@@ -1,4 +1,4 @@
-# Building and Testing the M01 Skeleton
+# Building and Testing MetadataSharp
 
 ## Prerequisites and SDK Selection
 
@@ -21,21 +21,20 @@ dotnet build MetadataSharp.sln --configuration Release --no-restore
 dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore
 ```
 
-A successful run should discover two xUnit theory cases that load the Core and
-Formats project assemblies and check their net8.0 target framework attributes.
-This checks project-reference output availability, test discovery and runtime
-loading without inventing a public library API. It does not validate metadata.
+The suite now defines 71 cases: two infrastructure cases, 36 binary primitive
+cases and 33 raw-model/rational cases. The workflow rejects fewer than 71 passing
+cases or any nonpassing cases. No format parsing/editing is tested yet.
 
 ## Project Boundaries
 
-- `src/MetadataSharp.Core`: empty SDK library; no runtime NuGet dependencies.
+- `src/MetadataSharp.Core`: binary primitives and raw EXIF model; no runtime NuGet dependencies.
 - `src/MetadataSharp.Formats`: empty SDK library referencing Core.
 - `tests/MetadataSharp.Tests`: xUnit tests referencing both libraries.
 - `Directory.Build.props`: shared language/target/nullable settings, deterministic
   output, warnings as errors, unsafe disabled, and packaging disabled by default.
 
-SDK-generated assembly attributes let empty library projects compile without dummy
-classes. One test project is sufficient for M01; future test separation is possible
+SDK-generated assembly attributes let the still-empty Formats project compile
+without dummy classes. One test project currently suffices; future separation is possible
 when there are actual format and external-tool tests. No coverage collector or
 external metadata tool is needed for this stage. `bin`, `obj`, test results and
 local IDE files are ignored. These projects are not ready for NuGet publication.
@@ -55,9 +54,21 @@ only the M01 skeleton, not metadata correctness or untested platform variants.
 `.github/workflows/build-and-test.yml` runs on pushes to master/Arena branches and
 pull requests targeting master. It installs a serviced .NET 8 SDK on Linux, Windows
 and macOS runners, records `dotnet --info`, and runs the restore/build/test commands
-above. A separate TRX check rejects a green run with no tests or fewer than two
+above. A separate TRX check rejects a green run with no tests or fewer than 71
 passing cases. Test results are retained as per-platform artifacts for seven days.
 CI needs only read access to repository contents; no SDK archive or release asset
 is required. Hosted runners have their own network environment, independent of
 Arena's local SDK download restrictions. The run conclusion and logs, not workflow
 creation alone, determine whether the M01 gate is satisfied.
+
+## M02 and M03 Validation
+
+- [M02 run 42417202024](https://github.com/sensboston/MetadataSharp/actions/runs/42417202024)
+  validated commit `97f87df97a55caf528c77dcbddeebcc5c447c587`.
+- [M03 run 42417333330](https://github.com/sensboston/MetadataSharp/actions/runs/42417333330)
+  validated commit `ca0f991066c0e7322decbe9ee88dd6f743aaa296`.
+
+Each passed restore, Release build and tests on Linux, Windows and macOS. The
+latest workflow raises the TRX floor to the full authored M01–M03 case count before
+merge. These tests validate bounded primitives and raw ownership, not TIFF/JPEG
+conformance, vendor metadata relocation or file saving.

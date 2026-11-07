@@ -177,3 +177,18 @@
   constraint verification remains an explicit M04 prerequisite; no format parser,
   editing API, endian transcoding or source document is introduced by M03.
 - Local `git diff --check` passed. Runtime gate pending GitHub Actions.
+
+### M03 CI result — 2026-11-07 — Gate closed
+
+- Validated commit: `ca0f991066c0e7322decbe9ee88dd6f743aaa296`.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42417333330
+- `gh run watch 42417333330 --exit-status --interval 15` exited 0. All three
+  platforms passed restore, Release build, tests and TRX verification.
+- Raised the workflow test floor from two infrastructure cases to all 71 authored
+  M01–M03 cases (2 infrastructure + 36 binary + 33 raw/rational). This strengthened
+  counter check is to be validated on the final head before merge.
+- Updated current status/navigation. No parser, ExifEdit or serializer was added.
+  M04 requires a separate request and normative/tag schema verification first.
+- Developer requested merge of ready work. PR #2 now includes M01–M03; merge only
+  after the final head's CI checks pass. Merge outcome is recorded in GitHub PR
+  history rather than predeclared here.
