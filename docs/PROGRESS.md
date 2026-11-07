@@ -233,3 +233,23 @@
   thumbnail ownership, refusals, all affected budgets and disjoint planned ranges.
 - Design: `docs/design/EXIF_LAYOUT_PLANNING_AND_SAFE_REBUILD_REFUSALS.md`.
 - `git diff --check` passed. Runtime gate awaits three-platform CI.
+
+### M05 CI and merge — 2026-11-07 — Gate closed
+
+- Commit `976983b9f36fddde9d0ab3eb558d4de9ea65e4e9` passed restore, Release build,
+  tests and the 142-case TRX floor on Linux, Windows and macOS in run 42418449461.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42418449461
+- `gh run watch 42418449461 --exit-status --interval 15` exited 0.
+- `gh pr merge 4 --merge` succeeded. M06 began after the successful gate and merge.
+
+### M06 — 2026-11-07 — Submitted to CI
+
+- Added internal plan-based TIFF EXIF serializer. Full layout/shape/pointer/thumbnail
+  validation precedes all destination modification; short buffers remain untouched.
+- Freeze plan collections, zero only the output region, retain suffix/source bytes,
+  and preserve raw payloads/thumbnail without interpretation or decoding.
+- Added independent II/MM and external-ASCII known bytes, rational/subdirectory
+  round trips, thumbnail rebasing, boundaries/padding and forged-plan refusal tests.
+- Design: `docs/design/EXIF_SERIALIZATION_PREFLIGHT_AND_OUTPUT_GUARANTEES.md`.
+- `git diff --check` passed. No external-tool result or local build is claimed;
+  runtime gate awaits the next three-platform CI run.
