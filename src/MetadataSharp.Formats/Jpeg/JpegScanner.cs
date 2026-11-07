@@ -27,7 +27,7 @@ internal static class JpegScanner
         byte[] payload = ArrayPool<byte>.Shared.Rent(65_533);
         try
         {
-            if (await input.Byte() != 0xFF || await input.Byte() != 0xD8)
+            if (await input.Byte().ConfigureAwait(false) != 0xFF || await input.Byte().ConfigureAwait(false) != 0xD8)
                 throw Error(MetadataErrorCode.InvalidJpeg, "The source does not start with SOI.", 0);
             var segments = new List<JpegSegment>();
             JpegSegment? exif = null;
@@ -41,15 +41,15 @@ internal static class JpegScanner
             {
                 token.ThrowIfCancellationRequested();
                 long start = input.Position;
-                if (await input.Byte() != 0xFF) throw Error(MetadataErrorCode.InvalidJpeg, "Expected a JPEG marker.", start);
+                if (await input.Byte().ConfigureAwait(false) != 0xFF) throw Error(MetadataErrorCode.InvalidJpeg, "Expected a JPEG marker.", start);
                 byte marker;
-                do { marker = await input.Byte(); } while (marker == 0xFF);
+                do { marker = await input.Byte().ConfigureAwait(false); } while (marker == 0xFF);
                 if (marker is 0 or 0xD8 or >= 0xD0 and <= 0xD7)
                     throw Error(MetadataErrorCode.InvalidJpeg, "Unexpected standalone marker outside scan data.", start);
                 if (!(marker is 0xC0 or 0xC4 or 0xDA or 0xDB or 0xDD or 0xFE or >= 0xE0 and <= 0xEF))
                     throw Error(MetadataErrorCode.UnsupportedFeature, "The marker is outside the single-scan baseline subset.", start);
                 if (segments.Count >= limits.MaxSegments) throw Error(MetadataErrorCode.LimitExceeded, "The segment budget was exceeded.", start);
-                int segmentLength = (await input.Byte() << 8) | await input.Byte();
+                int segmentLength = (await input.Byte().ConfigureAwait(false) << 8) | await input.Byte().ConfigureAwait(false);
                 if (segmentLength < 2) throw Error(MetadataErrorCode.InvalidJpeg, "A segment length is less than two.", start);
                 int count = segmentLength - 2;
                 long payloadAt = input.Position;
@@ -178,10 +178,10 @@ internal static class JpegScanner
             token.ThrowIfCancellationRequested();
             if (input.SkipPlainBytes() > 0) sawData = true;
             long at = input.Position;
-            byte b = await input.Byte();
+            byte b = await input.Byte().ConfigureAwait(false);
             if (b != 0xFF) { sawData = true; continue; }
             int fill = 0;
-            do { b = await input.Byte(); fill++; } while (b == 0xFF);
+            do { b = await input.Byte().ConfigureAwait(false); fill++; } while (b == 0xFF);
             if (b == 0)
             {
                 if (fill != 1) throw Error(MetadataErrorCode.InvalidJpeg, "Fill bytes cannot precede a stuffed zero.", at);

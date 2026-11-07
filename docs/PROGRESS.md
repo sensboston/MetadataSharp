@@ -283,3 +283,8 @@
   inputs, signatures, truncation, deterministic mutations, short reads and real
   sync/async separation. No foreign image fixtures or implementation source.
 - `git diff --check` passed. Runtime gate awaits CI; M08 has not started.
+
+- Initial M07 run 42419981805 failed compilation on xUnit2031 (filtered Assert.Single
+  analyzer); tests did not run. Corrected the assertion, hardened the async short-
+  read test double against MemoryStream fallback dispatch, and disabled context
+  capture in byte reads. No analyzer suppression or relaxed CI gate was used.

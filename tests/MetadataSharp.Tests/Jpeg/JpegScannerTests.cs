@@ -17,7 +17,7 @@ public sealed class JpegScannerTests
         Assert.Equal(8L, result.InsertionOffset);
         Assert.NotNull(result.Exif);
         Assert.Equal(JpegFixture.Exif(), data.AsSpan((int)result.Exif.PayloadOffset, result.Exif.PayloadLength).ToArray());
-        Assert.Single(result.Segments.Where(s => s.Marker == 0xED));
+        Assert.Single(result.Segments, s => s.Marker == 0xED);
         Assert.Equal(2, result.Segments.Count(s => s.Marker == 0xE1));
         Assert.Equal(data.Length - 2, result.EoiOffset);
         Assert.True(result.EntropyOffset > result.ScanOffset);
@@ -128,7 +128,10 @@ public sealed class JpegScannerTests
         {
             if (!asynchronous) throw new InvalidOperationException("Sync code used async I/O.");
             cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult(base.Read(buffer.Span[..Math.Min(buffer.Length, 3)]));
+            byte[] temporary = new byte[Math.Min(buffer.Length, 3)];
+            int read = base.Read(temporary, 0, temporary.Length);
+            temporary.AsMemory(0, read).CopyTo(buffer);
+            return ValueTask.FromResult(read);
         }
     }
 }
