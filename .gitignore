@@ -16,3 +16,7 @@ artifacts/
 *.suo
 .DS_Store
 Thumbs.db
+
+# Local Python harness caches
+**/__pycache__/
+*.py[cod]
