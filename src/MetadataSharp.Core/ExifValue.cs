@@ -43,6 +43,8 @@ public sealed class ExifValue
         bytes.AsSpan().CopyTo(destination);
     }
 
+    internal ReadOnlySpan<byte> RawBytes => bytes;
+
     internal static int GetWidth(TiffFieldType fieldType) => fieldType switch
     {
         TiffFieldType.Byte or TiffFieldType.Ascii or TiffFieldType.SByte or TiffFieldType.Undefined => 1,
