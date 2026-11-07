@@ -1,0 +1,73 @@
+name: Build and test
+
+on:
+  push:
+    branches: [master, 'arena/**']
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-and-test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: .NET 8 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Record SDK and runtime environment
+        run: dotnet --info
+      - name: Restore
+        run: dotnet restore MetadataSharp.sln
+      - name: Build Release
+        run: dotnet build MetadataSharp.sln --configuration Release --no-restore
+      - name: Test Release
+        run: dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults
+      - name: Verify tests actually ran
+        shell: python
+        run: |
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          files = list(Path('TestResults').rglob('*.trx'))
+          if not files:
+              raise SystemExit('No TRX results found')
+          total = 0
+          for file in files:
+              root = ET.parse(file).getroot()
+              ns = {'t': 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'}
+              counters = root.find('t:ResultSummary/t:Counters', ns)
+              if counters is None:
+                  raise SystemExit(f'No test counters in {file}')
+              count = int(counters.attrib['total'])
+              passed = int(counters.attrib['passed'])
+              if count != passed:
+                  raise SystemExit(f'Not all tests passed in {file}: {counters.attrib}')
+              total += count
+          if total < 2:
+              raise SystemExit(f'Expected at least two infrastructure cases, got {total}')
+          print(f'Validated {total} passing tests')
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: TestResults/**/*.trx
+          if-no-files-found: warn
+          retention-days: 7

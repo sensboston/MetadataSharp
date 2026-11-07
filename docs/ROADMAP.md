@@ -2,8 +2,9 @@
 
 ## Execution rules
 
-M00 scope and contracts were approved on 2026-11-07. No implementation exists
-yet. M01 is the next eligible unit when explicitly requested.
+M00 scope and contracts were approved on 2026-11-07. M01 infrastructure files
+are prepared, but restore/build/test are blocked by the missing .NET SDK. No
+metadata implementation exists. M01 remains pending; M02 is not eligible.
 Execute units in the order below. Each unit requires its predecessor's gate;
 contract-only proposals pause the unit until explicit approval. A completed gate
 requires reviewable changes, relevant passing tests, documented limitations, and

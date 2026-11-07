@@ -1,7 +1,7 @@
 # MetadataSharp
 
 A planned MIT-licensed managed .NET library for image metadata editing without
-pixel decoding or recompression. **Design stage: no library implementation yet.**
+pixel decoding or recompression. **Infrastructure skeleton only: no metadata implementation yet.**
 The initial scope is a restricted JPEG EXIF reader/editor, not general format support.
 
 ## Start Here
@@ -11,10 +11,12 @@ The initial scope is a restricted JPEG EXIF reader/editor, not general format su
   what was deliberately restricted, why, and when to revisit it.
 - [Approved initial API and safety contracts](docs/design/INITIAL_CONTRACTS.md):
   exact proposed signatures, limits, preservation/failure behavior and acceptance cases.
+- [Build and test instructions and current tooling blocker](docs/BUILD_AND_TEST.md).
 - [Development, licensing and regression-test policy](docs/DEVELOPMENT.md).
 - [Milestones and completion gates](docs/ROADMAP.md).
 - [One-stage execution prompts](docs/prompts/README.md).
 - [Progress and approval history](docs/PROGRESS.md).
 
-M00 was approved on 2026-11-07. M01 is the next eligible stage and has not started.
+M00 was approved on 2026-11-07. M01 files are prepared, but its completion gate is
+pending: this environment has no .NET SDK to run restore/build/test. M02 is blocked.
 See [LICENSE](LICENSE) for the MIT license.

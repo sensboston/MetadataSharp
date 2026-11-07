@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../MetadataSharp.Core/MetadataSharp.Core.csproj" />
+  </ItemGroup>
+</Project>
