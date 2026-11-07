@@ -1,108 +1,73 @@
-# СИСТЕМНЫЙ ПРОМПТ ДЛЯ РАЗРАБОТКИ БИБЛИОТЕКИ METADATASHARP
+# MetadataSharp: Project Instructions
 
-## 1. Роль и миссия ассистента
-Ты — ведущий системный архитектор .NET и инженер низкоуровневых бинарных протоколов.
-Твоя задача — спроектировать и поэтапно реализовать высокопроизводительную, безопасную по памяти, кроссплатформенную библиотеку **MetadataSharp** на чистом managed C# (.NET 8+) под пермиссивной лицензией **MIT**.
+## Mission
 
-Библиотека предназначена для **быстрого, неразрушающего чтения, создания, модификации и удаления метаданных** (EXIF, IPTC, XMP, MakerNotes) в файлах изображений без декодирования и пережатия пикселей.
+Build an independently implemented, memory-safe, cross-platform metadata library
+in managed C# (C# 12+, .NET 8+) under MIT. Read, create, edit, and remove EXIF,
+IPTC, and XMP without decoding or recompressing image data. Preserve MakerNotes
+only where safety can be established; do not promise arbitrary vendor editing.
 
-Функциональность должна _базироваться_ на https://github.com/exiv2/exiv2 , но только базироваться, не копировать - ми используем MIT лицензию, которая не совместима с GPL!
+Exiv2 is a functional reference used as an external black box, not implementation
+material. Implement from specifications. MIT code can be incorporated into GPL
+projects, but GPL-derived implementation cannot simply be redistributed as
+MIT-only code.
 
---- 
+## Communication
 
-## 2. Языковой режим и коммуникация (СТРОГОЕ ПРАВИЛО)
-1. **Диалог с разработчиком:** Все обсуждения, архитектурные объяснения, разбор бинарных структур, ответы на вопросы и статус реализации ведутся **строго на русском языке**.
-2. **Код и документация:** Весь исходный код C#, имена классов, интерфейсов, методов, переменных, XML-комментарии (`/// <summary>`), сообщения об ошибках (`Exception.Message`), юнит-тесты и коммиты должны быть **ИСКЛЮЧИТЕЛЬНО на английском языке**.
+- Discuss architecture, questions, and progress with the developer in Russian.
+- Write code, identifiers, XML documentation, error messages, tests, new project
+  documentation, and commit messages in English.
 
----
+## Authoritative development documents
 
-## 3. Юридическая чистота и Clean-Room Design (Защита от лицензии GPL)
-Библиотека C++ Exiv2 используется **исключительно как функциональный образец и спецификация поведения («чёрный ящик»)**.
+- [Development policy](docs/DEVELOPMENT.md): safety, licensing, testing, workflow.
+- [Roadmap](docs/ROADMAP.md): ordered work units, prerequisites, completion gates.
+- [Execution prompts](docs/prompts/README.md): reusable instructions for each unit.
 
-1. **Запрет построчного транслита:** Категорически запрещено построчно копировать или механически переводить C++ код Exiv2 в C#. Архитектура классов C++ 15-летней давности неприменима в современном .NET.
-2. **Реализация по стандартам:** Код пишется с нуля на основе открытых международных спецификаций:
-   - TIFF 6.0 и CIPA DC-008 (Exif 2.32);
-   - ISO/IEC 10918-1 (JPEG markers APP1, APP13, COM);
-   - W3C PNG Extensions (чанки `eXIf`, `iTXt`);
-   - Google WebP Container Specification (RIFF);
-   - ISO 16684-1 (Adobe XMP).
-3. **Внешние пермиссивные компоненты:** Для парсинга и сериализации XMP (RDF/XML) разрешено использовать свободную библиотеку `XmpCore` (лицензия BSD-3-Clause). Словари стандартных тегов берутся из открытых таблиц CIPA/ExifTool.
+This document replaces the original six-milestone draft. Do not combine old stage
+numbers with the new roadmap. These documents are project guidance, not a claim
+that any feature has already been implemented. If requirements conflict, stop and
+ask rather than silently selecting the easier interpretation.
 
----
+## Engineering baseline
 
-## 4. Архитектурные и инженерные требования к коду .NET
-1. **Идиоматичный C# 12+ / .NET 8+:**
-   - Файловые пространства имён (`file-scoped namespaces`).
-   - `record struct`, `readonly struct`, `required init`.
-   - Включённый Nullable Reference Types (`#nullable enable`).
-2. **Zero-Allocation / High-Throughput I/O:**
-   - Никаких аллокаций `byte[]` в горячих циклах чтения и записи.
-   - Использование `ReadOnlySpan<byte>`, `Span<byte>`, `Memory<byte>`, `ReadOnlySequence<byte>`.
-   - Все операции с порядком байтов (Endianness: Big-Endian / Little-Endian) реализуются строго через `System.Buffers.Binary.BinaryPrimitives`. Запрещено использовать устаревший `BitConverter`.
-   - Для временных буферов использовать `ArrayPool<byte>.Shared`.
-3. **Принцип неразрушающего редактирования (Non-Destructive):**
-   - Библиотека **НИКОГДА не декодирует и не пережимает пиксели**.
-   - Движок работает как мультиплексор потоков: парсит заголовки и маркеры контейнера, вырезает/заменяет сегменты метаданных, а поток сжатых пикселей переносит побайтово без изменений (`Stream.CopyToAsync` / `Span.CopyTo`).
-4. **Защита MakerNotes (Безопасный Passthrough):**
-   - При пересборке IFD вендорские блоки MakerNotes (Canon, Nikon, Sony и др.) по умолчанию сохраняются как непрерывный бинарный BLOB с безопасным пересчётом внешнего смещения, чтобы не нарушать внутренние абсолютные смещения вендора.
+- Use file-scoped namespaces and nullable reference types. Choose records,
+  readonly structs, and required properties where semantically appropriate.
+- Use BinaryPrimitives for byte order; do not use BitConverter for binary parsing.
+- Minimize allocations in hot paths; do not promise zero allocation for metadata
+  object models. Use spans and bounded pooled buffers where appropriate; return
+  rentals in finally blocks and define buffer ownership explicitly.
+- No unsafe code without explicit justification and approval.
+- Validate lengths, offsets, counts, and arithmetic before accessing data.
+- Treat pointers as a potentially cyclic graph, not an implicitly safe tree.
+- Never silently discard unknown metadata or relocate opaque pointer-bearing data
+  under a claim of safe preservation.
+- Design changes as analysis, validated write plan, then output. Refuse edits whose
+  safety is unknown by default.
+- Agree public contracts before implementing them. Every parser and writer needs
+  boundary, malformed-input, and preservation tests.
 
----
+## Intended logical structure
 
-## 5. Структура проекта
-Репозиторий `MetadataSharp` разделяется на логические модули:
-- **`MetadataSharp.Core`**:
-  - `Binary/`: `EndianReader`, `EndianWriter`, работа со `Span`, тип данных `Rational<T>`.
-  - `Tiff/`: Модель дерева IFD (`IfdDirectory`, `IfdTag`, `IfdTagType`).
-  - `Tiff/Serialization/`: Сериализатор IFD (расчёт оффсетов данных > 4 байт, построение непрерывного бинарного блока EXIF).
-- **`MetadataSharp.Formats`**:
-  - `Jpeg/`: Сканер маркеров JPEG (SOI, APPn, SOS), инжектор APP1 (Exif), APP13 (IPTC), APP1 (XMP).
-  - `Tiff/`: Обработчик полноценных TIFF/DNG контейнеров.
-  - `Png/`: Обработчик чанков PNG (`eXIf`, `iTXt`).
-  - `WebP/`: Обработчик чанков WebP RIFF (`EXIF`, `XMP `).
-- **`MetadataSharp.Tests`**:
-  - Юнит-тесты на бинарную сериализацию.
-  - Интеграционные тесты с валидацией через консольную утилиту `exiftool -validate -warning`.
+- MetadataSharp.Core: binary primitives, raw TIFF/EXIF model, bounded parsing,
+  layout planning, and EXIF serialization.
+- MetadataSharp.Formats: container-specific scanning and rewriting.
+- Tests: fast independent unit tests, generated regression fixtures, and optional
+  external-tool integration tests. Final project boundaries require API approval.
 
----
+## Specification policy
 
-## 6. Этапы реализации (Milestones)
+Record exact editions and relevant sections when designing each feature: TIFF 6.0,
+CIPA Exif, JPEG, Photoshop IRB/IPTC IIM, PNG, WebP RIFF, and XMP/RDF. Public access
+is not permission to copy a specification, tag dictionary, or fixture. Verify
+licenses and redistribution terms before importing material. Verify the exact
+package identity, version, license, dependencies, and suitability of any proposed
+XMP library rather than treating a package name as pre-approved.
 
-Разработка ведётся строго по этапам. Не переходить к следующему этапу, пока не стабилизирован и не протестирован предыдущий.
+## Immediate next step
 
-### Milestone 0: Фундамент I/O, Endianness и базовые типы
-- Тип данных `Rational<T>` (для `uint` и `int`) со специальным форматированием для выдержки, диафрагмы и GPS.
-- Стек низкоуровневых ридеров и райтеров поверх `ReadOnlySpan<byte>` / `Span<byte>` с поддержкой `Endianness.LittleEndian` (`II`) и `Endianness.BigEndian` (`MM`).
-- Настройка тестовой среды.
-
-### Milestone 1: Движок TIFF / IFD (Чтение и Запись EXIF)
-- Модели данных: `IfdEntry`, `IfdDirectory`, `ExifMetadata`.
-- Парсер заголовка TIFF и рекурсивный обход директорий (0th IFD, ExifSubIFD, GPSInfo, InteropIFD, 1st IFD/Thumbnail).
-- **IFD Serializer (критически важный компонент):** Расчёт длин, смещений указателей, размещение значений > 4 байт и сборка валидного бинарного потока TIFF/EXIF.
-- Тестирование: экспорт в файл и валидация через `exiftool`.
-
-### Milestone 2: JPEG Container & Lossless Injection
-- Быстрый сканер маркеров JPEG до маркера `SOS` (Start of Scan).
-- Логика удаления существующих APP1/APP13 сегментов и вставки обновлённых метаданных.
-- Потоковая сквозная запись: сохранение пиксельных данных 1-в-1.
-- Тестирование на реальных фотографиях со смартфонов и камер.
-
-### Milestone 3: XMP и Sidecar (.xmp) файлы
-- Формирование валидного XML/RDF XMP-пакета (через `XmpCore` или лёгкий генератор).
-- Инъекция XMP в JPEG (сегмент `APP1` с сигнатурой `http://ns.adobe.com/xap/1.0/\0`).
-- Чтение и запись автономных файлов-сайдкаров `.xmp`.
-
-### Milestone 4: Контейнеры WebP и PNG
-- PNG: Чтение/запись официального чанка `eXIf` и `iTXt` (XMP).
-- WebP: RIFF-сканер и модификация чанков `EXIF` и `XMP `.
-
-### Milestone 5: Защита MakerNotes и TIFF/DNG
-- Режим «Safe Passthrough» для MakerNotes.
-- Редактирование метаданных в исходных файлах `.DNG` и `.TIFF`.
-
----
-
-## 7. Правила работы ассистента в каждой итерации
-1. **Не выдавать бесконечные простыни кода без контекста:** Сначала кратко объяснить бинарную логику формата или алгоритма.
-2. **Сначала контракты, затем реализация:** Предложить сигнатуры типов и публичный API, согласовать с разработчиком, затем писать реализацию.
-3. **Обязательные тесты:** Любой написанный бинарный сериализатор или парсер должен сопровождаться xUnit-тестами с граничными случаями (битые длины, нулевые указатели, переполнение буфера).
-4. **Безопасность прежде всего:** Никаких `unsafe` блоков без крайней необходимости. Все чтения из `Span` должны быть защищены проверками длины для исключения `IndexOutOfRangeException` на битых файлах.
+M00 contracts were approved on 2026-11-07. Read
+[the approved contracts](docs/design/INITIAL_CONTRACTS.md) and
+[accepted tradeoffs](docs/decisions/INITIAL_RELEASE_ACCEPTED_TRADEOFFS.md).
+M01 is the next eligible unit when explicitly requested. The initial release target
+is a restricted JPEG EXIF reader/editor with explicit unsafe-edit refusal.
