@@ -474,3 +474,17 @@
   result. Contract-only proposal; no production/test implementation changed and no
   new test execution claimed. Requires explicit approval of new public/safety
   contracts before M12a implementation. No package publication.
+
+### M12 approval and M12a submission
+
+- Developer explicitly approved the M12 contracts/checkpoint split on 2026-11-07.
+- Reviewed IIM 4.2 (July 2014), Photoshop File Formats (June 2012 HTML mirror) and
+  XMP Part 3 (January 2020) storage/digest sections. Source blobs/hashes, six-field
+  validation table and deliberate restrictions are in the M12 normative review.
+- Implemented owned raw IIM datasets/occurrences, preserved untouched framing,
+  bounded normal/extended lengths, charset-aware text helpers and last-wins edits.
+  Internal Photoshop framing preserves unknown resources/names/padding and updates
+  only IPTC plus an existing digest; no new runtime dependency.
+- Added independent known-byte, repetition/encoding/control/budget/length/parity,
+  digest vector and APP13-capacity tests. Local dotnet is absent; required three-OS
+  CI is pending before M12b, and no local .NET test result is claimed.

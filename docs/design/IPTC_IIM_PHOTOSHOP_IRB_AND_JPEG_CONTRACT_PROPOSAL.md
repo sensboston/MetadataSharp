@@ -1,6 +1,6 @@
 # M12: IPTC IIM, Photoshop IRB and JPEG Contract Proposal
 
-Status: **PROPOSED — new public contracts require approval before implementation.**
+Status: **APPROVED by the developer on 2026-11-07.**
 Date: 2026-11-07. Predecessor: M10–M11 PR #7 merged with final CI green.
 
 ## 1. Bounded execution plan

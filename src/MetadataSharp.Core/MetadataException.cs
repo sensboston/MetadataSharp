@@ -12,7 +12,10 @@ public enum MetadataErrorCode
     ExifTooLarge,
     SourceChanged,
     InvalidXmp,
-    XmpTooLarge
+    XmpTooLarge,
+    InvalidIptc,
+    InvalidPhotoshopResources,
+    IptcTooLarge
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>
