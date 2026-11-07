@@ -491,3 +491,18 @@
 - Pre-CI audit corrected two new expected-byte test initializers to C# 12 collection
   expressions (spread syntax is not valid in legacy array initializers). No test
   assertion was removed; corrected-head CI remains required.
+- Corrected M12a head f45a96be8bc8399a2c92e33f48581f1ecc3edccc passed PR run
+  42425723428: Linux/macOS/Windows Release builds, 288-case floor, ten Python tests
+  and required existing Exiv2/ExifTool checks. M12b begins only after this gate.
+
+### M12b implementation submission
+
+- Added exact Photoshop APP13 discovery and independent IPTC Read/Save APIs with
+  source hash preflight, combined logical budgets, conservative ambiguity/digest
+  policy and safe non-overwriting publication. No EXIF/XMP pipeline behavior changed.
+- Added JPEG IPTC preservation, digest, signature, duplicates, malformed removal,
+  even-capacity, budget, async ownership/cancellation and path-race/failure tests.
+- Extended the owned public-API fixture consumer/reference harness with repetitions,
+  Unicode, existing digest maintenance, reverse writes, resource-preserving removal
+  and a 65,506-byte IIM/full APP13 boundary. Added independent repeated-row parser
+  policy tests. External reference outcomes remain pending.

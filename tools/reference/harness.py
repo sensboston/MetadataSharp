@@ -38,6 +38,18 @@ def exiv_values(text):
     return values
 
 
+def iptc_rows(text):
+    rows = []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        fields = line.split(None, 3)
+        if len(fields) != 4:
+            raise RuntimeError("Unexpected IPTC value row: " + line)
+        rows.append((fields[0], fields[1], int(fields[2]), fields[3]))
+    return rows
+
+
 def classify_warning(text):
     # Missing mandatory default-resolution tags are an explicit minimal-EXIF limitation.
     return text.casefold() in {
@@ -160,6 +172,39 @@ def main(argv=None):
             copied = output / (tool + "-xmp-noop.jpg"); ours("noop-xmp", changed, copied)
             assert copied.read_bytes() == changed.read_bytes(), "Reverse XMP no-op differs"
             assert scan_tail(changed.read_bytes()) == scan_tail(baseline), "Reverse XMP encoded bytes differ"
+        iptc = output / "iptc.jpg"
+        validate_image(iptc)
+        assert (output / "iptc-noop.jpg").read_bytes() == iptc.read_bytes(), "IPTC no-op differs"
+        assert (output / "iptc-removed.jpg").read_bytes() == (output / "iptc-expected-removed.jpg").read_bytes(), "IPTC removal lost unrelated resources"
+        assert scan_tail(iptc.read_bytes()) == scan_tail(baseline), "IPTC changed encoded bytes"
+        own = json.loads(ours("inspect-iptc", iptc))
+        assert own["caption"] == "Привет" and own["keywords"] == ["alpha", "beta", "alpha"], own
+        facts = json.loads(run(["exiftool", "-j", "-n", "-IPTC:Caption-Abstract", "-IPTC:Keywords", "-Photoshop:IPTCDigest", str(iptc)]))[0]
+        assert facts["Caption-Abstract"] == own["caption"] and facts["Keywords"] == own["keywords"], facts
+        assert facts["IPTCDigest"].lower() == own["digest"], "Stored IPTC digest is stale"
+        rows = iptc_rows(run(["exiv2", "-P", "kycv", "-K", "Iptc.Application2.Keywords", "-K", "Iptc.Application2.Caption", str(iptc)]))
+        assert [r[1:] for r in rows if r[0] == "Iptc.Application2.Keywords"] == [("String", 5, "alpha"), ("String", 4, "beta"), ("String", 5, "alpha")], rows
+        assert [r[1:] for r in rows if r[0] == "Iptc.Application2.Caption"] == [("String", 12, "Привет")], rows
+        full = output / "iptc-boundary.jpg"
+        validate_image(full)
+        full_own = json.loads(ours("inspect-iptc", full))["keywords"]
+        full_external = json.loads(run(["exiftool", "-j", "-IPTC:Keywords", str(full)]))[0]["Keywords"]
+        assert full_external == full_own and len(full_own) == 950, "IPTC full-capacity repetitions differ"
+        full_rows = iptc_rows(run(["exiv2", "-P", "kycv", "-K", "Iptc.Application2.Keywords", str(full)]))
+        assert [r[3] for r in full_rows] == full_own, "Exiv2 full-capacity repetitions differ"
+        for tool, caption in (("exiftool", "ExternalCaption"), ("exiv2", "Exiv2Caption")):
+            changed = output / (tool + "-iptc.jpg"); shutil.copyfile(iptc, changed)
+            if tool == "exiftool": run([tool, "-overwrite_original", "-IPTC:Caption-Abstract=" + caption, str(changed)])
+            else: run([tool, "-M", "set Iptc.Application2.Caption String " + caption, str(changed)])
+            actual = json.loads(ours("inspect-iptc", changed))
+            assert actual["caption"] == caption and actual["keywords"] == own["keywords"], actual
+            copied = output / (tool + "-iptc-noop.jpg"); ours("noop-iptc", changed, copied)
+            assert copied.read_bytes() == changed.read_bytes(), "Reverse IPTC no-op differs"
+            assert scan_tail(changed.read_bytes()) == scan_tail(baseline), "Reverse IPTC encoded bytes differ"
+            refreshed = output / (tool + "-iptc-refreshed.jpg"); ours("rewrite-iptc", changed, refreshed)
+            current = json.loads(ours("inspect-iptc", refreshed))
+            checksum = json.loads(run(["exiftool", "-j", "-n", "-Photoshop:IPTCDigest", str(refreshed)]))[0]
+            assert checksum["IPTCDigest"].lower() == current["digest"], "Refreshed IPTC digest is stale"
         report["fixtures"] = [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                                "source": "MetadataSharp authored synthetic generator", "license": "MIT"}
                               for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp")]

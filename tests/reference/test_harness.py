@@ -64,3 +64,14 @@ class HarnessExecutionTests(unittest.TestCase):
             report = json.loads((Path(temp) / "report.json").read_text())
             self.assertEqual("failed", report["status"])
             self.assertEqual(2, report["commands"][0]["exitCode"])
+
+
+class IptcRowTests(unittest.TestCase):
+    def test_repeated_iptc_rows_are_not_deduplicated(self):
+        rows = h.iptc_rows("Iptc.Application2.Keywords String 5 alpha\nIptc.Application2.Keywords String 5 alpha")
+        self.assertEqual(2, len(rows))
+        self.assertEqual(rows[0], rows[1])
+
+    def test_malformed_iptc_rows_fail(self):
+        with self.assertRaises(RuntimeError):
+            h.iptc_rows("not a row")

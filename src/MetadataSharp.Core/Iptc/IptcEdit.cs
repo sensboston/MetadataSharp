@@ -57,5 +57,11 @@ public sealed class IptcEdit
             throw new ArgumentException("The edit exceeds its aggregate default budget.");
         changes[key] = replacement;
     }
+    internal IptcEdit Capture()
+    {
+        var copy = new IptcEdit { removeAll = removeAll };
+        foreach (var pair in changes) copy.changes.Add(pair.Key, pair.Value);
+        return copy;
+    }
     internal (bool RemoveAll, Dictionary<IptcDatasetKey, Replacement> Changes) Snapshot() => (removeAll, new(changes));
 }

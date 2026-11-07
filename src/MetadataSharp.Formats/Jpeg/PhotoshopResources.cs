@@ -10,8 +10,10 @@ internal sealed class PhotoshopResources
 {
     internal sealed record Resource(ushort Id, ReadOnlyMemory<byte> Block, ReadOnlyMemory<byte> NameHeader, ReadOnlyMemory<byte> Data);
     private readonly IReadOnlyList<Resource> resources;
+    private readonly IptcLimits limits;
     internal IReadOnlyList<Resource> Resources => resources;
-    private PhotoshopResources(List<Resource> resources) => this.resources = resources.AsReadOnly();
+    private PhotoshopResources(List<Resource> resources, IptcLimits limits)
+    { this.resources = resources.AsReadOnly(); this.limits = limits with { }; }
     internal static PhotoshopResources Parse(byte[] payload, IptcLimits limits)
     {
         limits.Validate(); if (payload.Length > limits.MaxPacketBytes) throw IptcPacket.Limit();
@@ -35,7 +37,7 @@ internal sealed class PhotoshopResources
             var data = payload.AsMemory(at, (int)size); at += (int)(size + (size & 1));
             resources.Add(new(id, payload.AsMemory(start, at - start), header, data));
         }
-        return new(resources);
+        return new(resources, limits);
     }
     private static MetadataException Invalid() => new(MetadataErrorCode.InvalidPhotoshopResources, "Malformed or truncated Photoshop resource framing.");
     internal Resource? Iptc => resources.FirstOrDefault(r => r.Id == 0x0404);
@@ -47,7 +49,7 @@ internal sealed class PhotoshopResources
         if (digest is not null && (digest.Data.Length != 16 || Iptc is null))
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "An invalid-length or orphan IPTC digest cannot be interpreted safely.");
     }
-    internal static PhotoshopResources Empty => new([]);
+    internal static PhotoshopResources Empty => new([], new());
     internal byte[]? Rewrite(byte[]? iptc)
     {
         ValidateTargets();
@@ -56,6 +58,7 @@ internal sealed class PhotoshopResources
         {
             size += data.Length;
             if (size > 65533) throw new MetadataException(MetadataErrorCode.IptcTooLarge, "Photoshop resources exceed one JPEG APP13 payload.");
+            if (size > limits.MaxPacketBytes || output.Count >= limits.MaxResources) throw IptcPacket.Limit();
             output.Add(data);
         }
         foreach (Resource resource in resources)
