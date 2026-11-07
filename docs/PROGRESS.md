@@ -141,3 +141,17 @@
 - Updated current-status documents to supersede the historical local-SDK blocker.
   Local SDK installation is still unavailable; use CI for actual .NET execution.
 - M01 acceptance gate is satisfied. M02 has not started and requires a request.
+
+### M02 — 2026-11-07 — Implementation submitted to CI
+
+- Developer explicitly requested M02, then M03 only after successful CI, and merge
+  of completed work. This is a bounded two-stage exception to the default stop rule.
+- Added approved Endianness and internal span cursors using BinaryPrimitives;
+  Try failures do not advance or modify output. Added checked nonnegative range,
+  product and addition helpers, with friend access for the test assembly only.
+- Added known-byte tests for both orders/all integer widths, signed extrema, every
+  truncated width, exact end, failure recovery, invalid order and overflow bounds.
+- Design rationale: `docs/design/BINARY_PRIMITIVES_AND_FAILURE_ATOMICITY.md`.
+- No TIFF parsing, allocation abstraction or unapproved public API was added.
+- Local `git diff --check` passed; runtime checks require GitHub Actions. M03 has
+  not started; the gate remains pending until M02 CI succeeds.
