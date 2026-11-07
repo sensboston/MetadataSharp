@@ -288,3 +288,23 @@
   analyzer); tests did not run. Corrected the assertion, hardened the async short-
   read test double against MemoryStream fallback dispatch, and disabled context
   capture in byte reads. No analyzer suppression or relaxed CI gate was used.
+
+### M07 CI result — 2026-11-07 — Gate closed
+
+- Corrected commit `3437bb6a80bfa907c7aeed00aa082f8b18a2885e` passed Linux,
+  Windows and macOS restore/build/tests and the 176-case TRX floor in run 42420076893.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42420076893
+- `gh run watch 42420076893 --exit-status --interval 15` exited 0.
+- PR #6 remains open for the agreed combined M07–M09 group. M08 began only after
+  this CI gate; the initial analyzer failure is preserved in the history above.
+
+### M08 — 2026-11-07 — Submitted to CI
+
+- Implemented the approved ExifEdit and JPEG facade, sync/async I/O, source identity
+  preflight, safe addressed injection, whole removal and exact no-op copy.
+- SaveAs uses a same-directory temporary file and no-overwrite publication; stream
+  output failure may be partial. All shared pools returned; no source writes.
+- Added preservation, refusal, ownership, cancellation, endian, path race/cleanup
+  and output-failure tests. Shape validation does not claim full Exif conformance.
+- See `docs/design/JPEG_EXIF_EDITING_OWNERSHIP_AND_FAILURE_SEMANTICS.md`.
+- Local `git diff --check` passed; runtime gate awaits CI before M09.
