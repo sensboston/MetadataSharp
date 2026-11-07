@@ -100,7 +100,7 @@ public sealed class IptcPacket
                     throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "A text edit would require an unapproved encoding conversion.");
                 // Bound the frame before allocating it.
                 int width = value.ByteLength <= 32767 ? 0 : value.ByteLength <= 65535 ? 2 : value.ByteLength <= 0xffffff ? 3 : 4;
-                if (size + 5L + width + value.ByteLength > limits.MaxPacketBytes) throw Limit();
+                if (count >= limits.MaxDatasets || size + 5L + width + value.ByteLength > limits.MaxPacketBytes) throw Limit();
                 byte[] frame = new byte[5 + width + value.ByteLength]; frame[0] = 0x1c; frame[1] = key.Record; frame[2] = key.Dataset;
                 BinaryPrimitives.WriteUInt16BigEndian(frame.AsSpan(3), width == 0 ? (ushort)value.ByteLength : (ushort)(0x8000 | width));
                 for (int i = 0; i < width; i++) frame[5 + i] = (byte)((uint)value.ByteLength >> (8 * (width - i - 1)));

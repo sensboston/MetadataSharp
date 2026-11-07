@@ -506,3 +506,11 @@
   Unicode, existing digest maintenance, reverse writes, resource-preserving removal
   and a 65,506-byte IIM/full APP13 boundary. Added independent repeated-row parser
   policy tests. External reference outcomes remain pending.
+- First M12b commit 5c2376b passed PR run 42426038001: all three OS jobs, 304-case
+  floor, twelve offline Python tests and the full required external-reference job.
+  Repeated/Unicode IPTC facts, reverse writes/no-op, digest refresh, exact removal
+  preserving a copyright resource, and full-capacity repetitions all passed.
+- Audit tightened count/byte checks before allocating new IIM/IRB frames and checks
+  cancellation after the final hash read. Added partial-output/cancellation and
+  captured-growth regressions plus a deterministic 256-case owned mutation smoke
+  (not a general fuzzing or security-certification claim).

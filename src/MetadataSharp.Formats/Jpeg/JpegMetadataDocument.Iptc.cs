@@ -13,6 +13,7 @@ public sealed partial class JpegMetadataDocument
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         byte[] hash = await Hash(source, scan.Length, limits.CopyBufferBytes, asynchronous, token).ConfigureAwait(false);
+        token.ThrowIfCancellationRequested();
         if (!CryptographicOperations.FixedTimeEquals(digest, hash))
             throw new MetadataException(MetadataErrorCode.SourceChanged, "The source content has changed since opening.");
     }

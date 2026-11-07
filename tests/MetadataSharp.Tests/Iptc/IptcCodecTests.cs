@@ -194,4 +194,29 @@ public sealed class IptcCodecTests
         Assert.Equal(65532, empty.Rewrite(new byte[65506])!.Length);
         Assert.Equal(MetadataErrorCode.IptcTooLarge, Assert.Throws<MetadataException>(() => empty.Rewrite(new byte[65507])).Code);
     }
+    [Fact]
+    public void ResourceAndDatasetGrowthRespectCapturedBudgets()
+    {
+        byte[] unknown = Block(0x1234, []);
+        PhotoshopResources one = PhotoshopResources.Parse(Photoshop(unknown), new() { MaxResources = 1 });
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => one.Rewrite([1])).Code);
+        PhotoshopResources bytes = PhotoshopResources.Parse(Photoshop(unknown), new() { MaxPacketBytes = Photoshop(unknown).Length });
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => bytes.Rewrite([1])).Code);
+        IptcPacket packet = IptcPacket.Parse(Dataset(2, 25, 65), new() { Limits = new() { MaxDatasets = 1 } });
+        var edit = new IptcEdit(); edit.ReplaceRaw(Keywords, [IptcValue.FromRaw([1]), IptcValue.FromRaw([2])]);
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => packet.Apply(edit)).Code);
+    }
+    [Fact]
+    public void BoundedOwnedMutationSmokeNeverLeaksIncidentalRangeErrors()
+    {
+        var random = new Random(12007);
+        for (int i = 0; i < 256; i++)
+        {
+            byte[] iim = Dataset(2, 25, 65, 66, 67); iim[random.Next(iim.Length)] = (byte)random.Next(256);
+            Exception? iimError = Record.Exception(() => IptcPacket.Parse(iim)); Assert.True(iimError is null or MetadataException);
+            byte[] irb = Photoshop(Block(0x0404, Dataset(2, 25, 65))); irb[random.Next(irb.Length)] = (byte)random.Next(256);
+            Exception? irbError = Record.Exception(() => PhotoshopResources.Parse(irb, new())); Assert.True(irbError is null or MetadataException);
+        }
+    }
+
 }

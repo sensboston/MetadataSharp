@@ -54,29 +54,30 @@ internal sealed class PhotoshopResources
     {
         ValidateTargets();
         var output = new List<ReadOnlyMemory<byte>>(); long size = 14;
+        void Check(long length)
+        {
+            if (size + length > 65533) throw new MetadataException(MetadataErrorCode.IptcTooLarge, "Photoshop resources exceed one JPEG APP13 payload.");
+            if (size + length > limits.MaxPacketBytes || output.Count >= limits.MaxResources) throw IptcPacket.Limit();
+        }
         void Add(ReadOnlyMemory<byte> data)
         {
-            size += data.Length;
-            if (size > 65533) throw new MetadataException(MetadataErrorCode.IptcTooLarge, "Photoshop resources exceed one JPEG APP13 payload.");
-            if (size > limits.MaxPacketBytes || output.Count >= limits.MaxResources) throw IptcPacket.Limit();
-            output.Add(data);
+            Check(data.Length); size += data.Length; output.Add(data);
         }
         foreach (Resource resource in resources)
         {
             if (resource.Id is 0x0404 or 0x0425)
             {
                 if (iptc is null) continue;
+                int dataLength = resource.Id == 0x0404 ? iptc.Length : 16;
+                Check(resource.NameHeader.Length + 4L + dataLength + (dataLength & 1));
                 byte[] data = resource.Id == 0x0404 ? iptc : MD5.HashData(iptc);
-                if (size + resource.NameHeader.Length + 4L + data.Length + (data.Length & 1) > 65533)
-                    throw new MetadataException(MetadataErrorCode.IptcTooLarge, "The updated Photoshop segment exceeds its capacity.");
                 Add(Frame(resource.Id, data, resource.NameHeader));
             }
             else Add(resource.Block);
         }
         if (iptc is not null && Iptc is null)
         {
-            if (size + 12L + iptc.Length + (iptc.Length & 1) > 65533)
-                throw new MetadataException(MetadataErrorCode.IptcTooLarge, "The new IPTC resource exceeds its APP13 capacity.");
+            Check(12L + iptc.Length + (iptc.Length & 1));
             Add(Frame(0x0404, iptc, default));
         }
         if (output.Count == 0) return null;

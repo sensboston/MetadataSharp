@@ -142,6 +142,39 @@ public sealed class JpegIptcTests
         }
         finally { Directory.Delete(dir, true); }
     }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OutputFailureCanBePartialButSourceAndSnapshotStayUntouched(bool asynchronous)
+    {
+        byte[] image = Save(JpegFixture.Build(), Caption("source")); using var source = new MemoryStream(image.ToArray()); using var doc = JpegMetadataDocument.Open(source);
+        IptcPacket snapshot = doc.ReadIptc()!; using var destination = new PartialOutput();
+        if (asynchronous) await Assert.ThrowsAsync<IOException>(() => doc.SaveIptcAsync(destination, Caption("change")));
+        else Assert.Throws<IOException>(() => doc.SaveIptc(destination, Caption("change")));
+        Assert.True(destination.Length > 0); Assert.Equal(image, source.ToArray()); Assert.Equal("source", GetCaption(snapshot)); Assert.True(destination.CanWrite);
+    }
+    [Fact]
+    public async Task CancellationAfterAsyncPreflightReadLeavesBorrowedOutputEmpty()
+    {
+        using var source = new CancelInput(JpegFixture.Build()); using var doc = JpegMetadataDocument.Open(source);
+        using var cancel = new CancellationTokenSource(); source.Arm(cancel);
+        using var output = new MemoryStream(); await Assert.ThrowsAnyAsync<OperationCanceledException>(() => doc.SaveIptcAsync(output, new(), cancel.Token));
+        Assert.Empty(output.ToArray()); Assert.True(source.CanRead);
+    }
+    private sealed class PartialOutput : MemoryStream
+    {
+        public override void Write(ReadOnlySpan<byte> buffer)
+        { byte[] bytes = buffer[..Math.Min(buffer.Length, 2)].ToArray(); base.Write(bytes, 0, bytes.Length); throw new IOException("Injected output failure."); }
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        { byte[] bytes = buffer[..Math.Min(buffer.Length, 2)].ToArray(); base.Write(bytes, 0, bytes.Length); return ValueTask.FromException(new IOException("Injected async output failure.")); }
+    }
+    private sealed class CancelInput(byte[] bytes) : MemoryStream(bytes)
+    {
+        private CancellationTokenSource? cancel;
+        internal void Arm(CancellationTokenSource token) => cancel = token;
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        { byte[] bytes = new byte[buffer.Length]; int count = base.Read(bytes, 0, bytes.Length); bytes.AsSpan(0, count).CopyTo(buffer.Span); cancel?.Cancel(); return ValueTask.FromResult(count); }
+    }
     private sealed class OnCopyInput(byte[] bytes) : MemoryStream(bytes)
     {
         private Action? action; private int zeroSeeks;
