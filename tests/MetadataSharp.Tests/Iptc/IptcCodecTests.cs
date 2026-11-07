@@ -38,7 +38,8 @@ public sealed class IptcCodecTests
         Assert.Equal(expected, Raw(packet)); Assert.Equal("A", packet.GetText(0));
         byte[] value = [67]; IptcValue owned = IptcValue.FromRaw(value); value[0] = 99;
         var edit = new IptcEdit(); edit.ReplaceRaw(Keywords, [owned, IptcValue.FromRaw([68])]);
-        Assert.Equal(new byte[] { 0x1c, 2, 25, 0, 1, 67, 0x1c, 2, 25, 0, 1, 68, .. Dataset(7, 200, 9, 8), .. Dataset(2, 250, 6) }, Raw(packet.Apply(edit)!));
+        byte[] changed = [0x1c, 2, 25, 0, 1, 67, 0x1c, 2, 25, 0, 1, 68, .. Dataset(7, 200, 9, 8), .. Dataset(2, 250, 6)];
+        Assert.Equal(changed, Raw(packet.Apply(edit)!));
         Assert.Throws<NotSupportedException>(() => ((IList<IptcDataset>)packet.Datasets).Clear());
     }
     [Fact]
@@ -46,7 +47,8 @@ public sealed class IptcCodecTests
     {
         byte[] original = [0x1c, 2, 250, 0x80, 4, 0, 0, 0, 1, 77];
         IptcPacket packet = IptcPacket.Parse(original); var edit = new IptcEdit(); edit.ReplaceText(Keywords, ["alpha", "alpha"]);
-        Assert.Equal(new byte[] { .. original, .. Dataset(2, 25, Encoding.ASCII.GetBytes("alpha")), .. Dataset(2, 25, Encoding.ASCII.GetBytes("alpha")) }, Raw(packet.Apply(edit)!));
+        byte[] changed = [.. original, .. Dataset(2, 25, Encoding.ASCII.GetBytes("alpha")), .. Dataset(2, 25, Encoding.ASCII.GetBytes("alpha"))];
+        Assert.Equal(changed, Raw(packet.Apply(edit)!));
         Assert.Same(packet, packet.Apply(new()));
     }
     [Theory]

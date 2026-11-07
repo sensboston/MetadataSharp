@@ -488,3 +488,6 @@
 - Added independent known-byte, repetition/encoding/control/budget/length/parity,
   digest vector and APP13-capacity tests. Local dotnet is absent; required three-OS
   CI is pending before M12b, and no local .NET test result is claimed.
+- Pre-CI audit corrected two new expected-byte test initializers to C# 12 collection
+  expressions (spread syntax is not valid in legacy array initializers). No test
+  assertion was removed; corrected-head CI remains required.
