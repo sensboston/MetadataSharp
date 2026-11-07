@@ -414,3 +414,9 @@
   Public fixture consumer/harness now checks external literal reads, rich sidecar
   arrays/Unicode language alternatives, reverse writes/no-op and 65,502–65,504-byte
   boundaries. External outcomes are pending, not assumed from authored tests.
+- First M11 commit a1609be passed all three OS builds/tests (253-case minimum),
+  but required external validation failed because ExifTool `-lang all` is not a
+  language-alternative selector. Corrected the harness to request Title and
+  Title-ru explicitly, preserving both value assertions. No library refusal or
+  expected metadata value was relaxed. Added late-placement, opaque structure,
+  combined budget, EXIF independence and deterministic publication-race tests.

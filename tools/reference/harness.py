@@ -135,7 +135,7 @@ def main(argv=None):
         assert values["CreatorTool"] == "MetadataSharp", values
         values = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Xmp.xmp.CreatorTool", str(xmp)]))
         assert values == {"Xmp.xmp.CreatorTool": ("XmpText", 13, "MetadataSharp")}, values
-        rich = json.loads(run(["exiftool", "-j", "-XMP-dc:Subject", "-XMP-dc:Title", "-lang", "all", str(output / "xmp-rich.xmp")]))[0]
+        rich = json.loads(run(["exiftool", "-j", "-XMP-dc:Subject", "-XMP-dc:Title", "-XMP-dc:Title-ru", str(output / "xmp-rich.xmp")]))[0]
         assert rich["Subject"] == ["alpha", "beta"] and rich["Title"] == "Hello" and rich["Title-ru"] == "Привет", rich
         for size in (65502, 65503, 65504):
             boundary = output / f"xmp-boundary-{size}.jpg"

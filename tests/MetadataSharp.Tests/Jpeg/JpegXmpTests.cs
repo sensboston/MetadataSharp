@@ -160,6 +160,65 @@ public sealed class JpegXmpTests
         using var output = new MemoryStream(new byte[] { 7 }); Assert.Throws<ArgumentException>(() => doc.SaveXmp(output, Set("x"))); Assert.Equal(new byte[] { 7 }, output.ToArray());
         doc.Dispose(); Assert.True(source.CanRead); Assert.Throws<ObjectDisposedException>(() => doc.ReadXmp());
     }
+    [Fact]
+    public void OpaqueRdfAndCombinedExifBudgetRemainConservative()
+    {
+        byte[] xml = Encoding.UTF8.GetBytes("<r:RDF xmlns:r='http://www.w3.org/1999/02/22-rdf-syntax-ns#'><r:Description r:about='' xmlns:p='urn:owned'><p:structure r:parseType='Resource'><p:field>keep</p:field></p:structure></r:Description></r:RDF>");
+        byte[] image = JpegFixture.Build(Segment(xml));
+        using var doc = JpegMetadataDocument.Open(new MemoryStream(image)); Assert.False(doc.ReadXmp()!.IsEditable);
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => Save(image, Set("loss"))).Code);
+        var remove = new XmpEdit(); remove.RemoveAllXmp(); Assert.Equal(JpegFixture.Build(), Save(image, remove));
+        byte[] combined = JpegFixture.Build([.. JpegFixture.Segment(0xe1, JpegFixture.Exif()), .. Segment(Packet())]);
+        using var limited = JpegMetadataDocument.Open(new MemoryStream(combined), new() { Limits = new() { MaxRetainedMetadataBytes = JpegFixture.OrientationTiff.Length + Packet().Length - 1 } });
+        Assert.NotNull(limited.Exif); Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => limited.ReadXmp()).Code);
+    }
+    [Fact]
+    public void LateStandardPacketIsReplacedInPlaceWithoutReorderingOtherMarkers()
+    {
+        byte[] baseline = JpegFixture.Build(); using var scanInput = new MemoryStream(baseline);
+        JpegScanResult scan = JpegScanner.Scan(scanInput, new()); int at = (int)scan.ScanOffset;
+        byte[] source = [.. baseline[..at], .. Segment(Packet()), .. baseline[at..]];
+        byte[] output = Save(source, Set("late")); using var checkInput = new MemoryStream(output);
+        JpegScanResult changed = JpegScanner.Scan(checkInput, new()); JpegSegment xmp = Assert.Single(changed.Segments, s => s.IsStandardXmp);
+        Assert.Equal(at, xmp.Start); Assert.Equal(baseline[..at], output[..at]); Assert.Equal(baseline[at..], output[(int)(xmp.Start + xmp.Length)..]);
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PathFailureOrCompetingCreatorCleansTemporaryAndPreservesSource(bool competitor)
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "jpeg-xmp-failure-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(dir);
+        try
+        {
+            string target = Path.Combine(dir, "target.jpg"); byte[] original = JpegFixture.Build(Segment(Packet()));
+            using var source = new OnCopyInput(original); using var doc = JpegMetadataDocument.Open(source);
+            source.Arm(() => { if (competitor) File.WriteAllBytes(target, [77]); else throw new IOException("Injected source copy failure."); });
+            Assert.Throws<IOException>(() => doc.SaveXmpAs(target, new())); Assert.Empty(Directory.GetFiles(dir, "*.tmp"));
+            Assert.Equal(original, source.ToArray());
+            if (competitor) Assert.Equal(new byte[] { 77 }, File.ReadAllBytes(target)); else Assert.False(File.Exists(target));
+        }
+        finally { Directory.Delete(dir, true); }
+    }
+    [Fact]
+    public void ExifOnlyEditsPreserveMalformedAndExtendedXmpAsOpaqueBytes()
+    {
+        byte[] source = JpegFixture.Build([.. Segment(Encoding.UTF8.GetBytes("<bad")), .. JpegFixture.Segment(0xe1, "http://ns.adobe.com/xmp/extension/\0"u8.ToArray())]);
+        using var doc = JpegMetadataDocument.Open(new MemoryStream(source)); var edit = new ExifEdit();
+        edit.Set(new(ExifDirectoryKind.Ifd0, 0x0112), ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, [1, 0]));
+        using var output = new MemoryStream(); doc.Save(output, edit);
+        using var edited = JpegMetadataDocument.Open(new MemoryStream(output.ToArray())); var removal = new ExifEdit(); removal.RemoveAllExif();
+        using var restored = new MemoryStream(); edited.Save(restored, removal); Assert.Equal(source, restored.ToArray());
+    }
+    private sealed class OnCopyInput(byte[] bytes) : MemoryStream(bytes)
+    {
+        private Action? action; private int zeroSeeks;
+        internal void Arm(Action callback) { action = callback; zeroSeeks = 0; }
+        public override long Position
+        {
+            get => base.Position;
+            set { base.Position = value; if (value == 0 && action is not null && ++zeroSeeks == 2) action(); }
+        }
+    }
     private sealed class AsyncOutput : MemoryStream
     {
         public override void Write(byte[] buffer, int offset, int count) => throw new InvalidOperationException("Sync write used.");
