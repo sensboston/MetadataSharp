@@ -514,3 +514,16 @@
   cancellation after the final hash read. Added partial-output/cancellation and
   captured-growth regressions plus a deterministic 256-case owned mutation smoke
   (not a general fuzzing or security-certification claim).
+
+### M12 audited gate and documentation
+
+- Audited head f19471ec7d1e048423e8d9d3ed7e217b8832c8e0 passed PR run 42426187721:
+  all three OS builds/tests, 309-case floor, twelve offline Python tests and full
+  required Exiv2 0.27.6 / ExifTool 12.76 validation. No new warning category accepted;
+  the existing minimal-EXIF XResolution limitation remains explicit.
+- Added `IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md` with examples, raw/text
+  semantics, exact digest/IRB behavior, actual even-capacity limits, budgets and
+  path/stream failure rules. Updated current-state docs and preserved historical
+  gate counts. No new dependency, package publication or general IIM conformance claim.
+- Final documentation head still requires green CI before merging PR #8. M13 (PNG)
+  contract review is next eligible; no M13 implementation started.

@@ -21,9 +21,9 @@ dotnet build MetadataSharp.sln --configuration Release --no-restore
 dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore
 ```
 
-The suite now defines 260 cases through M11, covering infrastructure, binary
+The suite now defines 309 cases through M12, covering infrastructure, binary
 primitives, raw values, TIFF/EXIF reading, layout, serialization, JPEG EXIF/XMP scanning and editing, and XMP packets/sidecars. The workflow
-rejects fewer than 260 passing cases or any nonpassing cases. Ten independent Python policy/execution tests also run on each OS.
+rejects fewer than 309 passing cases or any nonpassing cases. Twelve independent Python policy/execution tests also run on each OS.
 
 ## Project Boundaries
 
@@ -53,7 +53,7 @@ only the M01 skeleton, not metadata correctness or untested platform variants.
 `.github/workflows/build-and-test.yml` runs on pushes to master/Arena branches and
 pull requests targeting master. It installs a serviced .NET 8 SDK on Linux, Windows
 and macOS runners, records `dotnet --info`, and runs the restore/build/test commands
-above. A separate TRX check rejects a green run with no tests or fewer than 260
+above. A separate TRX check rejects a green run with no tests or fewer than 309
 passing cases. Test results are retained as per-platform artifacts for seven days.
 CI needs only read access to repository contents; no SDK archive or release asset
 is required. Hosted runners have their own network environment, independent of
@@ -87,7 +87,7 @@ benchmark, external-tool validation or broader format-conformance claim is impli
 
 M07 passed run 42420076893; M08 passed 42420352483; corrected M09 passed
 [42420756667](https://github.com/sensboston/MetadataSharp/actions/runs/42420756667).
-The current TRX floor is 260. M09 additionally requires Exiv2 0.27.6 and ExifTool
+The current TRX floor is 309. M09 additionally requires Exiv2 0.27.6 and ExifTool
 12.76 in a separate Ubuntu 24.04 job; absent tools cannot silently skip CI.
 
 ```sh
@@ -125,3 +125,26 @@ Wrapper-corrected commit 2b760c6 passed PR run
 including the 260-case floor and full ExifTool validation of XMP JPEG/sidecar/boundary
 fixtures. The missing-wrapper warning was eliminated by emitting standard PIs;
 no warning whitelist was broadened. The original minimal-EXIF limitation remains.
+
+## M12 IPTC/Photoshop Validation
+
+M12a corrected head f45a96b passed PR run
+[42425723428](https://github.com/sensboston/MetadataSharp/actions/runs/42425723428)
+with a 288-case floor before M12b began. M12b first head 5c2376b passed
+[42426038001](https://github.com/sensboston/MetadataSharp/actions/runs/42426038001)
+with a 304-case floor. Audited head f19471e passed
+[42426187721](https://github.com/sensboston/MetadataSharp/actions/runs/42426187721)
+with a 309-case floor. All included Linux/macOS/Windows Release build/test and
+required pinned external-reference checks; Python policy coverage is now twelve tests.
+
+Owned IPTC fixtures exercise UTF-8/repeated datasets, exact no-op, resource-preserving
+removal, existing digest refresh, reverse CLI edits and full APP13 capacity. Both
+Exiv2 0.27.6 and ExifTool 12.76 passed their factual checks; explicit ExifTool
+validation ran on normal and boundary IPTC JPEGs. No new warning whitelist was
+introduced. The known initial minimal-EXIF XResolution limitation remains.
+A deterministic 256-iteration mutation smoke checked bounded IIM/IRB error paths;
+this is not a general fuzzing campaign or proof of security. Local dotnet remains
+unavailable; actual .NET/reference execution was in Actions, not locally claimed.
+
+See [IPTC usage](design/IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md) and the
+[normative review](design/IPTC_IIM_AND_PHOTOSHOP_NORMATIVE_REVIEW.md).

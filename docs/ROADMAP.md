@@ -2,7 +2,7 @@
 
 ## Execution rules
 
-M00 scope and contracts were approved on 2026-11-07. M01–M11 passed Linux,
+M00 scope and contracts were approved on 2026-11-07. M01–M12 passed Linux,
 Windows and macOS CI, with required pinned external references at M09. See
 [progress](PROGRESS.md) and the [initial JPEG audit](audits/INITIAL_JPEG_RELEASE_AUDIT.md)
 for evidence, restrictions and remaining publication gates. M07–M09 form one
@@ -65,11 +65,13 @@ The developer requested this next group on 2026-11-07. Its contract-only proposa
 is [XMP packets, sidecars and JPEG](design/XMP_PACKET_SIDECAR_AND_JPEG_CONTRACT_PROPOSAL.md).
 Contracts were explicitly approved on 2026-11-07. M10 and M11 passed their per-unit
 CI gates; see PROGRESS.md for evidence. See the XMP usage/normative review documents
-for the implemented subset. M12 (IPTC) is next and requires its own contract review.
+for the implemented subset. M12 (IPTC) was subsequently approved and implemented; see its checkpoint record below.
 
 ## M12 contract review
 
-The next IPTC/Photoshop scope is proposed in
+The IPTC/Photoshop scope is recorded in
 [the M12 contract](design/IPTC_IIM_PHOTOSHOP_IRB_AND_JPEG_CONTRACT_PROPOSAL.md).
-It proposes one PR with M12a codec/resource and M12b JPEG checkpoints, each gated
-by CI. Public contracts and implementation remain pending explicit approval.
+Approved on 2026-11-07: one PR with M12a codec/resource and M12b JPEG checkpoints,
+each gated by CI. Both implementation checkpoints passed; see PROGRESS.md and the
+IPTC usage/normative review documents for evidence and restrictions. M13 (PNG) is
+the next eligible scope and still requires new public/safety contract review.

@@ -14,10 +14,11 @@ MIT-only code.
 
 ## Current implementation boundary
 
-M01–M11 implement restricted JPEG EXIF/XMP editing, bounded XMP packets/sidecars
+M01–M12 implement restricted JPEG EXIF/IPTC/XMP editing, bounded XMP packets/sidecars
 and the external-reference audit. See `docs/design/XMP_USAGE_AND_PRESERVATION_LIMITS.md`
-for the approved XMP profile. See `docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md` for conformance limitations
-and remaining publication gates. No package has been published. M12+ requires
+for the approved XMP profile, and
+`docs/design/IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md` for the IPTC/IRB profile. See `docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md` for conformance limitations
+and remaining publication gates. No package has been published. M13+ requires
 new scope/contracts; the broader mission below is not implemented capability.
 
 ## Communication

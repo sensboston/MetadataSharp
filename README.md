@@ -1,7 +1,7 @@
 # MetadataSharp
 
 An MIT-licensed managed .NET library for image metadata editing without
-pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/XMP editing and XMP sidecars with conservative safety refusals.**
+pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/IPTC/XMP editing and XMP sidecars with conservative safety refusals.**
 This is not general image-format or full RDF/XMP support.
 
 ## Start Here
@@ -22,7 +22,7 @@ This is not general image-format or full RDF/XMP support.
 - [Serializer preflight/output guarantees](docs/design/EXIF_SERIALIZATION_PREFLIGHT_AND_OUTPUT_GUARANTEES.md).
 - [Progress and approval history](docs/PROGRESS.md).
 
-M00 was approved on 2026-11-07. M01–M11 passed cross-platform CI; the
+M00 was approved on 2026-11-07. M01–M12 passed cross-platform CI; the
 required Exiv2/ExifTool job also passed. See [progress](docs/PROGRESS.md) and the
 [first-release audit and remaining publication gates](docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md).
 This is not a published package or a full EXIF/JPEG conformance claim. The minimal
@@ -33,5 +33,8 @@ EXIF creation profile has a documented missing-default-tag validation warning.
 
 - [XMP usage, ownership and preservation limits](docs/design/XMP_USAGE_AND_PRESERVATION_LIMITS.md).
 - [XMP normative review and restricted profile](docs/design/XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md).
+
+- [IPTC usage, ownership and preservation limits](docs/design/IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md).
+- [IPTC IIM and Photoshop normative review](docs/design/IPTC_IIM_AND_PHOTOSHOP_NORMATIVE_REVIEW.md).
 
 See [LICENSE](LICENSE) for the MIT license.
