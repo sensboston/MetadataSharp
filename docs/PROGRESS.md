@@ -269,3 +269,17 @@
 - M07 is the next stage under standing authorization; no additional developer
   permission is needed for its already planned scope. It must verify JPEG marker
   rules from normative sources before coding and preserve the strict JPEG subset.
+
+### M07 — 2026-11-07 — Submitted to CI
+
+- Developer approved a combined M07–M09 PR, with per-unit commits and successful CI
+  before dependent work. Recorded this batching policy without relaxing stage gates.
+- Added internal pooled streaming sync/async baseline JPEG scanner through EOI,
+  structural table/frame/scan validation, signatures/ranges and strict refusals.
+- Reviewed T.81 Annex B and baseline restrictions plus JFIF reference; document
+  hashes, exact subset and non-decoding guarantees are in
+  `docs/design/JPEG_MARKER_SCANNING_AND_SUPPORTED_SUBSET.md`.
+- Added authored minimal grayscale JPEG fixture and scanner tests for malformed
+  inputs, signatures, truncation, deterministic mutations, short reads and real
+  sync/async separation. No foreign image fixtures or implementation source.
+- `git diff --check` passed. Runtime gate awaits CI; M08 has not started.

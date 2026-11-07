@@ -4,7 +4,10 @@
 
 Execute one roadmap work unit at a time. On 2026-11-07 the developer authorized
 continuing sequentially without requesting each next stage, and committing, pushing
-and merging completed work after successful CI. Read the repository and current
+and merging completed work after successful CI. The developer subsequently
+approved one PR for related M07–M09 work (and similar coherent groups), with a
+separate commit/progress record and successful CI gate for every included unit.
+Merge only after the entire group and final head pass their required checks. Read the repository and current
 diff first; preserve unrelated changes. Never bypass a predecessor gate.
 If a unit is too large, propose smaller units and stop before implementing them.
 
