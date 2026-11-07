@@ -420,3 +420,7 @@
   Title-ru explicitly, preserving both value assertions. No library refusal or
   expected metadata value was relaxed. Added late-placement, opaque structure,
   combined budget, EXIF independence and deterministic publication-race tests.
+- Audit found an alternative-array semantic risk: sorting language keys could
+  change the preferred first item when x-default is absent. Retained original
+  nondefault language order (still emitting x-default first) and added an explicit
+  unrelated-edit regression. This is a preservation fix, not a contract expansion.

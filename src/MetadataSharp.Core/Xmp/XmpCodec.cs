@@ -158,7 +158,7 @@ internal static class XmpCodec
                 writer.WriteStartElement("rdf", value.Kind == XmpValueKind.Bag ? "Bag" : value.Kind == XmpValueKind.Sequence ? "Seq" : "Alt", RdfUri);
                 if (value.Kind == XmpValueKind.LanguageAlternative)
                 {
-                    foreach (var language in value.Languages.OrderBy(p => p.Key.Equals("x-default", StringComparison.OrdinalIgnoreCase) ? 0 : 1).ThenBy(p => p.Key, StringComparer.Ordinal))
+                    foreach (var language in value.Languages.OrderBy(p => p.Key.Equals("x-default", StringComparison.OrdinalIgnoreCase) ? 0 : 1))
                     {
                         writer.WriteStartElement("rdf", "li", RdfUri);
                         writer.WriteAttributeString("xml", "lang", XNamespace.Xml.NamespaceName, language.Key);

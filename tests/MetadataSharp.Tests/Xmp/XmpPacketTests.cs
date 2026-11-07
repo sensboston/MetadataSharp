@@ -250,6 +250,14 @@ public sealed class XmpPacketTests
         }
         finally { Directory.Delete(directory, true); }
     }
+    [Fact]
+    public void AlternativeWithoutExplicitDefaultKeepsOriginalPreferredLanguage()
+    {
+        XmpPacket packet = XmpPacket.Parse(Xml("<p:title><rdf:Alt><rdf:li xml:lang='fr'>preferred</rdf:li><rdf:li xml:lang='en'>other</rdf:li></rdf:Alt></p:title>"));
+        var edit = new XmpEdit(); edit.Set(new("urn:owned:test", "unrelated"), XmpValue.CreateText("change"));
+        string output = Encoding.UTF8.GetString(Raw(packet.Apply(edit)!));
+        Assert.True(output.IndexOf("preferred", StringComparison.Ordinal) < output.IndexOf("other", StringComparison.Ordinal));
+    }
     private sealed class PartialOutput : MemoryStream
     {
         public override void Write(byte[] buffer, int offset, int count)
