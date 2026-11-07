@@ -95,7 +95,7 @@ def main(argv=None):
         assert scan_tail(baseline) == scan_tail(authored), "Encoded-image range changed"
         values = json.loads(run(["exiftool", "-j", "-n", "-Artist", "-Orientation", str(image)]))[0]
         assert values["Artist"] == "Alice" and values["Orientation"] == 1, values
-        values = exiv_values(run(["exiv2", "-P", "ktcv", "-K", "Exif.Image.Artist", "-K", "Exif.Image.Orientation", str(image)]))
+        values = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Exif.Image.Artist", "-K", "Exif.Image.Orientation", str(image)]))
         assert values == {"Exif.Image.Artist": ("Ascii", 6, "Alice"), "Exif.Image.Orientation": ("Short", 1, "1")}, values
         validation = json.loads(run(["exiftool", "-validate", "-warning", "-a", "-j", str(image)]), object_pairs_hook=list)
         pairs = validation[0]

@@ -54,6 +54,7 @@ public sealed class JpegScannerTests
     }
 
     [Theory]
+    [InlineData("early-eoi", MetadataErrorCode.InvalidJpeg)]
     [InlineData("progressive", MetadataErrorCode.UnsupportedFeature)]
     [InlineData("precision", MetadataErrorCode.UnsupportedFeature)]
     [InlineData("dimension", MetadataErrorCode.UnsupportedFeature)]
@@ -72,6 +73,7 @@ public sealed class JpegScannerTests
     {
         byte[] bytes = mutation switch
         {
+            "early-eoi" => [0xFF, 0xD8, 0xFF, 0xD9],
             "progressive" => JpegFixture.Build(frameMarker: 0xC2),
             "precision" => JpegFixture.Build(frame: [12, 0, 8, 0, 8, 1, 1, 0x11, 0]),
             "dimension" => JpegFixture.Build(frame: [8, 0, 0, 0, 8, 1, 1, 0x11, 0]),

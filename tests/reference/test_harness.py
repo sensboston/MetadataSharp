@@ -1,6 +1,12 @@
 import importlib.util
 from pathlib import Path
 import unittest
+from unittest.mock import patch
+from contextlib import redirect_stdout, redirect_stderr
+from tempfile import TemporaryDirectory
+import io
+import json
+import subprocess
 
 spec = importlib.util.spec_from_file_location("harness", Path(__file__).parents[2] / "tools/reference/harness.py")
 h = importlib.util.module_from_spec(spec)
@@ -35,3 +41,23 @@ class HarnessPolicyTests(unittest.TestCase):
     def test_fixture_specific_preservation_check_detects_changes(self):
         self.assertEqual(h.scan_tail(b"header\xff\xdascan"), b"\xff\xdascan")
         with self.assertRaises(RuntimeError): h.scan_tail(b"missing marker")
+
+
+class HarnessExecutionTests(unittest.TestCase):
+    def test_optional_main_records_skip_not_pass(self):
+        with TemporaryDirectory() as temp, patch.object(h, "available", return_value=False), redirect_stdout(io.StringIO()):
+            self.assertEqual(0, h.main(["--output", temp]))
+            self.assertEqual("skipped", json.loads((Path(temp) / "report.json").read_text())["status"])
+
+    def test_required_main_records_failure_not_skip(self):
+        with TemporaryDirectory() as temp, patch.object(h, "available", side_effect=RuntimeError("Required tools missing")), redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            self.assertEqual(1, h.main(["--required", "--output", temp]))
+            self.assertEqual("failed", json.loads((Path(temp) / "report.json").read_text())["status"])
+
+    def test_nonzero_tool_exit_is_preserved_and_fails(self):
+        result = subprocess.CompletedProcess(["exiv2"], 2, "diagnostic", "error")
+        with TemporaryDirectory() as temp, patch.object(h, "available", return_value=True), patch.object(h.subprocess, "run", return_value=result), redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            self.assertEqual(1, h.main(["--required", "--output", temp]))
+            report = json.loads((Path(temp) / "report.json").read_text())
+            self.assertEqual("failed", report["status"])
+            self.assertEqual(2, report["commands"][0]["exitCode"])

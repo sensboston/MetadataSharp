@@ -44,7 +44,7 @@ internal static class JpegScanner
                 if (await input.Byte().ConfigureAwait(false) != 0xFF) throw Error(MetadataErrorCode.InvalidJpeg, "Expected a JPEG marker.", start);
                 byte marker;
                 do { marker = await input.Byte().ConfigureAwait(false); } while (marker == 0xFF);
-                if (marker is 0 or 0xD8 or >= 0xD0 and <= 0xD7)
+                if (marker is 0 or 0xD8 or 0xD9 or >= 0xD0 and <= 0xD7)
                     throw Error(MetadataErrorCode.InvalidJpeg, "Unexpected standalone marker outside scan data.", start);
                 if (!(marker is 0xC0 or 0xC4 or 0xDA or 0xDB or 0xDD or 0xFE or >= 0xE0 and <= 0xEF))
                     throw Error(MetadataErrorCode.UnsupportedFeature, "The marker is outside the single-scan baseline subset.", start);

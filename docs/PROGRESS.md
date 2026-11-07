@@ -330,3 +330,11 @@
   authored; no GPL test/implementation is copied and no private photo is used.
 - `python -m unittest discover -s tests/reference -v`: six offline policy tests pass.
   `git diff --check` passed. Required external run and release audit remain pending.
+
+- Initial required reference run 42420600312 failed in harness normalization:
+  Exiv2 `-P ktcv` selected interpreted output rather than the type column. Read
+  the job check annotation via the GitHub API; changed flags to `-P kycv` for
+  key/type/count/plain-value. No expected value or safety assertion was relaxed.
+- Added independent main-path skip/failure/nonzero-exit tests (nine Python tests
+  total). Audit also corrected premature EOI classification to InvalidJpeg and
+  added its regression case. Generated Python caches are excluded from Git.
