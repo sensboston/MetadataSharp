@@ -450,3 +450,27 @@
   Only the previously documented minimal-EXIF missing-default-tag limitation remains.
 - Documentation-only final count/evidence update follows; merge still requires its
   final-head checks. M12 contract review is the next eligible unit, not implemented.
+
+### M10–M11 final head and merge confirmation
+
+- Final documentation head 332ede3c500621bc7e67b068e687d6b57912bacc passed PR run
+  42423001909 and push run 42422998072: all three OS jobs, 260-case floor, ten Python
+  tests and required Exiv2/ExifTool validation. PR #7 merged on 2026-11-07 as
+  7dafca53cab4ccf98539034585e5bcef69acdbc1. Verified via gh before starting M12.
+  This supersedes the earlier final-head pending submission notes.
+
+### M12 contract proposal (implementation pending)
+
+- Developer requested continued execution. Current clean branch:
+  arena/da38f569-metadatasharp, based on merged M10–M11 work.
+- Read the M12 prompt, development policy, current limits/errors and predecessor
+  status. Added `docs/design/IPTC_IIM_PHOTOSHOP_IRB_AND_JPEG_CONTRACT_PROPOSAL.md`.
+- Proposed one M12 PR with separately gated M12a codec/resource framing and M12b
+  JPEG integration checkpoints; exact public signatures, raw repetition/order
+  preservation, restricted text/encoding policy, extended lengths, Pascal name/data
+  padding, unknown-resource preservation, conservative ambiguity rules and existing
+  IPTC digest maintenance/removal. No EXIF/XMP synchronization or new dependency.
+- Exact normative source review remains a preimplementation gate, not an executed
+  result. Contract-only proposal; no production/test implementation changed and no
+  new test execution claimed. Requires explicit approval of new public/safety
+  contracts before M12a implementation. No package publication.

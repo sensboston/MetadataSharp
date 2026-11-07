@@ -66,3 +66,10 @@ is [XMP packets, sidecars and JPEG](design/XMP_PACKET_SIDECAR_AND_JPEG_CONTRACT_
 Contracts were explicitly approved on 2026-11-07. M10 and M11 passed their per-unit
 CI gates; see PROGRESS.md for evidence. See the XMP usage/normative review documents
 for the implemented subset. M12 (IPTC) is next and requires its own contract review.
+
+## M12 contract review
+
+The next IPTC/Photoshop scope is proposed in
+[the M12 contract](design/IPTC_IIM_PHOTOSHOP_IRB_AND_JPEG_CONTRACT_PROPOSAL.md).
+It proposes one PR with M12a codec/resource and M12b JPEG checkpoints, each gated
+by CI. Public contracts and implementation remain pending explicit approval.
