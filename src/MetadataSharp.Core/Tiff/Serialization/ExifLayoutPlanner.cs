@@ -163,7 +163,7 @@ internal static class ExifLayoutPlanner
     private static bool Protected(ExifTagKey key) => key.Directory == ExifDirectoryKind.Thumbnail ||
         TryLink(key.Directory, key.TagId, out _);
 
-    private static bool TryLink(ExifDirectoryKind role, ushort tag, out ExifDirectoryKind target)
+    internal static bool TryLink(ExifDirectoryKind role, ushort tag, out ExifDirectoryKind target)
     {
         target = (role, tag) switch
         {
@@ -175,7 +175,7 @@ internal static class ExifLayoutPlanner
         return target != ExifDirectoryKind.Ifd0;
     }
 
-    private static void ValidateShape(ExifEntry entry)
+    internal static void ValidateShape(ExifEntry entry)
     {
         ExifValue value = entry.Value;
         var (type, count) = (entry.Key.Directory, entry.Key.TagId) switch

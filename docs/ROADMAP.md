@@ -2,11 +2,11 @@
 
 ## Execution rules
 
-M00 scope and contracts were approved on 2026-11-07. M01–M03 passed restore,
+M00 scope and contracts were approved on 2026-11-07. M01–M06 passed restore,
 Release build and tests on Linux, Windows and macOS in GitHub Actions (evidence
-in [progress](PROGRESS.md)). No file parser/editor exists yet. M04 is next eligible
-under the sequential authorization, subject to normative/tag-schema verification
-before interpretation.
+in [progress](PROGRESS.md)). The internal EXIF core is implemented; no JPEG editor
+exists yet. M07 is next under the standing sequential authorization, with its
+JPEG normative verification gate before implementation.
 Execute units in the order below. Each unit requires its predecessor's gate;
 contract-only proposals pause the unit until explicit approval. A completed gate
 requires reviewable changes, relevant passing tests, documented limitations, and

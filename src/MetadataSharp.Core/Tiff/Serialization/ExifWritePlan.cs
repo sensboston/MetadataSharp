@@ -15,7 +15,11 @@ internal sealed class ExifWritePlan
     {
         ByteOrder = order;
         Length = length;
-        Directories = directories;
+        ArgumentNullException.ThrowIfNull(directories);
+        Directories = Array.AsReadOnly(directories.Select(d => d with
+        {
+            Entries = Array.AsReadOnly(d.Entries.ToArray())
+        }).ToArray());
         ThumbnailOffset = thumbnailOffset;
         this.thumbnail = thumbnail.ToArray();
     }
