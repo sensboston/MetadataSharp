@@ -2,8 +2,10 @@
 
 ## 1. Working agreement
 
-Execute one roadmap work unit per iteration. Read the repository and current diff
-first; preserve unrelated changes. Do not expand scope to finish adjacent features.
+Execute one roadmap work unit at a time. On 2026-11-07 the developer authorized
+continuing sequentially without requesting each next stage, and committing, pushing
+and merging completed work after successful CI. Read the repository and current
+diff first; preserve unrelated changes. Never bypass a predecessor gate.
 If a unit is too large, propose smaller units and stop before implementing them.
 
 Public contracts require developer approval before implementation. M00 approves
@@ -14,7 +16,8 @@ stop. Resume that same unit only after approval.
 Each implementation report must state changed files, commands and actual results,
 known limitations, and the next eligible unit. Never describe an unrun test as
 passing. A missing SDK or external tool is a recorded blocker or skip, not success.
-Do not commit, push, or publish unless requested.
+The standing authorization covers commits, pushes and PR merges for completed
+roadmap work, not package publication or changes to approved safety/API contracts.
 
 ## 2. Preservation guarantees
 

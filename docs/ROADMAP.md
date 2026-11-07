@@ -5,12 +5,17 @@
 M00 scope and contracts were approved on 2026-11-07. M01–M03 passed restore,
 Release build and tests on Linux, Windows and macOS in GitHub Actions (evidence
 in [progress](PROGRESS.md)). No file parser/editor exists yet. M04 is next eligible
-when requested, subject to normative/tag-schema verification before interpretation.
+under the sequential authorization, subject to normative/tag-schema verification
+before interpretation.
 Execute units in the order below. Each unit requires its predecessor's gate;
 contract-only proposals pause the unit until explicit approval. A completed gate
 requires reviewable changes, relevant passing tests, documented limitations, and
 an honest execution report. Unavailable required checks leave the gate pending
 unless the developer explicitly accepts a deferral.
+
+The developer authorized sequential execution and merge after successful CI on
+2026-11-07. Individual prompt stop rules still apply to blocked gates or changed
+public contracts, not to requesting the next already-planned unit.
 
 The first release candidate is M09, not the entire roadmap. M10 onward is a later
 expansion and requires a new scope/contract review at the start of each unit.
