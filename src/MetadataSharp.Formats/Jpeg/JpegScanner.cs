@@ -55,7 +55,9 @@ internal static class JpegScanner
                 long payloadAt = input.Position;
                 await input.Block(payload, count).ConfigureAwait(false);
                 bool isExif = marker == 0xE1 && HasExifSignature(payload, count);
-                var segment = new JpegSegment(marker, start, input.Position - start, payloadAt, count, isExif);
+                var segment = new JpegSegment(marker, start, input.Position - start, payloadAt, count, isExif,
+                    marker == 0xE1 && payload.AsSpan(0, count).StartsWith("http://ns.adobe.com/xap/1.0/\0"u8),
+                    marker == 0xE1 && payload.AsSpan(0, count).StartsWith("http://ns.adobe.com/xmp/extension/\0"u8));
                 segments.Add(segment);
                 if (isExif)
                 {

@@ -353,3 +353,100 @@
   records source/recipe hashes, installed tool copyright notices and SDK evidence.
 - No package publication, broad conformance or measured allocation claim. Final
   head CI remains required before merging the grouped PR; no M10 work started.
+
+### M07–M09 final gate and merge confirmation
+
+- Final head f3a51ae7239a550c0004d26df0a79bf1437009be passed PR run
+  42420919484 and push run 42420914771. All three .NET OS jobs and required
+  external-reference validation passed; offline Python suite has ten tests.
+- PR #6 merged as f10ec6b2d830eb7c919cf758962c26de775894f3 on 2026-11-07.
+  This records the completed final gate, superseding the preceding submission note.
+
+### M10–M11 contract proposal (implementation pending)
+
+- Developer requested the next coherent group on 2026-11-07. Active working branch:
+  arena/ca9ac984-metadatasharp, based on the merged M07–M09 work. No unrelated changes.
+- Read M10/M11 prompts, development policy and existing JPEG/EXIF contracts/API.
+- Added `docs/design/XMP_PACKET_SIDECAR_AND_JPEG_CONTRACT_PROPOSAL.md`: exact proposed
+  public API, framework-only XML dependency decision, restricted literal/array/lang
+  RDF profile, opaque packet behavior, UTF-8 scope, hostile-input budgets, sidecar
+  ownership/publication, JPEG signature/duplicate/Extended XMP refusal policy,
+  metadata independence and per-unit acceptance gates.
+- Located Adobe-hosted repository XMP Part 1/3 PDFs and recorded source revision/blob
+  identifiers. Edition/section/content review remains a preimplementation gate;
+  no SDK implementation, tests or PDF files imported.
+- Contract-only change; no parser/writer implementation, dependency addition or new
+  tests executed. M10 cannot begin implementation until the new contracts are
+  approved. After approval: normative review, M10 implementation and green CI, then
+  M11 implementation; final-head CI before the one grouped PR is merged.
+
+### M10 approval, normative review and implementation submission
+
+- Developer explicitly approved the M10–M11 proposal and continued execution on
+  2026-11-07. Marked the contract approved; no implementation preceded approval.
+- Reviewed Adobe XMP Part 1 (April 2012) and Part 3 (January 2020); hashes, sections,
+  deliberate profile restrictions and JPEG size/placement discrepancies are in
+  `docs/design/XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md`.
+- Implemented immutable literal/array/language models, bounded XML validation before
+  DOM allocation, opaque unsupported RDF, addressed edits, exact no-op, bounded
+  serialization preflight, detached stream/path loads and safe new-path saves.
+  Added InvalidXmp/XmpTooLarge at the end of the existing error enum; no new package.
+- Added independent M10 tests for known XML, namespace identity, qualifiers/opaque
+  refusal, Unicode/arrays/languages, ambiguity, XML/encoding attacks and budgets,
+  ownership, short actual-async I/O, cancellation, no-op and sidecar publication.
+- Local SDK remains unavailable. Submission requires actual three-platform Actions
+  validation before M11; no .NET result is claimed from local execution.
+- Initial M10 CI 42422121306 failed compilation because the new test file omitted
+  its explicit Xunit import. Added the import (no analyzer suppression) and extra
+  mid-I/O cancellation/partial failure and post-write publication cleanup tests.
+- M10 corrected commit b37ce98 passed PR run 42422179802 on Linux/macOS/Windows
+  with a 233-case minimum, ten offline Python tests and the existing required
+  external-reference job. This satisfies the predecessor gate before M11 changes.
+
+### M11 implementation submission
+
+- Extended scanner classification by exact standard/extension signatures only;
+  kept existing EXIF parsing and JPEG structural acceptance unchanged.
+- Added addressed JPEG XMP reads/saves with hash preflight, combined logical
+  metadata budgets, unique-packet policy, extension/stale-reference refusal,
+  malformed/opaque whole removal and exact no-op/EXIF independence.
+- Added JPEG XMP boundary/preservation/ambiguity/async/ownership/failure tests.
+  Public fixture consumer/harness now checks external literal reads, rich sidecar
+  arrays/Unicode language alternatives, reverse writes/no-op and 65,502–65,504-byte
+  boundaries. External outcomes are pending, not assumed from authored tests.
+- First M11 commit a1609be passed all three OS builds/tests (253-case minimum),
+  but required external validation failed because ExifTool `-lang all` is not a
+  language-alternative selector. Corrected the harness to request Title and
+  Title-ru explicitly, preserving both value assertions. No library refusal or
+  expected metadata value was relaxed. Added late-placement, opaque structure,
+  combined budget, EXIF independence and deterministic publication-race tests.
+- Audit found an alternative-array semantic risk: sorting language keys could
+  change the preferred first item when x-default is absent. Retained original
+  nondefault language order (still emitting x-default first) and added an explicit
+  unrelated-edit regression. This is a preservation fix, not a contract expansion.
+
+### M11 corrected gate and group audit
+
+- Commit 1e25408 passed PR run 42422570403: Linux/macOS/Windows Release builds,
+  a 259-case .NET floor, ten offline Python tests and required external references.
+- Both tools read all three 65,502/65,503/65,504-byte boundary packets. Rich sidecar
+  subjects/default/Russian title values, externally modified CreatorTool reads,
+  exact XMP no-op/removal and encoded-byte checks passed. No public boundary changed
+  to accommodate the historical PDF arithmetic discrepancy.
+- Added XMP usage/ownership/failure documentation and updated current-state docs.
+  Final harness hardening validates XMP JPEG/sidecar/boundary inputs explicitly
+  and attributes each warning to its fixture. Required final-head CI is pending
+  before merging PR #7. No M12 implementation or package publication.
+- Final hardening run 42422760070 kept all OS tests green but found an unclassified
+  ExifTool warning: `[minor] XMP is missing xpacket wrapper`. Rather than accept a
+  new warning category, emit the standard writable PI pair for newly serialized
+  packets (Part 1 section 7.3.2 allows an empty begin value). No-op keeps original
+  bytes. Added an independent exact-wrapper regression; boundary fixture sizing is
+  based on measured serialization overhead and retains all three target sizes.
+- Wrapper-corrected commit 2b760c69bc39d2c0a334d66e131b02ad869c6310 passed PR run
+  42422888266: all three OS jobs with a 260-case minimum, ten Python tests and
+  the full required external job, including explicit XMP/boundary validation.
+  Missing-wrapper warning eliminated; no new validation-warning category accepted.
+  Only the previously documented minimal-EXIF missing-default-tag limitation remains.
+- Documentation-only final count/evidence update follows; merge still requires its
+  final-head checks. M12 contract review is the next eligible unit, not implemented.

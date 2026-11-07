@@ -2,7 +2,7 @@
 
 ## Execution rules
 
-M00 scope and contracts were approved on 2026-11-07. M01–M09 passed Linux,
+M00 scope and contracts were approved on 2026-11-07. M01–M11 passed Linux,
 Windows and macOS CI, with required pinned external references at M09. See
 [progress](PROGRESS.md) and the [initial JPEG audit](audits/INITIAL_JPEG_RELEASE_AUDIT.md)
 for evidence, restrictions and remaining publication gates. M07–M09 form one
@@ -58,3 +58,11 @@ M17 does not authorize DNG implementation. Vendor-specific MakerNote relocation,
 BigTIFF, Extended XMP if deferred at M11, full JPEG variants beyond the approved
 subset, and synchronization need their own bounded follow-up prompts. Split such
 work only after its contracts and acceptance criteria are reviewed.
+
+## M10–M11 proposal
+
+The developer requested this next group on 2026-11-07. Its contract-only proposal
+is [XMP packets, sidecars and JPEG](design/XMP_PACKET_SIDECAR_AND_JPEG_CONTRACT_PROPOSAL.md).
+Contracts were explicitly approved on 2026-11-07. M10 and M11 passed their per-unit
+CI gates; see PROGRESS.md for evidence. See the XMP usage/normative review documents
+for the implemented subset. M12 (IPTC) is next and requires its own contract review.
