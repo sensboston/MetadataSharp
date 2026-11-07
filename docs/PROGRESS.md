@@ -269,3 +269,87 @@
 - M07 is the next stage under standing authorization; no additional developer
   permission is needed for its already planned scope. It must verify JPEG marker
   rules from normative sources before coding and preserve the strict JPEG subset.
+
+### M07 — 2026-11-07 — Submitted to CI
+
+- Developer approved a combined M07–M09 PR, with per-unit commits and successful CI
+  before dependent work. Recorded this batching policy without relaxing stage gates.
+- Added internal pooled streaming sync/async baseline JPEG scanner through EOI,
+  structural table/frame/scan validation, signatures/ranges and strict refusals.
+- Reviewed T.81 Annex B and baseline restrictions plus JFIF reference; document
+  hashes, exact subset and non-decoding guarantees are in
+  `docs/design/JPEG_MARKER_SCANNING_AND_SUPPORTED_SUBSET.md`.
+- Added authored minimal grayscale JPEG fixture and scanner tests for malformed
+  inputs, signatures, truncation, deterministic mutations, short reads and real
+  sync/async separation. No foreign image fixtures or implementation source.
+- `git diff --check` passed. Runtime gate awaits CI; M08 has not started.
+
+- Initial M07 run 42419981805 failed compilation on xUnit2031 (filtered Assert.Single
+  analyzer); tests did not run. Corrected the assertion, hardened the async short-
+  read test double against MemoryStream fallback dispatch, and disabled context
+  capture in byte reads. No analyzer suppression or relaxed CI gate was used.
+
+### M07 CI result — 2026-11-07 — Gate closed
+
+- Corrected commit `3437bb6a80bfa907c7aeed00aa082f8b18a2885e` passed Linux,
+  Windows and macOS restore/build/tests and the 176-case TRX floor in run 42420076893.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42420076893
+- `gh run watch 42420076893 --exit-status --interval 15` exited 0.
+- PR #6 remains open for the agreed combined M07–M09 group. M08 began only after
+  this CI gate; the initial analyzer failure is preserved in the history above.
+
+### M08 — 2026-11-07 — Submitted to CI
+
+- Implemented the approved ExifEdit and JPEG facade, sync/async I/O, source identity
+  preflight, safe addressed injection, whole removal and exact no-op copy.
+- SaveAs uses a same-directory temporary file and no-overwrite publication; stream
+  output failure may be partial. All shared pools returned; no source writes.
+- Added preservation, refusal, ownership, cancellation, endian, path race/cleanup
+  and output-failure tests. Shape validation does not claim full Exif conformance.
+- See `docs/design/JPEG_EXIF_EDITING_OWNERSHIP_AND_FAILURE_SEMANTICS.md`.
+- Local `git diff --check` passed; runtime gate awaits CI before M09.
+
+### M08 CI result — 2026-11-07 — Gate closed
+
+- Commit `c209dacaf76ab5b5843fc8575db26c4bb16c3dcf` passed Linux/Windows/macOS
+  restore/build/tests and the 191-case TRX floor in run 42420352483.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42420352483
+- `gh run watch 42420352483 --exit-status --interval 15` exited 0.
+- M09 began after this gate. No separate merge: PR #6 remains the agreed group.
+
+### M09 — 2026-11-07 — Submitted to CI
+
+- Added a public-API fixture consumer/generator with no metadata tool dependencies,
+  and a separate optional Python CLI reference harness. Ordinary tests stay offline.
+- Required CI installs standalone tools on ubuntu-24.04 and checks exact upstream
+  Exiv2 0.27.6 / ExifTool 12.76; package revisions and command results are recorded.
+- Harness compares raw tag values, reverse external edits, no-op/whole-removal and
+  encoded-byte preservation; classifies only specifically allowed minimal-EXIF
+  missing-default-tag warnings, failing unknown warnings and tool/version errors.
+- Generated evidence includes SHA-256 and source/license manifests. Fixtures are
+  authored; no GPL test/implementation is copied and no private photo is used.
+- `python -m unittest discover -s tests/reference -v`: six offline policy tests pass.
+  `git diff --check` passed. Required external run and release audit remain pending.
+
+- Initial required reference run 42420600312 failed in harness normalization:
+  Exiv2 `-P ktcv` selected interpreted output rather than the type column. Read
+  the job check annotation via the GitHub API; changed flags to `-P kycv` for
+  key/type/count/plain-value. No expected value or safety assertion was relaxed.
+- Added independent main-path skip/failure/nonzero-exit tests (nine Python tests
+  total). Audit also corrected premature EOI classification to InvalidJpeg and
+  added its regression case. Generated Python caches are excluded from Git.
+
+### M09 corrected gate and first-release audit
+
+- Commit cbb0a2b passed PR run 42420756667 on Linux/macOS/Windows with a 192-case
+  TRX floor and nine Python tests, plus the required pinned reference job.
+- Both references read authored values; reverse writes and exact no-op/encoded
+  preservation checks passed. ExifTool reported missing IFD0 XResolution, explicitly
+  classified as a minimal-EXIF limitation rather than full conformance.
+- Added `docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md`: reproducibility, fixture rights,
+  GPL black-box boundary, discrepancy disposition, safety/dependency audit and
+  publication checklist. Updated current-state docs. Final hardening adds a tenth
+  Python test for exact warning tag/name pairs, rejects optimized Python, and
+  records source/recipe hashes, installed tool copyright notices and SDK evidence.
+- No package publication, broad conformance or measured allocation claim. Final
+  head CI remains required before merging the grouped PR; no M10 work started.

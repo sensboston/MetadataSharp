@@ -1,7 +1,7 @@
 # MetadataSharp
 
 A planned MIT-licensed managed .NET library for image metadata editing without
-pixel decoding or recompression. **Early implementation: EXIF core reader, layout planner and serializer; no JPEG editor yet.**
+pixel decoding or recompression. **Early implementation: restricted JPEG EXIF reader/editor with conservative safety refusals.**
 The initial scope is a restricted JPEG EXIF reader/editor, not general format support.
 
 ## Start Here
@@ -11,7 +11,7 @@ The initial scope is a restricted JPEG EXIF reader/editor, not general format su
   what was deliberately restricted, why, and when to revisit it.
 - [Approved initial API and safety contracts](docs/design/INITIAL_CONTRACTS.md):
   exact proposed signatures, limits, preservation/failure behavior and acceptance cases.
-- [Build and test instructions and current tooling blocker](docs/BUILD_AND_TEST.md).
+- [Build and test instructions and CI evidence](docs/BUILD_AND_TEST.md).
 - [Development, licensing and regression-test policy](docs/DEVELOPMENT.md).
 - [Milestones and completion gates](docs/ROADMAP.md).
 - [One-stage execution prompts](docs/prompts/README.md).
@@ -22,7 +22,13 @@ The initial scope is a restricted JPEG EXIF reader/editor, not general format su
 - [Serializer preflight/output guarantees](docs/design/EXIF_SERIALIZATION_PREFLIGHT_AND_OUTPUT_GUARANTEES.md).
 - [Progress and approval history](docs/PROGRESS.md).
 
-M00 was approved on 2026-11-07. M01–M06 passed restore/build/test on Linux, Windows
-and macOS. See [progress](docs/PROGRESS.md) for commit/run evidence. M07 (JPEG
-scanning) is next under the standing sequential authorization.
+M00 was approved on 2026-11-07. M01–M09 passed cross-platform CI; the
+required Exiv2/ExifTool job also passed. See [progress](docs/PROGRESS.md) and the
+[first-release audit and remaining publication gates](docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md).
+This is not a published package or a full EXIF/JPEG conformance claim. The minimal
+EXIF creation profile has a documented missing-default-tag validation warning.
+
+- [JPEG supported scanning subset](docs/design/JPEG_MARKER_SCANNING_AND_SUPPORTED_SUBSET.md).
+- [JPEG editing, ownership and failure semantics](docs/design/JPEG_EXIF_EDITING_OWNERSHIP_AND_FAILURE_SEMANTICS.md).
+
 See [LICENSE](LICENSE) for the MIT license.

@@ -38,6 +38,8 @@ jobs:
         run: dotnet restore MetadataSharp.sln
       - name: Build Release
         run: dotnet build MetadataSharp.sln --configuration Release --no-restore
+      - name: Test offline reference-harness policy
+        run: python -m unittest discover -s tests/reference -v
       - name: Test Release
         run: dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults
       - name: Verify tests actually ran
@@ -60,8 +62,8 @@ jobs:
               if count != passed:
                   raise SystemExit(f'Not all tests passed in {file}: {counters.attrib}')
               total += count
-          if total < 155:
-              raise SystemExit(f'Expected at least 155 M01–M06 cases, got {total}')
+          if total < 192:
+              raise SystemExit(f'Expected at least 192 M01–M09 cases, got {total}')
           print(f'Validated {total} passing tests')
       - name: Upload test results
         if: always()
@@ -69,5 +71,40 @@ jobs:
         with:
           name: test-results-${{ matrix.os }}
           path: TestResults/**/*.trx
+          if-no-files-found: warn
+          retention-days: 7
+
+  external-reference:
+    name: Pinned external references
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      LC_ALL: C
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install external CLI tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y exiv2 libimage-exiftool-perl
+          mkdir -p artifacts/reference
+          dpkg-query -W exiv2 libimage-exiftool-perl > artifacts/reference/packages.txt
+          cp /usr/share/doc/exiv2/copyright artifacts/reference/exiv2-copyright.txt
+          cp /usr/share/doc/libimage-exiftool-perl/copyright artifacts/reference/exiftool-copyright.txt
+          dotnet --info > artifacts/reference/dotnet-info.txt
+      - name: Build fixture generator and public API consumer
+        run: dotnet build MetadataSharp.sln --configuration Release
+      - name: Required differential and validation checks
+        run: python tools/reference/harness.py --required
+      - name: Upload reproducibility evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-reference-evidence
+          path: artifacts/reference/
           if-no-files-found: warn
           retention-days: 7
