@@ -85,7 +85,7 @@ def main(argv=None):
                 classification = "documented-minimal-exif-default-tag" if classify_warning(value) else "unclassified"
                 report["warnings"].append({"file": image.name, "text": value, "classification": classification})
                 if classification == "unclassified":
-                    raise RuntimeError("Unclassified validation warning: " + value)
+                    raise RuntimeError("Unclassified validation warning in " + image.name + ": " + value)
                 print("::notice title=Reference discrepancy::" + value)
             elif name.lower().startswith("error"):
                 raise RuntimeError("Validation error: " + str(value))

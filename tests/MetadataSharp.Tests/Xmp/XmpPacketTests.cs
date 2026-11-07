@@ -258,6 +258,16 @@ public sealed class XmpPacketTests
         string output = Encoding.UTF8.GetString(Raw(packet.Apply(edit)!));
         Assert.True(output.IndexOf("preferred", StringComparison.Ordinal) < output.IndexOf("other", StringComparison.Ordinal));
     }
+    [Fact]
+    public void ChangedOutputEmitsCompleteWritablePacketWrapper()
+    {
+        var edit = new XmpEdit(); edit.Set(Title, XmpValue.CreateText("wrapped"));
+        byte[] bytes = Raw(XmpPacket.Parse(Xml("<p:title>before</p:title>")).Apply(edit)!);
+        string output = Encoding.UTF8.GetString(bytes);
+        Assert.StartsWith("<?xpacket begin=\"\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>", output);
+        Assert.EndsWith("<?xpacket end=\"w\"?>", output);
+        Assert.True(XmpPacket.Parse(bytes).IsEditable);
+    }
     private sealed class PartialOutput : MemoryStream
     {
         public override void Write(byte[] buffer, int offset, int count)

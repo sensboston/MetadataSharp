@@ -437,3 +437,9 @@
   Final harness hardening validates XMP JPEG/sidecar/boundary inputs explicitly
   and attributes each warning to its fixture. Required final-head CI is pending
   before merging PR #7. No M12 implementation or package publication.
+- Final hardening run 42422760070 kept all OS tests green but found an unclassified
+  ExifTool warning: `[minor] XMP is missing xpacket wrapper`. Rather than accept a
+  new warning category, emit the standard writable PI pair for newly serialized
+  packets (Part 1 section 7.3.2 allows an empty begin value). No-op keeps original
+  bytes. Added an independent exact-wrapper regression; boundary fixture sizing is
+  based on measured serialization overhead and retains all three target sizes.

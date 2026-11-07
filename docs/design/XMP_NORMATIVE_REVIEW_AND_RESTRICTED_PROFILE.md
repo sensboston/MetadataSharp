@@ -33,7 +33,10 @@ restrictions. Multiple descriptions, structures, URI values, inherited/general
 qualifiers and unsupported equivalent RDF remain opaque. Unknown simple property
 namespaces do not prevent editing. A read-only wrapper prevents editing by our
 conservative contract, although Part 1 permits format-aware processors to ignore
-that hint. Writers emit optional xmpmeta but omit optional packet PIs/padding.
+that hint. Writers emit xmpmeta and a complete writable xpacket PI pair with no padding.
+Although Part 1 permits omitted packet wrappers, final ExifTool validation reported
+a missing-wrapper warning for unwrapped output. Emit the standard wrapper rather
+than suppress that warning; its begin value is empty as permitted by section 7.3.2.
 Comments/PIs and wrapper toolkit identifiers have no data-model meaning; effective
 property edits need not preserve them. Exact no-op retains all original bytes.
 Supported text is XML-normalized on read (e.g. literal CRLF becomes LF); serialized

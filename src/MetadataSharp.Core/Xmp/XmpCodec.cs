@@ -142,6 +142,7 @@ internal static class XmpCodec
     private static void Emit(Stream stream, IReadOnlyDictionary<XmpPropertyName, XmpValue> properties)
     {
         using XmlWriter writer = XmlWriter.Create(stream, new XmlWriterSettings { Encoding = Utf8, OmitXmlDeclaration = true, CloseOutput = false, NewLineHandling = NewLineHandling.Entitize });
+        writer.WriteProcessingInstruction("xpacket", "begin=\"\" id=\"W5M0MpCehiHzreSzNTczkc9d\"");
         writer.WriteStartElement("x", "xmpmeta", MetaUri);
         writer.WriteStartElement("rdf", "RDF", RdfUri);
         writer.WriteStartElement("rdf", "Description", RdfUri);
@@ -171,6 +172,7 @@ internal static class XmpCodec
             writer.WriteEndElement();
         }
         writer.WriteEndElement(); writer.WriteEndElement(); writer.WriteEndElement();
+        writer.WriteProcessingInstruction("xpacket", "end=\"w\"");
     }
     private sealed class BudgetStream(int maximum) : Stream
     {
