@@ -21,9 +21,9 @@ dotnet build MetadataSharp.sln --configuration Release --no-restore
 dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore
 ```
 
-The suite now defines 259 cases through M11, covering infrastructure, binary
+The suite now defines 260 cases through M11, covering infrastructure, binary
 primitives, raw values, TIFF/EXIF reading, layout, serialization, JPEG EXIF/XMP scanning and editing, and XMP packets/sidecars. The workflow
-rejects fewer than 259 passing cases or any nonpassing cases. Ten independent Python policy/execution tests also run on each OS.
+rejects fewer than 260 passing cases or any nonpassing cases. Ten independent Python policy/execution tests also run on each OS.
 
 ## Project Boundaries
 
@@ -53,7 +53,7 @@ only the M01 skeleton, not metadata correctness or untested platform variants.
 `.github/workflows/build-and-test.yml` runs on pushes to master/Arena branches and
 pull requests targeting master. It installs a serviced .NET 8 SDK on Linux, Windows
 and macOS runners, records `dotnet --info`, and runs the restore/build/test commands
-above. A separate TRX check rejects a green run with no tests or fewer than 259
+above. A separate TRX check rejects a green run with no tests or fewer than 260
 passing cases. Test results are retained as per-platform artifacts for seven days.
 CI needs only read access to repository contents; no SDK archive or release asset
 is required. Hosted runners have their own network environment, independent of
@@ -87,7 +87,7 @@ benchmark, external-tool validation or broader format-conformance claim is impli
 
 M07 passed run 42420076893; M08 passed 42420352483; corrected M09 passed
 [42420756667](https://github.com/sensboston/MetadataSharp/actions/runs/42420756667).
-The current TRX floor is 259. M09 additionally requires Exiv2 0.27.6 and ExifTool
+The current TRX floor is 260. M09 additionally requires Exiv2 0.27.6 and ExifTool
 12.76 in a separate Ubuntu 24.04 job; absent tools cannot silently skip CI.
 
 ```sh
@@ -119,3 +119,9 @@ standard XMP JPEGs, rich sidecars and boundary files, using the same strict exis
 warning classification. Evidence manifests now include owned .xmp outputs as well
 as JPEGs. See [XMP usage](design/XMP_USAGE_AND_PRESERVATION_LIMITS.md) and the
 [normative review](design/XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md).
+
+Wrapper-corrected commit 2b760c6 passed PR run
+[42422888266](https://github.com/sensboston/MetadataSharp/actions/runs/42422888266),
+including the 260-case floor and full ExifTool validation of XMP JPEG/sidecar/boundary
+fixtures. The missing-wrapper warning was eliminated by emitting standard PIs;
+no warning whitelist was broadened. The original minimal-EXIF limitation remains.

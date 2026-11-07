@@ -443,3 +443,10 @@
   packets (Part 1 section 7.3.2 allows an empty begin value). No-op keeps original
   bytes. Added an independent exact-wrapper regression; boundary fixture sizing is
   based on measured serialization overhead and retains all three target sizes.
+- Wrapper-corrected commit 2b760c69bc39d2c0a334d66e131b02ad869c6310 passed PR run
+  42422888266: all three OS jobs with a 260-case minimum, ten Python tests and
+  the full required external job, including explicit XMP/boundary validation.
+  Missing-wrapper warning eliminated; no new validation-warning category accepted.
+  Only the previously documented minimal-EXIF missing-default-tag limitation remains.
+- Documentation-only final count/evidence update follows; merge still requires its
+  final-head checks. M12 contract review is the next eligible unit, not implemented.
