@@ -192,3 +192,23 @@
 - Developer requested merge of ready work. PR #2 now includes M01–M03; merge only
   after the final head's CI checks pass. Merge outcome is recorded in GitHub PR
   history rather than predeclared here.
+
+### Sequential authorization and M04 — 2026-11-07 — Submitted to CI
+
+- Developer authorized sequential milestones without per-stage permission, with
+  successful CI and merge of completed work. Safety/public-API changes still need
+  approval. Updated development policy to record the standing authorization.
+- Reviewed TIFF 6.0 Section 2 and final Exif 3.0 classic structure/link/tag-shape
+  sections through GitHub-hosted PDF copies. No third-party implementation/tests
+  were used. The supposed 2.32 copy proved to be a draft and was explicitly rejected.
+- Source hashes, exact sections, small factual tag schema, acceptance restrictions
+  and unverified final-2.32 semantic gates are in
+  `docs/design/TIFF_EXIF_NORMATIVE_SOURCES_AND_READ_POLICY.md`.
+- Implemented internal bounded classic TIFF/EXIF reading, known links, cycle/shared
+  pointer detection, overlap/alignment checks, structured failures, finite budgets,
+  raw MakerNotes and JPEG-thumbnail range/boundary preservation.
+- Added the already approved MetadataLimits/MetadataException contracts in Core.
+  No public reader facade, serializer, editing or JPEG container code is added.
+- Added independent both-order fixtures, malformed graph/range/type/count tests,
+  budgets, thumbnail checks and reproducible mutation smoke tests.
+- `git diff --check` passed. Local SDK remains absent; runtime gate awaits CI.
