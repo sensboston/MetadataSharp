@@ -10,7 +10,9 @@ public enum MetadataErrorCode
     AmbiguousMetadata,
     UnsafeRelocation,
     ExifTooLarge,
-    SourceChanged
+    SourceChanged,
+    InvalidXmp,
+    XmpTooLarge
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>

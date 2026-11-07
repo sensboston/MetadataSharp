@@ -1,8 +1,8 @@
 # M10–M11: XMP Packet, Sidecar and JPEG Contract Proposal
 
-Status: **PROPOSED — implementation requires developer approval.**
+Status: **APPROVED by the developer on 2026-11-07.**
 Date: 2026-11-07. Group: one M10–M11 PR, separate implementation commits and CI gates.
-The instruction to begin this group is not approval of the new signatures below.
+The developer explicitly approved these contracts and authorized sequential execution.
 
 ## 1. Dependency and scope decision
 

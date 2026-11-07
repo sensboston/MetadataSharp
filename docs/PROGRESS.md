@@ -379,3 +379,20 @@
   tests executed. M10 cannot begin implementation until the new contracts are
   approved. After approval: normative review, M10 implementation and green CI, then
   M11 implementation; final-head CI before the one grouped PR is merged.
+
+### M10 approval, normative review and implementation submission
+
+- Developer explicitly approved the M10–M11 proposal and continued execution on
+  2026-11-07. Marked the contract approved; no implementation preceded approval.
+- Reviewed Adobe XMP Part 1 (April 2012) and Part 3 (January 2020); hashes, sections,
+  deliberate profile restrictions and JPEG size/placement discrepancies are in
+  `docs/design/XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md`.
+- Implemented immutable literal/array/language models, bounded XML validation before
+  DOM allocation, opaque unsupported RDF, addressed edits, exact no-op, bounded
+  serialization preflight, detached stream/path loads and safe new-path saves.
+  Added InvalidXmp/XmpTooLarge at the end of the existing error enum; no new package.
+- Added independent M10 tests for known XML, namespace identity, qualifiers/opaque
+  refusal, Unicode/arrays/languages, ambiguity, XML/encoding attacks and budgets,
+  ownership, short actual-async I/O, cancellation, no-op and sidecar publication.
+- Local SDK remains unavailable. Submission requires actual three-platform Actions
+  validation before M11; no .NET result is claimed from local execution.
