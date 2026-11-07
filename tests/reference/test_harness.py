@@ -44,6 +44,9 @@ class HarnessPolicyTests(unittest.TestCase):
 
 
 class HarnessExecutionTests(unittest.TestCase):
+    def test_warning_tag_and_name_must_match(self):
+        self.assertFalse(h.classify_warning("Missing required JPEG IFD0 tag 0x011a YResolution"))
+
     def test_optional_main_records_skip_not_pass(self):
         with TemporaryDirectory() as temp, patch.object(h, "available", return_value=False), redirect_stdout(io.StringIO()):
             self.assertEqual(0, h.main(["--output", temp]))

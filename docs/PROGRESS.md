@@ -338,3 +338,18 @@
 - Added independent main-path skip/failure/nonzero-exit tests (nine Python tests
   total). Audit also corrected premature EOI classification to InvalidJpeg and
   added its regression case. Generated Python caches are excluded from Git.
+
+### M09 corrected gate and first-release audit
+
+- Commit cbb0a2b passed PR run 42420756667 on Linux/macOS/Windows with a 192-case
+  TRX floor and nine Python tests, plus the required pinned reference job.
+- Both references read authored values; reverse writes and exact no-op/encoded
+  preservation checks passed. ExifTool reported missing IFD0 XResolution, explicitly
+  classified as a minimal-EXIF limitation rather than full conformance.
+- Added `docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md`: reproducibility, fixture rights,
+  GPL black-box boundary, discrepancy disposition, safety/dependency audit and
+  publication checklist. Updated current-state docs. Final hardening adds a tenth
+  Python test for exact warning tag/name pairs, rejects optimized Python, and
+  records source/recipe hashes, installed tool copyright notices and SDK evidence.
+- No package publication, broad conformance or measured allocation claim. Final
+  head CI remains required before merging the grouped PR; no M10 work started.

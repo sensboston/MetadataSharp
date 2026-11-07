@@ -12,6 +12,13 @@ material. Implement from specifications. MIT code can be incorporated into GPL
 projects, but GPL-derived implementation cannot simply be redistributed as
 MIT-only code.
 
+## Current implementation boundary
+
+M01–M09 implement restricted JPEG EXIF scanning/editing and the external-reference
+audit. See `docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md` for conformance limitations
+and remaining publication gates. No package has been published. M10+ requires
+new scope/contracts; the broader mission below is not implemented capability.
+
 ## Communication
 
 - Discuss architecture, questions, and progress with the developer in Russian.

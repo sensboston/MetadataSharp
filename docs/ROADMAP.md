@@ -2,11 +2,11 @@
 
 ## Execution rules
 
-M00 scope and contracts were approved on 2026-11-07. M01–M06 passed restore,
-Release build and tests on Linux, Windows and macOS in GitHub Actions (evidence
-in [progress](PROGRESS.md)). The internal EXIF core is implemented; no JPEG editor
-exists yet. M07 is next under the standing sequential authorization, with its
-JPEG normative verification gate before implementation.
+M00 scope and contracts were approved on 2026-11-07. M01–M09 passed Linux,
+Windows and macOS CI, with required pinned external references at M09. See
+[progress](PROGRESS.md) and the [initial JPEG audit](audits/INITIAL_JPEG_RELEASE_AUDIT.md)
+for evidence, restrictions and remaining publication gates. M07–M09 form one
+approved PR with per-unit CI gates. No package publication is implied.
 Execute units in the order below. Each unit requires its predecessor's gate;
 contract-only proposals pause the unit until explicit approval. A completed gate
 requires reviewable changes, relevant passing tests, documented limitations, and

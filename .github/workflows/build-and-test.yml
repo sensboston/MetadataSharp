@@ -93,6 +93,9 @@ jobs:
           sudo apt-get install -y exiv2 libimage-exiftool-perl
           mkdir -p artifacts/reference
           dpkg-query -W exiv2 libimage-exiftool-perl > artifacts/reference/packages.txt
+          cp /usr/share/doc/exiv2/copyright artifacts/reference/exiv2-copyright.txt
+          cp /usr/share/doc/libimage-exiftool-perl/copyright artifacts/reference/exiftool-copyright.txt
+          dotnet --info > artifacts/reference/dotnet-info.txt
       - name: Build fixture generator and public API consumer
         run: dotnet build MetadataSharp.sln --configuration Release
       - name: Required differential and validation checks

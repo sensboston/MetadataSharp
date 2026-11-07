@@ -40,7 +40,11 @@ def exiv_values(text):
 
 def classify_warning(text):
     # Missing mandatory default-resolution tags are an explicit minimal-EXIF limitation.
-    return bool(re.fullmatch(r"Missing required JPEG IFD0 tag 0x(?:011a|011b|0128|0213) (?:XResolution|YResolution|ResolutionUnit|YCbCrPositioning)", text, re.IGNORECASE))
+    return text.casefold() in {
+        ("Missing required JPEG IFD0 tag " + tag + " " + name).casefold()
+        for tag, name in (("0x011a", "XResolution"), ("0x011b", "YResolution"),
+                          ("0x0128", "ResolutionUnit"), ("0x0213", "YCbCrPositioning"))
+    }
 
 
 def scan_tail(data):
@@ -74,6 +78,8 @@ def main(argv=None):
         return result.stdout
 
     try:
+        if not __debug__:
+            raise RuntimeError("Reference checks require Python without optimization (-O)")
         if not available(args.required):
             report["status"] = "skipped"; report["reason"] = "Optional tools missing"; save()
             print("SKIP: optional reference tools unavailable")
@@ -82,6 +88,10 @@ def main(argv=None):
         tool_version = run(["exiftool", "-ver"])
         check_version("exiv2", exiv_version, EXPECTED_EXIV2)
         check_version("exiftool", tool_version, EXPECTED_EXIFTOOL)
+        report["sourceCommit"] = run(["git", "rev-parse", "HEAD"]).strip()
+        report["recipeHashes"] = {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
+                                  for p in (Path("tools/MetadataSharp.ReferenceFixture/Program.cs"),
+                                            Path("tests/MetadataSharp.Tests/Jpeg/JpegFixture.cs"))}
         report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL}
         fixture = Path("tools/MetadataSharp.ReferenceFixture/bin/Release/net8.0/MetadataSharp.ReferenceFixture.dll").resolve()
         def ours(*parameters):

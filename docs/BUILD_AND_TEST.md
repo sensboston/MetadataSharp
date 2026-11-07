@@ -21,24 +21,22 @@ dotnet build MetadataSharp.sln --configuration Release --no-restore
 dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore
 ```
 
-The suite now defines 155 cases through M06, covering infrastructure, binary
-primitives, raw values, TIFF/EXIF reading, layout and serialization. The workflow
-rejects fewer than 155 passing cases or any nonpassing cases. JPEG containers and
-file editing are not implemented/tested yet.
+The suite now defines 192 cases through M09, covering infrastructure, binary
+primitives, raw values, TIFF/EXIF reading, layout, serialization, JPEG scanning and editing. The workflow
+rejects fewer than 192 passing cases or any nonpassing cases. Ten independent Python policy/execution tests also run on each OS.
 
 ## Project Boundaries
 
 - `src/MetadataSharp.Core`: binary/raw primitives and internal EXIF reader/planner/serializer; no runtime NuGet dependencies.
-- `src/MetadataSharp.Formats`: empty SDK library referencing Core.
+- `src/MetadataSharp.Formats`: JPEG scanner and EXIF editing facade referencing Core.
 - `tests/MetadataSharp.Tests`: xUnit tests referencing both libraries.
 - `Directory.Build.props`: shared language/target/nullable settings, deterministic
   output, warnings as errors, unsafe disabled, and packaging disabled by default.
 
-SDK-generated assembly attributes let the still-empty Formats project compile
-without dummy classes. One test project currently suffices; future separation is possible
-when there are actual format and external-tool tests. No coverage collector or
-external metadata tool is needed for this stage. `bin`, `obj`, test results and
-local IDE files are ignored. These projects are not ready for NuGet publication.
+The public-API fixture generator is `tools/MetadataSharp.ReferenceFixture`. Core
+and Formats have no runtime NuGet dependencies. Production code does not launch
+external tools. Generated `bin`, `obj`, test results, harness output and Python
+caches are ignored; packaging is disabled.
 
 ## Current Verification Status
 
@@ -55,7 +53,7 @@ only the M01 skeleton, not metadata correctness or untested platform variants.
 `.github/workflows/build-and-test.yml` runs on pushes to master/Arena branches and
 pull requests targeting master. It installs a serviced .NET 8 SDK on Linux, Windows
 and macOS runners, records `dotnet --info`, and runs the restore/build/test commands
-above. A separate TRX check rejects a green run with no tests or fewer than 155
+above. A separate TRX check rejects a green run with no tests or fewer than 192
 passing cases. Test results are retained as per-platform artifacts for seven days.
 CI needs only read access to repository contents; no SDK archive or release asset
 is required. Hosted runners have their own network environment, independent of
@@ -84,3 +82,23 @@ conformance, vendor metadata relocation or file saving.
 
 All passed restore, Release build, tests and TRX count checks. No local SDK run,
 benchmark, external-tool validation or broader format-conformance claim is implied.
+
+## M07–M09 Validation and External References
+
+M07 passed run 42420076893; M08 passed 42420352483; corrected M09 passed
+[42420756667](https://github.com/sensboston/MetadataSharp/actions/runs/42420756667).
+The current TRX floor is 192. M09 additionally requires Exiv2 0.27.6 and ExifTool
+12.76 in a separate Ubuntu 24.04 job; absent tools cannot silently skip CI.
+
+```sh
+python -m unittest discover -s tests/reference -v
+dotnet build MetadataSharp.sln --configuration Release
+python tools/reference/harness.py --required --output artifacts/reference
+```
+
+See the [audit](audits/INITIAL_JPEG_RELEASE_AUDIT.md) for exact provisioning,
+provenance, commands/evidence, warning classification and remaining release gates.
+Without `--required`, local missing tools produce an explicit skipped report.
+The local Arena checkout still has no SDK; actual .NET/reference execution was
+performed by Actions, not claimed as a local run. Historical sections above retain
+earlier milestone evidence, not current coverage boundaries.
