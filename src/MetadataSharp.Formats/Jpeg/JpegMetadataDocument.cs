@@ -9,7 +9,7 @@ namespace MetadataSharp.Formats.Jpeg;
 
 /// <summary>A validated JPEG source and independently owned EXIF snapshot.</summary>
 /// <remarks>Do not concurrently modify or use the source, document or edit. Caller streams remain open.</remarks>
-public sealed class JpegMetadataDocument : IDisposable, IAsyncDisposable
+public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
 {
     private readonly Stream source;
     private readonly bool ownsSource;

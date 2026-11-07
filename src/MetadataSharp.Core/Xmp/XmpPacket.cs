@@ -10,8 +10,9 @@ public sealed class XmpPacket
     private readonly byte[] bytes;
     private readonly XmpLimits limits;
     private readonly IReadOnlyDictionary<XmpPropertyName, XmpValue> properties;
-    private XmpPacket(byte[] bytes, XmpLimits limits, bool editable, Dictionary<XmpPropertyName, XmpValue> properties)
-    { this.bytes = bytes; this.limits = limits; IsEditable = editable; this.properties = new ReadOnlyDictionary<XmpPropertyName, XmpValue>(properties); }
+    private XmpPacket(byte[] bytes, XmpLimits limits, bool editable, Dictionary<XmpPropertyName, XmpValue> properties, bool hasExtendedReference)
+    { HasExtendedReference = hasExtendedReference; this.bytes = bytes; this.limits = limits; IsEditable = editable; this.properties = new ReadOnlyDictionary<XmpPropertyName, XmpValue>(properties); }
+    internal bool HasExtendedReference { get; }
     public bool IsEditable { get; }
     public int ByteLength => bytes.Length;
     public IReadOnlyDictionary<XmpPropertyName, XmpValue> Properties => IsEditable ? properties : throw XmpCodec.Unsupported();
@@ -40,7 +41,7 @@ public sealed class XmpPacket
     {
         var result = XmpCodec.Read(bytes, limits, token);
         token.ThrowIfCancellationRequested();
-        return new(bytes, limits, result.Editable, result.Properties);
+        return new(bytes, limits, result.Editable, result.Properties, result.HasExtendedReference);
     }
     public static XmpPacket Load(Stream source, XmpReadOptions? options = null) => LoadCore(source, Settings(options), false, default).GetAwaiter().GetResult();
     public static Task<XmpPacket> LoadAsync(Stream source, XmpReadOptions? options = null, CancellationToken cancellationToken = default) => LoadCore(source, Settings(options), true, cancellationToken);

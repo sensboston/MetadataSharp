@@ -13,7 +13,7 @@ internal static class XmpCodec
     internal static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "XMP exceeds a resource budget.");
     internal static MetadataException Unsupported() => new(MetadataErrorCode.UnsupportedFeature, "The XMP packet is outside the editable profile.");
 
-    internal static (bool Editable, Dictionary<XmpPropertyName, XmpValue> Properties) Read(byte[] bytes, XmpLimits limits, CancellationToken token)
+    internal static (bool Editable, Dictionary<XmpPropertyName, XmpValue> Properties, bool HasExtendedReference) Read(byte[] bytes, XmpLimits limits, CancellationToken token)
     {
         if (bytes.Length > limits.MaxPacketBytes) throw Limit();
         try
@@ -54,6 +54,8 @@ internal static class XmpCodec
             XElement? root = document.Root;
             XElement? rdf = root?.Name == Rdf + "RDF" ? root : root?.Name == XName.Get("xmpmeta", MetaUri) ? root.Elements(Rdf + "RDF").FirstOrDefault() : null;
             if (rdf is null) throw new MetadataException(MetadataErrorCode.InvalidXmp, "An XMP packet requires an RDF root.");
+            XName reference = XName.Get("HasExtendedXMP", "http://ns.adobe.com/xmp/note/");
+            bool hasReference = document.Descendants().Any(e => e.Name == reference || e.Attributes().Any(a => a.Name == reference));
             bool editable = PlainContainer(rdf) && (root == rdf || (OnlyWhitespace(root!) && root!.Elements().Count() == 1 &&
                 root.Attributes().All(a => a.IsNamespaceDeclaration || a.Name == XName.Get("xmptk", MetaUri))));
             var packetPis = document.DescendantNodes().OfType<XProcessingInstruction>().Where(p => p.Target == "xpacket").ToArray();
@@ -65,7 +67,7 @@ internal static class XmpCodec
             }
             XElement[] descriptions = rdf.Elements().ToArray();
             var properties = new Dictionary<XmpPropertyName, XmpValue>();
-            if (descriptions.Length != 1 || descriptions[0].Name != Rdf + "Description") return (false, properties);
+            if (descriptions.Length != 1 || descriptions[0].Name != Rdf + "Description") return (false, properties, hasReference);
             XElement description = descriptions[0];
             editable &= OnlyWhitespace(description) && description.Attribute(Rdf + "about")?.Value == "";
             int propertyCount = 0, itemCount = 0;
@@ -86,7 +88,7 @@ internal static class XmpCodec
                 XmpValue? value = Value(element, limits, ref itemCount);
                 if (value is null) editable = false; else properties.Add(name, value);
             }
-            return (editable, properties);
+            return (editable, properties, hasReference);
         }
         catch (DecoderFallbackException e) { throw new MetadataException(MetadataErrorCode.InvalidXmp, "Invalid UTF-8 XMP: " + e.Message); }
         catch (ArgumentException) { throw Limit(); }

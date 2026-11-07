@@ -127,9 +127,36 @@ def main(argv=None):
             copied = output / (tool + "-noop.jpg"); ours("noop", changed, copied)
             assert changed.read_bytes() == copied.read_bytes(), tool + " reverse no-op mismatch"
             assert scan_tail(changed.read_bytes()) == scan_tail(baseline), tool + " changed encoded data"
+        xmp = output / "xmp.jpg"
+        assert (output / "xmp-noop.jpg").read_bytes() == xmp.read_bytes(), "XMP no-op differs"
+        assert (output / "xmp-removed.jpg").read_bytes() == authored, "XMP removal changed EXIF or unrelated bytes"
+        assert scan_tail(xmp.read_bytes()) == scan_tail(baseline), "XMP changed encoded bytes"
+        values = json.loads(run(["exiftool", "-j", "-XMP-xmp:CreatorTool", str(xmp)]))[0]
+        assert values["CreatorTool"] == "MetadataSharp", values
+        values = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Xmp.xmp.CreatorTool", str(xmp)]))
+        assert values == {"Xmp.xmp.CreatorTool": ("XmpText", 13, "MetadataSharp")}, values
+        rich = json.loads(run(["exiftool", "-j", "-XMP-dc:Subject", "-XMP-dc:Title", "-lang", "all", str(output / "xmp-rich.xmp")]))[0]
+        assert rich["Subject"] == ["alpha", "beta"] and rich["Title"] == "Hello" and rich["Title-ru"] == "Привет", rich
+        for size in (65502, 65503, 65504):
+            boundary = output / f"xmp-boundary-{size}.jpg"
+            actual = json.loads(ours("inspect-xmp", boundary))["creatorTool"]
+            assert actual and set(actual) == {"a"}, "Boundary packet value differs"
+            external = json.loads(run(["exiftool", "-j", "-XMP-xmp:CreatorTool", str(boundary)]))[0]
+            assert external["CreatorTool"] == actual, "ExifTool boundary mismatch"
+            rows = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Xmp.xmp.CreatorTool", str(boundary)]))
+            assert rows == {"Xmp.xmp.CreatorTool": ("XmpText", len(actual), actual)}, "Exiv2 boundary mismatch"
+            assert scan_tail(boundary.read_bytes()) == scan_tail(baseline), "Boundary image changed"
+        for tool, text in (("exiftool", "ExternalXmp"), ("exiv2", "Exiv2Xmp")):
+            changed = output / (tool + "-xmp.jpg"); shutil.copyfile(xmp, changed)
+            if tool == "exiftool": run([tool, "-overwrite_original", "-XMP-xmp:CreatorTool=" + text, str(changed)])
+            else: run([tool, "-M", "set Xmp.xmp.CreatorTool XmpText " + text, str(changed)])
+            assert json.loads(ours("inspect-xmp", changed)) == {"creatorTool": text}, "Reverse XMP value differs"
+            copied = output / (tool + "-xmp-noop.jpg"); ours("noop-xmp", changed, copied)
+            assert copied.read_bytes() == changed.read_bytes(), "Reverse XMP no-op differs"
+            assert scan_tail(changed.read_bytes()) == scan_tail(baseline), "Reverse XMP encoded bytes differ"
         report["fixtures"] = [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                                "source": "MetadataSharp authored synthetic generator", "license": "MIT"}
-                              for p in sorted(output.glob("*.jpg"))]
+                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp")]
         report["status"] = "passed"; save()
         print("PASS: external reads, reverse edits, byte preservation and validation classification")
         return 0

@@ -399,3 +399,18 @@
 - Initial M10 CI 42422121306 failed compilation because the new test file omitted
   its explicit Xunit import. Added the import (no analyzer suppression) and extra
   mid-I/O cancellation/partial failure and post-write publication cleanup tests.
+- M10 corrected commit b37ce98 passed PR run 42422179802 on Linux/macOS/Windows
+  with a 233-case minimum, ten offline Python tests and the existing required
+  external-reference job. This satisfies the predecessor gate before M11 changes.
+
+### M11 implementation submission
+
+- Extended scanner classification by exact standard/extension signatures only;
+  kept existing EXIF parsing and JPEG structural acceptance unchanged.
+- Added addressed JPEG XMP reads/saves with hash preflight, combined logical
+  metadata budgets, unique-packet policy, extension/stale-reference refusal,
+  malformed/opaque whole removal and exact no-op/EXIF independence.
+- Added JPEG XMP boundary/preservation/ambiguity/async/ownership/failure tests.
+  Public fixture consumer/harness now checks external literal reads, rich sidecar
+  arrays/Unicode language alternatives, reverse writes/no-op and 65,502–65,504-byte
+  boundaries. External outcomes are pending, not assumed from authored tests.
