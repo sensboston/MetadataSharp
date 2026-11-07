@@ -21,13 +21,14 @@ dotnet build MetadataSharp.sln --configuration Release --no-restore
 dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore
 ```
 
-The suite now defines 71 cases: two infrastructure cases, 36 binary primitive
-cases and 33 raw-model/rational cases. The workflow rejects fewer than 71 passing
-cases or any nonpassing cases. No format parsing/editing is tested yet.
+The suite now defines 155 cases through M06, covering infrastructure, binary
+primitives, raw values, TIFF/EXIF reading, layout and serialization. The workflow
+rejects fewer than 155 passing cases or any nonpassing cases. JPEG containers and
+file editing are not implemented/tested yet.
 
 ## Project Boundaries
 
-- `src/MetadataSharp.Core`: binary primitives and raw EXIF model; no runtime NuGet dependencies.
+- `src/MetadataSharp.Core`: binary/raw primitives and internal EXIF reader/planner/serializer; no runtime NuGet dependencies.
 - `src/MetadataSharp.Formats`: empty SDK library referencing Core.
 - `tests/MetadataSharp.Tests`: xUnit tests referencing both libraries.
 - `Directory.Build.props`: shared language/target/nullable settings, deterministic
@@ -54,7 +55,7 @@ only the M01 skeleton, not metadata correctness or untested platform variants.
 `.github/workflows/build-and-test.yml` runs on pushes to master/Arena branches and
 pull requests targeting master. It installs a serviced .NET 8 SDK on Linux, Windows
 and macOS runners, records `dotnet --info`, and runs the restore/build/test commands
-above. A separate TRX check rejects a green run with no tests or fewer than 71
+above. A separate TRX check rejects a green run with no tests or fewer than 155
 passing cases. Test results are retained as per-platform artifacts for seven days.
 CI needs only read access to repository contents; no SDK archive or release asset
 is required. Hosted runners have their own network environment, independent of
@@ -72,3 +73,14 @@ Each passed restore, Release build and tests on Linux, Windows and macOS. The
 latest workflow raises the TRX floor to the full authored M01–M03 case count before
 merge. These tests validate bounded primitives and raw ownership, not TIFF/JPEG
 conformance, vendor metadata relocation or file saving.
+
+## M04–M06 Validation
+
+| Unit | Validated implementation commit | Three-platform PR run |
+| --- | --- | --- |
+| M04 | `ac9c9e87d21941f66ffa295b85c63eee776eddd3` | [42418170361](https://github.com/sensboston/MetadataSharp/actions/runs/42418170361) |
+| M05 | `976983b9f36fddde9d0ab3eb558d4de9ea65e4e9` | [42418449461](https://github.com/sensboston/MetadataSharp/actions/runs/42418449461) |
+| M06 | `067bfed16de2ebd3d8e0d982a73d33e87ea9a706` | [42418674786](https://github.com/sensboston/MetadataSharp/actions/runs/42418674786) |
+
+All passed restore, Release build, tests and TRX count checks. No local SDK run,
+benchmark, external-tool validation or broader format-conformance claim is implied.

@@ -3,9 +3,11 @@
 Status: **APPROVED for the initial release scope**. Approved: 2026-11-07.
 The developer explicitly approved all seven decisions in section 8. See
 [accepted tradeoffs](../decisions/INITIAL_RELEASE_ACCEPTED_TRADEOFFS.md).
-This is a design document, not implemented or compiled API. All signatures below
-are approved design declarations; bodies and namespace imports are intentionally omitted.
-No approval of this document authorizes work beyond the requested next unit.
+This is a design contract, not a claim that all APIs below are implemented.
+M01–M06 implement the core subset; the JPEG facade and edit API are still pending.
+Bodies and namespace imports are intentionally omitted.
+Sequential implementation was subsequently authorized on 2026-11-07; public
+contract/safety changes still require approval.
 
 ## 1. Release boundary
 
@@ -415,4 +417,4 @@ and exact JPEG allowlist remain explicit gates in their owning units, not permis
 to implement based on guesses. If normative review contradicts this proposal,
 return for approval before changing observable contracts.
 
-**M00 approval gate is closed. M01 is eligible when explicitly requested.**
+**M00 approval gate is closed. See the roadmap/progress record for current stage.**

@@ -253,3 +253,19 @@
 - Design: `docs/design/EXIF_SERIALIZATION_PREFLIGHT_AND_OUTPUT_GUARANTEES.md`.
 - `git diff --check` passed. No external-tool result or local build is claimed;
   runtime gate awaits the next three-platform CI run.
+
+### M06 CI result — 2026-11-07 — Gate closed
+
+- Commit `067bfed16de2ebd3d8e0d982a73d33e87ea9a706` passed restore, Release build,
+  tests and the 155-case TRX floor on Linux, Windows and macOS in run 42418674786.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42418674786
+- `gh run watch 42418674786 --exit-status --interval 15` exited 0.
+- Updated README, roadmap, build guide and project instructions to reflect actual
+  M04–M06 completion, not the historical M03 checkpoint. No public JPEG facade or
+  edit API has been implemented. Final-2.32 semantic verification remains explicit.
+- Confirmed M05 PR #4 merged at `4f05d169c3e85c1ed1da8235c5c6400690799383`.
+- PR #5 will be merged only after the final documentation head passes CI. Its
+  authoritative merge result is in GitHub PR history, not predicted in this record.
+- M07 is the next stage under standing authorization; no additional developer
+  permission is needed for its already planned scope. It must verify JPEG marker
+  rules from normative sources before coding and preserve the strict JPEG subset.
