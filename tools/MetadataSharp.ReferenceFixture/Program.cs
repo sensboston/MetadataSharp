@@ -1,8 +1,10 @@
 using System.Buffers.Binary;
 using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Core.Iptc;
 using MetadataSharp.Formats.Jpeg;
 using MetadataSharp.Tests.Jpeg;
 
@@ -42,6 +44,27 @@ if (args.Length == 2 && args[0] == "generate")
         edited.SaveXmpAs(Path.Combine(args[1], $"xmp-boundary-{size}.jpg"), boundary);
     }
 
+
+    // Authored resource fixture: keep a copyright flag, update IPTC and its existing digest.
+    IptcPacket minimal = IptcPacket.CreateEmpty(); byte[] iim = new byte[minimal.ByteLength]; minimal.CopyRawTo(iim);
+    byte[] flag = Resource(0x040a, [1]);
+    byte[] photoshop = [.. "Photoshop 3.0\0"u8, .. flag, .. Resource(0x0404, iim), .. Resource(0x0425, MD5.HashData(iim))];
+    byte[] xmpImage = File.ReadAllBytes(xmpPath);
+    byte[] seed = [.. xmpImage[..2], .. JpegFixture.Segment(0xed, photoshop), .. xmpImage[2..]];
+    using var withResources = JpegMetadataDocument.Open(new MemoryStream(seed));
+    var iptcEdit = new IptcEdit(); iptcEdit.ReplaceText(new(2, 25), ["alpha", "beta", "alpha"]);
+    iptcEdit.ReplaceText(new(2, 120), ["Привет"]);
+    string iptcPath = Path.Combine(args[1], "iptc.jpg"); withResources.SaveIptcAs(iptcPath, iptcEdit);
+    using var iptcDoc = JpegMetadataDocument.Open(iptcPath);
+    iptcDoc.SaveIptcAs(Path.Combine(args[1], "iptc-noop.jpg"), new());
+    var removeIptc = new IptcEdit(); removeIptc.RemoveAllIptc();
+    iptcDoc.SaveIptcAs(Path.Combine(args[1], "iptc-removed.jpg"), removeIptc);
+    File.WriteAllBytes(Path.Combine(args[1], "iptc-expected-removed.jpg"),
+        [.. xmpImage[..2], .. JpegFixture.Segment(0xed, [.. "Photoshop 3.0\0"u8, .. flag]), .. xmpImage[2..]]);
+    // 15 control bytes + 949 full 69-byte keyword datasets + one 10-byte dataset.
+    var full = new IptcEdit(); full.ReplaceText(new(2, 25), Enumerable.Repeat(new string('a', 64), 949).Append("aaaaa"));
+    withXmp.SaveIptcAs(Path.Combine(args[1], "iptc-boundary.jpg"), full);
+
 }
 else if (args.Length == 2 && args[0] == "inspect")
 {
@@ -67,9 +90,40 @@ else if (args.Length == 3 && args[0] == "noop-xmp")
 {
     using var doc = JpegMetadataDocument.Open(args[1]); doc.SaveXmpAs(args[2], new());
 }
+else if (args.Length == 2 && args[0] == "inspect-iptc")
+{
+    using var doc = JpegMetadataDocument.Open(args[1]); IptcPacket? packet = doc.ReadIptc();
+    string? caption = null; var keywords = new List<string>(); string? digest = null;
+    if (packet is not null)
+    {
+        for (int i = 0; i < packet.Datasets.Count; i++)
+        {
+            if (packet.Datasets[i].Key == new IptcDatasetKey(2, 25)) keywords.Add(packet.GetText(i));
+            if (packet.Datasets[i].Key == new IptcDatasetKey(2, 120)) caption = packet.GetText(i);
+        }
+        byte[] raw = new byte[packet.ByteLength]; packet.CopyRawTo(raw); digest = Convert.ToHexString(MD5.HashData(raw)).ToLowerInvariant();
+    }
+    Console.WriteLine(JsonSerializer.Serialize(new { caption, keywords, digest }));
+}
+else if (args.Length == 3 && args[0] == "noop-iptc")
+{
+    using var doc = JpegMetadataDocument.Open(args[1]); doc.SaveIptcAs(args[2], new());
+}
+else if (args.Length == 3 && args[0] == "rewrite-iptc")
+{
+    using var doc = JpegMetadataDocument.Open(args[1]); var edit = new IptcEdit(); edit.ReplaceText(new(2, 120), ["Refreshed"]); doc.SaveIptcAs(args[2], edit);
+}
 else if (args.Length == 3 && args[0] == "noop")
 {
     using var doc = JpegMetadataDocument.Open(args[1]); doc.SaveAs(args[2], new ExifEdit());
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | inspect FILE | inspect-xmp FILE | noop INPUT OUTPUT | noop-xmp INPUT OUTPUT"); return 2; }
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
+
+
+static byte[] Resource(ushort id, byte[] data)
+{
+    byte[] result = new byte[12 + data.Length + (data.Length & 1)]; "8BIM"u8.CopyTo(result);
+    BinaryPrimitives.WriteUInt16BigEndian(result.AsSpan(4), id);
+    BinaryPrimitives.WriteUInt32BigEndian(result.AsSpan(8), (uint)data.Length); data.CopyTo(result, 12); return result;
+}

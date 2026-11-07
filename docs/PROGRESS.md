@@ -450,3 +450,80 @@
   Only the previously documented minimal-EXIF missing-default-tag limitation remains.
 - Documentation-only final count/evidence update follows; merge still requires its
   final-head checks. M12 contract review is the next eligible unit, not implemented.
+
+### M10–M11 final head and merge confirmation
+
+- Final documentation head 332ede3c500621bc7e67b068e687d6b57912bacc passed PR run
+  42423001909 and push run 42422998072: all three OS jobs, 260-case floor, ten Python
+  tests and required Exiv2/ExifTool validation. PR #7 merged on 2026-11-07 as
+  7dafca53cab4ccf98539034585e5bcef69acdbc1. Verified via gh before starting M12.
+  This supersedes the earlier final-head pending submission notes.
+
+### M12 contract proposal (implementation pending)
+
+- Developer requested continued execution. Current clean branch:
+  arena/da38f569-metadatasharp, based on merged M10–M11 work.
+- Read the M12 prompt, development policy, current limits/errors and predecessor
+  status. Added `docs/design/IPTC_IIM_PHOTOSHOP_IRB_AND_JPEG_CONTRACT_PROPOSAL.md`.
+- Proposed one M12 PR with separately gated M12a codec/resource framing and M12b
+  JPEG integration checkpoints; exact public signatures, raw repetition/order
+  preservation, restricted text/encoding policy, extended lengths, Pascal name/data
+  padding, unknown-resource preservation, conservative ambiguity rules and existing
+  IPTC digest maintenance/removal. No EXIF/XMP synchronization or new dependency.
+- Exact normative source review remains a preimplementation gate, not an executed
+  result. Contract-only proposal; no production/test implementation changed and no
+  new test execution claimed. Requires explicit approval of new public/safety
+  contracts before M12a implementation. No package publication.
+
+### M12 approval and M12a submission
+
+- Developer explicitly approved the M12 contracts/checkpoint split on 2026-11-07.
+- Reviewed IIM 4.2 (July 2014), Photoshop File Formats (June 2012 HTML mirror) and
+  XMP Part 3 (January 2020) storage/digest sections. Source blobs/hashes, six-field
+  validation table and deliberate restrictions are in the M12 normative review.
+- Implemented owned raw IIM datasets/occurrences, preserved untouched framing,
+  bounded normal/extended lengths, charset-aware text helpers and last-wins edits.
+  Internal Photoshop framing preserves unknown resources/names/padding and updates
+  only IPTC plus an existing digest; no new runtime dependency.
+- Added independent known-byte, repetition/encoding/control/budget/length/parity,
+  digest vector and APP13-capacity tests. Local dotnet is absent; required three-OS
+  CI is pending before M12b, and no local .NET test result is claimed.
+- Pre-CI audit corrected two new expected-byte test initializers to C# 12 collection
+  expressions (spread syntax is not valid in legacy array initializers). No test
+  assertion was removed; corrected-head CI remains required.
+- Corrected M12a head f45a96be8bc8399a2c92e33f48581f1ecc3edccc passed PR run
+  42425723428: Linux/macOS/Windows Release builds, 288-case floor, ten Python tests
+  and required existing Exiv2/ExifTool checks. M12b begins only after this gate.
+
+### M12b implementation submission
+
+- Added exact Photoshop APP13 discovery and independent IPTC Read/Save APIs with
+  source hash preflight, combined logical budgets, conservative ambiguity/digest
+  policy and safe non-overwriting publication. No EXIF/XMP pipeline behavior changed.
+- Added JPEG IPTC preservation, digest, signature, duplicates, malformed removal,
+  even-capacity, budget, async ownership/cancellation and path-race/failure tests.
+- Extended the owned public-API fixture consumer/reference harness with repetitions,
+  Unicode, existing digest maintenance, reverse writes, resource-preserving removal
+  and a 65,506-byte IIM/full APP13 boundary. Added independent repeated-row parser
+  policy tests. External reference outcomes remain pending.
+- First M12b commit 5c2376b passed PR run 42426038001: all three OS jobs, 304-case
+  floor, twelve offline Python tests and the full required external-reference job.
+  Repeated/Unicode IPTC facts, reverse writes/no-op, digest refresh, exact removal
+  preserving a copyright resource, and full-capacity repetitions all passed.
+- Audit tightened count/byte checks before allocating new IIM/IRB frames and checks
+  cancellation after the final hash read. Added partial-output/cancellation and
+  captured-growth regressions plus a deterministic 256-case owned mutation smoke
+  (not a general fuzzing or security-certification claim).
+
+### M12 audited gate and documentation
+
+- Audited head f19471ec7d1e048423e8d9d3ed7e217b8832c8e0 passed PR run 42426187721:
+  all three OS builds/tests, 309-case floor, twelve offline Python tests and full
+  required Exiv2 0.27.6 / ExifTool 12.76 validation. No new warning category accepted;
+  the existing minimal-EXIF XResolution limitation remains explicit.
+- Added `IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md` with examples, raw/text
+  semantics, exact digest/IRB behavior, actual even-capacity limits, budgets and
+  path/stream failure rules. Updated current-state docs and preserved historical
+  gate counts. No new dependency, package publication or general IIM conformance claim.
+- Final documentation head still requires green CI before merging PR #8. M13 (PNG)
+  contract review is next eligible; no M13 implementation started.
