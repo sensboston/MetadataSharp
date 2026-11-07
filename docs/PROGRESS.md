@@ -55,3 +55,140 @@
 - M00 is complete as an approved design stage. M01 is eligible but not started.
 - Normative verification, compilation and implementation tests remain future gates;
   approval does not certify the unverified standards assumptions.
+
+### M01 — 2026-11-07 — Skeleton prepared; validation blocked
+
+- Authorization: the developer requested implementation after M00 approval and
+  explicitly resumed work in the new active session. Work remains on
+  `arena/e42dbe63-metadatasharp`; no switch to master was made.
+- Added `MetadataSharp.sln`, Core/Formats library projects and one xUnit test
+  project. Formats references Core; tests reference both. No binary primitives,
+  metadata API implementations, parsers or serializers were added.
+- Added shared net8.0/C# 12.0/nullable settings, unsafe disabled, deterministic
+  output, warnings as errors and packaging disabled. `global.json` allows serviced
+  stable .NET 8 feature bands without roll-forward to a different major version.
+- Test dependencies: Microsoft.NET.Test.Sdk 17.11.1, xunit 2.9.2,
+  xunit.runner.visualstudio 2.8.2 (private assets). No library NuGet dependencies.
+  Versions are explicit but restore/license/transitive resolution is not claimed
+  verified; no generated lock file was fabricated without restore.
+- Added a two-case infrastructure theory checking both referenced library assemblies
+  can load and declare net8.0. No placeholder public classes were introduced.
+- Added `.gitignore` and `docs/BUILD_AND_TEST.md`; updated navigation/current status
+  in README, roadmap and project instructions.
+- Environment check: `dotnet --info` failed with exit 127 (`dotnet: command not
+  found`). `command -v dotnet` found no executable; common SDK directories were
+  absent. No SDK was installed or alternate target silently selected.
+- Attempted acceptance commands individually; each failed with exit 127:
+  - `dotnet restore MetadataSharp.sln`
+  - `dotnet build MetadataSharp.sln --configuration Release --no-restore`
+  - `dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore`
+- Static validation: inline Python parsed SDK JSON and all three project XML files,
+  checked shared settings, project/solution reference paths, explicit package
+  version syntax, local links/fences in 28 Markdown files, and absence of production
+  C# source. PASS. This is not an MSBuild evaluation or C# compilation.
+- `git diff --check` passed. `git check-ignore` confirmed representative bin/obj/
+  TestResults paths are ignored. No CI or external-tool run was performed.
+- Pending gate: successful SDK-enabled restore, Release build and test execution
+  with two discovered theory cases. Package availability and runtime loading are
+  unverified until then. M02 is blocked; resume M01 validation next.
+
+### M01 SDK bootstrap attempt — 2026-11-07 — Still blocked
+
+- The developer uploaded `dotnet-sdk-8.0.400-linux-x64.tar.gz` (211,858,390 bytes)
+  to the repository release `sdk_bootstrap` after direct SDK download hosts failed.
+- `gh release view sdk_bootstrap --json tagName,assets` succeeded and confirmed the
+  asset. `gh release download sdk_bootstrap --pattern
+  dotnet-sdk-8.0.400-linux-x64.tar.gz --dir /home/user/.cache/metadatasharp-sdk`
+  failed with exit 1: GitHub redirected the download to
+  `release-assets.githubusercontent.com`, and the connection ended with EOF.
+- The asset host is outside the environment's stated outbound host allowlist.
+  GitHub API access does not establish access to release binary downloads.
+- Extraction, SHA-512 calculation and `dotnet --info` did not execute because the
+  chained download command failed. No SDK is installed; no new build/test result
+  is claimed. No signed download URL or credentials were stored in the repository.
+- M01 remains pending. Next options: platform-authorized access to the asset host,
+  a supported direct file attachment, or running the documented acceptance commands
+  in an SDK-enabled environment. No network-policy bypass is attempted.
+
+### M01 CI validation — 2026-11-07 — Run requested
+
+- The developer proposed GitHub Actions to validate M01 despite the missing local
+  SDK. Added a read-only workflow for Linux, Windows and macOS using .NET 8.
+- Workflow restores, builds Release, tests, checks TRX counters for at least two
+  passing cases, and uploads test results. No SDK archive is added to Git.
+- Publishing the current M01 files to the active Arena branch triggers validation;
+  no merge or later-stage implementation is part of this execution.
+- This entry records setup only. The completion gate remains pending until the
+  actual run result is inspected and recorded below.
+
+### M01 CI result — 2026-11-07 — Gate closed
+
+- Commit validated: `e72ce881dd5579b34d1dd36f335df58be8e3f299`.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42416545213
+- `gh run watch 42416545213 --exit-status --interval 15` exited 0.
+- Linux, Windows and macOS jobs all succeeded, including SDK setup, environment
+  reporting, restore, Release build, Release tests, TRX counter verification and
+  artifact upload. The counter step requires at least two passing cases and no
+  nonpassing cases; the current suite defines two cases.
+- A manual API dispatch attempt returned HTTP 403, but the push-triggered run did
+  start successfully. Opened PR #2 for review; it has not been merged.
+- Bulk log download via `gh run view 42416545213 --log` was unavailable because
+  its redirected log-storage host returned EOF. Job/step status was accessible and
+  observed through the watch command. Exact installed SDK patch is not claimed.
+- Nonblocking annotations: v4 actions use a deprecated Node runtime that GitHub
+  currently upgrades automatically; hosted runner image/capacity notices also
+  appeared. Future maintenance should review action versions and runner drift.
+- Updated current-status documents to supersede the historical local-SDK blocker.
+  Local SDK installation is still unavailable; use CI for actual .NET execution.
+- M01 acceptance gate is satisfied. M02 has not started and requires a request.
+
+### M02 — 2026-11-07 — Implementation submitted to CI
+
+- Developer explicitly requested M02, then M03 only after successful CI, and merge
+  of completed work. This is a bounded two-stage exception to the default stop rule.
+- Added approved Endianness and internal span cursors using BinaryPrimitives;
+  Try failures do not advance or modify output. Added checked nonnegative range,
+  product and addition helpers, with friend access for the test assembly only.
+- Added known-byte tests for both orders/all integer widths, signed extrema, every
+  truncated width, exact end, failure recovery, invalid order and overflow bounds.
+- Design rationale: `docs/design/BINARY_PRIMITIVES_AND_FAILURE_ATOMICITY.md`.
+- No TIFF parsing, allocation abstraction or unapproved public API was added.
+- Local `git diff --check` passed; runtime checks require GitHub Actions. M03 has
+  not started; the gate remains pending until M02 CI succeeds.
+
+### M02 CI result — 2026-11-07 — Gate closed
+
+- Validated commit: `97f87df97a55caf528c77dcbddeebcc5c447c587`.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42417202024
+- `gh run watch 42417202024 --exit-status --interval 15` exited 0. Linux,
+  Windows and macOS all passed restore, Release build, tests and TRX verification.
+- Existing nonblocking action-runtime/hosted-runner notices remain. No local SDK
+  or downloaded bulk log is claimed. M03 started only after this successful run.
+
+### M03 — 2026-11-07 — Implementation submitted to CI
+
+- Implemented the approved raw type/entry/snapshot model and signed/unsigned
+  rational types. Internal constructors do not broaden the public API.
+- Added ownership, both-order raw fidelity, twelve width cases, invalid enums,
+  count overflow, short/excess buffers, zero counts, opaque IDs, snapshot immutability,
+  duplicate keys, NaN-bit preservation, rational extrema/zero denominator/equality tests.
+- Rationale and exclusions: `docs/design/RAW_EXIF_VALUE_OWNERSHIP_AND_EQUALITY.md`.
+- No tag schema or relocation safety is inferred from raw values. Normative/tag
+  constraint verification remains an explicit M04 prerequisite; no format parser,
+  editing API, endian transcoding or source document is introduced by M03.
+- Local `git diff --check` passed. Runtime gate pending GitHub Actions.
+
+### M03 CI result — 2026-11-07 — Gate closed
+
+- Validated commit: `ca0f991066c0e7322decbe9ee88dd6f743aaa296`.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42417333330
+- `gh run watch 42417333330 --exit-status --interval 15` exited 0. All three
+  platforms passed restore, Release build, tests and TRX verification.
+- Raised the workflow test floor from two infrastructure cases to all 71 authored
+  M01–M03 cases (2 infrastructure + 36 binary + 33 raw/rational). This strengthened
+  counter check is to be validated on the final head before merge.
+- Updated current status/navigation. No parser, ExifEdit or serializer was added.
+  M04 requires a separate request and normative/tag schema verification first.
+- Developer requested merge of ready work. PR #2 now includes M01–M03; merge only
+  after the final head's CI checks pass. Merge outcome is recorded in GitHub PR
+  history rather than predeclared here.

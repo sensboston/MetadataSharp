@@ -69,5 +69,8 @@ XMP library rather than treating a package name as pre-approved.
 M00 contracts were approved on 2026-11-07. Read
 [the approved contracts](docs/design/INITIAL_CONTRACTS.md) and
 [accepted tradeoffs](docs/decisions/INITIAL_RELEASE_ACCEPTED_TRADEOFFS.md).
-M01 is the next eligible unit when explicitly requested. The initial release target
-is a restricted JPEG EXIF reader/editor with explicit unsafe-edit refusal.
+M01–M03 restore/build/test passed on Linux, Windows and macOS in GitHub Actions.
+The local environment still has no SDK; use CI as described in
+[build instructions](docs/BUILD_AND_TEST.md). M04 is next eligible when requested; verify its normative/tag-schema prerequisites.
+The initial release target is a restricted JPEG EXIF reader/editor with explicit
+unsafe-edit refusal.
