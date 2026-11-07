@@ -155,3 +155,25 @@
 - No TIFF parsing, allocation abstraction or unapproved public API was added.
 - Local `git diff --check` passed; runtime checks require GitHub Actions. M03 has
   not started; the gate remains pending until M02 CI succeeds.
+
+### M02 CI result — 2026-11-07 — Gate closed
+
+- Validated commit: `97f87df97a55caf528c77dcbddeebcc5c447c587`.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42417202024
+- `gh run watch 42417202024 --exit-status --interval 15` exited 0. Linux,
+  Windows and macOS all passed restore, Release build, tests and TRX verification.
+- Existing nonblocking action-runtime/hosted-runner notices remain. No local SDK
+  or downloaded bulk log is claimed. M03 started only after this successful run.
+
+### M03 — 2026-11-07 — Implementation submitted to CI
+
+- Implemented the approved raw type/entry/snapshot model and signed/unsigned
+  rational types. Internal constructors do not broaden the public API.
+- Added ownership, both-order raw fidelity, twelve width cases, invalid enums,
+  count overflow, short/excess buffers, zero counts, opaque IDs, snapshot immutability,
+  duplicate keys, NaN-bit preservation, rational extrema/zero denominator/equality tests.
+- Rationale and exclusions: `docs/design/RAW_EXIF_VALUE_OWNERSHIP_AND_EQUALITY.md`.
+- No tag schema or relocation safety is inferred from raw values. Normative/tag
+  constraint verification remains an explicit M04 prerequisite; no format parser,
+  editing API, endian transcoding or source document is introduced by M03.
+- Local `git diff --check` passed. Runtime gate pending GitHub Actions.
