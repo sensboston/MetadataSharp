@@ -69,8 +69,8 @@ XMP library rather than treating a package name as pre-approved.
 M00 contracts were approved on 2026-11-07. Read
 [the approved contracts](docs/design/INITIAL_CONTRACTS.md) and
 [accepted tradeoffs](docs/decisions/INITIAL_RELEASE_ACCEPTED_TRADEOFFS.md).
-M01 infrastructure files are prepared, but its restore/build/test gate is pending
-because the current environment has no .NET SDK. See
-[build instructions](docs/BUILD_AND_TEST.md). Complete M01 validation before M02.
+M01 restore/build/test passed on Linux, Windows and macOS in GitHub Actions.
+The local environment still has no SDK; use CI as described in
+[build instructions](docs/BUILD_AND_TEST.md). M02 is next eligible when requested.
 The initial release target is a restricted JPEG EXIF reader/editor with explicit
 unsafe-edit refusal.

@@ -17,6 +17,7 @@ The initial scope is a restricted JPEG EXIF reader/editor, not general format su
 - [One-stage execution prompts](docs/prompts/README.md).
 - [Progress and approval history](docs/PROGRESS.md).
 
-M00 was approved on 2026-11-07. M01 files are prepared, but its completion gate is
-pending: this environment has no .NET SDK to run restore/build/test. M02 is blocked.
+M00 was approved on 2026-11-07. M01 restore/build/test passed on Linux, Windows
+and macOS in [GitHub Actions](https://github.com/sensboston/MetadataSharp/actions/runs/42416545213).
+M02 is next eligible when requested; no metadata implementation exists yet.
 See [LICENSE](LICENSE) for the MIT license.

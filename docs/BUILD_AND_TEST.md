@@ -42,12 +42,13 @@ local IDE files are ignored. These projects are not ready for NuGet publication.
 
 ## Current Verification Status
 
-The Arena environment used for M01 preparation has no `dotnet` command. Restore,
-build and test cannot run there. Project XML, solution/reference paths and settings
-have been checked statically only; this does not establish compilation, package
-resolution, test discovery or passing tests. M01 remains pending until the commands
-above complete successfully in an SDK-enabled environment. Do not start M02 based
-on static checks alone. No CI run or platform matrix is claimed.
+The local Arena environment has no `dotnet` command. This no longer blocks the
+M01 gate: [GitHub Actions run 42416545213](https://github.com/sensboston/MetadataSharp/actions/runs/42416545213)
+validated commit `e72ce881dd5579b34d1dd36f335df58be8e3f299` on 2026-11-07.
+Linux, Windows and macOS jobs all passed restore, Release build, tests and the TRX
+counter check. The suite contains two infrastructure theory cases. This establishes
+only the M01 skeleton, not metadata correctness or untested platform variants.
+
 
 ## GitHub Actions Validation
 

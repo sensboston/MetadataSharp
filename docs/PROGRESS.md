@@ -120,3 +120,24 @@
   no merge or later-stage implementation is part of this execution.
 - This entry records setup only. The completion gate remains pending until the
   actual run result is inspected and recorded below.
+
+### M01 CI result — 2026-11-07 — Gate closed
+
+- Commit validated: `e72ce881dd5579b34d1dd36f335df58be8e3f299`.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42416545213
+- `gh run watch 42416545213 --exit-status --interval 15` exited 0.
+- Linux, Windows and macOS jobs all succeeded, including SDK setup, environment
+  reporting, restore, Release build, Release tests, TRX counter verification and
+  artifact upload. The counter step requires at least two passing cases and no
+  nonpassing cases; the current suite defines two cases.
+- A manual API dispatch attempt returned HTTP 403, but the push-triggered run did
+  start successfully. Opened PR #2 for review; it has not been merged.
+- Bulk log download via `gh run view 42416545213 --log` was unavailable because
+  its redirected log-storage host returned EOF. Job/step status was accessible and
+  observed through the watch command. Exact installed SDK patch is not claimed.
+- Nonblocking annotations: v4 actions use a deprecated Node runtime that GitHub
+  currently upgrades automatically; hosted runner image/capacity notices also
+  appeared. Future maintenance should review action versions and runner drift.
+- Updated current-status documents to supersede the historical local-SDK blocker.
+  Local SDK installation is still unavailable; use CI for actual .NET execution.
+- M01 acceptance gate is satisfied. M02 has not started and requires a request.
