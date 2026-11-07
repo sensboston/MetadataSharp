@@ -212,3 +212,24 @@
 - Added independent both-order fixtures, malformed graph/range/type/count tests,
   budgets, thumbnail checks and reproducible mutation smoke tests.
 - `git diff --check` passed. Local SDK remains absent; runtime gate awaits CI.
+
+### M04 CI and merge — 2026-11-07 — Gate closed
+
+- Commit `ac9c9e87d21941f66ffa295b85c63eee776eddd3` passed Linux/Windows/macOS
+  restore, Release build, tests and TRX checks in run 42418170361.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42418170361
+- `gh run watch 42418170361 --exit-status --interval 15` exited 0.
+- PR #3 merged using `gh pr merge 3 --merge`; GitHub confirmed MERGED at commit
+  `c450fcaaa9c1d0927311336f72caef2e27d9bc82`. M05 began only after this gate.
+
+### M05 — 2026-11-07 — Submitted to CI
+
+- Added deterministic internal EXIF directory/value/thumbnail planning; no payload
+  serialization, file rewriting or public edit API. Source byte order is retained.
+- Unknown/opaque source tags block rebuilding even if absent from desired metadata.
+  Known structural values and thumbnail entries are protected; pointer offsets are
+  recomputed from the planned TIFF base. Rechecked budgets after synthesized links.
+- Tests cover boundary/alignment/ordering, exact APP1 maximum, pointer rebasing,
+  thumbnail ownership, refusals, all affected budgets and disjoint planned ranges.
+- Design: `docs/design/EXIF_LAYOUT_PLANNING_AND_SAFE_REBUILD_REFUSALS.md`.
+- `git diff --check` passed. Runtime gate awaits three-platform CI.
