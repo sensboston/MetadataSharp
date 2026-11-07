@@ -424,3 +424,16 @@
   change the preferred first item when x-default is absent. Retained original
   nondefault language order (still emitting x-default first) and added an explicit
   unrelated-edit regression. This is a preservation fix, not a contract expansion.
+
+### M11 corrected gate and group audit
+
+- Commit 1e25408 passed PR run 42422570403: Linux/macOS/Windows Release builds,
+  a 259-case .NET floor, ten offline Python tests and required external references.
+- Both tools read all three 65,502/65,503/65,504-byte boundary packets. Rich sidecar
+  subjects/default/Russian title values, externally modified CreatorTool reads,
+  exact XMP no-op/removal and encoded-byte checks passed. No public boundary changed
+  to accommodate the historical PDF arithmetic discrepancy.
+- Added XMP usage/ownership/failure documentation and updated current-state docs.
+  Final harness hardening validates XMP JPEG/sidecar/boundary inputs explicitly
+  and attributes each warning to its fixture. Required final-head CI is pending
+  before merging PR #7. No M12 implementation or package publication.

@@ -77,6 +77,19 @@ def main(argv=None):
             raise RuntimeError(f"Command failed ({result.returncode}): {command!r}: {result.stdout} {result.stderr}")
         return result.stdout
 
+    def validate_image(image):
+        validation = json.loads(run(["exiftool", "-validate", "-warning", "-a", "-j", str(image)]), object_pairs_hook=list)
+        pairs = validation[0]
+        for name, value in pairs:
+            if name.lower().startswith("warning"):
+                classification = "documented-minimal-exif-default-tag" if classify_warning(value) else "unclassified"
+                report["warnings"].append({"file": image.name, "text": value, "classification": classification})
+                if classification == "unclassified":
+                    raise RuntimeError("Unclassified validation warning: " + value)
+                print("::notice title=Reference discrepancy::" + value)
+            elif name.lower().startswith("error"):
+                raise RuntimeError("Validation error: " + str(value))
+
     try:
         if not __debug__:
             raise RuntimeError("Reference checks require Python without optimization (-O)")
@@ -107,17 +120,7 @@ def main(argv=None):
         assert values["Artist"] == "Alice" and values["Orientation"] == 1, values
         values = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Exif.Image.Artist", "-K", "Exif.Image.Orientation", str(image)]))
         assert values == {"Exif.Image.Artist": ("Ascii", 6, "Alice"), "Exif.Image.Orientation": ("Short", 1, "1")}, values
-        validation = json.loads(run(["exiftool", "-validate", "-warning", "-a", "-j", str(image)]), object_pairs_hook=list)
-        pairs = validation[0]
-        for name, value in pairs:
-            if name.lower().startswith("warning"):
-                classification = "documented-minimal-exif-default-tag" if classify_warning(value) else "unclassified"
-                report["warnings"].append({"text": value, "classification": classification})
-                if classification == "unclassified":
-                    raise RuntimeError("Unclassified validation warning: " + value)
-                print("::notice title=Reference discrepancy::" + value)
-            elif name.lower().startswith("error"):
-                raise RuntimeError("Validation error: " + str(value))
+        validate_image(image)
         for tool, artist in (("exiftool", "External"), ("exiv2", "Exiv2")):
             changed = output / (tool + ".jpg"); shutil.copyfile(image, changed)
             if tool == "exiftool": run([tool, "-overwrite_original", "-Artist=" + artist, str(changed)])
@@ -128,6 +131,8 @@ def main(argv=None):
             assert changed.read_bytes() == copied.read_bytes(), tool + " reverse no-op mismatch"
             assert scan_tail(changed.read_bytes()) == scan_tail(baseline), tool + " changed encoded data"
         xmp = output / "xmp.jpg"
+        validate_image(xmp)
+        validate_image(output / "xmp-rich.xmp")
         assert (output / "xmp-noop.jpg").read_bytes() == xmp.read_bytes(), "XMP no-op differs"
         assert (output / "xmp-removed.jpg").read_bytes() == authored, "XMP removal changed EXIF or unrelated bytes"
         assert scan_tail(xmp.read_bytes()) == scan_tail(baseline), "XMP changed encoded bytes"
@@ -139,6 +144,7 @@ def main(argv=None):
         assert rich["Subject"] == ["alpha", "beta"] and rich["Title"] == "Hello" and rich["Title-ru"] == "Привет", rich
         for size in (65502, 65503, 65504):
             boundary = output / f"xmp-boundary-{size}.jpg"
+            validate_image(boundary)
             actual = json.loads(ours("inspect-xmp", boundary))["creatorTool"]
             assert actual and set(actual) == {"a"}, "Boundary packet value differs"
             external = json.loads(run(["exiftool", "-j", "-XMP-xmp:CreatorTool", str(boundary)]))[0]

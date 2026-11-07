@@ -23,7 +23,8 @@ record hashes and findings in a normative-source document. Located primary sourc
 `adobe/XMP-Toolkit-SDK`, revision `7093513bd3caaad29da01db0f275d88a39d6bcc2`,
 `docs/XMPSpecificationPart1.pdf` (blob `3118eadbdd4b8ba033f36bb68bd291e4d38ea95f`)
 and `docs/XMPSpecificationPart3.pdf` (blob `c7ee90e2b2b60e9ccef42bd0b6d676b21bc6591a`).
-These PDFs have been located, **not substantively reviewed yet**. Do not import
+These PDFs were reviewed before implementation; see
+`XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md` for editions, sections and hashes. Do not import
 SDK source/tests or redistribute the PDFs. If normative review contradicts this
 proposal, document the discrepancy and obtain approval for contract changes.
 

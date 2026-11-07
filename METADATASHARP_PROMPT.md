@@ -14,9 +14,10 @@ MIT-only code.
 
 ## Current implementation boundary
 
-M01–M09 implement restricted JPEG EXIF scanning/editing and the external-reference
-audit. See `docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md` for conformance limitations
-and remaining publication gates. No package has been published. M10+ requires
+M01–M11 implement restricted JPEG EXIF/XMP editing, bounded XMP packets/sidecars
+and the external-reference audit. See `docs/design/XMP_USAGE_AND_PRESERVATION_LIMITS.md`
+for the approved XMP profile. See `docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md` for conformance limitations
+and remaining publication gates. No package has been published. M12+ requires
 new scope/contracts; the broader mission below is not implemented capability.
 
 ## Communication

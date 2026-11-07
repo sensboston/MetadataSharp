@@ -21,9 +21,9 @@ dotnet build MetadataSharp.sln --configuration Release --no-restore
 dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore
 ```
 
-The suite now defines 192 cases through M09, covering infrastructure, binary
-primitives, raw values, TIFF/EXIF reading, layout, serialization, JPEG scanning and editing. The workflow
-rejects fewer than 192 passing cases or any nonpassing cases. Ten independent Python policy/execution tests also run on each OS.
+The suite now defines 259 cases through M11, covering infrastructure, binary
+primitives, raw values, TIFF/EXIF reading, layout, serialization, JPEG EXIF/XMP scanning and editing, and XMP packets/sidecars. The workflow
+rejects fewer than 259 passing cases or any nonpassing cases. Ten independent Python policy/execution tests also run on each OS.
 
 ## Project Boundaries
 
@@ -53,7 +53,7 @@ only the M01 skeleton, not metadata correctness or untested platform variants.
 `.github/workflows/build-and-test.yml` runs on pushes to master/Arena branches and
 pull requests targeting master. It installs a serviced .NET 8 SDK on Linux, Windows
 and macOS runners, records `dotnet --info`, and runs the restore/build/test commands
-above. A separate TRX check rejects a green run with no tests or fewer than 192
+above. A separate TRX check rejects a green run with no tests or fewer than 259
 passing cases. Test results are retained as per-platform artifacts for seven days.
 CI needs only read access to repository contents; no SDK archive or release asset
 is required. Hosted runners have their own network environment, independent of
@@ -87,7 +87,7 @@ benchmark, external-tool validation or broader format-conformance claim is impli
 
 M07 passed run 42420076893; M08 passed 42420352483; corrected M09 passed
 [42420756667](https://github.com/sensboston/MetadataSharp/actions/runs/42420756667).
-The current TRX floor is 192. M09 additionally requires Exiv2 0.27.6 and ExifTool
+The current TRX floor is 259. M09 additionally requires Exiv2 0.27.6 and ExifTool
 12.76 in a separate Ubuntu 24.04 job; absent tools cannot silently skip CI.
 
 ```sh
@@ -102,3 +102,20 @@ Without `--required`, local missing tools produce an explicit skipped report.
 The local Arena checkout still has no SDK; actual .NET/reference execution was
 performed by Actions, not claimed as a local run. Historical sections above retain
 earlier milestone evidence, not current coverage boundaries.
+
+## M10–M11 XMP Validation
+
+M10 commit b37ce98 passed three-platform PR run
+[42422179802](https://github.com/sensboston/MetadataSharp/actions/runs/42422179802)
+with a 233-case floor. M11 corrected/audited commit 1e25408 passed
+[42422570403](https://github.com/sensboston/MetadataSharp/actions/runs/42422570403)
+with a 259-case floor and ten Python policy tests. The required external job read
+our XMP with both tools, read reverse-modified owned JPEGs, verified exact no-op and
+encoded-byte preservation, checked rich sidecar values, and exercised all three
+65,502–65,504-byte boundaries. No local SDK run is claimed.
+
+Final harness hardening additionally applies ExifTool validation/warning review to
+standard XMP JPEGs, rich sidecars and boundary files, using the same strict existing
+warning classification. Evidence manifests now include owned .xmp outputs as well
+as JPEGs. See [XMP usage](design/XMP_USAGE_AND_PRESERVATION_LIMITS.md) and the
+[normative review](design/XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md).

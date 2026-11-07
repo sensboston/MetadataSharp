@@ -4,7 +4,8 @@ Status: **APPROVED for the initial release scope**. Approved: 2026-11-07.
 The developer explicitly approved all seven decisions in section 8. See
 [accepted tradeoffs](../decisions/INITIAL_RELEASE_ACCEPTED_TRADEOFFS.md).
 This is a design contract, not a claim that all APIs below are implemented.
-M01–M06 implement the core subset; the JPEG facade and edit API are still pending.
+M01–M09 implement this initial core/JPEG EXIF contract. M10–M11 add separately
+approved XMP contracts; see XMP_PACKET_SIDECAR_AND_JPEG_CONTRACT_PROPOSAL.md.
 Bodies and namespace imports are intentionally omitted.
 Sequential implementation was subsequently authorized on 2026-11-07; public
 contract/safety changes still require approval.
