@@ -527,3 +527,27 @@
   gate counts. No new dependency, package publication or general IIM conformance claim.
 - Final documentation head still requires green CI before merging PR #8. M13 (PNG)
   contract review is next eligible; no M13 implementation started.
+
+### M12 final head and merge confirmation
+
+- Final M12 head a0e1ad752359fc5da19827ba2c85e67efb85277e passed PR run
+  42426353953 and push run 42426350017: three OS jobs, 309-case floor, twelve
+  Python tests and the required external-reference job. PR #8 merged on
+  2026-11-07 as fc73316554cffd8a7a95b98a3610aa61427b3164, verified via gh.
+  This supersedes the preceding final-documentation pending submission note.
+
+### M13–M14 grouped contract proposal (implementation pending)
+
+- Developer approved grouping PNG/WebP into one PR: shared contract/normative review,
+  M13 implementation and green CI, then M14 implementation and final audit/CI.
+- Active clean working branch is arena/a6abf89b-metadatasharp. Read M13/M14 prompts,
+  development policy, existing limits and the current EXIF core's APP1-sized cap.
+- Added `PNG_AND_WEBP_METADATA_CONTRACT_PROPOSAL.md`: exact concrete facades/options,
+  static-only scope, strict PNG CRC/critical ordering, eXIf/iTXt identification,
+  bounded compressed XMP, unknown-chunk safety, WebP simple-to-VP8X promotion,
+  RIFF/flags/padding/alpha policy, independent EXIF/XMP operations and shared
+  stream/path failure rules. Proposed retaining the 65,527-byte TIFF core cap
+  rather than silently expanding it with the new containers.
+- This is a contract-only proposal. No parser/writer/dependency/test changes or new
+  test execution. Exact source review and new public/safety contract approval remain
+  required before implementing M13. No standalone TIFF/DNG, animation or publication.
