@@ -353,3 +353,29 @@
   records source/recipe hashes, installed tool copyright notices and SDK evidence.
 - No package publication, broad conformance or measured allocation claim. Final
   head CI remains required before merging the grouped PR; no M10 work started.
+
+### M07–M09 final gate and merge confirmation
+
+- Final head f3a51ae7239a550c0004d26df0a79bf1437009be passed PR run
+  42420919484 and push run 42420914771. All three .NET OS jobs and required
+  external-reference validation passed; offline Python suite has ten tests.
+- PR #6 merged as f10ec6b2d830eb7c919cf758962c26de775894f3 on 2026-11-07.
+  This records the completed final gate, superseding the preceding submission note.
+
+### M10–M11 contract proposal (implementation pending)
+
+- Developer requested the next coherent group on 2026-11-07. Active working branch:
+  arena/ca9ac984-metadatasharp, based on the merged M07–M09 work. No unrelated changes.
+- Read M10/M11 prompts, development policy and existing JPEG/EXIF contracts/API.
+- Added `docs/design/XMP_PACKET_SIDECAR_AND_JPEG_CONTRACT_PROPOSAL.md`: exact proposed
+  public API, framework-only XML dependency decision, restricted literal/array/lang
+  RDF profile, opaque packet behavior, UTF-8 scope, hostile-input budgets, sidecar
+  ownership/publication, JPEG signature/duplicate/Extended XMP refusal policy,
+  metadata independence and per-unit acceptance gates.
+- Located Adobe-hosted repository XMP Part 1/3 PDFs and recorded source revision/blob
+  identifiers. Edition/section/content review remains a preimplementation gate;
+  no SDK implementation, tests or PDF files imported.
+- Contract-only change; no parser/writer implementation, dependency addition or new
+  tests executed. M10 cannot begin implementation until the new contracts are
+  approved. After approval: normative review, M10 implementation and green CI, then
+  M11 implementation; final-head CI before the one grouped PR is merged.

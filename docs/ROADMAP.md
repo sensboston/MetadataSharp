@@ -58,3 +58,9 @@ M17 does not authorize DNG implementation. Vendor-specific MakerNote relocation,
 BigTIFF, Extended XMP if deferred at M11, full JPEG variants beyond the approved
 subset, and synchronization need their own bounded follow-up prompts. Split such
 work only after its contracts and acceptance criteria are reviewed.
+
+## M10–M11 proposal
+
+The developer requested this next group on 2026-11-07. Its contract-only proposal
+is [XMP packets, sidecars and JPEG](design/XMP_PACKET_SIDECAR_AND_JPEG_CONTRACT_PROPOSAL.md).
+New public contracts remain pending approval; this is not an implementation claim.
