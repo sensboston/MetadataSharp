@@ -8,12 +8,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataSharp.Formats", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataSharp.Tests", "tests\MetadataSharp.Tests\MetadataSharp.Tests.csproj", "{630E1287-AE68-45B1-85DD-0876D5253A10}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataSharp.ReferenceFixture", "tools\MetadataSharp.ReferenceFixture\MetadataSharp.ReferenceFixture.csproj", "{A548DC99-B83D-49FA-9586-F90F6B77DF33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A548DC99-B83D-49FA-9586-F90F6B77DF33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A548DC99-B83D-49FA-9586-F90F6B77DF33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A548DC99-B83D-49FA-9586-F90F6B77DF33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A548DC99-B83D-49FA-9586-F90F6B77DF33}.Release|Any CPU.Build.0 = Release|Any CPU
 		{458B554F-7C34-4D1D-95FB-9CE759B6460C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{458B554F-7C34-4D1D-95FB-9CE759B6460C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{458B554F-7C34-4D1D-95FB-9CE759B6460C}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -308,3 +308,25 @@
   and output-failure tests. Shape validation does not claim full Exif conformance.
 - See `docs/design/JPEG_EXIF_EDITING_OWNERSHIP_AND_FAILURE_SEMANTICS.md`.
 - Local `git diff --check` passed; runtime gate awaits CI before M09.
+
+### M08 CI result — 2026-11-07 — Gate closed
+
+- Commit `c209dacaf76ab5b5843fc8575db26c4bb16c3dcf` passed Linux/Windows/macOS
+  restore/build/tests and the 191-case TRX floor in run 42420352483.
+- Evidence: https://github.com/sensboston/MetadataSharp/actions/runs/42420352483
+- `gh run watch 42420352483 --exit-status --interval 15` exited 0.
+- M09 began after this gate. No separate merge: PR #6 remains the agreed group.
+
+### M09 — 2026-11-07 — Submitted to CI
+
+- Added a public-API fixture consumer/generator with no metadata tool dependencies,
+  and a separate optional Python CLI reference harness. Ordinary tests stay offline.
+- Required CI installs standalone tools on ubuntu-24.04 and checks exact upstream
+  Exiv2 0.27.6 / ExifTool 12.76; package revisions and command results are recorded.
+- Harness compares raw tag values, reverse external edits, no-op/whole-removal and
+  encoded-byte preservation; classifies only specifically allowed minimal-EXIF
+  missing-default-tag warnings, failing unknown warnings and tool/version errors.
+- Generated evidence includes SHA-256 and source/license manifests. Fixtures are
+  authored; no GPL test/implementation is copied and no private photo is used.
+- `python -m unittest discover -s tests/reference -v`: six offline policy tests pass.
+  `git diff --check` passed. Required external run and release audit remain pending.
