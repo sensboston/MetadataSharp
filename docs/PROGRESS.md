@@ -396,3 +396,6 @@
   ownership, short actual-async I/O, cancellation, no-op and sidecar publication.
 - Local SDK remains unavailable. Submission requires actual three-platform Actions
   validation before M11; no .NET result is claimed from local execution.
+- Initial M10 CI 42422121306 failed compilation because the new test file omitted
+  its explicit Xunit import. Added the import (no analyzer suppression) and extra
+  mid-I/O cancellation/partial failure and post-write publication cleanup tests.

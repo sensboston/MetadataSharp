@@ -1,4 +1,5 @@
 using System.Text;
+using Xunit;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Xmp;
 
@@ -211,6 +212,60 @@ public sealed class XmpPacketTests
         using (var source = new MemoryStream(new byte[] { 1, 2 }.Concat(xml).ToArray())) { source.Position = 2; packet = XmpPacket.Load(source); }
         Assert.Equal(xml, Raw(packet)); Assert.Throws<ArgumentException>(() => packet.CopyRawTo(new byte[1]));
         Assert.Throws<NotSupportedException>(() => ((IDictionary<XmpPropertyName, XmpValue>)packet.Properties).Clear());
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task OutputIoFailureMayLeavePartialBytesWithoutChangingPacket(bool asynchronous)
+    {
+        XmpPacket packet = XmpPacket.Parse(Xml("<p:title>owned</p:title>")); byte[] expected = Raw(packet);
+        using var output = new PartialOutput();
+        if (asynchronous) await Assert.ThrowsAsync<IOException>(() => packet.SaveAsync(output));
+        else Assert.Throws<IOException>(() => packet.Save(output));
+        Assert.Equal(2, output.Length); Assert.Equal(expected, Raw(packet)); Assert.True(output.CanWrite);
+    }
+    [Fact]
+    public async Task CancellationDuringReadAndWriteIsObservedAndStreamsStayOpen()
+    {
+        using var canceledRead = new CancellationTokenSource();
+        using var source = new CancelingInput(Xml("<p:title>x</p:title>"), canceledRead);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => XmpPacket.LoadAsync(source, cancellationToken: canceledRead.Token));
+        Assert.True(source.CanRead);
+        XmpPacket packet = XmpPacket.Parse(Xml("<p:title>" + new string('a', 20000) + "</p:title>"));
+        using var canceledWrite = new CancellationTokenSource(); using var output = new CancelingOutput(canceledWrite);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => packet.SaveAsync(output, canceledWrite.Token));
+        Assert.Equal(8192, output.Length); Assert.True(output.CanWrite);
+    }
+    [Fact]
+    public void FailedPublicationPreservesCompetingDirectoryAndCleansOwnedTemporary()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "metadatasharp-xmp-" + Guid.NewGuid().ToString("N"));
+        string target = Path.Combine(directory, "target.xmp"); Directory.CreateDirectory(target);
+        try
+        {
+            string sentinel = Path.Combine(target, "sentinel"); File.WriteAllText(sentinel, "keep");
+            Exception? error = Record.Exception(() => XmpPacket.CreateEmpty().SaveAs(target));
+            Assert.True(error is IOException or UnauthorizedAccessException);
+            Assert.Equal("keep", File.ReadAllText(sentinel)); Assert.Empty(Directory.GetFiles(directory, "*.tmp"));
+        }
+        finally { Directory.Delete(directory, true); }
+    }
+    private sealed class PartialOutput : MemoryStream
+    {
+        public override void Write(byte[] buffer, int offset, int count)
+        { base.Write(buffer, offset, Math.Min(count, 2)); throw new IOException("Injected output failure."); }
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        { byte[] b = buffer.ToArray(); base.Write(b, 0, Math.Min(b.Length, 2)); return ValueTask.FromException(new IOException("Injected async failure.")); }
+    }
+    private sealed class CancelingInput(byte[] bytes, CancellationTokenSource cancellation) : MemoryStream(bytes)
+    {
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        { byte[] b = new byte[Math.Min(buffer.Length, 3)]; int n = base.Read(b, 0, b.Length); b.AsSpan(0, n).CopyTo(buffer.Span); cancellation.Cancel(); return ValueTask.FromResult(n); }
+    }
+    private sealed class CancelingOutput(CancellationTokenSource cancellation) : MemoryStream
+    {
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        { byte[] b = buffer.ToArray(); base.Write(b, 0, b.Length); cancellation.Cancel(); return ValueTask.CompletedTask; }
     }
     private sealed class AsyncShortInput(byte[] bytes) : MemoryStream(bytes)
     {
