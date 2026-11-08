@@ -1,0 +1,3935 @@
+{
+  "schemaVersion": 1,
+  "baseline": "v0.28.9",
+  "commit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+  "source": "https://github.com/Exiv2/exiv2/blob/v0.28.9/exiv2.md#3-file-types",
+  "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
+  "generatedBy": "tools/reference/build_census.py",
+  "denominatorFrozen": false,
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track. All rows not-run/not-assessed; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "coverage": {
+    "enumerated": [
+      "JPEG/comments",
+      "JPEG/exif",
+      "JPEG/icc"
+    ],
+    "inventoryTrack": [
+      "JPEG"
+    ],
+    "pendingSeedIds": [
+      "EX0289-ARW-COMMENTS",
+      "EX0289-ARW-EXIF",
+      "EX0289-ARW-ICC",
+      "EX0289-ARW-IPTC",
+      "EX0289-ARW-THUMBNAIL",
+      "EX0289-ARW-XMP",
+      "EX0289-AVIF-COMMENTS",
+      "EX0289-AVIF-EXIF",
+      "EX0289-AVIF-ICC",
+      "EX0289-AVIF-IPTC",
+      "EX0289-AVIF-THUMBNAIL",
+      "EX0289-AVIF-XMP",
+      "EX0289-BMP-COMMENTS",
+      "EX0289-BMP-EXIF",
+      "EX0289-BMP-ICC",
+      "EX0289-BMP-IPTC",
+      "EX0289-BMP-THUMBNAIL",
+      "EX0289-BMP-XMP",
+      "EX0289-CR2-COMMENTS",
+      "EX0289-CR2-EXIF",
+      "EX0289-CR2-ICC",
+      "EX0289-CR2-IPTC",
+      "EX0289-CR2-THUMBNAIL",
+      "EX0289-CR2-XMP",
+      "EX0289-CR3-COMMENTS",
+      "EX0289-CR3-EXIF",
+      "EX0289-CR3-ICC",
+      "EX0289-CR3-IPTC",
+      "EX0289-CR3-THUMBNAIL",
+      "EX0289-CR3-XMP",
+      "EX0289-CRW-COMMENTS",
+      "EX0289-CRW-EXIF",
+      "EX0289-CRW-ICC",
+      "EX0289-CRW-IPTC",
+      "EX0289-CRW-THUMBNAIL",
+      "EX0289-CRW-XMP",
+      "EX0289-DCP-COMMENTS",
+      "EX0289-DCP-EXIF",
+      "EX0289-DCP-ICC",
+      "EX0289-DCP-IPTC",
+      "EX0289-DCP-THUMBNAIL",
+      "EX0289-DCP-XMP",
+      "EX0289-DNG-COMMENTS",
+      "EX0289-DNG-EXIF",
+      "EX0289-DNG-ICC",
+      "EX0289-DNG-IPTC",
+      "EX0289-DNG-THUMBNAIL",
+      "EX0289-DNG-XMP",
+      "EX0289-EPS-COMMENTS",
+      "EX0289-EPS-EXIF",
+      "EX0289-EPS-ICC",
+      "EX0289-EPS-IPTC",
+      "EX0289-EPS-THUMBNAIL",
+      "EX0289-EPS-XMP",
+      "EX0289-EXV-COMMENTS",
+      "EX0289-EXV-EXIF",
+      "EX0289-EXV-ICC",
+      "EX0289-EXV-IPTC",
+      "EX0289-EXV-THUMBNAIL",
+      "EX0289-EXV-XMP",
+      "EX0289-GIF-COMMENTS",
+      "EX0289-GIF-EXIF",
+      "EX0289-GIF-ICC",
+      "EX0289-GIF-IPTC",
+      "EX0289-GIF-THUMBNAIL",
+      "EX0289-GIF-XMP",
+      "EX0289-HEIC-COMMENTS",
+      "EX0289-HEIC-EXIF",
+      "EX0289-HEIC-ICC",
+      "EX0289-HEIC-IPTC",
+      "EX0289-HEIC-THUMBNAIL",
+      "EX0289-HEIC-XMP",
+      "EX0289-HEIF-COMMENTS",
+      "EX0289-HEIF-EXIF",
+      "EX0289-HEIF-ICC",
+      "EX0289-HEIF-IPTC",
+      "EX0289-HEIF-THUMBNAIL",
+      "EX0289-HEIF-XMP",
+      "EX0289-JP2-COMMENTS",
+      "EX0289-JP2-EXIF",
+      "EX0289-JP2-ICC",
+      "EX0289-JP2-IPTC",
+      "EX0289-JP2-THUMBNAIL",
+      "EX0289-JP2-XMP",
+      "EX0289-JPEG-IPTC",
+      "EX0289-JPEG-THUMBNAIL",
+      "EX0289-JPEG-XMP",
+      "EX0289-JXL-COMMENTS",
+      "EX0289-JXL-EXIF",
+      "EX0289-JXL-ICC",
+      "EX0289-JXL-IPTC",
+      "EX0289-JXL-THUMBNAIL",
+      "EX0289-JXL-XMP",
+      "EX0289-MRW-COMMENTS",
+      "EX0289-MRW-EXIF",
+      "EX0289-MRW-ICC",
+      "EX0289-MRW-IPTC",
+      "EX0289-MRW-THUMBNAIL",
+      "EX0289-MRW-XMP",
+      "EX0289-NEF-COMMENTS",
+      "EX0289-NEF-EXIF",
+      "EX0289-NEF-ICC",
+      "EX0289-NEF-IPTC",
+      "EX0289-NEF-THUMBNAIL",
+      "EX0289-NEF-XMP",
+      "EX0289-ORF-COMMENTS",
+      "EX0289-ORF-EXIF",
+      "EX0289-ORF-ICC",
+      "EX0289-ORF-IPTC",
+      "EX0289-ORF-THUMBNAIL",
+      "EX0289-ORF-XMP",
+      "EX0289-PEF-COMMENTS",
+      "EX0289-PEF-EXIF",
+      "EX0289-PEF-ICC",
+      "EX0289-PEF-IPTC",
+      "EX0289-PEF-THUMBNAIL",
+      "EX0289-PEF-XMP",
+      "EX0289-PGF-COMMENTS",
+      "EX0289-PGF-EXIF",
+      "EX0289-PGF-ICC",
+      "EX0289-PGF-IPTC",
+      "EX0289-PGF-THUMBNAIL",
+      "EX0289-PGF-XMP",
+      "EX0289-PNG-COMMENTS",
+      "EX0289-PNG-EXIF",
+      "EX0289-PNG-ICC",
+      "EX0289-PNG-IPTC",
+      "EX0289-PNG-THUMBNAIL",
+      "EX0289-PNG-XMP",
+      "EX0289-PSD-COMMENTS",
+      "EX0289-PSD-EXIF",
+      "EX0289-PSD-ICC",
+      "EX0289-PSD-IPTC",
+      "EX0289-PSD-THUMBNAIL",
+      "EX0289-PSD-XMP",
+      "EX0289-RAF-COMMENTS",
+      "EX0289-RAF-EXIF",
+      "EX0289-RAF-ICC",
+      "EX0289-RAF-IPTC",
+      "EX0289-RAF-THUMBNAIL",
+      "EX0289-RAF-XMP",
+      "EX0289-RW2-COMMENTS",
+      "EX0289-RW2-EXIF",
+      "EX0289-RW2-ICC",
+      "EX0289-RW2-IPTC",
+      "EX0289-RW2-THUMBNAIL",
+      "EX0289-RW2-XMP",
+      "EX0289-SR2-COMMENTS",
+      "EX0289-SR2-EXIF",
+      "EX0289-SR2-ICC",
+      "EX0289-SR2-IPTC",
+      "EX0289-SR2-THUMBNAIL",
+      "EX0289-SR2-XMP",
+      "EX0289-SRW-COMMENTS",
+      "EX0289-SRW-EXIF",
+      "EX0289-SRW-ICC",
+      "EX0289-SRW-IPTC",
+      "EX0289-SRW-THUMBNAIL",
+      "EX0289-SRW-XMP",
+      "EX0289-TGA-COMMENTS",
+      "EX0289-TGA-EXIF",
+      "EX0289-TGA-ICC",
+      "EX0289-TGA-IPTC",
+      "EX0289-TGA-THUMBNAIL",
+      "EX0289-TGA-XMP",
+      "EX0289-TIFF-COMMENTS",
+      "EX0289-TIFF-EXIF",
+      "EX0289-TIFF-ICC",
+      "EX0289-TIFF-IPTC",
+      "EX0289-TIFF-THUMBNAIL",
+      "EX0289-TIFF-XMP",
+      "EX0289-WEBP-COMMENTS",
+      "EX0289-WEBP-EXIF",
+      "EX0289-WEBP-ICC",
+      "EX0289-WEBP-IPTC",
+      "EX0289-WEBP-THUMBNAIL",
+      "EX0289-WEBP-XMP",
+      "EX0289-XMP-COMMENTS",
+      "EX0289-XMP-EXIF",
+      "EX0289-XMP-ICC",
+      "EX0289-XMP-IPTC",
+      "EX0289-XMP-THUMBNAIL",
+      "EX0289-XMP-XMP"
+    ]
+  },
+  "enumerations": {
+    "reviewStatus": "reviewed",
+    "reviewedAt": "2026-11-08",
+    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md",
+    "family": [
+      "exif",
+      "iptc",
+      "xmp",
+      "comments",
+      "icc",
+      "thumbnail",
+      "inventory"
+    ],
+    "operation": [
+      "inventory",
+      "read",
+      "insert",
+      "replace",
+      "remove",
+      "extract"
+    ],
+    "extractFamilies": [
+      "comments",
+      "icc",
+      "thumbnail"
+    ],
+    "textEncoding": [
+      "ascii",
+      "utf-8",
+      "unknown-raw",
+      "not-applicable"
+    ],
+    "valueType": [
+      "any-documented",
+      "opaque",
+      "text-bytes"
+    ],
+    "layout": {
+      "exif": [
+        "app1-exif-ifd0",
+        "app1-exif-ifd0-subifd",
+        "app1-exif-multiple"
+      ],
+      "comments": [
+        "com-single",
+        "com-multiple"
+      ],
+      "icc": [
+        "app2-icc-single",
+        "app2-icc-segmented"
+      ],
+      "inventory": [
+        "container"
+      ]
+    },
+    "duplicates": [
+      "none",
+      "first-wins",
+      "multiple-independent"
+    ],
+    "sidecar": [
+      "none"
+    ],
+    "presenceValues": [
+      "true",
+      "false",
+      "unknown"
+    ],
+    "rightsClasses": [
+      "owned-synthetic",
+      "cc0-verified",
+      "public-domain-verified",
+      "licensed-embedded",
+      "blocked",
+      "not-applicable"
+    ],
+    "oracleTypes": [
+      "specification",
+      "pinned-cli",
+      "exiftool",
+      "independent"
+    ]
+  },
+  "rows": [
+    {
+      "rowId": "EX0289-JPEG-INVENTORY-INVENTORY-0001",
+      "format": "JPEG",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "recognize/dimensions/MIME without decoding; count tracked separately, never support"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-READ-0001",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-READ-0002",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-READ-0003",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-READ-0004",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-READ-0005",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-READ-0006",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-READ-0007",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-READ-0008",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-READ-0009",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-INSERT-0001",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-INSERT-0002",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-INSERT-0003",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-INSERT-0004",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-INSERT-0005",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-INSERT-0006",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-INSERT-0007",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-INSERT-0008",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-INSERT-0009",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REPLACE-0001",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REPLACE-0002",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REPLACE-0003",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REPLACE-0004",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REPLACE-0005",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REPLACE-0006",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REPLACE-0007",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REPLACE-0008",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REPLACE-0009",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REMOVE-0001",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REMOVE-0002",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REMOVE-0003",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REMOVE-0004",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REMOVE-0005",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REMOVE-0006",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REMOVE-0007",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REMOVE-0008",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-EXIF-REMOVE-0009",
+      "format": "JPEG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "app1-exif-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0001",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0002",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0003",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0004",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0005",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0006",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0007",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0008",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0009",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0010",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0011",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0012",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0013",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0014",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0015",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0016",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0017",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-READ-0018",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0001",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0002",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0003",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0004",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0005",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0006",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0007",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0008",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0009",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0010",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0011",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0012",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0013",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0014",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0015",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0016",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0017",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-INSERT-0018",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0001",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0002",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0003",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0004",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0005",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0006",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0007",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0008",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0009",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0010",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0011",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0012",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0013",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0014",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0015",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0016",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0017",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0018",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0001",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0002",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0003",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0004",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0005",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0006",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0007",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0008",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0009",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0010",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0011",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0012",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0013",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0014",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0015",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0016",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "ascii",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0017",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0018",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0001",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "com-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "comment payload copied out as raw bytes"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0002",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "com-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "comment payload copied out as raw bytes"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0003",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "com-single",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "comment payload copied out as raw bytes"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0004",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "comment payload copied out as raw bytes"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0005",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "comment payload copied out as raw bytes"
+    },
+    {
+      "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0006",
+      "format": "JPEG",
+      "family": "comments",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "comment payload copied out as raw bytes"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-READ-0001",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-READ-0002",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-READ-0003",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-READ-0004",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-INSERT-0001",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-INSERT-0002",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-INSERT-0003",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-INSERT-0004",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-REPLACE-0001",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-REPLACE-0002",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-REPLACE-0003",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-REPLACE-0004",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-REMOVE-0001",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-REMOVE-0002",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-REMOVE-0003",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-REMOVE-0004",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-EXTRACT-0001",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-EXTRACT-0002",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-EXTRACT-0003",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    },
+    {
+      "rowId": "EX0289-JPEG-ICC-EXTRACT-0004",
+      "format": "JPEG",
+      "family": "icc",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B0",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+    }
+  ]
+}
