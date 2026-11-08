@@ -172,6 +172,16 @@ public sealed class TiffWriteAcceptanceTests
         { layout = doc.Layout; snapshot = doc.ReadValue(new(layout.FirstIfdOffset, 305))!; }
         Array.Clear(output); Assert.True(layout.FirstIfdOffset >= source.Length); Assert.Equal("accepted", Text(snapshot));
     }
+    [Fact]
+    public void OversizedEditSnapshotRefusesBeforeCopyingOrSourceIdentityIo()
+    {
+        var f = StandaloneTiffFixture.Create(); using var source = new HookSource(f.Bytes);
+        using var doc = TiffMetadataDocument.Open(source, new() { ReadOptions = new() { Limits = new() { MaxRetainedMetadataBytes = 4096 } } });
+        var edit = Edit(new string('x', 10000)); source.Next = () => throw new InvalidOperationException("Identity I/O must not start for an over-budget snapshot.");
+        using var output = new MemoryStream();
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => doc.Save(output, edit)).Code);
+        Assert.NotNull(source.Next); Assert.Empty(output.ToArray());
+    }
     private sealed class HookSource(byte[] bytes) : MemoryStream(bytes)
     {
         internal Action? Next;

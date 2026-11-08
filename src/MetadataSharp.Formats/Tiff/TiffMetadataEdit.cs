@@ -34,7 +34,18 @@ public sealed class TiffMetadataEdit
         changes[key] = value;
     }
     public void Remove(TiffFieldKey key) { TiffEditPolicy.Key(key); changes[key] = null; }
-    internal Dictionary<TiffFieldKey, ExifValue?> Snapshot() => new(changes);
+    internal Dictionary<TiffFieldKey, ExifValue?> Snapshot(long budget = long.MaxValue)
+    {
+        // Bound the snapshot itself before copying its dictionary, not just the later plan.
+        long retained = 0;
+        foreach (var change in changes)
+        {
+            long bytes = 32L + (change.Value?.ByteLength ?? 0);
+            if (bytes > budget - retained) throw new MetadataException(MetadataErrorCode.LimitExceeded, "TIFF edit snapshot exceeds its finite budget.");
+            retained += bytes;
+        }
+        return new(changes);
+    }
 }
 
 internal static class TiffEditPolicy

@@ -64,7 +64,7 @@ public sealed class TiffMetadataDocument : IDisposable, IAsyncDisposable
     }
     private async Task<TiffAppendPlan?> Prepare(TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
     {
-        ArgumentNullException.ThrowIfNull(edit); var changes = edit.Snapshot();
+        ArgumentNullException.ThrowIfNull(edit); var changes = edit.Snapshot(options.ReadOptions.Limits.MaxRetainedMetadataBytes);
         await Verify(asynchronous, token).ConfigureAwait(false);
         return await new TiffAppendPlanner(Layout, options, (offset, count) => ReadAt(offset, count, asynchronous, token), token).Create(changes).ConfigureAwait(false);
     }

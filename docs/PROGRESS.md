@@ -830,3 +830,8 @@
   and reapplied this entry before continuing. No historical checkpoint was lost;
   source/tests were unaffected. Review diff statistics and document headers as
   well as whitespace checks when writing recovery records.
+
+- A second resource audit now checks the edit-snapshot logical charge BEFORE
+  copying its dictionary or starting source identity I/O, rather than only in
+  later planning. Added an over-budget regression with a source-I/O trap; the
+  captured budget and approved 32/key+value formula are unchanged. Floor 438.
