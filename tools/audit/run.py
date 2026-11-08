@@ -78,17 +78,21 @@ def main():
     (consumer / 'NuGet.Config').write_text(f'<configuration><packageSources><clear/><add key="audit" value="{FEED.as_posix()}"/></packageSources></configuration>')
     # A unique cache and cleared sources ensure the smoke cannot use project references or an internet feed.
     (consumer / 'consumer.csproj').write_text('''<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>AUDIT_TARGET</TargetFramework><ImplicitUsings>enable</ImplicitUsings><IsPackable>false</IsPackable></PropertyGroup><ItemGroup><PackageReference Include="MetadataSharp.Formats" Version="[0.0.0-audit]"/></ItemGroup></Project>'''.replace('AUDIT_TARGET', TARGET))
-    (consumer / 'Program.cs').write_text('''using MetadataSharp.Formats.Tiff; using MetadataSharp.Core;
+    (consumer / 'Program.cs').write_text('''using MetadataSharp.Formats.Tiff; using MetadataSharp.Core; using System.Reflection; using System.Runtime.Versioning;
 using var doc = TiffMetadataDocument.Open(args[0]);
 var edit = new TiffMetadataEdit(); edit.Set(new(doc.Layout.FirstIfdOffset, 305), ExifValue.FromRaw(TiffFieldType.Ascii, 6, Endianness.LittleEndian, "audit\\0"u8));
 using var output = new MemoryStream(); doc.Save(output, edit); output.Position = 0;
 using var reopened = TiffMetadataDocument.Open(output);
 if (reopened.ReadValue(new(reopened.Layout.FirstIfdOffset, 305))?.Count != 6) throw new Exception("Package consumer mismatch.");
 if (System.Environment.Version.Major != EXPECTED_MAJOR) throw new Exception("Consumer ran on wrong runtime.");
+string expectedTarget = ".NETCoreApp,Version=v" + System.Environment.Version.Major + ".0";
+if (typeof(ExifValue).Assembly.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName != expectedTarget ||
+    typeof(TiffLayout).Assembly.GetCustomAttribute<TargetFrameworkAttribute>()?.FrameworkName != expectedTarget)
+    throw new Exception("Consumer loaded wrong library target asset.");
 Console.WriteLine("Offline package consumer passed.");'''.replace('EXPECTED_MAJOR', TARGET[3:].split('.')[0]))
     run('dotnet', 'restore', str(consumer / 'consumer.csproj'), '--configfile', str(consumer / 'NuGet.Config'), '--packages', str(OUT / 'isolated-cache'), cwd=consumer)
     run('dotnet', 'run', '--project', str(consumer / 'consumer.csproj'), '-c', 'Release', '--no-restore', '--', str(OUT / 'consumer.tif'), cwd=consumer)
-    report = dict(schema=2, targetFramework=TARGET, consumerSdk=consumer_sdk, publicSignatureSha256=signature_hash, publicSignatureCount=len(surfaces['net8.0']['signatures']), sourceCommit=os.getenv('AUDIT_SOURCE_COMMIT'), sdkInfo=subprocess.check_output(['dotnet', '--info'], text=True), packages=reports, offlineConsumer='passed',
+    report = dict(schema=2, targetFramework=TARGET, consumerSdk=consumer_sdk, publicSignatureSha256=signature_hash, publicSignatureCount=len(surfaces['net8.0']['signatures']), sourceCommit=os.getenv('AUDIT_SOURCE_COMMIT'), sdkInfo=subprocess.check_output(['dotnet', '--info'], text=True), packages=reports, offlineConsumer='passed', offlineConsumerAssets='target-matched',
                   publication='not attempted', docCaveat='XML member counts are not full API documentation coverage; CS1591 suppressed only for audit candidates')
     (OUT / 'packages.json').write_text(json.dumps(report, indent=2))
     # Persist small machine-readable evidence in Actions logs as well as artifacts.

@@ -1186,3 +1186,9 @@ MetadataSharp verification unassessed. Full E01 denominator/CLI/corpus gate rema
 OPEN. New generator/policy/documents need final-head CI, not predecessor inference.
 No DNG implementation, E03 approval or package publication. Final SHA/runs/merge
 receipt posted on PR #15 after all checks pass.
+
+Final consumer audit also asserts loaded Core/Formats TargetFrameworkAttribute,
+not only SDK and process runtime: a net10 consumer must not silently pick net8
+package assets. Added receipt discriminator offlineConsumerAssets=target-matched.
+This strengthens the final-head smoke beyond the earlier 2949589 evidence; it
+requires its own final run and does not retroactively change stored receipts.
