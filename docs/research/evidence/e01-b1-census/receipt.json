@@ -1,0 +1,48 @@
+{
+  "runId": "42524431666",
+  "job": "pinned-exiv2-baseline",
+  "checkRun": 128864763322,
+  "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42524431666",
+  "pullRequest": 25,
+  "sourceCommit": "2ce8a96 (PR #25 head; committed observations were generated pre-commit from the 12461fd rehearsal tree, inputs unchanged at commit time)",
+  "artifact": {
+    "name": "e01-b1-census-observations",
+    "id": 13634956621,
+    "sizeInBytes": 8868,
+    "digest": "sha256:7d97e502dae0aec7819122c1d44c569b017c274b7fb9541032f77bef4be3adba",
+    "expiresAt": "2026-12-08T21:19:15Z",
+    "note": "Artifact zip digest from the GitHub Actions API (metadata only). Artifact/log bytes are NOT retrievable from the dev sandbox (host allowlist), so the committed observations.json is the locally rehearsed pinned build's output (see README provenance); the CI run re-verified pin integrity, fixture determinism (regenerated and byte-compared against the committed manifest) and completed both batches without infrastructure failure."
+  },
+  "artifacts": [
+    {
+      "name": "e01-b0-census-observations",
+      "id": 13634821982,
+      "sizeInBytes": 9494,
+      "digest": "sha256:034dfeb7601ff9e6a7a2d4a98ebee52cb22b70c7e3f58447920e3413e29829d2",
+      "expiresAt": "2026-12-08T21:19:14Z",
+      "note": "carries the refreshed B0 evidence (unknown-raw comment READ rows now observe com-raw*.jpg fixtures; outcome counts unchanged 89/8/38)"
+    },
+    {
+      "name": "e01-exiv2-0289-observations",
+      "id": 13634911775,
+      "sizeInBytes": 5874,
+      "digest": "sha256:97fc453facd7aaebbfc1b4bbdb7080b79f1387aed50be4cf4af7607a0b610f00",
+      "expiresAt": "2026-12-08T21:19:13Z"
+    }
+  ],
+  "committedObservations": [
+    {
+      "path": "docs/research/evidence/e01-b1-census/observations.json",
+      "sha256": "5af78316a792e8e5b6dae24e06d9756759d428e6230341d3d5726694afc76865",
+      "provenance": "local pinned rehearsal against the b0859fc61 source, built with the CI job's CMAKE options",
+      "ciOutcome": "green (2m1s); outcome classes of the CI artifact were not byte-verified from this sandbox; any class-level difference between the committed evidence and the CI artifact would be a finding and is flagged here, not silently waived"
+    },
+    {
+      "path": "docs/research/evidence/e01-b0-census/observations.json",
+      "sha256": "ba907b56be93d871ab4aefc078b41b8de9ca40e41e8b80f9f806bf7a7bcdfd85",
+      "provenance": "local pinned rehearsal against the b0859fc61 source, built with the CI job's CMAKE options (B1-turn refresh)",
+      "ciOutcome": "green (2m1s); not byte-verified from this sandbox; flagged as above"
+    }
+  ],
+  "encoding": "complete zlib/base64 chunks <=2500 bytes (CI notice-encoded; unverified from sandbox)"
+}
