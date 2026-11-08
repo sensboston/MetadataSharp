@@ -1,7 +1,7 @@
 # MetadataSharp
 
 An MIT-licensed managed .NET library for image metadata editing without
-pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/IPTC/XMP, static PNG/WebP EXIF/XMP editing and XMP sidecars with conservative safety refusals; read-only classic TIFF layout accounting.**
+pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/IPTC/XMP, static PNG/WebP EXIF/XMP editing and XMP sidecars with conservative safety refusals; classic TIFF layout accounting and restricted descriptive editing (obsolete bytes retained).**
 This is not general image-format or full RDF/XMP support.
 
 ## Start Here
@@ -51,3 +51,6 @@ EXIF creation profile has a documented missing-default-tag validation warning.
 - [M15 audit and M16 constraints](docs/audits/STANDALONE_TIFF_READ_ONLY_AUDIT.md).
 
 See [LICENSE](LICENSE) for the MIT license.
+
+- [M16 TIFF editing usage and preservation/failure boundaries](docs/design/STANDALONE_TIFF_EDITING_USAGE_AND_LIMITS.md).
+- [M16 implementation audit and final-gate status](docs/audits/STANDALONE_TIFF_EDITING_AUDIT.md).

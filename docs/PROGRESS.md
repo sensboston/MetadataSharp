@@ -835,3 +835,17 @@
   copying its dictionary or starting source identity I/O, rather than only in
   later planning. Added an over-budget regression with a source-I/O trap; the
   captured budget and approved 32/key+value formula are unchanged. Floor 438.
+
+- Final acceptance additions cover white/black gray, RGB, 8/16-bit samples,
+  contiguous/separate layouts, both explicit alpha kinds, explicit unsigned sample
+  format, plus all ten addressed tags through add/read/exact no-op/removal in II/MM.
+  Full floor is 448. Added write usage/ownership/limits and audit/support records;
+  mandatory references remain four real owned baseline variants, not falsely
+  declared codec-valid synthetic fixtures. Final-head gates still pending.
+
+- Observed required run 42436144783 SUCCESS at audited code
+  635f8bb565eeaab72a9147d5e9825fdcde54c215: 438 .NET tests on each platform,
+  Python policy 12/12 and mandatory references green. This validates the DateTime
+  and snapshot-budget corrections, not the later ten added acceptance cases.
+  CURRENT_STATE now identifies only final expanded-head/documentation gates and
+  successful PR #11 completion as remaining M16 work.

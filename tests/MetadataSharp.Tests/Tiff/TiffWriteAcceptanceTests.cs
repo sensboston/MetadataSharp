@@ -182,6 +182,52 @@ public sealed class TiffWriteAcceptanceTests
         Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => doc.Save(output, edit)).Code);
         Assert.NotNull(source.Next); Assert.Empty(output.ToArray());
     }
+    [Theory]
+    [InlineData(0, 1, 16, 1, 0, false)] [InlineData(1, 1, 8, 2, 0, true)]
+    [InlineData(0, 2, 16, 1, 1, false)] [InlineData(1, 2, 8, 2, 2, true)]
+    [InlineData(2, 3, 16, 1, 0, false)] [InlineData(2, 4, 8, 1, 1, true)]
+    [InlineData(2, 4, 16, 2, 2, true)] [InlineData(0, 2, 8, 1, 2, false)]
+    public void GrayRgbBitDepthsContiguousSeparateAndBothAlphaKinds(uint photo, uint samples, uint bits, uint planar, uint alpha, bool tiles)
+    {
+        var f = StandaloneTiffFixture.Create(tiles: tiles); int segments = planar == 2 ? (int)samples : 1;
+        uint bytesPerSegment = 256 * (bits / 8) * (planar == 2 ? 1 : samples);
+        var fields = StandaloneTiffFixture.Fields(tiles).Select(field => field.Tag switch
+        {
+            258 => ((ushort)258, (ushort)3, Enumerable.Repeat(bits, (int)samples).ToArray()),
+            262 => ((ushort)262, (ushort)3, new uint[] { photo }),
+            277 => ((ushort)277, (ushort)3, new uint[] { samples }),
+            273 or 324 => (field.Tag, (ushort)4, Enumerable.Range(0, segments).Select(i => 2048u + (uint)i * bytesPerSegment).ToArray()),
+            279 or 325 => (field.Tag, (ushort)4, Enumerable.Repeat(bytesPerSegment, segments).ToArray()), _ => field
+        }).Append(((ushort)284, (ushort)3, new uint[] { planar })).Append(((ushort)339, (ushort)3, Enumerable.Repeat(1u, (int)samples).ToArray())).ToList();
+        if (alpha != 0) fields.Add((338, 3, [alpha]));
+        f.Directory(8, fields.ToArray()); byte[] output = Save(f.Bytes); Prefix(f.Bytes, output);
+        var layout = TiffLayout.Read(new MemoryStream(output)); Assert.True(layout.IsSupported); Assert.Equal(segments, layout.Directories.Single().Image!.Segments.Count);
+    }
+    [Theory]
+    [InlineData(false)] [InlineData(true)]
+    public void EveryAddressedTagAddsReadsNoOpsAndRemovesWithOriginalEndian(bool big)
+    {
+        var f = StandaloneTiffFixture.Create(big); var edit = new TiffMetadataEdit();
+        ushort[] tags = [269, 270, 271, 272, 285, 305, 315, 316, 306, 274];
+        foreach (ushort tag in tags)
+        {
+            byte[] bytes = tag == 274 ? [6, 0] : Encoding.ASCII.GetBytes(tag == 306 ? "2026:11:07 12:34:56\0" : $"tag-{tag}\0");
+            edit.Set(new(8, tag), ExifValue.FromRaw(tag == 274 ? TiffFieldType.Short : TiffFieldType.Ascii, tag == 274 ? 1u : (uint)bytes.Length, Endianness.LittleEndian, bytes));
+        }
+        byte[] output = Save(f.Bytes, edit); Prefix(f.Bytes, output);
+        using var doc = TiffMetadataDocument.Open(new MemoryStream(output)); var same = new TiffMetadataEdit(); var remove = new TiffMetadataEdit();
+        foreach (ushort tag in tags)
+        {
+            var key = new TiffFieldKey(doc.Layout.FirstIfdOffset, tag); var value = doc.ReadValue(key); Assert.NotNull(value); Assert.Equal(doc.Layout.ByteOrder, value.ByteOrder);
+            if (tag == 274) { byte[] bytes = new byte[2]; value.CopyRawTo(bytes); Assert.Equal(big ? new byte[] { 0, 6 } : new byte[] { 6, 0 }, bytes); }
+            else Assert.Equal(tag == 306 ? "2026:11:07 12:34:56" : $"tag-{tag}", Text(value));
+            same.Set(key, value); remove.Remove(key);
+        }
+        using var noop = new MemoryStream(); doc.Save(noop, same); Assert.Equal(output, noop.ToArray());
+        using var removed = new MemoryStream(); doc.Save(removed, remove); Prefix(output, removed.ToArray());
+        using var clean = TiffMetadataDocument.Open(new MemoryStream(removed.ToArray()));
+        foreach (ushort tag in tags) Assert.Null(clean.ReadValue(new(clean.Layout.FirstIfdOffset, tag)));
+    }
     private sealed class HookSource(byte[] bytes) : MemoryStream(bytes)
     {
         internal Action? Next;

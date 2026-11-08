@@ -51,3 +51,7 @@ A preview-only metadata directory without TIFF dimensions is safely accounted vi
 global JpegPreview range plus explicit UnsupportedPointerLayout (and unsupported
 compression where applicable). Image remains null: dimensions/storage are never
 guessed from JPEG bytes. Missing/unpaired preview extent fields still refuse.
+
+M16 now provides a separate restricted editing document; the M15 facade above
+remains read-only and unchanged. See [editing usage and safety boundaries](STANDALONE_TIFF_EDITING_USAGE_AND_LIMITS.md).
+An M15 layout alone is still never write authorization.

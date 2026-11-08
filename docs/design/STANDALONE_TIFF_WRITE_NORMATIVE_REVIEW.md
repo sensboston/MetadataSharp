@@ -42,6 +42,11 @@ Logical write bookkeeping ceiling (not managed-allocation accounting): original
 appended tail. Charge before growth. Exact-copy operations do not stage a graph;
 output ceiling still applies. Source M15 reader has its own approved finite charges.
 
-This is an INITIAL implementation checkpoint, not a completed M16 audit. Required
-reference-output facts/range checks, exhaustive accepted-family/boundary/failure
-coverage and final platform/reference gates remain pending; see CURRENT_STATE.md.
+The final source audit and accepted-family/boundary/failure matrix are recorded in
+[the M16 audit](../audits/STANDALONE_TIFF_EDITING_AUDIT.md). Mandatory initial write
+references passed; latest source/final-head platform gates remain distinct and
+must be checked before merge. See CURRENT_STATE.md for actual gate status.
+The snapshot's own 32/key+raw-value charge is checked before dictionary copying;
+original plus staged model charges still apply during effective planning. Existing
+invalid target dates refuse reads/replacement; untouched legacy dates are not
+reinterpreted and whole-field removal bypasses content decoding.

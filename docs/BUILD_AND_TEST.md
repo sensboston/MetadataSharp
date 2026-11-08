@@ -148,3 +148,21 @@ unavailable; actual .NET/reference execution was in Actions, not locally claimed
 
 See [IPTC usage](design/IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md) and the
 [normative review](design/IPTC_IIM_AND_PHOTOSHOP_NORMATIVE_REVIEW.md).
+
+## M15–M16 standalone TIFF validation
+
+M15 final 812bd76 passed runs 42431094052/42431090942 (392 tests/platform).
+M16 range-audited 600bbc1 passed required 42435227396 (405/platform), then expanded
+0dd3836 passed required 42435965943 and push 42435961970 (435/platform). All include
+Python policy 12/12 and pinned external references; do not substitute predecessor
+success for final-head validation. The submitted full M01–M16 floor is now 448.
+Actual final-head evidence/merge is recorded in CURRENT_STATE/PROGRESS and PR #11.
+
+The same restore/Release build/test commands apply; required reference generation
+now includes standalone TIFF original/edited/no-op/removed II/MM strip/tile files,
+reverse ingress/rewrite and independent directory/range/prefix/image identity
+checks. No optional-tool skip counts as a required pass. Bounded failed-TRX details
+are emitted as Actions annotations if log/artifact downloads are unavailable.
+See the [write audit](audits/STANDALONE_TIFF_EDITING_AUDIT.md) for test classifications:
+synthetic compression accounting and pure 4-GiB planner boundaries are not claims
+of decoded compression validity or full-size source I/O. Local SDK still absent.
