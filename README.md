@@ -6,6 +6,9 @@ This is not general image-format or full RDF/XMP support.
 
 ## Start Here
 
+- [Current state and recovery instructions](docs/CURRENT_STATE.md): approved scope,
+  completed gates, next actions and checks for resuming without chat history.
+
 - [Project instructions](METADATASHARP_PROMPT.md): mission and engineering baseline.
 - [Accepted initial-release tradeoffs](docs/decisions/INITIAL_RELEASE_ACCEPTED_TRADEOFFS.md):
   what was deliberately restricted, why, and when to revisit it.

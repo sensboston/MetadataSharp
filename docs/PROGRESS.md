@@ -730,3 +730,15 @@
 - Proposal-only local checks: `python -m unittest discover -s tests/reference -q`
   passed 12/12; `git diff --check` passed. No new .NET implementation/test result
   is claimed by this documentation checkpoint.
+
+### M16 explicit approval and pre-implementation recovery checkpoint (2026-11-07)
+
+- Developer explicitly confirmed the exact M16 contract, including retained obsolete
+  bytes, and required repository-accessible continuity documentation BEFORE code.
+- Marked the contract approved; added docs/CURRENT_STATE.md with predecessor hashes/
+  CI evidence, approved decisions, implementation sequence, file map, environment,
+  reproduction commands, safety stop rules and deferred milestones. Linked it from
+  README, development policy and project instructions; corrected stale test summary.
+- This is a documentation-only checkpoint. No M16 C# source/writer exists yet;
+  approval is not an implementation or green M16 test result. Commit/push this
+  checkpoint first, then begin normative review and implementation under its plan.

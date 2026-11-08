@@ -21,8 +21,8 @@ dotnet build MetadataSharp.sln --configuration Release --no-restore
 dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore
 ```
 
-The suite now defines 309 cases through M12, covering infrastructure, binary
-primitives, raw values, TIFF/EXIF reading, layout, serialization, JPEG EXIF/XMP scanning and editing, and XMP packets/sidecars. The workflow
+The last completed M15 gate passed 392 cases per platform (see CURRENT_STATE.md), covering infrastructure, binary
+primitives, raw values, TIFF/EXIF reading, layout, serialization, JPEG EXIF/XMP scanning and editing, and XMP packets/sidecars, PNG/WebP and standalone read-only TIFF. The workflow
 rejects fewer than 309 passing cases or any nonpassing cases. Twelve independent Python policy/execution tests also run on each OS.
 
 ## Project Boundaries

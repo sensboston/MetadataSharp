@@ -14,12 +14,17 @@ MIT-only code.
 
 ## Current implementation boundary
 
-M01–M12 implement restricted JPEG EXIF/IPTC/XMP editing, bounded XMP packets/sidecars
+**Read [docs/CURRENT_STATE.md](docs/CURRENT_STATE.md) first for the latest recovery
+checkpoint, approvals, evidence and pending work.**
+
+M01–M15 implement restricted JPEG EXIF/IPTC/XMP editing, static PNG/WebP EXIF/XMP,
+read-only standalone TIFF layout accounting, bounded XMP packets/sidecars
 and the external-reference audit. See `docs/design/XMP_USAGE_AND_PRESERVATION_LIMITS.md`
 for the approved XMP profile, and
 `docs/design/IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md` for the IPTC/IRB profile. See `docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md` for conformance limitations
-and remaining publication gates. No package has been published. M13+ requires
-new scope/contracts; the broader mission below is not implemented capability.
+and remaining publication gates. No package has been published. M16 restricted TIFF
+write contracts are now approved, not yet implemented at the recovery checkpoint.
+The broader mission below is not implemented capability.
 
 ## Communication
 

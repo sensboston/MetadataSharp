@@ -1,9 +1,11 @@
 # M16: Restricted Standalone TIFF Editing Contract Proposal
 
-Status: **PROPOSED — not approved; no writer implemented.**
+Status: **APPROVED by the developer on 2026-11-07; implementation pending.**
 Date: 2026-11-07. Developer authorized continuing after M15. This document asks
 for the separate public API, preservation strategy and safety approval required
-by M16; continuing the roadmap is not approval of unspecified write contracts.
+by M16. The developer subsequently explicitly approved this exact proposal,
+including retained obsolete bytes, and required a repository-resident recovery
+checkpoint before implementation. See docs/CURRENT_STATE.md.
 
 ## 1. Predecessor and bounded scope
 
