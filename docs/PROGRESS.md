@@ -675,3 +675,9 @@
   pointer coverage, plus a 128-KiB TIFF that forbids pixel reads and survives as an
   immutable snapshot. Pointer-array link ceilings now preflight before decoding.
   New audit head still requires full platform/reference CI before merge.
+
+- First submission 3c6e5636ce8a5f4d011fa9c32604b8f29f1aacc5 passed required
+  run 42430554406 (all platforms, 382 tests, pinned reference job). Final normative
+  audit tightened TIFF6's explicit nonempty-IFD framing requirement and replaced
+  empty synthetic graph nodes with a valid one-field metadata directory. Added
+  zero-entry refusal regression, without changing the approved public API/scope.

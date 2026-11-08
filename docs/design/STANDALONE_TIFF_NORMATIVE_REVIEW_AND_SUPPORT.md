@@ -55,3 +55,8 @@ collections; paths close before return and borrowed streams stay open.
 M16 remains unapproved: IsSupported is only this selected range-accounting subset,
 never authorization to relocate an opaque value or rebuild a TIFF. A separate
 source-identity, tag/pointer schema and write strategy must be approved first.
+
+Normative audit: TIFF6 section 2 explicitly requires at least one entry per IFD.
+Zero-entry directories are InvalidTiff, including metadata-only graph nodes; a
+metadata-only directory can instead contain an ordinary Software field. This is
+framing validation, not a restriction on metadata-only child roles.

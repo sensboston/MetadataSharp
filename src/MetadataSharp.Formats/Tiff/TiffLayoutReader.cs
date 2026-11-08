@@ -87,6 +87,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
     private async Task Directory(uint offset)
     {
         edges.Add(offset, []); int count = U16(await At(offset, 2).ConfigureAwait(false));
+        if (count == 0) throw Bad("TIFF6 requires at least one directory entry.");
         if (count > options.Limits.MaxEntriesPerDirectory || count > options.Limits.MaxTotalEntries - entries) throw Limit(); entries += count;
         long size = 6L + 12L * count; Bounds(offset, size, true); Range(TiffRangeKind.Directory, offset, null, offset, size);
         var fields = new List<TiffFieldInfo>(); var byTag = new Dictionary<ushort, TiffFieldInfo>(); var resultLinks = new List<TiffDirectoryLink>();

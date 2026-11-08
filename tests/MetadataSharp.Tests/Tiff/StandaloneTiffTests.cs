@@ -25,17 +25,17 @@ public sealed class StandaloneTiffTests
     {
         var f = StandaloneTiffFixture.Create();
         f.Directory(8, [.. StandaloneTiffFixture.Fields(), (330, 4, [512, 1024])], 1024);
-        f.Directory(512, [(34665, 4, [1024])]); f.Directory(1024, []);
+        f.Directory(512, [(34665, 4, [1024])]); f.Directory(1024, [(305, 2, [0])]);
         var layout = Read(f.Bytes); Assert.Equal(3, layout.Directories.Count);
         Assert.Equal(3, layout.Directories[0].Links.Count); Assert.All(layout.Directories[0].Links, link => Assert.True(link.PointerOffset >= 8));
         Assert.Equal(MetadataErrorCode.LimitExceeded, Error(f.Bytes, new() { Limits = new() { MaxDirectoryDepth = 2 } }));
-        f.Directory(1024, [], 8); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
+        f.Directory(1024, [(305, 2, [0])], 8); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
     }
     [Theory]
     [InlineData(34665)] [InlineData(34853)] [InlineData(40965)]
     public void MetadataDirectoryRelationshipsAreExplicit(ushort tag)
     {
-        var f = StandaloneTiffFixture.Create(); f.Directory(8, [.. StandaloneTiffFixture.Fields(), (tag, 4, [512])]); f.Directory(512, []);
+        var f = StandaloneTiffFixture.Create(); f.Directory(8, [.. StandaloneTiffFixture.Fields(), (tag, 4, [512])]); f.Directory(512, [(305, 2, [0])]);
         Assert.Equal(tag, Assert.Single(Read(f.Bytes).Directories[0].Links).TagId);
         f.Directory(8, [.. StandaloneTiffFixture.Fields(), (tag, 3, [512])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
     }
@@ -73,7 +73,7 @@ public sealed class StandaloneTiffTests
         { f.Directory(8, [.. StandaloneTiffFixture.Fields().Where(x => x.Tag != 273), (273, 4, [offset])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes)); }
         f.Directory(8, [.. StandaloneTiffFixture.Fields(), (256, 4, [16])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
         f.Directory(8, [.. StandaloneTiffFixture.Fields(), (513, 4, [2048]), (514, 4, [10])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
-        f.Directory(8, [(330, 4, [512, 512])]); f.Directory(512, []); Assert.Equal(2, Read(f.Bytes).Directories.Count);
+        f.Directory(8, [(330, 4, [512, 512])]); f.Directory(512, [(305, 2, [0])]); Assert.Equal(2, Read(f.Bytes).Directories.Count);
     }
     [Fact]
     public void ExactSharedValuesAreAllowedButPartialAliasesRefuse()
@@ -129,13 +129,14 @@ public sealed class StandaloneTiffTests
     public void GraphValueAndSegmentBudgetsAndNullPointersRefuse()
     {
         var f = StandaloneTiffFixture.Create(); f.Directory(8, [.. StandaloneTiffFixture.Fields(), (330, 4, [512, 1024])]);
-        f.Directory(512, []); f.Directory(1024, []);
+        f.Directory(512, [(305, 2, [0])]); f.Directory(1024, [(305, 2, [0])]);
         Assert.Equal(MetadataErrorCode.LimitExceeded, Error(f.Bytes, new() { MaxDirectoryLinks = 1 }));
         Assert.Equal(MetadataErrorCode.LimitExceeded, Error(f.Bytes, new() { Limits = new() { MaxDirectories = 1 } }));
         Assert.Equal(MetadataErrorCode.LimitExceeded, Error(f.Bytes, new() { Limits = new() { MaxValueBytes = 4 } }));
+        f.Directory(8, []); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
         f.Directory(8, [(330, 4, [0])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
         f.Directory(8, [(330, 4, [513])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
-        f.Directory(8, []); Assert.Contains(Read(f.Bytes).Issues, i => i.Code == TiffLayoutIssueCode.MissingImageLayout);
+        f.Directory(8, [(305, 2, [0])]); Assert.Contains(Read(f.Bytes).Issues, i => i.Code == TiffLayoutIssueCode.MissingImageLayout);
     }
     private sealed class HeaderOnlyStream(byte[] bytes) : MemoryStream(bytes)
     {
