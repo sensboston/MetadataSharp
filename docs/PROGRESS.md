@@ -880,3 +880,15 @@ optimization, new production dependency or publication. Existing 448 tests and
 mandatory external-reference checks remain required. Benchmark evidence will be
 small JSON files; binaries/packages stay ignored artifacts. Record actual failures
 and unrun checks; do not invent results. Final head must pass before one PR merge.
+
+### M17 feasibility deliverable
+
+Reviewed pinned DNG 1.7.1.0 September 2023 prose (126 pages), mirror blob
+5e4d714a2aa6b935286c6177991a72768fbaec0c, SHA256
+9cdfe43d44751b662d1f0ace81fff84f6a927321f5d18d79054ce78dd499abcd.
+DNG_SCOPE records raw/preview/profile/opcode/private/integrity/version families,
+required contracts, narrow candidate, rights/oracle strategy and unresolved blockers.
+Proposed D0/D1/D2 prompts explicitly require future approval; none implemented.
+No SDK/GPL code/tests, PDF or external camera fixtures imported. M17 asks approval
+of the follow-up plan, not of proceeding with the separately authorized M18 audit.
+Local Python policy 12/12/diff checks pass; .NET/platform/reference gate via CI next.
