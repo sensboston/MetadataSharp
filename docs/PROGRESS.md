@@ -1139,3 +1139,16 @@ legacy spike remains separately bounded follow-up. E01 doc-claim ledger may adva
 without being called a frozen/verified full denominator. Preserve all old evidence;
 record new target-specific measurements separately. Local SDK absent: actual
 runtime execution must come from push CI. Final head must pass before merge.
+
+### E02 initial multi-target submission
+
+Added net8.0/net10.0 library, tests and tool targets with SDK 10 feature-band
+selection, retaining C# 12. CI now schedules six explicit OS/TFM test jobs, two
+required reference jobs and six audit jobs. A new runtime-identity regression
+checks actual host and loaded library TFMs; floor 449 per combination. Audits
+require both DLL/XML asset sets and exact per-TFM dependencies, each consumer's
+actual runtime, and identical reflected public member signatures on both runtimes.
+No production parser/API changes. Signature equality is not full attribute/default/
+behavior compatibility proof; correctness/reference tests remain separate.
+Local Python policy 12/12, compile checks for audit/harness Python and diff checks
+pass. Actual .NET 10 and dual-target package results await this head's own Actions.

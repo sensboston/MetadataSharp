@@ -123,7 +123,10 @@ def main(argv=None):
                                             Path("tests/MetadataSharp.Tests/WebP/WebPFixture.cs"),
                                             Path("tests/MetadataSharp.Tests/Tiff/StandaloneTiffFixture.cs"))}
         report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL, "dwebp": EXPECTED_DWEBP}
-        fixture = Path("tools/MetadataSharp.ReferenceFixture/bin/Release/net8.0/MetadataSharp.ReferenceFixture.dll").resolve()
+        target = os.environ.get("METADATASHARP_REFERENCE_TFM", "net8.0")
+        if target not in ("net8.0", "net10.0"):
+            raise ValueError("Unsupported reference target framework")
+        fixture = Path(f"tools/MetadataSharp.ReferenceFixture/bin/Release/{target}/MetadataSharp.ReferenceFixture.dll").resolve()
         def ours(*parameters):
             return run(["dotnet", str(fixture), *map(str, parameters)])
         ours("generate", output)
