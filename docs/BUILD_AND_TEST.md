@@ -21,8 +21,8 @@ dotnet build MetadataSharp.sln --configuration Release --no-restore
 dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore
 ```
 
-The suite now defines 309 cases through M12, covering infrastructure, binary
-primitives, raw values, TIFF/EXIF reading, layout, serialization, JPEG EXIF/XMP scanning and editing, and XMP packets/sidecars. The workflow
+The last completed M15 gate passed 392 cases per platform (see CURRENT_STATE.md), covering infrastructure, binary
+primitives, raw values, TIFF/EXIF reading, layout, serialization, JPEG EXIF/XMP scanning and editing, and XMP packets/sidecars, PNG/WebP and standalone read-only TIFF. The workflow
 rejects fewer than 309 passing cases or any nonpassing cases. Twelve independent Python policy/execution tests also run on each OS.
 
 ## Project Boundaries
@@ -148,3 +148,27 @@ unavailable; actual .NET/reference execution was in Actions, not locally claimed
 
 See [IPTC usage](design/IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md) and the
 [normative review](design/IPTC_IIM_AND_PHOTOSHOP_NORMATIVE_REVIEW.md).
+
+## M15–M16 standalone TIFF validation
+
+M15 final 812bd76 passed runs 42431094052/42431090942 (392 tests/platform).
+M16 range-audited 600bbc1 passed required 42435227396 (405/platform), then expanded
+0dd3836 passed required 42435965943 and push 42435961970 (435/platform). All include
+Python policy 12/12 and pinned external references; do not substitute predecessor
+success for final-head validation. The submitted full M01–M16 floor is now 448.
+Actual final-head evidence/merge is recorded in CURRENT_STATE/PROGRESS and PR #11.
+
+The same restore/Release build/test commands apply; required reference generation
+now includes standalone TIFF original/edited/no-op/removed II/MM strip/tile files,
+reverse ingress/rewrite and independent directory/range/prefix/image identity
+checks. No optional-tool skip counts as a required pass. Bounded failed-TRX details
+are emitted as Actions annotations if log/artifact downloads are unavailable.
+See the [write audit](audits/STANDALONE_TIFF_EDITING_AUDIT.md) for test classifications:
+synthetic compression accounting and pure 4-GiB planner boundaries are not claims
+of decoded compression validity or full-size source I/O. Local SDK still absent.
+
+Full M16 acceptance/documentation head 762dc206915e7989721645e0ee3a8adb479310c2
+passed required run [42436352761](https://github.com/sensboston/MetadataSharp/actions/runs/42436352761):
+448 tests on each Windows/Linux/macOS, Python 12/12 and mandatory references.
+Final documentation-head checks and merge receipt are recorded on PR #11 after
+success. No local .NET, full 4-GiB I/O, benchmark or publication claim is implied.

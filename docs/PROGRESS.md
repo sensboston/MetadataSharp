@@ -705,3 +705,160 @@
   its own green CI before PR #10 merge; actual final-head evidence posted there.
 - M15 introduces no writer, new production dependency or larger embedded EXIF cap.
   Next implementation unit M16 still needs separate exact public/safety contracts.
+
+### M15 final merge confirmed; M16 contract-only proposal (2026-11-07)
+
+- Verified PR #10 MERGED, merge 80dc75e62eff242d2b98bc4b14b3090cf4ea60ce.
+  Final source 812bd76af3241d479e7b9fff07c9dd6a8197a118 passed PR/push runs
+  42431094052/42431090942 (392 tests/platform, Python 12/12, required references).
+- Developer requested continuing; active work branch is arena/d7ec6276-metadatasharp.
+  Prepared exact M16 public/safety proposal, not implementation: addressed baseline
+  descriptive fields, source-relative IFD keys, SHA-256 preflight, append-preserve
+  graph replacement, unchanged image/value offsets and new-path publication.
+- Explicit compromises require approval: obsolete metadata remains physically in
+  the original prefix; repeated saves grow files; unknown/private/MakerNote and
+  opaque extensions refuse effective edits. No general EXIF/XMP/IPTC TIFF editor,
+  compaction, privacy scrubbing, BigTIFF, DNG, new production dependency or EXIF cap
+  expansion. TiffLayout.IsSupported alone is not writer permission.
+- M16 proposal is PROPOSED, not approved. No new public C# API/parser/writer code,
+  normative-write-conformance claim or implementation-test pass is asserted.
+  Unit tests already exist and remain mandatory for every future stage; current
+  completed checkpoint has 392 .NET cases plus Python policy/reference checks.
+- Remaining roadmap units are M16 restricted TIFF editing, M17 DNG feasibility/
+  contracts only and M18 measured performance/packaging audit. DNG implementation
+  requires a separately approved follow-up, not an assumed part of M17.
+- Proposal-only local checks: `python -m unittest discover -s tests/reference -q`
+  passed 12/12; `git diff --check` passed. No new .NET implementation/test result
+  is claimed by this documentation checkpoint.
+
+### M16 explicit approval and pre-implementation recovery checkpoint (2026-11-07)
+
+- Developer explicitly confirmed the exact M16 contract, including retained obsolete
+  bytes, and required repository-accessible continuity documentation BEFORE code.
+- Marked the contract approved; added docs/CURRENT_STATE.md with predecessor hashes/
+  CI evidence, approved decisions, implementation sequence, file map, environment,
+  reproduction commands, safety stop rules and deferred milestones. Linked it from
+  README, development policy and project instructions; corrected stale test summary.
+- This is a documentation-only checkpoint. No M16 C# source/writer exists yet;
+  approval is not an implementation or green M16 test result. Commit/push this
+  checkpoint first, then begin normative review and implementation under its plan.
+
+### M16 initial implementation submission after preserved recovery checkpoint
+
+- Recovery checkpoint 4bf56c6 was pushed before any C# edit, as explicitly requested.
+  Then reviewed TIFF6 placement/fields/sort/alignment and CIPA pointer mechanics;
+  exact blobs/hashes and decisions recorded in the M16 normative-write review.
+- Added initial approved API/options/edit schema, finite append-graph planning and
+  document source identity/sync/async/new-path pipeline. No embedded EXIF serializer
+  reuse, source in-place writes or original-storage relocation. Original metadata
+  bytes are retained as explicitly approved; there is no privacy/compaction claim.
+- Added initial independent writer tests for II/MM strip/tile, full original prefix
+  retention, all directory link kinds/shared targets, no-ops/opaque refusals, last
+  field removal, typed keys/output limits, endian conversion and actual async I/O.
+- Python policy 12/12 and git diff --check pass locally. .NET source/tests have not
+  been built locally (SDK absent); initial Actions results must be inspected.
+  M16 external-write references, full acceptance matrix and final audit remain
+  PENDING. Updated CURRENT_STATE.md so resuming does not mistake this source for
+  either a no-code proposal or a completed/validated writer.
+- Initial source ae7a946 builds on Linux/macOS but test execution failed; details
+  require inspection before any green claim. Added explicit TRX failure annotations
+  so test errors remain accessible even when Actions artifact/log hosts cannot be
+  downloaded. No failing test was disabled or assertion weakened. Initial M16 write
+  reference generation/fact/pointer checks are now submitted alongside diagnosis.
+
+- Initial failure annotations identified two II/MM graph fixture failures BEFORE
+  writer planning: the generic helper put a SubIFD array at 768+256=1024, then
+  another synthetic IFD overwrote it. Moved that array to the explicit free 1536
+  region and added source-layout validation before testing the writer. No parser
+  range/overlap check or writer safety assertion was weakened. Full revised CI
+  and initial M16-specific independent write references remain to be inspected.
+
+### M16 first green implementation/reference checkpoint; range-limit audit
+
+- Source 53da0549868e0b4eb2261ca10096216aaac6cb6e passed required PR run
+  42435065413: 404 .NET tests per Windows/Linux/macOS, Python 12/12, all required
+  references including initial M16 edited TIFF facts, reverse edits and independent
+  output-pointer/range/prefix retention checks on four owned image variants.
+- Subsequent audit added active output range-count preflight (retained external
+  alias deduplication plus each newly staged external block), so a written file
+  fits captured MaxAccountedRanges as well as byte ceilings. Regression proves
+  external additions fail before output while inline additions reopen at ceiling.
+- This newer source requires its own full CI. M16 remains draft/in progress: all
+  accepted compression/plane/preview/value-alias/overflow/failure families, final
+  usage/support/audit and final-head gates are still outstanding. CURRENT_STATE.md
+  records actual evidence and next steps; do not merge or start M17 yet.
+
+### M16 persisted continuation checkpoint — initial writer green, unit incomplete
+
+- Code head 600bbc1eef2b21543ec2e8bfc13c0d99e631dd1d passed PR run
+  42435227396: all three Release platform jobs (405 passing .NET cases each),
+  Python policy 12/12 and mandatory independent reference job green. This includes
+  the output range-ceiling regression and initial M16 edited-file facts/IFD-range
+  checks. There is no new local .NET claim; SDK is still absent.
+- Recovery documentation is in Git and pushed. docs/CURRENT_STATE.md is the entry
+  point with approved scope, exact evidence, file map, failure diagnosis and next
+  steps. PR #11 remains DRAFT, not merged or a completed M16 milestone.
+- Next work: extend accepted compression/plane/preview/shared-value/sparse-overflow
+  tests and write failure/temporary-publication race/cancellation coverage; audit
+  resulting pointer/schema/resource proofs; finish usage/support/audit documentation
+  and actual final-head gates. Continue M16 without repeating approval. M17/DNG
+  code and package publication remain outside the approved implementation scope.
+
+### M16 expanded acceptance matrix submission
+
+- Added accounting-only compression selectors 1/5/7/8/32946/32773 for strip/tile
+  preservation (not a claim that the synthetic payload encodes those codecs),
+  II/MM separate RGB/explicit-alpha planes, shared RATIONAL alias/storage ceilings,
+  candidate preview/odd-prefix alignment, opaque-extension refusals, entry/value
+  limits and pure planner 4-GiB edge checks without giant allocations/hashing.
+- Added deterministic destination race, temporary cleanup after emission read fault,
+  caller-owned partial output, snapshot-before-async-I/O and cancellation after
+  emission/temporary creation tests. No safety check or warning classifier relaxed.
+- Static test floor raised to 435; actual .NET and required reference results await
+  Actions. Local Python policy 12/12 and git diff --check pass. M16 is still draft;
+  final audit/documentation and final-head gate remain required.
+
+- Descriptive-target audit fixed DateTime reads/replacement of an existing invalid
+  calendar value: it now follows the approved malformed-target refusal, while
+  unrelated edits preserve its raw bytes and whole-field removal bypasses content.
+  New-value validation rejects incompatible types/counts before copying raw bytes.
+  Regression covers invalid target read/set, isolated edit and removal; added a
+  128-KiB whole-file/snapshot test so no embedded-EXIF-size limit is implied.
+  No public signature or approved write strategy changed. Updated floor 437.
+- A documentation-update script accidentally overwrote PROGRESS.md in the preceding
+  commit. Restored its full historical content directly from that commit's parent
+  and reapplied this entry before continuing. No historical checkpoint was lost;
+  source/tests were unaffected. Review diff statistics and document headers as
+  well as whitespace checks when writing recovery records.
+
+- A second resource audit now checks the edit-snapshot logical charge BEFORE
+  copying its dictionary or starting source identity I/O, rather than only in
+  later planning. Added an over-budget regression with a source-I/O trap; the
+  captured budget and approved 32/key+value formula are unchanged. Floor 438.
+
+- Final acceptance additions cover white/black gray, RGB, 8/16-bit samples,
+  contiguous/separate layouts, both explicit alpha kinds, explicit unsigned sample
+  format, plus all ten addressed tags through add/read/exact no-op/removal in II/MM.
+  Full floor is 448. Added write usage/ownership/limits and audit/support records;
+  mandatory references remain four real owned baseline variants, not falsely
+  declared codec-valid synthetic fixtures. Final-head gates still pending.
+
+- Observed required run 42436144783 SUCCESS at audited code
+  635f8bb565eeaab72a9147d5e9825fdcde54c215: 438 .NET tests on each platform,
+  Python policy 12/12 and mandatory references green. This validates the DateTime
+  and snapshot-budget corrections, not the later ten added acceptance cases.
+  CURRENT_STATE now identifies only final expanded-head/documentation gates and
+  successful PR #11 completion as remaining M16 work.
+
+### M16 completed implementation/acceptance gate
+
+- Full source/test/documentation head **762dc206915e7989721645e0ee3a8adb479310c2**
+  passed required PR run **42436352761**: **448 tests on each Windows/Linux/macOS**,
+  Python policy **12/12**, mandatory pinned external references green. All ten new
+  family/tag-matrix cases passed. No assertions or warning classifiers weakened.
+- Implementation, complete accepted-family matrix, usage/support and audit are
+  finished within the approved contract. Final documentation-only commit must also
+  pass its own required checks before PR #11 is readied/merged. Actual final-head
+  SHA/run IDs and merge receipt will be posted on PR #11 after success, avoiding
+  circular commit recording. CURRENT_STATE gives a deterministic live-PR recovery
+  check. No package publication and no DNG implementation; stop after M16.

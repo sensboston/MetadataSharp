@@ -1,10 +1,13 @@
 # MetadataSharp
 
 An MIT-licensed managed .NET library for image metadata editing without
-pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/IPTC/XMP, static PNG/WebP EXIF/XMP editing and XMP sidecars with conservative safety refusals; read-only classic TIFF layout accounting.**
+pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/IPTC/XMP, static PNG/WebP EXIF/XMP editing and XMP sidecars with conservative safety refusals; classic TIFF layout accounting and restricted descriptive editing (obsolete bytes retained).**
 This is not general image-format or full RDF/XMP support.
 
 ## Start Here
+
+- [Current state and recovery instructions](docs/CURRENT_STATE.md): approved scope,
+  completed gates, next actions and checks for resuming without chat history.
 
 - [Project instructions](METADATASHARP_PROMPT.md): mission and engineering baseline.
 - [Accepted initial-release tradeoffs](docs/decisions/INITIAL_RELEASE_ACCEPTED_TRADEOFFS.md):
@@ -22,7 +25,7 @@ This is not general image-format or full RDF/XMP support.
 - [Serializer preflight/output guarantees](docs/design/EXIF_SERIALIZATION_PREFLIGHT_AND_OUTPUT_GUARANTEES.md).
 - [Progress and approval history](docs/PROGRESS.md).
 
-M00 was approved on 2026-11-07. M01–M15 passed their cross-platform implementation checkpoints; the
+M00 was approved on 2026-11-07. M01–M16 passed their cross-platform implementation checkpoints; the
 required Exiv2/ExifTool job also passed. See [progress](docs/PROGRESS.md) and the
 [first-release audit and remaining publication gates](docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md).
 PNG/WebP share a final group audit/merge gate recorded in progress.
@@ -48,3 +51,6 @@ EXIF creation profile has a documented missing-default-tag validation warning.
 - [M15 audit and M16 constraints](docs/audits/STANDALONE_TIFF_READ_ONLY_AUDIT.md).
 
 See [LICENSE](LICENSE) for the MIT license.
+
+- [M16 TIFF editing usage and preservation/failure boundaries](docs/design/STANDALONE_TIFF_EDITING_USAGE_AND_LIMITS.md).
+- [M16 implementation audit and final-gate status](docs/audits/STANDALONE_TIFF_EDITING_AUDIT.md).

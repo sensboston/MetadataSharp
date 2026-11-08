@@ -2,6 +2,9 @@
 
 ## 1. Working agreement
 
+Read [CURRENT_STATE.md](CURRENT_STATE.md) before resuming work; verify its checkpoint
+against Git/source and current CI rather than assuming a chat summary is current.
+
 Execute one roadmap work unit at a time. On 2026-11-07 the developer authorized
 continuing sequentially without requesting each next stage, and committing, pushing
 and merging completed work after successful CI. The developer subsequently

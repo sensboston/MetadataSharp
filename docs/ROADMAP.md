@@ -81,12 +81,25 @@ the next scope; its subsequent explicit PNG/WebP approval is recorded below.
 The developer approved one coherent PNG/WebP PR with separate per-format gates on
 2026-11-07. The new [container contracts](design/PNG_AND_WEBP_METADATA_CONTRACT_PROPOSAL.md)
 were explicitly approved on 2026-11-07. M13 passed before M14 began; M14 also
-passed its implementation CI. Final audit/head CI still precedes group merge.
-M15–M16 standalone TIFF remains a separate future scope; no DNG implementation.
+passed its implementation CI. Final head passed and PR #9 merged (269dc92cb5bf1218df230e1ced3140c95ca7d81c).
+Standalone TIFF contracts are separate; no DNG implementation.
 
 ## M15 approved read-only contract
 
 The developer requested attempting M15 next. Its [exact read-only TIFF proposal](design/STANDALONE_TIFF_READ_ONLY_CONTRACT_PROPOSAL.md)
 was explicitly approved on 2026-11-07. Implementation/audit passed 392 tests and
-required references; final documentation-head CI precedes merge (see the M15 audit). It separates immutable classic TIFF range accounting
+required references; final head 812bd76 also passed runs 42431094052/42431090942
+and PR #10 merged as 80dc75e62eff242d2b98bc4b14b3090cf4ea60ce. It separates immutable classic TIFF range accounting
 from JPEG-sized EXIF parsing, TIFF writing, BigTIFF and DNG. No M16 authorization.
+
+## M16 approved write contract — implemented and audited
+
+Developer requested continuing after M15. The [exact M16 proposal](design/STANDALONE_TIFF_EDITING_CONTRACT_PROPOSAL.md)
+was explicitly approved on 2026-11-07; implementation/audit passed at 762dc20 (448 tests/platform, policy/references green). Final documentation-head checks and merge receipt are tracked in PR #11.
+It specifies addressed baseline
+descriptive fields with append-preserve replacement of the active IFD graph,
+closed field/pointer schema and source-identity/new-output guarantees. Old metadata
+bytes remain physically present: no privacy scrubbing or compaction. Do not start
+writer code without the approved schema and predecessor gate.
+Use [the recovery checkpoint](CURRENT_STATE.md) for the current next steps. M17/M18 remain the next later units; DNG
+implementation is not part of those three remaining roadmap milestones.
