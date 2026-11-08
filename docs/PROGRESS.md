@@ -640,3 +640,15 @@
 - Added independent ExifTool facts for an explicitly authored legacy WebP EXIF
   wrapper and its canonical raw-TIFF rebuild, rather than relying only on our own
   reader/writer round trip. Final required reference gate includes both variants.
+
+### M13–M14 audited code checkpoint
+
+- Head da259516449cec78d17e3b9f3790a73c3237d4e4 passed required PR run
+  42429946046, all four jobs: 361 passing .NET tests on Windows/Linux/macOS,
+  Python 12/12, pinned Exiv2/ExifTool/dwebp checks including legacy WebP EXIF.
+- Completed the permanent group audit with actual per-unit/run evidence, reference
+  discrepancy classification, fixture licensing/provenance, failure guarantees and
+  deferred limits. Final documentation head must be revalidated before PR #9 merge;
+  actual final-head/merge evidence is posted to PR #9 after completion.
+- Next implementation scope: M15 only after explicit approval of its separate exact
+  read-only TIFF contract. Proposal is checked in; no TIFF/DNG code was started.
