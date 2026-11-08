@@ -686,3 +686,9 @@
   as semantic TIFF errors; configured input budgets and the 4-GiB profile ceiling
   preflight before reads. Added sync/async failure/borrowed-lifetime and oversized
   sparse-source tests. No source hashing or future editing authority is implied.
+
+- Thumbnail audit covers preview-only metadata IFDs without TIFF dimensions:
+  preserve their bounded candidate extent in global ranges and report unsupported
+  layout rather than guessing JPEG dimensions or declaring complete image support.
+  This uses the approved issue-bearing unsupported-layout path; paired fields,
+  budgets and all overlap checks remain mandatory. No pixel/JPEG decoding added.

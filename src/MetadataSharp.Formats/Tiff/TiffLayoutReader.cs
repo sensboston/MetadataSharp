@@ -140,6 +140,17 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         bool preview = f.ContainsKey(513) || f.ContainsKey(514);
         if (!strips && !tiles && !preview && !f.ContainsKey(256) && !f.ContainsKey(257)) return null;
         if (strips && tiles) throw Bad("Conflicting strip/tile layouts.");
+        TiffByteRange? jpeg = await Preview(owner, f, preview).ConfigureAwait(false);
+        if (!strips && !tiles && (!f.ContainsKey(256) || !f.ContainsKey(257)))
+        {
+            if (f.ContainsKey(259))
+            {
+                uint c = await Scalar(f, 259).ConfigureAwait(false);
+                if (c is not (1 or 5 or 7 or 8 or 32946 or 32773)) Issue(TiffLayoutIssueCode.UnsupportedCompression, owner, 259, "Compression is outside the accounting profile.");
+            }
+            Issue(TiffLayoutIssueCode.UnsupportedPointerLayout, owner, null, "Preview-only directory has no dimensioned strip/tile layout; extent is accounted globally.");
+            return null;
+        }
         uint w = await Scalar(f, 256).ConfigureAwait(false), h = await Scalar(f, 257).ConfigureAwait(false);
         if (w == 0 || h == 0) throw Bad("Zero image dimension.");
         uint compression = await Scalar(f, 259, 1).ConfigureAwait(false);
@@ -159,13 +170,6 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         if (baseSamples == 0 || (spp != baseSamples && !(spp == baseSamples + 1 && extra.Length == 1 && extra[0] is 1 or 2)) ||
             (spp == baseSamples && extra.Length != 0) || bits.Any(b => b is not (8 or 16)) || bits.Distinct().Count() != 1 || sample.Any(s => s != 1) || planar is not (1 or 2) || f.ContainsKey(530))
             Unsupported(TiffLayoutIssueCode.UnsupportedSampleLayout, null, "Sample/photometric layout is outside the accounting profile.");
-        TiffByteRange? jpeg = null;
-        if (preview)
-        {
-            uint start = await Scalar(f, 513, shorts: false).ConfigureAwait(false), bytes = await Scalar(f, 514, shorts: false).ConfigureAwait(false);
-            if (start == 0 || bytes == 0) throw Bad("Invalid JPEG preview extent.");
-            if (bytes > options.Limits.MaxThumbnailBytes) throw Limit(); AddSegment(); Range(TiffRangeKind.JpegPreview, owner, 513, start, bytes); jpeg = new(start, bytes);
-        }
         var imageRanges = new List<TiffByteRange>();
         if (strips || tiles)
         {
@@ -196,6 +200,14 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         }
         else Unsupported(TiffLayoutIssueCode.UnsupportedPointerLayout, null, "Candidate image has no supported strip/tile arrays.");
         return new(w, h, (ushort)compression, tiles ? TiffStorageKind.Tiles : TiffStorageKind.Strips, imageRanges.AsReadOnly(), jpeg, supported);
+    }
+    private async Task<TiffByteRange?> Preview(uint owner, Dictionary<ushort, TiffFieldInfo> fields, bool present)
+    {
+        if (!present) return null;
+        uint start = await Scalar(fields, 513, shorts: false).ConfigureAwait(false), bytes = await Scalar(fields, 514, shorts: false).ConfigureAwait(false);
+        if (start == 0 || bytes == 0) throw Bad("Invalid JPEG preview extent.");
+        if (bytes > options.Limits.MaxThumbnailBytes) throw Limit();
+        AddSegment(); Range(TiffRangeKind.JpegPreview, owner, 513, start, bytes); return new(start, bytes);
     }
     private void AddSegment() { if (segments >= options.Limits.MaxSegments) throw Limit(); segments++; }
     private void Graph(uint first)

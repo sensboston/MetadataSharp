@@ -154,6 +154,16 @@ public sealed class StandaloneTiffTests
         public override int Read(Span<byte> buffer) => throw new EndOfStreamException("Injected physical input failure.");
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => ValueTask.FromException<int>(new EndOfStreamException("Injected async input failure."));
     }
+    [Fact]
+    public void PreviewOnlyMetadataDirectoryIsAccountedWithoutGuessingDimensions()
+    {
+        var f = StandaloneTiffFixture.Create(); f.Directory(8, StandaloneTiffFixture.Fields(), 512);
+        f.Directory(512, [(259, 3, [6]), (513, 4, [3000]), (514, 4, [20])]);
+        var layout = Read(f.Bytes); Assert.False(layout.IsSupported); Assert.Null(layout.Directories[1].Image);
+        Assert.Equal(new TiffByteRange(3000, 20), Assert.Single(layout.Ranges, r => r.Kind == TiffRangeKind.JpegPreview).Range);
+        Assert.Contains(layout.Issues, i => i.DirectoryOffset == 512 && i.Code == TiffLayoutIssueCode.UnsupportedPointerLayout);
+        f.Directory(512, [(513, 4, [3000])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
+    }
     private sealed class HeaderOnlyStream(byte[] bytes) : MemoryStream(bytes)
     {
         public override int Read(Span<byte> buffer)

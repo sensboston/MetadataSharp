@@ -65,3 +65,8 @@ Files beyond the explicit 4-GiB classic profile refuse UnsupportedFeature before
 reads when the input byte budget would otherwise permit them. Physical stream
 I/O exceptions, including EndOfStreamException raised by a stream, propagate as
 I/O; stable declared out-of-range/truncated framing is rejected by range checks.
+
+A preview-only metadata directory without TIFF dimensions is safely accounted via
+global JpegPreview range plus explicit UnsupportedPointerLayout (and unsupported
+compression where applicable). Image remains null: dimensions/storage are never
+guessed from JPEG bytes. Missing/unpaired preview extent fields still refuse.

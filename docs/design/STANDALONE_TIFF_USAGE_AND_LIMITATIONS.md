@@ -46,3 +46,8 @@ logical charges and supported layouts. Those charges are not managed-memory clai
 
 M16 writing needs a separate approved source identity, pointer/tag classification
 and copy/relocation strategy. No BigTIFF, DNG or GeoTIFF semantics are implied.
+
+A preview-only metadata directory without TIFF dimensions is safely accounted via
+global JpegPreview range plus explicit UnsupportedPointerLayout (and unsupported
+compression where applicable). Image remains null: dimensions/storage are never
+guessed from JPEG bytes. Missing/unpaired preview extent fields still refuse.
