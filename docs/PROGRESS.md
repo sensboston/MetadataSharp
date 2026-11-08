@@ -1096,3 +1096,14 @@ is claimed. Attempt to rerun latest PR run 42444129097 was rejected by gh with
 proof of invalid YAML. Push this documentation checkpoint to trigger fresh checks
 on the active branch after the visibility change. Results remain pending until
 observed; old billing failures are historical, not evidence of the new attempt.
+
+### Public-repository verification succeeded
+
+Fresh head 849ff0cbee69746318ba39107b12b6c440bde8da passed run
+42445226614 after visibility change: all seven jobs SUCCESS, including three-OS
+.NET 8 correctness tests, Python policy, pinned external references and all three
+performance/package/offline-consumer audits. The former billing blocker did not
+prevent this new execution; no CI waiver or workflow alteration was needed.
+This does not validate .NET 10/Framework or DNG implementation (none added).
+Final documentation head still receives its own checks; immutable final receipt
+is recorded on PR #14 after success. D0 contract approval remains pending.

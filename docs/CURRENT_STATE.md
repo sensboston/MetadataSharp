@@ -107,3 +107,13 @@ Developer made repository public; verified through GitHub API. Latest old run
 Fresh push after visibility change triggers new CI. Inspect latest-head runs before
 reusing the earlier billing-blocker diagnosis. No checks waived and no historical
 secret/rights audit claimed by this change. D0 remains proposal-only/unapproved.
+
+### Superseding observed CI outcome
+
+The visibility recheck SUCCEEDED: head 849ff0cbee69746318ba39107b12b6c440bde8da,
+run 42445226614, all seven jobs green. The earlier billing-blocked runs above are
+historical and are no longer a current execution blocker for this observed run.
+Three-platform correctness/reference/audit checks executed; no waiver needed.
+Final documentation head must pass its own checks. Exact final receipt goes in
+PR #14. E01 full census is still OPEN and D0 surface still UNAPPROVED; no net10,
+Framework or DNG implementation/runtime verification is claimed.
