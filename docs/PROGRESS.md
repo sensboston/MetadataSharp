@@ -915,3 +915,11 @@ properties were set too late in Directory.Build.targets. Move those properties t
 Directory.Build.props (before SDK documentation defaults), retaining strict package
 XML checks; add explicit SeNS author/copyright metadata and capture full SDK info.
 Normal builds remain non-packable. No production source or API changes.
+
+M18 fixed head 13bdcca7a16911b17e55356e756b471472be6bff passed run 42439833467:
+all seven jobs including baseline/package/offline-consumer on all three platforms,
+448 tests/platform, policy/references. Package content included DLL/XML/MIT/readme;
+Core has no package deps, Formats only Core. GitHub truncates individual annotation
+messages to 4096 bytes, so add compressed <=2500-byte chunks and a receipt-checked
+collector for durable full evidence (blob downloads remain unavailable). No measured
+results will be inferred from truncated messages. Reporting fix needs its own gate.

@@ -1,4 +1,6 @@
 """Reproducible local-only package/content/offline-consumer audit. No publish command."""
+import base64
+import zlib
 import hashlib
 import json
 import os
@@ -65,7 +67,10 @@ Console.WriteLine("Offline package consumer passed.");''')
     # Persist small machine-readable evidence in Actions logs as well as artifacts.
     for file in ('baseline.json', 'packages.json'):
         value = json.loads((OUT / file).read_text())
-        print('::notice title=M18 ' + file + '::' + json.dumps(value, separators=(',', ':')).replace('%', '%25'), flush=True)
+        encoded = base64.b64encode(zlib.compress(json.dumps(value, separators=(',', ':')).encode())).decode()
+        chunks = [encoded[i:i+2500] for i in range(0, len(encoded), 2500)]
+        for i, chunk in enumerate(chunks):
+            print(f'::notice title=M18Z {file} {i}/{len(chunks)}::' + chunk, flush=True)
 
 if __name__ == '__main__':
     try:
