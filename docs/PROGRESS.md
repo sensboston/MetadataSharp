@@ -765,3 +765,10 @@
   so test errors remain accessible even when Actions artifact/log hosts cannot be
   downloaded. No failing test was disabled or assertion weakened. Initial M16 write
   reference generation/fact/pointer checks are now submitted alongside diagnosis.
+
+- Initial failure annotations identified two II/MM graph fixture failures BEFORE
+  writer planning: the generic helper put a SubIFD array at 768+256=1024, then
+  another synthetic IFD overwrote it. Moved that array to the explicit free 1536
+  region and added source-layout validation before testing the writer. No parser
+  range/overlap check or writer safety assertion was weakened. Full revised CI
+  and initial M16-specific independent write references remain to be inspected.

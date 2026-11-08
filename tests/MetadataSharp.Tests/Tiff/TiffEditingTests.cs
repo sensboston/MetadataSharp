@@ -39,6 +39,10 @@ public sealed class TiffEditingTests
         var f = StandaloneTiffFixture.Create(big);
         Software(f, 8, [.. StandaloneTiffFixture.Fields(), (330, 4, [512, 768]), (34665, 4, [1024]), (34853, 4, [1280])], 512);
         Software(f, 512, [(40965, 4, [1280])]); Software(f, 768, [(330, 4, [1024, 1280])]); Software(f, 1024); Software(f, 1280);
+        // The fixture helper's default external area (768+256) collides with IFD 1024.
+        // Place this pointer array in an explicitly free, independent region instead.
+        f.U32(768 + 2 + 8, 1536); f.U32(1536, 1024); f.U32(1540, 1280);
+        Assert.True(TiffLayout.Read(new MemoryStream(f.Bytes)).IsSupported);
         byte[] output = Save(f.Bytes, Edit(1280, "shared child"));
         using var doc = TiffMetadataDocument.Open(new MemoryStream(output)); Assert.Equal(5, doc.Layout.Directories.Count);
         Assert.All(doc.Layout.Directories, d => Assert.True(d.Offset >= f.Bytes.Length));
