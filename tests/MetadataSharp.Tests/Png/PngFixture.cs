@@ -17,6 +17,9 @@ internal static class PngFixture
     }
     internal static byte[] Compress(byte[] bytes, CompressionLevel level = CompressionLevel.Optimal)
     {
+        // Independently authored RFC1950 header + final fixed empty block + Adler32.
+        // Do not depend on whether a runtime encoder initializes on a zero-length write.
+        if (bytes.Length == 0) return [0x78, 0x9c, 3, 0, 0, 0, 0, 1];
         using var result = new MemoryStream(); using (var compressor = new ZLibStream(result, level, true)) compressor.Write(bytes); return result.ToArray();
     }
     internal static byte[] Header(byte color = 2, byte depth = 8, byte interlace = 0) => [0, 0, 0, 1, 0, 0, 0, 1, depth, color, 0, 0, interlace];

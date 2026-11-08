@@ -1152,3 +1152,13 @@ No production parser/API changes. Signature equality is not full attribute/defau
 behavior compatibility proof; correctness/reference tests remain separate.
 Local Python policy 12/12, compile checks for audit/harness Python and diff checks
 pass. Actual .NET 10 and dual-target package results await this head's own Actions.
+
+Initial E02 run 42445858808 at a055140: all six package/runtime/signature audits,
+both reference targets and all net8 tests passed; net10 tests failed three cases.
+Two old infrastructure cases hardcoded net8 instead of the executing target. One
+empty-zlib fixture relied on framework compressor initialization for zero-length
+input (failure at strict RFC header/minimum-length gate). Make the authored empty
+stream explicit and portable, with an extra regression rejecting zero/missing-
+DEFLATE framing; do NOT relax production BoundedZlib. Correct existing target
+expectations, retaining explicit runtime/loaded-asset checks. New floor 450.
+No production parsing algorithm/API or safety contract changed.
