@@ -1251,3 +1251,13 @@ PASS, observed write fails STRICT non-EXIF byte comparison. Cause is not guessed
 called an upstream bug. Keep gate strict; add bounded first segment mismatch bytes
 (authored fixture only) and operation context to diagnose. Existing fourteen gates
 remain green. No production changes or normalization workaround authorized.
+
+371fd0a/run42448387840 locates INSERT difference: five non-EXIF segments remain;
+index1 before is COM (fffe0020 + authored comment), after is DQT (ffdb0043...).
+This proves an ordering change, not yet whole-payload equality or corruption.
+Before the correction: distinguish exact order from a measured byte-identical
+segment permutation. Baseline writes may record that explicit ordering divergence
+ONLY if full segment MULTISETS (including multiplicity/content) match. Any payload
+change/drop/duplication remains a failure; scan and all other TIFF fields remain
+strict. Read/default verifier remains byte/order strict. MetadataSharp preservation
+contract stays unchanged; this is baseline observation, not accepted write parity.
