@@ -5,18 +5,21 @@ approvals/diagnostics remain in PROGRESS; older session instructions there are h
 
 ## Active branch and scope
 
-Assigned branch **arena/c321dc16-metadatasharp**, from PR #16 merge
-75ad10dcf9f96a496be8192c6f8949632c6da1ba. Never switch to master or another branch.
-PR #16 is MERGED (2026-11-08T05:10:04Z; final head 5b0783b, PR42449478931 and
-push42449474066 both 15/15). The bounded E01 pinned-CLI foundation is DONE. Standing authorization covers commit/push and completed green PR
-merge, not package publication or unseen public contracts. The previous public-
-visibility billing blocker is resolved in observed runs; no CI exception applies.
+Assigned branch **arena/7a35ad89-metadatasharp**, cut from master 79992da
+(PR #17 merge). Never switch to master or another branch. Standing authorization
+covers commit/push and completed green PR merge, not package publication or unseen
+public contracts. The previous public-visibility billing blocker is resolved in
+observed runs; no CI exception applies.
 
 Programme: roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md (E00–E18).
 Developer approved independent near-complete Exiv2 functionality, idiomatic .NET,
 .NET 8+10, conditional Framework only if cheap. No C++ hierarchy/CLI clone or GPL
 implementation/tests/dictionaries imported. Rights/provenance, finite input limits,
 unknown relocation refusal and independent metadata families stay binding.
+2026-11-08: developer directed full Exiv2-level user-visible capability and
+**avoiding external dependencies where possible**; binding dependency policy
+(zero third-party runtime deps; BCL-only; no analyzers/natives/embedded tools)
+is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
 
 ## Current evidence and actual implementation
 
@@ -85,18 +88,22 @@ permission to modify our writer. Default/read checker remains strict; only exact
 known differences classified, all other segment payloads/multiplicities remain
 strict. MetadataSharp status unscored; full E01 census/denominator still OPEN.
 
-Next open units (both still unstarted as of 2026-11-08):
-1. Expand the atomic E01 ledger by family/format/variant (more pinned CLI
-   observations beyond JPEG EXIF Artist; fixture rights, owned fixtures, independent
-   oracles, same strict classification policy). No percentage/exclusion may be
-   claimed; 186 seeds/348 candidates remain NOT a frozen denominator.
-2. Separately prepare the exact E03 .NET architecture/compatibility contracts
-   proposal (capability discovery/value/metadata/addressing/error APIs, independent
-   snapshots, migration policy). E03 needs explicit developer approval BEFORE any
-   refactor; a written proposal is not approval.
-D0 already approved, D1 normative/fixture/oracle/E03 prerequisites remain.
-No production DLL/API/parser dependency changes, general format support, exclusion,
-Framework or publication authorization is implied by any of the above.
+Next open units (as of 2026-11-08):
+1. **E03 proposal awaiting developer approval** —
+   design/DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL.md (capability
+   discovery surface, additive-only/migration/TFM/versioning policy, zero-dependency
+   reaffirmation). Approval discharges only the E03 compatibility gate; it
+   authorizes no implementation by itself.
+2. **E01-CEN** — finite atomic denominator design and the split of the 31×6 grid
+   into per-format execution batches; until the developer reviews the denominator,
+   no parity percentage or "complete" claim is possible.
+3. Atomic E01 breadth (per-format pinned CLI observations beyond JPEG EXIF Artist)
+   may proceed only as batches defined by E01-CEN, with owned fixtures/rights review.
+D0 already approved; D1 normative/fixture/oracle prerequisites remain (E03
+compatibility gate pending approval). No production DLL/API/parser dependency changes,
+general format support, exclusion, Framework or publication authorization is implied
+by the 2026-11-08 directive or this checkpoint. See
+design/EXIV2_PARITY_MASTER_PLAN.md for the full gated subtask split.
 
 ## Reproduction / local constraints
 
@@ -108,7 +115,7 @@ python -m unittest discover -s tests/discovery -q
 python tools/reference/build_capability_seeds.py --check
 git diff --check
 gh pr view 16 --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
-gh run list --branch arena/c321dc16-metadatasharp --limit 4
+gh run list --branch arena/7a35ad89-metadatasharp --limit 4
 # With both SDKs/runtimes installed:
 dotnet restore MetadataSharp.sln
 dotnet build MetadataSharp.sln -c Release --no-restore

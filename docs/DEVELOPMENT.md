@@ -169,3 +169,16 @@ Measure allocations and throughput with reproducible inputs and environments.
 Benchmark before optimizing; never relax validation for speed without approval.
 Aim for Linux, Windows, and macOS managed test coverage. Describe actual platform
 coverage and remaining gaps rather than claiming portability from a single run.
+
+## 7. Dependency policy
+
+Measured 2026-11-08: `MetadataSharp.Core` and `MetadataSharp.Formats` declare
+zero `PackageReference`s; only the test project has (private xUnit assets). The
+2026-11-08 developer directive binds this: shipped assemblies use the .NET BCL
+only — no third-party runtime packages, no analyzers/source generators, no
+P/Invoke/native assets, no embedded executables. External tools (Exiv2 CLI,
+validators) remain CI-only differential oracles, never library dependencies.
+Any exception requires its own reviewed proposal with license/maintenance review,
+per-TFM verification, notices, and explicit developer approval; feature units may
+not introduce one. See
+[EXIV2_PARITY_MASTER_PLAN](design/EXIV2_PARITY_MASTER_PLAN.md) section 2.

@@ -7,10 +7,12 @@ This is not general image-format or full RDF/XMP support.
 ## Current expansion programme
 
 [Independent Exiv2 capability coverage and .NET 8/10 programme](docs/roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md)
-is the active roadmap. [Documentation index](docs/DOCUMENTATION_INDEX.md) separates
-current work from completed M00–M18 history. Near-complete parity is a goal, not an
-implemented claim; .NET 10/Framework builds are not yet added. The new
-[DNG D0 contract](docs/design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md) awaits approval.
+is the active roadmap; the 2026-11-08 directive (reach Exiv2-level capability, avoid
+external dependencies) is broken into gated subtasks in
+[the master plan](docs/design/EXIV2_PARITY_MASTER_PLAN.md). Near-complete parity is a
+goal, not an implemented claim; net8.0/net10.0 dual targeting is in place and .NET
+Framework 4.8.x is deferred (not cheap). The DNG D0 contract was approved
+2026-11-07, and the [exact E03 architecture/compatibility proposal](docs/design/DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL.md) awaits approval.
 
 ## Start Here
 
