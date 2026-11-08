@@ -1647,3 +1647,14 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   percentage, NO exclusion signed, verification stays not-assessed, D2/publication
   NOT authorized, `denominatorFrozen: false`.
 - E01 gate remains OPEN until the developer reviews the frozen denominators.
+### E01 denominators — developer answers recorded — 2026-11-08
+
+- 2026-11-08: the developer answered the pre-freeze review package five questions
+  (PR #27) with binding effect, recorded as proposal §9: Q1=(a) single final freeze
+  after B2–B14 (B14 included); Q2 = thumbnail-uncompressed-insert row stays
+  not-applicable, NO exclusions signed before freeze, noDocumentedClaim cells need an
+  observation attempt or stay `blocked`; Q3 = nonzero-exit-artifact-produced is its own
+  reporting class, never a pass; Q4 = master-plan §5 numeric order B2→B14, all in this
+  cycle, freeze only after B14; Q5 = no percentages printed before freeze. No percentage,
+  no freeze, no exclusion, verification stays not-assessed, D2/publication NOT
+  authorized. E01 gate remains OPEN. Next: B2 (PNG + inventory).

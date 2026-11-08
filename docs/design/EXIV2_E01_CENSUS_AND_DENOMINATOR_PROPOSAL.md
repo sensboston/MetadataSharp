@@ -263,6 +263,37 @@ generation opened 2026-11-08 (tools/reference/build_census.py); observation and 
 authoring follow per §3–§5. E01's gate closes only when the developer reviews the frozen
 denominator — not before, and not by this document.
 
+## 9. 2026-11-08 — developer answers to the denominators pre-freeze review (binding)
+
+The developer answered the five questions in docs/design/EXIV2_E01_DENOMINATORS_PREFREEZE_REVIEW.md on 2026-11-08:
+
+1. **Q1 (freeze timing) = (a):** ONE final freeze of both denominators after ALL remaining batches
+   (B2 through B14, B14 included — the EXIF `any-documented` valueType split) are enumerated and
+   observed. No provisional denominator or percentage is computed or printed at any interim point;
+   `denominatorFrozen` stays `false` everywhere until the freeze.
+2. **Q2 (exclusion candidates):** `EX0289-JPEG-THUMBNAIL-INSERT-0002` (static not-applicable: the
+   pinned CLI exposes no uncompressed-thumbnail write path) REMAINS `not-applicable` in both
+   denominators — reported, never a parity pass. NO exclusion is granted or signed before the
+   freeze. BMFF/rights-gated rows proceed only under their own per-format rights review (B7+);
+   all 72 no-documented-claim/empty cells (71 `-` + 1 empty EPS comments cell) require a
+   pinned-CLI observation attempt — or remain `blocked` in `D_full` if corpus-gated — before the
+   final freeze; nothing is silently dropped.
+3. **Q3 (`nonzero-exit-artifact-produced`):** reported as its own class in every report;
+   never a parity pass; no exclusion is proposed or granted; no MetadataSharp mapping promised.
+4. **Q4 (remaining batch order and cycle):** master-plan §5 numeric order — B2 PNG → B3 WebP →
+   B4 TIFF → B5 XMP packets + sidecars → B6 DNG → B7 BMFF probe set → B8 JP2/PSD/PGF/EPS/EXV/DCP →
+   B9 RAW wave 1 → B10 RAW wave 2 → B11 legacy/recognition/video → B12 MakerNotes applicability
+   overlay → B13 workflow/transfer census → B14 vocabulary census. ALL in the current cycle; the
+   freeze happens only after B14. Inventory rows for the remaining formats are emitted in their
+   format batches (§5.4's "remainder in B1–B4" predates the B1 execution scope; no rows are lost —
+   each remaining batch carries its own `+inventory`; a catch-all inventory PR will be opened if any
+   format would otherwise be missed).
+5. **Q5 (pre-freeze reporting):** NO coverage percentage is printed anywhere before the freeze.
+
+Standing rules restated: verification stays `not-assessed` everywhere (E07); D2/publication NOT
+authorized; the E01 gate remains OPEN until the developer reviews the frozen denominators — not
+before, and not by this document.
+
 ## Appendix A — discovery grid (restated, no new claims)
 
 31 formats × 6 families = 186 cells; claims: **78 Read/Write, 36 Read, 71 no-claim (`-`),

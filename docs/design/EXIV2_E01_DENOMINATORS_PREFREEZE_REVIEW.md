@@ -100,3 +100,13 @@ Implement the decision mechanically (freeze tooling + PROGRESS delta report if Q
 provisional labeled counts if Q1=(b)) in a dedicated PR; remaining format batches proceed
 per the approved order. E01 gate stays OPEN until the developer reviews the frozen
 denominators — not before, and not by this document.
+
+## Resolution (2026-11-08, developer)
+
+All questions answered as recorded in the proposal's §9 (binding): Q1=(a) one final freeze after
+B2–B14 (B14 included), Q2 = `EX0289-JPEG-THUMBNAIL-INSERT-0002` stays `not-applicable` in both
+denominators and NO exclusions are granted before the freeze, Q3 = `nonzero-exit-artifact-produced`
+is its own reporting class, never a pass, Q4 = master-plan §5 numeric order, all batches in this
+cycle with freeze only after B14, Q5 = no percentages printed before the freeze. No denominator is
+computed yet; this document is closed as the review record; the freeze happens in its own PR after
+B14. `denominatorFrozen` remains `false`.
