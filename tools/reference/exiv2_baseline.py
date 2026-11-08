@@ -21,8 +21,15 @@ OPTIONS = {
     'EXIV2_ENABLE_XMP': 'ON', 'EXIV2_ENABLE_EXTERNAL_XMP': 'OFF',
     'EXIV2_ENABLE_PNG': 'ON', 'EXIV2_ENABLE_BMFF': 'ON', 'EXIV2_ENABLE_BROTLI': 'ON',
     'EXIV2_ENABLE_NLS': 'OFF', 'EXIV2_ENABLE_FILESYSTEM_ACCESS': 'ON',
+    'EXIV2_BUILD_EXIV2_COMMAND': 'ON', 'EXIV2_BUILD_FUZZ_TESTS': 'OFF',
+    'EXIV2_ENABLE_VIDEO': 'ON', 'EXIV2_ENABLE_INIH': 'ON', 'EXIV2_ENABLE_LENSDATA': 'ON',
+    'EXIV2_ENABLE_WEBREADY': 'OFF', 'EXIV2_ENABLE_CURL': 'OFF', 'EXIV2_ENABLE_DYNAMIC_RUNTIME': 'ON',
 }
 
+
+# Measured v0.28.9 verbose keys. PNG's compile switch is separately mandatory;
+# have_libz is a dependency observation, not by itself proof of PNG functionality.
+RUNTIME_FEATURES = ('have_xmptoolkit', 'have_libz', 'have_brotli', 'enable_bmff')
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
@@ -54,8 +61,8 @@ def check_cache(text):
 
 
 def check_runtime_features(text):
-    facts = dict(s.split('=', 1) for s in text.splitlines() if '=' in s and s.startswith('enable_'))
-    for key in ('enable_xmp', 'enable_png', 'enable_bmff', 'enable_brotli'):
+    facts = dict(s.split('=', 1) for s in text.splitlines() if '=' in s and s.startswith(('enable_', 'have_')))
+    for key in RUNTIME_FEATURES:
         require(facts.get(key) == '1', f'Missing/disabled runtime feature: {key}')
 
 
@@ -165,6 +172,7 @@ def main():
         prefixes = ('exiv2=', 'version=', 'compiler=', 'bits=', 'platform=', 'build_type=', 'debug=', 'dll=', 'enable_', 'have_', 'library=')
         report['baseline']['verboseBuildFacts'] = [s for s in verbose.splitlines() if s.startswith(prefixes)]
         check_runtime_features(verbose)
+        report['baseline']['runtimeFeatureChecks'] = dict.fromkeys(RUNTIME_FEATURES, '1')
         for command in (['cmake', '--version'], ['c++', '--version'], ['ldd', exe],
                         ['dpkg-query', '-W', 'cmake', 'ninja-build', 'g++', 'libexpat1-dev', 'zlib1g-dev', 'libbrotli-dev', 'libinih-dev', 'libfmt-dev']):
             run(command)

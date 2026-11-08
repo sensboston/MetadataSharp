@@ -62,12 +62,12 @@ class BaselinePolicyTests(unittest.TestCase):
             baseline.check_cache(cache.replace('EXIV2_ENABLE_PNG:BOOL=', 'EXIV2_ENABLE_PNG:UNINITIALIZED='))
 
     def test_actual_runtime_features_must_be_enabled(self):
-        facts = '\n'.join(f'enable_{k}=1' for k in ('xmp', 'png', 'bmff', 'brotli'))
+        facts = '\n'.join(f'{k}=1' for k in baseline.RUNTIME_FEATURES)
         baseline.check_runtime_features(facts)
-        for key in ('xmp', 'png', 'bmff', 'brotli'):
-            for replacement in ('', f'enable_{key}=0'):
+        for key in baseline.RUNTIME_FEATURES:
+            for replacement in ('', f'{key}=0'):
                 with self.assertRaises(ValueError):
-                    baseline.check_runtime_features(facts.replace(f'enable_{key}=1', replacement))
+                    baseline.check_runtime_features(facts.replace(f'{key}=1', replacement))
 
     def test_independent_artist_type_count_and_raw_bytes(self):
         before = baseline.inspect_jpeg(fixture())

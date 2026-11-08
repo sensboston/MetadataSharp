@@ -1235,3 +1235,13 @@ external configure/build also PASS, but observation step FAILS. Downloading logs
 from results-receiver returned EOF (known host restriction); annotations initially
 only gave exit1. No cause assumed. Add bounded explicit failure annotation with
 traceback/build facts before altering expectations; failed step remains required.
+
+Diagnostic run42448019127 at862fad4 proved exact CLI/source/version and all typed
+CMake features; failure was OUR assumed verbose key enable_xmp, not missing XMP.
+Actual v0.28.9 reports have_xmptoolkit=1, have_libz=1, have_brotli=1, enable_bmff=1;
+recorded cache separately proves PNG/XMP/Brotli switches ON. Match those measured
+keys, still reject absent/disabled features; do not infer format support from a
+library flag. Pin additional observed functional options explicitly (VIDEO/INIH/
+LENSDATA ON, WEBREADY/CURL OFF, dynamic runtime ON; command ON/fuzz tests OFF) so
+future source defaults cannot silently define this build. No upstream parser source
+read, runtime capability downgraded, or failed observation relabeled as success.
