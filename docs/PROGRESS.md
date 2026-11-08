@@ -1192,3 +1192,29 @@ not only SDK and process runtime: a net10 consumer must not silently pick net8
 package assets. Added receipt discriminator offlineConsumerAssets=target-matched.
 This strengthens the final-head smoke beyond the earlier 2949589 evidence; it
 requires its own final run and does not retroactively change stored receipts.
+
+## E01 pinned black-box execution plan (before implementation)
+
+PR #15 is merged at 7c872466c705c7d6877c8e41018df217d4cbd8db; final 85bd097
+passed PR42446407601 and push42446403212, 14/14 each. E02 bounded unit complete.
+Current assigned branch is arena/49d49a4f-metadatasharp; old branch references are
+historical. Continue E01, not D1 or public API refactor.
+
+Bounded next unit: provision exact Exiv2 v0.28.9 commit as an external executable
+in a separate required Ubuntu24.04 CI job; record explicit CMake feature switches,
+compiler/dependencies, full verbose runtime version, binary/source/build identities.
+Do not read/translate parser implementation, tests or tag dictionaries. No imported
+fixtures or GPL code in production/package. Build source and outputs stay ignored.
+Use existing independently authored MetadataSharp generator inputs for narrow JPEG
+ASCII Artist read/insert/replace/delete observations. Inspect each CLI-written
+result with a separately authored tiny fixture-specific byte reader (not Exiv2
+pretty-print alone), also verify image scan/non-target metadata preservation.
+Record atomic variant IDs and fixture/input/output hashes; valid results apply ONLY
+to those exact cases, not whole format cells. Keep 186 seeds/denominator unmodified.
+
+Add offline fail-closed policy tests and durable complete chunked JSON receipts;
+wrong version/missing feature/source/failed command/expected result mismatch must
+fail rather than skip. Existing required 0.27.6 references remain unchanged. No
+new runtime dependency, API, publication, blanket coverage, exclusion or E01 closure.
+Finish own full CI and merge only green. E03 remains exact proposal before refactor;
+D0 approval retained, normative/oracle/E03 prerequisites still block D1.

@@ -5,10 +5,10 @@ approvals/diagnostics remain in PROGRESS; older session instructions there are h
 
 ## Active branch and scope
 
-Assigned branch **arena/1af1ed4a-metadatasharp**, from PR #14 merge
-716c00be6782af86e00b5636314ecc2164650a0d. Never switch to master or another branch.
-Current PR **#15**: E02 .NET 8/10 target/runtime/package verification, plus E01
-operation seeds. Standing authorization covers commit/push and completed green PR
+Assigned branch **arena/49d49a4f-metadatasharp**, from PR #15 merge
+7c872466c705c7d6877c8e41018df217d4cbd8db. Never switch to master or another branch.
+PR #15 is MERGED; E02 is complete (final 85bd097, PR42446407601 and
+push42446403212 both 14/14). Active unit: E01 pinned black-box CLI observations. Standing authorization covers commit/push and completed green PR
 merge, not package publication or unseen public contracts. The previous public-
 visibility billing blocker is resolved in observed runs; no CI exception applies.
 
@@ -64,13 +64,12 @@ unrun, rights unreviewed and MetadataSharp verification unassessed. Six policy t
 prevent fabricated support/exclusions/percentages. Full denominator/CLI build/
 corpus/tag/layout/video/workflow census remains OPEN, no parity percentage claimed.
 
-Final E01 seed/documentation/evidence head needs its OWN 14-job CI before PR #15
-ready/merge. Record final immutable SHA/run IDs/merge receipt in PR (avoid circular
-commit recording). Check live PR on recovery; if MERGED, E02 bounded unit complete;
-if OPEN, finish required gate/merge or fix genuine failures without weakening policy.
-Afterwards continue full E01 and exact E03 architecture/compatibility proposal.
-Do NOT jump to D1 or infer E03 approval from signature equality. D2/writing/digests,
-broader DNG, Framework and release publication are still separate scope decisions.
+Current bounded E01 plan is recorded BEFORE coding in PROGRESS: pinned external
+v0.28.9 build with explicit options/dependency identity; authored JPEG ASCII Artist
+atomic read/insert/replace/delete variants, independent byte expectations and scan/
+non-target preservation; fail-closed policies and complete source-bound receipts.
+No denominator freeze, E01 completion, public API refactor or DNG implementation.
+E03 exact compatibility proposal remains a separate gate. D0 already approved.
 
 ## Reproduction / local constraints
 
@@ -81,8 +80,8 @@ python -m unittest discover -s tests/reference -q
 python -m unittest discover -s tests/discovery -q
 python tools/reference/build_capability_seeds.py --check
 git diff --check
-gh pr view 15 --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
-gh run list --branch arena/1af1ed4a-metadatasharp --limit 4
+gh pr list --head arena/49d49a4f-metadatasharp
+gh run list --branch arena/49d49a4f-metadatasharp --limit 4
 # With both SDKs/runtimes installed:
 dotnet restore MetadataSharp.sln
 dotnet build MetadataSharp.sln -c Release --no-restore
