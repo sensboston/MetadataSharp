@@ -238,8 +238,19 @@ pinned CLI (evidence e01-b0-census; 89 accepted / 8 refused — ICC
 duplicate-profile rows refuse mutations with `Not a valid ICC Profile`; 38 rows
 statically not-applicable by reviewed axis collapses: the `app1-exif-multiple`
 layout is itself the duplicate-block case, `com-single` cannot carry duplication).
-No denominator is computed here; the developer freezes both denominators after
-the full batch sequence per the approved order (B0 → B1 → denominators).
+B1 observation completed 2026-11-08: 57 applicable rows observed (55 accepted;
+2 nonzero-exit-artifact-produced — thumbnail extract exits 137/46 in the pinned
+CLI with the artifact produced; the JPEG-compressed thumbnail extract is
+byte-exact against the authored embedded blob) plus 1 statically not-applicable
+row (`exif-ifd1-uncompressed` thumbnail insert: the pinned CLI has no
+uncompressed-thumbnail write path; flagged for developer review at denominators).
+B1 notable CLI behaviors recorded, not gated: second APP13/IPTC block ignored on
+print and mutation context, EXIF IFD1 thumbnail tags print without decoding,
+Extended XMP's base packet prints `HasExtendedXMP` only, non-UTF-8 XMP packets
+fail decode with rc=0 and a warning, duplicate APP1 XMP first-wins. The coded
+scan bytes were preserved in all 193 rows. No denominator is computed here; the
+developer freezes both denominators after the full batch sequence per the approved
+order (B0 → B1 → denominators).
 
 ## 8. Review protocol and exit — CLOSED 2026-11-08 (design); B0 observed
 

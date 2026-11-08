@@ -23,14 +23,22 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
 
 ## Current evidence and actual implementation
 
-- B0 observation batch DONE (2026-11-08, this branch): docs/research/EXIV2_CENSUS.json
-  all 135 B0 rows observed-cli (97) or statically not-applicable (38, axis
-  collapses recorded per row); fixtures owned-synthetic and SHA-256 pinned
-  (tests/fixtures/jpeg/manifest.json); evidence committed at
-  docs/research/evidence/e01-b0-census/ (observations.json + README); CI job
-  `pinned-exiv2-baseline` re-runs the batch and uploads `e01-b0-census-observations`.
-  89 accepted / 8 refused (all ICC duplicate-profile rows; `Not a valid ICC
-  Profile`); scan preserved 135/135. Verification stays not-assessed; NO
+- B0 and B1 observation batches DONE (2026-11-08, this branch): docs/research/EXIV2_CENSUS.json
+  carries 193 JPEG rows; every B0 row is observed-cli (97) or statically
+  not-applicable (38, axis collapses recorded per row) and every B1 row is
+  observed-cli (57) or statically not-applicable (1: `exif-ifd1-uncompressed`
+  thumbnail insert — the pinned CLI exposes no uncompressed-thumbnail write path);
+  fixtures owned-synthetic and SHA-256 pinned (tests/fixtures/jpeg/manifest.json, 31
+  fixtures); evidence committed at docs/research/evidence/e01-b0-census/ and
+  docs/research/evidence/e01-b1-census/ (observations.json + README); CI job
+  `pinned-exiv2-baseline` re-runs both batches and uploads `e01-b0-census-observations`
+  and `e01-b1-census-observations`. B0: 89 accepted / 8 refused (all ICC duplicate-profile
+  rows; `Not a valid ICC Profile`). B1: 55 accepted / 2 nonzero-exit-artifact-produced
+  (thumbnail extract exits 137/46 by CLI quirk with the artifact produced; JPEG
+  thumbnail extract verified byte-exact) / 1 not-applicable. Scan preserved 193/193.
+  B0 evidence refreshed this batch: the four unknown-raw comment READ rows now observe
+  genuinely non-UTF-8 COM fixtures (`com-raw*.jpg`); B0 outcome counts unchanged; the
+  coded scan is still preserved 135/135. Verification stays not-assessed; NO
   denominator frozen; NO coverage percentage; exclusions (if any) go to the
   developer at the denominators step; D2/publication NOT authorized.
 

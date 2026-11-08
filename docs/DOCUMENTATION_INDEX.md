@@ -61,5 +61,7 @@ E01 pinned execution (bounded, not E01 closure):
 - research/evidence/e01-b0-census: B0 pilot observation JSON (97 observed rows,
   outcome counts) + README (provenance, limits, reproduction); fixtures are
   owned-synthetic, SHA-256 pinned in tests/fixtures/jpeg/manifest.json.
+- research/evidence/e01-b1-census: B1 XMP/IPTC/thumbnail observation JSON (57 observed
+  rows, outcome counts) + README; same fixture pin set.
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.

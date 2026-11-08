@@ -213,8 +213,8 @@ jobs:
         run: cmake --build artifacts/e01/build --target exiv2 --parallel 2
       - name: Required pinned observations with independent raw-byte expectations
         run: python tools/reference/exiv2_baseline.py --upstream artifacts/e01/source --build artifacts/e01/build
-      - name: B0 census observation batch (pinned CLI, outcomes recorded not gated)
-        run: python tools/reference/observe_b0.py --upstream artifacts/e01/source --build artifacts/e01/build
+      - name: B0+B1 census observation batches (pinned CLI, outcomes recorded not gated)
+        run: python tools/reference/observe_b0.py --upstream artifacts/e01/source --build artifacts/e01/build --batch all
       - name: Upload authored observations and reproducibility metadata (no executables/source)
         if: always()
         uses: actions/upload-artifact@v4
@@ -232,5 +232,14 @@ jobs:
           name: e01-b0-census-observations
           path: |
             artifacts/e01/b0/observations.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload B1 census observations and fixture manifest (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b1-census-observations
+          path: |
+            artifacts/e01/b1/observations.json
           if-no-files-found: error
           retention-days: 30
