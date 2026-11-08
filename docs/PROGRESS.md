@@ -1023,3 +1023,14 @@ This follow-up changes only existing Markdown files. Local policy 12/12 and diff
 checks pass. Merge uses the explicit per-PR exception, with the final SHA/receipt
 recorded on PR #13 after actual completion. Preserve current active branch. Next
 D0 work must stop at its proposal/approval gate; no existing safety contract changes.
+
+## P-series program authorization and research start
+
+Developer explicitly approved near-complete Exiv2 functional capability through
+independent implementation, issues/discussions-derived improvements, idiomatic
+.NET architecture, .NET 8 plus corrected .NET 10 LTS target, and Framework 4.8.x
+only if cheap. Active branch arena/d0eec35b-metadatasharp, base cleanup merge 820229f.
+Created NEXT_PROGRAM_ROADMAP with P00–P14 bounded gates; DNG D0 is proposal-only.
+Historical contracts/evidence retained. No new API/TFM/code implementation approved
+by program direction alone. Research uses public docs/issue/discussion requirements,
+not GPL implementation/tests; fixture/snippet rights remain separate.
