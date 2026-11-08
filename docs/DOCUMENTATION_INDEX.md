@@ -32,3 +32,9 @@ Additional current research (not completion claims):
   reviewed as requirements; complements the earlier title-only snapshot.
 - research/DOTNET_TARGET_FEASIBILITY.md: modern multi-target gate and preliminary
   Framework API cost map; no build or compatibility claim.
+
+E02 current support/build evidence:
+- audits/DOTNET_8_10_SUPPORT_AND_E02_AUDIT.md and evidence/e02: dual-runtime tests,
+  package manifests, matching-SDK consumers and reflected-signature receipts.
+- research/EXIV2_OPERATION_SEEDS.json and tools/reference/build_capability_seeds.py:
+  reproducible E01 documentation seeds, NOT frozen denominator or parity coverage.

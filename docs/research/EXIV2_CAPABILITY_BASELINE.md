@@ -71,3 +71,17 @@ Full E01 is OPEN. This first pass is enough to identify bounded work and prevent
 Follow-up: selected initial bodies have now been reviewed as requirements in
 EXIV2_BODY_REVIEW_SUPPLEMENT.md; that later pass does not retroactively change
 the provenance/scope of the initial title-only JSON snapshot. No defects reproduced.
+
+## Reproducible operation seeds (E01 remains open)
+
+EXIV2_OPERATION_SEEDS.json retains all 31 × 6 documentation cells with stable IDs,
+including no-claim cells, and expands write into **candidate** insert/replace/remove
+operations. These inferred suboperations are NOT proof of baseline support. Every
+seed explicitly records unrun CLI observation, unsplit variants, unreviewed fixture
+rights and unassessed MetadataSharp verification. Denominator is not frozen.
+Recognition/extraction/video/workflows/tag/encoding variants still require census.
+
+Regenerate with `python tools/reference/build_capability_seeds.py`; use `--check`
+to reject drift. Six independent policy tests prevent inferred writes/no-claim cells
+from becoming observed support/exclusions or a fabricated percentage. This is a
+traceable starting ledger, not closure of the E01 parity gate.

@@ -119,3 +119,15 @@ No DNG parser, runtime retarget, public API refactor, or new format is implement
 by these documents. The developer subsequently explicitly approved the exact D0 contract on
 2026-11-07. E04 contract approval is complete; D1 still waits for its normative,
 fixture/oracle and E02/E03 prerequisites. No approval of broader APIs is implied.
+
+## Superseding E02 implementation checkpoint
+
+E02 modern target implementation at 2949589 passed 42446034373: six OS/TFM
+correctness jobs (450 each), six strict package/matching-SDK consumer/signature
+jobs, and two required reference jobs. See DOTNET_8_10_SUPPORT_AND_E02_AUDIT and
+small evidence/e02 receipts. Framework 4.8.x is deferred because cheap inclusion
+was not established; no legacy spike or compatibility promise. E03 is not approved
+by successful cross-target signatures. Final PR #15 head/merge needs its own gate.
+E01 operation seeds are now reproducible (186 cells / 348 candidate operations),
+not an approved atomic denominator or observed current-Exiv2 coverage. E01/E03 and
+D1 normative/oracle prerequisites remain next; no DNG implementation yet.

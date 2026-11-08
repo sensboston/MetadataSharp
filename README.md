@@ -70,3 +70,13 @@ See [LICENSE](LICENSE) for the MIT license.
 - [Measured performance and local packaging audit](docs/audits/PERFORMANCE_AND_PACKAGING_AUDIT.md):
   three-platform evidence, allocation/throughput limits and remaining release gates.
   **No package publication authorized.** Final grouped gate/merge is tracked in PR #12.
+
+## Runtime targets
+
+Libraries target **.NET 8 and .NET 10**; source builds require SDK 10, with both
+runtimes/SDKs installed for full tests. .NET 8 package consumers are independently
+checked using SDK 8. New deployments should prefer .NET 10 LTS; net8.0 assets do
+not extend Microsoft's .NET 8 servicing beyond 2026-11-10. Framework 4.8.x is not
+supported. See [E02 support/audit](docs/audits/DOTNET_8_10_SUPPORT_AND_E02_AUDIT.md)
+for exact platform evidence and limitations. Packages remain local audit candidates,
+not published releases. Specify `-f net8.0` or `-f net10.0` when running tool projects.

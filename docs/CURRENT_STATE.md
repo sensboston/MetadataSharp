@@ -145,3 +145,22 @@ Next bounded unit: E02 modern multi-target/runtime/package verification, indepen
 of E01 census completion. Execution plan is in latest PROGRESS entry, saved before
 code. Do not implement D1 or silently approve E03. Framework remains deferred unless
 cheap support can actually be established; no production compatibility fork.
+
+### E02 observed gate and final handoff
+
+Audited implementation 2949589c1908b9da80289670b89c062d03bc5af0 passed required
+42446034373: all 14 jobs, 450 cases per six OS/TFM combinations, two references and
+six audited package/consumer/baseline jobs. Full JSON/receipt: audits/evidence/e02;
+policy/commands: audits/DOTNET_8_10_SUPPORT_AND_E02_AUDIT.md. SDK10 source builds,
+net8/net10 targets; consumers prove matching SDK8/SDK10, host and asset identity.
+Framework deferred; no net48/net481/native bridge or API/parser changes. Current
+source tools need explicit framework selection. Old net8-only evidence remains history.
+
+E01 now has 186 documentation-cell seeds / 348 candidate operations, a deterministic
+generator and six policy tests; seed state explicitly NOT observed/frozen/verified.
+Final discovery/documentation/evidence head of PR #15 must pass own 14-job CI before
+merge; exact final SHA/run/merge receipt posted there. E02 scoped unit complete only
+subject to that final gate. On recovery check live PR #15; do not assume merge.
+After merge, continue full E01 and E03 proposal; D1 still waits for approved-contract
+normative/oracle and compatibility gates. D0 approval already recorded, no repeat
+approval needed unless its promise changes. No package publication authorized.

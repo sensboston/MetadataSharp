@@ -1,0 +1,72 @@
+{
+  "schema": 2,
+  "targetFramework": "net8.0",
+  "consumerSdk": "8.0.427",
+  "publicSignatureSha256": "a9cd2ae9fe864fbf39da5bc9fd4bfb32fa720f4afc024ac81b53cd1f3bdb93cb",
+  "publicSignatureCount": 633,
+  "sourceCommit": "2949589c1908b9da80289670b89c062d03bc5af0",
+  "sdkInfo": ".NET SDK:\n Version:           10.0.403\n Commit:            5a2162bea6\n Workload version:  10.0.400-manifests.a00bebb6\n MSBuild version:   18.9.15+5a2162bea\n\nRuntime Environment:\n OS Name:     Mac OS X\n OS Version:  26.7\n OS Platform: Darwin\n RID:         osx-arm64\n Base Path:   /Users/runner/.dotnet/sdk/10.0.403/\n\n.NET workloads installed:\nThere are no installed workloads to display.\nConfigured to use workload sets when installing new manifests.\nNo workload sets are installed. Run \"dotnet workload restore\" to install a workload set.\n\nHost:\n  Version:      10.0.14\n  Architecture: arm64\n  Commit:       0427b9abbe\n\n.NET SDKs installed:\n  8.0.101 [/Users/runner/.dotnet/sdk]\n  8.0.204 [/Users/runner/.dotnet/sdk]\n  8.0.303 [/Users/runner/.dotnet/sdk]\n  8.0.427 [/Users/runner/.dotnet/sdk]\n  9.0.102 [/Users/runner/.dotnet/sdk]\n  9.0.203 [/Users/runner/.dotnet/sdk]\n  9.0.320 [/Users/runner/.dotnet/sdk]\n  10.0.103 [/Users/runner/.dotnet/sdk]\n  10.0.203 [/Users/runner/.dotnet/sdk]\n  10.0.302 [/Users/runner/.dotnet/sdk]\n  10.0.403 [/Users/runner/.dotnet/sdk]\n\n.NET runtimes installed:\n  Microsoft.AspNetCore.App 8.0.1 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 8.0.4 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 8.0.7 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 8.0.33 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 9.0.1 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 9.0.4 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 9.0.22 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.3 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.7 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.10 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.14 [/Users/runner/.dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.NETCore.App 8.0.1 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 8.0.4 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 8.0.7 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 8.0.33 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 9.0.1 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 9.0.4 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 9.0.22 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.3 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.7 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.10 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.14 [/Users/runner/.dotnet/shared/Microsoft.NETCore.App]\n\nOther architectures found:\n  None\n\nEnvironment variables:\n  DOTNET_CLI_TELEMETRY_OPTOUT              [1]\n  DOTNET_MULTILEVEL_LOOKUP                 [0]\n  DOTNET_NOLOGO                            [1]\n  DOTNET_ROOT                              [/Users/runner/.dotnet]\n  DOTNET_SKIP_FIRST_TIME_EXPERIENCE        [1]\n\nglobal.json file:\n  /Users/runner/work/MetadataSharp/MetadataSharp/global.json\n\nLearn more:\n  https://aka.ms/dotnet/info\n\nDownload .NET:\n  https://aka.ms/dotnet/download\n",
+  "packages": [
+    {
+      "package": "MetadataSharp.Core.0.0.0-audit.nupkg",
+      "sha256": "53c6a2cd45af8245fe25ed7f504dddd28c43994a650bec1c0308f6890eecddf1",
+      "entries": [
+        "LICENSE",
+        "MetadataSharp.Core.nuspec",
+        "README.md",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net10.0/MetadataSharp.Core.dll",
+        "lib/net10.0/MetadataSharp.Core.xml",
+        "lib/net8.0/MetadataSharp.Core.dll",
+        "lib/net8.0/MetadataSharp.Core.xml",
+        "package/services/metadata/core-properties/nuget.psmdcp"
+      ],
+      "dependencyGroups": {
+        "net10.0": [],
+        "net8.0": []
+      },
+      "documentedMembers": {
+        "net8.0": 45,
+        "net10.0": 45
+      }
+    },
+    {
+      "package": "MetadataSharp.Formats.0.0.0-audit.nupkg",
+      "sha256": "611de7e99299ff647a192217676579f6665fbf09a64e6eef4b2f7eba0b1a3204",
+      "entries": [
+        "LICENSE",
+        "MetadataSharp.Formats.nuspec",
+        "README.md",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net10.0/MetadataSharp.Formats.dll",
+        "lib/net10.0/MetadataSharp.Formats.xml",
+        "lib/net8.0/MetadataSharp.Formats.dll",
+        "lib/net8.0/MetadataSharp.Formats.xml",
+        "package/services/metadata/core-properties/nuget.psmdcp"
+      ],
+      "dependencyGroups": {
+        "net10.0": [
+          [
+            "MetadataSharp.Core",
+            "0.0.0-audit"
+          ]
+        ],
+        "net8.0": [
+          [
+            "MetadataSharp.Core",
+            "0.0.0-audit"
+          ]
+        ]
+      },
+      "documentedMembers": {
+        "net8.0": 19,
+        "net10.0": 19
+      }
+    }
+  ],
+  "offlineConsumer": "passed",
+  "publication": "not attempted",
+  "docCaveat": "XML member counts are not full API documentation coverage; CS1591 suppressed only for audit candidates"
+}

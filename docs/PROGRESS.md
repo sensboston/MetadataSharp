@@ -1168,3 +1168,21 @@ own SDK-major global.json and commands execute from that consumer directory.
 Check selected SDK major as well as host runtime. A net8 test under SDK 10 alone
 would not prove a net8 SDK consumer can restore/use the dual-target package; both
 consumer SDKs are installed by the matrix. Record consumer SDK in package receipt.
+
+### E02 implementation gate and E01 seed submission
+
+Audited code 2949589c1908b9da80289670b89c062d03bc5af0 passed 42446034373, all 14 jobs:
+450 cases per six OS/TFM combinations, six audits and both required references.
+Collected complete small JSON/receipt in docs/audits/evidence/e02. All consumers
+selected actual matching SDKs 8.0.427 / 10.0.403. Public reflected signatures: 633
+entries, identical hash across six receipts; not full metadata/behavior proof.
+No production algorithm/API changes or parser relaxation. Runtime support policy
+and Framework deferral recorded in E02 audit; historical M18 evidence untouched.
+
+E01 advances with 186 visible documentation-cell seeds / 348 inferred candidate
+operations and deterministic generator + six policy tests. No-claim cells not
+excluded, writes not observed, layouts unsplit, fixture rights unreviewed and
+MetadataSharp verification unassessed. Full E01 denominator/CLI/corpus gate remains
+OPEN. New generator/policy/documents need final-head CI, not predecessor inference.
+No DNG implementation, E03 approval or package publication. Final SHA/runs/merge
+receipt posted on PR #15 after all checks pass.

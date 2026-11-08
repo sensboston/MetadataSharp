@@ -1,0 +1,2891 @@
+{
+  "schema": 1,
+  "baseline": "v0.28.9",
+  "commit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+  "source": "https://github.com/Exiv2/exiv2/blob/v0.28.9/exiv2.md#3-file-types",
+  "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
+  "denominatorFrozen": false,
+  "scope": "Candidate seeds, NOT atomic verified requirements or a coverage percentage. No-claim cells stay visible, not excluded. Extraction/recognition/video/workflows/tag/encoding/layout cases still need separate census.",
+  "seeds": [
+    {
+      "seedId": "EX0289-ARW-COMMENTS",
+      "format": "ARW",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ARW-EXIF",
+      "format": "ARW",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ARW-ICC",
+      "format": "ARW",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ARW-IPTC",
+      "format": "ARW",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ARW-THUMBNAIL",
+      "format": "ARW",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ARW-XMP",
+      "format": "ARW",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-AVIF-COMMENTS",
+      "format": "AVIF",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-AVIF-EXIF",
+      "format": "AVIF",
+      "family": "exif",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-AVIF-ICC",
+      "format": "AVIF",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-AVIF-IPTC",
+      "format": "AVIF",
+      "family": "iptc",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-AVIF-THUMBNAIL",
+      "format": "AVIF",
+      "family": "thumbnail",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-AVIF-XMP",
+      "format": "AVIF",
+      "family": "xmp",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-BMP-COMMENTS",
+      "format": "BMP",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-BMP-EXIF",
+      "format": "BMP",
+      "family": "exif",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-BMP-ICC",
+      "format": "BMP",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-BMP-IPTC",
+      "format": "BMP",
+      "family": "iptc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-BMP-THUMBNAIL",
+      "format": "BMP",
+      "family": "thumbnail",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-BMP-XMP",
+      "format": "BMP",
+      "family": "xmp",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR2-COMMENTS",
+      "format": "CR2",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR2-EXIF",
+      "format": "CR2",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR2-ICC",
+      "format": "CR2",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR2-IPTC",
+      "format": "CR2",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR2-THUMBNAIL",
+      "format": "CR2",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR2-XMP",
+      "format": "CR2",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR3-COMMENTS",
+      "format": "CR3",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR3-EXIF",
+      "format": "CR3",
+      "family": "exif",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR3-ICC",
+      "format": "CR3",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR3-IPTC",
+      "format": "CR3",
+      "family": "iptc",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR3-THUMBNAIL",
+      "format": "CR3",
+      "family": "thumbnail",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CR3-XMP",
+      "format": "CR3",
+      "family": "xmp",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CRW-COMMENTS",
+      "format": "CRW",
+      "family": "comments",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CRW-EXIF",
+      "format": "CRW",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CRW-ICC",
+      "format": "CRW",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CRW-IPTC",
+      "format": "CRW",
+      "family": "iptc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CRW-THUMBNAIL",
+      "format": "CRW",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-CRW-XMP",
+      "format": "CRW",
+      "family": "xmp",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DCP-COMMENTS",
+      "format": "DCP",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DCP-EXIF",
+      "format": "DCP",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DCP-ICC",
+      "format": "DCP",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DCP-IPTC",
+      "format": "DCP",
+      "family": "iptc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DCP-THUMBNAIL",
+      "format": "DCP",
+      "family": "thumbnail",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DCP-XMP",
+      "format": "DCP",
+      "family": "xmp",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DNG-COMMENTS",
+      "format": "DNG",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DNG-EXIF",
+      "format": "DNG",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DNG-ICC",
+      "format": "DNG",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DNG-IPTC",
+      "format": "DNG",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DNG-THUMBNAIL",
+      "format": "DNG",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-DNG-XMP",
+      "format": "DNG",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EPS-COMMENTS",
+      "format": "EPS",
+      "family": "comments",
+      "documentedClaim": "",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EPS-EXIF",
+      "format": "EPS",
+      "family": "exif",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EPS-ICC",
+      "format": "EPS",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EPS-IPTC",
+      "format": "EPS",
+      "family": "iptc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EPS-THUMBNAIL",
+      "format": "EPS",
+      "family": "thumbnail",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EPS-XMP",
+      "format": "EPS",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EXV-COMMENTS",
+      "format": "EXV",
+      "family": "comments",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EXV-EXIF",
+      "format": "EXV",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EXV-ICC",
+      "format": "EXV",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EXV-IPTC",
+      "format": "EXV",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EXV-THUMBNAIL",
+      "format": "EXV",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-EXV-XMP",
+      "format": "EXV",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-GIF-COMMENTS",
+      "format": "GIF",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-GIF-EXIF",
+      "format": "GIF",
+      "family": "exif",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-GIF-ICC",
+      "format": "GIF",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-GIF-IPTC",
+      "format": "GIF",
+      "family": "iptc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-GIF-THUMBNAIL",
+      "format": "GIF",
+      "family": "thumbnail",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-GIF-XMP",
+      "format": "GIF",
+      "family": "xmp",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIC-COMMENTS",
+      "format": "HEIC",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIC-EXIF",
+      "format": "HEIC",
+      "family": "exif",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIC-ICC",
+      "format": "HEIC",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIC-IPTC",
+      "format": "HEIC",
+      "family": "iptc",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIC-THUMBNAIL",
+      "format": "HEIC",
+      "family": "thumbnail",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIC-XMP",
+      "format": "HEIC",
+      "family": "xmp",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIF-COMMENTS",
+      "format": "HEIF",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIF-EXIF",
+      "format": "HEIF",
+      "family": "exif",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIF-ICC",
+      "format": "HEIF",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIF-IPTC",
+      "format": "HEIF",
+      "family": "iptc",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIF-THUMBNAIL",
+      "format": "HEIF",
+      "family": "thumbnail",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-HEIF-XMP",
+      "format": "HEIF",
+      "family": "xmp",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JP2-COMMENTS",
+      "format": "JP2",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JP2-EXIF",
+      "format": "JP2",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JP2-ICC",
+      "format": "JP2",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JP2-IPTC",
+      "format": "JP2",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JP2-THUMBNAIL",
+      "format": "JP2",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JP2-XMP",
+      "format": "JP2",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "format": "JPEG",
+      "family": "comments",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JPEG-EXIF",
+      "format": "JPEG",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JPEG-ICC",
+      "format": "JPEG",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JPEG-IPTC",
+      "format": "JPEG",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JPEG-THUMBNAIL",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JPEG-XMP",
+      "format": "JPEG",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JXL-COMMENTS",
+      "format": "JXL",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JXL-EXIF",
+      "format": "JXL",
+      "family": "exif",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JXL-ICC",
+      "format": "JXL",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JXL-IPTC",
+      "format": "JXL",
+      "family": "iptc",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JXL-THUMBNAIL",
+      "format": "JXL",
+      "family": "thumbnail",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-JXL-XMP",
+      "format": "JXL",
+      "family": "xmp",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-MRW-COMMENTS",
+      "format": "MRW",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-MRW-EXIF",
+      "format": "MRW",
+      "family": "exif",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-MRW-ICC",
+      "format": "MRW",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-MRW-IPTC",
+      "format": "MRW",
+      "family": "iptc",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-MRW-THUMBNAIL",
+      "format": "MRW",
+      "family": "thumbnail",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-MRW-XMP",
+      "format": "MRW",
+      "family": "xmp",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-NEF-COMMENTS",
+      "format": "NEF",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-NEF-EXIF",
+      "format": "NEF",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-NEF-ICC",
+      "format": "NEF",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-NEF-IPTC",
+      "format": "NEF",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-NEF-THUMBNAIL",
+      "format": "NEF",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-NEF-XMP",
+      "format": "NEF",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ORF-COMMENTS",
+      "format": "ORF",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ORF-EXIF",
+      "format": "ORF",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ORF-ICC",
+      "format": "ORF",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ORF-IPTC",
+      "format": "ORF",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ORF-THUMBNAIL",
+      "format": "ORF",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-ORF-XMP",
+      "format": "ORF",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PEF-COMMENTS",
+      "format": "PEF",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PEF-EXIF",
+      "format": "PEF",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PEF-ICC",
+      "format": "PEF",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PEF-IPTC",
+      "format": "PEF",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PEF-THUMBNAIL",
+      "format": "PEF",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PEF-XMP",
+      "format": "PEF",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PGF-COMMENTS",
+      "format": "PGF",
+      "family": "comments",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PGF-EXIF",
+      "format": "PGF",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PGF-ICC",
+      "format": "PGF",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PGF-IPTC",
+      "format": "PGF",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PGF-THUMBNAIL",
+      "format": "PGF",
+      "family": "thumbnail",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PGF-XMP",
+      "format": "PGF",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PNG-COMMENTS",
+      "format": "PNG",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PNG-EXIF",
+      "format": "PNG",
+      "family": "exif",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PNG-ICC",
+      "format": "PNG",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PNG-IPTC",
+      "format": "PNG",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PNG-THUMBNAIL",
+      "format": "PNG",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PNG-XMP",
+      "format": "PNG",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PSD-COMMENTS",
+      "format": "PSD",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PSD-EXIF",
+      "format": "PSD",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PSD-ICC",
+      "format": "PSD",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PSD-IPTC",
+      "format": "PSD",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PSD-THUMBNAIL",
+      "format": "PSD",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-PSD-XMP",
+      "format": "PSD",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RAF-COMMENTS",
+      "format": "RAF",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RAF-EXIF",
+      "format": "RAF",
+      "family": "exif",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RAF-ICC",
+      "format": "RAF",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RAF-IPTC",
+      "format": "RAF",
+      "family": "iptc",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RAF-THUMBNAIL",
+      "format": "RAF",
+      "family": "thumbnail",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RAF-XMP",
+      "format": "RAF",
+      "family": "xmp",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RW2-COMMENTS",
+      "format": "RW2",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RW2-EXIF",
+      "format": "RW2",
+      "family": "exif",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RW2-ICC",
+      "format": "RW2",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RW2-IPTC",
+      "format": "RW2",
+      "family": "iptc",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RW2-THUMBNAIL",
+      "format": "RW2",
+      "family": "thumbnail",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-RW2-XMP",
+      "format": "RW2",
+      "family": "xmp",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SR2-COMMENTS",
+      "format": "SR2",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SR2-EXIF",
+      "format": "SR2",
+      "family": "exif",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SR2-ICC",
+      "format": "SR2",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SR2-IPTC",
+      "format": "SR2",
+      "family": "iptc",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SR2-THUMBNAIL",
+      "format": "SR2",
+      "family": "thumbnail",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SR2-XMP",
+      "format": "SR2",
+      "family": "xmp",
+      "documentedClaim": "Read",
+      "candidateOperations": [
+        "read"
+      ],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SRW-COMMENTS",
+      "format": "SRW",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SRW-EXIF",
+      "format": "SRW",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SRW-ICC",
+      "format": "SRW",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SRW-IPTC",
+      "format": "SRW",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SRW-THUMBNAIL",
+      "format": "SRW",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-SRW-XMP",
+      "format": "SRW",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TGA-COMMENTS",
+      "format": "TGA",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TGA-EXIF",
+      "format": "TGA",
+      "family": "exif",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TGA-ICC",
+      "format": "TGA",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TGA-IPTC",
+      "format": "TGA",
+      "family": "iptc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TGA-THUMBNAIL",
+      "format": "TGA",
+      "family": "thumbnail",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TGA-XMP",
+      "format": "TGA",
+      "family": "xmp",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TIFF-COMMENTS",
+      "format": "TIFF",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TIFF-EXIF",
+      "format": "TIFF",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TIFF-ICC",
+      "format": "TIFF",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TIFF-IPTC",
+      "format": "TIFF",
+      "family": "iptc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TIFF-THUMBNAIL",
+      "format": "TIFF",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-TIFF-XMP",
+      "format": "TIFF",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-WEBP-COMMENTS",
+      "format": "WEBP",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-WEBP-EXIF",
+      "format": "WEBP",
+      "family": "exif",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-WEBP-ICC",
+      "format": "WEBP",
+      "family": "icc",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-WEBP-IPTC",
+      "format": "WEBP",
+      "family": "iptc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-WEBP-THUMBNAIL",
+      "format": "WEBP",
+      "family": "thumbnail",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-WEBP-XMP",
+      "format": "WEBP",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-XMP-COMMENTS",
+      "format": "XMP",
+      "family": "comments",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-XMP-EXIF",
+      "format": "XMP",
+      "family": "exif",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-XMP-ICC",
+      "format": "XMP",
+      "family": "icc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-XMP-IPTC",
+      "format": "XMP",
+      "family": "iptc",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-XMP-THUMBNAIL",
+      "format": "XMP",
+      "family": "thumbnail",
+      "documentedClaim": "-",
+      "candidateOperations": [],
+      "operationEvidence": "documentation-only; no executable observation",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    },
+    {
+      "seedId": "EX0289-XMP-XMP",
+      "format": "XMP",
+      "family": "xmp",
+      "documentedClaim": "Read/Write",
+      "candidateOperations": [
+        "read",
+        "insert",
+        "replace",
+        "remove"
+      ],
+      "operationEvidence": "documentation-only; write suboperations inferred, not observed",
+      "variantStatus": "unsplit",
+      "fixtureRights": "not-reviewed",
+      "baselineObservation": "not-run",
+      "metadataSharpVerification": "not-assessed",
+      "disposition": "needs-reconciliation"
+    }
+  ]
+}

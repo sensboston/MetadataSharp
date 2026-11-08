@@ -43,6 +43,10 @@ jobs:
         run: dotnet build MetadataSharp.sln --configuration Release --no-restore
       - name: Test offline reference-harness policy
         run: python -m unittest discover -s tests/reference -v
+      - name: Verify discovery seed policy
+        run: |
+          python tools/reference/build_capability_seeds.py --check
+          python -m unittest discover -s tests/discovery -v
       - name: Test Release
         run: dotnet test tests/MetadataSharp.Tests/MetadataSharp.Tests.csproj --framework ${{ matrix.tfm }} --configuration Release --no-build --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults/${{ matrix.tfm }}
       - name: Report failed test details
