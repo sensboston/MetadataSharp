@@ -94,9 +94,11 @@ Next open units (as of 2026-11-08):
 1. **E03 APPROVED AND IMPLEMENTED (this branch)** — capability-discovery surface
    (`MetadataContainer`/`MetadataFamily`/`MetadataOperation`/`CapabilityStatus`/
    `CapabilityDescriptor`/`MetadataCapabilities`), pinned test table, test-local
-   zero-`PackageReference` guard; net8.0/net10.0 retained per developer. Awaiting
-   this PR's green CI + merge. Discharges only the E03 compatibility gate; it
-   authorizes no per-format work, exclusions or publication.
+   zero-`PackageReference` guard; net8.0/net10.0 retained per developer.
+   MERGED 2026-11-08T17:34:49Z as ea8e0567c92cbd4691faa7c1a027764e3daccc3b (final head
+   bb473f0; push 42505415670 and pull_request 42505425014 both 15/15). Discharges
+   only the E03 compatibility gate; it authorizes no per-format work, exclusions or
+   publication.
 2. **E01-CEN** — finite atomic denominator design and the split of the 31×6 grid
    into per-format execution batches; until the developer reviews the denominator,
    no parity percentage or "complete" claim is possible.
