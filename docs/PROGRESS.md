@@ -577,3 +577,9 @@
   EXIF:Artist to avoid implicit family synchronization; retain strict XMP profile
   and include raw authored-packet diagnostics if still outside it. No green group
   or M14 start claimed until the reference job also passes. Python policy 12/12 pass.
+
+- d602f1f again passed all .NET platforms. Packet diagnostics established the
+  reference failure is specifically ExifTool's PNG `end='r'` read-only wrapper,
+  not CRC/compression loss or RDF namespace handling. Retain the approved opaque
+  behavior and test no-op/removal/refusal explicitly; record unsupported reverse
+  semantic property reads in the reproducibility report. No warning suppression.

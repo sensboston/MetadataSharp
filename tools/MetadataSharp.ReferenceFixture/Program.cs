@@ -82,14 +82,25 @@ else if (args.Length == 2 && args[0] == "inspect-png")
     if (exif is not null && exif.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? a))
     { byte[] bytes = new byte[a.Value.ByteLength]; a.Value.CopyRawTo(bytes); artist = Encoding.ASCII.GetString(bytes).TrimEnd('\0'); }
     XmpPacket? packet = doc.ReadXmp();
-    if (packet is { IsEditable: false })
-    { byte[] raw = new byte[packet.ByteLength]; packet.CopyRawTo(raw); throw new InvalidOperationException("External authored PNG produced opaque RDF: " + Encoding.UTF8.GetString(raw)); }
-    string? creatorTool = packet?.Properties[new("http://ns.adobe.com/xap/1.0/", "CreatorTool")].Text;
-    Console.WriteLine(JsonSerializer.Serialize(new { artist, creatorTool }));
+    string? rawXmp = null;
+    if (packet is { IsEditable: false }) { byte[] raw = new byte[packet.ByteLength]; packet.CopyRawTo(raw); rawXmp = Encoding.UTF8.GetString(raw); }
+    string? creatorTool = packet is { IsEditable: true } ? packet.Properties[new("http://ns.adobe.com/xap/1.0/", "CreatorTool")].Text : null;
+    Console.WriteLine(JsonSerializer.Serialize(new { artist, creatorTool, xmpEditable = packet?.IsEditable, rawXmp }));
 }
 else if (args.Length == 3 && args[0] == "noop-png")
 {
     using var doc = PngMetadataDocument.Open(args[1]); doc.SaveXmpAs(args[2], new());
+}
+else if (args.Length == 2 && args[0] == "probe-png-opaque")
+{
+    using var doc = PngMetadataDocument.Open(args[1]); using var output = new MemoryStream();
+    var edit = new XmpEdit(); edit.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("refuse"));
+    try { doc.SaveXmp(output, edit); return 3; }
+    catch (MetadataException error) when (error.Code == MetadataErrorCode.UnsupportedFeature && output.Length == 0) { }
+    var remove = new XmpEdit(); remove.RemoveAllXmp(); doc.SaveXmp(output, remove);
+    using var reread = PngMetadataDocument.Open(new MemoryStream(output.ToArray()));
+    if (reread.ReadXmp() is not null || reread.ReadExif() is null) return 4;
+    Console.WriteLine("opaque edit refused before output; whole removal retained EXIF");
 }
 else if (args.Length == 2 && args[0] == "inspect")
 {

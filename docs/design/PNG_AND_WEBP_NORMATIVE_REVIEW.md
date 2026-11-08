@@ -39,3 +39,13 @@ RFC9649 (November 2024), mirrored at visualcommons/gamut
 SHA-256 `f4d7cd92b015c0b340f10a932bb03e564a758a17df50cbb992c16d8459d60e58`.
 Complete M13 CI before M14 implementation. If review requires a public/safety
 contract change, obtain approval rather than altering the accepted boundary silently.
+
+## M13 external discrepancy
+
+ExifTool 12.76 writes PNG XMP with `<?xpacket end='r'?>`. The existing approved
+XMP profile deliberately treats read-only wrappers as opaque (not invalid). Keep
+that contract: verify raw packet ownership/independent XML fact, exact no-op,
+property-edit refusal before output and successful whole removal. Do not label
+this a semantic reverse-property-read success or widen the XMP parser. Both CLI
+readers recognize our authored EXIF/XMP. ExifTool reverse EXIF remains supported.
+The required report records this specific unsupported reference operation.

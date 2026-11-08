@@ -231,7 +231,15 @@ def main(argv=None):
         assert rows == {"Exif.Image.Artist": ("Ascii", 6, "Alice"), "Xmp.xmp.CreatorTool": ("XmpText", 13, "MetadataSharp")}, rows
         changed = output / "external.png"; shutil.copyfile(png, changed)
         run(["exiftool", "-overwrite_original", "-EXIF:Artist=ExternalPng", "-XMP-xmp:CreatorTool=ExternalPng", str(changed)])
-        assert json.loads(ours("inspect-png", changed)) == {"artist": "ExternalPng", "creatorTool": "ExternalPng"}
+        actual = json.loads(ours("inspect-png", changed))
+        assert actual["artist"] == "ExternalPng" and actual["xmpEditable"] is False, actual
+        # ExifTool emits a read-only xpacket in PNG. This is intentionally opaque
+        # under the already approved XMP profile, not an editable reverse-read pass.
+        import xml.etree.ElementTree as ET
+        assert "end='r'" in actual["rawXmp"]
+        assert ET.fromstring(actual["rawXmp"]).find(".//{http://ns.adobe.com/xap/1.0/}CreatorTool").text == "ExternalPng"
+        ours("probe-png-opaque", changed)
+        report.setdefault("limitations", []).append("ExifTool 12.76 PNG XMP uses read-only xpacket: owned raw packet preserved, property editing refused before output, whole removal tested; semantic reverse property read unsupported")
         copied = output / "external-noop.png"; ours("noop-png", changed, copied)
         assert copied.read_bytes() == changed.read_bytes()
         assert png_pixels(changed) == png_pixels(png)
