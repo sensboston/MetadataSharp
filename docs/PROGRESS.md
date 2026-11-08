@@ -1023,3 +1023,103 @@ This follow-up changes only existing Markdown files. Local policy 12/12 and diff
 checks pass. Merge uses the explicit per-PR exception, with the final SHA/receipt
 recorded on PR #13 after actual completion. Preserve current active branch. Next
 D0 work must stop at its proposal/approval gate; no existing safety contract changes.
+
+## Programme 2 authorization, first discovery and D0 proposal
+
+Developer corrected .NET target to 10, approved independent near-complete Exiv2
+capability programme and improvements/idiomatic .NET planning, conditional cheap
+Framework support, documentation cleanup and starting work without routine further
+questions. Live branch arena/d0eec35b-metadatasharp from PR #13 merge 820229f5.
+Programme approval does not approve new DNG/public API contracts. The old one-off
+PR #13 CI exception does not transfer to new work.
+
+E00 recorded E00–E18 roadmap, parity denominator discipline, rights/source separation,
+.NET 8/10 lifecycle and conditional Framework gate. Marked old roadmap/prompt entry
+points historical in place; kept approved contracts/audits/provenance and old links.
+E01 began with pinned Exiv2 v0.28.9 tag/commit, README/license/CLI docs (31 type rows,
+six categories), 35 unique issue title/label/state signals and 12/37 discussions.
+No bodies/code/tests/attachments imported; findings are discovery hypotheses, not
+verified defects. Exiv2 0.28.9 CLI not run. Full E01 atomic inventory remains OPEN.
+
+Official dotnet/core metadata blob 66392f8bd6d254f73cf7a2f42113bc4034a20747 confirms
+.NET 8 EOL 2026-11-10 and .NET 10 EOL 2028-11-14. Neither SDK retarget nor Framework
+support implemented. D0/E04 exact read-only DNG contract prepared, status PROPOSED;
+no parser/editor/error enum added to code. Additional normative ledger, rights/oracle
+and target compatibility gates explicitly block D1 even after surface approval.
+Local checks and actual new PR/CI status recorded subsequently; no new .NET or
+reference executable run is claimed in this documentation/research submission.
+
+Programme submission local checks: Python reference policy 12/12; new research
+JSON parsed with 31 format rows, 35 issue signals and 12 discussion metadata records;
+new/edited local Markdown navigation links exist; git diff --check passed. These
+are documentation checks, not .NET, pinned-CLI or DNG conformance results.
+
+
+### Same-branch integration and additional requirements review
+
+Push of local planning commit 246fb84 was refused (non-fast-forward). Fetched remote
+9ce172a on the SAME assigned branch; it already contained PR #14 E00–E18 programme,
+initial research and exact D0 proposal. Integrated rather than force-pushing or
+discarding remote work. Resolved PROGRESS by preserving the existing research
+record. Removed the locally introduced duplicate P-series roadmap; E00–E18 in
+docs/roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md is the single active sequence.
+Additional review reads selected user issue/discussion bodies as requirements,
+not patches/linked source/comments/attachments. Initial title-only snapshot remains
+truthful for that earlier pass; the new body-review supplement records its own scope.
+
+### Follow-up research and actual infrastructure evidence
+
+Added selected-body requirements supplement (8 issues, 6 discussions), preserving
+initial title-only snapshot provenance and not following linked GPL source/patches
+or attachments. Added E02 modern-target matrix/package gate and Framework source
+API cost map; no cheap-compatibility or net10 execution claim. Existing code relies
+on modern guards, spans/stream async/disposal, crypto and zlib APIs; no shims/TFMs
+or new dependencies added. E00 direction stays approved, E01 full gate remains open,
+D0 exact contract stays PROPOSED. Historical docs archive in place rather than lose
+reviewed contracts/evidence.
+
+Runs 42444022195/42444017972 on integration head d27aaed did not start jobs. Check
+128619056830 explicitly reports account payment/spending-limit blocker. PR #14
+remains OPEN; no CI exception carried from PR #13. Local policy 12/12, research JSON
+parsing, selected Markdown links and git diff --check pass. New .NET/reference/
+audit/runtime/DNG conformance checks are not claimed. Remote/local work reconciled
+without force push or lost documentation. Final submission requires own green CI
+or an explicitly approved per-PR deferral before merge.
+
+### Public visibility and fresh CI attempt
+
+Developer changed repository visibility to public. GitHub API confirms
+private=false / visibility=public. This does not waive provenance, safety, contract
+approval or CI requirements, and no comprehensive historical secret/rights audit
+is claimed. Attempt to rerun latest PR run 42444129097 was rejected by gh with
+"cannot be rerun; its workflow file may be broken"; that generic message is not
+proof of invalid YAML. Push this documentation checkpoint to trigger fresh checks
+on the active branch after the visibility change. Results remain pending until
+observed; old billing failures are historical, not evidence of the new attempt.
+
+### Public-repository verification succeeded
+
+Fresh head 849ff0cbee69746318ba39107b12b6c440bde8da passed run
+42445226614 after visibility change: all seven jobs SUCCESS, including three-OS
+.NET 8 correctness tests, Python policy, pinned external references and all three
+performance/package/offline-consumer audits. The former billing blocker did not
+prevent this new execution; no CI waiver or workflow alteration was needed.
+This does not validate .NET 10/Framework or DNG implementation (none added).
+Final documentation head still receives its own checks; immutable final receipt
+is recorded on PR #14 after success. D0 contract approval remains pending.
+
+## Explicit DNG D0 contract approval
+
+Developer explicitly stated approval of DNG D0 on 2026-11-07. Recorded approval
+of exact proposed signatures, InvalidDng addition, read-only lifetime/error model
+and narrow profile in the contract; no code or existing public API changed.
+Programme direction alone was not used as approval. E04 contract gate is complete,
+but D1's section 5 normative ledger, owned-fixture/independent-oracle and E02/E03
+prerequisites remain mandatory. D2/write/digest/legacy-runtime support not approved.
+Do not ask the same D0 approval again unless promises change.
+
+Predecessor documentation head 3236ad9 passed 42445322851, all seven jobs, after
+public visibility change. This approval-record commit requires its own green CI
+before PR #14 merge; final SHA/run/merge receipt will be posted there after success.
+E01 full inventory remains open. Local policy/whitespace checks run; no DNG/net10/
+Framework implementation or runtime verification claimed by this documentation.

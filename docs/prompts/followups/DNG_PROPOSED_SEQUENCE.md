@@ -1,6 +1,10 @@
 # Proposed DNG follow-up prompts — approval pending
 
-These are future bounded units, NOT executable authorization. Read DNG_SCOPE.md
+Historical sequence from M17, refined by Programme 2 E04/E05/E13.
+The exact D0 contract in DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md was explicitly
+approved on 2026-11-07; do not ask for that same approval again. D1 still requires
+its section 5 normative/oracle and E02/E03 gates. D2 remains unapproved.
+These prompts are NOT blanket executable authorization. Read DNG_SCOPE.md
 and obtain the developer's approval of the sequence first. Do not change existing
 TIFF DNG refusal while performing a proposal-only unit.
 
