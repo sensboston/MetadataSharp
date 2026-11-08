@@ -172,3 +172,53 @@ jobs:
             artifacts/audit/**/packages.json
           if-no-files-found: error
           retention-days: 30
+
+  pinned-exiv2-baseline:
+    name: Exiv2 0.28.9 / bounded E01 observations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      LC_ALL: C
+      E01_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout pinned external black-box source (never production dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/e01/source
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Install external build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev
+      - name: Configure external black-box build with explicit policy
+        shell: python
+        run: |
+          import subprocess, sys
+          sys.path.insert(0, 'tools/reference')
+          from exiv2_baseline import OPTIONS
+          subprocess.run(['cmake', '-S', 'artifacts/e01/source', '-B', 'artifacts/e01/build', '-G', 'Ninja',
+                          *[f'-D{k}={v}' for k, v in OPTIONS.items()]], check=True)
+      - name: Build only external executable (no upstream tests or fixture imports)
+        run: cmake --build artifacts/e01/build --target exiv2 --parallel 2
+      - name: Required pinned observations with independent raw-byte expectations
+        run: python tools/reference/exiv2_baseline.py --upstream artifacts/e01/source --build artifacts/e01/build
+      - name: Upload authored observations and reproducibility metadata (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-exiv2-0289-observations
+          path: |
+            artifacts/e01/observations/observations.json
+            artifacts/e01/observations/verbose-version.txt
+          if-no-files-found: error
+          retention-days: 30

@@ -38,3 +38,9 @@ E02 current support/build evidence:
   package manifests, matching-SDK consumers and reflected-signature receipts.
 - research/EXIV2_OPERATION_SEEDS.json and tools/reference/build_capability_seeds.py:
   reproducible E01 documentation seeds, NOT frozen denominator or parity coverage.
+
+E01 pinned execution (bounded, not E01 closure):
+- research/EXIV2_PINNED_BASELINE_EXECUTION.md: exact source/build/fixture scope,
+  first failure diagnoses, explicit D001 COM/D002 XMP preservation differences.
+- research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
+  bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.

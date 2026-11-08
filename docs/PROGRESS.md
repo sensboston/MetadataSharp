@@ -1192,3 +1192,124 @@ not only SDK and process runtime: a net10 consumer must not silently pick net8
 package assets. Added receipt discriminator offlineConsumerAssets=target-matched.
 This strengthens the final-head smoke beyond the earlier 2949589 evidence; it
 requires its own final run and does not retroactively change stored receipts.
+
+## E01 pinned black-box execution plan (before implementation)
+
+PR #15 is merged at 7c872466c705c7d6877c8e41018df217d4cbd8db; final 85bd097
+passed PR42446407601 and push42446403212, 14/14 each. E02 bounded unit complete.
+Current assigned branch is arena/49d49a4f-metadatasharp; old branch references are
+historical. Continue E01, not D1 or public API refactor.
+
+Bounded next unit: provision exact Exiv2 v0.28.9 commit as an external executable
+in a separate required Ubuntu24.04 CI job; record explicit CMake feature switches,
+compiler/dependencies, full verbose runtime version, binary/source/build identities.
+Do not read/translate parser implementation, tests or tag dictionaries. No imported
+fixtures or GPL code in production/package. Build source and outputs stay ignored.
+Use existing independently authored MetadataSharp generator inputs for narrow JPEG
+ASCII Artist read/insert/replace/delete observations. Inspect each CLI-written
+result with a separately authored tiny fixture-specific byte reader (not Exiv2
+pretty-print alone), also verify image scan/non-target metadata preservation.
+Record atomic variant IDs and fixture/input/output hashes; valid results apply ONLY
+to those exact cases, not whole format cells. Keep 186 seeds/denominator unmodified.
+
+Add offline fail-closed policy tests and durable complete chunked JSON receipts;
+wrong version/missing feature/source/failed command/expected result mismatch must
+fail rather than skip. Existing required 0.27.6 references remain unchanged. No
+new runtime dependency, API, publication, blanket coverage, exclusion or E01 closure.
+Finish own full CI and merge only green. E03 remains exact proposal before refactor;
+D0 approval retained, normative/oracle/E03 prerequisites still block D1.
+
+Initial E01 harness implemented: explicit recognized typed CMake options PLUS
+runtime feature checks (not accepting unused -D cache strings), exact version/pin,
+external binary/cache/license/host dependencies, four fixture-specific operation
+observations, independent ASCII raw bytes + all non-EXIF segments/scan preservation.
+Full verbose version stays an ignored CI artifact; durable receipt filters build
+facts so upstream namespace catalogs are not imported into this MIT repository.
+Complete chunk collector rejects missing/duplicate/corrupt/mixed-source receipts.
+Local Python: 12 historical policies + 21 discovery/observation/collector cases PASS;
+no local SDK/CMake execution. Required fifteenth CI job must prove actual build and
+observations; no successful execution asserted yet.
+
+Initial E01 run42447844906 at6991c02: all fourteen existing gates PASS; pinned
+external configure/build also PASS, but observation step FAILS. Downloading logs
+from results-receiver returned EOF (known host restriction); annotations initially
+only gave exit1. No cause assumed. Add bounded explicit failure annotation with
+traceback/build facts before altering expectations; failed step remains required.
+
+Diagnostic run42448019127 at862fad4 proved exact CLI/source/version and all typed
+CMake features; failure was OUR assumed verbose key enable_xmp, not missing XMP.
+Actual v0.28.9 reports have_xmptoolkit=1, have_libz=1, have_brotli=1, enable_bmff=1;
+recorded cache separately proves PNG/XMP/Brotli switches ON. Match those measured
+keys, still reject absent/disabled features; do not infer format support from a
+library flag. Pin additional observed functional options explicitly (VIDEO/INIH/
+LENSDATA ON, WEBREADY/CURL OFF, dynamic runtime ON; command ON/fuzz tests OFF) so
+future source defaults cannot silently define this build. No upstream parser source
+read, runtime capability downgraded, or failed observation relabeled as success.
+
+Run42448200101/879cea0: source/version/cache and measured runtime feature checks
+PASS, observed write fails STRICT non-EXIF byte comparison. Cause is not guessed or
+called an upstream bug. Keep gate strict; add bounded first segment mismatch bytes
+(authored fixture only) and operation context to diagnose. Existing fourteen gates
+remain green. No production changes or normalization workaround authorized.
+
+371fd0a/run42448387840 locates INSERT difference: five non-EXIF segments remain;
+index1 before is COM (fffe0020 + authored comment), after is DQT (ffdb0043...).
+This proves an ordering change, not yet whole-payload equality or corruption.
+Before the correction: distinguish exact order from a measured byte-identical
+segment permutation. Baseline writes may record that explicit ordering divergence
+ONLY if full segment MULTISETS (including multiplicity/content) match. Any payload
+change/drop/duplication remains a failure; scan and all other TIFF fields remain
+strict. Read/default verifier remains byte/order strict. MetadataSharp preservation
+contract stays unchanged; this is baseline observation, not accepted write parity.
+
+043f01e/run42448594200 proves a second, exact INSERT finding: original authored
+COM fffe0020 + "MetadataSharp authored fixture" becomes fffe0021 + same bytes +
+00, in addition to ordering. All other non-EXIF segment multisets match. This is
+byte change, NOT exact preservation, and is not adopted as our writer policy.
+Before correction: add narrowly named baseline DIFFERENCE D001 for EXACTLY that
+single owned COM replacement, with strict matching of every other segment and its
+multiplicity. No generic trailing-NUL normalization or arbitrary COM waiver. Emit
+explicit false byte-preservation flags and visible finding ID in each affected row.
+Default/read/MetadataSharp verifier stays strict; negative tests must still reject
+that change by default and any other payload/loss/duplicate under observation mode.
+Successful CI then means the versioned observations (including known differences)
+match, NOT successful safe-writing parity. No percentage or exclusion accepted.
+
+6cc9b96/run42448793704 advances through READ and INSERT (D001 explicit), then
+REPLACE shows D002: owned single-property XMP APP1 is reserialized (wrapper BOM,
+toolkit label, whitespace/padding/namespace syntax) as well as COM D001. No generic
+XMP normalization waiver: before further implementation, define independent XML
+check ONLY for this authored packet: one xmpmeta/RDF/Description, exactly one
+CreatorTool=MetadataSharp simple text property (attribute or child syntax), no
+other property/qualifier/structure/DTD. A known D002 may be RECORDED only if both
+packets meet that literal expectation and all remaining segments match byte-for-
+byte with multiplicity, scan/IFD0 intact. Root toolkit annotation is separately
+visible serialization metadata, not claimed byte preservation. Explicitly false
+byte flags and both finding IDs; no successful writing parity or production policy
+change. Unknown structures/values/additions/drops still fail the observation gate.
+
+2ed0025/run42449006766: READ/INSERT/REPLACE pass independent checks, D001/D002
+explicitly recorded; REMOVE passes raw value/IFD0/scan/known-difference checks but
+our absent-key filtered print query returns nonzero. Do NOT waive exit failures.
+Use documented full EXIF inventory print (-P Ekycv) for removal and independently
+require exactly Orientation Short 1 1, no Artist/extra field. All invoked commands
+still must return zero; no skipped remove or arbitrary success-exit set. Narrow XML
+reader explicitly accepts UTF-8 only, rejects NUL/DTD outside this authored variant.
+
+### First complete E01 pinned observation protocol gate
+
+601a20b0c1e6d6e1a78b489269f687445ca7827b/run42449222307: all 15 jobs SUCCESS.
+Retrieved/validated complete source-bound report into research/evidence/e01-pinned-jpeg.
+READ exact; INSERT D001 with nonExifBytesAndOrderExact=false/payloadBytesExact=false;
+REPLACE/REMOVE D001+D002, same false flags. Independent expected Artist bytes or
+absence/remaining orientation inventory, all other TIFF fields and scan checked.
+This is a successful bounded observation protocol INCLUDING known differences,
+NOT successful safe-write parity, E01 census closure, exclusion or numerator claim.
+All original fourteen gates retained/pass, 450 .NET cases per six combos; Python
+12 historical +26 discovery cases. No production code/API/hostile-input relaxation.
+
+Full scope/build/license/output-rights caveats, optional feature-build gaps, failures,
+classification logic and reproduction are in EXIV2_PINNED_BASELINE_EXECUTION.md.
+Final PR #16 documentation/evidence head must pass its OWN fifteen jobs before
+merge. Exact final immutable SHA/run/merge receipt posted there. Continue atomic
+E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reopened.

@@ -205,3 +205,15 @@ commands describe older commits, not current source builds. Reference harness
 selects its fixture DLL with METADATASHARP_REFERENCE_TFM (default net8.0); audit
 selects with AUDIT_TFM (default net8.0). Normal IsPackable remains false. No publish.
 Final discovery/documentation head requires own CI; receipt recorded in PR #15.
+
+## E01 pinned baseline job
+
+CI now has **fifteen** jobs: the fourteen E02 checks remain, plus required
+`Exiv2 0.28.9 / bounded E01 observations`. It builds exact pinned upstream source
+externally, never links native/GPL code into production DLLs/packages, and does not
+replace required historical 0.27.6 references. No upstream tests/fixtures imported.
+See [scope, commands and preservation findings](research/EXIV2_PINNED_BASELINE_EXECUTION.md).
+Successful observation protocol includes visible D001/D002 reference differences;
+it is NOT a blanket successful safe-write/parity assertion. Full source-bound small
+JSON can be recovered with `python tools/reference/collect_baseline.py RUN_ID DEST`.
+Python discovery now runs 26 cases, historical policy 12; .NET floor remains 450/TFM.

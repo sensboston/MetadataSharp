@@ -1,0 +1,431 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "sourceCommit": "601a20b0c1e6d6e1a78b489269f687445ca7827b",
+  "baseline": {
+    "version": "0.28.9",
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "cmakeCacheSha256": "8f13f98e9fd2e35b240d5086f2570f88f2f4a57e78e52b5306688ae61817f98f",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "executableSha256": "c3755beed92d48750e966a2c9c4a3c810a6a9c88a6a5383f3c03708cee754afc",
+    "verboseBuildFacts": [
+      "exiv2=0.28.9",
+      "platform=linux",
+      "compiler=G++",
+      "bits=64",
+      "dll=0",
+      "debug=0",
+      "version=13.3.0",
+      "library=/usr/lib/locale/locale-archive",
+      "library=/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "library=/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "library=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33",
+      "library=/usr/lib/x86_64-linux-gnu/libinih.so.55",
+      "library=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0",
+      "library=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "library=/usr/lib/x86_64-linux-gnu/libINIReader.so.55",
+      "library=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0",
+      "library=/usr/lib/x86_64-linux-gnu/libz.so.1.3",
+      "library=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1",
+      "library=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "have_inttypes=1",
+      "have_libintl=1",
+      "have_lensdata=1",
+      "have_iconv=1",
+      "have_memory=1",
+      "have_stdbool=1",
+      "have_stdint=1",
+      "have_stdlib=1",
+      "have_strlib=0",
+      "have_strerror_r=1",
+      "have_strings_h=0",
+      "have_mmap=1",
+      "have_munmap=1",
+      "have_sys_stat=1",
+      "have_unistd_h=0",
+      "have_sys_mman=1",
+      "have_libz=1",
+      "have_brotli=1",
+      "have_xmptoolkit=1",
+      "have_bool=0",
+      "have_strings=1",
+      "have_sys_types=1",
+      "have_unistd=1",
+      "enable_bmff=1",
+      "enable_webready=0",
+      "enable_nls=0",
+      "enable_video=1"
+    ],
+    "runtimeFeatureChecks": {
+      "have_xmptoolkit": "1",
+      "have_libz": "1",
+      "have_brotli": "1",
+      "enable_bmff": "1"
+    }
+  },
+  "commands": [
+    {
+      "args": [
+        "git",
+        "-C",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/source",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "ce6a5b2ce9a4d2ebea7985e8124344952f1dbd8241b35d249a99057a3269b84a",
+      "stderr": "",
+      "stdout": "b0859fc61fea5dedfc898aece6b15893ddf4314e\n"
+    },
+    {
+      "args": [
+        "git",
+        "-C",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/source",
+        "status",
+        "--porcelain",
+        "--untracked-files=no"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "args": [
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "825e033c606737a732f94eff5a39957b14086a7cc964c3b83eedbbcababd4fdb",
+      "stderr": "",
+      "stdout": "exiv2 0.28.9\n\nThis program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public\nLicense along with this program; if not, write to the Free\nSoftware Foundation, Inc., 51 Franklin Street, Fifth Floor,\nBoston, MA 02110-1301 USA\n"
+    },
+    {
+      "args": [
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "--verbose",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "0c328d1aaedb3487abd48e280062d4ed2f53fd893c71d31fa4eaf23e9ad33029",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "cmake",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "f6e81c2559f3ce00c5fdad01d7b226c301f5d6b07ee04f65db6dbfdc1cc5970b",
+      "stderr": "",
+      "stdout": "cmake version 3.31.6\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n"
+    },
+    {
+      "args": [
+        "c++",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "88b7c4b67564a146863224148116065fee418539f0a408f3636a68f3bde51805",
+      "stderr": "",
+      "stdout": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
+    },
+    {
+      "args": [
+        "ldd",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "389d5c9559c3ebac64e3b3eeaa1f0c5e093364b0fd77badd5b19c1fa1a939720",
+      "stderr": "",
+      "stdout": "\tlinux-vdso.so.1 (0x00007f3b642c5000)\n\tlibexpat.so.1 => /lib/x86_64-linux-gnu/libexpat.so.1 (0x00007f3b64285000)\n\tlibz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007f3b64269000)\n\tlibbrotlidec.so.1 => /lib/x86_64-linux-gnu/libbrotlidec.so.1 (0x00007f3b6425b000)\n\tlibINIReader.so.0 => /lib/x86_64-linux-gnu/libINIReader.so.0 (0x00007f3b64253000)\n\tlibstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f3b63a00000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f3b63d17000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f3b63ce9000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f3b63600000)\n\tlibbrotlicommon.so.1 => /lib/x86_64-linux-gnu/libbrotlicommon.so.1 (0x00007f3b63cc6000)\n\tlibinih.so.1 => /lib/x86_64-linux-gnu/libinih.so.1 (0x00007f3b6424c000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f3b642c7000)\n"
+    },
+    {
+      "args": [
+        "dpkg-query",
+        "-W",
+        "cmake",
+        "ninja-build",
+        "g++",
+        "libexpat1-dev",
+        "zlib1g-dev",
+        "libbrotli-dev",
+        "libinih-dev",
+        "libfmt-dev"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "5374f4fd7eae9650378d8406aa40032949f541c3ba7f10b50e220a8fd7010a0a",
+      "stderr": "",
+      "stdout": "cmake\t3.28.3-1build7\ng++\t4:13.2.0-7ubuntu1\nlibbrotli-dev:amd64\t1.1.0-2ubuntu0.1\nlibexpat1-dev:amd64\t2.6.1-2ubuntu0.6\nlibfmt-dev:amd64\t9.1.0+ds1-2\nlibinih-dev:amd64\t55-1ubuntu2\nninja-build\t1.11.1-2\nzlib1g-dev:amd64\t1:1.3.dfsg-3.1ubuntu2.3\n"
+    },
+    {
+      "args": [
+        "dotnet",
+        "run",
+        "--project",
+        "/home/runner/work/MetadataSharp/MetadataSharp/tools/MetadataSharp.ReferenceFixture",
+        "-c",
+        "Release",
+        "-f",
+        "net8.0",
+        "--",
+        "generate",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/observations/fixtures"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "args": [
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-P",
+        "kycv",
+        "-K",
+        "Exif.Image.Artist",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/observations/read.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
+      "stderr": "",
+      "stdout": "Exif.Image.Artist                            Ascii       6  Alice\n"
+    },
+    {
+      "args": [
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii Alice",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/observations/insert.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "args": [
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-P",
+        "kycv",
+        "-K",
+        "Exif.Image.Artist",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/observations/insert.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
+      "stderr": "",
+      "stdout": "Exif.Image.Artist                            Ascii       6  Alice\n"
+    },
+    {
+      "args": [
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii Bob",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/observations/replace.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "args": [
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-P",
+        "kycv",
+        "-K",
+        "Exif.Image.Artist",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/observations/replace.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "edb84774f41ef82c1baa6847c590a7c1f6fad47e5aa60c97d79a22b92d2958ab",
+      "stderr": "",
+      "stdout": "Exif.Image.Artist                            Ascii       4  Bob\n"
+    },
+    {
+      "args": [
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "del Exif.Image.Artist",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/observations/remove.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "args": [
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-P",
+        "Ekycv",
+        "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/observations/remove.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "c9ab419b5c740b67d4936b46d4e4c31c751ca268889fba44ca6e192abc7fdeea",
+      "stderr": "",
+      "stdout": "Exif.Image.Orientation                       Short       1  1\n"
+    }
+  ],
+  "observations": [
+    {
+      "id": "EX0289-JPEG-EXIF-READ-IFD0-ARTIST-ASCII-II-01",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "read",
+      "variant": "single-scan 8x8 grayscale; classic II; IFD0 ASCII Artist; no MakerNote/thumbnail",
+      "inputSha256": "eed047fe9e958461a6b790233b789fc567429f86bbf5ac4c1ff00b0f6ed93bbd",
+      "outputSha256": "eed047fe9e958461a6b790233b789fc567429f86bbf5ac4c1ff00b0f6ed93bbd",
+      "fixture": "ours.jpg",
+      "fixtureRights": "repository-authored generator; MIT; no upstream fixture",
+      "independentExpected": {
+        "type": 2,
+        "count": 6,
+        "rawHex": "416c69636500"
+      },
+      "expectedSource": "authored literal; TIFF6 ASCII type/count/raw bytes; not reference-derived",
+      "preserved": {
+        "scanSha256": "ff0e7d335edfac055cd7b7f99ce18a5949f88189ae846e01ab0ee31ee45c1231",
+        "nonExifSegmentsBeforeSha256": "b33ff1445f5bea97f398e73fd37916cc1402260eef626652783d59d940931868",
+        "nonExifSegmentsAfterSha256": "b33ff1445f5bea97f398e73fd37916cc1402260eef626652783d59d940931868",
+        "nonExifSegmentPreservation": "exact-bytes-and-order",
+        "nonExifBytesAndOrderExact": true,
+        "nonExifPayloadBytesExact": true,
+        "knownReferenceDifferences": [],
+        "nonTargetIfd0": true
+      },
+      "baselineObservation": "passed-independent-byte-and-print-check",
+      "metadataSharpVerification": "not-scored; generated input is not bidirectional operation parity",
+      "limits": "Only this fixture variant, not full JPEG/EXIF support"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-IFD0-ARTIST-ASCII-II-01",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "insert",
+      "variant": "single-scan 8x8 grayscale; classic II; IFD0 ASCII Artist; no MakerNote/thumbnail",
+      "inputSha256": "a97468acf282ae32be6a2a9b14e954a0b5f2d1834fcda837af60384bacbefd95",
+      "outputSha256": "2e34563f1acc933d7d6703c13e6222ffb3dd28202fedc6c33764872e70ec5a47",
+      "fixture": "base.jpg",
+      "fixtureRights": "repository-authored generator; MIT; no upstream fixture",
+      "independentExpected": {
+        "type": 2,
+        "count": 6,
+        "rawHex": "416c69636500"
+      },
+      "expectedSource": "authored literal; TIFF6 ASCII type/count/raw bytes; not reference-derived",
+      "preserved": {
+        "scanSha256": "ff0e7d335edfac055cd7b7f99ce18a5949f88189ae846e01ab0ee31ee45c1231",
+        "nonExifSegmentsBeforeSha256": "b33ff1445f5bea97f398e73fd37916cc1402260eef626652783d59d940931868",
+        "nonExifSegmentsAfterSha256": "f7f4a6b5703aeab15a581100874db983fd3e73ffdb621f0a0b4c4db5b0fb18a8",
+        "nonExifSegmentPreservation": "D001-authored-COM-trailing-NUL-NOT-byte-preservation",
+        "nonExifBytesAndOrderExact": false,
+        "nonExifPayloadBytesExact": false,
+        "knownReferenceDifferences": [
+          "D001"
+        ],
+        "nonTargetIfd0": true
+      },
+      "baselineObservation": "passed-independent-byte-and-print-check",
+      "metadataSharpVerification": "not-scored; generated input is not bidirectional operation parity",
+      "limits": "Only this fixture variant, not full JPEG/EXIF support"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-IFD0-ARTIST-ASCII-II-01",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "replace",
+      "variant": "single-scan 8x8 grayscale; classic II; IFD0 ASCII Artist; no MakerNote/thumbnail",
+      "inputSha256": "d2a204deb6a7fb02b4e134d5956db78098422a366bbe411a585fba126d9479a2",
+      "outputSha256": "408c71d4bb30102503a676e9ded0b59a5a97591ebcbe1656d9919a09362af26f",
+      "fixture": "xmp.jpg",
+      "fixtureRights": "repository-authored generator; MIT; no upstream fixture",
+      "independentExpected": {
+        "type": 2,
+        "count": 4,
+        "rawHex": "426f6200"
+      },
+      "expectedSource": "authored literal; TIFF6 ASCII type/count/raw bytes; not reference-derived",
+      "preserved": {
+        "scanSha256": "ff0e7d335edfac055cd7b7f99ce18a5949f88189ae846e01ab0ee31ee45c1231",
+        "nonExifSegmentsBeforeSha256": "82c2db081d81d79bfda4c106ae52024a9f62dc276e8ad3c828f207af5601e331",
+        "nonExifSegmentsAfterSha256": "e656cf9ba6adfa4998afe78b8d54285d753e0774fff96ec7b23cf4cc50f63f70",
+        "nonExifSegmentPreservation": "D001+D002-authored-COM-and-single-CreatorTool-XMP-reencoded-NOT-byte-preservation",
+        "nonExifBytesAndOrderExact": false,
+        "nonExifPayloadBytesExact": false,
+        "knownReferenceDifferences": [
+          "D001",
+          "D002"
+        ],
+        "nonTargetIfd0": true
+      },
+      "baselineObservation": "passed-independent-byte-and-print-check",
+      "metadataSharpVerification": "not-scored; generated input is not bidirectional operation parity",
+      "limits": "Only this fixture variant, not full JPEG/EXIF support"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-IFD0-ARTIST-ASCII-II-01",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "remove",
+      "variant": "single-scan 8x8 grayscale; classic II; IFD0 ASCII Artist; no MakerNote/thumbnail",
+      "inputSha256": "d2a204deb6a7fb02b4e134d5956db78098422a366bbe411a585fba126d9479a2",
+      "outputSha256": "18f725c20ced3bba7b0fd5b6bf9304efcc11e18201613c2da3d936b612e7632a",
+      "fixture": "xmp.jpg",
+      "fixtureRights": "repository-authored generator; MIT; no upstream fixture",
+      "independentExpected": null,
+      "expectedSource": "authored literal; TIFF6 ASCII type/count/raw bytes; not reference-derived",
+      "preserved": {
+        "scanSha256": "ff0e7d335edfac055cd7b7f99ce18a5949f88189ae846e01ab0ee31ee45c1231",
+        "nonExifSegmentsBeforeSha256": "82c2db081d81d79bfda4c106ae52024a9f62dc276e8ad3c828f207af5601e331",
+        "nonExifSegmentsAfterSha256": "e656cf9ba6adfa4998afe78b8d54285d753e0774fff96ec7b23cf4cc50f63f70",
+        "nonExifSegmentPreservation": "D001+D002-authored-COM-and-single-CreatorTool-XMP-reencoded-NOT-byte-preservation",
+        "nonExifBytesAndOrderExact": false,
+        "nonExifPayloadBytesExact": false,
+        "knownReferenceDifferences": [
+          "D001",
+          "D002"
+        ],
+        "nonTargetIfd0": true
+      },
+      "baselineObservation": "passed-independent-byte-and-print-check",
+      "metadataSharpVerification": "not-scored; generated input is not bidirectional operation parity",
+      "limits": "Only this fixture variant, not full JPEG/EXIF support"
+    }
+  ],
+  "denominatorFrozen": false,
+  "currentCase": {
+    "operation": "remove",
+    "fixture": "xmp.jpg"
+  }
+}

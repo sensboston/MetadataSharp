@@ -85,3 +85,15 @@ Regenerate with `python tools/reference/build_capability_seeds.py`; use `--check
 to reject drift. Six independent policy tests prevent inferred writes/no-claim cells
 from becoming observed support/exclusions or a fabricated percentage. This is a
 traceable starting ledger, not closure of the E01 parity gate.
+
+## Superseding pinned CLI execution, E01 still OPEN
+
+The earlier CLI-unprovisioned status is historical. Code601a20b/run42449222307
+passes fifteen jobs with an actual exact-source Exiv2 0.28.9 build and four
+fixture-specific JPEG ASCII Artist observations. See
+[execution scope/findings](EXIV2_PINNED_BASELINE_EXECUTION.md) and
+[evidence](evidence/e01-pinned-jpeg/). These are not full format/operation inventory,
+MetadataSharp parity or safe-write support. All three reference writes have explicit
+non-target byte-preservation failures (COM change; XMP reencoding where present).
+Neither observed differences nor disabled optional web/curl are accepted exclusions.
+186 seeds/348 candidates and all unknown/rights/layout rows stay visible; no score.
