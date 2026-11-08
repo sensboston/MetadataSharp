@@ -103,3 +103,15 @@ bytes remain physically present: no privacy scrubbing or compaction. Do not star
 writer code without the approved schema and predecessor gate.
 Use [the recovery checkpoint](CURRENT_STATE.md) for the current next steps. M17/M18 remain the next later units; DNG
 implementation is not part of those three remaining roadmap milestones.
+
+## M17–M18 grouped final roadmap audit
+
+The developer explicitly requested both remaining units in one pass/PR on the new
+arena/b166bb08-metadatasharp branch. M17 [DNG feasibility](design/DNG_SCOPE.md) and
+[proposed follow-up prompts](prompts/followups/DNG_PROPOSED_SEQUENCE.md) are complete;
+the proposed future implementation sequence still requires approval. M17 passed
+42439542366 before M18 tooling began. M18 [measured/package audit](audits/PERFORMANCE_AND_PACKAGING_AUDIT.md)
+passed 42439984148 at 4d89a00 (seven jobs including three-platform package consumers,
+448 tests/platform and required references). Final grouped head/merge receipt is
+tracked in PR #12 after checks. After that merge M00–M18 are complete within their
+bounded definitions; no DNG implementation or package publication is implied.

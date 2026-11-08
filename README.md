@@ -54,3 +54,11 @@ See [LICENSE](LICENSE) for the MIT license.
 
 - [M16 TIFF editing usage and preservation/failure boundaries](docs/design/STANDALONE_TIFF_EDITING_USAGE_AND_LIMITS.md).
 - [M16 implementation audit and final-gate status](docs/audits/STANDALONE_TIFF_EDITING_AUDIT.md).
+
+## Final roadmap audits (M17–M18)
+
+- [DNG feasibility and approval-pending future sequence](docs/design/DNG_SCOPE.md):
+  **no DNG implementation**; existing TIFF refusal is unchanged.
+- [Measured performance and local packaging audit](docs/audits/PERFORMANCE_AND_PACKAGING_AUDIT.md):
+  three-platform evidence, allocation/throughput limits and remaining release gates.
+  **No package publication authorized.** Final grouped gate/merge is tracked in PR #12.

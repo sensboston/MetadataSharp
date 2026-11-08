@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sourceCommit": "4d89a00e016d32845bd44395bba7f0076dcc1217",
+  "sdkInfo": ".NET SDK:\n Version:           8.0.427\n Commit:            38c6707c62\n Workload version:  8.0.400-manifests.72773747\n MSBuild version:   17.11.69+4d6a29faa\n\nRuntime Environment:\n OS Name:     ubuntu\n OS Version:  26.04\n OS Platform: Linux\n RID:         linux-x64\n Base Path:   /usr/share/dotnet/sdk/8.0.427/\n\n.NET workloads installed:\nConfigured to use loose manifests when installing new manifests.\nThere are no installed workloads to display.\n\nHost:\n  Version:      10.0.14\n  Architecture: x64\n  Commit:       0427b9abbe\n\n.NET SDKs installed:\n  8.0.133 [/usr/share/dotnet/sdk]\n  8.0.206 [/usr/share/dotnet/sdk]\n  8.0.319 [/usr/share/dotnet/sdk]\n  8.0.427 [/usr/share/dotnet/sdk]\n  9.0.123 [/usr/share/dotnet/sdk]\n  9.0.205 [/usr/share/dotnet/sdk]\n  9.0.320 [/usr/share/dotnet/sdk]\n  10.0.114 [/usr/share/dotnet/sdk]\n  10.0.204 [/usr/share/dotnet/sdk]\n  10.0.303 [/usr/share/dotnet/sdk]\n  10.0.403 [/usr/share/dotnet/sdk]\n\n.NET runtimes installed:\n  Microsoft.AspNetCore.App 8.0.6 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 8.0.22 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 8.0.33 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 9.0.6 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 9.0.22 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.8 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.11 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.14 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.NETCore.App 8.0.6 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 8.0.22 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 8.0.33 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 9.0.6 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 9.0.22 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.8 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.11 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.14 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n\nOther architectures found:\n  None\n\nEnvironment variables:\n  DOTNET_CLI_TELEMETRY_OPTOUT              [1]\n  DOTNET_MULTILEVEL_LOOKUP                 [0]\n  DOTNET_NOLOGO                            [1]\n  DOTNET_ROOT                              [/usr/share/dotnet]\n  DOTNET_SKIP_FIRST_TIME_EXPERIENCE        [1]\n\nglobal.json file:\n  /home/runner/work/MetadataSharp/MetadataSharp/global.json\n\nLearn more:\n  https://aka.ms/dotnet/info\n\nDownload .NET:\n  https://aka.ms/dotnet/download\n",
+  "packages": [
+    {
+      "package": "MetadataSharp.Core.0.0.0-audit.nupkg",
+      "sha256": "85016fc36a4b2128543459dfa2027c9d64f5ac35c3db6940cf4eafdd94449a48",
+      "entries": [
+        "LICENSE",
+        "MetadataSharp.Core.nuspec",
+        "README.md",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net8.0/MetadataSharp.Core.dll",
+        "lib/net8.0/MetadataSharp.Core.xml",
+        "package/services/metadata/core-properties/94f935d6edc24aaf802bc8b98ac31b2e.psmdcp"
+      ],
+      "dependencies": [],
+      "documentedMembers": 45
+    },
+    {
+      "package": "MetadataSharp.Formats.0.0.0-audit.nupkg",
+      "sha256": "6a8a2227b569ed1bb158df8e5c0bd2916c91ed67fdbbfe5f0df2831f5e601609",
+      "entries": [
+        "LICENSE",
+        "MetadataSharp.Formats.nuspec",
+        "README.md",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net8.0/MetadataSharp.Formats.dll",
+        "lib/net8.0/MetadataSharp.Formats.xml",
+        "package/services/metadata/core-properties/dc5804f7df9a426c8bf01b2bf24ef839.psmdcp"
+      ],
+      "dependencies": [
+        [
+          "MetadataSharp.Core",
+          "0.0.0-audit"
+        ]
+      ],
+      "documentedMembers": 19
+    }
+  ],
+  "offlineConsumer": "passed",
+  "publication": "not attempted",
+  "docCaveat": "XML member counts are not full API documentation coverage; CS1591 suppressed only for audit candidates"
+}

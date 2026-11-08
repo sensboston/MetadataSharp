@@ -1,127 +1,80 @@
 # Current development state and recovery checkpoint
 
-Updated: 2026-11-07. Read first after interruption; compare with source/Git/live CI.
-This record supersedes earlier initial/no-code handoffs. PROGRESS.md retains history.
+Updated: 2026-11-07. Read first after interruption; verify against source/Git/live CI.
+PROGRESS.md preserves chronological approvals, diagnostics and immutable evidence.
 
-## Current unit and exact authorization
+## Current grouped unit
 
-**M16 restricted standalone TIFF editing: implementation, audit and full 448-case
-acceptance gate PASSED. No further M16 code work planned.** Final documentation-head
-checks/PR #11 merge receipt are recorded in the PR after actual success; on recovery
-check live PR status before assuming merge. Do not start another unit on a pending gate.
+**M17 DNG feasibility deliverable COMPLETE; future DNG implementation plan remains
+UNAPPROVED. M18 bounded measured performance/package audit COMPLETE.** Developer
+requested both remaining roadmap units in one pass/one PR. No public production API
+or safety changes, DNG implementation, broad optimization or publication authorized.
 
-Exact approved public/safety contract:
-[STANDALONE_TIFF_EDITING_CONTRACT_PROPOSAL.md](design/STANDALONE_TIFF_EDITING_CONTRACT_PROPOSAL.md).
-Developer explicitly approved the retained-obsolete-bytes compromise. Recovery
-checkpoint **4bf56c6 was pushed before code**, satisfying the separate prerequisite;
-do not repeat approval or that prerequisite. Actual public/safety changes still
-need approval. Usage and final source audit:
+Active assigned branch: `arena/b166bb08-metadatasharp`, based on M16 merge
+`d476e37ef1b848df4556b7346f9858310470f4ee`. Work only on live assigned Arena branch;
+never switch to master or reuse a merged historical session branch. One grouped
+PR: https://github.com/sensboston/MetadataSharp/pull/12. Standing authorization covers
+commits/push and merge after the whole final-head gate, not package publication.
 
-- design/STANDALONE_TIFF_EDITING_USAGE_AND_LIMITS.md
-- audits/STANDALONE_TIFF_EDITING_AUDIT.md
-- design/STANDALONE_TIFF_WRITE_NORMATIVE_REVIEW.md
+## Durable deliverables and observed gates
 
-Current session branch `arena/d7ec6276-metadatasharp`, based on M15 merge
-80dc75e62eff242d2b98bc4b14b3090cf4ea60ce. Work only on the live assigned Arena branch;
-this historical name must not override a later session assignment. Never switch to
-master. Saving/pushing and merging a completed green unit are authorized; package
-publication is not. Draft PR: https://github.com/sensboston/MetadataSharp/pull/11.
+- M00–M16 merged. M16 PR #11 confirmed merged at d476e37; final cbd3607 passed
+  42436474402/42436471157 with 448 tests/platform, policy/references.
+- M17: docs/design/DNG_SCOPE.md and docs/prompts/followups/DNG_PROPOSED_SEQUENCE.md.
+  Source DNG 1.7.1.0 September 2023 mirror/hash pinned; dependency/risk/required
+  contracts/exclusions/fixture rights/reference questions recorded. D0 → D1 → D2
+  is proposed future work requiring approval, not code or an approved public API.
+  Current TIFF DNG refusal remains unchanged. Exact M17 head
+  1a05ffe23ee6e8b766a6db777705e509755bb79b passed 42439542366 BEFORE M18 tooling.
+- M18: docs/audits/PERFORMANCE_AND_PACKAGING_AUDIT.md, evidence/m18 JSON/receipt,
+  tools/MetadataSharp.Audit, tools/audit/run.py and collect.py. Eight authored-input
+  public-API workloads, five measured batches, throughput/process-wide allocations,
+  hashes/environment; opt-in local 0.0.0-audit packages, manifests/XML/MIT/deps and
+  isolated offline consumer on Linux/Windows/macOS. Normal IsPackable stays false.
+- Audited/recovered evidence head **4d89a00e016d32845bd44395bba7f0076dcc1217** passed
+  required [42439984148](https://github.com/sensboston/MetadataSharp/actions/runs/42439984148):
+  **all seven jobs green**, including 448 .NET tests per OS, Python policy 12/12,
+  required pinned references and all three measurement/package/consumer jobs.
+- Package XML member counts 45 Core / 19 Formats are NOT full API documentation
+  coverage. No external production package deps except Formats → Core; framework
+  runtime still needed. No shipping CLI/native/fixture/PDF/GPL payloads. No broad
+  conformance, full-size I/O, universal speed, zero-allocation or release claim.
+- Final documentation/evidence commit still must pass its own seven-job CI before
+  readying/merging PR #12. Record immutable final SHA/run IDs/merge receipt in PR
+  after actual success (avoid circular self-recording). On recovery check live PR:
+  if MERGED, all M00–M18 roadmap units are complete within their bounded definitions;
+  if OPEN, finish only remaining required gates/merge or fix actual failures.
 
-## Observed checkpoints and remaining work
+## Next eligible work after grouped merge
 
-- M00–M15 merged. M15 final 812bd76 passed required 42431094052 and push 42431090942:
-  392 .NET tests/platform, Python 12/12 and pinned references. PR #10 merge above.
-- Initial M16 range-audited 600bbc1 passed 42435227396: 405/platform plus required
-  references. Then 0dd38366cdc5bac2843541d336abfb4c9837cbd5 passed 42435965943 and
-  42435961970: 435/platform, policy/references. These are not final-head results.
-- Latest validated source **635f8bb565eeaab72a9147d5e9825fdcde54c215** passed required
-  [42436144783](https://github.com/sensboston/MetadataSharp/actions/runs/42436144783):
-  **438 .NET tests on each Windows/Linux/macOS**, Python **12/12**, mandatory pinned
-  external references. This includes malformed-date policy and snapshot-budget fixes.
-- Full acceptance/documentation head **762dc206915e7989721645e0ee3a8adb479310c2**
-  passed required [42436352761](https://github.com/sensboston/MetadataSharp/actions/runs/42436352761):
-  **448 .NET tests per Windows/Linux/macOS**, Python **12/12**, required references.
-  Covers all accepted gray/RGB 8/16-bit/contiguous/separate/alpha families and every
-  addressed tag add/read/equivalent-copy/remove in both byte orders. Compression
-  selector cases are accounting-only, not valid codec payload claims; 4-GiB
-  boundaries use a pure planner model, not giant source I/O. No large artifacts.
-- Final documentation head must itself pass all required checks before ready/merge
-  of PR #11. Its immutable SHA/run/merge receipt is posted in that PR to avoid a
-  self-referential commit record. If the PR is already merged, M16 is complete;
-  if not, finish only those authorized final gate/merge steps. No package publication.
-- No further M16 public API/strategy expansion is planned. After completed merge,
-  M17 is DNG feasibility/contracts ONLY, not implementation. Its separate future
-  implementation plan needs approval. M18 is measured optimization/packaging audit,
-  not publication permission. The M16 prompt stops at its completed unit.
+No roadmap implementation milestone remains. Ask developer to approve proposed DNG
+D0/D1/D2 sequence before any future DNG work; exact contracts need separate approval
+before code. Release hardening (API docs, version/support/signing/SourceLink/SBOM/
+advisory checks and publication decision) remains separate. Do not publish packages
+or implement DNG merely because M17/M18 or their PR completed. M16 still retains
+obsolete bytes: no erasure/privacy/compaction, no generic opaque-pointer safety.
 
-## Essential implementation and safety facts
-
-- TiffMetadataDocument retains source identity/ownership; Layout is historical and
-  source-relative keys never rebind. ReadValue/Set/Remove only the closed baseline
-  descriptive subset. ExifValue remains the immutable primitive, not a general
-  TIFF/Exif projection. Existing JPEG/PNG/WebP/embedded EXIF behavior is unchanged.
-- Effective edits append a complete sorted active IFD graph through one old/new
-  map. Remap next/SubIFD/Exif/GPS/Interop edges; shared targets stay shared. Copy
-  original bytes except header 4–7 exactly, retaining original image/preview/value
-  positions. Original opaque/private extensions refuse effective writes even if
-  M15 accounting is supported. No directory creation/deletion or empty IFD output.
-- **Old metadata remains physically present. No privacy scrubbing, erasure or
-  compaction. Repeated edits grow files. New output only, never in-place append.**
-- Whole length/SHA-256 before reads/saves; no-op still verifies identity. Captured
-  finite budgets cover edit snapshot before copying plus original/staged graph,
-  changed values/pointer arrays/tail, address/entry/value/active-range ceilings.
-  Compatible unchanged external aliases count once. Logical charges are not CLR
-  allocation measurements. Existing invalid target dates refuse read/replacement;
-  unrelated edits preserve them, removal bypasses content but not framing.
-- Async-only/short I/O, cancellation, source changes, partial output, temporary
-  cleanup and race-created destination tests exist. Streams stay caller-owned;
-  no concurrent mutation, filesystem alias defense or crash durability is promised.
-- Mandatory reference harness exists and passed: four owned II/MM strip/tile
-  original/edited/no-op/removed cases; Exiv2/ExifTool changed facts, reverse ingress
-  and public-API rewrite, independent active IFD/range/prefix/image identity checks.
-  It is not a broader codec decoder/conformance suite. No GPL source/tests imported.
-
-## Files and recovery commands
-
-Source: src/MetadataSharp.Formats/Tiff/{TiffMetadataEdit,TiffMetadataDocument,
-TiffAppendPlanner,TiffLayout,TiffLayoutReader,TiffModels}.cs; shared ContainerIo.
-Tests: tests/MetadataSharp.Tests/Tiff/{TiffEditingTests,TiffWriteAcceptanceTests,
-StandaloneTiffTests,StandaloneTiffFixture}.cs. References: tools/MetadataSharp.ReferenceFixture/Program.cs,
-tools/reference/harness.py, tests/reference/test_harness.py. Workflow emits bounded
-failed-TRX annotations and enforces actual executed count, currently 448.
+## Recovery commands and environment
 
 ```sh
 git status --short
 git branch --show-current
 git log -6 --oneline
 python -m unittest discover -s tests/reference -q
+python -m py_compile tools/audit/*.py
 git diff --check
-gh run list --branch arena/d7ec6276-metadatasharp --limit 6
-gh pr view 11 --json state,isDraft,headRefOid,statusCheckRollup
-# On a machine with .NET 8:
-dotnet restore MetadataSharp.sln
-dotnet build MetadataSharp.sln --configuration Release --no-restore
-dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore
+gh pr view 12 --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
+gh run list --branch arena/b166bb08-metadatasharp --limit 6
+# On .NET 8 SDK machine (absent in local Arena):
+python tools/audit/run.py
+dotnet test MetadataSharp.sln --configuration Release
 ```
 
-Local dotnet is absent. Use actual push-triggered Actions, not another SDK download
-attempt. `gh workflow dispatch` was 403; push works. Remote logs/artifacts can EOF;
-use check-run annotations, including the workflow's bounded TRX failure report.
-Pinned Exiv2 0.27.6/ExifTool 12.76/dwebp 1.3.2 remain required; optional local skips
-are not passes. Do not weaken assertions/warnings. Historical fixture collision
-was fixed (external SubIFD array moved from 1024 to 1536), not a parser exception.
-A PROGRESS update-script overwrite was fully restored from Git before continuation;
-check document headers and diff statistics as well as whitespace on future updates.
-
-## Superseding M17–M18 active session (2026-11-07)
-
-M16 PR #11 is confirmed MERGED at d476e37ef1b848df4556b7346f9858310470f4ee.
-Active assigned branch: arena/b166bb08-metadatasharp. User explicitly requested
-M17+M18 in one pass/one PR. Bounded scope and recovery sequence are in the latest
-PROGRESS entry, committed before code. M17 produces DNG_SCOPE and proposed future
-prompts, with implementation approval pending; M18 independently measures authored
-public-API workloads and audits candidate packages without publication. Keep
-production contracts unchanged. Local SDK absent: use push CI and preserve small
-measured evidence in docs, not generated binaries. Next: pin/review DNG prose,
-commit M17 record, run its gate, then implement bounded M18 audit tooling and final
-platform/reference/package checks. Stop only for real blockers/new contracts.
+Do not retry unavailable SDK/blob downloads or workflow dispatch (403 previously).
+Push-triggered Actions work. Failed TRX and bounded command/assert diagnostics are
+check annotations. Audit JSON annotations use compressed <=2500-byte chunks because
+GitHub truncates messages at 4096; collector validates complete sets/run/source.
+First audit package assertion correctly caught absent XML due late MSBuild property
+setup; fixed by early opt-in props, not weakening checks. All artifacts stay ignored;
+only small measured JSON/receipt belong in Git. Required references use Exiv2 0.27.6,
+ExifTool 12.76 and dwebp 1.3.2; warnings/skips must not be weakened to obtain success.

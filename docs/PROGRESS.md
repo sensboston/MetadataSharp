@@ -923,3 +923,21 @@ Core has no package deps, Formats only Core. GitHub truncates individual annotat
 messages to 4096 bytes, so add compressed <=2500-byte chunks and a receipt-checked
 collector for durable full evidence (blob downloads remain unavailable). No measured
 results will be inferred from truncated messages. Reporting fix needs its own gate.
+
+### M18 full measured evidence gate and grouped completion submission
+
+Head 4d89a00e016d32845bd44395bba7f0076dcc1217 passed required 42439984148, all seven
+jobs: 448/platform, Python 12/12, references and all three platform audits. Complete
+baseline/package JSON recovered via compressed API annotations with checked source,
+chunk completeness and receipts under docs/audits/evidence/m18. Eight workloads,
+five batches each; runtime 8.0.33, SDK 8.0.427, X64 Linux/Windows and Arm64 macOS.
+Candidate package XML counts 45/19, MIT/readme/license and dependency assertions,
+isolated offline edit/reopen consumer all passed. Performance/reporting gaps and
+unexecuted release checks remain explicit; no optimization/publication/DNG code.
+
+M17 feasibility follow-up asks developer approval, not implicitly approved by the
+grouped merge. Final source/documentation/evidence head must pass all seven jobs
+before one PR #12 merge; immutable final-head run/merge receipt will be posted there.
+After completed merge, all bounded M00–M18 roadmap deliverables are complete. No
+further implementation unit starts automatically. Local Python policy/diff pass;
+local .NET absent, actual SDK measurements were Actions only.
