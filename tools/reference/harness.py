@@ -120,7 +120,8 @@ def main(argv=None):
                                   for p in (Path("tools/MetadataSharp.ReferenceFixture/Program.cs"),
                                             Path("tests/MetadataSharp.Tests/Jpeg/JpegFixture.cs"),
                                             Path("tests/MetadataSharp.Tests/Png/PngFixture.cs"),
-                                            Path("tests/MetadataSharp.Tests/WebP/WebPFixture.cs"))}
+                                            Path("tests/MetadataSharp.Tests/WebP/WebPFixture.cs"),
+                                            Path("tests/MetadataSharp.Tests/Tiff/StandaloneTiffFixture.cs"))}
         report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL, "dwebp": EXPECTED_DWEBP}
         fixture = Path("tools/MetadataSharp.ReferenceFixture/bin/Release/net8.0/MetadataSharp.ReferenceFixture.dll").resolve()
         def ours(*parameters):
