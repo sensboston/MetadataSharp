@@ -6,8 +6,8 @@ boundaries; append chronological evidence to PROGRESS.md. No chat history requir
 
 ## Current unit and approval
 
-**M16: restricted standalone TIFF editing — exact contract APPROVED; no writer
-code has been added at this checkpoint.** The developer explicitly confirmed the
+**M16: restricted standalone TIFF editing — exact contract APPROVED; initial
+implementation IN PROGRESS, not yet validated or complete.** The developer explicitly confirmed the
 proposal, including physically retained obsolete metadata, then asked for this
 repository-resident checkpoint before implementation. Do not ask for that same
 approval again. Any actual public/safety change still needs new approval.
@@ -22,6 +22,30 @@ Work only on the branch assigned by the live session; this historical branch nam
 must not override a later session's branch assignment. Never switch to master.
 Changes are committed/pushed under standing developer authorization. Merge only
 a completed final-head-green unit; package publication is not authorized.
+
+## Latest implementation checkpoint (supersedes the earlier no-code snapshot)
+
+- Recovery/approval documentation was committed and pushed FIRST as `4bf56c6`,
+  before changing any C#. That prerequisite is complete.
+- Rechecked TIFF6 and CIPA pointer prose/hashes; permanent record is
+  design/STANDALONE_TIFF_WRITE_NORMATIVE_REVIEW.md. Cache-only PDF tools are not
+  production dependencies and caches are not continuity artifacts.
+- Initial source now exists: TiffMetadataEdit.cs (options/keys/edit/schema),
+  TiffAppendPlanner.cs (graph map/closed schema/budget/no-op/append planning),
+  TiffMetadataDocument.cs (source identity/owned snapshots/I/O/publication).
+  TiffEditingTests.cs covers prefix/coded range retention, II/MM strip/tile,
+  shared directory edges, refusal/no-op/keys/limits, endian conversion and async.
+- Local Python policy 12/12 and whitespace checks pass. No local dotnet exists.
+  Initial code is NOT a completed/gated M16; inspect actual latest Actions results
+  after its submission, fix compile/analyzer/test issues before relying on it.
+- Next: inspect initial CI and audit preflight/schema/budget behavior; extend tests
+  to all accepted compression/plane/preview/alias/overflow/failure families, and
+  extend mandatory external reference generator/harness with M16 edited facts and
+  independent pointer/range checks. Existing reference checks alone are NOT an
+  M16 write-reference gate. Finish usage/support/audit docs before final green CI.
+- Do not mark the milestone complete, publish packages, merge a draft implementation
+  or start M17 based only on initial build/test success. Update this section with
+  actual commit/run evidence and remaining work after each meaningful checkpoint.
 
 ## Completed predecessor evidence
 

@@ -742,3 +742,21 @@
 - This is a documentation-only checkpoint. No M16 C# source/writer exists yet;
   approval is not an implementation or green M16 test result. Commit/push this
   checkpoint first, then begin normative review and implementation under its plan.
+
+### M16 initial implementation submission after preserved recovery checkpoint
+
+- Recovery checkpoint 4bf56c6 was pushed before any C# edit, as explicitly requested.
+  Then reviewed TIFF6 placement/fields/sort/alignment and CIPA pointer mechanics;
+  exact blobs/hashes and decisions recorded in the M16 normative-write review.
+- Added initial approved API/options/edit schema, finite append-graph planning and
+  document source identity/sync/async/new-path pipeline. No embedded EXIF serializer
+  reuse, source in-place writes or original-storage relocation. Original metadata
+  bytes are retained as explicitly approved; there is no privacy/compaction claim.
+- Added initial independent writer tests for II/MM strip/tile, full original prefix
+  retention, all directory link kinds/shared targets, no-ops/opaque refusals, last
+  field removal, typed keys/output limits, endian conversion and actual async I/O.
+- Python policy 12/12 and git diff --check pass locally. .NET source/tests have not
+  been built locally (SDK absent); initial Actions results must be inspected.
+  M16 external-write references, full acceptance matrix and final audit remain
+  PENDING. Updated CURRENT_STATE.md so resuming does not mistake this source for
+  either a no-code proposal or a completed/validated writer.
