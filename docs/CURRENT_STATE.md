@@ -5,12 +5,12 @@ approvals/diagnostics remain in PROGRESS; older session instructions there are h
 
 ## Active branch and scope
 
-Assigned branch **arena/d4158be1-metadatasharp**, cut from master fa548e92
-(PR #18 merge, which carried the parity master plan and E03 proposal). Never
-switch to master or another branch. Standing authorization covers commit/push
-and completed green PR merge, not package publication or unseen public contracts.
-The previous public-visibility billing blocker is resolved in observed runs; no CI
-exception applies.
+Assigned branch **arena/cdb43c96-metadatasharp**, cut from master 8fe9886
+(PR #20 merge; PR #19 brought E03 to master as ea8e056). Never switch to master
+or another branch. Standing authorization covers commit/push and completed green
+PR merge, not package publication or unseen public contracts. The previous
+public-visibility billing blocker is resolved in observed runs; no CI exception
+applies.
 
 Programme: roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md (E00–E18).
 Developer approved independent near-complete Exiv2 functionality, idiomatic .NET,
@@ -104,11 +104,20 @@ Next open units (as of 2026-11-08):
    no parity percentage or "complete" claim is possible.
 3. Atomic E01 breadth (per-format pinned CLI observations beyond JPEG EXIF Artist)
    may proceed only as batches defined by E01-CEN, with owned fixtures/rights review.
-D0 approved; D1 normative/fixture/oracle prerequisites remain (E03 compatibility
-gate now discharged pending merge). No other new public contracts, general format
-support, exclusion, Framework or publication authorization is implied by the
-2026-11-08 directive or this checkpoint. See
-design/EXIV2_PARITY_MASTER_PLAN.md for the full gated subtask split.
+4. **D1 — narrow read-only DNG inventory profile** (2026-11-08 go-ahead):
+   implemented on this branch, **PR #21**. Gates: 1 (normative ledger,
+   docs/design/DNG_D1_NORMATIVE_LEDGER.md), 2 (owned fixtures + structural
+   oracle + pinned ExifTool 12.76 inventory, docs/design/DNG_D1_FIXTURES_AND_ORACLES.md;
+   two independent writers byte-compared in CI; raw-decode oracle gap recorded
+   as blocker-class, accepted, never a silent skip), 3 (52 xunit cases +
+   offline Python policy suite, both shapes × II/MM), 4 (E02/E03 available).
+   TIFF's DNG refusal is unchanged. No decode/render/write, no parity percentage.
+   After PR #21 merges green: **E01-CEN starts immediately (developer
+   pre-authorized 2026-11-08)**, then documentation consolidation of completed
+   stages. See PROGRESS.md "D1 narrow read-only DNG inventory profile".
+No other new public contracts, general format support, exclusion, Framework or
+publication authorization is implied by the 2026-11-08 directive or this
+checkpoint. See design/EXIV2_PARITY_MASTER_PLAN.md for the full gated subtask split.
 
 ## Reproduction / local constraints
 
@@ -116,6 +125,7 @@ design/EXIV2_PARITY_MASTER_PLAN.md for the full gated subtask split.
 git status --short
 git branch --show-current
 python -m unittest discover -s tests/reference -q
+python tools/reference/dng_fixtures.py generate /tmp/dng-check
 python -m unittest discover -s tests/discovery -q
 python tools/reference/build_capability_seeds.py --check
 git diff --check
