@@ -1218,3 +1218,14 @@ fail rather than skip. Existing required 0.27.6 references remain unchanged. No
 new runtime dependency, API, publication, blanket coverage, exclusion or E01 closure.
 Finish own full CI and merge only green. E03 remains exact proposal before refactor;
 D0 approval retained, normative/oracle/E03 prerequisites still block D1.
+
+Initial E01 harness implemented: explicit recognized typed CMake options PLUS
+runtime feature checks (not accepting unused -D cache strings), exact version/pin,
+external binary/cache/license/host dependencies, four fixture-specific operation
+observations, independent ASCII raw bytes + all non-EXIF segments/scan preservation.
+Full verbose version stays an ignored CI artifact; durable receipt filters build
+facts so upstream namespace catalogs are not imported into this MIT repository.
+Complete chunk collector rejects missing/duplicate/corrupt/mixed-source receipts.
+Local Python: 12 historical policies + 21 discovery/observation/collector cases PASS;
+no local SDK/CMake execution. Required fifteenth CI job must prove actual build and
+observations; no successful execution asserted yet.
