@@ -908,3 +908,10 @@ all platforms; existing 448/platform tests and mandatory references remained gre
 Job-log blob download returned EOF. Add bounded command/assertion diagnostics and
 small JSON evidence as GitHub check annotations, retaining strict assertions and
 artifact upload. No package-audit success is claimed before diagnosis/fix.
+
+M18 diagnosis from check annotation 128606314112: candidate package lacked XML docs,
+so the required-content assertion correctly failed. Audit opt-in documentation
+properties were set too late in Directory.Build.targets. Move those properties to
+Directory.Build.props (before SDK documentation defaults), retaining strict package
+XML checks; add explicit SeNS author/copyright metadata and capture full SDK info.
+Normal builds remain non-packable. No production source or API changes.

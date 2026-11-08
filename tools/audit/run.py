@@ -59,7 +59,7 @@ if (reopened.ReadValue(new(reopened.Layout.FirstIfdOffset, 305))?.Count != 6) th
 Console.WriteLine("Offline package consumer passed.");''')
     run('dotnet', 'restore', str(consumer / 'consumer.csproj'), '--configfile', str(consumer / 'NuGet.Config'), '--packages', str(OUT / 'isolated-cache'))
     run('dotnet', 'run', '--project', str(consumer / 'consumer.csproj'), '-c', 'Release', '--no-restore', '--', str(OUT / 'consumer.tif'))
-    report = dict(schema=1, sourceCommit=os.getenv('AUDIT_SOURCE_COMMIT'), packages=reports, offlineConsumer='passed',
+    report = dict(schema=1, sourceCommit=os.getenv('AUDIT_SOURCE_COMMIT'), sdkInfo=subprocess.check_output(['dotnet', '--info'], text=True), packages=reports, offlineConsumer='passed',
                   publication='not attempted', docCaveat='XML member counts are not full API documentation coverage; CS1591 suppressed only for audit candidates')
     (OUT / 'packages.json').write_text(json.dumps(report, indent=2))
     # Persist small machine-readable evidence in Actions logs as well as artifacts.
