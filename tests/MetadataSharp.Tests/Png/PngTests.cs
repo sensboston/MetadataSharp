@@ -40,7 +40,7 @@ public sealed class PngTests
         Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => PngMetadataDocument.Open(new MemoryStream(bytes))).Code);
     }
     [Fact]
-    public void ExifAndXmpInsertReplaceRemovePreserveEveryOtherChunk()
+    public async Task ExifAndXmpInsertReplaceRemovePreserveEveryOtherChunk()
     {
         byte[] original = PngFixture.Build(PngFixture.Chunk("vpAg", [7, 8]));
         var edit = new ExifEdit(); edit.Set(new(ExifDirectoryKind.Ifd0, 0x0112), ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, [1, 0]));
@@ -48,18 +48,18 @@ public sealed class PngTests
         byte[] xmp = Save(exif, Set("first")); using (var doc = PngMetadataDocument.Open(new MemoryStream(xmp))) { Assert.Single(doc.ReadExif()!.Entries); Assert.Equal("first", doc.ReadXmp()!.Properties[Tool].Text); }
         byte[] replaced = Save(xmp, Set("second")); var removeXmp = new XmpEdit(); removeXmp.RemoveAllXmp(); Assert.Equal(exif, Save(replaced, removeXmp));
         var removeExif = new ExifEdit(); removeExif.RemoveAllExif(); Assert.Equal(original, ExifSave(exif, removeExif));
-        using var stream = new MemoryStream(xmp); PngScan scan = PngScanner.Scan(stream, new(), false, default).GetAwaiter().GetResult();
+        using var stream = new MemoryStream(xmp); PngScan scan = await PngScanner.Scan(stream, new(), false, default);
         PngChunk target = Assert.Single(scan.Chunks, c => c.Type == "eXIf"); Assert.Equal(JpegFixture.OrientationTiff, xmp.AsSpan((int)target.Payload, target.Size).ToArray());
     }
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void CompressedAndPostIdatXmpDecodeAndCanonicalizeOnlyOnEdit(bool compressed)
+    public async Task CompressedAndPostIdatXmpDecodeAndCanonicalizeOnlyOnEdit(bool compressed)
     {
         byte[] original = PngFixture.Build(after: PngFixture.Xmp(Packet("Привет"), compressed));
         using (var doc = PngMetadataDocument.Open(new MemoryStream(original))) Assert.Equal("Привет", doc.ReadXmp()!.Properties[Tool].Text);
         Assert.Equal(original, Save(original, new())); byte[] changed = Save(original, Set("edited"));
-        using var source = new MemoryStream(changed); var scan = PngScanner.Scan(source, new(), false, default).GetAwaiter().GetResult();
+        using var source = new MemoryStream(changed); var scan = await PngScanner.Scan(source, new(), false, default);
         PngChunk xmp = Assert.Single(scan.Chunks, c => c.Xmp), idat = Assert.Single(scan.Chunks, c => c.Type == "IDAT");
         Assert.True(xmp.Start > idat.Start); Assert.Equal(0, changed[(int)xmp.Payload + 18]);
         Assert.Equal(original.AsSpan(8, (int)idat.Start - 8 + (int)idat.Length).ToArray(), changed.AsSpan(8, (int)idat.Start - 8 + (int)idat.Length).ToArray());
@@ -142,6 +142,55 @@ public sealed class PngTests
         using var mutable = new MemoryStream(original.ToArray()); using var changed = PngMetadataDocument.Open(mutable); mutable.Position = 8; mutable.WriteByte(0);
         // Use an actual mutation, not an identical high byte in the IHDR length.
         mutable.Position = mutable.Length - 1; mutable.WriteByte(0); Assert.Equal(MetadataErrorCode.SourceChanged, Assert.Throws<MetadataException>(() => changed.ReadXmp()).Code);
+    }
+    [Fact]
+    public void OtherFamilyDuplicatesDoNotBecomeSemanticDependencies()
+    {
+        byte[] original = PngFixture.Build([.. PngFixture.Chunk("eXIf", [1]), .. PngFixture.Chunk("eXIf", [2])]);
+        byte[] edited = Save(original, Set("isolated"));
+        using var doc = PngMetadataDocument.Open(new MemoryStream(edited));
+        Assert.Equal("isolated", doc.ReadXmp()!.Properties[Tool].Text);
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => doc.ReadExif()).Code);
+    }
+    [Fact]
+    public void OversizedExifIsCopyOrWholeRemovalOnly()
+    {
+        byte[] original = PngFixture.Build(PngFixture.Chunk("eXIf", new byte[65528]));
+        Assert.Equal(original, ExifSave(original, new()));
+        using var doc = PngMetadataDocument.Open(new MemoryStream(original));
+        Assert.Equal(MetadataErrorCode.ExifTooLarge, Assert.Throws<MetadataException>(() => doc.ReadExif()).Code);
+        var remove = new ExifEdit(); remove.RemoveAllExif(); Assert.Equal(PngFixture.Build(), ExifSave(original, remove));
+        using var output = new MemoryStream(); var edit = new ExifEdit(); edit.Remove(new(ExifDirectoryKind.Ifd0, 0x0112));
+        Assert.Equal(MetadataErrorCode.ExifTooLarge, Assert.Throws<MetadataException>(() => doc.SaveExif(output, edit)).Code); Assert.Empty(output.ToArray());
+    }
+    [Theory]
+    [InlineData(0, 1, 0, false, true)]
+    [InlineData(2, 8, 1, false, true)]
+    [InlineData(3, 1, 0, true, true)]
+    [InlineData(3, 1, 0, false, false)]
+    [InlineData(4, 16, 0, false, true)]
+    [InlineData(6, 8, 0, false, true)]
+    [InlineData(2, 1, 0, false, false)]
+    [InlineData(6, 8, 2, false, false)]
+    public void IhdrAndPaletteProfilesAreExplicit(byte color, byte depth, byte interlace, bool palette, bool valid)
+    {
+        byte[] baseline = PngFixture.Build();
+        byte[] bytes = [.. baseline[..8], .. PngFixture.Chunk("IHDR", PngFixture.Header(color, depth, interlace)),
+            .. palette ? PngFixture.Chunk("PLTE", [1, 2, 3]) : [], .. baseline[33..]];
+        if (valid) Assert.Equal(bytes, Save(bytes, new())); // No pixel decode is claimed.
+        else Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => PngMetadataDocument.Open(new MemoryStream(bytes))).Code);
+    }
+    [Fact]
+    public void MalformedDeflateMutationSmokeRemainsBounded()
+    {
+        byte[] compressed = PngFixture.Compress(Encoding.UTF8.GetBytes(new string('x', 1000)));
+        var random = new Random(13013);
+        for (int i = 0; i < 256; i++)
+        {
+            byte[] mutation = compressed.ToArray(); mutation[random.Next(mutation.Length)] ^= (byte)(1 << random.Next(8));
+            try { Assert.True(BoundedZlib.Expand(mutation, 4096, default).Length <= 4096); }
+            catch (MetadataException error) { Assert.Contains(error.Code, new[] { MetadataErrorCode.InvalidPng, MetadataErrorCode.LimitExceeded }); }
+        }
     }
     private sealed class AsyncOutput : MemoryStream
     {

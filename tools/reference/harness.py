@@ -205,9 +205,39 @@ def main(argv=None):
             current = json.loads(ours("inspect-iptc", refreshed))
             checksum = json.loads(run(["exiftool", "-j", "-n", "-Photoshop:IPTCDigest", str(refreshed)]))[0]
             assert checksum["IPTCDigest"].lower() == current["digest"], "Refreshed IPTC digest is stale"
+        # PNG independent structural accounting: CRC and IDAT zlib are checked here,
+        # without reusing the library scanner or its CRC implementation.
+        import zlib
+        def png_pixels(path):
+            data = path.read_bytes(); assert data[:8] == b"\x89PNG\r\n\x1a\n"
+            at = 8; image = bytearray()
+            while at < len(data):
+                length = int.from_bytes(data[at:at+4], "big")
+                kind = data[at+4:at+8]; body = data[at+8:at+8+length]
+                assert zlib.crc32(kind + body) == int.from_bytes(data[at+8+length:at+12+length], "big")
+                if kind == b"IDAT": image.extend(body)
+                at += length + 12
+            assert at == len(data)
+            return bytes(image), zlib.decompress(image)
+        png = output / "ours.png"
+        assert png_pixels(png) == png_pixels(output / "base.png")
+        assert png_pixels(png)[1] == bytes([0, 10, 20, 30])
+        assert (output / "noop.png").read_bytes() == png.read_bytes()
+        assert (output / "removed.png").read_bytes() == (output / "exif.png").read_bytes()
+        validate_image(png)
+        values = json.loads(run(["exiftool", "-j", "-n", "-Artist", "-Orientation", "-XMP-xmp:CreatorTool", str(png)]))[0]
+        assert values["Artist"] == "Alice" and values["Orientation"] == 1 and values["CreatorTool"] == "MetadataSharp", values
+        rows = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Exif.Image.Artist", "-K", "Xmp.xmp.CreatorTool", str(png)]))
+        assert rows == {"Exif.Image.Artist": ("Ascii", 6, "Alice"), "Xmp.xmp.CreatorTool": ("XmpText", 13, "MetadataSharp")}, rows
+        changed = output / "external.png"; shutil.copyfile(png, changed)
+        run(["exiftool", "-overwrite_original", "-Artist=ExternalPng", "-XMP-xmp:CreatorTool=ExternalPng", str(changed)])
+        assert json.loads(ours("inspect-png", changed)) == {"artist": "ExternalPng", "creatorTool": "ExternalPng"}
+        copied = output / "external-noop.png"; ours("noop-png", changed, copied)
+        assert copied.read_bytes() == changed.read_bytes()
+        assert png_pixels(changed) == png_pixels(png)
         report["fixtures"] = [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                                "source": "MetadataSharp authored synthetic generator", "license": "MIT"}
-                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp")]
+                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png")]
         report["status"] = "passed"; save()
         print("PASS: external reads, reverse edits, byte preservation and validation classification")
         return 0

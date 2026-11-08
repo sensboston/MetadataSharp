@@ -111,7 +111,7 @@ public sealed class PngMetadataDocument : IDisposable, IAsyncDisposable
             if (payload.Length - at > options.MaxCompressedXmpBytes) throw BoundedZlib.Limit();
             text = BoundedZlib.Expand(payload[at..], maximum, token);
         }
-        Budget((long)payload.Length + text.Length + (Unique(false)?.Size ?? 0));
+        Budget((long)payload.Length + text.Length + scan.Chunks.Where(c => c.Type == "eXIf").Sum(c => (long)c.Size));
         XmpPacket result = XmpPacket.Parse(text, settings); token.ThrowIfCancellationRequested(); return result;
     }
     private sealed record Prepared(bool Copy, PngChunk? Target, byte[]? Chunk);
@@ -134,7 +134,7 @@ public sealed class PngMetadataDocument : IDisposable, IAsyncDisposable
             XmpPacket original = chunk is null ? XmpPacket.CreateEmpty() : await Xmp(chunk, null, asynchronous, token).ConfigureAwait(false);
             XmpPacket changed = original.Apply(capture)!;
             if (ReferenceEquals(original, changed) && chunk is not null) return new(true, null, null);
-            Budget((long)changed.ByteLength + original.ByteLength + (Unique(false)?.Size ?? 0));
+            Budget((long)changed.ByteLength + original.ByteLength + scan.Chunks.Where(c => c.Type == "eXIf").Sum(c => (long)c.Size));
             if (changed.ByteLength > options.MaxDecompressedXmpBytes) throw BoundedZlib.Limit();
             bytes = new byte[changed.ByteLength + 22]; "XML:com.adobe.xmp\0"u8.CopyTo(bytes); changed.CopyRawTo(bytes.AsSpan(22));
         }

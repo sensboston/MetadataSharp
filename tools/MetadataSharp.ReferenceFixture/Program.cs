@@ -7,6 +7,8 @@ using MetadataSharp.Core.Xmp;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Formats.Jpeg;
 using MetadataSharp.Tests.Jpeg;
+using MetadataSharp.Tests.Png;
+using MetadataSharp.Formats.Png;
 
 if (args.Length == 2 && args[0] == "generate")
 {
@@ -45,6 +47,13 @@ if (args.Length == 2 && args[0] == "generate")
     }
 
 
+    byte[] pngBase = PngFixture.Build();
+    File.WriteAllBytes(Path.Combine(args[1], "base.png"), pngBase);
+    using (var png = PngMetadataDocument.Open(new MemoryStream(pngBase))) png.SaveExifAs(Path.Combine(args[1], "exif.png"), edit);
+    using (var png = PngMetadataDocument.Open(Path.Combine(args[1], "exif.png"))) png.SaveXmpAs(Path.Combine(args[1], "ours.png"), xmp);
+    using (var png = PngMetadataDocument.Open(Path.Combine(args[1], "ours.png")))
+    { png.SaveXmpAs(Path.Combine(args[1], "noop.png"), new()); png.SaveXmpAs(Path.Combine(args[1], "removed.png"), removeXmp); }
+
     // Authored resource fixture: keep a copyright flag, update IPTC and its existing digest.
     IptcPacket minimal = IptcPacket.CreateEmpty(); byte[] iim = new byte[minimal.ByteLength]; minimal.CopyRawTo(iim);
     byte[] flag = Resource(0x040a, [1]);
@@ -65,6 +74,19 @@ if (args.Length == 2 && args[0] == "generate")
     var full = new IptcEdit(); full.ReplaceText(new(2, 25), Enumerable.Repeat(new string('a', 64), 949).Append("aaaaa"));
     withXmp.SaveIptcAs(Path.Combine(args[1], "iptc-boundary.jpg"), full);
 
+}
+else if (args.Length == 2 && args[0] == "inspect-png")
+{
+    using var doc = PngMetadataDocument.Open(args[1]); ExifMetadata? exif = doc.ReadExif();
+    string? artist = null;
+    if (exif is not null && exif.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? a))
+    { byte[] bytes = new byte[a.Value.ByteLength]; a.Value.CopyRawTo(bytes); artist = Encoding.ASCII.GetString(bytes).TrimEnd('\0'); }
+    string? creatorTool = doc.ReadXmp()?.Properties[new("http://ns.adobe.com/xap/1.0/", "CreatorTool")].Text;
+    Console.WriteLine(JsonSerializer.Serialize(new { artist, creatorTool }));
+}
+else if (args.Length == 3 && args[0] == "noop-png")
+{
+    using var doc = PngMetadataDocument.Open(args[1]); doc.SaveXmpAs(args[2], new());
 }
 else if (args.Length == 2 && args[0] == "inspect")
 {

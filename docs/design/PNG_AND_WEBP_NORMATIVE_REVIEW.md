@@ -23,6 +23,8 @@ ancillary-only changes. APNG is explicitly refused, not flattened to a first fra
 Compressed XMP: RFC1950 and RFC1951 (May 1996), text mirrors in madler/zlib
 `doc/rfc1950.txt` blob `ce6428a0f2eed45691ce209b1daf36807c29b3e7` and
 `doc/rfc1951.txt` blob `403c8c722ff24ca034973876fa819d37715b9b6a`.
+SHA-256 respectively `8f0475a5c984657bf26277f73df9456c9b97f175084f0c1748f1eb1f0b9b10b9`
+and `5ebf4b5b7fe1c3a0c0ab9aa3ac8c0f3853a7dc484905e76e03b0b0f301350009`.
 Reviewed zlib header/dictionary/checksum and DEFLATE sections 3.2.3–3.2.7.
 A bounded independently authored framing walk checks stored/fixed/dynamic blocks,
 length/distance bounds, final block and exact compressed end before framework
