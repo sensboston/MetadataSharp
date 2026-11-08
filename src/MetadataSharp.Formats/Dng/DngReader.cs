@@ -393,13 +393,15 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
 
     private async Task ValidateCommon(WorkingDirectory dir)
     {
-        if (dir.ByTag.TryGetValue(274, out var orientation) && orientation.FieldType == 3 && orientation.Count == 1)
+        if (dir.ByTag.TryGetValue(274, out var orientation))
         {
-            uint value = (await Uints(orientation, 3).ConfigureAwait(false))[0];
-            if (value != 1) Issue(DngLayoutIssueCode.InvalidSemanticValue, dir.Offset, 274, "Only Orientation 1 is accepted.");
+            if (orientation.FieldType == 3 && orientation.Count == 1)
+            {
+                uint value = (await Uints(orientation, 3).ConfigureAwait(false))[0];
+                if (value != 1) Issue(DngLayoutIssueCode.InvalidSemanticValue, dir.Offset, 274, "Only Orientation 1 is accepted.");
+            }
+            else Issue(DngLayoutIssueCode.UnsupportedFieldShape, dir.Offset, 274, "Orientation must be SHORT/1.");
         }
-        if (dir.ByTag.TryGetValue(274, out var orientation) && (orientation.FieldType != 3 || orientation.Count != 1))
-            Issue(DngLayoutIssueCode.UnsupportedFieldShape, dir.Offset, 274, "Orientation must be SHORT/1.");
         foreach (ushort tag in new ushort[] { 305, 315 })
             if (dir.ByTag.TryGetValue(tag, out var field))
                 await AsciiOk(dir, field, tag).ConfigureAwait(false);
