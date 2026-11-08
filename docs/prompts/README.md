@@ -5,7 +5,10 @@ Copy its text block into a session, or request: "Execute only M00 using
 `docs/prompts/M00.md`." The prompt instructs the agent to load current policies and
 approved designs rather than relying on previous conversation memory.
 
-Start with **[M00](M00.md)**. It is a proposal, not permission to implement.
+**Historical M00–M18 catalogue: complete, retained in place. Do not restart M00.**
+Current sequence is [Programme 2](../roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md).
+DNG D0 is [a proposal](../design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md), not code authorization.
+For historical context, [M00](M00.md) was the initial proposal.
 When approval is needed, answer the proposal explicitly and then request resuming
 the same unit. Broad approval of the roadmap is not approval of unseen APIs.
 

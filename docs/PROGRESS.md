@@ -1024,13 +1024,45 @@ checks pass. Merge uses the explicit per-PR exception, with the final SHA/receip
 recorded on PR #13 after actual completion. Preserve current active branch. Next
 D0 work must stop at its proposal/approval gate; no existing safety contract changes.
 
-## P-series program authorization and research start
+## Programme 2 authorization, first discovery and D0 proposal
 
-Developer explicitly approved near-complete Exiv2 functional capability through
-independent implementation, issues/discussions-derived improvements, idiomatic
-.NET architecture, .NET 8 plus corrected .NET 10 LTS target, and Framework 4.8.x
-only if cheap. Active branch arena/d0eec35b-metadatasharp, base cleanup merge 820229f.
-Created NEXT_PROGRAM_ROADMAP with P00–P14 bounded gates; DNG D0 is proposal-only.
-Historical contracts/evidence retained. No new API/TFM/code implementation approved
-by program direction alone. Research uses public docs/issue/discussion requirements,
-not GPL implementation/tests; fixture/snippet rights remain separate.
+Developer corrected .NET target to 10, approved independent near-complete Exiv2
+capability programme and improvements/idiomatic .NET planning, conditional cheap
+Framework support, documentation cleanup and starting work without routine further
+questions. Live branch arena/d0eec35b-metadatasharp from PR #13 merge 820229f5.
+Programme approval does not approve new DNG/public API contracts. The old one-off
+PR #13 CI exception does not transfer to new work.
+
+E00 recorded E00–E18 roadmap, parity denominator discipline, rights/source separation,
+.NET 8/10 lifecycle and conditional Framework gate. Marked old roadmap/prompt entry
+points historical in place; kept approved contracts/audits/provenance and old links.
+E01 began with pinned Exiv2 v0.28.9 tag/commit, README/license/CLI docs (31 type rows,
+six categories), 35 unique issue title/label/state signals and 12/37 discussions.
+No bodies/code/tests/attachments imported; findings are discovery hypotheses, not
+verified defects. Exiv2 0.28.9 CLI not run. Full E01 atomic inventory remains OPEN.
+
+Official dotnet/core metadata blob 66392f8bd6d254f73cf7a2f42113bc4034a20747 confirms
+.NET 8 EOL 2026-11-10 and .NET 10 EOL 2028-11-14. Neither SDK retarget nor Framework
+support implemented. D0/E04 exact read-only DNG contract prepared, status PROPOSED;
+no parser/editor/error enum added to code. Additional normative ledger, rights/oracle
+and target compatibility gates explicitly block D1 even after surface approval.
+Local checks and actual new PR/CI status recorded subsequently; no new .NET or
+reference executable run is claimed in this documentation/research submission.
+
+Programme submission local checks: Python reference policy 12/12; new research
+JSON parsed with 31 format rows, 35 issue signals and 12 discussion metadata records;
+new/edited local Markdown navigation links exist; git diff --check passed. These
+are documentation checks, not .NET, pinned-CLI or DNG conformance results.
+
+
+### Same-branch integration and additional requirements review
+
+Push of local planning commit 246fb84 was refused (non-fast-forward). Fetched remote
+9ce172a on the SAME assigned branch; it already contained PR #14 E00–E18 programme,
+initial research and exact D0 proposal. Integrated rather than force-pushing or
+discarding remote work. Resolved PROGRESS by preserving the existing research
+record. Removed the locally introduced duplicate P-series roadmap; E00–E18 in
+docs/roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md is the single active sequence.
+Additional review reads selected user issue/discussion bodies as requirements,
+not patches/linked source/comments/attachments. Initial title-only snapshot remains
+truthful for that earlier pass; the new body-review supplement records its own scope.

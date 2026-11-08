@@ -1,4 +1,9 @@
-# Roadmap and Completion Gates
+# Historical roadmap M00–M18 and completion gates
+
+> **Historical, completed baseline.** For current work use
+> [Programme 2: independent capability coverage and .NET evolution](roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md)
+> and [CURRENT_STATE](CURRENT_STATE.md). Retained in place to preserve contract,
+> provenance and historical links; "next" instructions below are not current tasks.
 
 ## Execution rules
 

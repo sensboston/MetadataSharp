@@ -79,7 +79,14 @@ licenses and redistribution terms before importing material. Verify the exact
 package identity, version, license, dependencies, and suitability of any proposed
 XMP library rather than treating a package name as pre-approved.
 
-## Immediate next step
+## Current programme
+
+Use docs/roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md and CURRENT_STATE for the active
+E00–E18 expansion. Developer approved the direction, .NET 8 + .NET 10 and conditional
+Framework feasibility, not unseen public APIs. E01 initial evidence is not full parity;
+DNG D0 contract is proposed, not implemented. Historical M00–M18 are complete.
+
+## Historical initial scope
 
 M00 contracts were approved on 2026-11-07. Read
 [the approved contracts](docs/design/INITIAL_CONTRACTS.md) and
@@ -87,5 +94,5 @@ M00 contracts were approved on 2026-11-07. Read
 M01–M18 bounded deliverables/gates are recorded in CURRENT_STATE and PROGRESS;
 verify final PR #12 status before assuming the grouped roadmap merge. The local
 SDK remains absent; use CI as documented. Future DNG follow-up implementation and
-package publication need separate approvals. No automatic next implementation
-unit remains after the completed roadmap; do not expand scope silently.
+package publication need separate approvals. The new expansion programme is separately authorized; follow its bounded gates
+rather than silently extending old milestone scope.
