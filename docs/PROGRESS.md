@@ -1005,3 +1005,21 @@ until account owner resolves GitHub Actions billing/spending limit and required
 checks run successfully. No gate bypass, merge override or repeated retry without
 an infrastructure fix. Keep active branch. Next project stage awaits developer
 selection; no new feature work began during cleanup.
+
+### Explicit documentation-only merge exception and next-stage selection
+
+Developer selected `dng_contract`: next stage is D0 exact read-only DNG contract
+proposal, NOT implementation or release hardening. Added scope to ROADMAP.
+Developer also explicitly selected `allow_documentation_only`: merge PR #13 despite
+unavailable green CI, solely for documentation of branch cleanup/next-stage scope.
+This exception is not transferable to code, API implementation, package changes or
+future PRs; workflows/check requirements are not modified and failures are not
+reported as passes. Latest head b78323e runs 42441262868/42441258668 failed before
+jobs started; a single requested rerun via `gh run rerun 42441262868 --failed` was
+rejected with "cannot be rerun; its workflow file may be broken". That generic CLI
+message does not establish a YAML defect or successful execution.
+
+This follow-up changes only existing Markdown files. Local policy 12/12 and diff
+checks pass. Merge uses the explicit per-PR exception, with the final SHA/receipt
+recorded on PR #13 after actual completion. Preserve current active branch. Next
+D0 work must stop at its proposal/approval gate; no existing safety contract changes.

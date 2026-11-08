@@ -115,3 +115,15 @@ passed 42439984148 at 4d89a00 (seven jobs including three-platform package consu
 448 tests/platform and required references). Final grouped head/merge receipt is
 tracked in PR #12 after checks. After that merge M00–M18 are complete within their
 bounded definitions; no DNG implementation or package publication is implied.
+
+## Selected next stage: DNG D0 contracts, not implementation
+
+After the completed roadmap/cleanup, the developer explicitly selected DNG
+contracts instead of release-candidate hardening. Execute only D0 from
+prompts/followups/DNG_PROPOSED_SEQUENCE.md: pin/resolve the narrow candidate's
+normative dependencies and propose exact read-only signatures, options, immutable
+models, version/role/tag subset, finite budgets, errors, ownership/async semantics,
+fixture rights and independent validator strategy. Record open blockers and ask
+approval of that exact public contract before any DNG implementation. Existing
+TIFF DNG refusal remains unchanged. D1/D2, shipping packages and publication are
+not authorized by selecting D0. Release hardening remains deferred, not completed.

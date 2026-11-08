@@ -49,19 +49,26 @@ commits/push and merge after the whole final-head gate, not package publication.
   No local obsolete branches existed. Cleanup documentation uses this active branch;
   documentation PR #13 is OPEN, not merged. Runs 42441201239/42441196628 at
   34f1591 failed before any job started: GitHub Actions account payment/spending
-  limit blocker, confirmed via check annotations. Account owner must fix Billing
-  & plans, then required checks must pass before merge. No gate bypass or blind
-  retries. Local policy 12/12 and diff checks passed; no new .NET run is claimed.
+  limit blocker, confirmed via check annotations. Subsequently the developer
+  explicitly approved a documentation-only CI exception for PR #13, including
+  this next-stage selection. No workflow changes or passing-CI claims. Check live
+  PR state/merge receipt; once merged, proceed to D0 proposal only. This exception
+  does not apply to future work. Local policy 12/12 and diff checks passed; no new
+  .NET run is claimed.
   Do NOT delete the active branch, even after its documentation PR merges.
 
 ## Next eligible work after grouped merge
 
-No roadmap implementation milestone remains. Ask developer to approve proposed DNG
-D0/D1/D2 sequence before any future DNG work; exact contracts need separate approval
-before code. Release hardening (API docs, version/support/signing/SourceLink/SBOM/
-advisory checks and publication decision) remains separate. Do not publish packages
-or implement DNG merely because M17/M18 or their PR completed. M16 still retains
-obsolete bytes: no erasure/privacy/compaction, no generic opaque-pointer safety.
+No original roadmap implementation milestone remains. Developer explicitly selected
+**DNG D0 exact read-only contract proposal** over release hardening. Follow
+ROADMAP's selected-next-stage scope and DNG_PROPOSED_SEQUENCE. D0 is proposal only:
+resolve subset/normative dependencies, exact signatures/options/immutable models,
+finite bounds/errors/ownership/async and fixture/oracle strategy, then ask approval
+and STOP before implementation. D1/D2 implementation is not authorized. Preserve
+existing TIFF DNG refusal. Release hardening/publication remain separate and deferred.
+M16 still retains obsolete bytes: no erasure/privacy/compaction or generic opaque-
+pointer safety. Do not extend the PR #13 documentation-only CI exception to D0
+implementation, production changes or future PRs.
 
 ## Recovery commands and environment
 
