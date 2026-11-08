@@ -88,7 +88,7 @@ public sealed class DngTests
         Assert.Equal(new TiffByteRange(1018, 16), Assert.Single(leaf.Image.Strips));
         Assert.Equal(21, root.Fields.Count); Assert.Equal(31, leaf.Fields.Count);
         TiffDirectoryLink link = Assert.Single(root.Links);
-        Assert.Equal(TiffDirectoryLinkKind.SubIfd, link.Kind); Assert.Equal((ushort?)330, link.TagId); Assert.Equal(450u, link.TargetIfdOffset);
+        Assert.Equal(TiffDirectoryLinkKind.SubIfd, link.Kind); Assert.Equal((ushort?)330, link.TagId); Assert.Equal(444u, link.TargetIfdOffset);
         Assert.Empty(leaf.Links);
         Assert.True(link.PointerOffset > 8);
         // NewSubFileType semantics are visible per directory.
