@@ -112,3 +112,16 @@ are not passes. Do not weaken assertions/warnings. Historical fixture collision
 was fixed (external SubIFD array moved from 1024 to 1536), not a parser exception.
 A PROGRESS update-script overwrite was fully restored from Git before continuation;
 check document headers and diff statistics as well as whitespace on future updates.
+
+## Superseding M17–M18 active session (2026-11-07)
+
+M16 PR #11 is confirmed MERGED at d476e37ef1b848df4556b7346f9858310470f4ee.
+Active assigned branch: arena/b166bb08-metadatasharp. User explicitly requested
+M17+M18 in one pass/one PR. Bounded scope and recovery sequence are in the latest
+PROGRESS entry, committed before code. M17 produces DNG_SCOPE and proposed future
+prompts, with implementation approval pending; M18 independently measures authored
+public-API workloads and audits candidate packages without publication. Keep
+production contracts unchanged. Local SDK absent: use push CI and preserve small
+measured evidence in docs, not generated binaries. Next: pin/review DNG prose,
+commit M17 record, run its gate, then implement bounded M18 audit tooling and final
+platform/reference/package checks. Stop only for real blockers/new contracts.

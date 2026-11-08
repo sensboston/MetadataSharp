@@ -862,3 +862,21 @@
   SHA/run IDs and merge receipt will be posted on PR #11 after success, avoiding
   circular commit recording. CURRENT_STATE gives a deterministic live-PR recovery
   check. No package publication and no DNG implementation; stop after M16.
+
+## M17–M18 grouped execution authorization and recovery plan
+
+Developer requested completing the remaining two units in one pass and one PR,
+then activated arena/b166bb08-metadatasharp from M16 merge d476e37. PR #11 is
+confirmed MERGED. M17 remains feasibility/proposed follow-up contracts ONLY;
+requesting approval of that future plan does not authorize DNG implementation.
+The grouped request authorizes proceeding to the independent bounded M18 audit
+without implementing or silently approving the M17 proposal.
+
+Before code: bounded M18 scope is reproducible public-API microbaselines on authored
+JPEG/PNG/WebP/TIFF inputs (throughput, process allocations, hashes/environment),
+three-platform CI, local-only package candidates/content/license/dependency/docs
+inspection and an offline consumer smoke. No production API/safety changes, broad
+optimization, new production dependency or publication. Existing 448 tests and
+mandatory external-reference checks remain required. Benchmark evidence will be
+small JSON files; binaries/packages stay ignored artifacts. Record actual failures
+and unrun checks; do not invent results. Final head must pass before one PR merge.
