@@ -1261,3 +1261,16 @@ ONLY if full segment MULTISETS (including multiplicity/content) match. Any paylo
 change/drop/duplication remains a failure; scan and all other TIFF fields remain
 strict. Read/default verifier remains byte/order strict. MetadataSharp preservation
 contract stays unchanged; this is baseline observation, not accepted write parity.
+
+043f01e/run42448594200 proves a second, exact INSERT finding: original authored
+COM fffe0020 + "MetadataSharp authored fixture" becomes fffe0021 + same bytes +
+00, in addition to ordering. All other non-EXIF segment multisets match. This is
+byte change, NOT exact preservation, and is not adopted as our writer policy.
+Before correction: add narrowly named baseline DIFFERENCE D001 for EXACTLY that
+single owned COM replacement, with strict matching of every other segment and its
+multiplicity. No generic trailing-NUL normalization or arbitrary COM waiver. Emit
+explicit false byte-preservation flags and visible finding ID in each affected row.
+Default/read/MetadataSharp verifier stays strict; negative tests must still reject
+that change by default and any other payload/loss/duplicate under observation mode.
+Successful CI then means the versioned observations (including known differences)
+match, NOT successful safe-writing parity. No percentage or exclusion accepted.
