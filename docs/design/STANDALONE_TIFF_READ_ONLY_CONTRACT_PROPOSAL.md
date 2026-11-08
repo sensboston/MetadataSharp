@@ -1,6 +1,6 @@
 # M15: Read-Only Standalone Classic TIFF Contract Proposal
 
-Status: **PROPOSED — not approved and not implemented.**
+Status: **APPROVED by the developer on 2026-11-07; implemented; see the M15 audit for actual CI and final merge evidence.**
 Date: 2026-11-07. The developer requested attempting M15 after PNG/WebP. This
 proposal makes the previously unspecified public API and safety boundary explicit.
 The PNG/WebP approval does not approve these new contracts. Start implementation
@@ -122,7 +122,7 @@ Safely framed but unsupported recognized compression/sample/pointer layouts retu
 an issue-bearing snapshot, never IsSupported=true. Keep normal argument/I/O and
 cancellation exceptions. No partial snapshot is returned after an exception.
 
-## 3. Framing, graph and pointer decisions requiring approval
+## 3. Approved framing, graph and pointer decisions
 
 - Classic TIFF 6.0, both endian orders, magic 42, 8-byte header, aligned nonzero
   first IFD, 32-bit offsets and 12-byte entries. First profile source at most 4 GiB;

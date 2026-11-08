@@ -120,7 +120,8 @@ def main(argv=None):
                                   for p in (Path("tools/MetadataSharp.ReferenceFixture/Program.cs"),
                                             Path("tests/MetadataSharp.Tests/Jpeg/JpegFixture.cs"),
                                             Path("tests/MetadataSharp.Tests/Png/PngFixture.cs"),
-                                            Path("tests/MetadataSharp.Tests/WebP/WebPFixture.cs"))}
+                                            Path("tests/MetadataSharp.Tests/WebP/WebPFixture.cs"),
+                                            Path("tests/MetadataSharp.Tests/Tiff/StandaloneTiffFixture.cs"))}
         report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL, "dwebp": EXPECTED_DWEBP}
         fixture = Path("tools/MetadataSharp.ReferenceFixture/bin/Release/net8.0/MetadataSharp.ReferenceFixture.dll").resolve()
         def ours(*parameters):
@@ -291,9 +292,21 @@ def main(argv=None):
         assert webp_coded(output / "legacy.webp") == webp_coded(output / "legacy-rebuilt.webp")
         assert b"Exif\0\0" in (output / "legacy.webp").read_bytes()
         assert b"Exif\0\0" not in (output / "legacy-rebuilt.webp").read_bytes()
+        for big in (False, True):
+            for tiles in (False, True):
+                tiff = output / f"owned-{big}-{tiles}.tif"
+                own = json.loads(ours("inspect-tiff", tiff))
+                assert own == {"width": 16, "height": 16, "supported": True, "segments": 1, "storage": "Tiles" if tiles else "Strips"}, own
+                facts = json.loads(run(["exiftool", "-j", "-n", "-ImageWidth", "-ImageHeight", "-BitsPerSample", "-Compression", str(tiff)]))[0]
+                assert facts["ImageWidth"] == 16 and facts["ImageHeight"] == 16 and facts["BitsPerSample"] == 8 and facts["Compression"] == 1, facts
+                rows = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Exif.Image.ImageWidth", "-K", "Exif.Image.ImageLength", str(tiff)]))
+                assert rows == {"Exif.Image.ImageWidth": ("Long", 1, "16"), "Exif.Image.ImageLength": ("Long", 1, "16")}, rows
+                changed = output / f"external-{big}-{tiles}.tif"; shutil.copyfile(tiff, changed)
+                run(["exiftool", "-overwrite_original", "-IFD0:Artist=ExternalTiff", str(changed)])
+                assert json.loads(ours("inspect-tiff", changed)) == own
         report["fixtures"] = [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                                "source": "MetadataSharp authored synthetic generator", "license": "MIT"}
-                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png", ".webp")]
+                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png", ".webp", ".tif")]
         report["status"] = "passed"; save()
         print("PASS: external reads, reverse edits, byte preservation and validation classification")
         return 0
