@@ -79,7 +79,7 @@ internal sealed class DngFixture
         new(50714, TRational, 1, PackRationals(big, (0, 1))),
         new(50717, TLong, 1, PackLongs(big, 65535)),
         new(50719, TLong, 2, PackLongs(big, 0, 0)),
-        new(50720, TLong, 2, PackLongs(big, 2, 4)),
+        new(50720, TLong, 2, PackLongs(big, 4, 2)),
         new(50721, TSRational, 9, PackSRationals(big, (1, 1), (0, 1), (0, 1), (0, 1), (1, 1), (0, 1), (0, 1), (0, 1), (1, 1))),
         new(50728, TRational, 3, PackRationals(big, (1, 1), (1, 1), (1, 1))),
         new(50778, TShort, 1, PackShorts(big, 21)),

@@ -18,7 +18,8 @@ public enum MetadataErrorCode
     IptcTooLarge,
     InvalidPng,
     InvalidWebP,
-    InvalidTiff
+    InvalidTiff,
+    InvalidDng
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>

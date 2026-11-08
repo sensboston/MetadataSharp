@@ -14,10 +14,10 @@ author-chosen constants: the raw image is 4×2 16-bit unsigned values
 
 | File | Bytes | SHA-256 | Shape / byte order |
 |---|---|---|---|
-| `dng-raw-ii.dng` | 598 | `c4e2893a31565c4b53a1fa26686288bdce9421252bbd0c920b9ee5eeabc9701c` | raw-rooted, II |
-| `dng-raw-mm.dng` | 598 | `5c1ade1005f83ed9ac1d4ff19c3c06972b1964989b85ba2523312620d1dc24b4` | raw-rooted, MM |
-| `dng-thumb-ii.dng` | 1040 | `8117e8756c4d69c1519a5201259d952e5777d332ffa1e37150444e2e83f637f0` | RGB thumbnail root + SubIFD raw leaf, II |
-| `dng-thumb-mm.dng` | 1040 | `7ba9311517d1c1751c3061b053b8ab464a4e1fde56d8765a27e00dc1ada4b799` | RGB thumbnail root + SubIFD raw leaf, MM |
+| `dng-raw-ii.dng` | 598 | `474952a49242556b9bec981483df2afc9c06546a0c7705a529f789c9ad52d2a0` | raw-rooted, II |
+| `dng-raw-mm.dng` | 598 | `64dee07029c8ed6fb9fcddac5a578ec79141789e6834fdf22809f8bca08685f8` | raw-rooted, MM |
+| `dng-thumb-ii.dng` | 1040 | `887ae87d6d1513c0d26ba6e5dcaf89bc7a027f086d3bc4ed1bb43f68f7ab2bd5` | RGB thumbnail root + SubIFD raw leaf, II |
+| `dng-thumb-mm.dng` | 1040 | `51cb2c3dcba0a96c3946f0e789b2a5623a0ec65e05a61a482e8bf8367a62381c` | RGB thumbnail root + SubIFD raw leaf, MM |
 
 Pinned layout (both byte orders): header 8 B; first IFD at 8; raw-rooted shape
 = one 31-entry IFD (body 378 B), external payloads two-byte aligned in tag

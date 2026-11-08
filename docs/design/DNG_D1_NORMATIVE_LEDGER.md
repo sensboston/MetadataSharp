@@ -72,7 +72,7 @@ same rules apply to Shape B's RGB root.
 | ColorMatrix1 | 50721 | SRATIONAL/9 | Required. Exactly 9 values; every denominator strictly positive. Numerators may be negative (SRATIONAL by design); zero denominators forbidden. | Type/count → `UnsupportedFieldShape`; zero denominator → `InvalidSemanticValue` |
 | CalibrationIlluminant1 | 50778 | SHORT/1 | Required. Exactly `21` (D65). | Other value → `InvalidSemanticValue` |
 | AsShotNeutral | 50728 | RATIONAL/3 | Required. Exactly 3 values; numerator and denominator strictly positive (no zero neutral). | Zero numerator/denominator → `InvalidSemanticValue` |
-| DefaultCropOrigin | 50719 | LONG/2 | Optional, but **paired** with DefaultCropSize. Positive values, fit the raw bounds. | Unpaired → `InvalidSemanticValue` |
+| DefaultCropOrigin | 50719 | LONG/2 | Optional, accepted at the raw leaf (Shape A root or Shape B SubIFD) and at the Shape-B RGB root; **paired** with DefaultCropSize on the same directory. Origin values fit the raw bounds. | Unpaired → `InvalidSemanticValue` |
 | DefaultCropSize | 50720 | LONG/2 | Optional, paired with DefaultCropOrigin. Positive-sized, fits the active area (whole raw bounds if ActiveArea absent). | Unpaired / non-positive / out-of-fit → `InvalidSemanticValue` |
 
 No color-science, calibration or linearization claim follows from these checks;
@@ -121,7 +121,7 @@ private tag or embedded-original is accepted; all → `UnsupportedExtension`.
 | Compression | 259 | SHORT/1 | Exactly `1`. | Other → `UnsupportedCompression` |
 | PhotometricInterpretation | 262 | SHORT/1 | Exactly `2` (RGB). | Other → `UnsupportedSampleLayout` |
 | StripOffsets | 273 | LONG/n | n = ceil(Height / RowsPerStrip). | Same as §5 |
-| SamplesPerPixel | 277 | SHORT/3 | Exactly `3` entries of `3`. (Authored profile: explicit 3-byte planar RGB.) | Other → `UnsupportedSampleLayout` |
+| SamplesPerPixel | 277 | SHORT/1 | Exactly `3`. | Other → `UnsupportedSampleLayout` |
 | RowsPerStrip | 278 | LONG/1 | Positive. | Same as §5 |
 | StripByteCounts | 279 | LONG/n | Each entry exactly `Width * ActualRows * 3`; sum ≤ `MaxThumbnailBytes` (default 61,440). | Mismatch → `InvalidSemanticValue`; sum exceeded → `LimitExceeded` |
 | PlanarConfiguration | 284 | SHORT/1 | Exactly `1`. | Other → `UnsupportedSampleLayout` |

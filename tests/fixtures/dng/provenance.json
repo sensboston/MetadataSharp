@@ -8,56 +8,60 @@
       "byteOrder": "II",
       "shape": "raw",
       "length": 598,
-      "sha256": "c4e2893a31565c4b53a1fa26686288bdce9421252bbd0c920b9ee5eeabc9701c",
+      "sha256": "474952a49242556b9bec981483df2afc9c06546a0c7705a529f789c9ad52d2a0",
       "ifd0Offset": 8,
       "rawIfdOffset": 8,
       "rawStripOffset": 582,
       "rawStripLength": 16,
       "rawStripSha256": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9",
       "thumbnailIfdOffset": null,
-      "thumbnailStripOffset": null
+      "thumbnailStripOffset": null,
+      "size": 598
     },
     {
       "file": "dng-thumb-ii.dng",
       "byteOrder": "II",
       "shape": "thumb",
       "length": 1040,
-      "sha256": "8117e8756c4d69c1519a5201259d952e5777d332ffa1e37150444e2e83f637f0",
+      "sha256": "887ae87d6d1513c0d26ba6e5dcaf89bc7a027f086d3bc4ed1bb43f68f7ab2bd5",
       "ifd0Offset": 8,
       "rawIfdOffset": 450,
       "rawStripOffset": 1024,
       "rawStripLength": 16,
       "rawStripSha256": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9",
       "thumbnailIfdOffset": 8,
-      "thumbnailStripOffset": 426
+      "thumbnailStripOffset": 426,
+      "size": 1040
     },
     {
       "file": "dng-raw-mm.dng",
       "byteOrder": "MM",
       "shape": "raw",
       "length": 598,
-      "sha256": "5c1ade1005f83ed9ac1d4ff19c3c06972b1964989b85ba2523312620d1dc24b4",
+      "sha256": "64dee07029c8ed6fb9fcddac5a578ec79141789e6834fdf22809f8bca08685f8",
       "ifd0Offset": 8,
       "rawIfdOffset": 8,
       "rawStripOffset": 582,
       "rawStripLength": 16,
       "rawStripSha256": "6472f018a621000b17e1b6c90e5555b2f11ed33f71d113a55af0c1c85e74716c",
       "thumbnailIfdOffset": null,
-      "thumbnailStripOffset": null
+      "thumbnailStripOffset": null,
+      "size": 598
     },
     {
       "file": "dng-thumb-mm.dng",
       "byteOrder": "MM",
       "shape": "thumb",
       "length": 1040,
-      "sha256": "7ba9311517d1c1751c3061b053b8ab464a4e1fde56d8765a27e00dc1ada4b799",
+      "sha256": "51cb2c3dcba0a96c3946f0e789b2a5623a0ec65e05a61a482e8bf8367a62381c",
       "ifd0Offset": 8,
       "rawIfdOffset": 450,
       "rawStripOffset": 1024,
       "rawStripLength": 16,
       "rawStripSha256": "6472f018a621000b17e1b6c90e5555b2f11ed33f71d113a55af0c1c85e74716c",
       "thumbnailIfdOffset": 8,
-      "thumbnailStripOffset": 426
+      "thumbnailStripOffset": 426,
+      "size": 1040
     }
   ],
   "rawPixelsSha256ByByteOrder": {

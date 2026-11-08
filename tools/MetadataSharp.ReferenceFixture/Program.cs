@@ -11,6 +11,7 @@ using MetadataSharp.Tests.Png;
 using MetadataSharp.Formats.Png;
 using MetadataSharp.Formats.WebP;
 using MetadataSharp.Formats.Tiff;
+using MetadataSharp.Formats.Dng;
 using MetadataSharp.Tests.Tiff;
 using MetadataSharp.Tests.WebP;
 using MetadataSharp.Tests.Dng;
@@ -185,6 +186,14 @@ else if (args.Length == 2 && args[0] == "inspect-tiff")
     var layout = TiffLayout.Read(args[1]); var image = layout.Directories.First(d => d.Image is not null).Image!;
     Console.WriteLine(JsonSerializer.Serialize(new { width = image.Width, height = image.Height, supported = layout.IsSupported,
         segments = image.Segments.Count, storage = image.Storage.ToString() }));
+}
+else if (args.Length == 2 && args[0] == "inspect-dng")
+{
+    var layout = DngLayout.Read(args[1]);
+    var image = layout.Directories.First(d => d.Image is not null).Image!;
+    Console.WriteLine(JsonSerializer.Serialize(new { width = image.Width, height = image.Height,
+        bitsPerSample = image.BitsPerSample, samplesPerPixel = image.SamplesPerPixel, supported = layout.IsSupported,
+        role = image.Role.ToString(), strips = image.Strips.Count }));
 }
 else if (args.Length == 2 && args[0] == "inspect")
 {
