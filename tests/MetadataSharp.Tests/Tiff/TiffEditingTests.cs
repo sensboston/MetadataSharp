@@ -106,6 +106,15 @@ public sealed class TiffEditingTests
         using var mutable = new MemoryStream(f.Bytes.ToArray()); using var changed = TiffMetadataDocument.Open(mutable); mutable.Position = 2048; mutable.WriteByte(255);
         Assert.Equal(MetadataErrorCode.SourceChanged, Assert.Throws<MetadataException>(() => changed.Save(empty, new())).Code); Assert.Empty(empty.ToArray());
     }
+    [Fact]
+    public void AppendedValueRangesMustFitTheCapturedReaderCeilingBeforeEmission()
+    {
+        var f = StandaloneTiffFixture.Create(); var options = new TiffEditOptions { ReadOptions = new() { MaxAccountedRanges = 3 } };
+        using var doc = TiffMetadataDocument.Open(new MemoryStream(f.Bytes), options); using var output = new MemoryStream();
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => doc.Save(output, Edit())).Code); Assert.Empty(output.ToArray());
+        doc.Save(output, Edit(text: "abc")); using var reopened = TiffMetadataDocument.Open(new MemoryStream(output.ToArray()), options);
+        Assert.True(reopened.Layout.IsSupported); Assert.Equal(3, reopened.Layout.Ranges.Count);
+    }
     private sealed class AsyncOutput : MemoryStream
     {
         public override void Write(ReadOnlySpan<byte> bytes) => throw new InvalidOperationException("Sync output used.");

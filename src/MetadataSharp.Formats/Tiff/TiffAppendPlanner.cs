@@ -107,6 +107,17 @@ internal sealed class TiffAppendPlanner(TiffLayout layout, TiffEditOptions optio
                 if (f.External is not null) Put32(f.Entry, 8, Reserve(f.External.Length));
             }
         }
+        // Reopenability includes the active range ceiling, not just byte length.
+        var originalValues = new HashSet<TiffByteRange>(); long externalValues = 0;
+        foreach (var node in nodes) foreach (Field f in node.Fields)
+        {
+            if (f.External is not null) { externalValues++; continue; }
+            if (TiffEditPolicy.Pointer(f.Tag) || effective.ContainsKey(new(node.Source.Offset, f.Tag))) continue;
+            TiffFieldInfo original = node.Source.Fields.First(field => field.TagId == f.Tag);
+            if (!original.IsInline) originalValues.Add(original.ValueRange);
+        }
+        long rangeCount = 1L + nodes.Count + externalValues + originalValues.Count + layout.Ranges.Count(r => r.Kind is TiffRangeKind.Strip or TiffRangeKind.Tile or TiffRangeKind.JpegPreview);
+        if (rangeCount > options.ReadOptions.MaxAccountedRanges) throw Limit();
         long size = cursor - layout.SourceLength; Charge(size);
         byte[] tail = new byte[(int)size];
         foreach (var node in nodes)

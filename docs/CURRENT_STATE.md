@@ -7,7 +7,7 @@ boundaries; append chronological evidence to PROGRESS.md. No chat history requir
 ## Current unit and approval
 
 **M16: restricted standalone TIFF editing — exact contract APPROVED; initial
-implementation IN PROGRESS, not yet validated or complete.** The developer explicitly confirmed the
+implementation IN PROGRESS; initial code/reference checkpoint passed, full unit incomplete.** The developer explicitly confirmed the
 proposal, including physically retained obsolete metadata, then asked for this
 repository-resident checkpoint before implementation. Do not ask for that same
 approval again. Any actual public/safety change still needs new approval.
@@ -35,14 +35,25 @@ a completed final-head-green unit; package publication is not authorized.
   TiffMetadataDocument.cs (source identity/owned snapshots/I/O/publication).
   TiffEditingTests.cs covers prefix/coded range retention, II/MM strip/tile,
   shared directory edges, refusal/no-op/keys/limits, endian conversion and async.
-- Local Python policy 12/12 and whitespace checks pass. No local dotnet exists.
-  Initial code is NOT a completed/gated M16; inspect actual latest Actions results
-  after its submission, fix compile/analyzer/test issues before relying on it.
+- Code head `53da0549868e0b4eb2261ca10096216aaac6cb6e` passed PR run
+  42435065413: 404 .NET cases on each Windows/Linux/macOS, Python policy 12/12,
+  required references including initial M16 TIFF edits, no-op/removal, reverse
+  ingress and independent output-IFD/range checks for four owned II/MM strip/tile
+  variants. This is an initial checkpoint, NOT a completed/gated M16.
+- First tests exposed a fixture collision (pointer array at 1024 overwritten by an
+  IFD); fixed at 1536 and validate the source before writer tests. Assertions and
+  parser overlap/bounds checks were not weakened. Failed-TRX annotations now expose
+  diagnostics when external Actions log/artifact downloads fail.
+- Subsequent source audit found the output range-count ceiling also needs explicit
+  preflight when new external values/pointer arrays are added. Added exact unique
+  preserved/new range accounting and a regression (external value fails before
+  output; inline value reopens within the same ceiling). Latest source head MUST
+  pass its own CI; predecessor success does not validate that addition.
 - Next: inspect initial CI and audit preflight/schema/budget behavior; extend tests
   to all accepted compression/plane/preview/alias/overflow/failure families, and
-  extend mandatory external reference generator/harness with M16 edited facts and
-  independent pointer/range checks. Existing reference checks alone are NOT an
-  M16 write-reference gate. Finish usage/support/audit docs before final green CI.
+  audit/extend the new mandatory M16 reference facts and independent pointer/range
+  checks beyond their initial four image variants. Initial reference success is
+  not a substitute for the complete acceptance matrix. Finish usage/support/audit docs before final green CI.
 - Do not mark the milestone complete, publish packages, merge a draft implementation
   or start M17 based only on initial build/test success. Update this section with
   actual commit/run evidence and remaining work after each meaningful checkpoint.

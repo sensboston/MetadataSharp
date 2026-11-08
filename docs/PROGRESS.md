@@ -772,3 +772,18 @@
   region and added source-layout validation before testing the writer. No parser
   range/overlap check or writer safety assertion was weakened. Full revised CI
   and initial M16-specific independent write references remain to be inspected.
+
+### M16 first green implementation/reference checkpoint; range-limit audit
+
+- Source 53da0549868e0b4eb2261ca10096216aaac6cb6e passed required PR run
+  42435065413: 404 .NET tests per Windows/Linux/macOS, Python 12/12, all required
+  references including initial M16 edited TIFF facts, reverse edits and independent
+  output-pointer/range/prefix retention checks on four owned image variants.
+- Subsequent audit added active output range-count preflight (retained external
+  alias deduplication plus each newly staged external block), so a written file
+  fits captured MaxAccountedRanges as well as byte ceilings. Regression proves
+  external additions fail before output while inline additions reopen at ceiling.
+- This newer source requires its own full CI. M16 remains draft/in progress: all
+  accepted compression/plane/preview/value-alias/overflow/failure families, final
+  usage/support/audit and final-head gates are still outstanding. CURRENT_STATE.md
+  records actual evidence and next steps; do not merge or start M17 yet.
