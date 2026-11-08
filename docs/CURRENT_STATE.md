@@ -1,166 +1,98 @@
 # Current development state and recovery checkpoint
 
-Updated 2026-11-07. Read first; compare with live branch/Git/PR/CI. Current assigned
-branch **arena/d0eec35b-metadatasharp**, based on PR #13 merge
-820229f57abe6cc10400087ca56ed2bdd0980911. Never use older session branch names.
+Updated 2026-11-07. Read first; verify against live branch/Git/PR/CI. Chronological
+approvals/diagnostics remain in PROGRESS; older session instructions there are history.
 
-## Approved new direction and scope
+## Active branch and scope
 
-Developer approved a new large programme aiming at practically complete Exiv2
-user-visible capability coverage via independent implementation, with improvements
-from issues/discussions, idiomatic .NET contracts, **.NET 8 + .NET 10 LTS**, and
-Framework 4.8.x ONLY if genuinely cheap. See
-roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md for E00–E18 and honest coverage rules.
-No C++ ABI/CLI syntax clone, GPL-derived implementation/tests/dictionaries, general
-MakerNote relocation, release publication or unseen public APIs approved.
+Assigned branch **arena/1af1ed4a-metadatasharp**, from PR #14 merge
+716c00be6782af86e00b5636314ecc2164650a0d. Never switch to master or another branch.
+Current PR **#15**: E02 .NET 8/10 target/runtime/package verification, plus E01
+operation seeds. Standing authorization covers commit/push and completed green PR
+merge, not package publication or unseen public contracts. The previous public-
+visibility billing blocker is resolved in observed runs; no CI exception applies.
 
-## This submission
+Programme: roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md (E00–E18).
+Developer approved independent near-complete Exiv2 functionality, idiomatic .NET,
+.NET 8+10, conditional Framework only if cheap. No C++ hierarchy/CLI clone or GPL
+implementation/tests/dictionaries imported. Rights/provenance, finite input limits,
+unknown relocation refusal and independent metadata families stay binding.
 
-- E00 programme documentation recorded; historical M00–M18 entry points marked
-  archive-in-place, binding contracts/audits/provenance kept. DOCUMENTATION_INDEX
-  distinguishes current work and history. No production source/config changed.
-- E01 initial discovery performed: Exiv2 v0.28.9 (2026-08-30), annotated tag
-  110cbaef8e75f0e064e5c522846a18982bc4db70 → b0859fc61fea5dedfc898aece6b15893ddf4314e.
-  Reviewed README/license/CLI documentation facts, not implementation or tests.
-  31 documented format rows/six metadata categories; 35 issue title/label/state
-  signals from three bounded search queries and 12 of 37 discussions (metadata
-  only in the initial snapshot). Additional selected-body review is recorded in
-  research/EXIV2_BODY_REVIEW_SUPPLEMENT.md (no source/patch/attachment review).
-  Full E01 operation inventory/CLI build verification and denominator remain
-  OPEN, no percentage claim. Sources/sampling limits in docs/research.
-- Official dotnet/core lifecycle index blob 66392f8bd6d254f73cf7a2f42113bc4034a20747
-  confirms .NET 8 EOL 2026-11-10, .NET 10 EOL 2028-11-14. No retargeting/builds done.
-  E02 must prove both TFMs/SDK selection/packages/platforms. Framework is unproven,
-  not a promised TFM or a trivial compatibility package. Initial API cost map is now in research/DOTNET_TARGET_FEASIBILITY.md; light
-  Framework support has NOT been established and no compatibility build ran.
-- E04/D0 exact read-only DNG proposal prepared in
-  design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md. **APPROVED 2026-11-07, not implemented.**
-  Exact APIs/error addition/subset proposed; normative ledger/fixture rights/raw
-  oracle/TFM/compatibility gates remain before D1. Existing TIFF DNG refusal stays.
-- Local Python policy and document JSON/link/diff checks are the available checks.
-  No .NET 10/Framework/Exiv2 0.28.9 binary/DNG decoder run is claimed. No legal
-  clean-room certification, exhaustive issue-body review or parity score claimed.
+## Current evidence and actual implementation
 
-## Next steps and stop boundaries
+- E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
+  42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.
+  No need to ask that same approval again unless its promise changes. D1 still
+  requires section 5 normative type/count/location/default ledger, owned valid
+  fixtures/complementary independent oracles and E02/E03 compatibility gates.
+- E02 code head **2949589c1908b9da80289670b89c062d03bc5af0** passed required
+  [42446034373](https://github.com/sensboston/MetadataSharp/actions/runs/42446034373):
+  **14 jobs green**: 450 .NET cases per six OS/TFM combinations, two required
+  reference jobs and six target-specific baseline/package/consumer audit jobs.
+- Core/Formats/tests/reference/audit tools target net8.0;net10.0; root global.json
+  selects stable SDK10 feature band, C#12 unchanged. Tests assert actual host major
+  and loaded test/library TFM, not merely SDK presence. Packages strictly require
+  both DLL/XML sets and exact per-target dependencies. Consumers use isolated
+  source/cache and own SDK-major global.json: SDK8.0.427 for net8, SDK10.0.403 for
+  net10 observed on all OSes. No production parser/public-member changes.
+- Public declared reflection signatures equal between runtimes and all six audit
+  receipts: 633 entries, hash a9cd2ae9fe864fbf39da5bc9fd4bfb32fa720f4afc024ac81b53cd1f3bdb93cb.
+  NOT full attribute/default/nullable/ABI or behavioral compatibility proof.
+  JSON/receipt: audits/evidence/e02; exact limitations/commands:
+  audits/DOTNET_8_10_SUPPORT_AND_E02_AUDIT.md. Historical M18 evidence kept separate.
+- Initial E02 failures were two old hardcoded-net8 tests and runtime-dependent
+  empty-zlib test fixture. Made target expectations match executing framework and
+  authored canonical valid empty zlib; extra test still rejects empty/truncated
+  framing. No production BoundedZlib relaxation or case skipped. Floor now 450.
+- Framework 4.8/4.8.1: defer/do not add; cost map did not establish "easy" support.
+  No legacy spike/runtime verification or impossibility claim. No conditional
+  parser fork/shims/native bridge/degraded async. Source builds need SDK10; net8
+  package consumption with SDK8 is separately proven. .NET8 servicing still ends
+  2026-11-10; .NET10 recommended for new consumers. No publication authorization.
 
-1. Save/push this documentation/research PR and inspect its actual CI. Prior GitHub
-   account billing/spending problem blocked PR #13 jobs. User allowed only that
-   documentation PR to merge without green CI; **exception does NOT carry over**.
-   Do not merge a new red/unexecuted head without successful checks or new explicit
-   per-PR deferral. Do not repeatedly retry billing failures without an account fix.
-2. D0 exact contract is explicitly approved (2026-11-07); do not request it again
-   without an actual change to the approved promise. Close its
-   normative/independent-oracle prerequisites before D1; do not implement DNG now.
-3. Continue full E01 atomic baseline/corpus/reference build reconciliation, with
-   rights per fixture and separation of docs claims/observations/test expectations.
-   E02 runtime work can be scoped independently when required CI is available.
-4. E03 architecture proposal before public API refactor. E06+ umbrella format/vendor
-   stages require bounded per-family prompts and new contract gates before code.
+## E01 state and next gates
 
-## Completed history and tools
+Pinned Exiv2 v0.28.9 / b0859fc61fea5dedfc898aece6b15893ddf4314e remains discovery
+baseline; required 0.27.6 CI references are historical regression oracles, NOT
+0.28.9 parity proof. Metadata facts/selected issue/discussion requirements and
+sources stay in docs/research. No source patches or camera attachments imported.
 
-M00–M18 complete within original bounded scope. M17 feasibility is not DNG support;
-M18 audit is not publication. PR #12 merged b7c9f395; final head 02be218 passed
-42440206658/42440203208: 448 tests/platform, Python 12/12, required references and
-three platform audits. PR #13 merged 820229f5 under one-off documentation-only CI
-exception; ten old proven-merged branches deleted, active session branches kept.
-Exact old decisions/receipt links remain PROGRESS/ROADMAP/audits. Old .NET 8 CI
-success and pinned Exiv2 0.27.6 are NOT evidence of new runtime/baseline parity.
+New E01 seed ledger: 186 documentation cells, 348 **candidate** operations, stable
+IDs and deterministic generator. Read/Write does not prove each inferred suboperation;
+no-claim cells are retained, not excluded. Every seed marks variants unsplit, CLI
+unrun, rights unreviewed and MetadataSharp verification unassessed. Six policy tests
+prevent fabricated support/exclusions/percentages. Full denominator/CLI build/
+corpus/tag/layout/video/workflow census remains OPEN, no parity percentage claimed.
+
+Final E01 seed/documentation/evidence head needs its OWN 14-job CI before PR #15
+ready/merge. Record final immutable SHA/run IDs/merge receipt in PR (avoid circular
+commit recording). Check live PR on recovery; if MERGED, E02 bounded unit complete;
+if OPEN, finish required gate/merge or fix genuine failures without weakening policy.
+Afterwards continue full E01 and exact E03 architecture/compatibility proposal.
+Do NOT jump to D1 or infer E03 approval from signature equality. D2/writing/digests,
+broader DNG, Framework and release publication are still separate scope decisions.
+
+## Reproduction / local constraints
 
 ```sh
 git status --short
 git branch --show-current
 python -m unittest discover -s tests/reference -q
+python -m unittest discover -s tests/discovery -q
+python tools/reference/build_capability_seeds.py --check
 git diff --check
-gh pr list --head arena/d0eec35b-metadatasharp --state all
-gh run list --branch arena/d0eec35b-metadatasharp --limit 4
+gh pr view 15 --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
+gh run list --branch arena/1af1ed4a-metadatasharp --limit 4
+# With both SDKs/runtimes installed:
+dotnet restore MetadataSharp.sln
+dotnet build MetadataSharp.sln -c Release --no-restore
+dotnet test tests/MetadataSharp.Tests/MetadataSharp.Tests.csproj -c Release -f net8.0 --no-build --no-restore
+dotnet test tests/MetadataSharp.Tests/MetadataSharp.Tests.csproj -c Release -f net10.0 --no-build --no-restore
 ```
 
-Local SDK absent; do not repeat failed SDK/Actions blob downloads. Use check-run
-annotations for infrastructure/TRX errors. Current pipeline requires seven jobs;
-none waived by this submission. Downloaded review material stays ignored artifacts;
-only small source metadata/factual research JSON is committed, not GPL source or PDFs.
-
-## Latest integration/research checkpoint
-
-Same-branch remote 9ce172a already supplied PR #14 programme/D0 documents; local
-push was correctly rejected. Merged remote without force, retained remote work,
-resolved only the chronological PROGRESS conflict and removed duplicate local
-P-series roadmap. The E00–E18 roadmap is authoritative; no competing numbering.
-Additional E01 review: 8 selected initial issue bodies and 6 discussion bodies as
-requirements (not patches/comments/attachments/source); see supplement. E02 initial
-API cost map shows Framework is not proven cheap; no build/TFM/API changes made.
-
-PR #14 remains OPEN. Runs 42444022195/42444017972 at d27aaed failed before jobs
-started; check annotation 128619056830 confirms account payments/spending-limit
-blocker. No successful .NET/reference/audit result is claimed for this programme.
-No repeated rerun or exception inferred from PR #13. Local policy 12/12, research
-JSON parsing, selected local Markdown links and whitespace checks pass. Final doc
-head still needs its own CI; new per-PR exception would require explicit approval.
-Next: owner review D0 exact proposed surface, continue full E01 denominator/corpus/
-CLI-build reconciliation and E02 feasibility once infrastructure permits. No D1 code
-before its explicit normative/oracle/runtime gates; D0 approval is now recorded.
-
-## Visibility change / CI recheck
-
-Developer made repository public; verified through GitHub API. Latest old run
-42444129097 could not be rerun (generic gh rejection, not proof of YAML defect).
-Fresh push after visibility change triggers new CI. Inspect latest-head runs before
-reusing the earlier billing-blocker diagnosis. No checks waived and no historical
-secret/rights audit claimed by this change. D0 remains proposal-only/unapproved.
-
-### Superseding observed CI outcome
-
-The visibility recheck SUCCEEDED: head 849ff0cbee69746318ba39107b12b6c440bde8da,
-run 42445226614, all seven jobs green. The earlier billing-blocked runs above are
-historical and are no longer a current execution blocker for this observed run.
-Three-platform correctness/reference/audit checks executed; no waiver needed.
-Final documentation head must pass its own checks. Exact final receipt goes in
-PR #14. E01 full census is still OPEN and D0 surface still UNAPPROVED; no net10,
-Framework or DNG implementation/runtime verification is claimed.
-
-## Superseding D0 approval and next gate
-
-Developer explicitly approved the exact DNG D0 contract on 2026-11-07. E04 contract
-approval is COMPLETE; no parser/error-enum implementation added. Earlier statements
-above about pending D0 approval are historical and superseded by this entry.
-Section 5 still requires closed normative type/count/location/default ledger, owned
-valid II/MM fixtures and complementary independently reviewed oracles, and E02/E03
-runtime/compatibility decisions before D1 code. Do not broaden DNG support or
-infer D2/write/digest/Framework approval. Full E01 capability census remains OPEN.
-
-Latest observed documentation head 3236ad9abd821936741c97b1ec751be1778174c2 passed
-42445322851 with all seven jobs green after public visibility change. No billing
-waiver needed; old infrastructure failures are historical. The approval-record
-commit must pass its own CI before PR #14 merge. Final immutable SHA/run/merge
-receipt goes in PR #14; on recovery inspect live PR status before assuming merged.
-After that documentation milestone, continue E01 and prerequisite E02/E03 work,
-not an unqualified D1 implementation. No package publication authorized.
-
-## Active E02 continuation (supersedes the older session branch above)
-
-Current assigned branch arena/1af1ed4a-metadatasharp; PR #14 confirmed merged at
-716c00be6782af86e00b5636314ecc2164650a0d after approved D0 and green CI.
-Next bounded unit: E02 modern multi-target/runtime/package verification, independent
-of E01 census completion. Execution plan is in latest PROGRESS entry, saved before
-code. Do not implement D1 or silently approve E03. Framework remains deferred unless
-cheap support can actually be established; no production compatibility fork.
-
-### E02 observed gate and final handoff
-
-Audited implementation 2949589c1908b9da80289670b89c062d03bc5af0 passed required
-42446034373: all 14 jobs, 450 cases per six OS/TFM combinations, two references and
-six audited package/consumer/baseline jobs. Full JSON/receipt: audits/evidence/e02;
-policy/commands: audits/DOTNET_8_10_SUPPORT_AND_E02_AUDIT.md. SDK10 source builds,
-net8/net10 targets; consumers prove matching SDK8/SDK10, host and asset identity.
-Framework deferred; no net48/net481/native bridge or API/parser changes. Current
-source tools need explicit framework selection. Old net8-only evidence remains history.
-
-E01 now has 186 documentation-cell seeds / 348 candidate operations, a deterministic
-generator and six policy tests; seed state explicitly NOT observed/frozen/verified.
-Final discovery/documentation/evidence head of PR #15 must pass own 14-job CI before
-merge; exact final SHA/run/merge receipt posted there. E02 scoped unit complete only
-subject to that final gate. On recovery check live PR #15; do not assume merge.
-After merge, continue full E01 and E03 proposal; D1 still waits for approved-contract
-normative/oracle and compatibility gates. D0 approval already recorded, no repeat
-approval needed unless its promise changes. No package publication authorized.
+Local dotnet absent; actual .NET evidence is Actions only. Do not retry unavailable
+SDK/blob downloads. Bounded failed-TRX/command diagnostics and compressed complete
+JSON annotations work; tools/audit/collect.py validates run/source/chunk receipts.
+Audit AUDIT_TFM and reference METADATASHARP_REFERENCE_TFM default net8.0, accept
+net10.0. Tools now need explicit -f for dotnet run; no target may silently fall back.
+Python policy 12/12 and seed tests 6/6 pass locally; own final CI still required.
