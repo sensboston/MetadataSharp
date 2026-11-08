@@ -31,7 +31,7 @@ def fixture(artist=b'Alice\0', orientation=1, xmp=b'owned-non-EXIF-APP1'):
             tail += raw
     tiff = b'II\x2a\0\x08\0\0\0' + struct.pack('<H', len(fields)) + entries + b'\0'*4 + tail
     # Not a decoder fixture: enough framing to exercise ONLY the bounded reader's guards.
-    return b'\xff\xd8' + segment(0xe1, b'Exif\0\0'+tiff) + segment(0xe1, xmp) + segment(0xda, b'owned-scan-header') + b'owned-scan\xff\xd9'
+    return b'\xff\xd8' + segment(0xe1, b'Exif\0\0'+tiff) + segment(0xe1, xmp) + segment(0xfe, b'owned-comment') + segment(0xda, b'owned-scan-header') + b'owned-scan\xff\xd9'
 
 
 class BaselinePolicyTests(unittest.TestCase):
@@ -82,6 +82,22 @@ class BaselinePolicyTests(unittest.TestCase):
         for data in (fixture(b'Bob\0', orientation=2), fixture(b'Bob\0', xmp=b'changed'), fixture(b'Bob\0').replace(b'owned-scan\xff', b'changed-scan\xff')):
             with self.assertRaises(ValueError):
                 baseline.verify(before, baseline.inspect_jpeg(data), b'Bob\0')
+
+    def test_byte_identical_permutation_is_reported_not_exact_preservation(self):
+        before = baseline.inspect_jpeg(fixture())
+        after = copy.deepcopy(before)
+        after['nonExifParts'].reverse()
+        after['nonExif'] = b''.join(after['nonExifParts'])
+        with self.assertRaises(ValueError):
+            baseline.verify(before, after, b'Alice\0')
+        self.assertEqual('byte-identical-segment-permutation-NOT-exact-order', baseline.verify(before, after, b'Alice\0', allow_segment_reorder=True))
+
+    def test_permutation_mode_still_rejects_payload_loss_and_duplication(self):
+        before = baseline.inspect_jpeg(fixture())
+        for parts in (before['nonExifParts'][1:], before['nonExifParts']*2, [s+b'\0' for s in before['nonExifParts']]):
+            after = copy.deepcopy(before); after['nonExifParts'] = parts; after['nonExif'] = b''.join(parts)
+            with self.assertRaises(ValueError):
+                baseline.verify(before, after, b'Alice\0', allow_segment_reorder=True)
 
     def test_non_exif_app1_is_not_misclassified(self):
         info = baseline.inspect_jpeg(fixture(xmp=b'Exif-not-a-signature'))
