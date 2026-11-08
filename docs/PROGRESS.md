@@ -551,3 +551,21 @@
 - This is a contract-only proposal. No parser/writer/dependency/test changes or new
   test execution. Exact source review and new public/safety contract approval remain
   required before implementing M13. No standalone TIFF/DNG, animation or publication.
+
+### M13 approval and implementation submission
+
+- Developer explicitly approved PNG/WebP contracts and authorized M13 then M14,
+  with interest in subsequent M15. M15 still needs separate read-only standalone
+  TIFF contracts; no TIFF/DNG implementation is authorized by PNG/WebP signatures.
+- Marked the shared proposal approved. Reviewed published PNG Third Edition and
+  RFC1950/1951 mechanics; source hashes/decisions are in the normative review.
+- Implemented full streaming PNG CRC/structural validation, static-only profile,
+  conservative unknown-chunk safety, lazy independent EXIF/XMP snapshots, addressed
+  preflighted edits, exact no-op and non-overwriting path publication. Retained the
+  approved 65,527-byte EXIF cap and original JPEG behavior.
+- Compressed XMP has an independently authored bounded DEFLATE framing walk plus
+  framework expansion and Adler verification; reject truncation/trailing streams
+  before returning a packet. No reference codec/CRC implementation was copied.
+- Added owned one-pixel fixtures and independent CRC, structure, metadata, compression,
+  limits, preservation and async/path tests. Local dotnet remains unavailable;
+  no .NET success claimed before actual three-platform CI. M14 is gated on M13.

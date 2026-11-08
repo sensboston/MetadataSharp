@@ -62,8 +62,8 @@ jobs:
               if count != passed:
                   raise SystemExit(f'Not all tests passed in {file}: {counters.attrib}')
               total += count
-          if total < 309:
-              raise SystemExit(f'Expected at least 309 M01–M12 cases, got {total}')
+          if total < 327:
+              raise SystemExit(f'Expected at least 327 M01–M13 cases, got {total}')
           print(f'Validated {total} passing tests')
       - name: Upload test results
         if: always()

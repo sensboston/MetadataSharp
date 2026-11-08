@@ -1,9 +1,9 @@
 # M13–M14: PNG and WebP Metadata Contract Proposal
 
-Status: **PROPOSED — new API/safety contracts require approval before implementation.**
+Status: **APPROVED by the developer on 2026-11-07.**
 Date: 2026-11-07. The developer approved grouping PNG and WebP into one PR, with
-separate implementation and successful CI gates. This is the contract checkpoint,
-not approval of signatures or unreviewed format assumptions below.
+separate implementation and successful CI gates, then explicitly approved the
+signatures/safety profile below. Normative review remains required.
 
 ## 1. Scope, dependencies and implementation gates
 

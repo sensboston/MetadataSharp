@@ -15,7 +15,9 @@ public enum MetadataErrorCode
     XmpTooLarge,
     InvalidIptc,
     InvalidPhotoshopResources,
-    IptcTooLarge
+    IptcTooLarge,
+    InvalidPng,
+    InvalidWebP
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>
