@@ -10,6 +10,8 @@ using MetadataSharp.Tests.Jpeg;
 using MetadataSharp.Tests.Png;
 using MetadataSharp.Formats.Png;
 using MetadataSharp.Formats.WebP;
+using MetadataSharp.Formats.Tiff;
+using MetadataSharp.Tests.Tiff;
 using MetadataSharp.Tests.WebP;
 
 if (args.Length == 2 && args[0] == "generate")
@@ -69,6 +71,13 @@ if (args.Length == 2 && args[0] == "generate")
     byte[] legacyWebp = WebPFixture.Extended(8, WebPFixture.Image(0)[12..], WebPFixture.Chunk("EXIF", [.. "Exif\0\0"u8, .. JpegFixture.OrientationTiff]));
     File.WriteAllBytes(Path.Combine(args[1], "legacy.webp"), legacyWebp);
     using (var legacyDoc = WebPMetadataDocument.Open(new MemoryStream(legacyWebp))) legacyDoc.SaveExifAs(Path.Combine(args[1], "legacy-rebuilt.webp"), edit);
+
+    foreach (bool big in new[] { false, true }) foreach (bool tiles in new[] { false, true })
+    {
+        var tiff = StandaloneTiffFixture.Create(big, tiles);
+        tiff.Directory(8, StandaloneTiffFixture.Fields(tiles).OrderBy(f => f.Tag).ToArray());
+        File.WriteAllBytes(Path.Combine(args[1], $"owned-{big}-{tiles}.tif"), tiff.Bytes);
+    }
 
     // Authored resource fixture: keep a copyright flag, update IPTC and its existing digest.
     IptcPacket minimal = IptcPacket.CreateEmpty(); byte[] iim = new byte[minimal.ByteLength]; minimal.CopyRawTo(iim);
@@ -144,6 +153,12 @@ else if (args.Length == 2 && args[0] == "probe-webp-opaque")
     using var reread = WebPMetadataDocument.Open(new MemoryStream(output.ToArray()));
     if (reread.ReadXmp() is not null || reread.ReadExif() is null) return 4;
     Console.WriteLine("opaque edit refused before output; whole removal retained EXIF");
+}
+else if (args.Length == 2 && args[0] == "inspect-tiff")
+{
+    var layout = TiffLayout.Read(args[1]); var image = layout.Directories.First(d => d.Image is not null).Image!;
+    Console.WriteLine(JsonSerializer.Serialize(new { width = image.Width, height = image.Height, supported = layout.IsSupported,
+        segments = image.Segments.Count, storage = image.Storage.ToString() }));
 }
 else if (args.Length == 2 && args[0] == "inspect")
 {

@@ -1,6 +1,6 @@
 # M15: Read-Only Standalone Classic TIFF Contract Proposal
 
-Status: **PROPOSED — not approved and not implemented.**
+Status: **APPROVED by the developer on 2026-11-07; implementation in progress.**
 Date: 2026-11-07. The developer requested attempting M15 after PNG/WebP. This
 proposal makes the previously unspecified public API and safety boundary explicit.
 The PNG/WebP approval does not approve these new contracts. Start implementation

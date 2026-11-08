@@ -652,3 +652,19 @@
   actual final-head/merge evidence is posted to PR #9 after completion.
 - Next implementation scope: M15 only after explicit approval of its separate exact
   read-only TIFF contract. Proposal is checked in; no TIFF/DNG code was started.
+
+### M15 approval and implementation submission (2026-11-07)
+
+- Developer explicitly approved STANDALONE_TIFF_READ_ONLY_CONTRACT_PROPOSAL.md.
+  Predecessor PR #9 merged at 269dc92cb5bf1218df230e1ced3140c95ca7d81c after
+  green final runs 42430081717/42430077969. Work is on arena/f0470529-metadatasharp.
+- Added separate immutable TiffLayout.Read[Async] facade, approved models/options,
+  bounded structural/image range accounting and explicit unsupported-layout issues.
+  No TIFF writer, shared facade refactor, EXIF cap expansion, BigTIFF or DNG support.
+- Reviewed TIFF6/CIPA normative field prose; finite logical bookkeeping formula,
+  unsupported matrix and M16 boundary are recorded in the normative/support doc.
+- Added owned II/MM strip/tile fixtures, DAG/cycle/pointers/overlap/planes/preview,
+  limit/type/unsupported/mutation and true-async/path tests. Required independent
+  ExifTool/Exiv2 reads and ExifTool rewritten-TIFF ingress exercise public API.
+- Local dotnet remains unavailable. Python policy and whitespace checks run locally;
+  no new .NET or external-reference success claimed before Actions results.
