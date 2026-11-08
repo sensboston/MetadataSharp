@@ -1,6 +1,5 @@
 import importlib.util
 import json
-import re
 from pathlib import Path
 import unittest
 
@@ -8,7 +7,13 @@ ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location('census', ROOT / 'tools/reference/build_census.py')
 census = importlib.util.module_from_spec(spec); spec.loader.exec_module(census)
 
-ROW_ID = re.compile(r'^EX0289-[A-Za-z]+-[A-Z]+-[A-Z]+-\d{4}$')
+ROW_ID = __import__('re').compile(r'^EX0289-[A-Za-z]+-[A-Z]+-[A-Z]+-\d{4}$')
+
+
+def load_evidence():
+    path = ROOT / 'docs/research/evidence/e01-b0-census/observations.json'
+    return json.loads(path.read_text()) if path.exists() else None
+
 
 class CensusPolicyTests(unittest.TestCase):
     def setUp(self):
@@ -46,17 +51,40 @@ class CensusPolicyTests(unittest.TestCase):
                 self.assertIn(row['family'], enums['extractFamilies'])
                 self.assertEqual('not-applicable', row['textEncoding'])
 
-    def test_b0_pilot_is_all_not_run_and_not_assessed(self):
+    def test_b0_batch_is_fully_observed_or_static_not_applicable(self):
         self.assertFalse(self.report['denominatorFrozen'])
+        evidence = load_evidence()
+        self.assertIsNotNone(evidence, 'B0 pinned-CLI observation evidence is required')
+        self.assertEqual('passed', evidence['status'])
+        static = {row['rowId'] for row in self.report['rows'] if census.static_not_applicable(row)}
+        observed = {r['rowId'] for r in self.report['rows'] if r['baselineObservation'] == 'observed-cli'}
+        not_applicable = {r['rowId'] for r in self.report['rows'] if r['baselineObservation'] == 'not-applicable'}
+        self.assertEqual(len(self.report['rows']), len(observed) + len(not_applicable))
+        self.assertEqual(static, not_applicable)
+        self.assertEqual({o['id'] for o in evidence['observations']}, observed)
+        self.assertEqual(len(static), 38)
+        self.assertEqual(len(observed), 97)
         for row in self.report['rows']:
-            self.assertEqual('not-run', row['baselineObservation'])
-            self.assertEqual('not-assessed', row['verification'])
-            self.assertIsNone(row['fixture'])
             self.assertEqual('B0', row['batch'])
 
-    def test_fixture_rights_never_inferred(self):
+    def test_verification_stays_not_assessed(self):
         for row in self.report['rows']:
-            self.assertIsNone(row['fixture'])
+            self.assertEqual('not-assessed', row['verification'])
+
+    def test_observed_rows_carry_pinned_owned_synthetic_fixtures(self):
+        manifest = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/jpeg/manifest.json').read_text())}
+        for row in self.report['rows']:
+            if row['baselineObservation'] == 'not-applicable':
+                self.assertIsNone(row['fixture'])
+                self.assertIn('static not-applicable', row['notes'])
+                continue
+            fixture = row['fixture']
+            pin = manifest[fixture['file']]
+            self.assertEqual(pin['sha256'], fixture['sha256'])
+            self.assertEqual(pin['length'], fixture['length'])
+            self.assertEqual(pin['recipe'], fixture['recipe'])
+            self.assertEqual('owned-synthetic', fixture['rights'])
+            self.assertIn('B0 pinned-CLI observation', row['notes'])
 
     def test_pilot_scope_is_exactly_jpeg_exif_comments_icc_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}

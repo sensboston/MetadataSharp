@@ -58,5 +58,8 @@ E02 current support/build evidence:
 E01 pinned execution (bounded, not E01 closure):
 - research/EXIV2_PINNED_BASELINE_EXECUTION.md: exact source/build/fixture scope,
   first failure diagnoses, explicit D001 COM/D002 XMP preservation differences.
+- research/evidence/e01-b0-census: B0 pilot observation JSON (97 observed rows,
+  outcome counts) + README (provenance, limits, reproduction); fixtures are
+  owned-synthetic, SHA-256 pinned in tests/fixtures/jpeg/manifest.json.
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.

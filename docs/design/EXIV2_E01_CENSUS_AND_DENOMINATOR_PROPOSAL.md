@@ -233,7 +233,15 @@ parity claim. Developer answers, 2026-11-08 (PR #22/#23 review round):
 Any change to these answers lands by PR with developer approval, then flows into
 PROGRESS.md and CURRENT_STATE.md.
 
-## 8. Review protocol and exit — CLOSED 2026-11-08 (design); B0 open
+B0 pilot observation completed 2026-11-08: all applicable rows observed with the
+pinned CLI (evidence e01-b0-census; 89 accepted / 8 refused — ICC
+duplicate-profile rows refuse mutations with `Not a valid ICC Profile`; 38 rows
+statically not-applicable by reviewed axis collapses: the `app1-exif-multiple`
+layout is itself the duplicate-block case, `com-single` cannot carry duplication).
+No denominator is computed here; the developer freezes both denominators after
+the full batch sequence per the approved order (B0 → B1 → denominators).
+
+## 8. Review protocol and exit — CLOSED 2026-11-08 (design); B0 observed
 
 Developer reviewed §2 (schema), §3 (provenance), §5 (batching), §6 (denominators/
 reporting) and the §7 answers on 2026-11-08; this document is APPROVED as the design
@@ -277,7 +285,7 @@ Sketch: 4 operations × layout(3) × duplicates(3) ≈ 36 base rows before encod
 pruning and before merging equivalents — every pruning step is recorded in the census with
 a reason, and prunings are part of review. Expected artifacts: per-row
 `baselineObservation`/`verification` slots, one pinned JPEG fixture per mutation-class
-variant, oracle pointers, batch `B0`. None of these rows exist yet; nothing here is a
+variant, oracle pointers, batch `B0`. B0 rows now exist and are observed; nothing here is a
 denominator until the pilot and review produce and approve them.
 
 ## Appendix C — risks
