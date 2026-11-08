@@ -1,7 +1,8 @@
 # DNG D0: proposed exact read-only inventory contract
 
-Status: **PROPOSED — not approved or implemented.** Programme direction was
-approved; these new signatures/subset rules still need explicit approval. This is
+Status: **APPROVED by the developer on 2026-11-07; not implemented.** Approval
+covers the exact signatures, error addition, read-only lifetime model and narrow
+subset below, subject to the explicit prerequisites in section 5. This is
 E04/D0, not general DNG support. E02/E03 runtime/compatibility decisions and the
 normative/fixture-oracle prerequisites below must pass before E05/D1 code.
 Existing TiffLayout/TiffMetadataDocument DNG rejection stays unchanged.
@@ -219,7 +220,10 @@ API approval is necessary but not alone sufficient to start D1:
 4. E02 net8.0/net10.0 matrix and E03 compatibility decision must be available;
    retain existing JPEG/PNG/WebP/TIFF contracts and no production native/GPL deps.
 
-Approval requested: exact proposed surface, read-only lifetime/error model and this
-intentionally narrow profile, subject to the explicit normative/oracle gates above.
-**No D1 implementation, D2 write API, digest algorithm or legacy-runtime support is
-approved by this document.** Until explicit approval, stop at proposal/research.
+Approval recorded: the developer explicitly approved DNG D0 on 2026-11-07,
+including this exact surface, read-only lifetime/error model and intentionally
+narrow profile, subject to the normative/oracle/runtime gates above. Do not request
+that same contract approval again unless a public/subset/safety promise changes.
+**D1 code must not begin until these prerequisites are closed.** Approval does not
+authorize D2 writing, digest algorithms, broad DNG support or legacy-runtime support.
+This document remains a contract record; no parser or enum was implemented here.

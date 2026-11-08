@@ -3,7 +3,7 @@
 Status: direction APPROVED by developer on 2026-11-07; new public contracts still
 need explicit approval before implementation. This is a new programme, not a
 renumbering or reopening of completed M00–M18. Active work starts with E00/E01;
-DNG D0 is proposal-only E04. No package publication is authorized.
+DNG D0 is approved contract-only E04 (2026-11-07), not implementation. No package publication is authorized.
 
 ## Goal, meaning of parity, and non-negotiable boundaries
 
@@ -116,5 +116,6 @@ E01 atomic inventory/CLI verification remains open. Read EXIV2_CAPABILITY_BASELI
 and EXIV2_REQUIREMENTS_TRIAGE for source-limited findings. Current CI billing issue
 must be rechecked; PR #13's one-off docs exception does not cover this programme.
 No DNG parser, runtime retarget, public API refactor, or new format is implemented
-by these documents. Ask approval of the D0 proposal separately; do not treat
-programme approval as approval of its newly written public signatures.
+by these documents. The developer subsequently explicitly approved the exact D0 contract on
+2026-11-07. E04 contract approval is complete; D1 still waits for its normative,
+fixture/oracle and E02/E03 prerequisites. No approval of broader APIs is implied.

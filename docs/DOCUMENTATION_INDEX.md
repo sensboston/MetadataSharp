@@ -8,7 +8,7 @@
 - research/EXIV2_CAPABILITY_BASELINE.md and EXIV2_REQUIREMENTS_TRIAGE.md: bounded
   first-pass evidence, snapshot JSON, unresolved full E01 inventory work.
 - design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md: exact new API/subset proposal,
-  approval pending and additional normative/oracle gates before implementation.
+  explicitly approved 2026-11-07, with normative/oracle/runtime gates before implementation.
 - DEVELOPMENT.md: standing safety, licensing, verification and workflow policy.
 - BUILD_AND_TEST.md: reproduction and historical observed results.
 

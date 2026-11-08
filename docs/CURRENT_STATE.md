@@ -34,7 +34,7 @@ MakerNote relocation, release publication or unseen public APIs approved.
   not a promised TFM or a trivial compatibility package. Initial API cost map is now in research/DOTNET_TARGET_FEASIBILITY.md; light
   Framework support has NOT been established and no compatibility build ran.
 - E04/D0 exact read-only DNG proposal prepared in
-  design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md. **UNAPPROVED, not implemented.**
+  design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md. **APPROVED 2026-11-07, not implemented.**
   Exact APIs/error addition/subset proposed; normative ledger/fixture rights/raw
   oracle/TFM/compatibility gates remain before D1. Existing TIFF DNG refusal stays.
 - Local Python policy and document JSON/link/diff checks are the available checks.
@@ -48,7 +48,8 @@ MakerNote relocation, release publication or unseen public APIs approved.
    documentation PR to merge without green CI; **exception does NOT carry over**.
    Do not merge a new red/unexecuted head without successful checks or new explicit
    per-PR deferral. Do not repeatedly retry billing failures without an account fix.
-2. Request explicit D0 contract approval, not generic programme approval. Close its
+2. D0 exact contract is explicitly approved (2026-11-07); do not request it again
+   without an actual change to the approved promise. Close its
    normative/independent-oracle prerequisites before D1; do not implement DNG now.
 3. Continue full E01 atomic baseline/corpus/reference build reconciliation, with
    rights per fixture and separation of docs claims/observations/test expectations.
@@ -98,7 +99,7 @@ JSON parsing, selected local Markdown links and whitespace checks pass. Final do
 head still needs its own CI; new per-PR exception would require explicit approval.
 Next: owner review D0 exact proposed surface, continue full E01 denominator/corpus/
 CLI-build reconciliation and E02 feasibility once infrastructure permits. No D1 code
-before D0 approval plus its explicit normative/oracle/runtime gates.
+before its explicit normative/oracle/runtime gates; D0 approval is now recorded.
 
 ## Visibility change / CI recheck
 
@@ -117,3 +118,21 @@ Three-platform correctness/reference/audit checks executed; no waiver needed.
 Final documentation head must pass its own checks. Exact final receipt goes in
 PR #14. E01 full census is still OPEN and D0 surface still UNAPPROVED; no net10,
 Framework or DNG implementation/runtime verification is claimed.
+
+## Superseding D0 approval and next gate
+
+Developer explicitly approved the exact DNG D0 contract on 2026-11-07. E04 contract
+approval is COMPLETE; no parser/error-enum implementation added. Earlier statements
+above about pending D0 approval are historical and superseded by this entry.
+Section 5 still requires closed normative type/count/location/default ledger, owned
+valid II/MM fixtures and complementary independently reviewed oracles, and E02/E03
+runtime/compatibility decisions before D1 code. Do not broaden DNG support or
+infer D2/write/digest/Framework approval. Full E01 capability census remains OPEN.
+
+Latest observed documentation head 3236ad9abd821936741c97b1ec751be1778174c2 passed
+42445322851 with all seven jobs green after public visibility change. No billing
+waiver needed; old infrastructure failures are historical. The approval-record
+commit must pass its own CI before PR #14 merge. Final immutable SHA/run/merge
+receipt goes in PR #14; on recovery inspect live PR status before assuming merged.
+After that documentation milestone, continue E01 and prerequisite E02/E03 work,
+not an unqualified D1 implementation. No package publication authorized.

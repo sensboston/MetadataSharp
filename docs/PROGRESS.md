@@ -1107,3 +1107,19 @@ prevent this new execution; no CI waiver or workflow alteration was needed.
 This does not validate .NET 10/Framework or DNG implementation (none added).
 Final documentation head still receives its own checks; immutable final receipt
 is recorded on PR #14 after success. D0 contract approval remains pending.
+
+## Explicit DNG D0 contract approval
+
+Developer explicitly stated approval of DNG D0 on 2026-11-07. Recorded approval
+of exact proposed signatures, InvalidDng addition, read-only lifetime/error model
+and narrow profile in the contract; no code or existing public API changed.
+Programme direction alone was not used as approval. E04 contract gate is complete,
+but D1's section 5 normative ledger, owned-fixture/independent-oracle and E02/E03
+prerequisites remain mandatory. D2/write/digest/legacy-runtime support not approved.
+Do not ask the same D0 approval again unless promises change.
+
+Predecessor documentation head 3236ad9 passed 42445322851, all seven jobs, after
+public visibility change. This approval-record commit requires its own green CI
+before PR #14 merge; final SHA/run/merge receipt will be posted there after success.
+E01 full inventory remains open. Local policy/whitespace checks run; no DNG/net10/
+Framework implementation or runtime verification claimed by this documentation.
