@@ -9,6 +9,7 @@ import re
 import shutil
 import struct
 import subprocess
+import traceback
 import zlib
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -160,10 +161,10 @@ def main():
         check_version(run([exe, '--version']))
         verbose = run([exe, '--verbose', '--version'], raw_only=True)
         (output / 'verbose-version.txt').write_text(verbose)
-        check_runtime_features(verbose)
         # Do not persist namespace catalogs/tag dictionaries in the repository receipt.
         prefixes = ('exiv2=', 'version=', 'compiler=', 'bits=', 'platform=', 'build_type=', 'debug=', 'dll=', 'enable_', 'have_', 'library=')
         report['baseline']['verboseBuildFacts'] = [s for s in verbose.splitlines() if s.startswith(prefixes)]
+        check_runtime_features(verbose)
         for command in (['cmake', '--version'], ['c++', '--version'], ['ldd', exe],
                         ['dpkg-query', '-W', 'cmake', 'ninja-build', 'g++', 'libexpat1-dev', 'zlib1g-dev', 'libbrotli-dev', 'libinih-dev', 'libfmt-dev']):
             run(command)
@@ -209,7 +210,11 @@ def main():
             print(f'::notice title=E01Z observations.json {i}/{len(chunks)}::{chunk}', flush=True)
     except Exception:
         report['status'] = 'failed'
+        report['failure'] = traceback.format_exc()[-3500:]
         save()
+        diagnostic = json.dumps(dict(error=report['failure'], baseline=report['baseline']), separators=(',', ':'))[-6000:]
+        diagnostic = diagnostic.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+        print('::error title=E01 black-box observation failure::' + diagnostic, flush=True)
         raise
 
 

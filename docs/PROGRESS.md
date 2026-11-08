@@ -1229,3 +1229,9 @@ Complete chunk collector rejects missing/duplicate/corrupt/mixed-source receipts
 Local Python: 12 historical policies + 21 discovery/observation/collector cases PASS;
 no local SDK/CMake execution. Required fifteenth CI job must prove actual build and
 observations; no successful execution asserted yet.
+
+Initial E01 run42447844906 at6991c02: all fourteen existing gates PASS; pinned
+external configure/build also PASS, but observation step FAILS. Downloading logs
+from results-receiver returned EOF (known host restriction); annotations initially
+only gave exit1. No cause assumed. Add bounded explicit failure annotation with
+traceback/build facts before altering expectations; failed step remains required.
