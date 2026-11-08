@@ -1123,3 +1123,19 @@ public visibility change. This approval-record commit requires its own green CI
 before PR #14 merge; final SHA/run/merge receipt will be posted there after success.
 E01 full inventory remains open. Local policy/whitespace checks run; no DNG/net10/
 Framework implementation or runtime verification claimed by this documentation.
+
+## E02 execution plan after approved D0 documentation merge
+
+Active branch arena/1af1ed4a-metadatasharp starts from PR #14 merge 716c00b.
+D0 is approved but D1 remains gated; E02 can proceed independently of open E01.
+Implement approved .NET 8/10 direction without production API/algorithm changes:
+SDK 10 selection, net8.0/net10.0 library/test/tool assets, six OS/TFM correctness
+jobs with explicit TRX framework identity, two required reference jobs, six audit
+jobs, per-TFM package groups/XML/DLLs and isolated consumers, and cross-target
+public-signature receipts. Keep C# 12 and strict package payload assertions.
+No new runtime dependency, Framework target, DNG parser or API refactor. Framework
+is deferred as not demonstrated cheap by the recorded API cost map; any actual
+legacy spike remains separately bounded follow-up. E01 doc-claim ledger may advance
+without being called a frozen/verified full denominator. Preserve all old evidence;
+record new target-specific measurements separately. Local SDK absent: actual
+runtime execution must come from push CI. Final head must pass before merge.

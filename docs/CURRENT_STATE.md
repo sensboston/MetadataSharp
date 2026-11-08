@@ -136,3 +136,12 @@ commit must pass its own CI before PR #14 merge. Final immutable SHA/run/merge
 receipt goes in PR #14; on recovery inspect live PR status before assuming merged.
 After that documentation milestone, continue E01 and prerequisite E02/E03 work,
 not an unqualified D1 implementation. No package publication authorized.
+
+## Active E02 continuation (supersedes the older session branch above)
+
+Current assigned branch arena/1af1ed4a-metadatasharp; PR #14 confirmed merged at
+716c00be6782af86e00b5636314ecc2164650a0d after approved D0 and green CI.
+Next bounded unit: E02 modern multi-target/runtime/package verification, independent
+of E01 census completion. Execution plan is in latest PROGRESS entry, saved before
+code. Do not implement D1 or silently approve E03. Framework remains deferred unless
+cheap support can actually be established; no production compatibility fork.
