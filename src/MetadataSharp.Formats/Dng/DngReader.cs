@@ -103,10 +103,8 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         Range(TiffRangeKind.Header, null, null, 0, 8); Discover(first);
         while (pending.Count != 0) { token.ThrowIfCancellationRequested(); await Directory(pending.Dequeue()).ConfigureAwait(false); }
         Graph(first);
-        var sorted = ranges.OrderBy(r => r.Range.Offset).ThenBy(r => r.Range.Length).ToArray();
-        for (int i = 1; i < sorted.Length; i++) { token.ThrowIfCancellationRequested(); if (sorted[i].Range.Offset < sorted[i - 1].Range.Offset + sorted[i - 1].Range.Length) throw Bad("Overlapping DNG ranges."); }
         token.ThrowIfCancellationRequested();
-        return await Validate(first, sorted).ConfigureAwait(false);
+        return await Validate(first).ConfigureAwait(false);
     }
     private sealed class WorkingDirectory
     {
@@ -219,7 +217,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         }
         return result;
     }
-    private async Task<DngLayout> Validate(uint first, TiffAccountedRange[] sorted)
+    private async Task<DngLayout> Validate(uint first)
     {
         // ---------- Hard identity errors (D0 error model) ----------
         var root = working.First(d => d.Offset == first);
@@ -309,6 +307,8 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
             await ValidateColorIdentity(dir, dir.IsRoot).ConfigureAwait(false);
         }
 
+        var sorted = ranges.OrderBy(r => r.Range.Offset).ThenBy(r => r.Range.Length).ToArray();
+        for (int i = 1; i < sorted.Length; i++) { token.ThrowIfCancellationRequested(); if (sorted[i].Range.Offset < sorted[i - 1].Range.Offset + sorted[i - 1].Range.Length) throw Bad("Overlapping DNG ranges."); }
         var snapshots = working.Select(d => d.Snapshot()).ToArray();
         bool isSupported = issues.Count == 0;
         token.ThrowIfCancellationRequested();
