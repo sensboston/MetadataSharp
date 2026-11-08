@@ -1412,3 +1412,15 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
 - NOT authorized by this approval: D1 start (needs explicit go-ahead + normative/
   fixture/oracle prereqs), any E06–E18 format/family unit, exclusions/percentages,
   package publication, Framework work.
+
+### E03 merge receipt — 2026-11-08
+
+- PR #19 MERGED 2026-11-08T17:34:49Z as merge commit
+  ea8e0567c92cbd4691faa7c1a027764e3daccc3b. Final head bb473f0bc8d4bcfd3e725eaea32
+  00ee2868a053 passed both required fifteen-job runs (push 42505415670, pull_request
+  42505425014; 15/15 each, incl. pinned external Exiv2 0.28.9 job, six audits and both
+  historical references). Superseded push run a835fa0 was cancelled by the concurrency
+  policy when the branch advanced. Receipt posted on PR #19.
+- E03 gate discharged. Standing non-goals remain binding: no D1 start (explicit
+  go-ahead + normative/fixture/oracle prerequisites still required), no E06–E18
+  format work, no exclusions/percentages, no publication, Framework deferred.
