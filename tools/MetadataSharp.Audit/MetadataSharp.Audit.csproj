@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/MetadataSharp.Formats/MetadataSharp.Formats.csproj" />
+    <Compile Include="../../tests/MetadataSharp.Tests/Jpeg/JpegFixture.cs" Link="JpegFixture.cs" />
+    <Compile Include="../../tests/MetadataSharp.Tests/Png/PngFixture.cs" Link="PngFixture.cs" />
+    <Compile Include="../../tests/MetadataSharp.Tests/WebP/WebPFixture.cs" Link="WebPFixture.cs" />
+    <Compile Include="../../tests/MetadataSharp.Tests/Tiff/StandaloneTiffFixture.cs" Link="StandaloneTiffFixture.cs" />
+  </ItemGroup>
+</Project>

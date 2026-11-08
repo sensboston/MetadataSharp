@@ -862,3 +862,82 @@
   SHA/run IDs and merge receipt will be posted on PR #11 after success, avoiding
   circular commit recording. CURRENT_STATE gives a deterministic live-PR recovery
   check. No package publication and no DNG implementation; stop after M16.
+
+## M17–M18 grouped execution authorization and recovery plan
+
+Developer requested completing the remaining two units in one pass and one PR,
+then activated arena/b166bb08-metadatasharp from M16 merge d476e37. PR #11 is
+confirmed MERGED. M17 remains feasibility/proposed follow-up contracts ONLY;
+requesting approval of that future plan does not authorize DNG implementation.
+The grouped request authorizes proceeding to the independent bounded M18 audit
+without implementing or silently approving the M17 proposal.
+
+Before code: bounded M18 scope is reproducible public-API microbaselines on authored
+JPEG/PNG/WebP/TIFF inputs (throughput, process allocations, hashes/environment),
+three-platform CI, local-only package candidates/content/license/dependency/docs
+inspection and an offline consumer smoke. No production API/safety changes, broad
+optimization, new production dependency or publication. Existing 448 tests and
+mandatory external-reference checks remain required. Benchmark evidence will be
+small JSON files; binaries/packages stay ignored artifacts. Record actual failures
+and unrun checks; do not invent results. Final head must pass before one PR merge.
+
+### M17 feasibility deliverable
+
+Reviewed pinned DNG 1.7.1.0 September 2023 prose (126 pages), mirror blob
+5e4d714a2aa6b935286c6177991a72768fbaec0c, SHA256
+9cdfe43d44751b662d1f0ace81fff84f6a927321f5d18d79054ce78dd499abcd.
+DNG_SCOPE records raw/preview/profile/opcode/private/integrity/version families,
+required contracts, narrow candidate, rights/oracle strategy and unresolved blockers.
+Proposed D0/D1/D2 prompts explicitly require future approval; none implemented.
+No SDK/GPL code/tests, PDF or external camera fixtures imported. M17 asks approval
+of the follow-up plan, not of proceeding with the separately authorized M18 audit.
+Local Python policy 12/12/diff checks pass; .NET/platform/reference gate via CI next.
+
+### M17 gate before M18 tooling
+
+M17 head 1a05ffe23ee6e8b766a6db777705e509755bb79b passed required run
+42439542366: 448 .NET tests per platform, Python 12/12, required external references.
+Only after that gate, M18 tooling adds synchronous public-API microbaselines and
+three-platform local candidate-package/content/license/docs/offline-consumer audit.
+Normal projects remain non-packable; opt-in audit candidates version 0.0.0-audit
+are ignored, never published. XML docs gaps are reported, not hidden by a full-docs
+claim. Measurements/package smoke have not yet run; await this head's CI.
+
+First M18 run 42439656646 compiled/executed baselines but package audit failed on
+all platforms; existing 448/platform tests and mandatory references remained green.
+Job-log blob download returned EOF. Add bounded command/assertion diagnostics and
+small JSON evidence as GitHub check annotations, retaining strict assertions and
+artifact upload. No package-audit success is claimed before diagnosis/fix.
+
+M18 diagnosis from check annotation 128606314112: candidate package lacked XML docs,
+so the required-content assertion correctly failed. Audit opt-in documentation
+properties were set too late in Directory.Build.targets. Move those properties to
+Directory.Build.props (before SDK documentation defaults), retaining strict package
+XML checks; add explicit SeNS author/copyright metadata and capture full SDK info.
+Normal builds remain non-packable. No production source or API changes.
+
+M18 fixed head 13bdcca7a16911b17e55356e756b471472be6bff passed run 42439833467:
+all seven jobs including baseline/package/offline-consumer on all three platforms,
+448 tests/platform, policy/references. Package content included DLL/XML/MIT/readme;
+Core has no package deps, Formats only Core. GitHub truncates individual annotation
+messages to 4096 bytes, so add compressed <=2500-byte chunks and a receipt-checked
+collector for durable full evidence (blob downloads remain unavailable). No measured
+results will be inferred from truncated messages. Reporting fix needs its own gate.
+
+### M18 full measured evidence gate and grouped completion submission
+
+Head 4d89a00e016d32845bd44395bba7f0076dcc1217 passed required 42439984148, all seven
+jobs: 448/platform, Python 12/12, references and all three platform audits. Complete
+baseline/package JSON recovered via compressed API annotations with checked source,
+chunk completeness and receipts under docs/audits/evidence/m18. Eight workloads,
+five batches each; runtime 8.0.33, SDK 8.0.427, X64 Linux/Windows and Arm64 macOS.
+Candidate package XML counts 45/19, MIT/readme/license and dependency assertions,
+isolated offline edit/reopen consumer all passed. Performance/reporting gaps and
+unexecuted release checks remain explicit; no optimization/publication/DNG code.
+
+M17 feasibility follow-up asks developer approval, not implicitly approved by the
+grouped merge. Final source/documentation/evidence head must pass all seven jobs
+before one PR #12 merge; immutable final-head run/merge receipt will be posted there.
+After completed merge, all bounded M00–M18 roadmap deliverables are complete. No
+further implementation unit starts automatically. Local Python policy/diff pass;
+local .NET absent, actual SDK measurements were Actions only.

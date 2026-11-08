@@ -122,3 +122,35 @@ jobs:
           path: artifacts/reference/
           if-no-files-found: warn
           retention-days: 7
+
+  performance-package-audit:
+    name: Audit / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      AUDIT_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Record SDK and environment
+        run: dotnet --info
+      - name: Measure and audit local candidates
+        run: python tools/audit/run.py
+      - name: Upload audit evidence (never publish packages)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-${{ matrix.os }}
+          path: |
+            artifacts/audit/baseline.json
+            artifacts/audit/packages.json
+          if-no-files-found: error
+          retention-days: 30

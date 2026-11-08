@@ -9,4 +9,17 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(MetadataSharpAuditPackage)' == 'true' and ('$(MSBuildProjectName)' == 'MetadataSharp.Core' or '$(MSBuildProjectName)' == 'MetadataSharp.Formats')">
+    <IsPackable>true</IsPackable>
+    <Authors>SeNS</Authors>
+    <Copyright>Copyright (c) 2026 SeNS</Copyright>
+    <Version>0.0.0-audit</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Restricted metadata library; local audit candidate, not publication authorization.</Description>
+    <RepositoryUrl>https://github.com/sensboston/MetadataSharp</RepositoryUrl>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Existing public documentation gaps are reported in the audit, not claimed fixed. -->
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
 </Project>

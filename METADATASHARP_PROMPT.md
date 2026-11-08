@@ -17,13 +17,14 @@ MIT-only code.
 **Read [docs/CURRENT_STATE.md](docs/CURRENT_STATE.md) first for the latest recovery
 checkpoint, approvals, evidence and pending work.**
 
-M01–M15 implement restricted JPEG EXIF/IPTC/XMP editing, static PNG/WebP EXIF/XMP,
-read-only standalone TIFF layout accounting, bounded XMP packets/sidecars
+M01–M16 implement restricted JPEG EXIF/IPTC/XMP editing, static PNG/WebP EXIF/XMP,
+standalone TIFF layout accounting/restricted descriptive editing, bounded XMP packets/sidecars
 and the external-reference audit. See `docs/design/XMP_USAGE_AND_PRESERVATION_LIMITS.md`
 for the approved XMP profile, and
 `docs/design/IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md` for the IPTC/IRB profile. See `docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md` for conformance limitations
-and remaining publication gates. No package has been published. M16 restricted TIFF
-write contracts are now approved, not yet implemented at the recovery checkpoint.
+and remaining publication gates. No package has been published. M16 restricted TIFF editing is complete, retaining obsolete bytes. M17 DNG feasibility
+and M18 measured packaging audit are recorded in CURRENT_STATE; no DNG implementation
+or package publication follows from those audits.
 The broader mission below is not implemented capability.
 
 ## Communication
@@ -83,9 +84,8 @@ XMP library rather than treating a package name as pre-approved.
 M00 contracts were approved on 2026-11-07. Read
 [the approved contracts](docs/design/INITIAL_CONTRACTS.md) and
 [accepted tradeoffs](docs/decisions/INITIAL_RELEASE_ACCEPTED_TRADEOFFS.md).
-M01–M06 restore/build/test passed on Linux, Windows and macOS in GitHub Actions.
-The local environment still has no SDK; use CI as described in
-[build instructions](docs/BUILD_AND_TEST.md). M07 is next under the standing sequential authorization; verify JPEG normative
-prerequisites before coding.
-The initial release target is a restricted JPEG EXIF reader/editor with explicit
-unsafe-edit refusal.
+M01–M18 bounded deliverables/gates are recorded in CURRENT_STATE and PROGRESS;
+verify final PR #12 status before assuming the grouped roadmap merge. The local
+SDK remains absent; use CI as documented. Future DNG follow-up implementation and
+package publication need separate approvals. No automatic next implementation
+unit remains after the completed roadmap; do not expand scope silently.

@@ -172,3 +172,22 @@ passed required run [42436352761](https://github.com/sensboston/MetadataSharp/ac
 448 tests on each Windows/Linux/macOS, Python 12/12 and mandatory references.
 Final documentation-head checks and merge receipt are recorded on PR #11 after
 success. No local .NET, full 4-GiB I/O, benchmark or publication claim is implied.
+
+## M17–M18 feasibility and measured package audit
+
+M17 documentation head 1a05ffe passed required 42439542366 before M18 tooling.
+M18 tooling/evidence head 4d89a00 passed required 42439984148: seven jobs, 448 .NET
+tests per Windows/Linux/macOS, Python policy 12/12, mandatory references, and
+baseline/local-package/offline-consumer audits per OS. No production API changed.
+
+```sh
+python tools/audit/run.py
+# Recover complete small evidence through configured gh (no blob download):
+python tools/audit/collect.py 42439984148 artifacts/recovered-audit
+```
+
+See [M18 audit](audits/PERFORMANCE_AND_PACKAGING_AUDIT.md) for methodology, exact
+measured JSON, SDK/architecture context, package/license/dependency/API docs gaps
+and unexecuted checks. Audit-only opt-in IsPackable/0.0.0-audit properties never
+permit publication; normal builds are non-packable. Local SDK is absent. Final PR
+#12 documentation head requires its own full CI before merge; receipt goes in PR.

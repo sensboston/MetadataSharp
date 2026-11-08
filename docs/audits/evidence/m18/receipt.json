@@ -1,0 +1,42 @@
+{
+  "run": {
+    "conclusion": "success",
+    "headSha": "4d89a00e016d32845bd44395bba7f0076dcc1217",
+    "status": "completed",
+    "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42439984148"
+  },
+  "runId": "42439984148",
+  "encoding": "zlib/base64 chunks <=2500 bytes",
+  "files": [
+    {
+      "file": "ubuntu-baseline.json",
+      "checkRun": 128606933230,
+      "rawJsonSha256": "8274684014da91f3bd055d1e814a51eae5a4c50d85ca319bd2793fb77397f609"
+    },
+    {
+      "file": "ubuntu-packages.json",
+      "checkRun": 128606933230,
+      "rawJsonSha256": "91de4d662bff5d45cc5a3af08340ba74fe13f21f94fa823e6cacf8e3cf5f0517"
+    },
+    {
+      "file": "windows-baseline.json",
+      "checkRun": 128606933120,
+      "rawJsonSha256": "9e7c9e076a6ba8be18cc7a638af67b678e17096bd0548dcbe624062f43c0ff96"
+    },
+    {
+      "file": "windows-packages.json",
+      "checkRun": 128606933120,
+      "rawJsonSha256": "c0420476ff7d6ab028a982b0ab3c6bd656753325e01dd6a2560f8498586277ec"
+    },
+    {
+      "file": "macos-baseline.json",
+      "checkRun": 128606933072,
+      "rawJsonSha256": "7fb54a12362574d1cfbf750c9fbb996251f1ef3d14ebfb085e1c6eea5b8692cd"
+    },
+    {
+      "file": "macos-packages.json",
+      "checkRun": 128606933072,
+      "rawJsonSha256": "6236c11f4380a2984c0ec6dd2cf68e823ba0cc51d3309cf7c4c57cf5c874f2e9"
+    }
+  ]
+}
