@@ -106,7 +106,7 @@ public sealed class DngTests
         Assert.Equal(1040, layout.SourceLength);
         Assert.Equal(new DngVersion(1, 1, 0, 0), layout.Version);
         Assert.Equal(4u, layout.Directories[0].Image!.Width);
-        Assert.Equal(426L, layout.Directories[0].Image.Strips[0].Offset);
+        Assert.Equal(426L, layout.Directories[0].Image!.Strips[0].Offset);
         Assert.True(layout.Ranges.Count > 4);
         Assert.False(layout.Directories is DngDirectoryInfo[]);
         Assert.False(layout.Ranges is TiffAccountedRange[]);
