@@ -849,3 +849,16 @@
   and snapshot-budget corrections, not the later ten added acceptance cases.
   CURRENT_STATE now identifies only final expanded-head/documentation gates and
   successful PR #11 completion as remaining M16 work.
+
+### M16 completed implementation/acceptance gate
+
+- Full source/test/documentation head **762dc206915e7989721645e0ee3a8adb479310c2**
+  passed required PR run **42436352761**: **448 tests on each Windows/Linux/macOS**,
+  Python policy **12/12**, mandatory pinned external references green. All ten new
+  family/tag-matrix cases passed. No assertions or warning classifiers weakened.
+- Implementation, complete accepted-family matrix, usage/support and audit are
+  finished within the approved contract. Final documentation-only commit must also
+  pass its own required checks before PR #11 is readied/merged. Actual final-head
+  SHA/run IDs and merge receipt will be posted on PR #11 after success, avoiding
+  circular commit recording. CURRENT_STATE gives a deterministic live-PR recovery
+  check. No package publication and no DNG implementation; stop after M16.

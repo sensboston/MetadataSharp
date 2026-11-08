@@ -1,6 +1,6 @@
 # M16: Restricted Standalone TIFF Editing Contract Proposal
 
-Status: **APPROVED by the developer on 2026-11-07; implementation and audit submitted; final-head completion gates pending.**
+Status: **APPROVED by the developer on 2026-11-07; implemented/audited; 448-case acceptance gate passed at 762dc20; final documentation-head/merge receipt tracked in PR #11.**
 Date: 2026-11-07. Developer authorized continuing after M15. This document asks
 for the separate public API, preservation strategy and safety approval required
 by M16. The developer subsequently explicitly approved this exact proposal,

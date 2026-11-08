@@ -17,8 +17,13 @@ family/failure code 0dd38366cdc5bac2843541d336abfb4c9837cbd5 passed required
 and push run 42435961970: 435 tests/platform plus policy/references. DateTime/snapshot audit corrections at
 635f8bb565eeaab72a9147d5e9825fdcde54c215 passed required
 [42436144783](https://github.com/sensboston/MetadataSharp/actions/runs/42436144783):
-438/platform, policy 12/12 and references. The final 448-case submission requires
-its own final-head CI. **This audit submission is not yet a final-head gate or merge.**
+438/platform, policy 12/12 and references. Full acceptance/documentation head
+**762dc206915e7989721645e0ee3a8adb479310c2** passed required
+[42436352761](https://github.com/sensboston/MetadataSharp/actions/runs/42436352761):
+**448 .NET tests on each Windows/Linux/macOS**, Python **12/12** and mandatory
+references. Implementation/acceptance audit is complete. The final documentation
+commit must also pass CI before merge; its exact SHA/run/merge receipt is recorded
+in PR #11 after success, not preclaimed here.
 See CURRENT_STATE/PROGRESS and PR #11 for subsequent exact evidence. Local SDK
 is absent; only Python policy and diff checks are local. No benchmark, full fuzz
 campaign or package publication is claimed.

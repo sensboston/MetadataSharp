@@ -92,10 +92,10 @@ required references; final head 812bd76 also passed runs 42431094052/42431090942
 and PR #10 merged as 80dc75e62eff242d2b98bc4b14b3090cf4ea60ce. It separates immutable classic TIFF range accounting
 from JPEG-sized EXIF parsing, TIFF writing, BigTIFF and DNG. No M16 authorization.
 
-## M16 approved write contract — implementation/audit submitted
+## M16 approved write contract — implemented and audited
 
 Developer requested continuing after M15. The [exact M16 proposal](design/STANDALONE_TIFF_EDITING_CONTRACT_PROPOSAL.md)
-was explicitly approved on 2026-11-07; implementation/audit is submitted; final expanded-head gates are pending.
+was explicitly approved on 2026-11-07; implementation/audit passed at 762dc20 (448 tests/platform, policy/references green). Final documentation-head checks and merge receipt are tracked in PR #11.
 It specifies addressed baseline
 descriptive fields with append-preserve replacement of the active IFD graph,
 closed field/pointer schema and source-identity/new-output guarantees. Old metadata

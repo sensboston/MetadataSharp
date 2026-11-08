@@ -166,3 +166,9 @@ are emitted as Actions annotations if log/artifact downloads are unavailable.
 See the [write audit](audits/STANDALONE_TIFF_EDITING_AUDIT.md) for test classifications:
 synthetic compression accounting and pure 4-GiB planner boundaries are not claims
 of decoded compression validity or full-size source I/O. Local SDK still absent.
+
+Full M16 acceptance/documentation head 762dc206915e7989721645e0ee3a8adb479310c2
+passed required run [42436352761](https://github.com/sensboston/MetadataSharp/actions/runs/42436352761):
+448 tests on each Windows/Linux/macOS, Python 12/12 and mandatory references.
+Final documentation-head checks and merge receipt are recorded on PR #11 after
+success. No local .NET, full 4-GiB I/O, benchmark or publication claim is implied.

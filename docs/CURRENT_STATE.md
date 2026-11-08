@@ -5,8 +5,10 @@ This record supersedes earlier initial/no-code handoffs. PROGRESS.md retains his
 
 ## Current unit and exact authorization
 
-**M16 restricted standalone TIFF editing: implemented and audited; final expanded
-448-case/head gates pending. PR #11 is still draft and unmerged.**
+**M16 restricted standalone TIFF editing: implementation, audit and full 448-case
+acceptance gate PASSED. No further M16 code work planned.** Final documentation-head
+checks/PR #11 merge receipt are recorded in the PR after actual success; on recovery
+check live PR status before assuming merge. Do not start another unit on a pending gate.
 
 Exact approved public/safety contract:
 [STANDALONE_TIFF_EDITING_CONTRACT_PROPOSAL.md](design/STANDALONE_TIFF_EDITING_CONTRACT_PROPOSAL.md).
@@ -36,16 +38,17 @@ publication is not. Draft PR: https://github.com/sensboston/MetadataSharp/pull/1
   [42436144783](https://github.com/sensboston/MetadataSharp/actions/runs/42436144783):
   **438 .NET tests on each Windows/Linux/macOS**, Python **12/12**, mandatory pinned
   external references. This includes malformed-date policy and snapshot-budget fixes.
-- Full acceptance/documentation submission adds ten cases (448 total floor): all
-  accepted gray/RGB 8/16-bit/contiguous/separate/alpha families and every addressed
-  tag add/read/equivalent-copy/remove in both byte orders. Its own CI is required.
-  Compression selector cases are accounting-only, not valid codec payload claims;
-  4-GiB boundary cases use a pure planner model, not giant source I/O. No large
-  fixture/cache/SDK artifacts committed. Complete usage/support/audit documents exist.
-- Remaining: push/review final submission, observe required final-head all-platform
-  and reference gates; fix failures without weakening policy. Record actual results,
-  complete final status/docs, run final documentation-head gates, ready/merge PR #11
-  only after success. Do not invent results or merge on predecessor evidence.
+- Full acceptance/documentation head **762dc206915e7989721645e0ee3a8adb479310c2**
+  passed required [42436352761](https://github.com/sensboston/MetadataSharp/actions/runs/42436352761):
+  **448 .NET tests per Windows/Linux/macOS**, Python **12/12**, required references.
+  Covers all accepted gray/RGB 8/16-bit/contiguous/separate/alpha families and every
+  addressed tag add/read/equivalent-copy/remove in both byte orders. Compression
+  selector cases are accounting-only, not valid codec payload claims; 4-GiB
+  boundaries use a pure planner model, not giant source I/O. No large artifacts.
+- Final documentation head must itself pass all required checks before ready/merge
+  of PR #11. Its immutable SHA/run/merge receipt is posted in that PR to avoid a
+  self-referential commit record. If the PR is already merged, M16 is complete;
+  if not, finish only those authorized final gate/merge steps. No package publication.
 - No further M16 public API/strategy expansion is planned. After completed merge,
   M17 is DNG feasibility/contracts ONLY, not implementation. Its separate future
   implementation plan needs approval. M18 is measured optimization/packaging audit,
