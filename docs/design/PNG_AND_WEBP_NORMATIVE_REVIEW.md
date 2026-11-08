@@ -49,3 +49,41 @@ property-edit refusal before output and successful whole removal. Do not label
 this a semantic reverse-property-read success or widen the XMP parser. Both CLI
 readers recognize our authored EXIF/XMP. ExifTool reverse EXIF remains supported.
 The required report records this specific unsupported reference operation.
+
+## M14 WebP review after M13 green checkpoint
+
+Reviewed RFC9649 sections 2.3–2.7.1.6 (RIFF/chunks, sizes/padding, static/extended
+ordering, VP8X flags/canvas, alpha/ICC/metadata/unknown chunks) and 3.4 (bounded
+VP8L signature/dimensions/alpha hint/version). Strict zero reserved bits and no
+trailing bytes are approved conservative restrictions where readers may ignore.
+Reconstruction/color chunks must remain ordered; metadata MAY occur out of order,
+so existing target replacements remain in place. New EXIF precedes post-image XMP
+where possible; new XMP is appended. No other-family chunk is relocated.
+
+VP8L alpha_is_used is only an encoder hint: do not require equality with existing
+VP8X alpha flags and do not claim transparent-pixel validation. On simple lossless
+promotion derive the flag from this hint as approved. Lossy ALPH presence must
+match VP8X alpha; ALPH is allowed only before VP8, with supported control bits and
+raw byte count; compressed alpha/ICCP data is otherwise opaque. ALPH+VP8L is outside
+the supported profile. ICC semantic validity is not asserted.
+
+VP8 bounded frame header review: RFC6386 (November 2011), section 9.1 only, mirror
+visualcommons/gamut `references/vp8/rfc6386.txt`, blob
+`bb4d70ba562876818d1c365353bd92314d350b95`, SHA-256
+`c044997ae5e26f74dc28569f8866937412b2783e887c96e0c09372af78be411c`.
+Read only prose/field diagrams, not reference codec code later in the RFC. Validate
+key/show frame, versions 0–3, start code, nonzero encoded 14-bit dimensions and
+first-partition range. Scaling hints do not alter coded canvas dimensions; no
+rendering/entropy/pixel conformance claim. VP8L version must be zero.
+
+Read raw TIFF or legacy Exif-NUL-NUL wrapper; preserve original representation on
+no-op and write raw TIFF on effective rebuild. This is compatibility framing, not
+EXIF capacity expansion. Exact chunk presence determines metadata flags even for
+duplicates; target duplicates remain ambiguous. Unknown chunks block all effective
+edits but may survive structural reads/no-op, including unpromoted simple sources.
+
+Test-only valid WebP images were encoded from owned RGB/RGBA pixels using pinned
+Pillow 12.0.0/libwebp 1.6.0, not imported codec fixtures. Complete recipe, input/output
+hashes and relevant license notices are in tests/fixtures/webp. No encoder dependency
+is introduced in production or ordinary tests. Required external checks provision
+dwebp 1.3.2 separately and compare PAM decoding before/after all four frame modes.

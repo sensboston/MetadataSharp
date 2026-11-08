@@ -583,3 +583,30 @@
   not CRC/compression loss or RDF namespace handling. Retain the approved opaque
   behavior and test no-op/removal/refusal explicitly; record unsupported reverse
   semantic property reads in the reproducibility report. No warning suppression.
+
+### M13 completed checkpoint; M14 eligible
+
+- M13 head c2f3c58ca415bb002071ae7a004f38f1862f462e passed required PR run
+  42429048302: Windows/Linux/macOS Release build/tests (338-case minimum), Python
+  policy 12/12, pinned Exiv2 0.27.6/ExifTool 12.76 PNG/JPEG reference job green.
+- Observed PNG reference limitation is explicit in the report/review: ExifTool
+  read-only wrappers remain opaque, exact copy/removal works and semantic edits
+  refuse before output. Existing warning classifier was not broadened.
+- Starting M14 only after that completed checkpoint. PNG/WebP share approved
+  contracts/PR #9; no merge until the complete group passes final head CI.
+
+### M14 implementation submission
+
+- Added independent concrete WebP facade/options and bounded RIFF/header scanner:
+  strict size/padding, VP8/VP8L static images, VP8X flags/canvas, ICC/ALPH order,
+  simple promotion, no downgrade, raw/legacy EXIF and independent XMP. Unknown
+  chunks and animation cannot be edited/flattened. No coded-pixel decoding.
+- Normative review records metadata's permitted arbitrary ordering and VP8L alpha
+  hint semantics without inventing pixel facts. Fixtures are four owned pixels
+  encoded by pinned test-only Pillow/libwebp; recipe/hashes/notices checked in.
+- Added offline WebP boundary/preservation/independence and async/publication tests,
+  plus required CLI reads/reverse edits and separately pinned dwebp decoded-PAM
+  equality. Python policy 12/12 passes; dotnet remains absent locally, so new .NET
+  code and reference additions await Actions, not reported as green yet.
+- PNG audit additionally fixed missing-property removal with existing EXIF: return
+  an exact no-op before planner/unknown-chunk edit restrictions. No contract change.

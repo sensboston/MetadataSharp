@@ -11,17 +11,18 @@ import sys
 
 EXPECTED_EXIV2 = "0.27.6"
 EXPECTED_EXIFTOOL = "12.76"
+EXPECTED_DWEBP = "1.3.2"
 
 
 def available(required, which=shutil.which):
-    missing = [name for name in ("dotnet", "exiv2", "exiftool") if not which(name)]
+    missing = [name for name in ("dotnet", "exiv2", "exiftool", "dwebp") if not which(name)]
     if missing and required:
         raise RuntimeError("Required tools missing: " + ", ".join(missing))
     return not missing
 
 
 def check_version(name, text, expected):
-    actual = re.search(r"\bexiv2\s+(\d+\.\d+\.\d+)\b", text) if name == "exiv2" else re.fullmatch(r"\s*(\d+\.\d+)\s*", text)
+    actual = re.search(r"\bexiv2\s+(\d+\.\d+\.\d+)\b", text) if name == "exiv2" else re.fullmatch(r"\s*(\d+(?:\.\d+)+)\s*", text)
     if not actual or actual.group(1) != expected:
         raise RuntimeError(f"{name} version mismatch: expected {expected}, got {text.strip()!r}")
 
@@ -113,11 +114,14 @@ def main(argv=None):
         tool_version = run(["exiftool", "-ver"])
         check_version("exiv2", exiv_version, EXPECTED_EXIV2)
         check_version("exiftool", tool_version, EXPECTED_EXIFTOOL)
+        check_version("dwebp", run(["dwebp", "-version"]), EXPECTED_DWEBP)
         report["sourceCommit"] = run(["git", "rev-parse", "HEAD"]).strip()
         report["recipeHashes"] = {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
                                   for p in (Path("tools/MetadataSharp.ReferenceFixture/Program.cs"),
-                                            Path("tests/MetadataSharp.Tests/Jpeg/JpegFixture.cs"))}
-        report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL}
+                                            Path("tests/MetadataSharp.Tests/Jpeg/JpegFixture.cs"),
+                                            Path("tests/MetadataSharp.Tests/Png/PngFixture.cs"),
+                                            Path("tests/MetadataSharp.Tests/WebP/WebPFixture.cs"))}
+        report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL, "dwebp": EXPECTED_DWEBP}
         fixture = Path("tools/MetadataSharp.ReferenceFixture/bin/Release/net8.0/MetadataSharp.ReferenceFixture.dll").resolve()
         def ours(*parameters):
             return run(["dotnet", str(fixture), *map(str, parameters)])
@@ -243,9 +247,47 @@ def main(argv=None):
         copied = output / "external-noop.png"; ours("noop-png", changed, copied)
         assert copied.read_bytes() == changed.read_bytes()
         assert png_pixels(changed) == png_pixels(png)
+        def webp_coded(path):
+            data = path.read_bytes(); assert data[:4] == b"RIFF" and data[8:12] == b"WEBP"
+            assert int.from_bytes(data[4:8], "little") == len(data) - 8
+            at = 12; coded = bytearray()
+            while at < len(data):
+                size = int.from_bytes(data[at+4:at+8], "little"); end = at + 8 + size + size % 2
+                assert end <= len(data)
+                if size % 2: assert data[end-1] == 0
+                if data[at:at+4] in (b"VP8 ", b"VP8L", b"ALPH", b"ICCP"): coded.extend(data[at:end])
+                at = end
+            assert at == len(data)
+            return bytes(coded)
+        for kind in range(4):
+            webp = output / f"ours-{kind}.webp"; base_webp = output / f"base-{kind}.webp"
+            assert webp_coded(webp) == webp_coded(base_webp)
+            assert (output / f"noop-{kind}.webp").read_bytes() == webp.read_bytes()
+            assert (output / f"removed-{kind}.webp").read_bytes() == (output / f"exif-{kind}.webp").read_bytes()
+            validate_image(webp)
+            values = json.loads(run(["exiftool", "-j", "-n", "-Artist", "-Orientation", "-XMP-xmp:CreatorTool", str(webp)]))[0]
+            assert values["Artist"] == "Alice" and values["Orientation"] == 1 and values["CreatorTool"] == "MetadataSharp", values
+            rows = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Exif.Image.Artist", "-K", "Xmp.xmp.CreatorTool", str(webp)]))
+            assert rows == {"Exif.Image.Artist": ("Ascii", 6, "Alice"), "Xmp.xmp.CreatorTool": ("XmpText", 13, "MetadataSharp")}, rows
+            decoded = output / f"base-{kind}.pam"; edited_pixels = output / f"ours-{kind}.pam"
+            run(["dwebp", str(base_webp), "-pam", "-o", str(decoded)])
+            run(["dwebp", str(webp), "-pam", "-o", str(edited_pixels)])
+            assert decoded.read_bytes() == edited_pixels.read_bytes(), "Independent WebP decoded pixels differ"
+            external = output / f"external-{kind}.webp"; shutil.copyfile(webp, external)
+            run(["exiftool", "-overwrite_original", "-EXIF:Artist=ExternalWebP", "-XMP-xmp:CreatorTool=ExternalWebP", str(external)])
+            actual = json.loads(ours("inspect-webp", external)); assert actual["artist"] == "ExternalWebP", actual
+            if actual["xmpEditable"]:
+                assert actual["creatorTool"] == "ExternalWebP", actual
+            else:
+                assert "end='r'" in actual["rawXmp"]
+                assert ET.fromstring(actual["rawXmp"]).find(".//{http://ns.adobe.com/xap/1.0/}CreatorTool").text == "ExternalWebP"
+                ours("probe-webp-opaque", external)
+                report.setdefault("limitations", []).append(f"ExifTool 12.76 WebP kind {kind}: read-only xpacket opaque; property refusal/whole removal tested; semantic reverse property read unsupported")
+            copied = output / f"external-noop-{kind}.webp"; ours("noop-webp", external, copied)
+            assert copied.read_bytes() == external.read_bytes() and webp_coded(external) == webp_coded(base_webp)
         report["fixtures"] = [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                                "source": "MetadataSharp authored synthetic generator", "license": "MIT"}
-                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png")]
+                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png", ".webp")]
         report["status"] = "passed"; save()
         print("PASS: external reads, reverse edits, byte preservation and validation classification")
         return 0

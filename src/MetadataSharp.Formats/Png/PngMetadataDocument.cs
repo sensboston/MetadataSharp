@@ -141,6 +141,7 @@ public sealed class PngMetadataDocument : IDisposable, IAsyncDisposable
         else if (!remove)
         {
             TiffReadResult? original = chunk is null ? null : await Exif(chunk, asynchronous, token).ConfigureAwait(false);
+            if (es!.Changes.All(pair => pair.Value is null && (original is null || !original.Metadata.TryGetEntry(pair.Key, out _)))) return new(true, null, null);
             var desired = es!.Apply(original, original?.Metadata.ByteOrder ?? Endianness.LittleEndian, options.Limits);
             if (original is null && desired.Entries.Count == 0) return new(true, null, null);
             ExifWritePlan plan = ExifLayoutPlanner.Create(original, desired, options.Limits); Budget((long)plan.Length + (chunk?.Size ?? 0) + scan.Chunks.Where(c => c.Xmp).Sum(c => (long)c.Size));
