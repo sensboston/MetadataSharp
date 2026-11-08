@@ -13,6 +13,7 @@ using MetadataSharp.Formats.WebP;
 using MetadataSharp.Formats.Tiff;
 using MetadataSharp.Tests.Tiff;
 using MetadataSharp.Tests.WebP;
+using MetadataSharp.Tests.Dng;
 
 if (args.Length == 2 && args[0] == "generate")
 {
@@ -66,6 +67,12 @@ if (args.Length == 2 && args[0] == "generate")
         using var withWebp = WebPMetadataDocument.Open(Path.Combine(args[1], $"ours-{kind}.webp"));
         withWebp.SaveXmpAs(Path.Combine(args[1], $"noop-{kind}.webp"), new());
         withWebp.SaveXmpAs(Path.Combine(args[1], $"removed-{kind}.webp"), removeXmp);
+    }
+
+    foreach (bool big in new[] { false, true }) foreach (bool thumbFixture in new[] { false, true })
+    {
+        var dng = thumbFixture ? DngFixture.ThumbnailAndRaw(big) : DngFixture.RawOnly(big);
+        File.WriteAllBytes(Path.Combine(args[1], $"dng-{(thumbFixture ? "thumb" : "raw")}-{(big ? "mm" : "ii")}.dng"), dng.Bytes);
     }
 
     byte[] legacyWebp = WebPFixture.Extended(8, WebPFixture.Image(0)[12..], WebPFixture.Chunk("EXIF", [.. "Exif\0\0"u8, .. JpegFixture.OrientationTiff]));

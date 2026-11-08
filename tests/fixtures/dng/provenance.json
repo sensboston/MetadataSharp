@@ -1,0 +1,67 @@
+{
+  "encoder": "None (authored byte-level writer; two independent implementations: tools/reference/dng_fixtures.py and tests/MetadataSharp.Tests/Dng/DngFixture.cs)",
+  "recipe": "Deterministic classic-TIFF-container DNG writer: tags unique and ascending, body = 2 + 12*n + 4 bytes, external payloads (>4 bytes) allocated at two-byte-aligned offsets after the body in tag order, strips after the last external payload; both writers must emit byte-identical output (CI cross-check in external-reference).",
+  "inputRights": "MetadataSharp authored synthetic 4x2 test images (raw: 16-bit CFA pixels 0x0000..0x7000 step 0x1000; thumbnail: 8-bit RGB bytes 0..23), MIT; no imported DNGs, no imported codec code/tests, no Adobe specification text reproduced.",
+  "fixtures": [
+    {
+      "file": "dng-raw-ii.dng",
+      "byteOrder": "II",
+      "shape": "raw",
+      "length": 598,
+      "sha256": "c4e2893a31565c4b53a1fa26686288bdce9421252bbd0c920b9ee5eeabc9701c",
+      "ifd0Offset": 8,
+      "rawIfdOffset": 8,
+      "rawStripOffset": 582,
+      "rawStripLength": 16,
+      "rawStripSha256": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9",
+      "thumbnailIfdOffset": null,
+      "thumbnailStripOffset": null
+    },
+    {
+      "file": "dng-thumb-ii.dng",
+      "byteOrder": "II",
+      "shape": "thumb",
+      "length": 1040,
+      "sha256": "8117e8756c4d69c1519a5201259d952e5777d332ffa1e37150444e2e83f637f0",
+      "ifd0Offset": 8,
+      "rawIfdOffset": 450,
+      "rawStripOffset": 1024,
+      "rawStripLength": 16,
+      "rawStripSha256": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9",
+      "thumbnailIfdOffset": 8,
+      "thumbnailStripOffset": 426
+    },
+    {
+      "file": "dng-raw-mm.dng",
+      "byteOrder": "MM",
+      "shape": "raw",
+      "length": 598,
+      "sha256": "5c1ade1005f83ed9ac1d4ff19c3c06972b1964989b85ba2523312620d1dc24b4",
+      "ifd0Offset": 8,
+      "rawIfdOffset": 8,
+      "rawStripOffset": 582,
+      "rawStripLength": 16,
+      "rawStripSha256": "6472f018a621000b17e1b6c90e5555b2f11ed33f71d113a55af0c1c85e74716c",
+      "thumbnailIfdOffset": null,
+      "thumbnailStripOffset": null
+    },
+    {
+      "file": "dng-thumb-mm.dng",
+      "byteOrder": "MM",
+      "shape": "thumb",
+      "length": 1040,
+      "sha256": "7ba9311517d1c1751c3061b053b8ab464a4e1fde56d8765a27e00dc1ada4b799",
+      "ifd0Offset": 8,
+      "rawIfdOffset": 450,
+      "rawStripOffset": 1024,
+      "rawStripLength": 16,
+      "rawStripSha256": "6472f018a621000b17e1b6c90e5555b2f11ed33f71d113a55af0c1c85e74716c",
+      "thumbnailIfdOffset": 8,
+      "thumbnailStripOffset": 426
+    }
+  ],
+  "rawPixelsSha256ByByteOrder": {
+    "II": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9",
+    "MM": "6472f018a621000b17e1b6c90e5555b2f11ed33f71d113a55af0c1c85e74716c"
+  }
+}
