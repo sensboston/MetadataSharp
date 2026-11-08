@@ -1583,3 +1583,53 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   - Verification stays not-assessed everywhere (E07); no denominator computed;
     the exclusions conversation (if any) goes to the developer at step 3.
 - E01 gate remains OPEN.
+### B1 pinned-CLI observation batch — 2026-11-08 (JPEG × {xmp, iptc, thumbnail})
+
+- 2026-11-08: B1 batch executed end-to-end (step 2 of the approved 1→2→3 order;
+  B0 done 2026-11-08, denominators remain step 3). No exclusions granted; no
+  freeze; no percentage; D2/publication not authorized.
+  - tools/reference/jpeg_owned_fixtures.py extended to 31 fixtures (+17): XMP
+    standard/extended (base + 2 extension chunks)/duplicate/non-UTF-8 payload
+    variants incl. Extended-XMP duplicate and Extended non-UTF-8 fixtures;
+    IPTC Photoshop 8BIM 0x0404 with repeatable 2:25 keywords (single block,
+    repeated dataset, two APP13 segments unique and shared); EXIF IFD1
+    embedded thumbnails (JPEG-compressed, uncompressed strip) via a proper
+    IFD0→IFD1 next-IFD chain with inline-patched strip blob offsets; non-UTF-8
+    raw COM fixtures (`com-raw*.jpg`) for the B0 unknown-raw comment READ refresh.
+    Pinned manifest/provenance regenerated (14→31 fixtures, byte-deterministic).
+  - tools/reference/build_census.py: B1 rows for XMP (4 ops × 2 layouts ×
+    duplicates {none, first-wins} × encodings {utf-8, unknown-raw}; the pure
+    ASCII cell is byte-identical to utf-8 and omitted), IPTC (4 ops × 8BIM
+    layout × {none, first-wins}) and thumbnail (5 ops × JPEG/uncompressed
+    layouts; insert on the uncompressed layout is statically
+    not-applicable — the pinned CLI exposes no uncompressed-thumbnail write
+    path; flagged for developer review at denominators). Evidence now applies
+    per batch with per-row batch-prefixed notes; `denominatorFrozen` stays false.
+  - tools/reference/observe_b0.py: `--batch {b0|b1|all}` (default all), per-batch
+    output `artifacts/e01/<batch>/observations.json`; XMP/IPTC/thumbnail runners
+    added (IPTC IIM 2:25 parser and EXIF IFD1 thumbnail tag reader included);
+    honest new outcome class `nonzero-exit-artifact-produced` for the CLI's
+    nonzero-exit-but-successful thumbnail extract (rc 137/46) instead of
+    mislabeling it refused or accepted.
+  - docs/research/evidence/e01-b1-census/ — committed observations.json + README.
+    57 rows observed-cli: 55 accepted, 2 nonzero-exit-artifact-produced
+    (thumbnail extract; the JPEG-compressed extract is byte-exact against the
+    authored embedded blob — sha256 verified at observation time; the
+    uncompressed extract emits CLI-defined TIFF, record-only). 1 static
+    not-applicable (thumbnail insert on the uncompressed layout). Scan preserved
+    in all 58 rows. Notable CLI behaviors recorded, not gated: second
+    APP13/IPTC block is ignored on print and mutation; repeated 2:25 datasets
+    survive `set` (first replaced, remainder kept); EXIF IFD1 thumbnail tags
+    print without decoding; Extended XMP prints `HasExtendedXMP` only; non-UTF-8
+    XMP fails decode rc=0 with a warning; duplicate APP1 XMP first-wins;
+    `del Xmp.xmp.CreatorTool` on an Extended-XMP file is a no-op for the
+    extension chunks and leaves `HasExtendedXMP` intact.
+  - B0 observations refreshed honestly in the same turn: the four unknown-raw
+    comment READ rows now observe the non-UTF-8 COM fixtures; B0 outcome counts
+    unchanged (89/8/38); scan preserved 135/135.
+  - docs/research/EXIV2_CENSUS.json regenerated: 193 rows (B0 135 + B1 58),
+    all observed-cli or not-applicable; fixtures pinned per row; oracles split
+    spec-derived vs pinned-cli. Discovery suite: 53/53 local.
+  - Verification stays not-assessed everywhere (E07); no denominator computed;
+    the exclusions conversation (if any) goes to the developer at step 3
+    (denominators + sign-off). E01 gate remains OPEN.

@@ -10,8 +10,8 @@ census = importlib.util.module_from_spec(spec); spec.loader.exec_module(census)
 ROW_ID = __import__('re').compile(r'^EX0289-[A-Za-z]+-[A-Z]+-[A-Z]+-\d{4}$')
 
 
-def load_evidence():
-    path = ROOT / 'docs/research/evidence/e01-b0-census/observations.json'
+def load_evidence(batch='b0'):
+    path = ROOT / f'docs/research/evidence/e01-{batch}-census/observations.json'
     return json.loads(path.read_text()) if path.exists() else None
 
 
@@ -53,19 +53,37 @@ class CensusPolicyTests(unittest.TestCase):
 
     def test_b0_batch_is_fully_observed_or_static_not_applicable(self):
         self.assertFalse(self.report['denominatorFrozen'])
-        evidence = load_evidence()
+        evidence = load_evidence('b0')
         self.assertIsNotNone(evidence, 'B0 pinned-CLI observation evidence is required')
         self.assertEqual('passed', evidence['status'])
-        static = {row['rowId'] for row in self.report['rows'] if census.static_not_applicable(row)}
-        observed = {r['rowId'] for r in self.report['rows'] if r['baselineObservation'] == 'observed-cli'}
-        not_applicable = {r['rowId'] for r in self.report['rows'] if r['baselineObservation'] == 'not-applicable'}
-        self.assertEqual(len(self.report['rows']), len(observed) + len(not_applicable))
+        b0 = [r for r in self.report['rows'] if r['batch'] == 'B0']
+        static = {row['rowId'] for row in b0 if census.static_not_applicable(row)}
+        observed = {r['rowId'] for r in b0 if r['baselineObservation'] == 'observed-cli'}
+        not_applicable = {r['rowId'] for r in b0 if r['baselineObservation'] == 'not-applicable'}
+        self.assertEqual(len(b0), len(observed) + len(not_applicable))
         self.assertEqual(static, not_applicable)
         self.assertEqual({o['id'] for o in evidence['observations']}, observed)
         self.assertEqual(len(static), 38)
         self.assertEqual(len(observed), 97)
-        for row in self.report['rows']:
-            self.assertEqual('B0', row['batch'])
+
+    def test_b1_batch_is_fully_observed_or_static_not_applicable(self):
+        evidence = load_evidence('b1')
+        self.assertIsNotNone(evidence, 'B1 pinned-CLI observation evidence is required')
+        self.assertEqual('passed', evidence['status'])
+        self.assertEqual('B1', evidence['batch'])
+        b1 = [r for r in self.report['rows'] if r['batch'] == 'B1']
+        static = {row['rowId'] for row in b1 if census.static_not_applicable(row)}
+        observed = {r['rowId'] for r in b1 if r['baselineObservation'] == 'observed-cli'}
+        not_applicable = {r['rowId'] for r in b1 if r['baselineObservation'] == 'not-applicable'}
+        self.assertEqual(len(b1), len(observed) + len(not_applicable))
+        self.assertEqual(static, not_applicable)
+        self.assertEqual({o['id'] for o in evidence['observations']}, observed)
+        self.assertEqual(len(static), 1)
+        self.assertEqual(len(observed), 57)
+        self.assertEqual({'observed-cli', 'not-applicable'}, {r['baselineObservation'] for r in b1})
+        for row in b1:
+            self.assertEqual('not-assessed', row['verification'])
+        self.assertEqual(1, evidence['outcomeCounts'].get('static-not-applicable'))
 
     def test_verification_stays_not_assessed(self):
         for row in self.report['rows']:
@@ -84,13 +102,15 @@ class CensusPolicyTests(unittest.TestCase):
             self.assertEqual(pin['length'], fixture['length'])
             self.assertEqual(pin['recipe'], fixture['recipe'])
             self.assertEqual('owned-synthetic', fixture['rights'])
-            self.assertIn('B0 pinned-CLI observation', row['notes'])
+            self.assertIn(f"{row['batch']} pinned-CLI observation", row['notes'])
 
-    def test_pilot_scope_is_exactly_jpeg_exif_comments_icc_plus_inventory(self):
+    def test_scope_is_jpeg_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
-        self.assertEqual({'exif', 'comments', 'icc', 'inventory'}, families)
+        self.assertEqual({'exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail', 'inventory'}, families)
         self.assertEqual(1, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
-        self.assertEqual(135, len(self.report['rows']))
+        self.assertEqual(135, sum(1 for r in self.report['rows'] if r['batch'] == 'B0'))
+        self.assertEqual(58, sum(1 for r in self.report['rows'] if r['batch'] == 'B1'))
+        self.assertEqual(193, len(self.report['rows']))
 
     def test_pending_cells_partition_the_seed_grid(self):
         enumerated = set(self.report['coverage']['enumerated'])
@@ -99,7 +119,7 @@ class CensusPolicyTests(unittest.TestCase):
         enumerated_seeds = {s['seedId'] for s in self.seeds['seeds']
                              if f"{s['format']}/{s['family']}" in enumerated}
         self.assertEqual(all_seeds, enumerated_seeds | pending)
-        self.assertEqual(3, len(enumerated_seeds))
+        self.assertEqual(6, len(enumerated_seeds))
 
     def test_no_claim_never_enters_the_pilot(self):
         for row in self.report['rows']:

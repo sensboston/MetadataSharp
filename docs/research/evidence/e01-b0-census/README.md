@@ -12,6 +12,13 @@ universal invariant "the coded JPEG scan never changes".
   not-applicable (axis collapse, reasons recorded per row in the census):
   the `app1-exif-multiple` layout *is* the duplicate-block case (duplicates
   axis not independent) and `com-single` cannot carry a duplication policy.
+- Refresh note (B1 turn, 2026-11-08): the four `unknown-raw` comment READ rows
+  now observe genuinely non-UTF-8 COM fixtures (`com-raw.jpg`,
+  `com-raw-multiple.jpg`, `com-raw-multiple-dup.jpg`) instead of the UTF-8
+  placeholders used during the B0 pilot. Outcome counts are unchanged
+  (89 accepted / 8 refused / 38 static not-applicable) and the coded scan is
+  still preserved 135/135. The committed `observations.json` was regenerated;
+  CI re-verifies on every pinned-exiv2-baseline run.
 - Outcome counts: 89 `accepted` (exit 0), 8 `refused` (exit != 0),
   38 `static-not-applicable`. The 8 refusals are all ICC rows whose fixture
   carries two ICC profiles in one JPEG (`icc-single-dup.jpg`,

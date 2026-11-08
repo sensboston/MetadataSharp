@@ -1,7 +1,8 @@
 {
   "schema": 1,
   "status": "passed",
-  "sourceCommit": "e9d68eca26aae9bd873597c1c12659abc43708f3",
+  "batch": "B0",
+  "sourceCommit": "12461fd779f211aa1b6c5e48c9fcd0dd4db76d7e",
   "baseline": {
     "version": "0.28.9",
     "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
@@ -37,14 +38,14 @@
       "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
       "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
     },
-    "cmakeCacheSha256": "6600030648dd720b6c41f002d885ba949a68d29f4a8c154a1c501f69510fb565",
+    "cmakeCacheSha256": "871e371f5e69fc056b48ed79a71278e441f058bb31f43ba1c5f6191676b2bf62",
     "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
-    "executableSha256": "d594bfe912400186b1a77e21228be3034f66c077b2bb417aca1b6f5c355cb4a9"
+    "executableSha256": "cd8cec529f582d4d30813b51ec1bc27674328d6fac7844b227869c7122bb1f5b"
   },
   "commands": [
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "--version"
       ],
       "exitCode": 0,
@@ -53,23 +54,23 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pS",
-        "/tmp/e01/b0/fixtures/exif-base.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/exif-base.jpg"
       ],
       "exitCode": 0,
-      "stdoutSha256": "b9f242f8d27c54aaf7cee22367348b65fd95144e5e97a5667deb061f49b4438b",
-      "stdout": "STRUCTURE OF JPEG FILE: /tmp/e01/b0/fixtures/exif-base.jpg\n address | marker       |  length | data\n       0 | 0xffd8 SOI  \n       2 | 0xffe1 APP1  |      52 | Exif..II*...................;..\n      56 | 0xffdb DQT   |      67 \n     125 | 0xffc4 DHT   |      38 \n     165 | 0xffc0 SOF0  |      11 \n     178 | 0xffda SOS  \n",
+      "stdoutSha256": "b37fabb0004a50b1b87e253cf25303b4db58a77286c26b074e055110f57c308f",
+      "stdout": "STRUCTURE OF JPEG FILE: /home/user/MetadataSharp/artifacts/e01/b0/fixtures/exif-base.jpg\n address | marker       |  length | data\n       0 | 0xffd8 SOI  \n       2 | 0xffe1 APP1  |      52 | Exif..II*...................;..\n      56 | 0xffdb DQT   |      67 \n     125 | 0xffc4 DHT   |      38 \n     165 | 0xffc0 SOF0  |      11 \n     178 | 0xffda SOS  \n",
       "stderr": ""
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-P",
         "Ekycv",
         "-K",
         "Exif.Image.Artist",
-        "/tmp/e01/b0/fixtures/exif-base.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/exif-base.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
@@ -78,12 +79,12 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-P",
         "Ekycv",
         "-K",
         "Exif.Image.Artist",
-        "/tmp/e01/b0/fixtures/exif-dup-tag.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/exif-dup-tag.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "cbcebe921a847498475647b5330a71cbe943858837456aa68bbf5cef42dc97b0",
@@ -92,12 +93,12 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-P",
         "Ekycv",
         "-K",
         "Exif.Image.Artist",
-        "/tmp/e01/b0/fixtures/exif-multi-app1.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/exif-multi-app1.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
@@ -106,12 +107,12 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-P",
         "Ekycv",
         "-K",
         "Exif.Image.Artist",
-        "/tmp/e01/b0/fixtures/exif-subifd.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/exif-subifd.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
@@ -120,12 +121,12 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-P",
         "Ekycv",
         "-K",
         "Exif.Image.Artist",
-        "/tmp/e01/b0/fixtures/exif-subifd-dup-tag.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/exif-subifd-dup-tag.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
@@ -134,12 +135,12 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-P",
         "Ekycv",
         "-K",
         "Exif.Image.Artist",
-        "/tmp/e01/b0/fixtures/exif-subifd-multi.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/exif-subifd-multi.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
@@ -148,10 +149,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.ImageDescription Ascii MetadataSharp",
-        "/tmp/e01/b0/work/0010/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0010/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -160,10 +161,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.ImageDescription Ascii MetadataSharp",
-        "/tmp/e01/b0/work/0011/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0011/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -172,10 +173,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.ImageDescription Ascii MetadataSharp",
-        "/tmp/e01/b0/work/0012/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0012/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -184,10 +185,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.ImageDescription Ascii MetadataSharp",
-        "/tmp/e01/b0/work/0013/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0013/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -196,10 +197,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.ImageDescription Ascii MetadataSharp",
-        "/tmp/e01/b0/work/0014/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0014/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -208,10 +209,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.ImageDescription Ascii MetadataSharp",
-        "/tmp/e01/b0/work/0015/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0015/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -220,10 +221,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.Artist Ascii Bob",
-        "/tmp/e01/b0/work/0019/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0019/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -232,10 +233,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.Artist Ascii Bob",
-        "/tmp/e01/b0/work/0020/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0020/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -244,10 +245,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.Artist Ascii Bob",
-        "/tmp/e01/b0/work/0021/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0021/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -256,10 +257,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.Artist Ascii Bob",
-        "/tmp/e01/b0/work/0022/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0022/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -268,10 +269,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.Artist Ascii Bob",
-        "/tmp/e01/b0/work/0023/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0023/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -280,10 +281,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "set Exif.Image.Artist Ascii Bob",
-        "/tmp/e01/b0/work/0024/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0024/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -292,10 +293,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "del Exif.Image.Artist",
-        "/tmp/e01/b0/work/0028/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0028/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -304,10 +305,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "del Exif.Image.Artist",
-        "/tmp/e01/b0/work/0029/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0029/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -316,10 +317,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "del Exif.Image.Artist",
-        "/tmp/e01/b0/work/0030/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0030/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -328,10 +329,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "del Exif.Image.Artist",
-        "/tmp/e01/b0/work/0031/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0031/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -340,10 +341,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "del Exif.Image.Artist",
-        "/tmp/e01/b0/work/0032/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0032/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -352,10 +353,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-M",
         "del Exif.Image.Artist",
-        "/tmp/e01/b0/work/0033/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0033/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -364,9 +365,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-single.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-single.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -375,9 +376,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-single.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-single.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -386,9 +387,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-single.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-raw.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -397,9 +398,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-multiple.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -408,9 +409,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-multiple.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -419,9 +420,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-raw-multiple.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -430,9 +431,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-multiple-dup.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-multiple-dup.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -441,9 +442,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-multiple-dup.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-multiple-dup.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -452,9 +453,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-multiple-dup.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-raw-multiple-dup.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -463,9 +464,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-multiple.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -474,9 +475,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-multiple.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -485,9 +486,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/com-raw-multiple.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -496,10 +497,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert",
-        "/tmp/e01/b0/work/0055/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0055/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -508,10 +509,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert \u00e9 \u2713",
-        "/tmp/e01/b0/work/0056/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0056/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -520,10 +521,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "\\x89RAW\\xff\\xfe",
-        "/tmp/e01/b0/work/0057/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0057/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -532,10 +533,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert",
-        "/tmp/e01/b0/work/0064/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0064/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -544,10 +545,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert \u00e9 \u2713",
-        "/tmp/e01/b0/work/0065/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0065/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -556,10 +557,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "\\x89RAW\\xff\\xfe",
-        "/tmp/e01/b0/work/0066/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0066/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -568,10 +569,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert",
-        "/tmp/e01/b0/work/0067/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0067/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -580,10 +581,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert \u00e9 \u2713",
-        "/tmp/e01/b0/work/0068/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0068/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -592,10 +593,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "\\x89RAW\\xff\\xfe",
-        "/tmp/e01/b0/work/0069/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0069/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -604,10 +605,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert",
-        "/tmp/e01/b0/work/0070/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0070/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -616,10 +617,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert \u00e9 \u2713",
-        "/tmp/e01/b0/work/0071/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0071/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -628,10 +629,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "\\x89RAW\\xff\\xfe",
-        "/tmp/e01/b0/work/0072/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0072/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -640,10 +641,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert",
-        "/tmp/e01/b0/work/0073/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0073/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -652,10 +653,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert \u00e9 \u2713",
-        "/tmp/e01/b0/work/0074/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0074/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -664,10 +665,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "\\x89RAW\\xff\\xfe",
-        "/tmp/e01/b0/work/0075/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0075/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -676,10 +677,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert",
-        "/tmp/e01/b0/work/0082/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0082/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -688,10 +689,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert \u00e9 \u2713",
-        "/tmp/e01/b0/work/0083/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0083/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -700,10 +701,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "\\x89RAW\\xff\\xfe",
-        "/tmp/e01/b0/work/0084/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0084/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -712,10 +713,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert",
-        "/tmp/e01/b0/work/0085/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0085/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -724,10 +725,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert \u00e9 \u2713",
-        "/tmp/e01/b0/work/0086/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0086/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -736,10 +737,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "\\x89RAW\\xff\\xfe",
-        "/tmp/e01/b0/work/0087/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0087/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -748,10 +749,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert",
-        "/tmp/e01/b0/work/0088/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0088/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -760,10 +761,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "MetadataSharp B0 insert \u00e9 \u2713",
-        "/tmp/e01/b0/work/0089/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0089/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -772,10 +773,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-c",
         "\\x89RAW\\xff\\xfe",
-        "/tmp/e01/b0/work/0090/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0090/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -784,10 +785,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0091/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0091/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -796,10 +797,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0092/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0092/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -808,10 +809,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0093/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0093/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -820,10 +821,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0100/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0100/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -832,10 +833,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0101/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0101/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -844,10 +845,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0102/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0102/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -856,10 +857,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0103/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0103/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -868,10 +869,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0104/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0104/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -880,10 +881,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0105/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0105/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -892,10 +893,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0106/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0106/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -904,10 +905,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0107/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0107/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -916,10 +917,10 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "c",
-        "/tmp/e01/b0/work/0108/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0108/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -928,12 +929,12 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-e",
         "c",
         "-l",
-        "/tmp/e01/b0/work/0109/extract-out",
-        "/tmp/e01/b0/work/0109/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0109/extract-out",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0109/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -942,12 +943,12 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-e",
         "c",
         "-l",
-        "/tmp/e01/b0/work/0112/extract-out",
-        "/tmp/e01/b0/work/0112/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0112/extract-out",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0112/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -956,12 +957,12 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-e",
         "c",
         "-l",
-        "/tmp/e01/b0/work/0113/extract-out",
-        "/tmp/e01/b0/work/0113/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0113/extract-out",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0113/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -970,12 +971,12 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-e",
         "c",
         "-l",
-        "/tmp/e01/b0/work/0114/extract-out",
-        "/tmp/e01/b0/work/0114/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0114/extract-out",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0114/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -984,9 +985,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/icc-single.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/icc-single.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "bc139aa383785cdf0ee2e53ca9c2617a2ad2a9f428467580b915c022b9d3e170",
@@ -995,9 +996,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/icc-single-dup.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/icc-single-dup.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "1592294f6e4bc39a7f8cbc5e84c9f9abe9b70915f34fb38d7111a0fad2a41cdd",
@@ -1006,9 +1007,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/icc-segmented.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/icc-segmented.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "bc139aa383785cdf0ee2e53ca9c2617a2ad2a9f428467580b915c022b9d3e170",
@@ -1017,9 +1018,9 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-pC",
-        "/tmp/e01/b0/fixtures/icc-segmented-dup.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/fixtures/icc-segmented-dup.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "1592294f6e4bc39a7f8cbc5e84c9f9abe9b70915f34fb38d7111a0fad2a41cdd",
@@ -1028,11 +1029,11 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-iC",
         "-l",
-        "/tmp/e01/b0/work/0119/icc-src",
-        "/tmp/e01/b0/work/0119/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0119/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0119/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1041,24 +1042,24 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-iC",
         "-l",
-        "/tmp/e01/b0/work/0120/icc-src",
-        "/tmp/e01/b0/work/0120/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0120/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0120/case.jpg"
       ],
       "exitCode": 1,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout": "",
-      "stderr": "Exiv2 exception in insert action for file /tmp/e01/b0/work/0120/case.jpg:\nNot a valid ICC Profile\n"
+      "stderr": "Exiv2 exception in insert action for file /home/user/MetadataSharp/artifacts/e01/b0/work/0120/case.jpg:\nNot a valid ICC Profile\n"
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-iC",
         "-l",
-        "/tmp/e01/b0/work/0121/icc-src",
-        "/tmp/e01/b0/work/0121/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0121/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0121/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1067,24 +1068,24 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-iC",
         "-l",
-        "/tmp/e01/b0/work/0122/icc-src",
-        "/tmp/e01/b0/work/0122/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0122/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0122/case.jpg"
       ],
       "exitCode": 1,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout": "",
-      "stderr": "Exiv2 exception in insert action for file /tmp/e01/b0/work/0122/case.jpg:\nNot a valid ICC Profile\n"
+      "stderr": "Exiv2 exception in insert action for file /home/user/MetadataSharp/artifacts/e01/b0/work/0122/case.jpg:\nNot a valid ICC Profile\n"
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-iC",
         "-l",
-        "/tmp/e01/b0/work/0123/icc-src",
-        "/tmp/e01/b0/work/0123/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0123/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0123/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1093,24 +1094,24 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-iC",
         "-l",
-        "/tmp/e01/b0/work/0124/icc-src",
-        "/tmp/e01/b0/work/0124/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0124/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0124/case.jpg"
       ],
       "exitCode": 1,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout": "",
-      "stderr": "Exiv2 exception in insert action for file /tmp/e01/b0/work/0124/case.jpg:\nNot a valid ICC Profile\n"
+      "stderr": "Exiv2 exception in insert action for file /home/user/MetadataSharp/artifacts/e01/b0/work/0124/case.jpg:\nNot a valid ICC Profile\n"
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-iC",
         "-l",
-        "/tmp/e01/b0/work/0125/icc-src",
-        "/tmp/e01/b0/work/0125/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0125/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0125/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1119,23 +1120,23 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-iC",
         "-l",
-        "/tmp/e01/b0/work/0126/icc-src",
-        "/tmp/e01/b0/work/0126/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0126/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0126/case.jpg"
       ],
       "exitCode": 1,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout": "",
-      "stderr": "Exiv2 exception in insert action for file /tmp/e01/b0/work/0126/case.jpg:\nNot a valid ICC Profile\n"
+      "stderr": "Exiv2 exception in insert action for file /home/user/MetadataSharp/artifacts/e01/b0/work/0126/case.jpg:\nNot a valid ICC Profile\n"
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "C",
-        "/tmp/e01/b0/work/0127/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0127/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1144,22 +1145,22 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "C",
-        "/tmp/e01/b0/work/0128/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0128/case.jpg"
       ],
       "exitCode": 1,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout": "",
-      "stderr": "Exiv2 exception in erase action for file /tmp/e01/b0/work/0128/case.jpg:\nNot a valid ICC Profile\n"
+      "stderr": "Exiv2 exception in erase action for file /home/user/MetadataSharp/artifacts/e01/b0/work/0128/case.jpg:\nNot a valid ICC Profile\n"
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "C",
-        "/tmp/e01/b0/work/0129/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0129/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1168,23 +1169,23 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-d",
         "C",
-        "/tmp/e01/b0/work/0130/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0130/case.jpg"
       ],
       "exitCode": 1,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout": "",
-      "stderr": "Exiv2 exception in erase action for file /tmp/e01/b0/work/0130/case.jpg:\nNot a valid ICC Profile\n"
+      "stderr": "Exiv2 exception in erase action for file /home/user/MetadataSharp/artifacts/e01/b0/work/0130/case.jpg:\nNot a valid ICC Profile\n"
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-eC",
         "-l",
-        "/tmp/e01/b0/work/0131/icc-out",
-        "/tmp/e01/b0/work/0131/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0131/icc-out",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0131/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1193,24 +1194,24 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-eC",
         "-l",
-        "/tmp/e01/b0/work/0132/icc-out",
-        "/tmp/e01/b0/work/0132/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0132/icc-out",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0132/case.jpg"
       ],
       "exitCode": 1,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout": "",
-      "stderr": "Exiv2 exception in extract action for file /tmp/e01/b0/work/0132/case.jpg:\nNot a valid ICC Profile\n"
+      "stderr": "Exiv2 exception in extract action for file /home/user/MetadataSharp/artifacts/e01/b0/work/0132/case.jpg:\nNot a valid ICC Profile\n"
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-eC",
         "-l",
-        "/tmp/e01/b0/work/0133/icc-out",
-        "/tmp/e01/b0/work/0133/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0133/icc-out",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0133/case.jpg"
       ],
       "exitCode": 0,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -1219,16 +1220,16 @@
     },
     {
       "args": [
-        "/tmp/e01/b/bin/exiv2",
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
         "-eC",
         "-l",
-        "/tmp/e01/b0/work/0134/icc-out",
-        "/tmp/e01/b0/work/0134/case.jpg"
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0134/icc-out",
+        "/home/user/MetadataSharp/artifacts/e01/b0/work/0134/case.jpg"
       ],
       "exitCode": 1,
       "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "stdout": "",
-      "stderr": "Exiv2 exception in extract action for file /tmp/e01/b0/work/0134/case.jpg:\nNot a valid ICC Profile\n"
+      "stderr": "Exiv2 exception in extract action for file /home/user/MetadataSharp/artifacts/e01/b0/work/0134/case.jpg:\nNot a valid ICC Profile\n"
     }
   ],
   "observations": [
@@ -1786,17 +1787,17 @@
       "layout": "com-single",
       "duplicates": "none",
       "textEncoding": "unknown-raw",
-      "fixture": "com-single.jpg",
-      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixture": "com-raw.jpg",
+      "fixtureSha256": "c1e2f73df592cc9200f565c18ae720caeabb2ef4c5fc69b93d031eca6094587f",
       "fixtureRights": "owned-synthetic",
-      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
-      "outputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "inputSha256": "c1e2f73df592cc9200f565c18ae720caeabb2ef4c5fc69b93d031eca6094587f",
+      "outputSha256": "c1e2f73df592cc9200f565c18ae720caeabb2ef4c5fc69b93d031eca6094587f",
       "recordOnly": false,
       "expectOk": null,
       "outcome": "accepted",
       "facts": {
         "commentPayloadHex": [
-          "4d65746164617461536861727020423020636f6d6d656e742041"
+          "89feff52415720686967682d6279746520636f6d6d656e742041"
         ],
         "scanPreserved": true
       }
@@ -1857,18 +1858,18 @@
       "layout": "com-multiple",
       "duplicates": "none",
       "textEncoding": "unknown-raw",
-      "fixture": "com-multiple.jpg",
-      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixture": "com-raw-multiple.jpg",
+      "fixtureSha256": "11db36074ca7c5ac30086cbb7152b26a5fa8a1c85748567fa94580772bdf6400",
       "fixtureRights": "owned-synthetic",
-      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
-      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "inputSha256": "11db36074ca7c5ac30086cbb7152b26a5fa8a1c85748567fa94580772bdf6400",
+      "outputSha256": "11db36074ca7c5ac30086cbb7152b26a5fa8a1c85748567fa94580772bdf6400",
       "recordOnly": true,
       "expectOk": null,
       "outcome": "accepted",
       "facts": {
         "commentPayloadHex": [
-          "4d65746164617461536861727020423020636f6d6d656e742041",
-          "4d65746164617461536861727020423020636f6d6d656e742042"
+          "89feff52415720686967682d6279746520636f6d6d656e742041",
+          "89feff52415720686967682d6279746520636f6d6d656e742042"
         ],
         "scanPreserved": true
       }
@@ -1929,18 +1930,18 @@
       "layout": "com-multiple",
       "duplicates": "first-wins",
       "textEncoding": "unknown-raw",
-      "fixture": "com-multiple-dup.jpg",
-      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixture": "com-raw-multiple-dup.jpg",
+      "fixtureSha256": "c7b30274774582875ef901934b236cc93121fc032d58145fd2d82ad73d30368e",
       "fixtureRights": "owned-synthetic",
-      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
-      "outputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "inputSha256": "c7b30274774582875ef901934b236cc93121fc032d58145fd2d82ad73d30368e",
+      "outputSha256": "c7b30274774582875ef901934b236cc93121fc032d58145fd2d82ad73d30368e",
       "recordOnly": true,
       "expectOk": null,
       "outcome": "accepted",
       "facts": {
         "commentPayloadHex": [
-          "4d65746164617461536861727020423020636f6d6d656e742041",
-          "4d65746164617461536861727020423020636f6d6d656e742041"
+          "89feff52415720686967682d6279746520636f6d6d656e742041",
+          "89feff52415720686967682d6279746520636f6d6d656e742041"
         ],
         "scanPreserved": true
       }
@@ -2001,18 +2002,18 @@
       "layout": "com-multiple",
       "duplicates": "multiple-independent",
       "textEncoding": "unknown-raw",
-      "fixture": "com-multiple.jpg",
-      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixture": "com-raw-multiple.jpg",
+      "fixtureSha256": "11db36074ca7c5ac30086cbb7152b26a5fa8a1c85748567fa94580772bdf6400",
       "fixtureRights": "owned-synthetic",
-      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
-      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "inputSha256": "11db36074ca7c5ac30086cbb7152b26a5fa8a1c85748567fa94580772bdf6400",
+      "outputSha256": "11db36074ca7c5ac30086cbb7152b26a5fa8a1c85748567fa94580772bdf6400",
       "recordOnly": true,
       "expectOk": null,
       "outcome": "accepted",
       "facts": {
         "commentPayloadHex": [
-          "4d65746164617461536861727020423020636f6d6d656e742041",
-          "4d65746164617461536861727020423020636f6d6d656e742042"
+          "89feff52415720686967682d6279746520636f6d6d656e742041",
+          "89feff52415720686967682d6279746520636f6d6d656e742042"
         ],
         "scanPreserved": true
       }
@@ -3685,6 +3686,33 @@
       "rights": "owned-synthetic"
     },
     {
+      "file": "com-raw-multiple-dup.jpg",
+      "sha256": "c7b30274774582875ef901934b236cc93121fc032d58145fd2d82ad73d30368e",
+      "length": 197,
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-com-multiple-raw-identical-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "com-raw-multiple.jpg",
+      "sha256": "11db36074ca7c5ac30086cbb7152b26a5fa8a1c85748567fa94580772bdf6400",
+      "length": 197,
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "recipe": "jpeg-com-multiple-raw-distinct-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "com-raw.jpg",
+      "sha256": "c1e2f73df592cc9200f565c18ae720caeabb2ef4c5fc69b93d031eca6094587f",
+      "length": 167,
+      "layout": "com-single",
+      "duplicates": "none",
+      "recipe": "jpeg-com-raw-high-bytes-v1",
+      "rights": "owned-synthetic"
+    },
+    {
       "file": "com-single.jpg",
       "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
       "length": 167,
@@ -3748,6 +3776,24 @@
       "rights": "owned-synthetic"
     },
     {
+      "file": "exif-thumb-jpeg.jpg",
+      "sha256": "79cb8aa2775ae2c543388fefb260e106374d9f703820d492a1744ef9957defee",
+      "length": 364,
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "recipe": "jpeg-exif-ifd1-jpeg-thumbnail-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "exif-thumb-raw.jpg",
+      "sha256": "3e80373b3afa974e83520cb945784ab9c7eef6e1e0a7761b058d0e42ffab66bc",
+      "length": 467,
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "recipe": "jpeg-exif-ifd1-uncompressed-thumbnail-v1",
+      "rights": "owned-synthetic"
+    },
+    {
       "file": "icc-segmented-dup.jpg",
       "sha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
       "length": 593,
@@ -3781,6 +3827,114 @@
       "layout": "app2-icc-single",
       "duplicates": "none",
       "recipe": "jpeg-icc-single-segment-a-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "iptc-multiple-dup.jpg",
+      "sha256": "8fc90f0a9cb3e28192fd65b20a8434d46c3765f36774422b427ffb7dbb273dea",
+      "length": 241,
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-iptc-two-app13-shared-dataset-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "iptc-multiple.jpg",
+      "sha256": "34885ed8df316623f77119763e834de8968d3c478ad4438c6907d0fc75e94c75",
+      "length": 243,
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "none",
+      "recipe": "jpeg-iptc-two-app13-unique-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "iptc-none.jpg",
+      "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "length": 137,
+      "layout": "app13-8bim-iptc",
+      "duplicates": "none",
+      "recipe": "jpeg-iptc-none-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "iptc-single-dup-dataset.jpg",
+      "sha256": "342614793c82680b3d35334667b900177776274f6e9ed5989613ff5862021bdd",
+      "length": 209,
+      "layout": "app13-8bim-iptc",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-iptc-single-8bim-repeated-dataset-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "iptc-single.jpg",
+      "sha256": "0e67a028512b807822d7f0d3514e20d23b686e95b89f9b3bdc9f8a54896843cd",
+      "length": 213,
+      "layout": "app13-8bim-iptc",
+      "duplicates": "none",
+      "recipe": "jpeg-iptc-single-8bim-unique-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-duplicate.jpg",
+      "sha256": "11b2f4ec8c1f09453d549612f415e1d51348b542724c446f35c990b6f71a7a9c",
+      "length": 917,
+      "layout": "app1-xmp-standard",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-xmp-two-app1-different-creators-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-extended-duplicate.jpg",
+      "sha256": "d87e7300893a1d6e30308ba0b4c7361279f98e40885d2a314860146d81459620",
+      "length": 1493,
+      "layout": "app1-xmp-extended",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-xmp-extended-two-base-one-chunk-set-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-extended-nonutf8.jpg",
+      "sha256": "d2c62e62dd3ab7db305a20482445af020ece08dbf8957d21581af6f8e17681c6",
+      "length": 380,
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "recipe": "jpeg-xmp-extended-non-utf8-base-and-chunks-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-extended.jpg",
+      "sha256": "6c80bbc59c1b19b2639d26f576097871ac9432780b7f851dcb78cdfc4d19daa1",
+      "length": 1085,
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "recipe": "jpeg-xmp-extended-base-plus-2-chunks-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-none.jpg",
+      "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "length": 137,
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "recipe": "jpeg-xmp-none-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-nonutf8.jpg",
+      "sha256": "bcc9c03bc146c6374eb4cb0bcb874d94b8f9a92c6fe1590109acf9e7c899c3e5",
+      "length": 184,
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "recipe": "jpeg-xmp-non-utf8-payload-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-standard.jpg",
+      "sha256": "9caace1e155603a05306aa4e91845ca50863b77771a722acfbf4dd810606aecb",
+      "length": 526,
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "recipe": "jpeg-xmp-standard-packet-v1",
       "rights": "owned-synthetic"
     }
   ]

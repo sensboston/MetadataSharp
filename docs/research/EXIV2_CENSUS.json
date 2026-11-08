@@ -6,12 +6,15 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track. B0 pinned-CLI observation complete: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}. Pinned-CLI observation complete for batch(es) B0, B1: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "JPEG/comments",
       "JPEG/exif",
-      "JPEG/icc"
+      "JPEG/icc",
+      "JPEG/iptc",
+      "JPEG/thumbnail",
+      "JPEG/xmp"
     ],
     "inventoryTrack": [
       "JPEG"
@@ -101,9 +104,6 @@
       "EX0289-JP2-IPTC",
       "EX0289-JP2-THUMBNAIL",
       "EX0289-JP2-XMP",
-      "EX0289-JPEG-IPTC",
-      "EX0289-JPEG-THUMBNAIL",
-      "EX0289-JPEG-XMP",
       "EX0289-JXL-COMMENTS",
       "EX0289-JXL-EXIF",
       "EX0289-JXL-ICC",
@@ -252,6 +252,18 @@
       "icc": [
         "app2-icc-single",
         "app2-icc-segmented"
+      ],
+      "xmp": [
+        "app1-xmp-standard",
+        "app1-xmp-extended"
+      ],
+      "iptc": [
+        "app13-8bim-iptc",
+        "app13-8bim-iptc-multiple"
+      ],
+      "thumbnail": [
+        "exif-ifd1-jpeg",
+        "exif-ifd1-uncompressed"
       ],
       "inventory": [
         "container"
@@ -542,7 +554,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0008",
@@ -569,7 +581,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0009",
@@ -596,7 +608,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0001",
@@ -821,7 +833,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0008",
@@ -848,7 +860,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0009",
@@ -875,7 +887,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0001",
@@ -1100,7 +1112,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0008",
@@ -1127,7 +1139,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0009",
@@ -1154,7 +1166,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0001",
@@ -1379,7 +1391,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0008",
@@ -1406,7 +1418,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0009",
@@ -1433,7 +1445,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+      "notes": "JPEG pilot static not-applicable (B0): app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0001",
@@ -1518,11 +1530,11 @@
       },
       "noDocumentedClaim": false,
       "fixture": {
-        "file": "com-single.jpg",
-        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "file": "com-raw.jpg",
+        "sha256": "c1e2f73df592cc9200f565c18ae720caeabb2ef4c5fc69b93d031eca6094587f",
         "length": 167,
         "rights": "owned-synthetic",
-        "recipe": "jpeg-com-single-a-v1"
+        "recipe": "jpeg-com-raw-high-bytes-v1"
       },
       "oracle": {
         "type": "pinned-cli",
@@ -1532,7 +1544,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-raw.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0004",
@@ -1559,7 +1571,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0005",
@@ -1586,7 +1598,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0006",
@@ -1613,7 +1625,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0007",
@@ -1640,7 +1652,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0008",
@@ -1667,7 +1679,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0009",
@@ -1694,7 +1706,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0010",
@@ -1779,11 +1791,11 @@
       },
       "noDocumentedClaim": false,
       "fixture": {
-        "file": "com-multiple.jpg",
-        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "file": "com-raw-multiple.jpg",
+        "sha256": "11db36074ca7c5ac30086cbb7152b26a5fa8a1c85748567fa94580772bdf6400",
         "length": 197,
         "rights": "owned-synthetic",
-        "recipe": "jpeg-com-multiple-distinct-v1"
+        "recipe": "jpeg-com-multiple-raw-distinct-v1"
       },
       "oracle": {
         "type": "pinned-cli",
@@ -1793,7 +1805,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-raw-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0013",
@@ -1878,11 +1890,11 @@
       },
       "noDocumentedClaim": false,
       "fixture": {
-        "file": "com-multiple-dup.jpg",
-        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "file": "com-raw-multiple-dup.jpg",
+        "sha256": "c7b30274774582875ef901934b236cc93121fc032d58145fd2d82ad73d30368e",
         "length": 197,
         "rights": "owned-synthetic",
-        "recipe": "jpeg-com-multiple-identical-v1"
+        "recipe": "jpeg-com-multiple-raw-identical-v1"
       },
       "oracle": {
         "type": "pinned-cli",
@@ -1892,7 +1904,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-raw-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0016",
@@ -1977,11 +1989,11 @@
       },
       "noDocumentedClaim": false,
       "fixture": {
-        "file": "com-multiple.jpg",
-        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "file": "com-raw-multiple.jpg",
+        "sha256": "11db36074ca7c5ac30086cbb7152b26a5fa8a1c85748567fa94580772bdf6400",
         "length": 197,
         "rights": "owned-synthetic",
-        "recipe": "jpeg-com-multiple-distinct-v1"
+        "recipe": "jpeg-com-multiple-raw-distinct-v1"
       },
       "oracle": {
         "type": "pinned-cli",
@@ -1991,7 +2003,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-raw-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0001",
@@ -2117,7 +2129,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0005",
@@ -2144,7 +2156,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0006",
@@ -2171,7 +2183,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0007",
@@ -2198,7 +2210,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0008",
@@ -2225,7 +2237,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0009",
@@ -2252,7 +2264,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0010",
@@ -2675,7 +2687,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0005",
@@ -2702,7 +2714,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0006",
@@ -2729,7 +2741,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0007",
@@ -2756,7 +2768,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0008",
@@ -2783,7 +2795,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0009",
@@ -2810,7 +2822,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0010",
@@ -3233,7 +3245,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0005",
@@ -3260,7 +3272,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0006",
@@ -3287,7 +3299,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0007",
@@ -3314,7 +3326,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0008",
@@ -3341,7 +3353,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0009",
@@ -3368,7 +3380,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0010",
@@ -3725,7 +3737,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0003",
@@ -3752,7 +3764,7 @@
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+      "notes": "JPEG pilot static not-applicable (B0): single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0004",
@@ -4512,6 +4524,1914 @@
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B0 pinned-CLI observation: outcome=refused; exit-observed; fixture=icc-segmented-dup.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-READ-0001",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-standard.jpg",
+        "sha256": "9caace1e155603a05306aa4e91845ca50863b77771a722acfbf4dd810606aecb",
+        "length": 526,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-standard-packet-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-standard.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-READ-0002",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-nonutf8.jpg",
+        "sha256": "bcc9c03bc146c6374eb4cb0bcb874d94b8f9a92c6fe1590109acf9e7c899c3e5",
+        "length": 184,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-nonutf8.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-READ-0003",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-standard",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-duplicate.jpg",
+        "sha256": "11b2f4ec8c1f09453d549612f415e1d51348b542724c446f35c990b6f71a7a9c",
+        "length": 917,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-two-app1-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-READ-0004",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-standard",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-nonutf8.jpg",
+        "sha256": "bcc9c03bc146c6374eb4cb0bcb874d94b8f9a92c6fe1590109acf9e7c899c3e5",
+        "length": 184,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-nonutf8.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-READ-0005",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended.jpg",
+        "sha256": "6c80bbc59c1b19b2639d26f576097871ac9432780b7f851dcb78cdfc4d19daa1",
+        "length": 1085,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-base-plus-2-chunks-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-READ-0006",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended-nonutf8.jpg",
+        "sha256": "d2c62e62dd3ab7db305a20482445af020ece08dbf8957d21581af6f8e17681c6",
+        "length": 380,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-non-utf8-base-and-chunks-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended-nonutf8.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-READ-0007",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-extended",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended-duplicate.jpg",
+        "sha256": "d87e7300893a1d6e30308ba0b4c7361279f98e40885d2a314860146d81459620",
+        "length": 1493,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-two-base-one-chunk-set-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-READ-0008",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-extended",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended-nonutf8.jpg",
+        "sha256": "d2c62e62dd3ab7db305a20482445af020ece08dbf8957d21581af6f8e17681c6",
+        "length": 380,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-non-utf8-base-and-chunks-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended-nonutf8.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-INSERT-0001",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-none-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-none.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-INSERT-0002",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-none-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-none.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-INSERT-0003",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-standard",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-duplicate.jpg",
+        "sha256": "11b2f4ec8c1f09453d549612f415e1d51348b542724c446f35c990b6f71a7a9c",
+        "length": 917,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-two-app1-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-INSERT-0004",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-standard",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-duplicate.jpg",
+        "sha256": "11b2f4ec8c1f09453d549612f415e1d51348b542724c446f35c990b6f71a7a9c",
+        "length": 917,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-two-app1-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-INSERT-0005",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended.jpg",
+        "sha256": "6c80bbc59c1b19b2639d26f576097871ac9432780b7f851dcb78cdfc4d19daa1",
+        "length": 1085,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-base-plus-2-chunks-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-INSERT-0006",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended.jpg",
+        "sha256": "6c80bbc59c1b19b2639d26f576097871ac9432780b7f851dcb78cdfc4d19daa1",
+        "length": 1085,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-base-plus-2-chunks-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-INSERT-0007",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-extended",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended-duplicate.jpg",
+        "sha256": "d87e7300893a1d6e30308ba0b4c7361279f98e40885d2a314860146d81459620",
+        "length": 1493,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-two-base-one-chunk-set-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-INSERT-0008",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-extended",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended-duplicate.jpg",
+        "sha256": "d87e7300893a1d6e30308ba0b4c7361279f98e40885d2a314860146d81459620",
+        "length": 1493,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-two-base-one-chunk-set-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REPLACE-0001",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-standard.jpg",
+        "sha256": "9caace1e155603a05306aa4e91845ca50863b77771a722acfbf4dd810606aecb",
+        "length": 526,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-standard-packet-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-standard.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REPLACE-0002",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-standard.jpg",
+        "sha256": "9caace1e155603a05306aa4e91845ca50863b77771a722acfbf4dd810606aecb",
+        "length": 526,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-standard-packet-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-standard.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REPLACE-0003",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-standard",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-duplicate.jpg",
+        "sha256": "11b2f4ec8c1f09453d549612f415e1d51348b542724c446f35c990b6f71a7a9c",
+        "length": 917,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-two-app1-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REPLACE-0004",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-standard",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-duplicate.jpg",
+        "sha256": "11b2f4ec8c1f09453d549612f415e1d51348b542724c446f35c990b6f71a7a9c",
+        "length": 917,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-two-app1-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REPLACE-0005",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended.jpg",
+        "sha256": "6c80bbc59c1b19b2639d26f576097871ac9432780b7f851dcb78cdfc4d19daa1",
+        "length": 1085,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-base-plus-2-chunks-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REPLACE-0006",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended.jpg",
+        "sha256": "6c80bbc59c1b19b2639d26f576097871ac9432780b7f851dcb78cdfc4d19daa1",
+        "length": 1085,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-base-plus-2-chunks-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REPLACE-0007",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-extended",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended-duplicate.jpg",
+        "sha256": "d87e7300893a1d6e30308ba0b4c7361279f98e40885d2a314860146d81459620",
+        "length": 1493,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-two-base-one-chunk-set-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REPLACE-0008",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-extended",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended-duplicate.jpg",
+        "sha256": "d87e7300893a1d6e30308ba0b4c7361279f98e40885d2a314860146d81459620",
+        "length": 1493,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-two-base-one-chunk-set-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REMOVE-0001",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-standard.jpg",
+        "sha256": "9caace1e155603a05306aa4e91845ca50863b77771a722acfbf4dd810606aecb",
+        "length": 526,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-standard-packet-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-standard.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REMOVE-0002",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-standard.jpg",
+        "sha256": "9caace1e155603a05306aa4e91845ca50863b77771a722acfbf4dd810606aecb",
+        "length": 526,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-standard-packet-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-standard.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REMOVE-0003",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-standard",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-duplicate.jpg",
+        "sha256": "11b2f4ec8c1f09453d549612f415e1d51348b542724c446f35c990b6f71a7a9c",
+        "length": 917,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-two-app1-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REMOVE-0004",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-standard",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-duplicate.jpg",
+        "sha256": "11b2f4ec8c1f09453d549612f415e1d51348b542724c446f35c990b6f71a7a9c",
+        "length": 917,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-two-app1-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REMOVE-0005",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended.jpg",
+        "sha256": "6c80bbc59c1b19b2639d26f576097871ac9432780b7f851dcb78cdfc4d19daa1",
+        "length": 1085,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-base-plus-2-chunks-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REMOVE-0006",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-extended",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended.jpg",
+        "sha256": "6c80bbc59c1b19b2639d26f576097871ac9432780b7f851dcb78cdfc4d19daa1",
+        "length": 1085,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-base-plus-2-chunks-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REMOVE-0007",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-extended",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended-duplicate.jpg",
+        "sha256": "d87e7300893a1d6e30308ba0b4c7361279f98e40885d2a314860146d81459620",
+        "length": 1493,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-two-base-one-chunk-set-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-REMOVE-0008",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "app1-xmp-extended",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-extended-duplicate.jpg",
+        "sha256": "d87e7300893a1d6e30308ba0b4c7361279f98e40885d2a314860146d81459620",
+        "length": 1493,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-extended-two-base-one-chunk-set-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-extended-duplicate.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-READ-0001",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-single.jpg",
+        "sha256": "0e67a028512b807822d7f0d3514e20d23b686e95b89f9b3bdc9f8a54896843cd",
+        "length": 213,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-single-8bim-unique-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-single.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-READ-0002",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-single-dup-dataset.jpg",
+        "sha256": "342614793c82680b3d35334667b900177776274f6e9ed5989613ff5862021bdd",
+        "length": 209,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-single-8bim-repeated-dataset-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-single-dup-dataset.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-READ-0003",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-multiple.jpg",
+        "sha256": "34885ed8df316623f77119763e834de8968d3c478ad4438c6907d0fc75e94c75",
+        "length": 243,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-two-app13-unique-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-multiple.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-READ-0004",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-multiple-dup.jpg",
+        "sha256": "8fc90f0a9cb3e28192fd65b20a8434d46c3765f36774422b427ffb7dbb273dea",
+        "length": 241,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-two-app13-shared-dataset-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-multiple-dup.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-INSERT-0001",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-none-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-none.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-INSERT-0002",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-single-dup-dataset.jpg",
+        "sha256": "342614793c82680b3d35334667b900177776274f6e9ed5989613ff5862021bdd",
+        "length": 209,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-single-8bim-repeated-dataset-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-single-dup-dataset.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-INSERT-0003",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-multiple.jpg",
+        "sha256": "34885ed8df316623f77119763e834de8968d3c478ad4438c6907d0fc75e94c75",
+        "length": 243,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-two-app13-unique-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-multiple.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-INSERT-0004",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-multiple-dup.jpg",
+        "sha256": "8fc90f0a9cb3e28192fd65b20a8434d46c3765f36774422b427ffb7dbb273dea",
+        "length": 241,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-two-app13-shared-dataset-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-multiple-dup.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-REPLACE-0001",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-single.jpg",
+        "sha256": "0e67a028512b807822d7f0d3514e20d23b686e95b89f9b3bdc9f8a54896843cd",
+        "length": 213,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-single-8bim-unique-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-single.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-REPLACE-0002",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-single-dup-dataset.jpg",
+        "sha256": "342614793c82680b3d35334667b900177776274f6e9ed5989613ff5862021bdd",
+        "length": 209,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-single-8bim-repeated-dataset-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-single-dup-dataset.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-REPLACE-0003",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-multiple.jpg",
+        "sha256": "34885ed8df316623f77119763e834de8968d3c478ad4438c6907d0fc75e94c75",
+        "length": 243,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-two-app13-unique-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-multiple.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-REPLACE-0004",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-multiple-dup.jpg",
+        "sha256": "8fc90f0a9cb3e28192fd65b20a8434d46c3765f36774422b427ffb7dbb273dea",
+        "length": 241,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-two-app13-shared-dataset-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-multiple-dup.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-REMOVE-0001",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-single.jpg",
+        "sha256": "0e67a028512b807822d7f0d3514e20d23b686e95b89f9b3bdc9f8a54896843cd",
+        "length": 213,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-single-8bim-unique-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-single.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-REMOVE-0002",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-single-dup-dataset.jpg",
+        "sha256": "342614793c82680b3d35334667b900177776274f6e9ed5989613ff5862021bdd",
+        "length": 209,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-single-8bim-repeated-dataset-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-single-dup-dataset.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-REMOVE-0003",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-multiple.jpg",
+        "sha256": "34885ed8df316623f77119763e834de8968d3c478ad4438c6907d0fc75e94c75",
+        "length": 243,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-two-app13-unique-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-multiple.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-IPTC-REMOVE-0004",
+      "format": "JPEG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "app13-8bim-iptc-multiple",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "iptc-multiple-dup.jpg",
+        "sha256": "8fc90f0a9cb3e28192fd65b20a8434d46c3765f36774422b427ffb7dbb273dea",
+        "length": 241,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-iptc-two-app13-shared-dataset-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=iptc-multiple-dup.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-READ-0001",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "exif-thumb-jpeg.jpg",
+        "sha256": "79cb8aa2775ae2c543388fefb260e106374d9f703820d492a1744ef9957defee",
+        "length": 364,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-thumb-jpeg.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-READ-0002",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "exif-thumb-raw.jpg",
+        "sha256": "3e80373b3afa974e83520cb945784ab9c7eef6e1e0a7761b058d0e42ffab66bc",
+        "length": 467,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-thumb-raw.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-INSERT-0001",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "exif-base.jpg",
+        "sha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-orientation-artist-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-base.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-INSERT-0002",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "axis collapse; not applicable: pinned CLI exposes no uncompressed-thumbnail write path (-i t embeds JPEG thumbnails only); revisit if the CLI grows the capability; flagged for developer review at denominators"
+      },
+      "baselineObservation": "not-applicable",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG pilot static not-applicable (B1): pinned CLI exposes no uncompressed-thumbnail write path (-i t embeds JPEG thumbnails only); revisit if the CLI grows the capability; flagged for developer review at denominators"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-REPLACE-0001",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "exif-thumb-jpeg.jpg",
+        "sha256": "79cb8aa2775ae2c543388fefb260e106374d9f703820d492a1744ef9957defee",
+        "length": 364,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-thumb-jpeg.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-REPLACE-0002",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "exif-thumb-raw.jpg",
+        "sha256": "3e80373b3afa974e83520cb945784ab9c7eef6e1e0a7761b058d0e42ffab66bc",
+        "length": 467,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-thumb-raw.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-REMOVE-0001",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "exif-thumb-jpeg.jpg",
+        "sha256": "79cb8aa2775ae2c543388fefb260e106374d9f703820d492a1744ef9957defee",
+        "length": 364,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-thumb-jpeg.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-REMOVE-0002",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "exif-thumb-raw.jpg",
+        "sha256": "3e80373b3afa974e83520cb945784ab9c7eef6e1e0a7761b058d0e42ffab66bc",
+        "length": 467,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-thumb-raw.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-EXTRACT-0001",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "exif-thumb-jpeg.jpg",
+        "sha256": "79cb8aa2775ae2c543388fefb260e106374d9f703820d492a1744ef9957defee",
+        "length": 364,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=exif-thumb-jpeg.jpg"
+    },
+    {
+      "rowId": "EX0289-JPEG-THUMBNAIL-EXTRACT-0002",
+      "format": "JPEG",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "exif-thumb-raw.jpg",
+        "sha256": "3e80373b3afa974e83520cb945784ab9c7eef6e1e0a7761b058d0e42ffab66bc",
+        "length": 467,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b1-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B1",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B1 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=exif-thumb-raw.jpg"
     }
   ]
 }
