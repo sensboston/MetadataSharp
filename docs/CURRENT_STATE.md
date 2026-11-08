@@ -5,12 +5,11 @@ approvals/diagnostics remain in PROGRESS; older session instructions there are h
 
 ## Active branch and scope
 
-Assigned branch **arena/cdb43c96-metadatasharp**, cut from master 8fe9886
-(PR #20 merge; PR #19 brought E03 to master as ea8e056); **merged into master as
-`0d4a516` (PR #21, 2026-11-08)**. Never switch to master or another branch. Standing authorization covers commit/push and completed green
-PR merge, not package publication or unseen public contracts. The previous
-public-visibility billing blocker is resolved in observed runs; no CI exception
-applies.
+Assigned branch **arena/45659746-metadatasharp**, at master `e9d68ec` (PR #23
+merge, 2026-11-08); never switch to master or another branch. Standing authorization
+covers commit/push and completed green PR merge, not package publication or
+unseen public contracts. The previous public-visibility billing blocker is resolved
+in observed runs; no CI exception applies.
 
 Programme: roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md (E00–E18).
 Developer approved independent near-complete Exiv2 functionality, idiomatic .NET,
@@ -23,6 +22,17 @@ unknown relocation refusal and independent metadata families stay binding.
 is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
 
 ## Current evidence and actual implementation
+
+- B0 observation batch DONE (2026-11-08, this branch): docs/research/EXIV2_CENSUS.json
+  all 135 B0 rows observed-cli (97) or statically not-applicable (38, axis
+  collapses recorded per row); fixtures owned-synthetic and SHA-256 pinned
+  (tests/fixtures/jpeg/manifest.json); evidence committed at
+  docs/research/evidence/e01-b0-census/ (observations.json + README); CI job
+  `pinned-exiv2-baseline` re-runs the batch and uploads `e01-b0-census-observations`.
+  89 accepted / 8 refused (all ICC duplicate-profile rows; `Not a valid ICC
+  Profile`); scan preserved 135/135. Verification stays not-assessed; NO
+  denominator frozen; NO coverage percentage; exclusions (if any) go to the
+  developer at the denominators step; D2/publication NOT authorized.
 
 - E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
   42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.

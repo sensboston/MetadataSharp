@@ -1551,3 +1551,35 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
     B14 or must split now. NO observation has been run yet — zero rows carry evidence.
 - No exclusions, no freeze, no percentage; D_full/D_accept are computed only after
   the observation batch and developer review. E01 gate remains OPEN.
+### B0 pinned-CLI observation batch — 2026-11-08 (JPEG rows observed)
+
+- 2026-11-08: B0 observation batch executed end-to-end (step 1 of the approved
+  1→2→3 order: B0 observations, then B1 JPEG xmp/iptc/thumbnail enumeration,
+  then denominators + developer sign-off). No exclusions granted; no freeze; no
+  percentage; D2/publication not authorized.
+  - NEW tools/reference/jpeg_owned_fixtures.py — deterministic owned synthetic
+    JPEG writer (14 fixtures): EXIF IFD0/SubIFD/multi-APP1 with duplicate-tag
+    and duplicate-block axes; COM single/multiple/duplicate; minimal synthetic
+    ICC profiles (single-segment, duplicate, two-segment); 8x8 single-scan
+    baseline body; ICC fragments reassembled exactly. Pinned by SHA-256 in
+    tests/fixtures/jpeg/manifest.json + provenance.json (binaries never
+    committed; CI regenerates and byte-compares).
+  - NEW tools/reference/observe_b0.py — runs the pinned 0.28.9 CLI per applicable
+    census row (fixtures regenerated and hash-checked first; pin/upstream
+    verified; scan-bytes invariant; outcomes recorded, never gated). CI
+    `pinned-exiv2-baseline` job re-runs it and uploads `e01-b0-census-observations`.
+  - NEW docs/research/evidence/e01-b0-census/ — committed observations.json +
+    README (provenance, reproduction, limits). 97 rows observed-cli (89 accepted,
+    8 refused — all ICC duplicate-profile rows: `Not a valid ICC Profile` on
+    insert/replace/remove/extract; `-pC` still succeeds), 38 statically
+    not-applicable (axis collapses: app1-exif-multiple is itself the
+    duplicate-block case; com-single cannot carry duplication). Scan preserved
+    in 135/135 rows. Comments store argv bytes + trailing NUL (D001-consistent,
+    recorded verbatim); `-e c` emits an exiv2 raw .exv container; in-IFD duplicate
+    tags print fully; a second EXIF APP1 block is ignored on print/mutation context.
+  - docs/research/EXIV2_CENSUS.json regenerated: all B0 rows observed-cli or
+    not-applicable (no not-run remains); fixtures pinned per row; oracles split
+    spec-derived vs pinned-cli (record-only rows). Discovery suite: 47/47 local.
+  - Verification stays not-assessed everywhere (E07); no denominator computed;
+    the exclusions conversation (if any) goes to the developer at step 3.
+- E01 gate remains OPEN.

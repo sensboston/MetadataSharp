@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track. All rows not-run/not-assessed; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track. B0 pinned-CLI observation complete: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "JPEG/comments",
@@ -302,16 +302,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-base.jpg",
+        "sha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-orientation-artist-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "recognize/dimensions/MIME without decoding; count tracked separately, never support"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-base.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0001",
@@ -329,16 +335,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "exif-base.jpg",
+        "sha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-orientation-artist-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-base.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0002",
@@ -356,16 +368,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-dup-tag.jpg",
+        "sha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+        "length": 203,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-duplicate-artist-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-dup-tag.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0003",
@@ -383,16 +401,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-multi-app1.jpg",
+        "sha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+        "length": 239,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-two-app1-independent-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-multi-app1.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0004",
@@ -410,16 +434,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "exif-subifd.jpg",
+        "sha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+        "length": 221,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-iso-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0005",
@@ -437,16 +467,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-subifd-dup-tag.jpg",
+        "sha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+        "length": 233,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-duplicate-iso-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd-dup-tag.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0006",
@@ -464,16 +500,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-subifd-multi.jpg",
+        "sha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+        "length": 269,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-two-app1-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd-multi.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0007",
@@ -494,13 +536,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0008",
@@ -521,13 +563,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-READ-0009",
@@ -548,13 +590,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0001",
@@ -572,16 +614,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "exif-base.jpg",
+        "sha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-orientation-artist-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-base.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0002",
@@ -599,16 +647,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-dup-tag.jpg",
+        "sha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+        "length": 203,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-duplicate-artist-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-dup-tag.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0003",
@@ -626,16 +680,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-multi-app1.jpg",
+        "sha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+        "length": 239,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-two-app1-independent-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-multi-app1.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0004",
@@ -653,16 +713,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "exif-subifd.jpg",
+        "sha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+        "length": 221,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-iso-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0005",
@@ -680,16 +746,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-subifd-dup-tag.jpg",
+        "sha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+        "length": 233,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-duplicate-iso-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd-dup-tag.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0006",
@@ -707,16 +779,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-subifd-multi.jpg",
+        "sha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+        "length": 269,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-two-app1-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd-multi.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0007",
@@ -737,13 +815,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0008",
@@ -764,13 +842,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-INSERT-0009",
@@ -791,13 +869,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0001",
@@ -815,16 +893,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "exif-base.jpg",
+        "sha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-orientation-artist-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-base.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0002",
@@ -842,16 +926,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-dup-tag.jpg",
+        "sha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+        "length": 203,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-duplicate-artist-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-dup-tag.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0003",
@@ -869,16 +959,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-multi-app1.jpg",
+        "sha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+        "length": 239,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-two-app1-independent-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-multi-app1.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0004",
@@ -896,16 +992,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "exif-subifd.jpg",
+        "sha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+        "length": 221,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-iso-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0005",
@@ -923,16 +1025,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-subifd-dup-tag.jpg",
+        "sha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+        "length": 233,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-duplicate-iso-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd-dup-tag.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0006",
@@ -950,16 +1058,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-subifd-multi.jpg",
+        "sha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+        "length": 269,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-two-app1-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd-multi.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0007",
@@ -980,13 +1094,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0008",
@@ -1007,13 +1121,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REPLACE-0009",
@@ -1034,13 +1148,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0001",
@@ -1058,16 +1172,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "exif-base.jpg",
+        "sha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-orientation-artist-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-base.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0002",
@@ -1085,16 +1205,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-dup-tag.jpg",
+        "sha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+        "length": 203,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-ifd0-duplicate-artist-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-dup-tag.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0003",
@@ -1112,16 +1238,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-multi-app1.jpg",
+        "sha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+        "length": 239,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-two-app1-independent-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-multi-app1.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0004",
@@ -1139,16 +1271,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "exif-subifd.jpg",
+        "sha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+        "length": 221,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-iso-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0005",
@@ -1166,16 +1304,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-subifd-dup-tag.jpg",
+        "sha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+        "length": 233,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-duplicate-iso-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd-dup-tag.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0006",
@@ -1193,16 +1337,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "exif-subifd-multi.jpg",
+        "sha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+        "length": 269,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-exif-subifd-two-app1-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=exif-subifd-multi.jpg"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0007",
@@ -1223,13 +1373,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0008",
@@ -1250,13 +1400,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-EXIF-REMOVE-0009",
@@ -1277,13 +1427,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "generic EXIF row; valueType split deferred to B14 vocabulary census"
+      "notes": "JPEG pilot static not-applicable: app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0001",
@@ -1301,16 +1451,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0002",
@@ -1328,16 +1484,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0003",
@@ -1355,16 +1517,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0004",
@@ -1385,13 +1553,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0005",
@@ -1412,13 +1580,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0006",
@@ -1439,13 +1607,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0007",
@@ -1466,13 +1634,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0008",
@@ -1493,13 +1661,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0009",
@@ -1520,13 +1688,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0010",
@@ -1544,16 +1712,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0011",
@@ -1571,16 +1745,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0012",
@@ -1598,16 +1778,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0013",
@@ -1625,16 +1811,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0014",
@@ -1652,16 +1844,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0015",
@@ -1679,16 +1877,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0016",
@@ -1706,16 +1910,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0017",
@@ -1733,16 +1943,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-READ-0018",
@@ -1760,16 +1976,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0001",
@@ -1787,16 +2009,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0002",
@@ -1814,16 +2042,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0003",
@@ -1841,16 +2075,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0004",
@@ -1871,13 +2111,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0005",
@@ -1898,13 +2138,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0006",
@@ -1925,13 +2165,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0007",
@@ -1952,13 +2192,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0008",
@@ -1979,13 +2219,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0009",
@@ -2006,13 +2246,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0010",
@@ -2030,16 +2270,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0011",
@@ -2057,16 +2303,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0012",
@@ -2084,16 +2336,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0013",
@@ -2111,16 +2369,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0014",
@@ -2138,16 +2402,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0015",
@@ -2165,16 +2435,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0016",
@@ -2192,16 +2468,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0017",
@@ -2219,16 +2501,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-INSERT-0018",
@@ -2246,16 +2534,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-none.jpg",
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+        "length": 137,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-none-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-none.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0001",
@@ -2273,16 +2567,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0002",
@@ -2300,16 +2600,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0003",
@@ -2327,16 +2633,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0004",
@@ -2357,13 +2669,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0005",
@@ -2384,13 +2696,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0006",
@@ -2411,13 +2723,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0007",
@@ -2438,13 +2750,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0008",
@@ -2465,13 +2777,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0009",
@@ -2492,13 +2804,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0010",
@@ -2516,16 +2828,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0011",
@@ -2543,16 +2861,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0012",
@@ -2570,16 +2894,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0013",
@@ -2597,16 +2927,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0014",
@@ -2624,16 +2960,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0015",
@@ -2651,16 +2993,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0016",
@@ -2678,16 +3026,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0017",
@@ -2705,16 +3059,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REPLACE-0018",
@@ -2732,16 +3092,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0001",
@@ -2759,16 +3125,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0002",
@@ -2786,16 +3158,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0003",
@@ -2813,16 +3191,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0004",
@@ -2843,13 +3227,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0005",
@@ -2870,13 +3254,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0006",
@@ -2897,13 +3281,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0007",
@@ -2924,13 +3308,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0008",
@@ -2951,13 +3335,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0009",
@@ -2978,13 +3362,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0010",
@@ -3002,16 +3386,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0011",
@@ -3029,16 +3419,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0012",
@@ -3056,16 +3452,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0013",
@@ -3083,16 +3485,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0014",
@@ -3110,16 +3518,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0015",
@@ -3137,16 +3551,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0016",
@@ -3164,16 +3584,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0017",
@@ -3191,16 +3617,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-REMOVE-0018",
@@ -3218,16 +3650,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "JPEG COM payload as stored; interpretation left to the caller"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0001",
@@ -3245,16 +3683,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-single.jpg",
+        "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+        "length": 167,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-single-a-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "comment payload copied out as raw bytes"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0002",
@@ -3275,13 +3719,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "comment payload copied out as raw bytes"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0003",
@@ -3302,13 +3746,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "axis collapse; not applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "not-applicable",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "comment payload copied out as raw bytes"
+      "notes": "JPEG pilot static not-applicable: single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0004",
@@ -3326,16 +3770,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "comment payload copied out as raw bytes"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0005",
@@ -3353,16 +3803,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple-dup.jpg",
+        "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-identical-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "comment payload copied out as raw bytes"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-COMMENTS-EXTRACT-0006",
@@ -3380,16 +3836,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "com-multiple.jpg",
+        "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+        "length": 197,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-com-multiple-distinct-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "comment payload copied out as raw bytes"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=com-multiple.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-READ-0001",
@@ -3407,16 +3869,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-single.jpg",
+        "sha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+        "length": 347,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-single-segment-a-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-READ-0002",
@@ -3434,16 +3902,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-single-dup.jpg",
+        "sha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+        "length": 557,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-single-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-single-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-READ-0003",
@@ -3461,16 +3935,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-segmented.jpg",
+        "sha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+        "length": 365,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-segment-a-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-segmented.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-READ-0004",
@@ -3488,16 +3968,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-segmented-dup.jpg",
+        "sha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+        "length": 593,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-two-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-segmented-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-INSERT-0001",
@@ -3515,16 +4001,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "icc-single.jpg",
+        "sha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+        "length": 347,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-single-segment-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-INSERT-0002",
@@ -3542,16 +4034,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-single-dup.jpg",
+        "sha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+        "length": 557,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-single-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=refused; exit-observed; fixture=icc-single-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-INSERT-0003",
@@ -3569,16 +4067,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "icc-segmented.jpg",
+        "sha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+        "length": 365,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-segment-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-segmented.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-INSERT-0004",
@@ -3596,16 +4100,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-segmented-dup.jpg",
+        "sha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+        "length": 593,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-two-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=refused; exit-observed; fixture=icc-segmented-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-REPLACE-0001",
@@ -3623,16 +4133,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "icc-single.jpg",
+        "sha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+        "length": 347,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-single-segment-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-REPLACE-0002",
@@ -3650,16 +4166,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-single-dup.jpg",
+        "sha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+        "length": 557,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-single-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=refused; exit-observed; fixture=icc-single-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-REPLACE-0003",
@@ -3677,16 +4199,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "icc-segmented.jpg",
+        "sha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+        "length": 365,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-segment-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-segmented.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-REPLACE-0004",
@@ -3704,16 +4232,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-segmented-dup.jpg",
+        "sha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+        "length": 593,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-two-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=refused; exit-observed; fixture=icc-segmented-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-REMOVE-0001",
@@ -3731,16 +4265,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "icc-single.jpg",
+        "sha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+        "length": 347,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-single-segment-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-REMOVE-0002",
@@ -3758,16 +4298,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-single-dup.jpg",
+        "sha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+        "length": 557,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-single-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=refused; exit-observed; fixture=icc-single-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-REMOVE-0003",
@@ -3785,16 +4331,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "icc-segmented.jpg",
+        "sha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+        "length": 365,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-segment-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-segmented.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-REMOVE-0004",
@@ -3812,16 +4364,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-segmented-dup.jpg",
+        "sha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+        "length": 593,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-two-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=refused; exit-observed; fixture=icc-segmented-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-EXTRACT-0001",
@@ -3839,16 +4397,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "icc-single.jpg",
+        "sha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+        "length": 347,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-single-segment-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-single.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-EXTRACT-0002",
@@ -3866,16 +4430,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-single-dup.jpg",
+        "sha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+        "length": 557,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-single-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=refused; exit-observed; fixture=icc-single-dup.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-EXTRACT-0003",
@@ -3893,16 +4463,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
+      "fixture": {
+        "file": "icc-segmented.jpg",
+        "sha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+        "length": 365,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-segment-a-v1"
+      },
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=accepted; exit-observed; fixture=icc-segmented.jpg"
     },
     {
       "rowId": "EX0289-JPEG-ICC-EXTRACT-0004",
@@ -3920,16 +4496,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "icc-segmented-dup.jpg",
+        "sha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+        "length": 593,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-icc-two-two-segment-profiles-v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B0",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ICC profile container operation; no profile decoding/validation claimed"
+      "notes": "B0 pinned-CLI observation: outcome=refused; exit-observed; fixture=icc-segmented-dup.jpg"
     }
   ]
 }

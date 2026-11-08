@@ -1,0 +1,3787 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "sourceCommit": "e9d68eca26aae9bd873597c1c12659abc43708f3",
+  "baseline": {
+    "version": "0.28.9",
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "cmakeCacheSha256": "6600030648dd720b6c41f002d885ba949a68d29f4a8c154a1c501f69510fb565",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "executableSha256": "d594bfe912400186b1a77e21228be3034f66c077b2bb417aca1b6f5c355cb4a9"
+  },
+  "commands": [
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "825e033c606737a732f94eff5a39957b14086a7cc964c3b83eedbbcababd4fdb",
+      "stdout": "exiv2 0.28.9\n\nThis program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public\nLicense along with this program; if not, write to the Free\nSoftware Foundation, Inc., 51 Franklin Street, Fifth Floor,\nBoston, MA 02110-1301 USA\n"
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pS",
+        "/tmp/e01/b0/fixtures/exif-base.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "b9f242f8d27c54aaf7cee22367348b65fd95144e5e97a5667deb061f49b4438b",
+      "stdout": "STRUCTURE OF JPEG FILE: /tmp/e01/b0/fixtures/exif-base.jpg\n address | marker       |  length | data\n       0 | 0xffd8 SOI  \n       2 | 0xffe1 APP1  |      52 | Exif..II*...................;..\n      56 | 0xffdb DQT   |      67 \n     125 | 0xffc4 DHT   |      38 \n     165 | 0xffc0 SOF0  |      11 \n     178 | 0xffda SOS  \n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-P",
+        "Ekycv",
+        "-K",
+        "Exif.Image.Artist",
+        "/tmp/e01/b0/fixtures/exif-base.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
+      "stdout": "Exif.Image.Artist                            Ascii       6  Alice\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-P",
+        "Ekycv",
+        "-K",
+        "Exif.Image.Artist",
+        "/tmp/e01/b0/fixtures/exif-dup-tag.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "cbcebe921a847498475647b5330a71cbe943858837456aa68bbf5cef42dc97b0",
+      "stdout": "Exif.Image.Artist                            Ascii       6  Alice\nExif.Image.Artist                            Ascii       4  Bob\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-P",
+        "Ekycv",
+        "-K",
+        "Exif.Image.Artist",
+        "/tmp/e01/b0/fixtures/exif-multi-app1.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
+      "stdout": "Exif.Image.Artist                            Ascii       6  Alice\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-P",
+        "Ekycv",
+        "-K",
+        "Exif.Image.Artist",
+        "/tmp/e01/b0/fixtures/exif-subifd.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
+      "stdout": "Exif.Image.Artist                            Ascii       6  Alice\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-P",
+        "Ekycv",
+        "-K",
+        "Exif.Image.Artist",
+        "/tmp/e01/b0/fixtures/exif-subifd-dup-tag.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
+      "stdout": "Exif.Image.Artist                            Ascii       6  Alice\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-P",
+        "Ekycv",
+        "-K",
+        "Exif.Image.Artist",
+        "/tmp/e01/b0/fixtures/exif-subifd-multi.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "2398b3d5bd45c7b321e55650b9fc1e3836c6b28bb8f46ed04cee44ccaf286e00",
+      "stdout": "Exif.Image.Artist                            Ascii       6  Alice\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.ImageDescription Ascii MetadataSharp",
+        "/tmp/e01/b0/work/0010/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.ImageDescription Ascii MetadataSharp",
+        "/tmp/e01/b0/work/0011/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.ImageDescription Ascii MetadataSharp",
+        "/tmp/e01/b0/work/0012/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.ImageDescription Ascii MetadataSharp",
+        "/tmp/e01/b0/work/0013/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.ImageDescription Ascii MetadataSharp",
+        "/tmp/e01/b0/work/0014/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.ImageDescription Ascii MetadataSharp",
+        "/tmp/e01/b0/work/0015/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii Bob",
+        "/tmp/e01/b0/work/0019/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii Bob",
+        "/tmp/e01/b0/work/0020/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii Bob",
+        "/tmp/e01/b0/work/0021/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii Bob",
+        "/tmp/e01/b0/work/0022/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii Bob",
+        "/tmp/e01/b0/work/0023/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii Bob",
+        "/tmp/e01/b0/work/0024/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "del Exif.Image.Artist",
+        "/tmp/e01/b0/work/0028/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "del Exif.Image.Artist",
+        "/tmp/e01/b0/work/0029/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "del Exif.Image.Artist",
+        "/tmp/e01/b0/work/0030/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "del Exif.Image.Artist",
+        "/tmp/e01/b0/work/0031/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "del Exif.Image.Artist",
+        "/tmp/e01/b0/work/0032/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-M",
+        "del Exif.Image.Artist",
+        "/tmp/e01/b0/work/0033/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-single.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-single.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-single.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-multiple-dup.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-multiple-dup.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-multiple-dup.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/com-multiple.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert",
+        "/tmp/e01/b0/work/0055/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert \u00e9 \u2713",
+        "/tmp/e01/b0/work/0056/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "\\x89RAW\\xff\\xfe",
+        "/tmp/e01/b0/work/0057/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert",
+        "/tmp/e01/b0/work/0064/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert \u00e9 \u2713",
+        "/tmp/e01/b0/work/0065/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "\\x89RAW\\xff\\xfe",
+        "/tmp/e01/b0/work/0066/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert",
+        "/tmp/e01/b0/work/0067/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert \u00e9 \u2713",
+        "/tmp/e01/b0/work/0068/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "\\x89RAW\\xff\\xfe",
+        "/tmp/e01/b0/work/0069/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert",
+        "/tmp/e01/b0/work/0070/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert \u00e9 \u2713",
+        "/tmp/e01/b0/work/0071/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "\\x89RAW\\xff\\xfe",
+        "/tmp/e01/b0/work/0072/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert",
+        "/tmp/e01/b0/work/0073/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert \u00e9 \u2713",
+        "/tmp/e01/b0/work/0074/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "\\x89RAW\\xff\\xfe",
+        "/tmp/e01/b0/work/0075/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert",
+        "/tmp/e01/b0/work/0082/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert \u00e9 \u2713",
+        "/tmp/e01/b0/work/0083/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "\\x89RAW\\xff\\xfe",
+        "/tmp/e01/b0/work/0084/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert",
+        "/tmp/e01/b0/work/0085/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert \u00e9 \u2713",
+        "/tmp/e01/b0/work/0086/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "\\x89RAW\\xff\\xfe",
+        "/tmp/e01/b0/work/0087/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert",
+        "/tmp/e01/b0/work/0088/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "MetadataSharp B0 insert \u00e9 \u2713",
+        "/tmp/e01/b0/work/0089/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-c",
+        "\\x89RAW\\xff\\xfe",
+        "/tmp/e01/b0/work/0090/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0091/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0092/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0093/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0100/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0101/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0102/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0103/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0104/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0105/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0106/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0107/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "c",
+        "/tmp/e01/b0/work/0108/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-e",
+        "c",
+        "-l",
+        "/tmp/e01/b0/work/0109/extract-out",
+        "/tmp/e01/b0/work/0109/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-e",
+        "c",
+        "-l",
+        "/tmp/e01/b0/work/0112/extract-out",
+        "/tmp/e01/b0/work/0112/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-e",
+        "c",
+        "-l",
+        "/tmp/e01/b0/work/0113/extract-out",
+        "/tmp/e01/b0/work/0113/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-e",
+        "c",
+        "-l",
+        "/tmp/e01/b0/work/0114/extract-out",
+        "/tmp/e01/b0/work/0114/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/icc-single.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "bc139aa383785cdf0ee2e53ca9c2617a2ad2a9f428467580b915c022b9d3e170",
+      "stdout": "\u0000\u0000\u0000\ufffdSOBS\u00040\u0000\u0000mntrRGB XYZ \u0007\ufffd\u0000\u000b\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000acspSOBR\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd\ufffd\u0000\u0001\u0000\u0000\u0000\u0000\ufffd-MetadataSharp synthetic ICC authored\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001desc\u0000\u0000\u0000\ufffd\u0000\u0000\u00000desc\u0000\u0000\u0000\u001cMetadataSharp ICC profile A\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/icc-single-dup.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "1592294f6e4bc39a7f8cbc5e84c9f9abe9b70915f34fb38d7111a0fad2a41cdd",
+      "stdout": "\u0000\u0000\u0000\ufffdSOBS\u00040\u0000\u0000mntrRGB XYZ \u0007\ufffd\u0000\u000b\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000acspSOBR\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd\ufffd\u0000\u0001\u0000\u0000\u0000\u0000\ufffd-MetadataSharp synthetic ICC authored\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001desc\u0000\u0000\u0000\ufffd\u0000\u0000\u00000desc\u0000\u0000\u0000\u001cMetadataSharp ICC profile A\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffdSOBS\u00040\u0000\u0000mntrGRAYXYZ \u0007\ufffd\u0000\u000b\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000acspSOBR\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd\ufffd\u0000\u0001\u0000\u0000\u0000\u0000\ufffd-MetadataSharp synthetic ICC authored\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001desc\u0000\u0000\u0000\ufffd\u0000\u0000\u00000desc\u0000\u0000\u0000\u001cMetadataSharp ICC profile B\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/icc-segmented.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "bc139aa383785cdf0ee2e53ca9c2617a2ad2a9f428467580b915c022b9d3e170",
+      "stdout": "\u0000\u0000\u0000\ufffdSOBS\u00040\u0000\u0000mntrRGB XYZ \u0007\ufffd\u0000\u000b\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000acspSOBR\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd\ufffd\u0000\u0001\u0000\u0000\u0000\u0000\ufffd-MetadataSharp synthetic ICC authored\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001desc\u0000\u0000\u0000\ufffd\u0000\u0000\u00000desc\u0000\u0000\u0000\u001cMetadataSharp ICC profile A\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-pC",
+        "/tmp/e01/b0/fixtures/icc-segmented-dup.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "1592294f6e4bc39a7f8cbc5e84c9f9abe9b70915f34fb38d7111a0fad2a41cdd",
+      "stdout": "\u0000\u0000\u0000\ufffdSOBS\u00040\u0000\u0000mntrRGB XYZ \u0007\ufffd\u0000\u000b\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000acspSOBR\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd\ufffd\u0000\u0001\u0000\u0000\u0000\u0000\ufffd-MetadataSharp synthetic ICC authored\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001desc\u0000\u0000\u0000\ufffd\u0000\u0000\u00000desc\u0000\u0000\u0000\u001cMetadataSharp ICC profile A\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffdSOBS\u00040\u0000\u0000mntrGRAYXYZ \u0007\ufffd\u0000\u000b\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000acspSOBR\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd\ufffd\u0000\u0001\u0000\u0000\u0000\u0000\ufffd-MetadataSharp synthetic ICC authored\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001desc\u0000\u0000\u0000\ufffd\u0000\u0000\u00000desc\u0000\u0000\u0000\u001cMetadataSharp ICC profile B\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-iC",
+        "-l",
+        "/tmp/e01/b0/work/0119/icc-src",
+        "/tmp/e01/b0/work/0119/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-iC",
+        "-l",
+        "/tmp/e01/b0/work/0120/icc-src",
+        "/tmp/e01/b0/work/0120/case.jpg"
+      ],
+      "exitCode": 1,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Exiv2 exception in insert action for file /tmp/e01/b0/work/0120/case.jpg:\nNot a valid ICC Profile\n"
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-iC",
+        "-l",
+        "/tmp/e01/b0/work/0121/icc-src",
+        "/tmp/e01/b0/work/0121/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-iC",
+        "-l",
+        "/tmp/e01/b0/work/0122/icc-src",
+        "/tmp/e01/b0/work/0122/case.jpg"
+      ],
+      "exitCode": 1,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Exiv2 exception in insert action for file /tmp/e01/b0/work/0122/case.jpg:\nNot a valid ICC Profile\n"
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-iC",
+        "-l",
+        "/tmp/e01/b0/work/0123/icc-src",
+        "/tmp/e01/b0/work/0123/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-iC",
+        "-l",
+        "/tmp/e01/b0/work/0124/icc-src",
+        "/tmp/e01/b0/work/0124/case.jpg"
+      ],
+      "exitCode": 1,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Exiv2 exception in insert action for file /tmp/e01/b0/work/0124/case.jpg:\nNot a valid ICC Profile\n"
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-iC",
+        "-l",
+        "/tmp/e01/b0/work/0125/icc-src",
+        "/tmp/e01/b0/work/0125/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-iC",
+        "-l",
+        "/tmp/e01/b0/work/0126/icc-src",
+        "/tmp/e01/b0/work/0126/case.jpg"
+      ],
+      "exitCode": 1,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Exiv2 exception in insert action for file /tmp/e01/b0/work/0126/case.jpg:\nNot a valid ICC Profile\n"
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "C",
+        "/tmp/e01/b0/work/0127/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "C",
+        "/tmp/e01/b0/work/0128/case.jpg"
+      ],
+      "exitCode": 1,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Exiv2 exception in erase action for file /tmp/e01/b0/work/0128/case.jpg:\nNot a valid ICC Profile\n"
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "C",
+        "/tmp/e01/b0/work/0129/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-d",
+        "C",
+        "/tmp/e01/b0/work/0130/case.jpg"
+      ],
+      "exitCode": 1,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Exiv2 exception in erase action for file /tmp/e01/b0/work/0130/case.jpg:\nNot a valid ICC Profile\n"
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-eC",
+        "-l",
+        "/tmp/e01/b0/work/0131/icc-out",
+        "/tmp/e01/b0/work/0131/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-eC",
+        "-l",
+        "/tmp/e01/b0/work/0132/icc-out",
+        "/tmp/e01/b0/work/0132/case.jpg"
+      ],
+      "exitCode": 1,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Exiv2 exception in extract action for file /tmp/e01/b0/work/0132/case.jpg:\nNot a valid ICC Profile\n"
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-eC",
+        "-l",
+        "/tmp/e01/b0/work/0133/icc-out",
+        "/tmp/e01/b0/work/0133/case.jpg"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/tmp/e01/b/bin/exiv2",
+        "-eC",
+        "-l",
+        "/tmp/e01/b0/work/0134/icc-out",
+        "/tmp/e01/b0/work/0134/case.jpg"
+      ],
+      "exitCode": 1,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Exiv2 exception in extract action for file /tmp/e01/b0/work/0134/case.jpg:\nNot a valid ICC Profile\n"
+    }
+  ],
+  "observations": [
+    {
+      "id": "EX0289-JPEG-INVENTORY-INVENTORY-0001",
+      "seedId": "EX0289-JPEG-INVENTORY",
+      "operation": "inventory",
+      "family": "inventory",
+      "layout": "container",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-base.jpg",
+      "fixtureSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "outputSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-READ-0001",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "read",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-base.jpg",
+      "fixtureSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "outputSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-READ-0002",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "read",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-dup-tag.jpg",
+      "fixtureSha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "outputSha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-READ-0003",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "read",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "multiple-independent",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-multi-app1.jpg",
+      "fixtureSha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "outputSha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-READ-0004",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "read",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd.jpg",
+      "fixtureSha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "outputSha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-READ-0005",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "read",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd-dup-tag.jpg",
+      "fixtureSha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "outputSha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-READ-0006",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "read",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "multiple-independent",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd-multi.jpg",
+      "fixtureSha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "outputSha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-0001",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "insert",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-base.jpg",
+      "fixtureSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "outputSha256": "245c63c56e66fc3a962c0ba5dbeb016503c78977cac67975036d3c49864eb481",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-0002",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "insert",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-dup-tag.jpg",
+      "fixtureSha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "outputSha256": "5bb13de5f5ece919cb8e61173f796b7fbb526d42e188d8757ebab8b6091ef1e1",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-0003",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "insert",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "multiple-independent",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-multi-app1.jpg",
+      "fixtureSha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "outputSha256": "6526235f55ba9d0bbcca5fc3d6440f51e4f54e212fc164919e87be2b18fa0463",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-0004",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "insert",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd.jpg",
+      "fixtureSha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "outputSha256": "47fff4d3e29714f30fa4cb31125be9e5a03b54e83f7fee7460002b2722b64801",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-0005",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "insert",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd-dup-tag.jpg",
+      "fixtureSha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "outputSha256": "9b7f78502118be458bc17822d66bfb0086cc6257daf664616def5777bead32f1",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-0006",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "insert",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "multiple-independent",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd-multi.jpg",
+      "fixtureSha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "outputSha256": "e7e08a5183d54029e132569f5e4a20afa3621b81dcfcb0286316eb37258a6890",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-0001",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "replace",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-base.jpg",
+      "fixtureSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "outputSha256": "ee874a029b11e71a14f2c49b054677a0fd24b2343a4e51a2ee284df4cb7eec0e",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-0002",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "replace",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-dup-tag.jpg",
+      "fixtureSha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "outputSha256": "16c8545fb4666156c749e740b371f736f63123356e90a800fefcaf2576b1fc31",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-0003",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "replace",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "multiple-independent",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-multi-app1.jpg",
+      "fixtureSha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "outputSha256": "85a83fffd6f24055222ee987facd3e3e5fa09336a08c65abecee271bd8f09794",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-0004",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "replace",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd.jpg",
+      "fixtureSha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "outputSha256": "c04a1b41d96e702a562f14b014e7a26a8bf9f013e6bccf2ef3b9d2ebacc777b2",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-0005",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "replace",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd-dup-tag.jpg",
+      "fixtureSha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "outputSha256": "57e1dea11b6dc6919d3ee8ecda14001d2afb73e2b75c498a82ee6cefa67d5031",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-0006",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "replace",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "multiple-independent",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd-multi.jpg",
+      "fixtureSha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "outputSha256": "c3cc7d8dc14fff04d2c643708f3f99b88a1089eee2164d2fd18335f7dab3b4cd",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-0001",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "remove",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-base.jpg",
+      "fixtureSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "outputSha256": "662bf9cef51ba16b3d5803377595d212cdd1f443625ee32f32ca4f477d1ce518",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-0002",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "remove",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-dup-tag.jpg",
+      "fixtureSha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "outputSha256": "662bf9cef51ba16b3d5803377595d212cdd1f443625ee32f32ca4f477d1ce518",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-0003",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "remove",
+      "family": "exif",
+      "layout": "app1-exif-ifd0",
+      "duplicates": "multiple-independent",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-multi-app1.jpg",
+      "fixtureSha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "outputSha256": "ef80fab936ebd3bfb6d3d197beb1ea3d1234a22cbdca943a88c868598b623a8f",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-0004",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "remove",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd.jpg",
+      "fixtureSha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "outputSha256": "9b306d8ca5ee576ef676fb762f0e6c40bc47f715a34ea2f8663fada8413e9f66",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-0005",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "remove",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd-dup-tag.jpg",
+      "fixtureSha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "outputSha256": "c99fe956bf3f8311a3267871f5f02bbe3af2d140928535e6f013543b8e1b7d29",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-0006",
+      "seedId": "EX0289-JPEG-EXIF",
+      "operation": "remove",
+      "family": "exif",
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "multiple-independent",
+      "textEncoding": "not-applicable",
+      "fixture": "exif-subifd-multi.jpg",
+      "fixtureSha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "outputSha256": "4dba22fa548d737e59854f601ca4c1e62a521cf7ec78e375677f85e5b35d3880",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0001",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "ascii",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0002",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0003",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0010",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "ascii",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020636f6d6d656e742042"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0011",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020636f6d6d656e742042"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0012",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020636f6d6d656e742042"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0013",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "ascii",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020636f6d6d656e742041"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0014",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "utf-8",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020636f6d6d656e742041"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0015",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020636f6d6d656e742041"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0016",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "ascii",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020636f6d6d656e742042"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0017",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "utf-8",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020636f6d6d656e742042"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0018",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020636f6d6d656e742042"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0001",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "ascii",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "8956ea671650099f34a34921fe4589c4eb64ce00a95893105074dd4569e1deac",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727400"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0002",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "cbe02dd51b201fd4f4c23c96f3d060e9d045177e9e9de50ca76494cab372a149",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727420c3a920e29c9300"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0003",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "d97b29ba9f228bc90893278b75ea513d1e77ebe3f6e91788baeafc43fa0156e5",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "89524157fffe00"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0010",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "ascii",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "8956ea671650099f34a34921fe4589c4eb64ce00a95893105074dd4569e1deac",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727400"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0011",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "cbe02dd51b201fd4f4c23c96f3d060e9d045177e9e9de50ca76494cab372a149",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727420c3a920e29c9300"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0012",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "d97b29ba9f228bc90893278b75ea513d1e77ebe3f6e91788baeafc43fa0156e5",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "89524157fffe00"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0013",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "ascii",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "8956ea671650099f34a34921fe4589c4eb64ce00a95893105074dd4569e1deac",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727400"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0014",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "utf-8",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "cbe02dd51b201fd4f4c23c96f3d060e9d045177e9e9de50ca76494cab372a149",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727420c3a920e29c9300"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0015",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "d97b29ba9f228bc90893278b75ea513d1e77ebe3f6e91788baeafc43fa0156e5",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "89524157fffe00"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0016",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "ascii",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "8956ea671650099f34a34921fe4589c4eb64ce00a95893105074dd4569e1deac",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727400"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0017",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "utf-8",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "cbe02dd51b201fd4f4c23c96f3d060e9d045177e9e9de50ca76494cab372a149",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727420c3a920e29c9300"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0018",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "insert",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-none.jpg",
+      "fixtureSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "outputSha256": "d97b29ba9f228bc90893278b75ea513d1e77ebe3f6e91788baeafc43fa0156e5",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "89524157fffe00"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0001",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "ascii",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "8956ea671650099f34a34921fe4589c4eb64ce00a95893105074dd4569e1deac",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727400"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0002",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "cbe02dd51b201fd4f4c23c96f3d060e9d045177e9e9de50ca76494cab372a149",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020696e7365727420c3a920e29c9300"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0003",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "d97b29ba9f228bc90893278b75ea513d1e77ebe3f6e91788baeafc43fa0156e5",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 1,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          true
+        ],
+        "commentPayloadHex": [
+          "89524157fffe00"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0010",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "ascii",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "cc9928cadf27de008aa117241ad09c1a9b0ca4ded81f49e9ea9e989cc25c7ec6",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 2,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          false,
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742042",
+          "4d65746164617461536861727020423020696e7365727400"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0011",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "6ac5e2881ccbcd41b4b537f8b9789b66c08b4d2e10c884af876c95f15ea0ff06",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 2,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          false,
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742042",
+          "4d65746164617461536861727020423020696e7365727420c3a920e29c9300"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0012",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "5994e807dca42a7cb90a7b3d065d787a605d823bdcae2c2774977d6c6953b519",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 2,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          false,
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742042",
+          "89524157fffe00"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0013",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "ascii",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "4fb123adc0ecec7f777ed15dd1fe7e94b5e965e5c2caad2653d2f00d9f1e421a",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 2,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          false,
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020696e7365727400"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0014",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "utf-8",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "7815f1954681c5088f9d2b183259a75b389cff365f4ab9f63d05e87d6d30eb42",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 2,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          false,
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "4d65746164617461536861727020423020696e7365727420c3a920e29c9300"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0015",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "03fdf010f0afe20eca052cb525eed1a12eb08159f41fcbd51c98add05a53136f",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 2,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          false,
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742041",
+          "89524157fffe00"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0016",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "ascii",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "cc9928cadf27de008aa117241ad09c1a9b0ca4ded81f49e9ea9e989cc25c7ec6",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 2,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          false,
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742042",
+          "4d65746164617461536861727020423020696e7365727400"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0017",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "utf-8",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "6ac5e2881ccbcd41b4b537f8b9789b66c08b4d2e10c884af876c95f15ea0ff06",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 2,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          false,
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742042",
+          "4d65746164617461536861727020423020696e7365727420c3a920e29c9300"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0018",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "replace",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "5994e807dca42a7cb90a7b3d065d787a605d823bdcae2c2774977d6c6953b519",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCount": 2,
+        "commentEqualsPayload": false,
+        "commentEqualsPayloadMinusTrailingNul": [
+          false,
+          true
+        ],
+        "commentPayloadHex": [
+          "4d65746164617461536861727020423020636f6d6d656e742042",
+          "89524157fffe00"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0001",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "ascii",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 0,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0002",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 0,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0003",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 0,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0010",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "ascii",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "8b39f37f7d82814c2dffea96cc00b765209e22a1e52ca58217cfb1ef3cb5b331",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0011",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "8b39f37f7d82814c2dffea96cc00b765209e22a1e52ca58217cfb1ef3cb5b331",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0012",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "8b39f37f7d82814c2dffea96cc00b765209e22a1e52ca58217cfb1ef3cb5b331",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0013",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "ascii",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0014",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "utf-8",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0015",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0016",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "ascii",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "8b39f37f7d82814c2dffea96cc00b765209e22a1e52ca58217cfb1ef3cb5b331",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0017",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "utf-8",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "8b39f37f7d82814c2dffea96cc00b765209e22a1e52ca58217cfb1ef3cb5b331",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0018",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "remove",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "unknown-raw",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "8b39f37f7d82814c2dffea96cc00b765209e22a1e52ca58217cfb1ef3cb5b331",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "commentCountAfter": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-EXTRACT-0001",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "extract",
+      "family": "comments",
+      "layout": "com-single",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "com-single.jpg",
+      "fixtureSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "outputSha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "extractedFiles": [
+          "case.exv"
+        ],
+        "extractedSha256": {
+          "case.exv": "5c4515f1a622c5a402f9aa8e5e2c944ef8ff462e4f6b6eeff564cc2760aa6e5e"
+        },
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-EXTRACT-0004",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "extract",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "extractedFiles": [
+          "case.exv"
+        ],
+        "extractedSha256": {
+          "case.exv": "5c4515f1a622c5a402f9aa8e5e2c944ef8ff462e4f6b6eeff564cc2760aa6e5e"
+        },
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-EXTRACT-0005",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "extract",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "com-multiple-dup.jpg",
+      "fixtureSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "outputSha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "extractedFiles": [
+          "case.exv"
+        ],
+        "extractedSha256": {
+          "case.exv": "5c4515f1a622c5a402f9aa8e5e2c944ef8ff462e4f6b6eeff564cc2760aa6e5e"
+        },
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-EXTRACT-0006",
+      "seedId": "EX0289-JPEG-COMMENTS",
+      "operation": "extract",
+      "family": "comments",
+      "layout": "com-multiple",
+      "duplicates": "multiple-independent",
+      "textEncoding": "not-applicable",
+      "fixture": "com-multiple.jpg",
+      "fixtureSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "outputSha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "extractedFiles": [
+          "case.exv"
+        ],
+        "extractedSha256": {
+          "case.exv": "5c4515f1a622c5a402f9aa8e5e2c944ef8ff462e4f6b6eeff564cc2760aa6e5e"
+        },
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-READ-0001",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "read",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single.jpg",
+      "fixtureSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "outputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-READ-0002",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "read",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single-dup.jpg",
+      "fixtureSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "outputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-READ-0003",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "read",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented.jpg",
+      "fixtureSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "outputSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-READ-0004",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "read",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented-dup.jpg",
+      "fixtureSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "outputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-INSERT-0001",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "insert",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single.jpg",
+      "fixtureSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "outputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCount": 1,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-INSERT-0002",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "insert",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single-dup.jpg",
+      "fixtureSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "outputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "refused",
+      "facts": {
+        "iccProfileCount": 2,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-INSERT-0003",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "insert",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented.jpg",
+      "fixtureSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "outputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCount": 1,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-INSERT-0004",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "insert",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented-dup.jpg",
+      "fixtureSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "outputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "refused",
+      "facts": {
+        "iccProfileCount": 2,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-REPLACE-0001",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "replace",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single.jpg",
+      "fixtureSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "outputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCount": 1,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-REPLACE-0002",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "replace",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single-dup.jpg",
+      "fixtureSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "outputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "refused",
+      "facts": {
+        "iccProfileCount": 2,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-REPLACE-0003",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "replace",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented.jpg",
+      "fixtureSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "outputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCount": 1,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-REPLACE-0004",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "replace",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented-dup.jpg",
+      "fixtureSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "outputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "refused",
+      "facts": {
+        "iccProfileCount": 2,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-REMOVE-0001",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "remove",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single.jpg",
+      "fixtureSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "outputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCountAfter": 0,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-REMOVE-0002",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "remove",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single-dup.jpg",
+      "fixtureSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "outputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "refused",
+      "facts": {
+        "iccProfileCountAfter": 2,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-REMOVE-0003",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "remove",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented.jpg",
+      "fixtureSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "outputSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCountAfter": 0,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-REMOVE-0004",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "remove",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented-dup.jpg",
+      "fixtureSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "outputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "refused",
+      "facts": {
+        "iccProfileCountAfter": 2,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-EXTRACT-0001",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "extract",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single.jpg",
+      "fixtureSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "outputSha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "extractedFiles": [
+          "case.icc"
+        ],
+        "extractedSha256": "bc139aa383785cdf0ee2e53ca9c2617a2ad2a9f428467580b915c022b9d3e170",
+        "extractedEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-EXTRACT-0002",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "extract",
+      "family": "icc",
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-single-dup.jpg",
+      "fixtureSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "outputSha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "refused",
+      "facts": {
+        "extractedFiles": [],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-EXTRACT-0003",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "extract",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented.jpg",
+      "fixtureSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "outputSha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "extractedFiles": [
+          "case.icc"
+        ],
+        "extractedSha256": "bc139aa383785cdf0ee2e53ca9c2617a2ad2a9f428467580b915c022b9d3e170",
+        "extractedEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-JPEG-ICC-EXTRACT-0004",
+      "seedId": "EX0289-JPEG-ICC",
+      "operation": "extract",
+      "family": "icc",
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "icc-segmented-dup.jpg",
+      "fixtureSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "outputSha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "refused",
+      "facts": {
+        "extractedFiles": [],
+        "scanPreserved": true
+      }
+    }
+  ],
+  "staticNotApplicable": [
+    {
+      "id": "EX0289-JPEG-EXIF-READ-0007",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-READ-0008",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-READ-0009",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-0007",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-0008",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-INSERT-0009",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-0007",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-0008",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REPLACE-0009",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-0007",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-0008",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-EXIF-REMOVE-0009",
+      "reason": "app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent (duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0004",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0005",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0006",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0007",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0008",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-READ-0009",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0004",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0005",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0006",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0007",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0008",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-INSERT-0009",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0004",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0005",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0006",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0007",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0008",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REPLACE-0009",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0004",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0005",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0006",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0007",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0008",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-REMOVE-0009",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-EXTRACT-0002",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    },
+    {
+      "id": "EX0289-JPEG-COMMENTS-EXTRACT-0003",
+      "reason": "single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple"
+    }
+  ],
+  "outcomeCounts": {
+    "accepted": 89,
+    "refused": 8,
+    "static-not-applicable": 38
+  },
+  "denominatorFrozen": false,
+  "fixtureManifest": [
+    {
+      "file": "com-multiple-dup.jpg",
+      "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+      "length": 197,
+      "layout": "com-multiple",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-com-multiple-identical-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "com-multiple.jpg",
+      "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+      "length": 197,
+      "layout": "com-multiple",
+      "duplicates": "none",
+      "recipe": "jpeg-com-multiple-distinct-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "com-none.jpg",
+      "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "length": 137,
+      "layout": "com-single",
+      "duplicates": "none",
+      "recipe": "jpeg-com-none-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "com-single.jpg",
+      "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+      "length": 167,
+      "layout": "com-single",
+      "duplicates": "none",
+      "recipe": "jpeg-com-single-a-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "exif-base.jpg",
+      "sha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+      "length": 191,
+      "layout": "app1-exif-ifd0",
+      "duplicates": "none",
+      "recipe": "jpeg-exif-ifd0-orientation-artist-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "exif-dup-tag.jpg",
+      "sha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+      "length": 203,
+      "layout": "app1-exif-ifd0",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-exif-ifd0-duplicate-artist-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "exif-multi-app1.jpg",
+      "sha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+      "length": 239,
+      "layout": "app1-exif-ifd0",
+      "duplicates": "multiple-independent",
+      "recipe": "jpeg-exif-two-app1-independent-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "exif-subifd-dup-tag.jpg",
+      "sha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+      "length": 233,
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-exif-subifd-duplicate-iso-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "exif-subifd-multi.jpg",
+      "sha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+      "length": 269,
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "multiple-independent",
+      "recipe": "jpeg-exif-subifd-two-app1-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "exif-subifd.jpg",
+      "sha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+      "length": 221,
+      "layout": "app1-exif-ifd0-subifd",
+      "duplicates": "none",
+      "recipe": "jpeg-exif-subifd-iso-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "icc-segmented-dup.jpg",
+      "sha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+      "length": 593,
+      "layout": "app2-icc-segmented",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-icc-two-two-segment-profiles-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "icc-segmented.jpg",
+      "sha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+      "length": 365,
+      "layout": "app2-icc-segmented",
+      "duplicates": "none",
+      "recipe": "jpeg-icc-two-segment-a-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "icc-single-dup.jpg",
+      "sha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+      "length": 557,
+      "layout": "app2-icc-single",
+      "duplicates": "first-wins",
+      "recipe": "jpeg-icc-two-single-segment-profiles-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "icc-single.jpg",
+      "sha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+      "length": 347,
+      "layout": "app2-icc-single",
+      "duplicates": "none",
+      "recipe": "jpeg-icc-single-segment-a-v1",
+      "rights": "owned-synthetic"
+    }
+  ]
+}

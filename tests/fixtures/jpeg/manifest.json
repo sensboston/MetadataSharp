@@ -1,0 +1,128 @@
+[
+  {
+    "file": "com-multiple-dup.jpg",
+    "sha256": "ab00557198d9331ff04985ab80b3ba615110d6d2f03e82d0cf305623ead3f9f8",
+    "length": 197,
+    "layout": "com-multiple",
+    "duplicates": "first-wins",
+    "recipe": "jpeg-com-multiple-identical-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "com-multiple.jpg",
+    "sha256": "d718e388e740041de4a285137b664b476d737188701d3eb94266fb0d27f34777",
+    "length": 197,
+    "layout": "com-multiple",
+    "duplicates": "none",
+    "recipe": "jpeg-com-multiple-distinct-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "com-none.jpg",
+    "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+    "length": 137,
+    "layout": "com-single",
+    "duplicates": "none",
+    "recipe": "jpeg-com-none-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "com-single.jpg",
+    "sha256": "4e8f6c2b487487a9108bae87ad5b216e12ea277556090ea72f3f69ecc6f41e02",
+    "length": 167,
+    "layout": "com-single",
+    "duplicates": "none",
+    "recipe": "jpeg-com-single-a-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "exif-base.jpg",
+    "sha256": "0ecf5607b0be783a6fdb67bb20e16ca70d4a6aecc6dadc73c431f38ec4745284",
+    "length": 191,
+    "layout": "app1-exif-ifd0",
+    "duplicates": "none",
+    "recipe": "jpeg-exif-ifd0-orientation-artist-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "exif-dup-tag.jpg",
+    "sha256": "42fd88aa72182d55ccf4dae112ae0bd22932e8a20e5a04d4e7a6dd72e6a1a825",
+    "length": 203,
+    "layout": "app1-exif-ifd0",
+    "duplicates": "first-wins",
+    "recipe": "jpeg-exif-ifd0-duplicate-artist-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "exif-multi-app1.jpg",
+    "sha256": "8c38d9ece3550441613d68e1b9d7d80caca5ad8a82cd69693fb32d3f83201e10",
+    "length": 239,
+    "layout": "app1-exif-ifd0",
+    "duplicates": "multiple-independent",
+    "recipe": "jpeg-exif-two-app1-independent-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "exif-subifd-dup-tag.jpg",
+    "sha256": "180fba141718064d324a57a0a477439aaa38a1d466d5be9e66ab05159733ae31",
+    "length": 233,
+    "layout": "app1-exif-ifd0-subifd",
+    "duplicates": "first-wins",
+    "recipe": "jpeg-exif-subifd-duplicate-iso-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "exif-subifd-multi.jpg",
+    "sha256": "94c3707543221f3be36341e9727831b2d5497884b5a64ef2b0d3604926e09045",
+    "length": 269,
+    "layout": "app1-exif-ifd0-subifd",
+    "duplicates": "multiple-independent",
+    "recipe": "jpeg-exif-subifd-two-app1-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "exif-subifd.jpg",
+    "sha256": "6a9b1e68111e6201a897cde41715c134c983d96e626b5bc71f0fab04cb5b0022",
+    "length": 221,
+    "layout": "app1-exif-ifd0-subifd",
+    "duplicates": "none",
+    "recipe": "jpeg-exif-subifd-iso-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "icc-segmented-dup.jpg",
+    "sha256": "9a15769bcf870d73e09882c8df8240040c4dddfa4393eff8800b903b2edc94ee",
+    "length": 593,
+    "layout": "app2-icc-segmented",
+    "duplicates": "first-wins",
+    "recipe": "jpeg-icc-two-two-segment-profiles-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "icc-segmented.jpg",
+    "sha256": "93be6a0726834816a6dfbe7043e42eabb77a101cc71dfd20b1c59ab7b0b100ea",
+    "length": 365,
+    "layout": "app2-icc-segmented",
+    "duplicates": "none",
+    "recipe": "jpeg-icc-two-segment-a-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "icc-single-dup.jpg",
+    "sha256": "a3126801fa0c7ca6fc7cc2505917502e730f0a00d791511ee3df507bc403f1a1",
+    "length": 557,
+    "layout": "app2-icc-single",
+    "duplicates": "first-wins",
+    "recipe": "jpeg-icc-two-single-segment-profiles-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "icc-single.jpg",
+    "sha256": "d48d6718426767e4778afeab074c121edb4388ced73f11c68554796896450fdf",
+    "length": 347,
+    "layout": "app2-icc-single",
+    "duplicates": "none",
+    "recipe": "jpeg-icc-single-segment-a-v1",
+    "rights": "owned-synthetic"
+  }
+]

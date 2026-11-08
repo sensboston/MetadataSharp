@@ -17,6 +17,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SEEDS = ROOT / 'docs/research/EXIV2_OPERATION_SEEDS.json'
 OUTPUT = ROOT / 'docs/research/EXIV2_CENSUS.json'
+OBSERVATIONS = ROOT / 'docs/research/evidence/e01-b0-census/observations.json'
+FIXTURE_MANIFEST = ROOT / 'tests/fixtures/jpeg/manifest.json'
+
+# Axis collapses that are statically impossible, reviewed with the B0 pilot.
+# (family, layout, duplicates or None for all duplicates) -> reason
+STATIC_NOT_APPLICABLE = [
+    ('exif', 'app1-exif-multiple', None,
+     'app1-exif-multiple layout is itself the duplicate-block case; duplicates axis not independent '
+     '(duplicate-block coverage lives in app1-exif-ifd0/app1-exif-ifd0-subifd x multiple-independent)'),
+    ('comments', 'com-single', 'first-wins',
+     'single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple'),
+    ('comments', 'com-single', 'multiple-independent',
+     'single COM segment cannot carry a duplication policy; duplicate coverage lives in com-multiple'),
+]
+
+
+def static_not_applicable(row):
+    for family, layout, duplicates, reason in STATIC_NOT_APPLICABLE:
+        if row['family'] == family and row['layout'] == layout and (duplicates is None or row['duplicates'] == duplicates):
+            return reason
+    return None
 
 # --- Approved enumerations (design review 2026-11-08) -----------------------
 # Every axis value used by a row MUST come from this block (closed world).
@@ -114,8 +135,53 @@ def build_rows(seeds):
     return rows
 
 
+def apply_observations(rows):
+    """Fold the committed pinned-CLI observation evidence into the rows.
+
+    Without the evidence file every row stays not-run/not-assessed (pre-B0), so
+    the artifact is stable either way; with it, each row is flipped to
+    observed-cli (or statically not-applicable) and pinned to its fixture.
+    """
+    if not OBSERVATIONS.exists():
+        return rows, None
+    evidence = json.loads(OBSERVATIONS.read_text())
+    assert evidence.get('status') == 'passed', 'B0 observation evidence must be a passed run'
+    observed = {item['id']: item for item in evidence['observations']}
+    manifest = {entry['file']: entry for entry in json.loads(FIXTURE_MANIFEST.read_text())}
+    updated = []
+    for row in rows:
+        row = dict(row)
+        reason = static_not_applicable(row)
+        if reason:
+            row['baselineObservation'] = 'not-applicable'
+            row['oracle'] = {'type': 'specification', 'detail': 'axis collapse; not applicable: ' + reason}
+            row['notes'] = 'JPEG pilot static not-applicable: ' + reason
+            updated.append(row)
+            continue
+        item = observed.get(row['rowId'])
+        assert item is not None, f'observation missing for applicable row {row["rowId"]}'
+        fixture = manifest[item['fixture']]
+        assert fixture['sha256'] == item['fixtureSha256'], f'fixture/evidence hash mismatch for {row["rowId"]}'
+        row['fixture'] = {'file': fixture['file'], 'sha256': fixture['sha256'], 'length': fixture['length'],
+                          'rights': 'owned-synthetic', 'recipe': fixture['recipe']}
+        row['baselineObservation'] = 'observed-cli'
+        if item['recordOnly'] or item['expectOk'] is None:
+            row['oracle'] = {'type': 'pinned-cli',
+                             'detail': 'spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b0-census'}
+        else:
+            row['oracle'] = {'type': 'specification',
+                             'detail': 'spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b0-census'}
+        facts = f"outcome={item['outcome']}; exit-observed; fixture={item['fixture']}"
+        if item['facts'].get('scanPreserved') is False:
+            facts += '; FINDING scan-changed'
+        row['notes'] = f'B0 pinned-CLI observation: {facts}'
+        updated.append(row)
+    return updated, evidence
+
+
 def build(seeds):
     rows = build_rows(seeds)
+    rows, evidence = apply_observations(rows)
     enumerated = {'JPEG/inventory'} | {f'JPEG/{family}' for family in ('exif', 'comments', 'icc')}
     pending = sorted(s['seedId'] for s in seeds['seeds']
                      if f"{s['format']}/{s['family']}" not in {e for e in enumerated if e != 'JPEG/inventory'})
@@ -145,8 +211,11 @@ def build(seeds):
         generatedBy='tools/reference/build_census.py',
         denominatorFrozen=False,
         scope=('B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track. '
-               'All rows not-run/not-assessed; no coverage percentage; no denominator computed. '
-               'Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.'),
+               + ('B0 pinned-CLI observation complete: rows flipped to observed-cli/not-applicable; '
+                  'no coverage percentage; no denominator computed. '
+                  if evidence else
+                  'All rows not-run/not-assessed; no coverage percentage; no denominator computed. ')
+               + 'Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.'),
         coverage={
             'enumerated': sorted(enumerated - {'JPEG/inventory'}),
             'inventoryTrack': ['JPEG'],
