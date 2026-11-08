@@ -39,5 +39,14 @@
       "outputSha256": "54691ac34e7ac6de4991e5df5618da4a8a1d4ad8e2d3ba8da24a231a77cc784e",
       "outputHex": "524946461e000000574542505650384c110000002f0000001007508a2ad4a3808188e87f0000"
     }
-  ]
+  ],
+  "encoderDistribution": {
+    "filename": "pillow-12.0.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "url": "https://files.pythonhosted.org/packages/41/1e/db9470f2d030b4995083044cd8738cdd1bf773106819f6d8ba12597d5352/pillow-12.0.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "digests": {
+      "blake2b_256": "411edb9470f2d030b4995083044cd8738cdd1bf773106819f6d8ba12597d5352",
+      "md5": "1900fa940a75e89cca203e0acce0018e",
+      "sha256": "bee2a6db3a7242ea309aa7ee8e2780726fed67ff4e5b40169f2c940e7eb09227"
+    }
+  }
 }

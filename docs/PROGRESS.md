@@ -610,3 +610,24 @@
   code and reference additions await Actions, not reported as green yet.
 - PNG audit additionally fixed missing-property removal with existing EXIF: return
   an exact no-op before planner/unknown-chunk edit restrictions. No contract change.
+
+### M14 completed checkpoint and final group audit submission
+
+- M14 cc8b8700e63cd922f9e30b60db83cd6c534be81f passed both PR run
+  42429453288 and push run 42429449491: all three .NET platforms (352-case minimum),
+  Python policy 12/12 and pinned reference job including dwebp 1.3.2 green.
+- Final audit adds PNG missing-property/no-op regression, exact XMP-keyword near
+  match, empty/reserved DEFLATE tests, and corrects compressed iTXt nonzero method
+  classification to InvalidPng (no new public behavior/profile). Existing malformed
+  compression still refuses before destination writes. Added both-format path races,
+  emission-failure temporary cleanup, owned path closure, snapshot stability and
+  cancellation after partial caller-stream emission. No rollback promise added.
+- Updated user-facing supported-subset docs/README. Captured exact encoder wheel
+  URL/digest in fixture provenance; no new production dependency, reference code or
+  camera image imported. No full-format, performance or package-publication claim.
+- M15 exact standalone read-only TIFF proposal prepared, explicitly NOT approved
+  or implemented. It is immutable layout/range accounting, not metadata rewriting,
+  BigTIFF, DNG, or a larger-cap reuse of the JPEG EXIF parser. Developer approval
+  remains required before code. M16 is not authorized.
+- Final audit head CI is still pending. Do not merge based on predecessor results
+  alone; require the final head's platforms and reference checks.

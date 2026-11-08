@@ -192,6 +192,25 @@ public sealed class PngTests
             catch (MetadataException error) { Assert.Contains(error.Code, new[] { MetadataErrorCode.InvalidPng, MetadataErrorCode.LimitExceeded }); }
         }
     }
+    [Fact]
+    public void MissingExifPropertyRemovalPreservesUnsafeUnknownSourceExactly()
+    {
+        byte[] original = PngFixture.Build([.. PngFixture.Chunk("eXIf", JpegFixture.OrientationTiff), .. PngFixture.Chunk("vpAG", [1])]);
+        var missing = new ExifEdit(); missing.Remove(new(ExifDirectoryKind.Ifd0, 0x013B)); Assert.Equal(original, ExifSave(original, missing));
+    }
+    [Fact]
+    public void InvalidCompressionMethodAndNearMatchKeywordAreNotReinterpreted()
+    {
+        byte[] invalid = PngFixture.Build(PngFixture.Xmp(Packet(), true, method: 1));
+        using var doc = PngMetadataDocument.Open(new MemoryStream(invalid)); using var output = new MemoryStream();
+        Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => doc.SaveXmp(output, Set("x"))).Code); Assert.Empty(output.ToArray());
+        byte[] other = PngFixture.Chunk("iTXt", [.. "XML:com.adobe.xmpA\0"u8, 0, 0, 0, 0, .. Packet("other")]);
+        byte[] changed = Save(PngFixture.Build(other), Set("real"));
+        using var read = PngMetadataDocument.Open(new MemoryStream(changed)); Assert.Equal("real", read.ReadXmp()!.Properties[Tool].Text);
+        Assert.True(changed.AsSpan(33, other.Length).SequenceEqual(other));
+        Assert.Empty(BoundedZlib.Expand(PngFixture.Compress([]), 1, default));
+        Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => BoundedZlib.Expand([0x78, 0x9c, 7, 0, 0, 0, 0, 1], 100, default)).Code);
+    }
     private sealed class AsyncOutput : MemoryStream
     {
         public override void Write(ReadOnlySpan<byte> buffer) => throw new InvalidOperationException("Sync write used.");

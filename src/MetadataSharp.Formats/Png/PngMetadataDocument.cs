@@ -107,7 +107,7 @@ public sealed class PngMetadataDocument : IDisposable, IAsyncDisposable
         }
         else
         {
-            if (method != 0) throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Unsupported XMP iTXt compression method.");
+            if (method != 0) throw PngScanner.Invalid("Invalid XMP iTXt compression method.");
             if (payload.Length - at > options.MaxCompressedXmpBytes) throw BoundedZlib.Limit();
             text = BoundedZlib.Expand(payload[at..], maximum, token);
         }

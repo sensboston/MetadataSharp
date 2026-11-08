@@ -72,5 +72,28 @@ crash-durable transaction, hard-link/symlink identity proof or sandbox boundary.
 
 ## WebP
 
-Implementation and validation details are to be recorded after the M13 gate and
-M14 work. The approved contract is not itself evidence that WebP support shipped.
+Use MetadataSharp.Formats.WebP.WebPMetadataDocument with WebPReadOptions; its
+independent EXIF/XMP, stream/path and sync/async method set matches the PNG facade.
+It deliberately has no compressed-XMP options and no public shared base class.
+
+Static VP8 and VP8L image headers are checked without decoding entropy. Simple
+sources are promoted by adding VP8X on effective metadata insertion; existing
+extended layout is never downgraded on removal. RIFF size, zero odd padding,
+VP8X reserved bits/presence flags/canvas and ICC/ALPH order are checked. A lossless
+alpha bit is a hint, not proof of actual transparent pixels; preserve existing
+VP8X alpha flags rather than inventing pixels. Unknown well-framed chunks survive
+reads/no-op but block effective edits. Animation flags/chunks explicitly refuse.
+
+Raw TIFF and the legacy Exif-NUL-NUL wrapper can be read; no-op preserves either,
+rebuild uses raw TIFF. The same EXIF cap applies. XMP is the existing raw bounded
+UTF-8 packet, not PNG iTXt or JPEG APP1. Duplicate/malformed targets follow the same
+isolation and whole-removal policy. Metadata may legally precede image chunks;
+replace it in place, insert new metadata in a permitted canonical position and
+preserve all other-family, VP8/VP8L, ALPH and ICCP chunks exactly. Only relevant
+VP8X metadata bits and RIFF/target chunk framing change.
+
+The four authored RGB/RGBA lossy/lossless fixtures have pinned encoder provenance
+and license notices in tests/fixtures/webp. Required references compare CLI facts,
+reverse writes, complete coded chunks and independently decoded dwebp PAM bytes.
+External read-only XMP wrappers, if emitted, remain opaque under the shared profile
+and are recorded specifically rather than counted as semantic property reads.

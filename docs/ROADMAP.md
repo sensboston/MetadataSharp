@@ -80,6 +80,12 @@ the next scope; its subsequent explicit PNG/WebP approval is recorded below.
 
 The developer approved one coherent PNG/WebP PR with separate per-format gates on
 2026-11-07. The new [container contracts](design/PNG_AND_WEBP_METADATA_CONTRACT_PROPOSAL.md)
-were explicitly approved on 2026-11-07. M13 is in implementation/CI;
-complete PNG and green CI before WebP, then merge only after final group CI.
+were explicitly approved on 2026-11-07. M13 passed before M14 began; M14 also
+passed its implementation CI. Final audit/head CI still precedes group merge.
 M15–M16 standalone TIFF remains a separate future scope; no DNG implementation.
+
+## M15 pending contract approval
+
+The developer requested attempting M15 next. Its [exact read-only TIFF proposal](design/STANDALONE_TIFF_READ_ONLY_CONTRACT_PROPOSAL.md)
+is not approved or implemented. It separates immutable classic TIFF range accounting
+from JPEG-sized EXIF parsing, TIFF writing, BigTIFF and DNG. No M16 authorization.
