@@ -22,7 +22,7 @@ This is not general image-format or full RDF/XMP support.
 - [Serializer preflight/output guarantees](docs/design/EXIF_SERIALIZATION_PREFLIGHT_AND_OUTPUT_GUARANTEES.md).
 - [Progress and approval history](docs/PROGRESS.md).
 
-M00 was approved on 2026-11-07. M01–M14 passed their cross-platform implementation checkpoints; the
+M00 was approved on 2026-11-07. M01–M15 passed their cross-platform implementation checkpoints; the
 required Exiv2/ExifTool job also passed. See [progress](docs/PROGRESS.md) and the
 [first-release audit and remaining publication gates](docs/audits/INITIAL_JPEG_RELEASE_AUDIT.md).
 PNG/WebP share a final group audit/merge gate recorded in progress.
@@ -44,5 +44,7 @@ EXIF creation profile has a documented missing-default-tag validation warning.
 
 - [Standalone TIFF usage and limitations](docs/design/STANDALONE_TIFF_USAGE_AND_LIMITATIONS.md).
 - [Standalone TIFF normative review and support matrix](docs/design/STANDALONE_TIFF_NORMATIVE_REVIEW_AND_SUPPORT.md).
+
+- [M15 audit and M16 constraints](docs/audits/STANDALONE_TIFF_READ_ONLY_AUDIT.md).
 
 See [LICENSE](LICENSE) for the MIT license.

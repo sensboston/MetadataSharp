@@ -692,3 +692,16 @@
   layout rather than guessing JPEG dimensions or declaring complete image support.
   This uses the approved issue-bearing unsupported-layout path; paired fields,
   budgets and all overlap checks remain mandatory. No pixel/JPEG decoding added.
+
+### M15 audited implementation checkpoint
+
+- e806adc0d35913a807e6050632afbb06e3f7e85e passed required PR run 42430917666:
+  392 passing .NET tests on each of Windows/Linux/macOS, Python policy 12/12 and
+  required pinned CLI references. TIFF fact checks/reverse ingress are explicit,
+  not a full TIFF validator or decoded-pixel conformance claim.
+- Permanent M15 audit, implemented support matrix and usage/limitations record
+  approved behavior, exact evidence, normative source provenance, finite limits,
+  unsupported cases and remaining M16 boundary. Final documentation head requires
+  its own green CI before PR #10 merge; actual final-head evidence posted there.
+- M15 introduces no writer, new production dependency or larger embedded EXIF cap.
+  Next implementation unit M16 still needs separate exact public/safety contracts.
