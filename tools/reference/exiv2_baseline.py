@@ -114,7 +114,7 @@ def inspect_jpeg(data):
             offset = p + 8 if size <= 4 else u32(p+8)
             require(offset >= (end + 4 if size > 4 else p+8) and offset + size <= len(exif), 'Field outside data extent')
             tags[tag] = (kind, n, exif[offset:offset+size])
-    return dict(tags=tags, scan=scan, nonExif=b''.join(non_exif))
+    return dict(tags=tags, scan=scan, nonExif=b''.join(non_exif), nonExifParts=non_exif)
 
 
 def verify(before, after, expected):
@@ -122,7 +122,10 @@ def verify(before, after, expected):
     require(after['tags'].get(315) == target, 'Artist raw type/count/value mismatch')
     require({k: v for k, v in before['tags'].items() if k != 315} == {k: v for k, v in after['tags'].items() if k != 315}, 'Non-target TIFF fields changed')
     require(before['scan'] == after['scan'], 'JPEG coded scan bytes changed')
-    require(before['nonExif'] == after['nonExif'], 'Non-EXIF segments changed')
+    if before['nonExif'] != after['nonExif']:
+        old, new = before['nonExifParts'], after['nonExifParts']
+        mismatch = next((i for i in range(min(len(old), len(new))) if old[i] != new[i]), min(len(old), len(new)))
+        raise ValueError('Non-EXIF segments changed: ' + json.dumps(dict(oldCount=len(old), newCount=len(new), index=mismatch, oldHex=old[mismatch].hex()[:400] if mismatch < len(old) else None, newHex=new[mismatch].hex()[:400] if mismatch < len(new) else None)))
 
 
 def parse_artist(text, expected):
@@ -194,6 +197,7 @@ def main():
                 run([exe, '-M', modification, target])
             result = target.read_bytes()
             after = inspect_jpeg(result)
+            report['currentCase'] = dict(operation=operation, fixture=name)
             verify(before, after, expected)
             parse_artist(run([exe, '-P', 'kycv', '-K', 'Exif.Image.Artist', target]), expected)
             require(source.read_bytes() == original, 'Source fixture changed')
@@ -220,7 +224,7 @@ def main():
         report['status'] = 'failed'
         report['failure'] = traceback.format_exc()[-3500:]
         save()
-        diagnostic = json.dumps(dict(error=report['failure'], baseline=report['baseline']), separators=(',', ':'))[-6000:]
+        diagnostic = json.dumps(dict(error=report['failure'], currentCase=report.get('currentCase')), separators=(',', ':'))
         diagnostic = diagnostic.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
         print('::error title=E01 black-box observation failure::' + diagnostic, flush=True)
         raise

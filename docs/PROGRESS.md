@@ -1245,3 +1245,9 @@ library flag. Pin additional observed functional options explicitly (VIDEO/INIH/
 LENSDATA ON, WEBREADY/CURL OFF, dynamic runtime ON; command ON/fuzz tests OFF) so
 future source defaults cannot silently define this build. No upstream parser source
 read, runtime capability downgraded, or failed observation relabeled as success.
+
+Run42448200101/879cea0: source/version/cache and measured runtime feature checks
+PASS, observed write fails STRICT non-EXIF byte comparison. Cause is not guessed or
+called an upstream bug. Keep gate strict; add bounded first segment mismatch bytes
+(authored fixture only) and operation context to diagnose. Existing fourteen gates
+remain green. No production changes or normalization workaround authorized.
