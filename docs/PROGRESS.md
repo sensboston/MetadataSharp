@@ -892,3 +892,13 @@ Proposed D0/D1/D2 prompts explicitly require future approval; none implemented.
 No SDK/GPL code/tests, PDF or external camera fixtures imported. M17 asks approval
 of the follow-up plan, not of proceeding with the separately authorized M18 audit.
 Local Python policy 12/12/diff checks pass; .NET/platform/reference gate via CI next.
+
+### M17 gate before M18 tooling
+
+M17 head 1a05ffe23ee6e8b766a6db777705e509755bb79b passed required run
+42439542366: 448 .NET tests per platform, Python 12/12, required external references.
+Only after that gate, M18 tooling adds synchronous public-API microbaselines and
+three-platform local candidate-package/content/license/docs/offline-consumer audit.
+Normal projects remain non-packable; opt-in audit candidates version 0.0.0-audit
+are ignored, never published. XML docs gaps are reported, not hidden by a full-docs
+claim. Measurements/package smoke have not yet run; await this head's CI.
