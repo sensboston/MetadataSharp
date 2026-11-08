@@ -38,7 +38,7 @@ version supported by the runtime is tested by this library.
 | Modern guard helpers | ArgumentNullException.ThrowIfNull throughout Core; ObjectDisposedException.ThrowIf in document facades | Internal shims or equivalent checks, preserving parameter names/errors; many call sites |
 | Spans/BinaryPrimitives | Raw values and TIFF/container framing | Reviewed compatibility packages and target API map; C# compiler support alone insufficient |
 | IAsyncDisposable/ValueTask and memory-based stream overrides | Source ownership and async documents/ContainerIo | Public contract/package implications, actual Framework stream I/O/short-read/cancellation tests; no Task.Run fallback marketed as equivalent |
-| Modern crypto helpers | SHA256.HashData / CryptographicOperations used for identity | API equivalents, incremental hash behavior and allocation/performance/constant-time requirements |
+| Modern crypto helpers | IncrementalHash / CryptographicOperations and span-based identity I/O | API equivalents, incremental hash behavior and allocation/performance/constant-time requirements |
 | Compression | ZLibStream in PNG text handling | Framework lacks the same convenient zlib surface; replacement/dependency review and bounded expansion/validation tests, no unsafe handwave around wrappers |
 | Language/runtime support | Records/init members, range/span APIs and modern collections | Compiler/runtime shim and transitive dependency inventory; do not fork the engine |
 | Packaging/test infrastructure | net8-only tools/consumers and three-OS matrix | Isolated Windows Framework runner/reference assemblies/consumer and separate support policy; cross-compilation is not runtime validation |

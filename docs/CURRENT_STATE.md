@@ -79,3 +79,23 @@ Local SDK absent; do not repeat failed SDK/Actions blob downloads. Use check-run
 annotations for infrastructure/TRX errors. Current pipeline requires seven jobs;
 none waived by this submission. Downloaded review material stays ignored artifacts;
 only small source metadata/factual research JSON is committed, not GPL source or PDFs.
+
+## Latest integration/research checkpoint
+
+Same-branch remote 9ce172a already supplied PR #14 programme/D0 documents; local
+push was correctly rejected. Merged remote without force, retained remote work,
+resolved only the chronological PROGRESS conflict and removed duplicate local
+P-series roadmap. The E00–E18 roadmap is authoritative; no competing numbering.
+Additional E01 review: 8 selected initial issue bodies and 6 discussion bodies as
+requirements (not patches/comments/attachments/source); see supplement. E02 initial
+API cost map shows Framework is not proven cheap; no build/TFM/API changes made.
+
+PR #14 remains OPEN. Runs 42444022195/42444017972 at d27aaed failed before jobs
+started; check annotation 128619056830 confirms account payments/spending-limit
+blocker. No successful .NET/reference/audit result is claimed for this programme.
+No repeated rerun or exception inferred from PR #13. Local policy 12/12, research
+JSON parsing, selected local Markdown links and whitespace checks pass. Final doc
+head still needs its own CI; new per-PR exception would require explicit approval.
+Next: owner review D0 exact proposed surface, continue full E01 denominator/corpus/
+CLI-build reconciliation and E02 feasibility once infrastructure permits. No D1 code
+before D0 approval plus its explicit normative/oracle/runtime gates.

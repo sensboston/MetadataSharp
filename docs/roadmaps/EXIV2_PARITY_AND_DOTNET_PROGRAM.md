@@ -48,7 +48,7 @@ MakerNote safety, hostile-input limits and independent EXIF/IPTC/XMP remain bind
 
 Developer explicitly corrected the target to **.NET 10**, alongside .NET 8.
 Official dotnet/core lifecycle metadata blob 66392f8bd6d254f73cf7a2f42113bc4034a20747:
-.NET 8 LTS maintenance ends **2026-11-10**; .NET 10 LTS active support ends
+.NET 8 LTS maintenance ends **2026-11-10**; .NET 10 LTS support ends
 **2028-11-14** (observation 2026-11-07). Retaining net8.0 compatibility does NOT
 extend Microsoft's support or promise security fixes for an EOL runtime. Recommend
 .NET 10 to new consumers; publish a reviewed compatibility policy before release.

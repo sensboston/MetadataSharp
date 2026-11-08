@@ -1066,3 +1066,22 @@ docs/roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md is the single active sequence.
 Additional review reads selected user issue/discussion bodies as requirements,
 not patches/linked source/comments/attachments. Initial title-only snapshot remains
 truthful for that earlier pass; the new body-review supplement records its own scope.
+
+### Follow-up research and actual infrastructure evidence
+
+Added selected-body requirements supplement (8 issues, 6 discussions), preserving
+initial title-only snapshot provenance and not following linked GPL source/patches
+or attachments. Added E02 modern-target matrix/package gate and Framework source
+API cost map; no cheap-compatibility or net10 execution claim. Existing code relies
+on modern guards, spans/stream async/disposal, crypto and zlib APIs; no shims/TFMs
+or new dependencies added. E00 direction stays approved, E01 full gate remains open,
+D0 exact contract stays PROPOSED. Historical docs archive in place rather than lose
+reviewed contracts/evidence.
+
+Runs 42444022195/42444017972 on integration head d27aaed did not start jobs. Check
+128619056830 explicitly reports account payment/spending-limit blocker. PR #14
+remains OPEN; no CI exception carried from PR #13. Local policy 12/12, research JSON
+parsing, selected Markdown links and git diff --check pass. New .NET/reference/
+audit/runtime/DNG conformance checks are not claimed. Remote/local work reconciled
+without force push or lost documentation. Final submission requires own green CI
+or an explicitly approved per-PR deferral before merge.
