@@ -15,16 +15,16 @@
   },
   {
     "file": "dng-thumb-ii.dng",
-    "sha256": "887ae87d6d1513c0d26ba6e5dcaf89bc7a027f086d3bc4ed1bb43f68f7ab2bd5",
-    "length": 1040,
+    "sha256": "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96",
+    "length": 1034,
     "byteOrder": "II",
     "shape": "thumb",
     "ifd0": 8,
-    "raw_ifd": 450,
-    "raw_strip": 1024,
+    "raw_ifd": 444,
+    "raw_strip": 1018,
     "raw_strip_length": 16,
     "thumb_ifd": 8,
-    "thumb_strip": 426,
+    "thumb_strip": 420,
     "rawStripSha256": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9"
   },
   {
@@ -43,16 +43,16 @@
   },
   {
     "file": "dng-thumb-mm.dng",
-    "sha256": "51cb2c3dcba0a96c3946f0e789b2a5623a0ec65e05a61a482e8bf8367a62381c",
-    "length": 1040,
+    "sha256": "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9",
+    "length": 1034,
     "byteOrder": "MM",
     "shape": "thumb",
     "ifd0": 8,
-    "raw_ifd": 450,
-    "raw_strip": 1024,
+    "raw_ifd": 444,
+    "raw_strip": 1018,
     "raw_strip_length": 16,
     "thumb_ifd": 8,
-    "thumb_strip": 426,
+    "thumb_strip": 420,
     "rawStripSha256": "6472f018a621000b17e1b6c90e5555b2f11ed33f71d113a55af0c1c85e74716c"
   }
 ]

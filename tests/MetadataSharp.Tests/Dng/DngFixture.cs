@@ -96,7 +96,7 @@ internal sealed class DngFixture
         new(262, TShort, 1, PackShorts(big, 2)),
         new(273, TLong, 1, PackLongs(big, 0)), // patched: thumbnail strip offset
         new(274, TShort, 1, PackShorts(big, 1)),
-        new(277, TShort, 3, PackShorts(big, 3, 3, 3)),
+        new(277, TShort, 1, PackShorts(big, 3)),
         new(278, TLong, 1, PackLongs(big, 2)),
         new(279, TLong, 1, PackLongs(big, 24)),
         new(284, TShort, 1, PackShorts(big, 1)),

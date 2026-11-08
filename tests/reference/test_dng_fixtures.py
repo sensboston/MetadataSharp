@@ -16,9 +16,9 @@ spec.loader.exec_module(g)
 
 PINNED = {
     ("II", "raw"): (598, "474952a49242556b9bec981483df2afc9c06546a0c7705a529f789c9ad52d2a0", 582, None, 8, 8),
-    ("II", "thumb"): (1040, "887ae87d6d1513c0d26ba6e5dcaf89bc7a027f086d3bc4ed1bb43f68f7ab2bd5", 1024, 426, 450, 8),
+    ("II", "thumb"): (1034, "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96", 1018, 420, 444, 8),
     ("MM", "raw"): (598, "64dee07029c8ed6fb9fcddac5a578ec79141789e6834fdf22809f8bca08685f8", 582, None, 8, 8),
-    ("MM", "thumb"): (1040, "51cb2c3dcba0a96c3946f0e789b2a5623a0ec65e05a61a482e8bf8367a62381c", 1024, 426, 450, 8),
+    ("MM", "thumb"): (1034, "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9", 1018, 420, 444, 8),
 }
 RAW_PIXEL_SHA256 = {
     "II": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9",

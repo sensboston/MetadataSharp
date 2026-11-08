@@ -22,16 +22,16 @@
       "file": "dng-thumb-ii.dng",
       "byteOrder": "II",
       "shape": "thumb",
-      "length": 1040,
-      "sha256": "887ae87d6d1513c0d26ba6e5dcaf89bc7a027f086d3bc4ed1bb43f68f7ab2bd5",
+      "length": 1034,
+      "sha256": "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96",
       "ifd0Offset": 8,
-      "rawIfdOffset": 450,
-      "rawStripOffset": 1024,
+      "rawIfdOffset": 444,
+      "rawStripOffset": 1018,
       "rawStripLength": 16,
       "rawStripSha256": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9",
       "thumbnailIfdOffset": 8,
-      "thumbnailStripOffset": 426,
-      "size": 1040
+      "thumbnailStripOffset": 420,
+      "size": 1034
     },
     {
       "file": "dng-raw-mm.dng",
@@ -52,16 +52,16 @@
       "file": "dng-thumb-mm.dng",
       "byteOrder": "MM",
       "shape": "thumb",
-      "length": 1040,
-      "sha256": "51cb2c3dcba0a96c3946f0e789b2a5623a0ec65e05a61a482e8bf8367a62381c",
+      "length": 1034,
+      "sha256": "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9",
       "ifd0Offset": 8,
-      "rawIfdOffset": 450,
-      "rawStripOffset": 1024,
+      "rawIfdOffset": 444,
+      "rawStripOffset": 1018,
       "rawStripLength": 16,
       "rawStripSha256": "6472f018a621000b17e1b6c90e5555b2f11ed33f71d113a55af0c1c85e74716c",
       "thumbnailIfdOffset": 8,
-      "thumbnailStripOffset": 426,
-      "size": 1040
+      "thumbnailStripOffset": 420,
+      "size": 1034
     }
   ],
   "rawPixelsSha256ByByteOrder": {

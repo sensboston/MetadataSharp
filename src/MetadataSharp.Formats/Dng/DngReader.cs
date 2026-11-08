@@ -78,7 +78,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         if (links >= options.TiffOptions.MaxDirectoryLinks) throw Limit();
         links++; Charge(48);
         Discover(target);
-        edges[owner].Add(target);
+        if (kind != TiffDirectoryLinkKind.NextIfd) edges[owner].Add(target);
         result.Add(new(kind, tag, pointer, target));
     }
     internal static async Task<DngLayout> Read(Stream source, DngReadOptions options, bool asynchronous, CancellationToken token)
@@ -137,6 +137,8 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
             long start = offset + 2L + 12L * i;
             byte[] raw = await At(start, 12).ConfigureAwait(false);
             ushort tag = U16(raw), type = U16(raw, 2); uint n = U32(raw, 4);
+            if (tag is TagDngVersion or TagDngBackwardVersion && (type != 1 || n != 4))
+                throw InvalidDng($"Tag {tag} must be BYTE/4.");
             Charge(64 + 4L * n);
             int width = type switch { 1 or 2 or 6 or 7 => 1, 3 or 8 => 2, 4 or 9 or 11 => 4, 5 or 10 or 12 => 8, _ => throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Unknown DNG field width/type.") };
             long bytes = (long)n * width; if (bytes > options.TiffOptions.Limits.MaxValueBytes) throw Limit();
@@ -224,6 +226,8 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         if (!root.ByTag.TryGetValue(TagDngVersion, out var rootVersionField))
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Ordinary TIFF without a root DNGVersion; DNG is unsupported.");
         DngVersion version = await IdentityVersion(rootVersionField, root.Offset, TagDngVersion).ConfigureAwait(false);
+        if (!version.Equals(new DngVersion(1, 1, 0, 0)))
+            Issue(DngLayoutIssueCode.UnsupportedVersion, first, TagDngVersion, "DNGVersion must be exactly 1.1.0.0.");
         foreach (var dir in working)
         {
             if (dir.Offset == first) continue;
@@ -236,7 +240,8 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
             if (dir.ByTag.TryGetValue(TagDngVersion, out var leafVersion))
             {
                 DngVersion leaf = await IdentityVersion(leafVersion, dir.Offset, TagDngVersion).ConfigureAwait(false);
-                if (!leaf.Equals(version)) Issue(DngLayoutIssueCode.UnsupportedVersion, dir.Offset, TagDngVersion, "Raw leaf DNGVersion differs from the root value.");
+                if (!leaf.Equals(new DngVersion(1, 1, 0, 0))) Issue(DngLayoutIssueCode.UnsupportedVersion, dir.Offset, TagDngVersion, "DNGVersion must be exactly 1.1.0.0.");
+                else if (!leaf.Equals(version)) Issue(DngLayoutIssueCode.UnsupportedVersion, dir.Offset, TagDngVersion, "Raw leaf DNGVersion differs from the root value.");
             }
             if (dir.ByTag.TryGetValue(TagDngBackwardVersion, out var leafBackward))
             {

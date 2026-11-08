@@ -33,8 +33,8 @@ public sealed class DngTests
     // Pins the C# writer (independent of the Python writer pinned by the offline Python suite).
     [InlineData(false, false, 598, "474952a49242556b9bec981483df2afc9c06546a0c7705a529f789c9ad52d2a0")]
     [InlineData(true, false, 598, "64dee07029c8ed6fb9fcddac5a578ec79141789e6834fdf22809f8bca08685f8")]
-    [InlineData(false, true, 1040, "887ae87d6d1513c0d26ba6e5dcaf89bc7a027f086d3bc4ed1bb43f68f7ab2bd5")]
-    [InlineData(true, true, 1040, "51cb2c3dcba0a96c3946f0e789b2a5623a0ec65e05a61a482e8bf8367a62381c")]
+    [InlineData(false, true, 1034, "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96")]
+    [InlineData(true, true, 1034, "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9")]
     public void FixtureBytesArePinned(bool big, bool thumb, int length, string sha256)
     {
         DngFixture fixture = thumb ? DngFixture.ThumbnailAndRaw(big) : DngFixture.RawOnly(big);
@@ -80,12 +80,12 @@ public sealed class DngTests
         DngDirectoryInfo root = layout.Directories[0];
         DngDirectoryInfo leaf = layout.Directories[1];
         Assert.True(root.IsRoot); Assert.False(leaf.IsRoot);
-        Assert.Equal(8u, root.Offset); Assert.Equal(450u, leaf.Offset);
+        Assert.Equal(8u, root.Offset); Assert.Equal(444u, leaf.Offset);
         Assert.Equal(DngImageRole.RgbThumbnail, root.Image!.Role);
         Assert.Equal(DngImageRole.CfaRaw, leaf.Image!.Role);
         Assert.Equal((ushort)8, root.Image.BitsPerSample); Assert.Equal((ushort)3, root.Image.SamplesPerPixel);
-        Assert.Equal(new TiffByteRange(426, 24), Assert.Single(root.Image.Strips));
-        Assert.Equal(new TiffByteRange(1024, 16), Assert.Single(leaf.Image.Strips));
+        Assert.Equal(new TiffByteRange(420, 24), Assert.Single(root.Image.Strips));
+        Assert.Equal(new TiffByteRange(1018, 16), Assert.Single(leaf.Image.Strips));
         Assert.Equal(21, root.Fields.Count); Assert.Equal(31, leaf.Fields.Count);
         TiffDirectoryLink link = Assert.Single(root.Links);
         Assert.Equal(TiffDirectoryLinkKind.SubIfd, link.Kind); Assert.Equal((ushort?)330, link.TagId); Assert.Equal(450u, link.TargetIfdOffset);
@@ -103,10 +103,10 @@ public sealed class DngTests
         byte[] bytes = DngFixture.ThumbnailAndRaw(big).Bytes;
         DngLayout layout = Read(bytes);
         Array.Clear(bytes);
-        Assert.Equal(1040, layout.SourceLength);
+        Assert.Equal(1034, layout.SourceLength);
         Assert.Equal(new DngVersion(1, 1, 0, 0), layout.Version);
         Assert.Equal(4u, layout.Directories[0].Image!.Width);
-        Assert.Equal(426L, layout.Directories[0].Image!.Strips[0].Offset);
+        Assert.Equal(420L, layout.Directories[0].Image!.Strips[0].Offset);
         Assert.True(layout.Ranges.Count > 4);
         Assert.False(layout.Directories is DngDirectoryInfo[]);
         Assert.False(layout.Ranges is TiffAccountedRange[]);
@@ -337,7 +337,7 @@ public sealed class DngTests
         Assert.Contains(layout.Issues, issue => issue.Code == DngLayoutIssueCode.InvalidSemanticValue && issue.TagId == 50708);
         bytes = DngFixture.RawOnly(false).Bytes;
         long cell = ExternalPointer(bytes, 50708);
-        bytes[cell + 19] = (byte)'X'; // overwrite the final NUL (payload is 20 bytes)
+        bytes[cell + 18] = (byte)'X'; // overwrite the final NUL (payload is 19 bytes)
         layout = Read(bytes);
         Assert.Contains(layout.Issues, issue => issue.Code == DngLayoutIssueCode.InvalidSemanticValue && issue.TagId == 50708);
     }
@@ -496,7 +496,7 @@ public sealed class DngTests
         // Thumbnail root with two SubIFD targets: patch the entry to LONG/2 is not possible inline;
         // instead point SubIFD at the raw leaf AND mark the raw leaf's own 254 as thumbnail role.
         byte[] bytes = DngFixture.ThumbnailAndRaw(false).Bytes;
-        SetU32(bytes, ValueCell(bytes, 254, 450), 1, false); // raw leaf claims thumbnail
+        SetU32(bytes, ValueCell(bytes, 254, 444), 1, false); // raw leaf claims thumbnail
         DngLayout layout = Read(bytes);
         Assert.False(layout.IsSupported);
         Assert.Contains(layout.Issues, issue => issue.Code == DngLayoutIssueCode.UnsupportedDirectoryRole);

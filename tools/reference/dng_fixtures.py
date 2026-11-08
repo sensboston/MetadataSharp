@@ -18,7 +18,7 @@ RAW_PIXELS = [0x0000, 0x1000, 0x2000, 0x3000, 0x4000, 0x5000, 0x6000, 0x7000]
 THUMB_PIXELS = list(range(24))
 SOFTWARE = b"MetadataSharp D1 fixture\0"   # 25 bytes
 ARTIST = b"MetadataSharp\0"                # 14 bytes
-UNIQUE_MODEL = b"MetadataSharp DNG1\0"     # 20 bytes
+UNIQUE_MODEL = b"MetadataSharp DNG1\0"     # 19 bytes
 
 
 def pack_payload(fmt, type_id, values):
@@ -89,7 +89,7 @@ def thumbnail_entries():
         (262, T_SHORT, 1, [2]),
         (273, T_LONG, 1, [0]),  # patched: thumbnail strip offset
         (274, T_SHORT, 1, [1]),
-        (277, T_SHORT, 3, [3, 3, 3]),
+        (277, T_SHORT, 1, [3]),
         (278, T_LONG, 1, [2]),
         (279, T_LONG, 1, [24]),
         (284, T_SHORT, 1, [1]),

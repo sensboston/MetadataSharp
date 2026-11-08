@@ -16,15 +16,15 @@ author-chosen constants: the raw image is 4×2 16-bit unsigned values
 |---|---|---|---|
 | `dng-raw-ii.dng` | 598 | `474952a49242556b9bec981483df2afc9c06546a0c7705a529f789c9ad52d2a0` | raw-rooted, II |
 | `dng-raw-mm.dng` | 598 | `64dee07029c8ed6fb9fcddac5a578ec79141789e6834fdf22809f8bca08685f8` | raw-rooted, MM |
-| `dng-thumb-ii.dng` | 1040 | `887ae87d6d1513c0d26ba6e5dcaf89bc7a027f086d3bc4ed1bb43f68f7ab2bd5` | RGB thumbnail root + SubIFD raw leaf, II |
-| `dng-thumb-mm.dng` | 1040 | `51cb2c3dcba0a96c3946f0e789b2a5623a0ec65e05a61a482e8bf8367a62381c` | RGB thumbnail root + SubIFD raw leaf, MM |
+| `dng-thumb-ii.dng` | 1034 | `3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96` | RGB thumbnail root + SubIFD raw leaf, II |
+| `dng-thumb-mm.dng` | 1034 | `5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9` | RGB thumbnail root + SubIFD raw leaf, MM |
 
 Pinned layout (both byte orders): header 8 B; first IFD at 8; raw-rooted shape
 = one 31-entry IFD (body 378 B), external payloads two-byte aligned in tag
 order, raw strip at 582, file length 598. Thumbnail shape = 21-entry thumbnail
-IFD0 (RGB, NewSubFileType 1) then 24 B RGB strip at 426, raw leaf IFD at 450
-(31 entries, identity DNG tags duplicated at both levels), raw strip at 1024,
-file length 1040. Absolute offsets are asserted by unit tests, so any layout
+IFD0 (RGB, NewSubFileType 1) then 24 B RGB strip at 420, raw leaf IFD at 444
+(31 entries, identity DNG tags duplicated at both levels), raw strip at 1018,
+file length 1034. Absolute offsets are asserted by unit tests, so any layout
 drift fails loudly.
 
 Two independent, deterministically generated writers produce these bytes:
