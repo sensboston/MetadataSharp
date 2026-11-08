@@ -99,3 +99,11 @@ head still needs its own CI; new per-PR exception would require explicit approva
 Next: owner review D0 exact proposed surface, continue full E01 denominator/corpus/
 CLI-build reconciliation and E02 feasibility once infrastructure permits. No D1 code
 before D0 approval plus its explicit normative/oracle/runtime gates.
+
+## Visibility change / CI recheck
+
+Developer made repository public; verified through GitHub API. Latest old run
+42444129097 could not be rerun (generic gh rejection, not proof of YAML defect).
+Fresh push after visibility change triggers new CI. Inspect latest-head runs before
+reusing the earlier billing-blocker diagnosis. No checks waived and no historical
+secret/rights audit claimed by this change. D0 remains proposal-only/unapproved.

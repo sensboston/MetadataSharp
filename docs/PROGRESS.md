@@ -1085,3 +1085,14 @@ parsing, selected Markdown links and git diff --check pass. New .NET/reference/
 audit/runtime/DNG conformance checks are not claimed. Remote/local work reconciled
 without force push or lost documentation. Final submission requires own green CI
 or an explicitly approved per-PR deferral before merge.
+
+### Public visibility and fresh CI attempt
+
+Developer changed repository visibility to public. GitHub API confirms
+private=false / visibility=public. This does not waive provenance, safety, contract
+approval or CI requirements, and no comprehensive historical secret/rights audit
+is claimed. Attempt to rerun latest PR run 42444129097 was rejected by gh with
+"cannot be rerun; its workflow file may be broken"; that generic message is not
+proof of invalid YAML. Push this documentation checkpoint to trigger fresh checks
+on the active branch after the visibility change. Results remain pending until
+observed; old billing failures are historical, not evidence of the new attempt.
