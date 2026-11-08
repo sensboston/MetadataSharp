@@ -668,3 +668,10 @@
   ExifTool/Exiv2 reads and ExifTool rewritten-TIFF ingress exercise public API.
 - Local dotnet remains unavailable. Python policy and whitespace checks run locally;
   no new .NET or external-reference success claimed before Actions results.
+
+- Initial .NET implementation passed all three platforms (382 tests); external
+  reference gate is inspected separately before declaring the unit green. Added
+  explicit sample-layout issue, directory/link/value budget, no-image and null/odd
+  pointer coverage, plus a 128-KiB TIFF that forbids pixel reads and survives as an
+  immutable snapshot. Pointer-array link ceilings now preflight before decoding.
+  New audit head still requires full platform/reference CI before merge.

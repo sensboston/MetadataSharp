@@ -107,6 +107,41 @@ public sealed class StandaloneTiffTests
         try { Assert.True((await TiffLayout.ReadAsync(path)).IsSupported); File.Delete(path); Assert.Equal(16u, result.Directories[0].Image!.Width); }
         finally { File.Delete(path); }
     }
+    [Theory]
+    [InlineData(258, 1)] [InlineData(258, 32)] [InlineData(262, 3)]
+    [InlineData(284, 3)] [InlineData(339, 2)] [InlineData(339, 3)]
+    public void UnsupportedSamplesReturnIssuesRatherThanSuccessfulSupport(ushort tag, uint value)
+    {
+        var f = StandaloneTiffFixture.Create(); f.Directory(8, [.. StandaloneTiffFixture.Fields().Where(v => v.Tag != tag), (tag, 3, [value])]);
+        var layout = Read(f.Bytes); Assert.False(layout.IsSupported); Assert.False(layout.Directories[0].Image!.IsSupported);
+        Assert.Contains(layout.Issues, issue => issue.Code == TiffLayoutIssueCode.UnsupportedSampleLayout);
+    }
+    [Fact]
+    public void StandaloneFileCanExceedExifCapWithoutReadingPixels()
+    {
+        byte[] bytes = new byte[131072]; StandaloneTiffFixture.Create().Bytes.CopyTo(bytes, 0);
+        using var source = new HeaderOnlyStream(bytes); var layout = TiffLayout.Read(source);
+        Assert.True(layout.IsSupported); Assert.Equal(131072, layout.SourceLength); Assert.True(source.CanRead);
+        var fields = (IList<TiffDirectoryInfo>)layout.Directories;
+        Assert.Throws<NotSupportedException>(() => fields[0] = fields[0]);
+    }
+    [Fact]
+    public void GraphValueAndSegmentBudgetsAndNullPointersRefuse()
+    {
+        var f = StandaloneTiffFixture.Create(); f.Directory(8, [.. StandaloneTiffFixture.Fields(), (330, 4, [512, 1024])]);
+        f.Directory(512, []); f.Directory(1024, []);
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Error(f.Bytes, new() { MaxDirectoryLinks = 1 }));
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Error(f.Bytes, new() { Limits = new() { MaxDirectories = 1 } }));
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Error(f.Bytes, new() { Limits = new() { MaxValueBytes = 4 } }));
+        f.Directory(8, [(330, 4, [0])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
+        f.Directory(8, [(330, 4, [513])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
+        f.Directory(8, []); Assert.Contains(Read(f.Bytes).Issues, i => i.Code == TiffLayoutIssueCode.MissingImageLayout);
+    }
+    private sealed class HeaderOnlyStream(byte[] bytes) : MemoryStream(bytes)
+    {
+        public override int Read(Span<byte> buffer)
+        { if (Position >= 2048 || Position + buffer.Length > 2048) throw new InvalidOperationException("Pixel reads are forbidden."); return base.Read(buffer); }
+    }
     [Fact]
     public void BoundedMutationSmokeDoesNotLeakArithmeticOrIndexErrors()
     {

@@ -104,6 +104,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
             if (tag is 330 or 34665 or 34853 or 40965)
             {
                 if (type != 4 || n == 0 || (tag != 330 && n != 1)) throw Bad("Invalid IFD pointer shape.");
+                if (n > options.MaxDirectoryLinks - links) throw Limit();
                 uint[] targets = await Numbers(field, false).ConfigureAwait(false);
                 var kind = tag switch { 330 => TiffDirectoryLinkKind.SubIfd, 34665 => TiffDirectoryLinkKind.Exif, 34853 => TiffDirectoryLinkKind.Gps, _ => TiffDirectoryLinkKind.Interoperability };
                 for (int t = 0; t < targets.Length; t++) Link(resultLinks, offset, targets[t], location + 4L * t, kind, tag);

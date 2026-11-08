@@ -40,6 +40,9 @@ EXIF creation profile has a documented missing-default-tag validation warning.
 
 - [PNG/WebP usage and preservation limits](docs/design/PNG_AND_WEBP_USAGE_AND_PRESERVATION_LIMITS.md).
 - [PNG/WebP normative review and reference discrepancies](docs/design/PNG_AND_WEBP_NORMATIVE_REVIEW.md).
-- [M15 read-only TIFF proposal — approval pending](docs/design/STANDALONE_TIFF_READ_ONLY_CONTRACT_PROPOSAL.md).
+- [M15 approved read-only TIFF contract](docs/design/STANDALONE_TIFF_READ_ONLY_CONTRACT_PROPOSAL.md).
+
+- [Standalone TIFF usage and limitations](docs/design/STANDALONE_TIFF_USAGE_AND_LIMITATIONS.md).
+- [Standalone TIFF normative review and support matrix](docs/design/STANDALONE_TIFF_NORMATIVE_REVIEW_AND_SUPPORT.md).
 
 See [LICENSE](LICENSE) for the MIT license.
