@@ -1375,3 +1375,40 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
 - No production source, test, CI, audit or dependency changed. Branch
   arena/7a35ad89-metadatasharp cut from master 79992da. Documentation checks
   (links/fences/git diff --check) re-run for edited files.
+
+### E03 architecture/compatibility contracts — approved 2026-11-08 — implemented
+
+- Developer explicitly approved the E03 proposal IN FULL (2026-11-08): the section 4
+  additive surface, sections 3/5/7 policies, and the verification plan; the developer
+  may adjust later. net8.0 + net10.0 are retained despite net8 end of servicing
+  (2026-11-10); .NET Framework remains deferred; no publication authorization.
+- Implemented on arena/7a35ad89-metadatasharp:
+  - NEW src/MetadataSharp.Core/MetadataCapabilities.cs — exact approved surface:
+    MetadataContainer (Unknown=0 + 31 documented baseline rows, XMP row as
+    XmpSidecar), MetadataFamily (Exif=0, IptcIim, Xmp, Icc, Comment, Thumbnail,
+    Preview), MetadataOperation (Read=0, Insert, Replace, Remove, Extract),
+    CapabilityStatus (NotSupported=0, Partial, Supported), readonly record struct
+    CapabilityDescriptor, static MetadataCapabilities with stable sorted immutable
+    All (IReadOnlyList), fail-closed TryGet/GetStatus (missing row or undefined
+    enum values => false/NotSupported, never throw).
+  - Manifest mirrors shipped, test-evidenced capability only: JPEG/PNG/WebP/sidecar
+    EXIF/IPTC/XMP rows (Read Supported; Insert/Replace/Remove Partial), TIFF EXIF
+    Read/Insert/Replace Partial (ten descriptive IFD0 tags, append-preserve, old
+    bytes retained); XmpSidecar XMP rows; everything else NotSupported (ICC/comment/
+    thumbnail/preview rows have no public API and are therefore absent, not faked).
+    Notes are compile-time constants, bounded (<=240 chars) and carry no control
+    characters; manifest is strictly ordered and validated at static init.
+  - NEW tests/MetadataSharp.Tests/Capabilities/MetadataCapabilitiesTests.cs —
+    independently authored expectation table (35 rows incl. exact notes), ordering,
+    fail-closed and domain-coverage tests.
+  - ProjectInfrastructureTests gains SourceProjectsDeclareNoPackageReferences
+    (test-local guard; implementation source adds ZERO new dependencies).
+- NO approved contract, limit, refusal, writer, parser, dependency or TFM changed.
+  Reflection-signature delta is exactly the approved additions; E02 receipts remain
+  immutable historical evidence. Capability contents are data pinned by tests and
+  grow only with reviewed units.
+- Local dotnet unavailable; actual build/test evidence is Actions only. Receipt
+  (runs/jobs) is posted on the implementing PR; merge only after final head green.
+- NOT authorized by this approval: D1 start (needs explicit go-ahead + normative/
+  fixture/oracle prereqs), any E06–E18 format/family unit, exclusions/percentages,
+  package publication, Framework work.

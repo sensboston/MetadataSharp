@@ -12,7 +12,9 @@ external dependencies) is broken into gated subtasks in
 [the master plan](docs/design/EXIV2_PARITY_MASTER_PLAN.md). Near-complete parity is a
 goal, not an implemented claim; net8.0/net10.0 dual targeting is in place and .NET
 Framework 4.8.x is deferred (not cheap). The DNG D0 contract was approved
-2026-11-07, and the [exact E03 architecture/compatibility proposal](docs/design/DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL.md) awaits approval.
+2026-11-07, and the E03 architecture/compatibility contracts were approved 2026-11-08
+and implemented (additive `MetadataCapabilities` discovery API; zero third-party
+runtime dependencies remain enforced by a test).
 
 ## Start Here
 

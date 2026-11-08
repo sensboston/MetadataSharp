@@ -1,10 +1,14 @@
 # E03: proposed .NET architecture and compatibility contracts
 
-Status: **PROPOSAL — requires explicit developer approval before any implementation.**
-This is E03 of Programme 2 ([EXIV2_PARITY_AND_DOTNET_PROGRAM](../roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md)).
-Approval of this document approves exactly the additive surface in section 4 and the
-policies in sections 5–8. It approves **no per-format API, no DNG implementation,
-no refactor and no behavioral change** to any approved contract.
+Status: **APPROVED by the developer on 2026-11-08 and IMPLEMENTED on branch
+arena/7a35ad89-metadatasharp (additive capability-discovery surface in
+`MetadataSharp.Core.MetadataCapabilities.cs`, pinned test table, test-local
+zero-`PackageReference` guard).** Approval covered the exact signatures in
+section 4 and the policies in sections 3/5/7 in full; the developer reserved
+the right to adjust later. Approval discharged only the E03 compatibility gate;
+it authorized no D1/E06–E18 work, no per-format APIs, no exclusions and no
+package publication. Historical proposal text is retained below unchanged except
+this status line; receipts are tracked in PROGRESS.md and the implementing PR.
 
 ## 1. Purpose and evidence boundary
 
