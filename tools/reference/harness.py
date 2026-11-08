@@ -230,7 +230,7 @@ def main(argv=None):
         rows = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Exif.Image.Artist", "-K", "Xmp.xmp.CreatorTool", str(png)]))
         assert rows == {"Exif.Image.Artist": ("Ascii", 6, "Alice"), "Xmp.xmp.CreatorTool": ("XmpText", 13, "MetadataSharp")}, rows
         changed = output / "external.png"; shutil.copyfile(png, changed)
-        run(["exiftool", "-overwrite_original", "-Artist=ExternalPng", "-XMP-xmp:CreatorTool=ExternalPng", str(changed)])
+        run(["exiftool", "-overwrite_original", "-EXIF:Artist=ExternalPng", "-XMP-xmp:CreatorTool=ExternalPng", str(changed)])
         assert json.loads(ours("inspect-png", changed)) == {"artist": "ExternalPng", "creatorTool": "ExternalPng"}
         copied = output / "external-noop.png"; ours("noop-png", changed, copied)
         assert copied.read_bytes() == changed.read_bytes()

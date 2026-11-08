@@ -81,7 +81,10 @@ else if (args.Length == 2 && args[0] == "inspect-png")
     string? artist = null;
     if (exif is not null && exif.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? a))
     { byte[] bytes = new byte[a.Value.ByteLength]; a.Value.CopyRawTo(bytes); artist = Encoding.ASCII.GetString(bytes).TrimEnd('\0'); }
-    string? creatorTool = doc.ReadXmp()?.Properties[new("http://ns.adobe.com/xap/1.0/", "CreatorTool")].Text;
+    XmpPacket? packet = doc.ReadXmp();
+    if (packet is { IsEditable: false })
+    { byte[] raw = new byte[packet.ByteLength]; packet.CopyRawTo(raw); throw new InvalidOperationException("External authored PNG produced opaque RDF: " + Encoding.UTF8.GetString(raw)); }
+    string? creatorTool = packet?.Properties[new("http://ns.adobe.com/xap/1.0/", "CreatorTool")].Text;
     Console.WriteLine(JsonSerializer.Serialize(new { artist, creatorTool }));
 }
 else if (args.Length == 3 && args[0] == "noop-png")

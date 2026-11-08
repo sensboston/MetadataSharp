@@ -569,3 +569,11 @@
 - Added owned one-pixel fixtures and independent CRC, structure, metadata, compression,
   limits, preservation and async/path tests. Local dotnet remains unavailable;
   no .NET success claimed before actual three-platform CI. M14 is gated on M13.
+
+- First submission failed only xUnit blocking-task analyzer checks; tests were made
+  properly async rather than suppressing the analyzer. Revised d548ae8 passed all
+  .NET platforms (at least 338 cases) but PNG external reverse validation exposed
+  opaque RDF after unqualified ExifTool Artist editing. Restrict the operation to
+  EXIF:Artist to avoid implicit family synchronization; retain strict XMP profile
+  and include raw authored-packet diagnostics if still outside it. No green group
+  or M14 start claimed until the reference job also passes. Python policy 12/12 pass.
