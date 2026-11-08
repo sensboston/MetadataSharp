@@ -5,11 +5,12 @@ approvals/diagnostics remain in PROGRESS; older session instructions there are h
 
 ## Active branch and scope
 
-Assigned branch **arena/7a35ad89-metadatasharp**, cut from master 79992da
-(PR #17 merge). Never switch to master or another branch. Standing authorization
-covers commit/push and completed green PR merge, not package publication or unseen
-public contracts. The previous public-visibility billing blocker is resolved in
-observed runs; no CI exception applies.
+Assigned branch **arena/d4158be1-metadatasharp**, cut from master fa548e92
+(PR #18 merge, which carried the parity master plan and E03 proposal). Never
+switch to master or another branch. Standing authorization covers commit/push
+and completed green PR merge, not package publication or unseen public contracts.
+The previous public-visibility billing blocker is resolved in observed runs; no CI
+exception applies.
 
 Programme: roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md (E00–E18).
 Developer approved independent near-complete Exiv2 functionality, idiomatic .NET,
@@ -39,7 +40,8 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   source/cache and own SDK-major global.json: SDK8.0.427 for net8, SDK10.0.403 for
   net10 observed on all OSes. No production parser/public-member changes.
 - Public declared reflection signatures equal between runtimes and all six audit
-  receipts: 633 entries, hash a9cd2ae9fe864fbf39da5bc9fd4bfb32fa720f4afc024ac81b53cd1f3bdb93cb.
+  receipts (E02 receipt; predates the approved E03 additions implemented on this
+  branch): 633 entries, hash a9cd2ae9fe864fbf39da5bc9fd4bfb32fa720f4afc024ac81b53cd1f3bdb93cb.
   NOT full attribute/default/nullable/ABI or behavioral compatibility proof.
   JSON/receipt: audits/evidence/e02; exact limitations/commands:
   audits/DOTNET_8_10_SUPPORT_AND_E02_AUDIT.md. Historical M18 evidence kept separate.
@@ -89,20 +91,21 @@ known differences classified, all other segment payloads/multiplicities remain
 strict. MetadataSharp status unscored; full E01 census/denominator still OPEN.
 
 Next open units (as of 2026-11-08):
-1. **E03 proposal awaiting developer approval** —
-   design/DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL.md (capability
-   discovery surface, additive-only/migration/TFM/versioning policy, zero-dependency
-   reaffirmation). Approval discharges only the E03 compatibility gate; it
-   authorizes no implementation by itself.
+1. **E03 APPROVED AND IMPLEMENTED (this branch)** — capability-discovery surface
+   (`MetadataContainer`/`MetadataFamily`/`MetadataOperation`/`CapabilityStatus`/
+   `CapabilityDescriptor`/`MetadataCapabilities`), pinned test table, test-local
+   zero-`PackageReference` guard; net8.0/net10.0 retained per developer. Awaiting
+   this PR's green CI + merge. Discharges only the E03 compatibility gate; it
+   authorizes no per-format work, exclusions or publication.
 2. **E01-CEN** — finite atomic denominator design and the split of the 31×6 grid
    into per-format execution batches; until the developer reviews the denominator,
    no parity percentage or "complete" claim is possible.
 3. Atomic E01 breadth (per-format pinned CLI observations beyond JPEG EXIF Artist)
    may proceed only as batches defined by E01-CEN, with owned fixtures/rights review.
-D0 already approved; D1 normative/fixture/oracle prerequisites remain (E03
-compatibility gate pending approval). No production DLL/API/parser dependency changes,
-general format support, exclusion, Framework or publication authorization is implied
-by the 2026-11-08 directive or this checkpoint. See
+D0 approved; D1 normative/fixture/oracle prerequisites remain (E03 compatibility
+gate now discharged pending merge). No other new public contracts, general format
+support, exclusion, Framework or publication authorization is implied by the
+2026-11-08 directive or this checkpoint. See
 design/EXIV2_PARITY_MASTER_PLAN.md for the full gated subtask split.
 
 ## Reproduction / local constraints
@@ -114,8 +117,8 @@ python -m unittest discover -s tests/reference -q
 python -m unittest discover -s tests/discovery -q
 python tools/reference/build_capability_seeds.py --check
 git diff --check
-gh pr view 16 --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
-gh run list --branch arena/7a35ad89-metadatasharp --limit 4
+gh pr view --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
+gh run list --branch arena/d4158be1-metadatasharp --limit 4
 # With both SDKs/runtimes installed:
 dotnet restore MetadataSharp.sln
 dotnet build MetadataSharp.sln -c Release --no-restore

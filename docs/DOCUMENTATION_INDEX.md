@@ -4,12 +4,12 @@
 
 - CURRENT_STATE.md: source-of-truth recovery status, approvals and blockers.
 - roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md: new programme E00–E18; user-approved
-  direction, not unseen public API approval or a parity completion claim.
+  direction, not a parity completion claim.
+- design/DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL.md: exact E03
+  contracts, APPROVED 2026-11-08 and implemented (additive MetadataCapabilities);
+  receipts in PROGRESS.md.
 - design/EXIV2_PARITY_MASTER_PLAN.md: how the 2026-11-08 parity directive is
   broken into gated subtasks; sequencing, dependency policy and definition of done.
-- design/DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL.md: exact E03
-  proposal (capability discovery, compatibility/migration policy); PROPOSAL only,
-  not approved, nothing implemented.
 - research/EXIV2_CAPABILITY_BASELINE.md and EXIV2_REQUIREMENTS_TRIAGE.md: bounded
   first-pass evidence, snapshot JSON, unresolved full E01 inventory work.
 - design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md: exact new API/subset proposal,
