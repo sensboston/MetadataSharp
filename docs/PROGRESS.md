@@ -705,3 +705,28 @@
   its own green CI before PR #10 merge; actual final-head evidence posted there.
 - M15 introduces no writer, new production dependency or larger embedded EXIF cap.
   Next implementation unit M16 still needs separate exact public/safety contracts.
+
+### M15 final merge confirmed; M16 contract-only proposal (2026-11-07)
+
+- Verified PR #10 MERGED, merge 80dc75e62eff242d2b98bc4b14b3090cf4ea60ce.
+  Final source 812bd76af3241d479e7b9fff07c9dd6a8197a118 passed PR/push runs
+  42431094052/42431090942 (392 tests/platform, Python 12/12, required references).
+- Developer requested continuing; active work branch is arena/d7ec6276-metadatasharp.
+  Prepared exact M16 public/safety proposal, not implementation: addressed baseline
+  descriptive fields, source-relative IFD keys, SHA-256 preflight, append-preserve
+  graph replacement, unchanged image/value offsets and new-path publication.
+- Explicit compromises require approval: obsolete metadata remains physically in
+  the original prefix; repeated saves grow files; unknown/private/MakerNote and
+  opaque extensions refuse effective edits. No general EXIF/XMP/IPTC TIFF editor,
+  compaction, privacy scrubbing, BigTIFF, DNG, new production dependency or EXIF cap
+  expansion. TiffLayout.IsSupported alone is not writer permission.
+- M16 proposal is PROPOSED, not approved. No new public C# API/parser/writer code,
+  normative-write-conformance claim or implementation-test pass is asserted.
+  Unit tests already exist and remain mandatory for every future stage; current
+  completed checkpoint has 392 .NET cases plus Python policy/reference checks.
+- Remaining roadmap units are M16 restricted TIFF editing, M17 DNG feasibility/
+  contracts only and M18 measured performance/packaging audit. DNG implementation
+  requires a separately approved follow-up, not an assumed part of M17.
+- Proposal-only local checks: `python -m unittest discover -s tests/reference -q`
+  passed 12/12; `git diff --check` passed. No new .NET implementation/test result
+  is claimed by this documentation checkpoint.
