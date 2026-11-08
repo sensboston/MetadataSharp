@@ -1,14 +1,14 @@
 # Current development state and recovery checkpoint
 
-Updated 2026-11-07. Read first; verify against live branch/Git/PR/CI. Chronological
+Updated 2026-11-08. Read first; verify against live branch/Git/PR/CI. Chronological
 approvals/diagnostics remain in PROGRESS; older session instructions there are history.
 
 ## Active branch and scope
 
-Assigned branch **arena/49d49a4f-metadatasharp**, from PR #15 merge
-7c872466c705c7d6877c8e41018df217d4cbd8db. Never switch to master or another branch.
-PR #15 is MERGED; E02 is complete (final 85bd097, PR42446407601 and
-push42446403212 both 14/14). Active unit: E01 pinned black-box CLI observations. Standing authorization covers commit/push and completed green PR
+Assigned branch **arena/c321dc16-metadatasharp**, from PR #16 merge
+75ad10dcf9f96a496be8192c6f8949632c6da1ba. Never switch to master or another branch.
+PR #16 is MERGED (2026-11-08T05:10:04Z; final head 5b0783b, PR42449478931 and
+push42449474066 both 15/15). The bounded E01 pinned-CLI foundation is DONE. Standing authorization covers commit/push and completed green PR
 merge, not package publication or unseen public contracts. The previous public-
 visibility billing blocker is resolved in observed runs; no CI exception applies.
 
@@ -70,7 +70,12 @@ Artist read/insert/replace/remove observations. Complete raw field/print/scan an
 source/build/dependency identities in research/evidence/e01-pinned-jpeg; scope and
 findings in research/EXIV2_PINNED_BASELINE_EXECUTION.md. Raw namespace catalogs and
 upstream source/executable are NOT committed or distributed. Web/curl OFF in this
-configuration is unobserved breadth, not an accepted exclusion.
+configuration is unobserved breadth, not an accepted exclusion. FINAL head
+5b0783bf2a60844e82ab2a61479816d01b15d4b9 also passed both required final runs
+(PR42449478931 and push42449474066, 15/15 each) and was merged as 75ad10d with the
+final immutable source/run/merge receipts posted on PR #16. This bounded CLI
+foundation is DONE; do NOT infer E01 census closure, E03 approval, D1 progress or
+any parity/percentage from it.
 
 Important: all THREE reference writes have false exact non-EXIF preservation flags:
 D001 exact authored COM trailing-NUL addition/order; D002 single-property XMP
@@ -80,13 +85,18 @@ permission to modify our writer. Default/read checker remains strict; only exact
 known differences classified, all other segment payloads/multiplicities remain
 strict. MetadataSharp status unscored; full E01 census/denominator still OPEN.
 
-Final PR #16 head needs own FIFTEEN-job CI before merge; final immutable source/run/
-merge receipt posted there. On recovery check live PR #16. If merged, this bounded
-CLI foundation is done; do NOT infer E01/E03/full parity/D1 completed. Next expand
-atomic ledger by family/format/variant and separately prepare exact E03 compatibility
-proposal. D0 already approved, D1 normative/fixture/oracle/E03 prerequisites remain.
+Next open units (both still unstarted as of 2026-11-08):
+1. Expand the atomic E01 ledger by family/format/variant (more pinned CLI
+   observations beyond JPEG EXIF Artist; fixture rights, owned fixtures, independent
+   oracles, same strict classification policy). No percentage/exclusion may be
+   claimed; 186 seeds/348 candidates remain NOT a frozen denominator.
+2. Separately prepare the exact E03 .NET architecture/compatibility contracts
+   proposal (capability discovery/value/metadata/addressing/error APIs, independent
+   snapshots, migration policy). E03 needs explicit developer approval BEFORE any
+   refactor; a written proposal is not approval.
+D0 already approved, D1 normative/fixture/oracle/E03 prerequisites remain.
 No production DLL/API/parser dependency changes, general format support, exclusion,
-Framework or publication authorization introduced in this unit.
+Framework or publication authorization is implied by any of the above.
 
 ## Reproduction / local constraints
 
@@ -98,7 +108,7 @@ python -m unittest discover -s tests/discovery -q
 python tools/reference/build_capability_seeds.py --check
 git diff --check
 gh pr view 16 --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
-gh run list --branch arena/49d49a4f-metadatasharp --limit 4
+gh run list --branch arena/c321dc16-metadatasharp --limit 4
 # With both SDKs/runtimes installed:
 dotnet restore MetadataSharp.sln
 dotnet build MetadataSharp.sln -c Release --no-restore
@@ -112,4 +122,4 @@ JSON annotations work; tools/audit/collect.py validates run/source/chunk receipt
 Audit AUDIT_TFM and reference METADATASHARP_REFERENCE_TFM default net8.0, accept
 net10.0. Tools now need explicit -f for dotnet run; no target may silently fall back.
 Python historical policy 12/12 and discovery/observation/collector 26/26 pass locally;
-own final fifteen-job CI still required.
+merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/15).
