@@ -431,10 +431,11 @@ def main(argv=None):
         thumb_dims = dng_check(output / "dng-thumb-ii.dng", False)
         assert thumb_dims[3] == 2
         dng_check(output / "dng-thumb-mm.dng", False)
+        dng_version_digits = lambda value: "".join(ch for ch in str(value) if ch.isdigit())
         facts = json.loads(run(["exiftool", "-j", "-n", "-DNGVersion", "-ImageWidth", "-ImageLength", "-Compression", "-SamplesPerPixel", "-PhotometricInterpretation", str(output / "dng-raw-ii.dng")]))[0]
-        assert facts["DNGVersion"] == "1.1.0.0" and facts["ImageWidth"] == 4 and facts["ImageLength"] == 2 and facts["Compression"] == 1 and facts["SamplesPerPixel"] == 1 and facts["PhotometricInterpretation"] == 32803, facts
+        assert dng_version_digits(facts["DNGVersion"]) == "1100" and facts["ImageWidth"] == 4 and facts["ImageLength"] == 2 and facts["Compression"] == 1 and facts["SamplesPerPixel"] == 1 and facts["PhotometricInterpretation"] == 32803, facts
         facts = json.loads(run(["exiftool", "-j", "-n", "-DNGVersion", "-ImageWidth", "-ImageLength", "-Compression", "-SamplesPerPixel", "-PhotometricInterpretation", str(output / "dng-thumb-ii.dng")]))[0]
-        assert facts["DNGVersion"] == "1.1.0.0" and facts["ImageWidth"] == 4 and facts["ImageLength"] == 2 and facts["Compression"] == 1 and facts["SamplesPerPixel"] == 3 and facts["PhotometricInterpretation"] == 2, facts
+        assert dng_version_digits(facts["DNGVersion"]) == "1100" and facts["ImageWidth"] == 4 and facts["ImageLength"] == 2 and facts["Compression"] == 1 and facts["SamplesPerPixel"] == 3 and facts["PhotometricInterpretation"] == 2, facts
         own_dng = json.loads(ours("inspect-dng", output / "dng-raw-ii.dng"))
         assert own_dng == {"width": 4, "height": 2, "bitsPerSample": 16, "samplesPerPixel": 1, "supported": True, "role": "CfaRaw", "strips": 1}, own_dng
         own_dng = json.loads(ours("inspect-dng", output / "dng-thumb-ii.dng"))
