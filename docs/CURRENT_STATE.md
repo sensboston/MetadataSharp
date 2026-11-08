@@ -10,10 +10,10 @@ UNAPPROVED. M18 bounded measured performance/package audit COMPLETE.** Developer
 requested both remaining roadmap units in one pass/one PR. No public production API
 or safety changes, DNG implementation, broad optimization or publication authorized.
 
-Active assigned branch: `arena/b166bb08-metadatasharp`, based on M16 merge
-`d476e37ef1b848df4556b7346f9858310470f4ee`. Work only on live assigned Arena branch;
-never switch to master or reuse a merged historical session branch. One grouped
-PR: https://github.com/sensboston/MetadataSharp/pull/12. Standing authorization covers
+Active assigned branch: `arena/d5125ece-metadatasharp`, based on completed M17–M18 merge
+`b7c9f3959b289f08c30d209b78d0915003111390`. Work only on live assigned Arena branch;
+never switch to master or reuse a merged historical session branch. Completed grouped
+PR: https://github.com/sensboston/MetadataSharp/pull/12 (MERGED). Standing authorization covers
 commits/push and merge after the whole final-head gate, not package publication.
 
 ## Durable deliverables and observed gates
@@ -39,11 +39,16 @@ commits/push and merge after the whole final-head gate, not package publication.
   coverage. No external production package deps except Formats → Core; framework
   runtime still needed. No shipping CLI/native/fixture/PDF/GPL payloads. No broad
   conformance, full-size I/O, universal speed, zero-allocation or release claim.
-- Final documentation/evidence commit still must pass its own seven-job CI before
-  readying/merging PR #12. Record immutable final SHA/run IDs/merge receipt in PR
-  after actual success (avoid circular self-recording). On recovery check live PR:
-  if MERGED, all M00–M18 roadmap units are complete within their bounded definitions;
-  if OPEN, finish only remaining required gates/merge or fix actual failures.
+- Final grouped head **02be218820c6a6b3abdbd08091db1761c7771f7d** passed
+  42440206658/42440203208, all seven jobs, before PR #12 merged at b7c9f395.
+  **All bounded M00–M18 roadmap units are complete.** No pending M17/M18 merge gate.
+- Post-roadmap cleanup explicitly requested by developer: removed ten obsolete
+  remote Arena branches only after merged-PR and full-history ancestry proofs;
+  exact names/tips and verification are in PROGRESS. Pruned remote-tracking refs.
+  Master, current active Arena branch, tags, releases and all merged commits kept.
+  No local obsolete branches existed. Cleanup documentation uses this active branch;
+  check its own PR/CI before assuming that documentation merge is complete.
+  Do NOT delete the active branch, even after its documentation PR merges.
 
 ## Next eligible work after grouped merge
 
@@ -63,8 +68,9 @@ git log -6 --oneline
 python -m unittest discover -s tests/reference -q
 python -m py_compile tools/audit/*.py
 git diff --check
-gh pr view 12 --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
-gh run list --branch arena/b166bb08-metadatasharp --limit 6
+gh pr list --head arena/d5125ece-metadatasharp --state all --json number,state,url
+git ls-remote --heads origin
+gh run list --branch arena/d5125ece-metadatasharp --limit 6
 # On .NET 8 SDK machine (absent in local Arena):
 python tools/audit/run.py
 dotnet test MetadataSharp.sln --configuration Release

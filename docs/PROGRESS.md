@@ -941,3 +941,48 @@ before one PR #12 merge; immutable final-head run/merge receipt will be posted t
 After completed merge, all bounded M00–M18 roadmap deliverables are complete. No
 further implementation unit starts automatically. Local Python policy/diff pass;
 local .NET absent, actual SDK measurements were Actions only.
+
+## Post-roadmap merged-branch cleanup
+
+Developer explicitly requested removing obsolete branches and updating existing
+records before selecting the next project stage. Active session branch is
+`arena/d5125ece-metadatasharp`; it and `master` are protected and were not deleted.
+M17–M18 PR #12 is confirmed MERGED at
+`b7c9f3959b289f08c30d209b78d0915003111390`. Its final head 02be218 passed
+42440206658/42440203208 (seven jobs); all bounded M00–M18 units are complete.
+
+The initial checkout was shallow (master history count 1), so ancestry checks first
+refused every candidate. Fetched full history with `git fetch --unshallow origin`;
+no deletion occurred before proof. Verified there were no open PRs, matched each
+candidate to merged PRs, required its exact remote tip to be an ancestor of
+`origin/master`, then rechecked its live SHA immediately before deleting the GitHub
+branch ref through `gh api --method DELETE`. No force-push, source/history removal,
+tag/release deletion or unmerged-branch deletion was performed.
+
+| Deleted remote branch | Verified tip retained in master | Merged PRs |
+| --- | --- | --- |
+| `arena/754dbace-metadatasharp` | `f87c70975ae73c04882692722b194f11dfac9ce9` | #1 |
+| `arena/9e197a4e-metadatasharp` | `990ed33c6fcb18f579c6f305edb751dfae21a7d8` | #3, #4, #5 |
+| `arena/a6abf89b-metadatasharp` | `84e70789aed436eb9ce124e465f1eb1912eb7e06` | #9 |
+| `arena/b166bb08-metadatasharp` | `02be218820c6a6b3abdbd08091db1761c7771f7d` | #12 |
+| `arena/c040176d-metadatasharp` | `f3a51ae7239a550c0004d26df0a79bf1437009be` | #6 |
+| `arena/ca9ac984-metadatasharp` | `332ede3c500621bc7e67b068e687d6b57912bacc` | #7 |
+| `arena/d7ec6276-metadatasharp` | `cbd36078e0f3061a6f21b741fcf7d49886a3c799` | #11 |
+| `arena/da38f569-metadatasharp` | `a0e1ad752359fc5da19827ba2c85e67efb85277e` | #8 |
+| `arena/e42dbe63-metadatasharp` | `9794b9c00b8530a67a3c8400ff99ea2db6a8b13a` | #2 |
+| `arena/f0470529-metadatasharp` | `812bd76af3241d479e7b9fff07c9dd6a8197a118` | #10 |
+
+Deleted **10** obsolete remote branches and pruned their remote-tracking refs.
+`git ls-remote --heads origin` subsequently showed only master, before publishing
+this active documentation branch. Local branches were already only master and the
+active Arena branch; no local branch deletion was necessary. All commits remain
+reachable from master and merged PR records retain review/CI evidence. Existing
+tags/releases, including sdk_bootstrap, were preserved.
+
+Updated CURRENT_STATE rather than creating a new cleanup document. No production
+source, package/audit configuration or public contracts changed. Local Python policy
+and whitespace checks run for this documentation change; its own CI gate must pass
+before merging the documentation PR. Final head/check/merge receipt is recorded in
+that PR after success. Preserve the active branch even after that merge; its deletion
+is not part of this cleanup. Next project stage awaits developer selection; DNG
+implementation and package publication still require separate approvals.
