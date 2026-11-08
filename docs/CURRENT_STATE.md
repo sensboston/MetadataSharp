@@ -41,9 +41,12 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   coded scan is still preserved 135/135. Verification stays not-assessed; NO
   denominator frozen; NO coverage percentage; exclusions (if any) go to the
   developer at the denominators step; D2/publication NOT authorized.
-  2026-11-08 (step 3 opened): docs/design/EXIV2_E01_DENOMINATORS_PREFREEZE_REVIEW.md —
-  pre-freeze review package with the freeze-timing/exclusion/reporting questions for
-  the developer; nothing frozen or signed by it; gate stays OPEN.
+  2026-11-08 (step 3 ANSWERED, freeze pending B2–B14): the developer answered the
+  pre-freeze review (Q1=(a) one final freeze after all remaining batches incl. B14;
+  Q2 thumbnail-insert stays not-applicable, no exclusions signed; Q3 nonzero-exit-artifact-
+  produced its own class, never a pass; Q4 numeric order B2→B14, all in this cycle;
+  Q5 no percentages pre-freeze). Recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md
+  §9; freeze happens in its own PR after B14; gate stays OPEN; next batch B2 (PNG).
 
 - E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
   42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.

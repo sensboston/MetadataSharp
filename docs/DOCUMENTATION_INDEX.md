@@ -11,8 +11,8 @@
 - design/EXIV2_PARITY_MASTER_PLAN.md: how the 2026-11-08 parity directive is
   broken into gated subtasks; sequencing, dependency policy and definition of done.
 - design/EXIV2_E01_DENOMINATORS_PREFREEZE_REVIEW.md: pre-freeze review package
-  (counts, freeze timing Q1–Q5, exclusion candidates identified only — nothing signed;
-  denominatorFrozen stays false).
+  (counts, freeze timing Q1–Q5); ANSWERED 2026-11-08 — binding answers recorded in the
+  census proposal §9; freeze pending B2–B14; denominatorFrozen stays false.
 - design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md: E01-CEN design (schema,
   fixture provenance, batching, two denominators); APPROVED by developer 2026-11-08
   (decisions in §6/§7). Denominators not frozen yet; no percentage exists.
