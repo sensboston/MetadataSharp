@@ -986,3 +986,22 @@ before merging the documentation PR. Final head/check/merge receipt is recorded 
 that PR after success. Preserve the active branch even after that merge; its deletion
 is not part of this cleanup. Next project stage awaits developer selection; DNG
 implementation and package publication still require separate approvals.
+
+### Cleanup documentation CI infrastructure blocker
+
+Documentation PR #13: https://github.com/sensboston/MetadataSharp/pull/13.
+Head 34f1591684ae59c94ad1b335b4fd8d2cd5713172 runs 42441201239 and 42441196628
+reported failures in all seven jobs, but GitHub annotations explicitly state:
+"The job was not started because recent account payments have failed or your
+spending limit needs to be increased. Please check the 'Billing & plans' section
+in your settings" (confirmed check IDs 128610605935/128610605889/128610605873).
+No build/test/audit executed in those jobs. This is an account Actions billing/limit
+blocker, not a test failure, and predecessor green results do not validate this
+head. Local Python policy 12/12 and git diff --check passed.
+
+Branch cleanup itself is complete and remote inventory is exactly master plus
+arena/d5125ece-metadatasharp. Documentation is saved/pushed, but PR #13 remains OPEN
+until account owner resolves GitHub Actions billing/spending limit and required
+checks run successfully. No gate bypass, merge override or repeated retry without
+an infrastructure fix. Keep active branch. Next project stage awaits developer
+selection; no new feature work began during cleanup.

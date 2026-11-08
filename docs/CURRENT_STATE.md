@@ -47,7 +47,11 @@ commits/push and merge after the whole final-head gate, not package publication.
   exact names/tips and verification are in PROGRESS. Pruned remote-tracking refs.
   Master, current active Arena branch, tags, releases and all merged commits kept.
   No local obsolete branches existed. Cleanup documentation uses this active branch;
-  check its own PR/CI before assuming that documentation merge is complete.
+  documentation PR #13 is OPEN, not merged. Runs 42441201239/42441196628 at
+  34f1591 failed before any job started: GitHub Actions account payment/spending
+  limit blocker, confirmed via check annotations. Account owner must fix Billing
+  & plans, then required checks must pass before merge. No gate bypass or blind
+  retries. Local policy 12/12 and diff checks passed; no new .NET run is claimed.
   Do NOT delete the active branch, even after its documentation PR merges.
 
 ## Next eligible work after grouped merge
