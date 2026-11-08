@@ -787,3 +787,19 @@
   accepted compression/plane/preview/value-alias/overflow/failure families, final
   usage/support/audit and final-head gates are still outstanding. CURRENT_STATE.md
   records actual evidence and next steps; do not merge or start M17 yet.
+
+### M16 persisted continuation checkpoint — initial writer green, unit incomplete
+
+- Code head 600bbc1eef2b21543ec2e8bfc13c0d99e631dd1d passed PR run
+  42435227396: all three Release platform jobs (405 passing .NET cases each),
+  Python policy 12/12 and mandatory independent reference job green. This includes
+  the output range-ceiling regression and initial M16 edited-file facts/IFD-range
+  checks. There is no new local .NET claim; SDK is still absent.
+- Recovery documentation is in Git and pushed. docs/CURRENT_STATE.md is the entry
+  point with approved scope, exact evidence, file map, failure diagnosis and next
+  steps. PR #11 remains DRAFT, not merged or a completed M16 milestone.
+- Next work: extend accepted compression/plane/preview/shared-value/sparse-overflow
+  tests and write failure/temporary-publication race/cancellation coverage; audit
+  resulting pointer/schema/resource proofs; finish usage/support/audit documentation
+  and actual final-head gates. Continue M16 without repeating approval. M17/DNG
+  code and package publication remain outside the approved implementation scope.

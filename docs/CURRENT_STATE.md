@@ -49,6 +49,14 @@ a completed final-head-green unit; package publication is not authorized.
   preserved/new range accounting and a regression (external value fails before
   output; inline value reopens within the same ceiling). Latest source head MUST
   pass its own CI; predecessor success does not validate that addition.
+  That check now PASSED on code head `600bbc1eef2b21543ec2e8bfc13c0d99e631dd1d`,
+  PR run [42435227396](https://github.com/sensboston/MetadataSharp/actions/runs/42435227396):
+  **405 .NET tests per Windows/Linux/macOS**, Python 12/12 and required M16 write
+  references green. This documentation update does not change that code.
+- Work is saved/pushed; PR #11 is deliberately DRAFT and must not be merged yet.
+  Full M16 acceptance matrix, failure/overflow audit and final usage/support/audit
+  documents are still incomplete. No new contract approval is needed to continue
+  the already approved M16; new public/safety changes still require approval.
 - Next: inspect initial CI and audit preflight/schema/budget behavior; extend tests
   to all accepted compression/plane/preview/alias/overflow/failure families, and
   audit/extend the new mandatory M16 reference facts and independent pointer/range
