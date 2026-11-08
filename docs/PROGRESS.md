@@ -1123,3 +1123,72 @@ public visibility change. This approval-record commit requires its own green CI
 before PR #14 merge; final SHA/run/merge receipt will be posted there after success.
 E01 full inventory remains open. Local policy/whitespace checks run; no DNG/net10/
 Framework implementation or runtime verification claimed by this documentation.
+
+## E02 execution plan after approved D0 documentation merge
+
+Active branch arena/1af1ed4a-metadatasharp starts from PR #14 merge 716c00b.
+D0 is approved but D1 remains gated; E02 can proceed independently of open E01.
+Implement approved .NET 8/10 direction without production API/algorithm changes:
+SDK 10 selection, net8.0/net10.0 library/test/tool assets, six OS/TFM correctness
+jobs with explicit TRX framework identity, two required reference jobs, six audit
+jobs, per-TFM package groups/XML/DLLs and isolated consumers, and cross-target
+public-signature receipts. Keep C# 12 and strict package payload assertions.
+No new runtime dependency, Framework target, DNG parser or API refactor. Framework
+is deferred as not demonstrated cheap by the recorded API cost map; any actual
+legacy spike remains separately bounded follow-up. E01 doc-claim ledger may advance
+without being called a frozen/verified full denominator. Preserve all old evidence;
+record new target-specific measurements separately. Local SDK absent: actual
+runtime execution must come from push CI. Final head must pass before merge.
+
+### E02 initial multi-target submission
+
+Added net8.0/net10.0 library, tests and tool targets with SDK 10 feature-band
+selection, retaining C# 12. CI now schedules six explicit OS/TFM test jobs, two
+required reference jobs and six audit jobs. A new runtime-identity regression
+checks actual host and loaded library TFMs; floor 449 per combination. Audits
+require both DLL/XML asset sets and exact per-TFM dependencies, each consumer's
+actual runtime, and identical reflected public member signatures on both runtimes.
+No production parser/API changes. Signature equality is not full attribute/default/
+behavior compatibility proof; correctness/reference tests remain separate.
+Local Python policy 12/12, compile checks for audit/harness Python and diff checks
+pass. Actual .NET 10 and dual-target package results await this head's own Actions.
+
+Initial E02 run 42445858808 at a055140: all six package/runtime/signature audits,
+both reference targets and all net8 tests passed; net10 tests failed three cases.
+Two old infrastructure cases hardcoded net8 instead of the executing target. One
+empty-zlib fixture relied on framework compressor initialization for zero-length
+input (failure at strict RFC header/minimum-length gate). Make the authored empty
+stream explicit and portable, with an extra regression rejecting zero/missing-
+DEFLATE framing; do NOT relax production BoundedZlib. Correct existing target
+expectations, retaining explicit runtime/loaded-asset checks. New floor 450.
+No production parsing algorithm/API or safety contract changed.
+
+Strengthened consumer independence: each net8/net10 package consumer now has its
+own SDK-major global.json and commands execute from that consumer directory.
+Check selected SDK major as well as host runtime. A net8 test under SDK 10 alone
+would not prove a net8 SDK consumer can restore/use the dual-target package; both
+consumer SDKs are installed by the matrix. Record consumer SDK in package receipt.
+
+### E02 implementation gate and E01 seed submission
+
+Audited code 2949589c1908b9da80289670b89c062d03bc5af0 passed 42446034373, all 14 jobs:
+450 cases per six OS/TFM combinations, six audits and both required references.
+Collected complete small JSON/receipt in docs/audits/evidence/e02. All consumers
+selected actual matching SDKs 8.0.427 / 10.0.403. Public reflected signatures: 633
+entries, identical hash across six receipts; not full metadata/behavior proof.
+No production algorithm/API changes or parser relaxation. Runtime support policy
+and Framework deferral recorded in E02 audit; historical M18 evidence untouched.
+
+E01 advances with 186 visible documentation-cell seeds / 348 inferred candidate
+operations and deterministic generator + six policy tests. No-claim cells not
+excluded, writes not observed, layouts unsplit, fixture rights unreviewed and
+MetadataSharp verification unassessed. Full E01 denominator/CLI/corpus gate remains
+OPEN. New generator/policy/documents need final-head CI, not predecessor inference.
+No DNG implementation, E03 approval or package publication. Final SHA/runs/merge
+receipt posted on PR #15 after all checks pass.
+
+Final consumer audit also asserts loaded Core/Formats TargetFrameworkAttribute,
+not only SDK and process runtime: a net10 consumer must not silently pick net8
+package assets. Added receipt discriminator offlineConsumerAssets=target-matched.
+This strengthens the final-head smoke beyond the earlier 2949589 evidence; it
+requires its own final run and does not retroactively change stored receipts.

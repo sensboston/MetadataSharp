@@ -1,0 +1,72 @@
+{
+  "run": {
+    "conclusion": "success",
+    "headSha": "2949589c1908b9da80289670b89c062d03bc5af0",
+    "status": "completed",
+    "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42446034373"
+  },
+  "runId": "42446034373",
+  "encoding": "zlib/base64 chunks <=2500 bytes",
+  "files": [
+    {
+      "file": "ubuntu-net10.0-baseline.json",
+      "checkRun": 128625090196,
+      "rawJsonSha256": "93356043289632e5f74145336608d29871c49c2e44a12499b7956585aee6c530"
+    },
+    {
+      "file": "ubuntu-net10.0-packages.json",
+      "checkRun": 128625090196,
+      "rawJsonSha256": "8d12c1be34249fce3e4a7154cbe20ad36368ee71b14c6cc62710cfdc1c057531"
+    },
+    {
+      "file": "windows-net10.0-baseline.json",
+      "checkRun": 128625090171,
+      "rawJsonSha256": "ef3d6f4d323421ae837055f6b6f18d490ca2b4280f2163bb8da8fc30079ba13e"
+    },
+    {
+      "file": "windows-net10.0-packages.json",
+      "checkRun": 128625090171,
+      "rawJsonSha256": "6f913b9b0db67974a6b66a51d654a097aab23045a5a1760424292a376ece0038"
+    },
+    {
+      "file": "macos-net8.0-baseline.json",
+      "checkRun": 128625090117,
+      "rawJsonSha256": "a41ded83cb35c9ccbfd42172a8ddaabb4e7f0c0fddf8a7613eaa41264fd2a01d"
+    },
+    {
+      "file": "macos-net8.0-packages.json",
+      "checkRun": 128625090117,
+      "rawJsonSha256": "f9813fb73e8df7b37a6d7d259585132c16df65deafb64240c638f9514e9753c8"
+    },
+    {
+      "file": "ubuntu-net8.0-baseline.json",
+      "checkRun": 128625090057,
+      "rawJsonSha256": "ca11ffa9998918abdca688974a655db4516cdfd56ad104e0454cff68a77b95a9"
+    },
+    {
+      "file": "ubuntu-net8.0-packages.json",
+      "checkRun": 128625090057,
+      "rawJsonSha256": "1dd1ee3f83c92fcf320d96a112e85c957d0ab5a384ff027fe938160d5e6110b8"
+    },
+    {
+      "file": "windows-net8.0-baseline.json",
+      "checkRun": 128625090052,
+      "rawJsonSha256": "3ee34697a64463973f3ae8b0d769b3b8223c3e4a28fc7b78d341cd9f1e6040b1"
+    },
+    {
+      "file": "windows-net8.0-packages.json",
+      "checkRun": 128625090052,
+      "rawJsonSha256": "59e3982a076eaf098cc63707630df01469c73680fa0f924c0587f465af74810b"
+    },
+    {
+      "file": "macos-net10.0-baseline.json",
+      "checkRun": 128625090047,
+      "rawJsonSha256": "e1c40d5e4b40f6d0ea413a3f39fb743f1bbee8ae790f837b437ce2be3867c95b"
+    },
+    {
+      "file": "macos-net10.0-packages.json",
+      "checkRun": 128625090047,
+      "rawJsonSha256": "c8c4d7832f2233c8fe3dcec099e2cf6314df668691026df1f3a6119b07da5433"
+    }
+  ]
+}

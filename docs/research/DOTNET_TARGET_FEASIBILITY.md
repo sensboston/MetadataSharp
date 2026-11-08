@@ -57,3 +57,12 @@ Source inspection and earlier recorded net8 evidence only. Neither net10 nor
 Framework was compiled/run in this checkpoint. Local SDK absent; prior Actions
 billing blocker is not resolved by editing target strings. Implementation requires
 its own green gates; PR #13's documentation exception does not apply.
+
+## Superseding E02 implementation evidence
+
+The preliminary no-build status above is historical. E02 now implements dual modern
+targets and passes 42446034373 at 2949589: six target/OS correctness jobs, six strict
+package/consumer audits and two references. See
+../audits/DOTNET_8_10_SUPPORT_AND_E02_AUDIT.md for exact scope/evidence/SDK/runtime
+checks. Framework remains deferred (cheap threshold not established); no legacy
+build was executed. E03/new API compatibility approval is not inferred.

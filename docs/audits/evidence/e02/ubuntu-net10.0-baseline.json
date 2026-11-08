@@ -1,0 +1,327 @@
+{
+  "schema": 2,
+  "targetFramework": ".NETCoreApp,Version=v10.0",
+  "sourceCommit": "2949589c1908b9da80289670b89c062d03bc5af0",
+  "runtime": ".NET 10.0.14",
+  "os": "Ubuntu 26.04.1 LTS",
+  "architecture": "X64",
+  "processors": 4,
+  "serverGc": false,
+  "stopwatchFrequency": 1000000000,
+  "allocationScope": "GC.GetTotalAllocatedBytes(true): process-wide, synchronous workload, includes document/output allocation; not retained memory",
+  "provenance": "MIT-authored linked test fixtures; TIFF 1-MiB input pads the 4096-byte fixture with zero unreferenced storage; XMP input is empty model",
+  "workloads": [
+    {
+      "name": "jpeg-open",
+      "inputBytes": 137,
+      "inputSha256": "8292726994D10CED48123F0FF06D852F70CF199F656F962A8690DFE36EB03260",
+      "iterationsPerSample": 100,
+      "result": 137,
+      "samples": [
+        {
+          "seconds": 0.0011006,
+          "operationsPerSecond": 90859.53116481919,
+          "allocatedBytesPerOperation": 1408.96,
+          "nominalInputMiBPerSecond": 11.87110497434638
+        },
+        {
+          "seconds": 0.0011523,
+          "operationsPerSecond": 86782.95582747548,
+          "allocatedBytesPerOperation": 1408.96,
+          "nominalInputMiBPerSecond": 11.338486622203963
+        },
+        {
+          "seconds": 0.0010351,
+          "operationsPerSecond": 96609.02328277462,
+          "allocatedBytesPerOperation": 1408.96,
+          "nominalInputMiBPerSecond": 12.622295560588954
+        },
+        {
+          "seconds": 0.0010128,
+          "operationsPerSecond": 98736.17693522907,
+          "allocatedBytesPerOperation": 1408.96,
+          "nominalInputMiBPerSecond": 12.900215377928147
+        },
+        {
+          "seconds": 0.0010139,
+          "operationsPerSecond": 98629.05611993292,
+          "allocatedBytesPerOperation": 1408.96,
+          "nominalInputMiBPerSecond": 12.886219681196986
+        }
+      ]
+    },
+    {
+      "name": "jpeg-exif-save",
+      "inputBytes": 137,
+      "inputSha256": "8292726994D10CED48123F0FF06D852F70CF199F656F962A8690DFE36EB03260",
+      "iterationsPerSample": 100,
+      "result": 173,
+      "samples": [
+        {
+          "seconds": 0.0029448,
+          "operationsPerSecond": 33958.16354251562,
+          "allocatedBytesPerOperation": 5219.52,
+          "nominalInputMiBPerSecond": 4.436748891186371
+        },
+        {
+          "seconds": 0.0026377,
+          "operationsPerSecond": 37911.817113394245,
+          "allocatedBytesPerOperation": 5219.52,
+          "nominalInputMiBPerSecond": 4.9533070988988985
+        },
+        {
+          "seconds": 0.0025334,
+          "operationsPerSecond": 39472.64545669851,
+          "allocatedBytesPerOperation": 5219.52,
+          "nominalInputMiBPerSecond": 5.157234599654862
+        },
+        {
+          "seconds": 0.0024789,
+          "operationsPerSecond": 40340.47359716003,
+          "allocatedBytesPerOperation": 5219.52,
+          "nominalInputMiBPerSecond": 5.270619280634808
+        },
+        {
+          "seconds": 0.0025505,
+          "operationsPerSecond": 39207.99843168007,
+          "allocatedBytesPerOperation": 5219.52,
+          "nominalInputMiBPerSecond": 5.122657570972604
+        }
+      ]
+    },
+    {
+      "name": "png-exif-save",
+      "inputBytes": 69,
+      "inputSha256": "38CDE640A8C23C5B3DF30608D15AFEB0D1680C1100EEF2B86F6F9C0C689829F3",
+      "iterationsPerSample": 100,
+      "result": 107,
+      "samples": [
+        {
+          "seconds": 0.0028203,
+          "operationsPerSecond": 35457.22086302876,
+          "allocatedBytesPerOperation": 5899.52,
+          "nominalInputMiBPerSecond": 2.3332102199067917
+        },
+        {
+          "seconds": 0.0031949,
+          "operationsPerSecond": 31299.884190428496,
+          "allocatedBytesPerOperation": 5892.8,
+          "nominalInputMiBPerSecond": 2.0596428004642164
+        },
+        {
+          "seconds": 0.0029201,
+          "operationsPerSecond": 34245.40255470703,
+          "allocatedBytesPerOperation": 5892.8,
+          "nominalInputMiBPerSecond": 2.253468300127778
+        },
+        {
+          "seconds": 0.0028785,
+          "operationsPerSecond": 34740.31613687685,
+          "allocatedBytesPerOperation": 5892.8,
+          "nominalInputMiBPerSecond": 2.2860353598065397
+        },
+        {
+          "seconds": 0.0029703,
+          "operationsPerSecond": 33666.63300003367,
+          "allocatedBytesPerOperation": 5892.8,
+          "nominalInputMiBPerSecond": 2.215383221628497
+        }
+      ]
+    },
+    {
+      "name": "webp-exif-save",
+      "inputBytes": 52,
+      "inputSha256": "EADBD992C7BED764FBCEB6EB182ECE269BDB6E53F76C1DDF272A16BC26F504E8",
+      "iterationsPerSample": 100,
+      "result": 104,
+      "samples": [
+        {
+          "seconds": 0.0026091,
+          "operationsPerSecond": 38327.392587482274,
+          "allocatedBytesPerOperation": 5796.8,
+          "nominalInputMiBPerSecond": 1.9006961961260587
+        },
+        {
+          "seconds": 0.0025117,
+          "operationsPerSecond": 39813.67201496994,
+          "allocatedBytesPerOperation": 5796.8,
+          "nominalInputMiBPerSecond": 1.9744023750099535
+        },
+        {
+          "seconds": 0.002481,
+          "operationsPerSecond": 40306.32809351068,
+          "allocatedBytesPerOperation": 5796.8,
+          "nominalInputMiBPerSecond": 1.998833714354091
+        },
+        {
+          "seconds": 0.0025662,
+          "operationsPerSecond": 38968.12407450705,
+          "allocatedBytesPerOperation": 5796.8,
+          "nominalInputMiBPerSecond": 1.9324707525962515
+        },
+        {
+          "seconds": 0.0025169,
+          "operationsPerSecond": 39731.41563033891,
+          "allocatedBytesPerOperation": 5796.8,
+          "nominalInputMiBPerSecond": 1.970323193338035
+        }
+      ]
+    },
+    {
+      "name": "tiff-layout-4k",
+      "inputBytes": 4096,
+      "inputSha256": "91334DB1DC18CB6218E1B32D8F8669158F5A958620B3DC4727DC1DDE1E10833C",
+      "iterationsPerSample": 100,
+      "result": 1,
+      "samples": [
+        {
+          "seconds": 0.0026328,
+          "operationsPerSecond": 37982.37617745366,
+          "allocatedBytesPerOperation": 9256,
+          "nominalInputMiBPerSecond": 148.36865694317837
+        },
+        {
+          "seconds": 0.002474,
+          "operationsPerSecond": 40420.37186742118,
+          "allocatedBytesPerOperation": 9256,
+          "nominalInputMiBPerSecond": 157.89207760711398
+        },
+        {
+          "seconds": 0.0023428,
+          "operationsPerSecond": 42683.96790165614,
+          "allocatedBytesPerOperation": 9256,
+          "nominalInputMiBPerSecond": 166.7342496158443
+        },
+        {
+          "seconds": 0.0023978,
+          "operationsPerSecond": 41704.89615480858,
+          "allocatedBytesPerOperation": 9262.72,
+          "nominalInputMiBPerSecond": 162.909750604721
+        },
+        {
+          "seconds": 0.0023751,
+          "operationsPerSecond": 42103.49037935244,
+          "allocatedBytesPerOperation": 9256,
+          "nominalInputMiBPerSecond": 164.46675929434548
+        }
+      ]
+    },
+    {
+      "name": "tiff-edit-4k",
+      "inputBytes": 4096,
+      "inputSha256": "91334DB1DC18CB6218E1B32D8F8669158F5A958620B3DC4727DC1DDE1E10833C",
+      "iterationsPerSample": 100,
+      "result": 4228,
+      "samples": [
+        {
+          "seconds": 0.0077489,
+          "operationsPerSecond": 12905.057492031126,
+          "allocatedBytesPerOperation": 28218.24,
+          "nominalInputMiBPerSecond": 50.41038082824659
+        },
+        {
+          "seconds": 0.0067522,
+          "operationsPerSecond": 14809.987855809959,
+          "allocatedBytesPerOperation": 28218.24,
+          "nominalInputMiBPerSecond": 57.85151506175765
+        },
+        {
+          "seconds": 0.0067514,
+          "operationsPerSecond": 14811.742749651923,
+          "allocatedBytesPerOperation": 28218.24,
+          "nominalInputMiBPerSecond": 57.858370115827825
+        },
+        {
+          "seconds": 0.0066888,
+          "operationsPerSecond": 14950.36478890085,
+          "allocatedBytesPerOperation": 28218.24,
+          "nominalInputMiBPerSecond": 58.399862456643945
+        },
+        {
+          "seconds": 0.0071555,
+          "operationsPerSecond": 13975.263783103905,
+          "allocatedBytesPerOperation": 28218.24,
+          "nominalInputMiBPerSecond": 54.59087415274963
+        }
+      ]
+    },
+    {
+      "name": "tiff-edit-1m",
+      "inputBytes": 1048576,
+      "inputSha256": "6324745227E11E59BF82D823C9B77160139972FB0B8075FC42615384AC43D534",
+      "iterationsPerSample": 20,
+      "result": 1048708,
+      "samples": [
+        {
+          "seconds": 0.056597,
+          "operationsPerSecond": 353.3756206159337,
+          "allocatedBytesPerOperation": 4146875.6,
+          "nominalInputMiBPerSecond": 353.3756206159337
+        },
+        {
+          "seconds": 0.0535072,
+          "operationsPerSecond": 373.7814723999761,
+          "allocatedBytesPerOperation": 4147630,
+          "nominalInputMiBPerSecond": 373.7814723999761
+        },
+        {
+          "seconds": 0.0676104,
+          "operationsPerSecond": 295.8124785535953,
+          "allocatedBytesPerOperation": 4146393.2,
+          "nominalInputMiBPerSecond": 295.8124785535953
+        },
+        {
+          "seconds": 0.0718855,
+          "operationsPerSecond": 278.2202252192723,
+          "allocatedBytesPerOperation": 4147810.4,
+          "nominalInputMiBPerSecond": 278.2202252192723
+        },
+        {
+          "seconds": 0.0641087,
+          "operationsPerSecond": 311.9701382183697,
+          "allocatedBytesPerOperation": 4147572,
+          "nominalInputMiBPerSecond": 311.9701382183697
+        }
+      ]
+    },
+    {
+      "name": "xmp-create-apply",
+      "inputBytes": 0,
+      "inputSha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+      "iterationsPerSample": 100,
+      "result": 318,
+      "samples": [
+        {
+          "seconds": 0.0133925,
+          "operationsPerSecond": 7466.865783087549,
+          "allocatedBytesPerOperation": 88320.16,
+          "nominalInputMiBPerSecond": 0
+        },
+        {
+          "seconds": 0.0125169,
+          "operationsPerSecond": 7989.198603488085,
+          "allocatedBytesPerOperation": 88320.16,
+          "nominalInputMiBPerSecond": 0
+        },
+        {
+          "seconds": 0.0129952,
+          "operationsPerSecond": 7695.148978084216,
+          "allocatedBytesPerOperation": 88320.16,
+          "nominalInputMiBPerSecond": 0
+        },
+        {
+          "seconds": 0.0113745,
+          "operationsPerSecond": 8791.595234955383,
+          "allocatedBytesPerOperation": 88320.16,
+          "nominalInputMiBPerSecond": 0
+        },
+        {
+          "seconds": 0.0100554,
+          "operationsPerSecond": 9944.905225053204,
+          "allocatedBytesPerOperation": 88320.16,
+          "nominalInputMiBPerSecond": 0
+        }
+      ]
+    }
+  ]
+}

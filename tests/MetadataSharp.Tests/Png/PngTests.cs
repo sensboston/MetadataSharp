@@ -212,6 +212,15 @@ public sealed class PngTests
         Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => BoundedZlib.Expand([0x78, 0x9c, 7, 0, 0, 0, 0, 1], 100, default)).Code);
     }
     [Fact]
+    public void CanonicalEmptyZlibIsValidButMissingDeflateFramingStillRefuses()
+    {
+        byte[] canonical = [0x78, 0x9c, 3, 0, 0, 0, 0, 1];
+        Assert.Equal(canonical, PngFixture.Compress([]));
+        Assert.Empty(BoundedZlib.Expand(canonical, 1, default));
+        foreach (byte[] malformed in new byte[][] { [], [0x78, 0x9c, 0, 0, 0, 1] })
+            Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => BoundedZlib.Expand(malformed, 1, default)).Code);
+    }
+    [Fact]
     public void ManyEmptyFixedBlocksAndConcatenatedStreamsHaveExactTermination()
     {
         // Independently authored RFC1951 bits: fixed block + seven-bit EOB, no literals.

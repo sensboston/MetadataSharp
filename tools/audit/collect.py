@@ -20,7 +20,12 @@ def main(run_id, destination):
             continue
         assert check['conclusion'] == 'success', check
         annotations = gh('api', f'repos/sensboston/MetadataSharp/check-runs/{check["id"]}/annotations?per_page=100')
-        platform = check['name'].split('/')[-1].strip().replace('-latest', '')
+        parts = check['name'].split(' / ')
+        platform = parts[1].replace('-latest', '')
+        assert platform in ('ubuntu', 'windows', 'macos')
+        if len(parts) == 3:
+            assert parts[2] in ('net8.0', 'net10.0')
+            platform += '-' + parts[2]
         for file in ['baseline.json', 'packages.json']:
             pieces = {}
             for a in annotations:
@@ -33,7 +38,8 @@ def main(run_id, destination):
             path = destination / f'{platform}-{file}'
             path.write_text(json.dumps(value, indent=2) + '\n')
             receipts.append(dict(file=path.name, checkRun=check['id'], rawJsonSha256=hashlib.sha256(raw).hexdigest()))
-    assert len(receipts) == 6, receipts
+    expected = 12 if any('-net' in r['file'] for r in receipts) else 6
+    assert len(receipts) == expected and len({r['file'] for r in receipts}) == expected, receipts
     (destination / 'receipt.json').write_text(json.dumps(dict(run=run, runId=run_id, encoding='zlib/base64 chunks <=2500 bytes', files=receipts), indent=2)+'\n')
 
 if __name__ == '__main__':

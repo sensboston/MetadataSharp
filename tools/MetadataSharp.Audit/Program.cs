@@ -14,6 +14,15 @@ using MetadataSharp.Tests.Png;
 using MetadataSharp.Tests.WebP;
 using MetadataSharp.Tests.Tiff;
 
+if (args.Length == 2 && args[0] == "--api")
+{
+    var signatures = new[] { typeof(ExifValue).Assembly, typeof(TiffMetadataDocument).Assembly }
+        .SelectMany(a => a.GetExportedTypes()).OrderBy(t => t.FullName, StringComparer.Ordinal)
+        .SelectMany(t => new[] { "TYPE " + t.FullName }.Concat(t.GetMembers(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly)
+            .Select(m => t.FullName + " " + m.MemberType + " " + m.ToString()).Order(StringComparer.Ordinal))).ToArray();
+    File.WriteAllText(args[1], JsonSerializer.Serialize(new { runtimeMajor = Environment.Version.Major, signatures }));
+    return;
+}
 if (args.Length != 1) throw new ArgumentException("Supply an evidence output directory.");
 Directory.CreateDirectory(args[0]);
 byte[] jpeg = JpegFixture.Build(), png = PngFixture.Build(), webp = WebPFixture.Image(0);
@@ -50,7 +59,7 @@ foreach (var w in workloads)
     }
     results.Add(new { name = w.Name, inputBytes = w.Input.Length, inputSha256 = Convert.ToHexString(SHA256.HashData(w.Input)), iterationsPerSample = w.Iterations, result = expected, samples });
 }
-var report = new { schema = 1, sourceCommit = Environment.GetEnvironmentVariable("AUDIT_SOURCE_COMMIT"),
+var report = new { schema = 2, targetFramework = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(System.Runtime.Versioning.TargetFrameworkAttribute), false).Cast<System.Runtime.Versioning.TargetFrameworkAttribute>().Single().FrameworkName, sourceCommit = Environment.GetEnvironmentVariable("AUDIT_SOURCE_COMMIT"),
     runtime = RuntimeInformation.FrameworkDescription, os = RuntimeInformation.OSDescription,
     architecture = RuntimeInformation.ProcessArchitecture.ToString(), processors = Environment.ProcessorCount,
     serverGc = GCSettings.IsServerGC, stopwatchFrequency = Stopwatch.Frequency,

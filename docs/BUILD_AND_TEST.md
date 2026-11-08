@@ -191,3 +191,17 @@ measured JSON, SDK/architecture context, package/license/dependency/API docs gap
 and unexecuted checks. Audit-only opt-in IsPackable/0.0.0-audit properties never
 permit publication; normal builds are non-packable. Local SDK is absent. Final PR
 #12 documentation head requires its own full CI before merge; receipt goes in PR.
+
+## E02 modern multi-target verification (supersedes net8-only instructions)
+
+Source SDK selection is now 10.0.100/latest stable feature band; retain SDK/runtime
+8 and 10 to execute both targets. Libraries/tests/tools target net8.0 and net10.0;
+`dotnet run` for those projects now requires `--framework net8.0` or `net10.0`.
+
+Validated 2949589/run42446034373: all 14 jobs, 450 .NET cases per six OS/TFM
+combinations, both references and six audits. Exact commands/support/evidence:
+[audit](audits/DOTNET_8_10_SUPPORT_AND_E02_AUDIT.md). Historical SDK8-only/single-TFM
+commands describe older commits, not current source builds. Reference harness
+selects its fixture DLL with METADATASHARP_REFERENCE_TFM (default net8.0); audit
+selects with AUDIT_TFM (default net8.0). Normal IsPackable remains false. No publish.
+Final discovery/documentation head requires own CI; receipt recorded in PR #15.

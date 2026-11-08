@@ -1,0 +1,72 @@
+{
+  "schema": 2,
+  "targetFramework": "net10.0",
+  "consumerSdk": "10.0.403",
+  "publicSignatureSha256": "a9cd2ae9fe864fbf39da5bc9fd4bfb32fa720f4afc024ac81b53cd1f3bdb93cb",
+  "publicSignatureCount": 633,
+  "sourceCommit": "2949589c1908b9da80289670b89c062d03bc5af0",
+  "sdkInfo": ".NET SDK:\n Version:           10.0.403\n Commit:            5a2162bea6\n Workload version:  10.0.400-manifests.a00bebb6\n MSBuild version:   18.9.15+5a2162bea\n\nRuntime Environment:\n OS Name:     ubuntu\n OS Version:  26.04\n OS Platform: Linux\n RID:         linux-x64\n Base Path:   /usr/share/dotnet/sdk/10.0.403/\n\n.NET workloads installed:\nThere are no installed workloads to display.\nConfigured to use workload sets when installing new manifests.\nNo workload sets are installed. Run \"dotnet workload restore\" to install a workload set.\n\nHost:\n  Version:      10.0.14\n  Architecture: x64\n  Commit:       0427b9abbe\n\n.NET SDKs installed:\n  8.0.133 [/usr/share/dotnet/sdk]\n  8.0.206 [/usr/share/dotnet/sdk]\n  8.0.319 [/usr/share/dotnet/sdk]\n  8.0.427 [/usr/share/dotnet/sdk]\n  9.0.123 [/usr/share/dotnet/sdk]\n  9.0.205 [/usr/share/dotnet/sdk]\n  9.0.320 [/usr/share/dotnet/sdk]\n  10.0.114 [/usr/share/dotnet/sdk]\n  10.0.204 [/usr/share/dotnet/sdk]\n  10.0.303 [/usr/share/dotnet/sdk]\n  10.0.403 [/usr/share/dotnet/sdk]\n\n.NET runtimes installed:\n  Microsoft.AspNetCore.App 8.0.6 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 8.0.22 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 8.0.33 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 9.0.6 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 9.0.22 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.8 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.11 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.14 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]\n  Microsoft.NETCore.App 8.0.6 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 8.0.22 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 8.0.33 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 9.0.6 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 9.0.22 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.8 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.11 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.14 [/usr/share/dotnet/shared/Microsoft.NETCore.App]\n\nOther architectures found:\n  None\n\nEnvironment variables:\n  DOTNET_CLI_TELEMETRY_OPTOUT              [1]\n  DOTNET_MULTILEVEL_LOOKUP                 [0]\n  DOTNET_NOLOGO                            [1]\n  DOTNET_ROOT                              [/usr/share/dotnet]\n  DOTNET_SKIP_FIRST_TIME_EXPERIENCE        [1]\n\nglobal.json file:\n  /home/runner/work/MetadataSharp/MetadataSharp/global.json\n\nLearn more:\n  https://aka.ms/dotnet/info\n\nDownload .NET:\n  https://aka.ms/dotnet/download\n",
+  "packages": [
+    {
+      "package": "MetadataSharp.Core.0.0.0-audit.nupkg",
+      "sha256": "e405177d127f5232818211fee1359b5134112e45b63ed2857f1014bf9c59e855",
+      "entries": [
+        "LICENSE",
+        "MetadataSharp.Core.nuspec",
+        "README.md",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net10.0/MetadataSharp.Core.dll",
+        "lib/net10.0/MetadataSharp.Core.xml",
+        "lib/net8.0/MetadataSharp.Core.dll",
+        "lib/net8.0/MetadataSharp.Core.xml",
+        "package/services/metadata/core-properties/nuget.psmdcp"
+      ],
+      "dependencyGroups": {
+        "net10.0": [],
+        "net8.0": []
+      },
+      "documentedMembers": {
+        "net8.0": 45,
+        "net10.0": 45
+      }
+    },
+    {
+      "package": "MetadataSharp.Formats.0.0.0-audit.nupkg",
+      "sha256": "9613738629c199f6d20e8185e1da4dcd203ec8e593d7a60a48466786aa232e0d",
+      "entries": [
+        "LICENSE",
+        "MetadataSharp.Formats.nuspec",
+        "README.md",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net10.0/MetadataSharp.Formats.dll",
+        "lib/net10.0/MetadataSharp.Formats.xml",
+        "lib/net8.0/MetadataSharp.Formats.dll",
+        "lib/net8.0/MetadataSharp.Formats.xml",
+        "package/services/metadata/core-properties/nuget.psmdcp"
+      ],
+      "dependencyGroups": {
+        "net10.0": [
+          [
+            "MetadataSharp.Core",
+            "0.0.0-audit"
+          ]
+        ],
+        "net8.0": [
+          [
+            "MetadataSharp.Core",
+            "0.0.0-audit"
+          ]
+        ]
+      },
+      "documentedMembers": {
+        "net8.0": 19,
+        "net10.0": 19
+      }
+    }
+  ],
+  "offlineConsumer": "passed",
+  "publication": "not attempted",
+  "docCaveat": "XML member counts are not full API documentation coverage; CS1591 suppressed only for audit candidates"
+}
