@@ -72,8 +72,8 @@ same rules apply to Shape B's RGB root.
 | ColorMatrix1 | 50721 | SRATIONAL/9 | Required. Exactly 9 values; every denominator strictly positive. Numerators may be negative (SRATIONAL by design); zero denominators forbidden. | Type/count → `UnsupportedFieldShape`; zero denominator → `InvalidSemanticValue` |
 | CalibrationIlluminant1 | 50778 | SHORT/1 | Required. Exactly `21` (D65). | Other value → `InvalidSemanticValue` |
 | AsShotNeutral | 50728 | RATIONAL/3 | Required. Exactly 3 values; numerator and denominator strictly positive (no zero neutral). | Zero numerator/denominator → `InvalidSemanticValue` |
-| DefaultCropOrigin | 50719 | LONG/2 | Optional, accepted at the raw leaf (Shape A root or Shape B SubIFD) and at the Shape-B RGB root; **paired** with DefaultCropSize on the same directory. Origin values fit the raw bounds. | Unpaired → `InvalidSemanticValue` |
-| DefaultCropSize | 50720 | LONG/2 | Optional, paired with DefaultCropOrigin. Positive-sized, fits the active area (whole raw bounds if ActiveArea absent). | Unpaired / non-positive / out-of-fit → `InvalidSemanticValue` |
+| DefaultCropOrigin | 50719 | LONG/2 | Optional, raw leaf only (Shape A root == raw leaf; Shape B SubIFD); **paired** with DefaultCropSize on the same directory. Origin values fit the raw bounds. On a thumbnail root the pair is out of whitelist → `UnsupportedExtension`. | Unpaired → `InvalidSemanticValue` |
+| DefaultCropSize | 50720 | LONG/2 | Optional, raw leaf only; paired with DefaultCropOrigin. Positive-sized, fits the active area (whole raw bounds if ActiveArea absent). | Unpaired / non-positive / out-of-fit → `InvalidSemanticValue` |
 
 No color-science, calibration or linearization claim follows from these checks;
 they establish only structural presence and sign/positivity constraints.
@@ -155,10 +155,12 @@ is ignored. No parity or completeness claim is made.
 
 ## 9. Root-versus-child association (summary)
 
-Root (both shapes): 50706, 50707 (optional), 50708, 50719, 50720, 50721, 50728,
+Root (both shapes): 50706, 50707 (optional), 50708, 50721, 50728,
 50778 + role-specific image fields (Shape A: §5 raw; Shape B: §6 thumbnail) +
 common §3. Raw leaf (Shape B only): §5 set, may duplicate 50706/50707/50708/
 50721/50728/50778 under the §1 mirror rule; may also carry §3 common fields.
+The DefaultCropOrigin/DefaultCropSize pair and ActiveArea are raw-leaf-only;
+on a Shape-B thumbnail root they are rejected as `UnsupportedExtension`.
 CFA tags and BlackLevel/WhiteLevel live on the raw leaf only. ActiveArea lives
 on the raw leaf only. No field moves roles implicitly; an unexpected role for a
 §4/§5 field → `UnsupportedDirectoryRole`.
