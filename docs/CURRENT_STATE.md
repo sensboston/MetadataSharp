@@ -1,97 +1,78 @@
 # Current development state and recovery checkpoint
 
-Updated: 2026-11-07. Read first after interruption; verify against source/Git/live CI.
-PROGRESS.md preserves chronological approvals, diagnostics and immutable evidence.
+Updated 2026-11-07. Read first; compare with live branch/Git/PR/CI. Current assigned
+branch **arena/d0eec35b-metadatasharp**, based on PR #13 merge
+820229f57abe6cc10400087ca56ed2bdd0980911. Never use older session branch names.
 
-## Current grouped unit
+## Approved new direction and scope
 
-**M17 DNG feasibility deliverable COMPLETE; future DNG implementation plan remains
-UNAPPROVED. M18 bounded measured performance/package audit COMPLETE.** Developer
-requested both remaining roadmap units in one pass/one PR. No public production API
-or safety changes, DNG implementation, broad optimization or publication authorized.
+Developer approved a new large programme aiming at practically complete Exiv2
+user-visible capability coverage via independent implementation, with improvements
+from issues/discussions, idiomatic .NET contracts, **.NET 8 + .NET 10 LTS**, and
+Framework 4.8.x ONLY if genuinely cheap. See
+roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md for E00–E18 and honest coverage rules.
+No C++ ABI/CLI syntax clone, GPL-derived implementation/tests/dictionaries, general
+MakerNote relocation, release publication or unseen public APIs approved.
 
-Active assigned branch: `arena/d5125ece-metadatasharp`, based on completed M17–M18 merge
-`b7c9f3959b289f08c30d209b78d0915003111390`. Work only on live assigned Arena branch;
-never switch to master or reuse a merged historical session branch. Completed grouped
-PR: https://github.com/sensboston/MetadataSharp/pull/12 (MERGED). Standing authorization covers
-commits/push and merge after the whole final-head gate, not package publication.
+## This submission
 
-## Durable deliverables and observed gates
+- E00 programme documentation recorded; historical M00–M18 entry points marked
+  archive-in-place, binding contracts/audits/provenance kept. DOCUMENTATION_INDEX
+  distinguishes current work and history. No production source/config changed.
+- E01 initial discovery performed: Exiv2 v0.28.9 (2026-08-30), annotated tag
+  110cbaef8e75f0e064e5c522846a18982bc4db70 → b0859fc61fea5dedfc898aece6b15893ddf4314e.
+  Reviewed README/license/CLI documentation facts, not implementation or tests.
+  31 documented format rows/six metadata categories; 35 issue title/label/state
+  signals from three bounded search queries and 12 of 37 discussions (metadata
+  only). Full E01 operation inventory/CLI build verification and denominator remain
+  OPEN, no percentage claim. Sources/sampling limits in docs/research.
+- Official dotnet/core lifecycle index blob 66392f8bd6d254f73cf7a2f42113bc4034a20747
+  confirms .NET 8 EOL 2026-11-10, .NET 10 EOL 2028-11-14. No retargeting/builds done.
+  E02 must prove both TFMs/SDK selection/packages/platforms. Framework is unproven,
+  not a promised TFM or a trivial compatibility package. Modern API cost map needed.
+- E04/D0 exact read-only DNG proposal prepared in
+  design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md. **UNAPPROVED, not implemented.**
+  Exact APIs/error addition/subset proposed; normative ledger/fixture rights/raw
+  oracle/TFM/compatibility gates remain before D1. Existing TIFF DNG refusal stays.
+- Local Python policy and document JSON/link/diff checks are the available checks.
+  No .NET 10/Framework/Exiv2 0.28.9 binary/DNG decoder run is claimed. No legal
+  clean-room certification, exhaustive issue-body review or parity score claimed.
 
-- M00–M16 merged. M16 PR #11 confirmed merged at d476e37; final cbd3607 passed
-  42436474402/42436471157 with 448 tests/platform, policy/references.
-- M17: docs/design/DNG_SCOPE.md and docs/prompts/followups/DNG_PROPOSED_SEQUENCE.md.
-  Source DNG 1.7.1.0 September 2023 mirror/hash pinned; dependency/risk/required
-  contracts/exclusions/fixture rights/reference questions recorded. D0 → D1 → D2
-  is proposed future work requiring approval, not code or an approved public API.
-  Current TIFF DNG refusal remains unchanged. Exact M17 head
-  1a05ffe23ee6e8b766a6db777705e509755bb79b passed 42439542366 BEFORE M18 tooling.
-- M18: docs/audits/PERFORMANCE_AND_PACKAGING_AUDIT.md, evidence/m18 JSON/receipt,
-  tools/MetadataSharp.Audit, tools/audit/run.py and collect.py. Eight authored-input
-  public-API workloads, five measured batches, throughput/process-wide allocations,
-  hashes/environment; opt-in local 0.0.0-audit packages, manifests/XML/MIT/deps and
-  isolated offline consumer on Linux/Windows/macOS. Normal IsPackable stays false.
-- Audited/recovered evidence head **4d89a00e016d32845bd44395bba7f0076dcc1217** passed
-  required [42439984148](https://github.com/sensboston/MetadataSharp/actions/runs/42439984148):
-  **all seven jobs green**, including 448 .NET tests per OS, Python policy 12/12,
-  required pinned references and all three measurement/package/consumer jobs.
-- Package XML member counts 45 Core / 19 Formats are NOT full API documentation
-  coverage. No external production package deps except Formats → Core; framework
-  runtime still needed. No shipping CLI/native/fixture/PDF/GPL payloads. No broad
-  conformance, full-size I/O, universal speed, zero-allocation or release claim.
-- Final grouped head **02be218820c6a6b3abdbd08091db1761c7771f7d** passed
-  42440206658/42440203208, all seven jobs, before PR #12 merged at b7c9f395.
-  **All bounded M00–M18 roadmap units are complete.** No pending M17/M18 merge gate.
-- Post-roadmap cleanup explicitly requested by developer: removed ten obsolete
-  remote Arena branches only after merged-PR and full-history ancestry proofs;
-  exact names/tips and verification are in PROGRESS. Pruned remote-tracking refs.
-  Master, current active Arena branch, tags, releases and all merged commits kept.
-  No local obsolete branches existed. Cleanup documentation uses this active branch;
-  documentation PR #13 is OPEN, not merged. Runs 42441201239/42441196628 at
-  34f1591 failed before any job started: GitHub Actions account payment/spending
-  limit blocker, confirmed via check annotations. Subsequently the developer
-  explicitly approved a documentation-only CI exception for PR #13, including
-  this next-stage selection. No workflow changes or passing-CI claims. Check live
-  PR state/merge receipt; once merged, proceed to D0 proposal only. This exception
-  does not apply to future work. Local policy 12/12 and diff checks passed; no new
-  .NET run is claimed.
-  Do NOT delete the active branch, even after its documentation PR merges.
+## Next steps and stop boundaries
 
-## Next eligible work after grouped merge
+1. Save/push this documentation/research PR and inspect its actual CI. Prior GitHub
+   account billing/spending problem blocked PR #13 jobs. User allowed only that
+   documentation PR to merge without green CI; **exception does NOT carry over**.
+   Do not merge a new red/unexecuted head without successful checks or new explicit
+   per-PR deferral. Do not repeatedly retry billing failures without an account fix.
+2. Request explicit D0 contract approval, not generic programme approval. Close its
+   normative/independent-oracle prerequisites before D1; do not implement DNG now.
+3. Continue full E01 atomic baseline/corpus/reference build reconciliation, with
+   rights per fixture and separation of docs claims/observations/test expectations.
+   E02 runtime work can be scoped independently when required CI is available.
+4. E03 architecture proposal before public API refactor. E06+ umbrella format/vendor
+   stages require bounded per-family prompts and new contract gates before code.
 
-No original roadmap implementation milestone remains. Developer explicitly selected
-**DNG D0 exact read-only contract proposal** over release hardening. Follow
-ROADMAP's selected-next-stage scope and DNG_PROPOSED_SEQUENCE. D0 is proposal only:
-resolve subset/normative dependencies, exact signatures/options/immutable models,
-finite bounds/errors/ownership/async and fixture/oracle strategy, then ask approval
-and STOP before implementation. D1/D2 implementation is not authorized. Preserve
-existing TIFF DNG refusal. Release hardening/publication remain separate and deferred.
-M16 still retains obsolete bytes: no erasure/privacy/compaction or generic opaque-
-pointer safety. Do not extend the PR #13 documentation-only CI exception to D0
-implementation, production changes or future PRs.
+## Completed history and tools
 
-## Recovery commands and environment
+M00–M18 complete within original bounded scope. M17 feasibility is not DNG support;
+M18 audit is not publication. PR #12 merged b7c9f395; final head 02be218 passed
+42440206658/42440203208: 448 tests/platform, Python 12/12, required references and
+three platform audits. PR #13 merged 820229f5 under one-off documentation-only CI
+exception; ten old proven-merged branches deleted, active session branches kept.
+Exact old decisions/receipt links remain PROGRESS/ROADMAP/audits. Old .NET 8 CI
+success and pinned Exiv2 0.27.6 are NOT evidence of new runtime/baseline parity.
 
 ```sh
 git status --short
 git branch --show-current
-git log -6 --oneline
 python -m unittest discover -s tests/reference -q
-python -m py_compile tools/audit/*.py
 git diff --check
-gh pr list --head arena/d5125ece-metadatasharp --state all --json number,state,url
-git ls-remote --heads origin
-gh run list --branch arena/d5125ece-metadatasharp --limit 6
-# On .NET 8 SDK machine (absent in local Arena):
-python tools/audit/run.py
-dotnet test MetadataSharp.sln --configuration Release
+gh pr list --head arena/d0eec35b-metadatasharp --state all
+gh run list --branch arena/d0eec35b-metadatasharp --limit 4
 ```
 
-Do not retry unavailable SDK/blob downloads or workflow dispatch (403 previously).
-Push-triggered Actions work. Failed TRX and bounded command/assert diagnostics are
-check annotations. Audit JSON annotations use compressed <=2500-byte chunks because
-GitHub truncates messages at 4096; collector validates complete sets/run/source.
-First audit package assertion correctly caught absent XML due late MSBuild property
-setup; fixed by early opt-in props, not weakening checks. All artifacts stay ignored;
-only small measured JSON/receipt belong in Git. Required references use Exiv2 0.27.6,
-ExifTool 12.76 and dwebp 1.3.2; warnings/skips must not be weakened to obtain success.
+Local SDK absent; do not repeat failed SDK/Actions blob downloads. Use check-run
+annotations for infrastructure/TRX errors. Current pipeline requires seven jobs;
+none waived by this submission. Downloaded review material stays ignored artifacts;
+only small source metadata/factual research JSON is committed, not GPL source or PDFs.

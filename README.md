@@ -4,6 +4,14 @@ An MIT-licensed managed .NET library for image metadata editing without
 pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/IPTC/XMP, static PNG/WebP EXIF/XMP editing and XMP sidecars with conservative safety refusals; classic TIFF layout accounting and restricted descriptive editing (obsolete bytes retained).**
 This is not general image-format or full RDF/XMP support.
 
+## Current expansion programme
+
+[Independent Exiv2 capability coverage and .NET 8/10 programme](docs/roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md)
+is the active roadmap. [Documentation index](docs/DOCUMENTATION_INDEX.md) separates
+current work from completed M00–M18 history. Near-complete parity is a goal, not an
+implemented claim; .NET 10/Framework builds are not yet added. The new
+[DNG D0 contract](docs/design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md) awaits approval.
+
 ## Start Here
 
 - [Current state and recovery instructions](docs/CURRENT_STATE.md): approved scope,
