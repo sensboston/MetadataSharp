@@ -803,3 +803,17 @@
   resulting pointer/schema/resource proofs; finish usage/support/audit documentation
   and actual final-head gates. Continue M16 without repeating approval. M17/DNG
   code and package publication remain outside the approved implementation scope.
+
+### M16 expanded acceptance matrix submission
+
+- Added accounting-only compression selectors 1/5/7/8/32946/32773 for strip/tile
+  preservation (not a claim that the synthetic payload encodes those codecs),
+  II/MM separate RGB/explicit-alpha planes, shared RATIONAL alias/storage ceilings,
+  candidate preview/odd-prefix alignment, opaque-extension refusals, entry/value
+  limits and pure planner 4-GiB edge checks without giant allocations/hashing.
+- Added deterministic destination race, temporary cleanup after emission read fault,
+  caller-owned partial output, snapshot-before-async-I/O and cancellation after
+  emission/temporary creation tests. No safety check or warning classifier relaxed.
+- Static test floor raised to 435; actual .NET and required reference results await
+  Actions. Local Python policy 12/12 and git diff --check pass. M16 is still draft;
+  final audit/documentation and final-head gate remain required.
