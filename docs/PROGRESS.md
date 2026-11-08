@@ -760,3 +760,8 @@
   M16 external-write references, full acceptance matrix and final audit remain
   PENDING. Updated CURRENT_STATE.md so resuming does not mistake this source for
   either a no-code proposal or a completed/validated writer.
+- Initial source ae7a946 builds on Linux/macOS but test execution failed; details
+  require inspection before any green claim. Added explicit TRX failure annotations
+  so test errors remain accessible even when Actions artifact/log hosts cannot be
+  downloaded. No failing test was disabled or assertion weakened. Initial M16 write
+  reference generation/fact/pointer checks are now submitted alongside diagnosis.

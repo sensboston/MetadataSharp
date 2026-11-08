@@ -304,6 +304,45 @@ def main(argv=None):
                 changed = output / f"external-{big}-{tiles}.tif"; shutil.copyfile(tiff, changed)
                 run(["exiftool", "-overwrite_original", "-IFD0:Artist=ExternalTiff", str(changed)])
                 assert json.loads(ours("inspect-tiff", changed)) == own
+                edited_tiff = output / f"edited-{big}-{tiles}.tif"
+                base_bytes = tiff.read_bytes(); edited_bytes = edited_tiff.read_bytes()
+                assert edited_bytes[:4] == base_bytes[:4] and edited_bytes[8:len(base_bytes)] == base_bytes[8:]
+                assert (output / f"edit-noop-{big}-{tiles}.tif").read_bytes() == edited_bytes
+                # Independent bounded pointer/value accounting for the owned one-IFD profile.
+                endian = "big" if big else "little"
+                def number(data, at, size):
+                    assert at >= 0 and at + size <= len(data)
+                    return int.from_bytes(data[at:at+size], endian)
+                root = number(edited_bytes, 4, 4); assert root >= len(base_bytes) and root % 2 == 0
+                count = number(edited_bytes, root, 2); assert 1 <= count <= 512
+                assert number(edited_bytes, root + 2 + 12*count, 4) == 0
+                fields = {}; extents = [(0, 8), (root, root + 6 + 12*count)]
+                last = -1
+                for i in range(count):
+                    at = root + 2 + i*12; tag = number(edited_bytes, at, 2); typ = number(edited_bytes, at+2, 2); n = number(edited_bytes, at+4, 4)
+                    assert tag > last; last = tag
+                    width = {2: 1, 3: 2, 4: 4}[typ]; size = width*n
+                    pos = at+8 if size <= 4 else number(edited_bytes, at+8, 4)
+                    assert pos + size <= len(edited_bytes)
+                    if size > 4: assert pos % 2 == 0; extents.append((pos, pos+size))
+                    fields[tag] = (typ, n, edited_bytes[pos:pos+size])
+                offset_tag, count_tag = (324, 325) if tiles else (273, 279)
+                start = int.from_bytes(fields[offset_tag][2], endian); size = int.from_bytes(fields[count_tag][2], endian)
+                assert start == 2048 and size == 256 and edited_bytes[start:start+size] == base_bytes[start:start+size]
+                extents.append((start, start+size)); extents.sort()
+                assert all(a[1] <= b[0] for a, b in zip(extents, extents[1:]))
+                assert fields[305][2] == b"MetadataSharp\0" and fields[315][2] == b"Alice\0"
+                facts = json.loads(run(["exiftool", "-j", "-IFD0:Software", "-IFD0:Artist", str(edited_tiff)]))[0]
+                assert facts["Software"] == "MetadataSharp" and facts["Artist"] == "Alice", facts
+                rows = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Exif.Image.Software", "-K", "Exif.Image.Artist", str(edited_tiff)]))
+                assert rows == {"Exif.Image.Software": ("Ascii", 14, "MetadataSharp"), "Exif.Image.Artist": ("Ascii", 6, "Alice")}, rows
+                removed_tiff = output / f"edit-removed-{big}-{tiles}.tif"
+                assert json.loads(ours("inspect-tiff-values", removed_tiff)) == {"artist": None, "software": "MetadataSharp"}
+                assert b"Alice\0" in removed_tiff.read_bytes()  # Deliberate physical retention, not privacy scrubbing.
+                assert json.loads(ours("inspect-tiff-values", changed))["artist"] == "ExternalTiff"
+                refreshed = output / f"refreshed-{big}-{tiles}.tif"; ours("rewrite-tiff", changed, refreshed)
+                facts = json.loads(run(["exiftool", "-j", "-IFD0:Software", "-IFD0:Artist", str(refreshed)]))[0]
+                assert facts["Software"] == "Refreshed" and facts["Artist"] == "ExternalTiff", facts
         report["fixtures"] = [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                                "source": "MetadataSharp authored synthetic generator", "license": "MIT"}
                               for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png", ".webp", ".tif")]

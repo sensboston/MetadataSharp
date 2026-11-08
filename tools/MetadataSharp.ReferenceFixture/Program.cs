@@ -77,6 +77,15 @@ if (args.Length == 2 && args[0] == "generate")
         var tiff = StandaloneTiffFixture.Create(big, tiles);
         tiff.Directory(8, StandaloneTiffFixture.Fields(tiles).OrderBy(f => f.Tag).ToArray());
         File.WriteAllBytes(Path.Combine(args[1], $"owned-{big}-{tiles}.tif"), tiff.Bytes);
+        using var tiffDoc = TiffMetadataDocument.Open(new MemoryStream(tiff.Bytes));
+        var tiffEdit = new TiffMetadataEdit();
+        tiffEdit.Set(new(tiffDoc.Layout.FirstIfdOffset, 305), ExifValue.FromRaw(TiffFieldType.Ascii, 14, Endianness.LittleEndian, "MetadataSharp\0"u8));
+        tiffEdit.Set(new(tiffDoc.Layout.FirstIfdOffset, 315), ExifValue.FromRaw(TiffFieldType.Ascii, 6, Endianness.LittleEndian, "Alice\0"u8));
+        string editedTiff = Path.Combine(args[1], $"edited-{big}-{tiles}.tif"); tiffDoc.SaveAs(editedTiff, tiffEdit);
+        using var tiffResult = TiffMetadataDocument.Open(editedTiff);
+        tiffResult.SaveAs(Path.Combine(args[1], $"edit-noop-{big}-{tiles}.tif"), new());
+        var removeArtist = new TiffMetadataEdit(); removeArtist.Remove(new(tiffResult.Layout.FirstIfdOffset, 315));
+        tiffResult.SaveAs(Path.Combine(args[1], $"edit-removed-{big}-{tiles}.tif"), removeArtist);
     }
 
     // Authored resource fixture: keep a copyright flag, update IPTC and its existing digest.
@@ -154,6 +163,16 @@ else if (args.Length == 2 && args[0] == "probe-webp-opaque")
     if (reread.ReadXmp() is not null || reread.ReadExif() is null) return 4;
     Console.WriteLine("opaque edit refused before output; whole removal retained EXIF");
 }
+else if (args.Length == 2 && args[0] == "inspect-tiff-values")
+{
+    using var doc = TiffMetadataDocument.Open(args[1]);
+    Console.WriteLine(JsonSerializer.Serialize(new { artist = RawText(doc.ReadValue(new(doc.Layout.FirstIfdOffset, 315))), software = RawText(doc.ReadValue(new(doc.Layout.FirstIfdOffset, 305))) }));
+}
+else if (args.Length == 3 && args[0] == "rewrite-tiff")
+{
+    using var doc = TiffMetadataDocument.Open(args[1]); var edit = new TiffMetadataEdit();
+    edit.Set(new(doc.Layout.FirstIfdOffset, 305), ExifValue.FromRaw(TiffFieldType.Ascii, 10, Endianness.LittleEndian, "Refreshed\0"u8)); doc.SaveAs(args[2], edit);
+}
 else if (args.Length == 2 && args[0] == "inspect-tiff")
 {
     var layout = TiffLayout.Read(args[1]); var image = layout.Directories.First(d => d.Image is not null).Image!;
@@ -220,4 +239,9 @@ static byte[] Resource(ushort id, byte[] data)
     byte[] result = new byte[12 + data.Length + (data.Length & 1)]; "8BIM"u8.CopyTo(result);
     BinaryPrimitives.WriteUInt16BigEndian(result.AsSpan(4), id);
     BinaryPrimitives.WriteUInt32BigEndian(result.AsSpan(8), (uint)data.Length); data.CopyTo(result, 12); return result;
+}
+
+static string? RawText(ExifValue? value)
+{
+    if (value is null) return null; byte[] bytes = new byte[value.ByteLength]; value.CopyRawTo(bytes); return Encoding.ASCII.GetString(bytes).TrimEnd('\0');
 }

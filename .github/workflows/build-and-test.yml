@@ -42,6 +42,19 @@ jobs:
         run: python -m unittest discover -s tests/reference -v
       - name: Test Release
         run: dotnet test MetadataSharp.sln --configuration Release --no-build --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults
+      - name: Report failed test details
+        if: failure()
+        shell: python
+        run: |
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          ns = {'t': 'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'}
+          for path in Path('TestResults').rglob('*.trx'):
+              for result in ET.parse(path).getroot().findall('.//t:UnitTestResult', ns):
+                  if result.get('outcome') == 'Failed':
+                      text = result.get('testName', '') + ': ' + ' '.join(result.itertext())
+                      text = text[:6000].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+                      print('::error title=Unit test failure::' + text)
       - name: Verify tests actually ran
         shell: python
         run: |
