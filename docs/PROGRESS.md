@@ -1499,3 +1499,27 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   Exiv2 0.28.9 observations). **Merged into master as `0d4a516`
   (2026-11-08T18:46:52Z).** No parity percentage; D2/decode/render/write and
   publication remain unauthorized.
+
+### E01-CEN finite atomic denominator design — 2026-11-08 (PROPOSAL, not approved)
+
+- 2026-11-08: after D1 merged, developer-pre-authorized next unit E01-CEN was
+  drafted as docs/design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md. It defines:
+  the census row schema (schemaVersion 1; EX0289-pinned row IDs; operations
+  inventory/read/insert/replace/remove/extract; axes valueType/textEncoding/layout/
+  duplicates/sidecar/presence, all bound to a reviewed closed `enumerations` block;
+  invariants incl. no self-oracles and refusals-never-support), the fixture
+  provenance workflow (authored generators, pinned SHA-256 manifests, mutation
+  recipes instead of file copies, rights classes, blocked-rights handling, in-repo
+  budget), the pinned-CLI observation machinery (CI-only black box, ExifTool 12.76
+  secondary differential reference), the proposed per-format batching B0–B14 of the
+  31×6 grid (pilot JPEG first; evidence-rich B0–B6; rights/build-gated B7–B11;
+  cross-cutting applicability B12–B14), and the TWO denominators (D_full = every
+  reviewed row incl. no-claim/blocked/refused; D_accept = D_full minus signed
+  developer exclusions; neither is computed yet; reporting rule defined). It also
+  records 71 no-claim + 1 empty cell (EPS comments) as in-denominator candidates and
+  9 open review questions for the developer.
+- Status: PROPOSAL — scope only; no code, tests, fixtures, package or contract
+  changes; exclusions NOT granted; no parity percentage exists; E01 gate stays open.
+  Awaits developer review; changes land by PR; on approval, record here and open the
+  B0 pilot. Review of §6 (denominators/reporting) is the binding input to any future
+  coverage percentage.

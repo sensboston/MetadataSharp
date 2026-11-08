@@ -100,8 +100,10 @@ Next open units (as of 2026-11-08):
    only the E03 compatibility gate; it authorizes no per-format work, exclusions or
    publication.
 2. **E01-CEN** — finite atomic denominator design and the split of the 31×6 grid
-   into per-format execution batches; until the developer reviews the denominator,
-   no parity percentage or "complete" claim is possible.
+   into per-format execution batches; proposal recorded 2026-11-08 in
+   docs/design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md (scope only; no code);
+   until the developer reviews the denominator, no parity percentage or "complete"
+   claim is possible.
 3. Atomic E01 breadth (per-format pinned CLI observations beyond JPEG EXIF Artist)
    may proceed only as batches defined by E01-CEN, with owned fixtures/rights review.
 4. **D1 — narrow read-only DNG inventory profile** (2026-11-08 go-ahead):
