@@ -1,12 +1,13 @@
 # E01-CEN — finite atomic denominator design (proposal)
 
-Status: **PROPOSAL for developer review. Not approved. Scope only; no code, no tests, no
-package or contract changes accompany it.** It defines the census row schema, the fixture
-provenance workflow and the proposed per-format batching of the 31×6 capability grid so
-that E01 can eventually freeze a denominator. Until the developer reviews and freezes
-both denominators described here, **no parity percentage and no "complete" claim exists**,
-and nothing in this document authorizes implementation, exclusions, publication or any
-new public contract. Baseline pins: Exiv2 **v0.28.9**, annotated tag
+Status: **DESIGN REVIEWED AND APPROVED 2026-11-08 (developer; six §7 decisions recorded
+in §7 below). B0 pilot execution opened 2026-11-08; observations and fixture authoring
+are pending. Denominators remain UNFROZEN until the census executes and no-claim cells
+are observed.** It defines the census row schema, the fixture provenance workflow and
+the proposed per-format batching of the 31×6 capability grid so that E01 can eventually
+freeze a denominator. Until the denominators are computed and reviewed, **no parity
+percentage and no "complete" claim exists**, and nothing in this document authorizes
+implementation, exclusions, publication or any new public contract. Baseline pins: Exiv2 **v0.28.9**, annotated tag
 `110cbaef8e75f0e064e5c522846a18982bc4db70` → commit
 `b0859fc61fea5dedfc898aece6b15893ddf4314e`; documentation blob
 `149f53b809c182bb4145567e28c466965f7f6505`. Pinned CLI v0.28.9 build/run remains a
@@ -169,9 +170,20 @@ their reviews (B7–B11), cross-cutting applicability last (B12–B14). Vocabula
 also a dependency of rich value assertions in B1+ and may be promoted earlier by
 developer decision — that is an ordering improvement, not a scope change.
 
-## 6. The two denominators
+## 6. The two denominators — APPROVED 2026-11-08 (decisions recorded)
 
-Both are published together, always, with counts by status. Neither is computed here.
+The developer approved this section as proposed on 2026-11-08: the denominator
+definitions and the reporting rule are frozen as written; the exclusion-candidate list
+remains identification only (no exclusions signed). Additional binding decisions from the
+same review: (i) no-claim rows are included in `D_full` and MUST be attempted via pinned
+CLI observation before any freeze; (ii) external corpora are limited to verified
+CC0/public-domain samples with recorded license/hashes (small fixtures in-repo, larger
+external corpora via manifest) — no other licensing; (iii) BMFF/video rows proceed
+census-first with a separate per-format rights review before any fixture is authored,
+no write support promised; (iv) sidecar rows are census presence rows only
+(`xmp-applied` writes stay E15); (v) ExifTool 12.76 remains the secondary differential
+reference alongside pinned Exiv2 CLI for new observations. Both denominators are
+published together, always, with counts by status. Neither is computed yet.
 
 - **`D_full` (full-baseline denominator):** every census row generated from the 31×6
   grid × operations × reviewed enumerations — including rows whose source cell is `-`
@@ -195,34 +207,42 @@ Both are published together, always, with counts by status. Neither is computed 
   `noDocumentedClaim-pending` counts always printed alongside both. A refused row is
   never a pass; a blocked row is never dropped.
 
-## 7. What this document is not / open questions
+## 7. What this document is not / review questions — ANSWERED 2026-11-08
 
 Not approval of any format, operation, exclusion, API or timeline; not a schedule; not a
-parity claim. Open questions requiring the developer's review (answer changes this
-document, then PROGRESS/CURRENT_STATE record it):
+parity claim. Developer answers, 2026-11-08 (PR #22/#23 review round):
 
-1. Freeze both denominators as defined in §6, or adjust the exclusion candidate list /
-   reporting rule?
-2. Should `-`/empty no-claim cells default into `D_full` as proposed (yes recommended)?
-3. Approved storage budget for external corpora (real-capture RAW fixtures), and which
-   licensed corpora (if any) may be used?
-4. B7 rights-review scope and sign-off authority before any BMFF fixture is authored?
-5. Sidecar `xmp-applied` rows: confirmed as census presence rows only (writes = E15)?
-6. B13 scope: full workflow census now, or after E07 core read coverage lands?
-7. Is ExifTool 12.76 retained as secondary differential reference throughout (current
-   CI), or Exiv2 CLI only?
-8. Census artifact home and review cadence: `docs/research/EXIV2_CENSUS.json` + per-batch
-   PRs, as proposed?
-9. B14 timing: keep last, or promote before B7 to enrich value axes earlier?
+1. **Denominators:** freeze §6 as proposed (definitions and reporting rule). Exclusion
+   candidates remain unsigned; no exclusion exists yet.
+2. **No-claim cells:** include in `D_full`, with a mandatory pinned-CLI observation
+   attempt before the freeze.
+3. **External corpora:** verified CC0/public-domain only, license and hashes recorded;
+   small fixtures in-repo, larger corpora external with manifest. No other licensing.
+4. **BMFF (B7):** continue census-first with a separate per-format rights review before
+   any fixture is authored; no write support promised or implied.
+5. **Sidecar:** census presence rows only; sidecar writes remain E15 scope.
+6. **B13 scope:** not blocked on core read coverage; full workflow census runs after
+   E07 core read coverage lands (applied default, override by PR).
+7. **Secondary oracle:** ExifTool 12.76 retained alongside pinned Exiv2 CLI for new
+   observations (rows may be confirmed by both).
+8. **Census artifact home:** `docs/research/EXIV2_CENSUS.json` + PR-per-batch review
+   cadence (applied default, override by PR).
+9. **B14 timing:** kept last; promote earlier only by developer decision (applied
+   default, override by PR).
 
-## 8. Review protocol and exit
+Any change to these answers lands by PR with developer approval, then flows into
+PROGRESS.md and CURRENT_STATE.md.
 
-Developer reviews §2 (schema), §3 (provenance), §5 (batching), §6 (denominators/reporting)
-and the §7 answers. Changes land by PR to this document (and the master plan link). On
-approval: mark status APPROVED with date in this header, record in PROGRESS.md and
-CURRENT_STATE.md, set `EXIV2_OPERATION_SEEDS.json` `denominatorFrozen: false → true` only
-when the census is actually generated and frozen, open B0 pilot. E01's gate closes only
-when the developer reviews the frozen denominator — not before, and not by this proposal.
+## 8. Review protocol and exit — CLOSED 2026-11-08 (design); B0 open
+
+Developer reviewed §2 (schema), §3 (provenance), §5 (batching), §6 (denominators/
+reporting) and the §7 answers on 2026-11-08; this document is APPROVED as the design
+contract for the census. Changes still land by PR to this document (and the master plan
+link). `EXIV2_OPERATION_SEEDS.json` remains `denominatorFrozen: false` until the census
+is generated, observed and the developer freezes both denominators. B0 pilot enumeration
+generation opened 2026-11-08 (tools/reference/build_census.py); observation and fixture
+authoring follow per §3–§5. E01's gate closes only when the developer reviews the frozen
+denominator — not before, and not by this document.
 
 ## Appendix A — discovery grid (restated, no new claims)
 

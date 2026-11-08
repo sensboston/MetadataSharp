@@ -46,6 +46,7 @@ jobs:
       - name: Verify discovery seed policy
         run: |
           python tools/reference/build_capability_seeds.py --check
+          python tools/reference/build_census.py --check
           python -m unittest discover -s tests/discovery -v
       - name: Test Release
         run: dotnet test tests/MetadataSharp.Tests/MetadataSharp.Tests.csproj --framework ${{ matrix.tfm }} --configuration Release --no-build --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults/${{ matrix.tfm }}

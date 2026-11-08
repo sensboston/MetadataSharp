@@ -99,11 +99,14 @@ Next open units (as of 2026-11-08):
    bb473f0; push 42505415670 and pull_request 42505425014 both 15/15). Discharges
    only the E03 compatibility gate; it authorizes no per-format work, exclusions or
    publication.
-2. **E01-CEN** — finite atomic denominator design and the split of the 31×6 grid
-   into per-format execution batches; proposal recorded 2026-11-08 in
-   docs/design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md (scope only; no code);
-   until the developer reviews the denominator, no parity percentage or "complete"
-   claim is possible.
+2. **E01-CEN** — finite atomic denominator design; DESIGN APPROVED 2026-11-08
+   (decisions in docs/design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md §6/§7).
+   B0 pilot census generated 2026-11-08: docs/research/EXIV2_CENSUS.json (135 rows,
+   all not-run; JPEG × {exif, comments, icc} + inventory; 183 cells pending);
+   generator tools/reference/build_census.py (+ --check in CI); policy tests
+   tests/discovery/test_census.py. Observations (pinned CLI, no-claim attempts) and
+   fixture authoring pending; denominators NOT frozen; no parity percentage or
+   "complete" claim is possible until the developer freezes both denominators.
 3. Atomic E01 breadth (per-format pinned CLI observations beyond JPEG EXIF Artist)
    may proceed only as batches defined by E01-CEN, with owned fixtures/rights review.
 4. **D1 — narrow read-only DNG inventory profile** (2026-11-08 go-ahead):

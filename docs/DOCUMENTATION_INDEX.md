@@ -10,9 +10,11 @@
   receipts in PROGRESS.md.
 - design/EXIV2_PARITY_MASTER_PLAN.md: how the 2026-11-08 parity directive is
   broken into gated subtasks; sequencing, dependency policy and definition of done.
-- design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md: E01-CEN proposal (schema,
-  fixture provenance, batching, two denominators). Proposal only; requires developer
-  review before any freeze or percentage is possible.
+- design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md: E01-CEN design (schema,
+  fixture provenance, batching, two denominators); APPROVED by developer 2026-11-08
+  (decisions in §6/§7). Denominators not frozen yet; no percentage exists.
+- research/EXIV2_CENSUS.json: generated B0 pilot census (schemaVersion 1); regenerate
+  only via tools/reference/build_census.py (--check enforced in CI).
 - research/EXIV2_CAPABILITY_BASELINE.md and EXIV2_REQUIREMENTS_TRIAGE.md: bounded
   first-pass evidence, snapshot JSON, unresolved full E01 inventory work.
 - design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md: exact new API/subset proposal,

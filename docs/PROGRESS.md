@@ -1518,8 +1518,36 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   developer exclusions; neither is computed yet; reporting rule defined). It also
   records 71 no-claim + 1 empty cell (EPS comments) as in-denominator candidates and
   9 open review questions for the developer.
-- Status: PROPOSAL — scope only; no code, tests, fixtures, package or contract
-  changes; exclusions NOT granted; no parity percentage exists; E01 gate stays open.
-  Awaits developer review; changes land by PR; on approval, record here and open the
-  B0 pilot. Review of §6 (denominators/reporting) is the binding input to any future
-  coverage percentage.
+- Status: DESIGN REVIEWED AND APPROVED by the developer on 2026-11-08 (six §7
+  decisions recorded in the proposal: freeze §6 definitions/reporting as proposed;
+  no-claim rows included in D_full with mandatory pinned-CLI observation before any
+  freeze; external corpora limited to verified CC0/public-domain with recorded
+  license/hashes; BMFF/video census-first + per-format rights review before fixtures;
+  sidecar rows presence-only (writes stay E15); ExifTool 12.76 retained as secondary
+  differential reference; B13 full workflow census after E07 core read coverage; census
+  home docs/research/EXIV2_CENSUS.json + PR-per-batch; B14 kept last). Changes land by
+  PR; exclusions NOT granted; no parity percentage exists; E01 gate stays open.
+
+### B0 pilot census generation — 2026-11-08 (JPEG × {exif, comments, icc} + inventory)
+
+- 2026-11-08: design approval recorded; B0 enumeration generated and pinned.
+  - NEW tools/reference/build_census.py (generator + --check drift guard) and
+    docs/research/EXIV2_CENSUS.json (schemaVersion 1, generatedBy the tool).
+    135 rows, all `not-run`/`not-assessed` (baselineObservation/verification), no
+    fixtures authored yet, `denominatorFrozen: false`. Enumeration: JPEG EXIF 36 rows
+    (4 ops × 3 layouts × 3 duplication states, valueType `any-documented` — B14 splits
+    the vocabulary), JPEG comments 78 rows (5 ops; encodings ascii/utf-8/unknown-raw;
+    extract fixed to opaque/not-applicable), JPEG ICC 20 rows (5 ops × single/segmented
+    APP2 × none/first-wins, opaque bytes), 1 JPEG inventory-track row. 183 documented
+    cells remain pending in coverage.pendingSeedIds (incl. JPEG xmp/iptc/thumbnail —
+    those are B1). Enumerations block marked reviewed 2026-11-08; axis values closed.
+  - NEW tests/discovery/test_census.py — 10 policy tests (determinism, ID format,
+    closed-enumeration conformance, extract-only-on-opaque families, pilot honesty
+    (all not-run), grid partition seeds↔pending, no-claim absence from pilot, no
+    MetadataSharp-as-oracle). CI `Verify discovery seed policy` step now runs
+    `python tools/reference/build_census.py --check` alongside the seeds check.
+  - Review focus for the next PR: schema ergonomics at scale (B1 will triple the
+    corpus), the `inventory` family marker, and whether `any-documented` survives
+    B14 or must split now. NO observation has been run yet — zero rows carry evidence.
+- No exclusions, no freeze, no percentage; D_full/D_accept are computed only after
+  the observation batch and developer review. E01 gate remains OPEN.
