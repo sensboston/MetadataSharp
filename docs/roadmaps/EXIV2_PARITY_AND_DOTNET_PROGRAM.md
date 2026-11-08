@@ -141,6 +141,9 @@ observations. Three baseline writes explicitly fail exact non-target byte-preser
 (D001 COM NUL/order, D002 XMP reencoding on replace/remove); those are NOT safe-write
 parity, accepted exclusions or justification to change MetadataSharp preservation.
 See research/EXIV2_PINNED_BASELINE_EXECUTION.md and evidence/e01-pinned-jpeg.
-PR #16 final head needs its own fifteen-job gate; exact merge receipt lives there.
+PR #16 FINAL head 5b0783bf2a60844e82ab2a61479816d01b15d4b9 also passed both final
+runs (PR42449478931 and push42449474066, 15/15 each) and MERGED 2026-11-08T05:10:04Z
+as 75ad10dcf9f96a496be8192c6f8949632c6da1ba; final immutable source/run/merge
+receipts are posted on PR #16. The bounded CLI foundation is complete.
 186 seed cells/348 candidates are still NOT a frozen denominator or percentage.
 E01 breadth/optional build reconciliation and E03 proposal remain OPEN; no D1 yet.

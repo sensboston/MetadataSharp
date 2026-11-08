@@ -1313,3 +1313,34 @@ classification logic and reproduction are in EXIV2_PINNED_BASELINE_EXECUTION.md.
 Final PR #16 documentation/evidence head must pass its OWN fifteen jobs before
 merge. Exact final immutable SHA/run/merge receipt posted there. Continue atomic
 E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reopened.
+
+### PR #16 merge and post-merge recovery checkpoint — 2026-11-08
+
+- PR #16 merged 2026-11-08T05:10:04Z as merge commit
+  75ad10dcf9f96a496be8192c6f8949632c6da1ba; FINAL head
+  5b0783bf2a60844e82ab2a61479816d01b15d4b9 passed both required final fifteen-job
+  runs (PR42449478931 and push42449474066, 15/15 each, verified via gh before merge).
+  Final immutable source/run/merge receipts are posted in PR #16 comments.
+- New assigned branch arena/c321dc16-metadatasharp is cut directly from that merge
+  commit; no new implementation is part of this checkpoint. Branch references in
+  CURRENT_STATE.md were updated; PROGRESS history entries were left as written.
+- Bounded E01 pinned black-box CLI foundation is COMPLETE: exact external Exiv2
+  0.28.9 source b0859fc61fea5dedfc898aece6b15893ddf4314e, recognized explicit CMake
+  features/runtime/dependency identities, four owned JPEG ASCII Artist
+  read/insert/replace/remove observations with independent checks, strict default
+  verifier and narrow known differences D001 (COM trailing NUL/order) and D002
+  (single-property XMP reserialization) explicitly recorded, never normalized away.
+  Those flags remain FALSE for all three writes; this is NOT safe-write parity.
+- NOT completed and not to be inferred: full E01 census/denominator/percentage,
+  E03 approval or any refactor, D1 (normative/oracle/E03 gates), DNG implementation,
+  package publication, Framework 4.8.x, or any production DLL/API/parser change.
+- 186 seed cells / 348 candidate operations remain unchanged and NOT a frozen
+  denominator. Non-JPEG families/formats/variants, video/CLI/tag/encoding/layout
+  breadth and fixture rights review remain OPEN.
+- Next open units (unstarted): (1) expand the atomic E01 ledger by
+  family/format/variant; (2) separately prepare the exact E03 .NET
+  architecture/compatibility contracts proposal, which requires explicit developer
+  approval before any refactor. D0 approval retained; D1 prerequisites unchanged.
+- Validation for this checkpoint: `git status --short`, `git branch --show-current`,
+  `gh pr view 16`, link/fence re-check of edited Markdown and `git diff --check`.
+  No .NET execution was run locally (no local SDK); no production code changed.
