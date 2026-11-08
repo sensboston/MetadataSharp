@@ -527,3 +527,128 @@
   gate counts. No new dependency, package publication or general IIM conformance claim.
 - Final documentation head still requires green CI before merging PR #8. M13 (PNG)
   contract review is next eligible; no M13 implementation started.
+
+### M12 final head and merge confirmation
+
+- Final M12 head a0e1ad752359fc5da19827ba2c85e67efb85277e passed PR run
+  42426353953 and push run 42426350017: three OS jobs, 309-case floor, twelve
+  Python tests and the required external-reference job. PR #8 merged on
+  2026-11-07 as fc73316554cffd8a7a95b98a3610aa61427b3164, verified via gh.
+  This supersedes the preceding final-documentation pending submission note.
+
+### M13–M14 grouped contract proposal (implementation pending)
+
+- Developer approved grouping PNG/WebP into one PR: shared contract/normative review,
+  M13 implementation and green CI, then M14 implementation and final audit/CI.
+- Active clean working branch is arena/a6abf89b-metadatasharp. Read M13/M14 prompts,
+  development policy, existing limits and the current EXIF core's APP1-sized cap.
+- Added `PNG_AND_WEBP_METADATA_CONTRACT_PROPOSAL.md`: exact concrete facades/options,
+  static-only scope, strict PNG CRC/critical ordering, eXIf/iTXt identification,
+  bounded compressed XMP, unknown-chunk safety, WebP simple-to-VP8X promotion,
+  RIFF/flags/padding/alpha policy, independent EXIF/XMP operations and shared
+  stream/path failure rules. Proposed retaining the 65,527-byte TIFF core cap
+  rather than silently expanding it with the new containers.
+- This is a contract-only proposal. No parser/writer/dependency/test changes or new
+  test execution. Exact source review and new public/safety contract approval remain
+  required before implementing M13. No standalone TIFF/DNG, animation or publication.
+
+### M13 approval and implementation submission
+
+- Developer explicitly approved PNG/WebP contracts and authorized M13 then M14,
+  with interest in subsequent M15. M15 still needs separate read-only standalone
+  TIFF contracts; no TIFF/DNG implementation is authorized by PNG/WebP signatures.
+- Marked the shared proposal approved. Reviewed published PNG Third Edition and
+  RFC1950/1951 mechanics; source hashes/decisions are in the normative review.
+- Implemented full streaming PNG CRC/structural validation, static-only profile,
+  conservative unknown-chunk safety, lazy independent EXIF/XMP snapshots, addressed
+  preflighted edits, exact no-op and non-overwriting path publication. Retained the
+  approved 65,527-byte EXIF cap and original JPEG behavior.
+- Compressed XMP has an independently authored bounded DEFLATE framing walk plus
+  framework expansion and Adler verification; reject truncation/trailing streams
+  before returning a packet. No reference codec/CRC implementation was copied.
+- Added owned one-pixel fixtures and independent CRC, structure, metadata, compression,
+  limits, preservation and async/path tests. Local dotnet remains unavailable;
+  no .NET success claimed before actual three-platform CI. M14 is gated on M13.
+
+- First submission failed only xUnit blocking-task analyzer checks; tests were made
+  properly async rather than suppressing the analyzer. Revised d548ae8 passed all
+  .NET platforms (at least 338 cases) but PNG external reverse validation exposed
+  opaque RDF after unqualified ExifTool Artist editing. Restrict the operation to
+  EXIF:Artist to avoid implicit family synchronization; retain strict XMP profile
+  and include raw authored-packet diagnostics if still outside it. No green group
+  or M14 start claimed until the reference job also passes. Python policy 12/12 pass.
+
+- d602f1f again passed all .NET platforms. Packet diagnostics established the
+  reference failure is specifically ExifTool's PNG `end='r'` read-only wrapper,
+  not CRC/compression loss or RDF namespace handling. Retain the approved opaque
+  behavior and test no-op/removal/refusal explicitly; record unsupported reverse
+  semantic property reads in the reproducibility report. No warning suppression.
+
+### M13 completed checkpoint; M14 eligible
+
+- M13 head c2f3c58ca415bb002071ae7a004f38f1862f462e passed required PR run
+  42429048302: Windows/Linux/macOS Release build/tests (338-case minimum), Python
+  policy 12/12, pinned Exiv2 0.27.6/ExifTool 12.76 PNG/JPEG reference job green.
+- Observed PNG reference limitation is explicit in the report/review: ExifTool
+  read-only wrappers remain opaque, exact copy/removal works and semantic edits
+  refuse before output. Existing warning classifier was not broadened.
+- Starting M14 only after that completed checkpoint. PNG/WebP share approved
+  contracts/PR #9; no merge until the complete group passes final head CI.
+
+### M14 implementation submission
+
+- Added independent concrete WebP facade/options and bounded RIFF/header scanner:
+  strict size/padding, VP8/VP8L static images, VP8X flags/canvas, ICC/ALPH order,
+  simple promotion, no downgrade, raw/legacy EXIF and independent XMP. Unknown
+  chunks and animation cannot be edited/flattened. No coded-pixel decoding.
+- Normative review records metadata's permitted arbitrary ordering and VP8L alpha
+  hint semantics without inventing pixel facts. Fixtures are four owned pixels
+  encoded by pinned test-only Pillow/libwebp; recipe/hashes/notices checked in.
+- Added offline WebP boundary/preservation/independence and async/publication tests,
+  plus required CLI reads/reverse edits and separately pinned dwebp decoded-PAM
+  equality. Python policy 12/12 passes; dotnet remains absent locally, so new .NET
+  code and reference additions await Actions, not reported as green yet.
+- PNG audit additionally fixed missing-property removal with existing EXIF: return
+  an exact no-op before planner/unknown-chunk edit restrictions. No contract change.
+
+### M14 completed checkpoint and final group audit submission
+
+- M14 cc8b8700e63cd922f9e30b60db83cd6c534be81f passed both PR run
+  42429453288 and push run 42429449491: all three .NET platforms (352-case minimum),
+  Python policy 12/12 and pinned reference job including dwebp 1.3.2 green.
+- Final audit adds PNG missing-property/no-op regression, exact XMP-keyword near
+  match, empty/reserved DEFLATE tests, and corrects compressed iTXt nonzero method
+  classification to InvalidPng (no new public behavior/profile). Existing malformed
+  compression still refuses before destination writes. Added both-format path races,
+  emission-failure temporary cleanup, owned path closure, snapshot stability and
+  cancellation after partial caller-stream emission. No rollback promise added.
+- Updated user-facing supported-subset docs/README. Captured exact encoder wheel
+  URL/digest in fixture provenance; no new production dependency, reference code or
+  camera image imported. No full-format, performance or package-publication claim.
+- M15 exact standalone read-only TIFF proposal prepared, explicitly NOT approved
+  or implemented. It is immutable layout/range accounting, not metadata rewriting,
+  BigTIFF, DNG, or a larger-cap reuse of the JPEG EXIF parser. Developer approval
+  remains required before code. M16 is not authorized.
+- Final audit head CI is still pending. Do not merge based on predecessor results
+  alone; require the final head's platforms and reference checks.
+
+- Hostile-compression audit caches immutable fixed Huffman trees instead of
+  reconstructing them for each empty fixed block; a 10,000-empty-block owned RFC
+  bit fixture and concatenation-refusal test cover exact framing. Adler traversal
+  now checks cancellation at bounded checkpoints. No measured allocation claim.
+
+- Added independent ExifTool facts for an explicitly authored legacy WebP EXIF
+  wrapper and its canonical raw-TIFF rebuild, rather than relying only on our own
+  reader/writer round trip. Final required reference gate includes both variants.
+
+### M13–M14 audited code checkpoint
+
+- Head da259516449cec78d17e3b9f3790a73c3237d4e4 passed required PR run
+  42429946046, all four jobs: 361 passing .NET tests on Windows/Linux/macOS,
+  Python 12/12, pinned Exiv2/ExifTool/dwebp checks including legacy WebP EXIF.
+- Completed the permanent group audit with actual per-unit/run evidence, reference
+  discrepancy classification, fixture licensing/provenance, failure guarantees and
+  deferred limits. Final documentation head must be revalidated before PR #9 merge;
+  actual final-head/merge evidence is posted to PR #9 after completion.
+- Next implementation scope: M15 only after explicit approval of its separate exact
+  read-only TIFF contract. Proposal is checked in; no TIFF/DNG code was started.

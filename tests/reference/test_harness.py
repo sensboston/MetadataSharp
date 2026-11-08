@@ -24,6 +24,8 @@ class HarnessPolicyTests(unittest.TestCase):
     def test_versions_are_exact_not_latest(self):
         h.check_version("exiv2", "exiv2 0.27.6\nCopyright", "0.27.6")
         h.check_version("exiftool", "12.76\n", "12.76")
+        h.check_version("dwebp", "1.3.2\n", "1.3.2")
+        with self.assertRaises(RuntimeError): h.check_version("dwebp", "1.6.0", "1.3.2")
         with self.assertRaises(RuntimeError): h.check_version("exiftool", "12.77", "12.76")
         with self.assertRaises(RuntimeError): h.check_version("exiv2", "garbage", "0.27.6")
 

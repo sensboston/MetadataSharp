@@ -11,17 +11,18 @@ import sys
 
 EXPECTED_EXIV2 = "0.27.6"
 EXPECTED_EXIFTOOL = "12.76"
+EXPECTED_DWEBP = "1.3.2"
 
 
 def available(required, which=shutil.which):
-    missing = [name for name in ("dotnet", "exiv2", "exiftool") if not which(name)]
+    missing = [name for name in ("dotnet", "exiv2", "exiftool", "dwebp") if not which(name)]
     if missing and required:
         raise RuntimeError("Required tools missing: " + ", ".join(missing))
     return not missing
 
 
 def check_version(name, text, expected):
-    actual = re.search(r"\bexiv2\s+(\d+\.\d+\.\d+)\b", text) if name == "exiv2" else re.fullmatch(r"\s*(\d+\.\d+)\s*", text)
+    actual = re.search(r"\bexiv2\s+(\d+\.\d+\.\d+)\b", text) if name == "exiv2" else re.fullmatch(r"\s*(\d+(?:\.\d+)+)\s*", text)
     if not actual or actual.group(1) != expected:
         raise RuntimeError(f"{name} version mismatch: expected {expected}, got {text.strip()!r}")
 
@@ -113,11 +114,14 @@ def main(argv=None):
         tool_version = run(["exiftool", "-ver"])
         check_version("exiv2", exiv_version, EXPECTED_EXIV2)
         check_version("exiftool", tool_version, EXPECTED_EXIFTOOL)
+        check_version("dwebp", run(["dwebp", "-version"]), EXPECTED_DWEBP)
         report["sourceCommit"] = run(["git", "rev-parse", "HEAD"]).strip()
         report["recipeHashes"] = {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
                                   for p in (Path("tools/MetadataSharp.ReferenceFixture/Program.cs"),
-                                            Path("tests/MetadataSharp.Tests/Jpeg/JpegFixture.cs"))}
-        report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL}
+                                            Path("tests/MetadataSharp.Tests/Jpeg/JpegFixture.cs"),
+                                            Path("tests/MetadataSharp.Tests/Png/PngFixture.cs"),
+                                            Path("tests/MetadataSharp.Tests/WebP/WebPFixture.cs"))}
+        report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL, "dwebp": EXPECTED_DWEBP}
         fixture = Path("tools/MetadataSharp.ReferenceFixture/bin/Release/net8.0/MetadataSharp.ReferenceFixture.dll").resolve()
         def ours(*parameters):
             return run(["dotnet", str(fixture), *map(str, parameters)])
@@ -205,9 +209,91 @@ def main(argv=None):
             current = json.loads(ours("inspect-iptc", refreshed))
             checksum = json.loads(run(["exiftool", "-j", "-n", "-Photoshop:IPTCDigest", str(refreshed)]))[0]
             assert checksum["IPTCDigest"].lower() == current["digest"], "Refreshed IPTC digest is stale"
+        # PNG independent structural accounting: CRC and IDAT zlib are checked here,
+        # without reusing the library scanner or its CRC implementation.
+        import zlib
+        def png_pixels(path):
+            data = path.read_bytes(); assert data[:8] == b"\x89PNG\r\n\x1a\n"
+            at = 8; image = bytearray()
+            while at < len(data):
+                length = int.from_bytes(data[at:at+4], "big")
+                kind = data[at+4:at+8]; body = data[at+8:at+8+length]
+                assert zlib.crc32(kind + body) == int.from_bytes(data[at+8+length:at+12+length], "big")
+                if kind == b"IDAT": image.extend(body)
+                at += length + 12
+            assert at == len(data)
+            return bytes(image), zlib.decompress(image)
+        png = output / "ours.png"
+        assert png_pixels(png) == png_pixels(output / "base.png")
+        assert png_pixels(png)[1] == bytes([0, 10, 20, 30])
+        assert (output / "noop.png").read_bytes() == png.read_bytes()
+        assert (output / "removed.png").read_bytes() == (output / "exif.png").read_bytes()
+        validate_image(png)
+        values = json.loads(run(["exiftool", "-j", "-n", "-Artist", "-Orientation", "-XMP-xmp:CreatorTool", str(png)]))[0]
+        assert values["Artist"] == "Alice" and values["Orientation"] == 1 and values["CreatorTool"] == "MetadataSharp", values
+        rows = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Exif.Image.Artist", "-K", "Xmp.xmp.CreatorTool", str(png)]))
+        assert rows == {"Exif.Image.Artist": ("Ascii", 6, "Alice"), "Xmp.xmp.CreatorTool": ("XmpText", 13, "MetadataSharp")}, rows
+        changed = output / "external.png"; shutil.copyfile(png, changed)
+        run(["exiftool", "-overwrite_original", "-EXIF:Artist=ExternalPng", "-XMP-xmp:CreatorTool=ExternalPng", str(changed)])
+        actual = json.loads(ours("inspect-png", changed))
+        assert actual["artist"] == "ExternalPng" and actual["xmpEditable"] is False, actual
+        # ExifTool emits a read-only xpacket in PNG. This is intentionally opaque
+        # under the already approved XMP profile, not an editable reverse-read pass.
+        import xml.etree.ElementTree as ET
+        assert "end='r'" in actual["rawXmp"]
+        assert ET.fromstring(actual["rawXmp"]).find(".//{http://ns.adobe.com/xap/1.0/}CreatorTool").text == "ExternalPng"
+        ours("probe-png-opaque", changed)
+        report.setdefault("limitations", []).append("ExifTool 12.76 PNG XMP uses read-only xpacket: owned raw packet preserved, property editing refused before output, whole removal tested; semantic reverse property read unsupported")
+        copied = output / "external-noop.png"; ours("noop-png", changed, copied)
+        assert copied.read_bytes() == changed.read_bytes()
+        assert png_pixels(changed) == png_pixels(png)
+        def webp_coded(path):
+            data = path.read_bytes(); assert data[:4] == b"RIFF" and data[8:12] == b"WEBP"
+            assert int.from_bytes(data[4:8], "little") == len(data) - 8
+            at = 12; coded = bytearray()
+            while at < len(data):
+                size = int.from_bytes(data[at+4:at+8], "little"); end = at + 8 + size + size % 2
+                assert end <= len(data)
+                if size % 2: assert data[end-1] == 0
+                if data[at:at+4] in (b"VP8 ", b"VP8L", b"ALPH", b"ICCP"): coded.extend(data[at:end])
+                at = end
+            assert at == len(data)
+            return bytes(coded)
+        for kind in range(4):
+            webp = output / f"ours-{kind}.webp"; base_webp = output / f"base-{kind}.webp"
+            assert webp_coded(webp) == webp_coded(base_webp)
+            assert (output / f"noop-{kind}.webp").read_bytes() == webp.read_bytes()
+            assert (output / f"removed-{kind}.webp").read_bytes() == (output / f"exif-{kind}.webp").read_bytes()
+            validate_image(webp)
+            values = json.loads(run(["exiftool", "-j", "-n", "-Artist", "-Orientation", "-XMP-xmp:CreatorTool", str(webp)]))[0]
+            assert values["Artist"] == "Alice" and values["Orientation"] == 1 and values["CreatorTool"] == "MetadataSharp", values
+            rows = exiv_values(run(["exiv2", "-P", "kycv", "-K", "Exif.Image.Artist", "-K", "Xmp.xmp.CreatorTool", str(webp)]))
+            assert rows == {"Exif.Image.Artist": ("Ascii", 6, "Alice"), "Xmp.xmp.CreatorTool": ("XmpText", 13, "MetadataSharp")}, rows
+            decoded = output / f"base-{kind}.pam"; edited_pixels = output / f"ours-{kind}.pam"
+            run(["dwebp", str(base_webp), "-pam", "-o", str(decoded)])
+            run(["dwebp", str(webp), "-pam", "-o", str(edited_pixels)])
+            assert decoded.read_bytes() == edited_pixels.read_bytes(), "Independent WebP decoded pixels differ"
+            external = output / f"external-{kind}.webp"; shutil.copyfile(webp, external)
+            run(["exiftool", "-overwrite_original", "-EXIF:Artist=ExternalWebP", "-XMP-xmp:CreatorTool=ExternalWebP", str(external)])
+            actual = json.loads(ours("inspect-webp", external)); assert actual["artist"] == "ExternalWebP", actual
+            if actual["xmpEditable"]:
+                assert actual["creatorTool"] == "ExternalWebP", actual
+            else:
+                assert "end='r'" in actual["rawXmp"]
+                assert ET.fromstring(actual["rawXmp"]).find(".//{http://ns.adobe.com/xap/1.0/}CreatorTool").text == "ExternalWebP"
+                ours("probe-webp-opaque", external)
+                report.setdefault("limitations", []).append(f"ExifTool 12.76 WebP kind {kind}: read-only xpacket opaque; property refusal/whole removal tested; semantic reverse property read unsupported")
+            copied = output / f"external-noop-{kind}.webp"; ours("noop-webp", external, copied)
+            assert copied.read_bytes() == external.read_bytes() and webp_coded(external) == webp_coded(base_webp)
+        for name in ("legacy.webp", "legacy-rebuilt.webp"):
+            facts = json.loads(run(["exiftool", "-j", "-n", "-Orientation", str(output / name)]))[0]
+            assert facts["Orientation"] == 1, facts
+        assert webp_coded(output / "legacy.webp") == webp_coded(output / "legacy-rebuilt.webp")
+        assert b"Exif\0\0" in (output / "legacy.webp").read_bytes()
+        assert b"Exif\0\0" not in (output / "legacy-rebuilt.webp").read_bytes()
         report["fixtures"] = [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                                "source": "MetadataSharp authored synthetic generator", "license": "MIT"}
-                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp")]
+                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png", ".webp")]
         report["status"] = "passed"; save()
         print("PASS: external reads, reverse edits, byte preservation and validation classification")
         return 0

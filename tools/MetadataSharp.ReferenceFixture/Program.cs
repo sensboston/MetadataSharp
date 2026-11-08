@@ -7,6 +7,10 @@ using MetadataSharp.Core.Xmp;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Formats.Jpeg;
 using MetadataSharp.Tests.Jpeg;
+using MetadataSharp.Tests.Png;
+using MetadataSharp.Formats.Png;
+using MetadataSharp.Formats.WebP;
+using MetadataSharp.Tests.WebP;
 
 if (args.Length == 2 && args[0] == "generate")
 {
@@ -45,6 +49,27 @@ if (args.Length == 2 && args[0] == "generate")
     }
 
 
+    byte[] pngBase = PngFixture.Build();
+    File.WriteAllBytes(Path.Combine(args[1], "base.png"), pngBase);
+    using (var png = PngMetadataDocument.Open(new MemoryStream(pngBase))) png.SaveExifAs(Path.Combine(args[1], "exif.png"), edit);
+    using (var png = PngMetadataDocument.Open(Path.Combine(args[1], "exif.png"))) png.SaveXmpAs(Path.Combine(args[1], "ours.png"), xmp);
+    using (var png = PngMetadataDocument.Open(Path.Combine(args[1], "ours.png")))
+    { png.SaveXmpAs(Path.Combine(args[1], "noop.png"), new()); png.SaveXmpAs(Path.Combine(args[1], "removed.png"), removeXmp); }
+
+    for (int kind = 0; kind < 4; kind++)
+    {
+        byte[] webpBase = WebPFixture.Image(kind); File.WriteAllBytes(Path.Combine(args[1], $"base-{kind}.webp"), webpBase);
+        using (var webp = WebPMetadataDocument.Open(new MemoryStream(webpBase))) webp.SaveExifAs(Path.Combine(args[1], $"exif-{kind}.webp"), edit);
+        using (var webp = WebPMetadataDocument.Open(Path.Combine(args[1], $"exif-{kind}.webp"))) webp.SaveXmpAs(Path.Combine(args[1], $"ours-{kind}.webp"), xmp);
+        using var withWebp = WebPMetadataDocument.Open(Path.Combine(args[1], $"ours-{kind}.webp"));
+        withWebp.SaveXmpAs(Path.Combine(args[1], $"noop-{kind}.webp"), new());
+        withWebp.SaveXmpAs(Path.Combine(args[1], $"removed-{kind}.webp"), removeXmp);
+    }
+
+    byte[] legacyWebp = WebPFixture.Extended(8, WebPFixture.Image(0)[12..], WebPFixture.Chunk("EXIF", [.. "Exif\0\0"u8, .. JpegFixture.OrientationTiff]));
+    File.WriteAllBytes(Path.Combine(args[1], "legacy.webp"), legacyWebp);
+    using (var legacyDoc = WebPMetadataDocument.Open(new MemoryStream(legacyWebp))) legacyDoc.SaveExifAs(Path.Combine(args[1], "legacy-rebuilt.webp"), edit);
+
     // Authored resource fixture: keep a copyright flag, update IPTC and its existing digest.
     IptcPacket minimal = IptcPacket.CreateEmpty(); byte[] iim = new byte[minimal.ByteLength]; minimal.CopyRawTo(iim);
     byte[] flag = Resource(0x040a, [1]);
@@ -65,6 +90,60 @@ if (args.Length == 2 && args[0] == "generate")
     var full = new IptcEdit(); full.ReplaceText(new(2, 25), Enumerable.Repeat(new string('a', 64), 949).Append("aaaaa"));
     withXmp.SaveIptcAs(Path.Combine(args[1], "iptc-boundary.jpg"), full);
 
+}
+else if (args.Length == 2 && args[0] == "inspect-png")
+{
+    using var doc = PngMetadataDocument.Open(args[1]); ExifMetadata? exif = doc.ReadExif();
+    string? artist = null;
+    if (exif is not null && exif.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? a))
+    { byte[] bytes = new byte[a.Value.ByteLength]; a.Value.CopyRawTo(bytes); artist = Encoding.ASCII.GetString(bytes).TrimEnd('\0'); }
+    XmpPacket? packet = doc.ReadXmp();
+    string? rawXmp = null;
+    if (packet is { IsEditable: false }) { byte[] raw = new byte[packet.ByteLength]; packet.CopyRawTo(raw); rawXmp = Encoding.UTF8.GetString(raw); }
+    string? creatorTool = packet is { IsEditable: true } ? packet.Properties[new("http://ns.adobe.com/xap/1.0/", "CreatorTool")].Text : null;
+    Console.WriteLine(JsonSerializer.Serialize(new { artist, creatorTool, xmpEditable = packet?.IsEditable, rawXmp }));
+}
+else if (args.Length == 3 && args[0] == "noop-png")
+{
+    using var doc = PngMetadataDocument.Open(args[1]); doc.SaveXmpAs(args[2], new());
+}
+else if (args.Length == 2 && args[0] == "probe-png-opaque")
+{
+    using var doc = PngMetadataDocument.Open(args[1]); using var output = new MemoryStream();
+    var edit = new XmpEdit(); edit.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("refuse"));
+    try { doc.SaveXmp(output, edit); return 3; }
+    catch (MetadataException error) when (error.Code == MetadataErrorCode.UnsupportedFeature && output.Length == 0) { }
+    var remove = new XmpEdit(); remove.RemoveAllXmp(); doc.SaveXmp(output, remove);
+    using var reread = PngMetadataDocument.Open(new MemoryStream(output.ToArray()));
+    if (reread.ReadXmp() is not null || reread.ReadExif() is null) return 4;
+    Console.WriteLine("opaque edit refused before output; whole removal retained EXIF");
+}
+else if (args.Length == 2 && args[0] == "inspect-webp")
+{
+    using var doc = WebPMetadataDocument.Open(args[1]); ExifMetadata? exif = doc.ReadExif();
+    string? artist = null;
+    if (exif is not null && exif.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? a))
+    { byte[] bytes = new byte[a.Value.ByteLength]; a.Value.CopyRawTo(bytes); artist = Encoding.ASCII.GetString(bytes).TrimEnd('\0'); }
+    XmpPacket? packet = doc.ReadXmp();
+    string? rawXmp = null;
+    if (packet is { IsEditable: false }) { byte[] raw = new byte[packet.ByteLength]; packet.CopyRawTo(raw); rawXmp = Encoding.UTF8.GetString(raw); }
+    string? creatorTool = packet is { IsEditable: true } ? packet.Properties[new("http://ns.adobe.com/xap/1.0/", "CreatorTool")].Text : null;
+    Console.WriteLine(JsonSerializer.Serialize(new { artist, creatorTool, xmpEditable = packet?.IsEditable, rawXmp }));
+}
+else if (args.Length == 3 && args[0] == "noop-webp")
+{
+    using var doc = WebPMetadataDocument.Open(args[1]); doc.SaveXmpAs(args[2], new());
+}
+else if (args.Length == 2 && args[0] == "probe-webp-opaque")
+{
+    using var doc = WebPMetadataDocument.Open(args[1]); using var output = new MemoryStream();
+    var edit = new XmpEdit(); edit.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("refuse"));
+    try { doc.SaveXmp(output, edit); return 3; }
+    catch (MetadataException error) when (error.Code == MetadataErrorCode.UnsupportedFeature && output.Length == 0) { }
+    var remove = new XmpEdit(); remove.RemoveAllXmp(); doc.SaveXmp(output, remove);
+    using var reread = WebPMetadataDocument.Open(new MemoryStream(output.ToArray()));
+    if (reread.ReadXmp() is not null || reread.ReadExif() is null) return 4;
+    Console.WriteLine("opaque edit refused before output; whole removal retained EXIF");
 }
 else if (args.Length == 2 && args[0] == "inspect")
 {

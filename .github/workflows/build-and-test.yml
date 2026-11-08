@@ -62,9 +62,9 @@ jobs:
               if count != passed:
                   raise SystemExit(f'Not all tests passed in {file}: {counters.attrib}')
               total += count
-          if total < 309:
-              raise SystemExit(f'Expected at least 309 M01–M12 cases, got {total}')
-          print(f'Validated {total} passing tests')
+          if total < 361:
+              raise SystemExit(f'Expected at least 361 M01–M14 cases, got {total}')
+          print(f'::notice title=Executed test count::Validated {total} passing tests')
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -90,11 +90,12 @@ jobs:
       - name: Install external CLI tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y exiv2 libimage-exiftool-perl
+          sudo apt-get install -y exiv2 libimage-exiftool-perl webp
           mkdir -p artifacts/reference
-          dpkg-query -W exiv2 libimage-exiftool-perl > artifacts/reference/packages.txt
+          dpkg-query -W exiv2 libimage-exiftool-perl webp > artifacts/reference/packages.txt
           cp /usr/share/doc/exiv2/copyright artifacts/reference/exiv2-copyright.txt
           cp /usr/share/doc/libimage-exiftool-perl/copyright artifacts/reference/exiftool-copyright.txt
+          cp /usr/share/doc/webp/copyright artifacts/reference/webp-copyright.txt
           dotnet --info > artifacts/reference/dotnet-info.txt
       - name: Build fixture generator and public API consumer
         run: dotnet build MetadataSharp.sln --configuration Release

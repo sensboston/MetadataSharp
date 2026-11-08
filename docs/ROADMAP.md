@@ -74,4 +74,18 @@ The IPTC/Photoshop scope is recorded in
 Approved on 2026-11-07: one PR with M12a codec/resource and M12b JPEG checkpoints,
 each gated by CI. Both implementation checkpoints passed; see PROGRESS.md and the
 IPTC usage/normative review documents for evidence and restrictions. M13 (PNG) is
-the next eligible scope and still requires new public/safety contract review.
+the next scope; its subsequent explicit PNG/WebP approval is recorded below.
+
+## M13–M14 grouped contract review
+
+The developer approved one coherent PNG/WebP PR with separate per-format gates on
+2026-11-07. The new [container contracts](design/PNG_AND_WEBP_METADATA_CONTRACT_PROPOSAL.md)
+were explicitly approved on 2026-11-07. M13 passed before M14 began; M14 also
+passed its implementation CI. Final audit/head CI still precedes group merge.
+M15–M16 standalone TIFF remains a separate future scope; no DNG implementation.
+
+## M15 pending contract approval
+
+The developer requested attempting M15 next. Its [exact read-only TIFF proposal](design/STANDALONE_TIFF_READ_ONLY_CONTRACT_PROPOSAL.md)
+is not approved or implemented. It separates immutable classic TIFF range accounting
+from JPEG-sized EXIF parsing, TIFF writing, BigTIFF and DNG. No M16 authorization.
