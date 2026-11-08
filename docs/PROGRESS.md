@@ -902,3 +902,9 @@ three-platform local candidate-package/content/license/docs/offline-consumer aud
 Normal projects remain non-packable; opt-in audit candidates version 0.0.0-audit
 are ignored, never published. XML docs gaps are reported, not hidden by a full-docs
 claim. Measurements/package smoke have not yet run; await this head's CI.
+
+First M18 run 42439656646 compiled/executed baselines but package audit failed on
+all platforms; existing 448/platform tests and mandatory references remained green.
+Job-log blob download returned EOF. Add bounded command/assertion diagnostics and
+small JSON evidence as GitHub check annotations, retaining strict assertions and
+artifact upload. No package-audit success is claimed before diagnosis/fix.

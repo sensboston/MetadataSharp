@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import traceback
 import xml.etree.ElementTree as ET
 import zipfile
 
@@ -13,7 +14,12 @@ OUT = ROOT / 'artifacts' / 'audit'
 FEED = OUT / 'packages'
 
 def run(*args):
-    subprocess.run(args, cwd=ROOT, check=True)
+    result = subprocess.run(args, cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    print(result.stdout, flush=True)
+    if result.returncode:
+        message = result.stdout[-12000:].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+        print('::error title=M18 command failure::' + message, flush=True)
+        raise subprocess.CalledProcessError(result.returncode, args)
 
 def main():
     FEED.mkdir(parents=True, exist_ok=True)
@@ -59,7 +65,12 @@ Console.WriteLine("Offline package consumer passed.");''')
     # Persist small machine-readable evidence in Actions logs as well as artifacts.
     for file in ('baseline.json', 'packages.json'):
         value = json.loads((OUT / file).read_text())
-        print('AUDIT_EVIDENCE ' + file + ' ' + json.dumps(value, separators=(',', ':')), flush=True)
+        print('::notice title=M18 ' + file + '::' + json.dumps(value, separators=(',', ':')).replace('%', '%25'), flush=True)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception:
+        message = traceback.format_exc()[-12000:].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+        print('::error title=M18 audit failure::' + message, flush=True)
+        raise
