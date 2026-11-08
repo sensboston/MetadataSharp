@@ -26,3 +26,9 @@ This cleanup marks old entry points historical and replaces the active recovery
 instructions. Future physical archive moves require a link migration pass; there is
 no need to churn dozens of reviewed contracts now. Restricted/GPL source/spec copies,
 issue bodies/attachments and downloaded fixtures are not part of the retained docs.
+
+Additional current research (not completion claims):
+- research/EXIV2_BODY_REVIEW_SUPPLEMENT.md: selected issue/discussion initial bodies
+  reviewed as requirements; complements the earlier title-only snapshot.
+- research/DOTNET_TARGET_FEASIBILITY.md: modern multi-target gate and preliminary
+  Framework API cost map; no build or compatibility claim.

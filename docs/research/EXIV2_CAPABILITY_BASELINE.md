@@ -67,3 +67,7 @@ I = inventory only. These are broad discovery labels, never parity percentages.
 
 Full E01 is OPEN. This first pass is enough to identify bounded work and prevent
 "100%" from silently meaning only the currently supported formats.
+
+Follow-up: selected initial bodies have now been reviewed as requirements in
+EXIV2_BODY_REVIEW_SUPPLEMENT.md; that later pass does not retroactively change
+the provenance/scope of the initial title-only JSON snapshot. No defects reproduced.

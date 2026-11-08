@@ -24,12 +24,15 @@ MakerNote relocation, release publication or unseen public APIs approved.
   Reviewed README/license/CLI documentation facts, not implementation or tests.
   31 documented format rows/six metadata categories; 35 issue title/label/state
   signals from three bounded search queries and 12 of 37 discussions (metadata
-  only). Full E01 operation inventory/CLI build verification and denominator remain
+  only in the initial snapshot). Additional selected-body review is recorded in
+  research/EXIV2_BODY_REVIEW_SUPPLEMENT.md (no source/patch/attachment review).
+  Full E01 operation inventory/CLI build verification and denominator remain
   OPEN, no percentage claim. Sources/sampling limits in docs/research.
 - Official dotnet/core lifecycle index blob 66392f8bd6d254f73cf7a2f42113bc4034a20747
   confirms .NET 8 EOL 2026-11-10, .NET 10 EOL 2028-11-14. No retargeting/builds done.
   E02 must prove both TFMs/SDK selection/packages/platforms. Framework is unproven,
-  not a promised TFM or a trivial compatibility package. Modern API cost map needed.
+  not a promised TFM or a trivial compatibility package. Initial API cost map is now in research/DOTNET_TARGET_FEASIBILITY.md; light
+  Framework support has NOT been established and no compatibility build ran.
 - E04/D0 exact read-only DNG proposal prepared in
   design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md. **UNAPPROVED, not implemented.**
   Exact APIs/error addition/subset proposed; normative ledger/fixture rights/raw
