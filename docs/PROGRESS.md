@@ -1274,3 +1274,16 @@ Default/read/MetadataSharp verifier stays strict; negative tests must still reje
 that change by default and any other payload/loss/duplicate under observation mode.
 Successful CI then means the versioned observations (including known differences)
 match, NOT successful safe-writing parity. No percentage or exclusion accepted.
+
+6cc9b96/run42448793704 advances through READ and INSERT (D001 explicit), then
+REPLACE shows D002: owned single-property XMP APP1 is reserialized (wrapper BOM,
+toolkit label, whitespace/padding/namespace syntax) as well as COM D001. No generic
+XMP normalization waiver: before further implementation, define independent XML
+check ONLY for this authored packet: one xmpmeta/RDF/Description, exactly one
+CreatorTool=MetadataSharp simple text property (attribute or child syntax), no
+other property/qualifier/structure/DTD. A known D002 may be RECORDED only if both
+packets meet that literal expectation and all remaining segments match byte-for-
+byte with multiplicity, scan/IFD0 intact. Root toolkit annotation is separately
+visible serialization metadata, not claimed byte preservation. Explicitly false
+byte flags and both finding IDs; no successful writing parity or production policy
+change. Unknown structures/values/additions/drops still fail the observation gate.
