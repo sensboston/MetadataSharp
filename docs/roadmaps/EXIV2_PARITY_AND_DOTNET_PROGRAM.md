@@ -147,3 +147,22 @@ as 75ad10dcf9f96a496be8192c6f8949632c6da1ba; final immutable source/run/merge
 receipts are posted on PR #16. The bounded CLI foundation is complete.
 186 seed cells/348 candidates are still NOT a frozen denominator or percentage.
 E01 breadth/optional build reconciliation and E03 proposal remain OPEN; no D1 yet.
+
+## 2026-11-08 directive and E03 proposal checkpoint
+
+The developer directed that MetadataSharp reach Exiv2-level user-visible
+capability and avoid external dependencies where possible; the execution split of
+that directive into gated subtasks is recorded in
+[design/EXIV2_PARITY_MASTER_PLAN](../design/EXIV2_PARITY_MASTER_PLAN.md). Its
+measured dependency rule: zero third-party runtime dependencies in Core/Formats
+(measured 2026-11-08) and no analyzers/natives in shipped assemblies.
+
+E03 now has an exact contract proposal,
+[design/DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL](../design/DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL.md):
+additive capability-discovery surface (`MetadataContainer`/`MetadataFamily`/
+`MetadataOperation`/`CapabilityStatus`/`CapabilityDescriptor`/`MetadataCapabilities`),
+compatibility/migration/TFM policy, versioning and surface-audit rules, and the
+zero-dependency reaffirmation. It is a PROPOSAL requiring explicit developer
+approval; no public surface, test, audit or behavior changes accompany it. D1
+still requires its own explicit go-ahead plus normative/fixture/oracle
+prerequisites; E03 approval discharges only the E03 compatibility gate.

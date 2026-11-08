@@ -1344,3 +1344,34 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
 - Validation for this checkpoint: `git status --short`, `git branch --show-current`,
   `gh pr view 16`, link/fence re-check of edited Markdown and `git diff --check`.
   No .NET execution was run locally (no local SDK); no production code changed.
+
+### 2026-11-08 directive, parity master plan and E03 proposal — 2026-11-08
+
+- Developer directive (2026-11-08): bring MetadataSharp functionality up to
+  Exiv2 user-visible capability; avoid external dependencies where possible.
+  Tasks may be split into subtasks. This authorizes direction, not unseen
+  public API approval, exclusions, Framework support or publication.
+- Recorded the binding dependency policy (zero third-party runtime deps;
+  BCL-only; no analyzers/natives/embedded executables; CI-only external oracles)
+  in DEVELOPMENT.md section 7. Measured at proposal time: Core/Formats declare
+  no PackageReference; only the test project has (private xUnit assets).
+- NEW design/EXIV2_PARITY_MASTER_PLAN.md: honest gap matrix (current scope:
+  JPEG/PNG/WebP/TIFF restricted EXIF/IPTC/XMP + sidecars), the E06–E18 split
+  into gated subtasks E01-CEN..E18 with dependencies/approvals, required order
+  (E03 → E01-CEN → implementation batches → E17 → E18) and an explicit
+  definition of done for the parity goal. States clearly: parity is dozens of
+  gated units; no percentage exists until the E01 denominator is frozen and
+  reviewed.
+- NEW design/DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL.md (E03):
+  exact additive surface (`MetadataContainer` 31 baseline rows incl. XmpSidecar,
+  `MetadataFamily`, `MetadataOperation`, `CapabilityStatus` fail-closed,
+  `CapabilityDescriptor`, static `MetadataCapabilities` with All/TryGet/GetStatus),
+  compatibility/migration/TFM/versioning/surface-audit policy, zero-dependency
+  reaffirmation, verification plan (incl. test-local PackageReference guard),
+  explicit non-goals (no approved-contract changes, no new per-format APIs, no
+  InvalidDng duplication, no package publication). PROPOSAL ONLY — nothing
+  implemented; explicit developer approval required; open questions listed in
+  section 9 of that document.
+- No production source, test, CI, audit or dependency changed. Branch
+  arena/7a35ad89-metadatasharp cut from master 79992da. Documentation checks
+  (links/fences/git diff --check) re-run for edited files.
