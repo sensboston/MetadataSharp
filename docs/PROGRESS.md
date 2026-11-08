@@ -636,3 +636,7 @@
   reconstructing them for each empty fixed block; a 10,000-empty-block owned RFC
   bit fixture and concatenation-refusal test cover exact framing. Adler traversal
   now checks cancellation at bounded checkpoints. No measured allocation claim.
+
+- Added independent ExifTool facts for an explicitly authored legacy WebP EXIF
+  wrapper and its canonical raw-TIFF rebuild, rather than relying only on our own
+  reader/writer round trip. Final required reference gate includes both variants.

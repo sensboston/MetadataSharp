@@ -87,3 +87,9 @@ Pillow 12.0.0/libwebp 1.6.0, not imported codec fixtures. Complete recipe, input
 hashes and relevant license notices are in tests/fixtures/webp. No encoder dependency
 is introduced in production or ordinary tests. Required external checks provision
 dwebp 1.3.2 separately and compare PAM decoding before/after all four frame modes.
+
+Final reference audit additionally reads an explicitly authored legacy Exif-NUL-NUL
+WebP chunk with ExifTool, rebuilds through the facade and reads the resulting raw
+TIFF representation independently. This checks compatibility ingress separately
+from canonical output and coded-frame preservation; no universal legacy-wrapper
+conformance or support by every tool is claimed.

@@ -66,6 +66,10 @@ if (args.Length == 2 && args[0] == "generate")
         withWebp.SaveXmpAs(Path.Combine(args[1], $"removed-{kind}.webp"), removeXmp);
     }
 
+    byte[] legacyWebp = WebPFixture.Extended(8, WebPFixture.Image(0)[12..], WebPFixture.Chunk("EXIF", [.. "Exif\0\0"u8, .. JpegFixture.OrientationTiff]));
+    File.WriteAllBytes(Path.Combine(args[1], "legacy.webp"), legacyWebp);
+    using (var legacyDoc = WebPMetadataDocument.Open(new MemoryStream(legacyWebp))) legacyDoc.SaveExifAs(Path.Combine(args[1], "legacy-rebuilt.webp"), edit);
+
     // Authored resource fixture: keep a copyright flag, update IPTC and its existing digest.
     IptcPacket minimal = IptcPacket.CreateEmpty(); byte[] iim = new byte[minimal.ByteLength]; minimal.CopyRawTo(iim);
     byte[] flag = Resource(0x040a, [1]);

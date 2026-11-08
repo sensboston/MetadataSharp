@@ -285,6 +285,12 @@ def main(argv=None):
                 report.setdefault("limitations", []).append(f"ExifTool 12.76 WebP kind {kind}: read-only xpacket opaque; property refusal/whole removal tested; semantic reverse property read unsupported")
             copied = output / f"external-noop-{kind}.webp"; ours("noop-webp", external, copied)
             assert copied.read_bytes() == external.read_bytes() and webp_coded(external) == webp_coded(base_webp)
+        for name in ("legacy.webp", "legacy-rebuilt.webp"):
+            facts = json.loads(run(["exiftool", "-j", "-n", "-Orientation", str(output / name)]))[0]
+            assert facts["Orientation"] == 1, facts
+        assert webp_coded(output / "legacy.webp") == webp_coded(output / "legacy-rebuilt.webp")
+        assert b"Exif\0\0" in (output / "legacy.webp").read_bytes()
+        assert b"Exif\0\0" not in (output / "legacy-rebuilt.webp").read_bytes()
         report["fixtures"] = [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                                "source": "MetadataSharp authored synthetic generator", "license": "MIT"}
                               for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png", ".webp")]

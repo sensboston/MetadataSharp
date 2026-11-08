@@ -105,6 +105,7 @@ public sealed class TiffLayout
         TiffReadOptions? options = null, CancellationToken cancellationToken = default);
     public Endianness ByteOrder { get; }
     public long SourceLength { get; }
+    public uint FirstIfdOffset { get; }
     public IReadOnlyList<TiffDirectoryInfo> Directories { get; }
     public IReadOnlyList<TiffAccountedRange> Ranges { get; }
     public IReadOnlyList<TiffLayoutIssue> Issues { get; }
