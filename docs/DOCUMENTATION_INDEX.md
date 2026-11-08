@@ -14,7 +14,7 @@
   first-pass evidence, snapshot JSON, unresolved full E01 inventory work.
 - design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md: exact new API/subset proposal,
   explicitly approved 2026-11-07, with normative/oracle/runtime gates; gates 1–3
-  are closed for D1 (see below), implementation is PR #21.
+  are closed for D1 (see below), implementation merged via PR #21.
 - design/DNG_D1_NORMATIVE_LEDGER.md: binding field/count/role/constraint ledger for
   the D1 profile (root-vs-raw-leaf identity mirror rules, error mapping, known gaps).
 - design/DNG_D1_FIXTURES_AND_ORACLES.md: owned fixtures provenance (two independent

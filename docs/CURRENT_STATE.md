@@ -6,8 +6,8 @@ approvals/diagnostics remain in PROGRESS; older session instructions there are h
 ## Active branch and scope
 
 Assigned branch **arena/cdb43c96-metadatasharp**, cut from master 8fe9886
-(PR #20 merge; PR #19 brought E03 to master as ea8e056). Never switch to master
-or another branch. Standing authorization covers commit/push and completed green
+(PR #20 merge; PR #19 brought E03 to master as ea8e056); **merged into master as
+`0d4a516` (PR #21, 2026-11-08)**. Never switch to master or another branch. Standing authorization covers commit/push and completed green
 PR merge, not package publication or unseen public contracts. The previous
 public-visibility billing blocker is resolved in observed runs; no CI exception
 applies.
@@ -105,16 +105,22 @@ Next open units (as of 2026-11-08):
 3. Atomic E01 breadth (per-format pinned CLI observations beyond JPEG EXIF Artist)
    may proceed only as batches defined by E01-CEN, with owned fixtures/rights review.
 4. **D1 — narrow read-only DNG inventory profile** (2026-11-08 go-ahead):
-   implemented on this branch, **PR #21**. Gates: 1 (normative ledger,
-   docs/design/DNG_D1_NORMATIVE_LEDGER.md), 2 (owned fixtures + structural
-   oracle + pinned ExifTool 12.76 inventory, docs/design/DNG_D1_FIXTURES_AND_ORACLES.md;
-   two independent writers byte-compared in CI; raw-decode oracle gap recorded
-   as blocker-class, accepted, never a silent skip), 3 (52 xunit cases +
-   offline Python policy suite, both shapes × II/MM), 4 (E02/E03 available).
-   TIFF's DNG refusal is unchanged. No decode/render/write, no parity percentage.
-   After PR #21 merges green: **E01-CEN starts immediately (developer
-   pre-authorized 2026-11-08)**, then documentation consolidation of completed
-   stages. See PROGRESS.md "D1 narrow read-only DNG inventory profile".
+   **merged 2026-11-08** ([PR #21](https://github.com/sensboston/MetadataSharp/pull/21),
+   merge `0d4a516`; final head `7d5fc2d`; all fifteen jobs green in
+   [run 42511505561](https://github.com/sensboston/MetadataSharp/actions/runs/42511505561)).
+   Gates: 1 (normative ledger, docs/design/DNG_D1_NORMATIVE_LEDGER.md), 2 (owned
+   fixtures + structural oracle + pinned ExifTool 12.76 inventory,
+   docs/design/DNG_D1_FIXTURES_AND_ORACLES.md; two independent writers byte-compared
+   in CI; raw-decode oracle gap recorded as blocker-class, accepted, never a silent
+   skip), 3 (52 xunit cases + offline Python policy suite, both shapes × II/MM),
+   4 (E02/E03 available). TIFF's DNG refusal is unchanged. No decode/render/write,
+   no parity percentage. CI hardening before merge is chronicled in PROGRESS.md
+   (strip-range accounting/global overlap check, thumbnail fixture SamplesPerPixel
+   re-pinned to normative SHORT/1, InvalidDng/UnsupportedVersion error-model fixes,
+   exiftool -n DNGVersion/ImageHeight/SubIFD tag reporting).
+   Next unit (developer pre-authorized 2026-11-08): **E01-CEN starts immediately**,
+   then documentation consolidation of completed stages. See PROGRESS.md
+   "D1 narrow read-only DNG inventory profile".
 No other new public contracts, general format support, exclusion, Framework or
 publication authorization is implied by the 2026-11-08 directive or this
 checkpoint. See design/EXIV2_PARITY_MASTER_PLAN.md for the full gated subtask split.

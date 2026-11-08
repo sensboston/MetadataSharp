@@ -70,7 +70,7 @@ See [LICENSE](LICENSE) for the MIT license.
 ## Final roadmap audits (M17–M18)
 
 - [DNG feasibility and scope](docs/design/DNG_SCOPE.md): DNG D1 narrow read-only
-  inventory profile implemented (PR #21); existing TIFF refusal is unchanged;
+  inventory profile merged (PR #21); existing TIFF refusal is unchanged;
   no DNG decode/render/write; no parity or conformance claim. See
   [DNG_D1 normative ledger](docs/design/DNG_D1_NORMATIVE_LEDGER.md) and
   [fixtures/oracles](docs/design/DNG_D1_FIXTURES_AND_ORACLES.md).
