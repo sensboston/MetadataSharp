@@ -41,6 +41,9 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   coded scan is still preserved 135/135. Verification stays not-assessed; NO
   denominator frozen; NO coverage percentage; exclusions (if any) go to the
   developer at the denominators step; D2/publication NOT authorized.
+  2026-11-08 (step 3 opened): docs/design/EXIV2_E01_DENOMINATORS_PREFREEZE_REVIEW.md —
+  pre-freeze review package with the freeze-timing/exclusion/reporting questions for
+  the developer; nothing frozen or signed by it; gate stays OPEN.
 
 - E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
   42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.

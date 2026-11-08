@@ -1633,3 +1633,17 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   - Verification stays not-assessed everywhere (E07); no denominator computed;
     the exclusions conversation (if any) goes to the developer at step 3
     (denominators + sign-off). E01 gate remains OPEN.
+### E01 denominators — pre-freeze review package opened — 2026-11-08
+
+- 2026-11-08: step 3 of the approved order (B0 → B1 → denominators) opened as a
+  REVIEW PACKAGE, not a freeze: docs/design/EXIV2_E01_DENOMINATORS_PREFREEZE_REVIEW.md.
+  It records the post-B1 state (193 rows: 154 observed-cli / 39 static
+  not-applicable; 144 accepted / 8 refused (all ICC duplicate-profile rows) /
+  2 nonzero-exit-artifact-produced / 0 verified), restates the approved §6
+  denominator definitions and lists what the developer must decide (freeze timing
+  Q1; exclusion candidates E-CAND-1 thumbnail-uncompressed-insert NA and the
+  reserved BMFF/noDocumentedClaim cells Q2; nonzero-exit-artifact-produced reporting
+  Q3; remaining batch order Q4; pre-freeze reporting rule Q5). NO freeze, NO
+  percentage, NO exclusion signed, verification stays not-assessed, D2/publication
+  NOT authorized, `denominatorFrozen: false`.
+- E01 gate remains OPEN until the developer reviews the frozen denominators.
