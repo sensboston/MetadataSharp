@@ -109,12 +109,11 @@ approval. E02 can proceed independently of D0 review once CI/tooling is availabl
 Grouping related milestones into PRs is allowed only with separate per-unit records
 and gates; it never bypasses predecessors or new contract approval.
 
-## Completion, blockers and next actions
+## Historical E00 checkpoint (superseded by execution below)
 
 This submission completes E00 documentation and initial E01 discovery only. Full
 E01 atomic inventory/CLI verification remains open. Read EXIV2_CAPABILITY_BASELINE
-and EXIV2_REQUIREMENTS_TRIAGE for source-limited findings. Current CI billing issue
-must be rechecked; PR #13's one-off docs exception does not cover this programme.
+and EXIV2_REQUIREMENTS_TRIAGE for source-limited findings. The historical CI billing issue was subsequently resolved by public visibility; PR #13's one-off docs exception does not cover this programme.
 No DNG parser, runtime retarget, public API refactor, or new format is implemented
 by these documents. The developer subsequently explicitly approved the exact D0 contract on
 2026-11-07. E04 contract approval is complete; D1 still waits for its normative,
@@ -127,7 +126,21 @@ correctness jobs (450 each), six strict package/matching-SDK consumer/signature
 jobs, and two required reference jobs. See DOTNET_8_10_SUPPORT_AND_E02_AUDIT and
 small evidence/e02 receipts. Framework 4.8.x is deferred because cheap inclusion
 was not established; no legacy spike or compatibility promise. E03 is not approved
-by successful cross-target signatures. Final PR #15 head/merge needs its own gate.
+by successful cross-target signatures. PR #15 MERGED 7c872466: final 85bd097 passed PR42446407601/push42446403212, 14/14 each; E02 bounded unit complete.
 E01 operation seeds are now reproducible (186 cells / 348 candidate operations),
 not an approved atomic denominator or observed current-Exiv2 coverage. E01/E03 and
 D1 normative/oracle prerequisites remain next; no DNG implementation yet.
+
+
+## E01 pinned execution checkpoint (not full census)
+
+601a20b/run42449222307 passed all fifteen required jobs, including source-pinned
+Exiv2 0.28.9 with recognized explicit build options/runtime/dependency identities.
+Four owned JPEG ASCII Artist operations have independent raw field/print/scan
+observations. Three baseline writes explicitly fail exact non-target byte-preservation
+(D001 COM NUL/order, D002 XMP reencoding on replace/remove); those are NOT safe-write
+parity, accepted exclusions or justification to change MetadataSharp preservation.
+See research/EXIV2_PINNED_BASELINE_EXECUTION.md and evidence/e01-pinned-jpeg.
+PR #16 final head needs its own fifteen-job gate; exact merge receipt lives there.
+186 seed cells/348 candidates are still NOT a frozen denominator or percentage.
+E01 breadth/optional build reconciliation and E03 proposal remain OPEN; no D1 yet.

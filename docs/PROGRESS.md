@@ -1295,3 +1295,21 @@ Use documented full EXIF inventory print (-P Ekycv) for removal and independentl
 require exactly Orientation Short 1 1, no Artist/extra field. All invoked commands
 still must return zero; no skipped remove or arbitrary success-exit set. Narrow XML
 reader explicitly accepts UTF-8 only, rejects NUL/DTD outside this authored variant.
+
+### First complete E01 pinned observation protocol gate
+
+601a20b0c1e6d6e1a78b489269f687445ca7827b/run42449222307: all 15 jobs SUCCESS.
+Retrieved/validated complete source-bound report into research/evidence/e01-pinned-jpeg.
+READ exact; INSERT D001 with nonExifBytesAndOrderExact=false/payloadBytesExact=false;
+REPLACE/REMOVE D001+D002, same false flags. Independent expected Artist bytes or
+absence/remaining orientation inventory, all other TIFF fields and scan checked.
+This is a successful bounded observation protocol INCLUDING known differences,
+NOT successful safe-write parity, E01 census closure, exclusion or numerator claim.
+All original fourteen gates retained/pass, 450 .NET cases per six combos; Python
+12 historical +26 discovery cases. No production code/API/hostile-input relaxation.
+
+Full scope/build/license/output-rights caveats, optional feature-build gaps, failures,
+classification logic and reproduction are in EXIV2_PINNED_BASELINE_EXECUTION.md.
+Final PR #16 documentation/evidence head must pass its OWN fifteen jobs before
+merge. Exact final immutable SHA/run/merge receipt posted there. Continue atomic
+E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reopened.

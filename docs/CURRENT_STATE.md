@@ -64,12 +64,29 @@ unrun, rights unreviewed and MetadataSharp verification unassessed. Six policy t
 prevent fabricated support/exclusions/percentages. Full denominator/CLI build/
 corpus/tag/layout/video/workflow census remains OPEN, no parity percentage claimed.
 
-Current bounded E01 plan is recorded BEFORE coding in PROGRESS: pinned external
-v0.28.9 build with explicit options/dependency identity; authored JPEG ASCII Artist
-atomic read/insert/replace/delete variants, independent byte expectations and scan/
-non-target preservation; fail-closed policies and complete source-bound receipts.
-No denominator freeze, E01 completion, public API refactor or DNG implementation.
-E03 exact compatibility proposal remains a separate gate. D0 already approved.
+PR #16 bounded E01 CLI unit: implementation 601a20b passed 42449222307,
+15/15 jobs including source-pinned external 0.28.9 build and four owned JPEG ASCII
+Artist read/insert/replace/remove observations. Complete raw field/print/scan and
+source/build/dependency identities in research/evidence/e01-pinned-jpeg; scope and
+findings in research/EXIV2_PINNED_BASELINE_EXECUTION.md. Raw namespace catalogs and
+upstream source/executable are NOT committed or distributed. Web/curl OFF in this
+configuration is unobserved breadth, not an accepted exclusion.
+
+Important: all THREE reference writes have false exact non-EXIF preservation flags:
+D001 exact authored COM trailing-NUL addition/order; D002 single-property XMP
+reserialization on replace/remove, independently checked against literal property.
+These are recorded baseline differences, NOT successful safe-writing parity or
+permission to modify our writer. Default/read checker remains strict; only exact
+known differences classified, all other segment payloads/multiplicities remain
+strict. MetadataSharp status unscored; full E01 census/denominator still OPEN.
+
+Final PR #16 head needs own FIFTEEN-job CI before merge; final immutable source/run/
+merge receipt posted there. On recovery check live PR #16. If merged, this bounded
+CLI foundation is done; do NOT infer E01/E03/full parity/D1 completed. Next expand
+atomic ledger by family/format/variant and separately prepare exact E03 compatibility
+proposal. D0 already approved, D1 normative/fixture/oracle/E03 prerequisites remain.
+No production DLL/API/parser dependency changes, general format support, exclusion,
+Framework or publication authorization introduced in this unit.
 
 ## Reproduction / local constraints
 
@@ -80,7 +97,7 @@ python -m unittest discover -s tests/reference -q
 python -m unittest discover -s tests/discovery -q
 python tools/reference/build_capability_seeds.py --check
 git diff --check
-gh pr list --head arena/49d49a4f-metadatasharp
+gh pr view 16 --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
 gh run list --branch arena/49d49a4f-metadatasharp --limit 4
 # With both SDKs/runtimes installed:
 dotnet restore MetadataSharp.sln
@@ -94,4 +111,5 @@ SDK/blob downloads. Bounded failed-TRX/command diagnostics and compressed comple
 JSON annotations work; tools/audit/collect.py validates run/source/chunk receipts.
 Audit AUDIT_TFM and reference METADATASHARP_REFERENCE_TFM default net8.0, accept
 net10.0. Tools now need explicit -f for dotnet run; no target may silently fall back.
-Python policy 12/12 and seed tests 6/6 pass locally; own final CI still required.
+Python historical policy 12/12 and discovery/observation/collector 26/26 pass locally;
+own final fifteen-job CI still required.
