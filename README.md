@@ -1,7 +1,7 @@
 # MetadataSharp
 
 An MIT-licensed managed .NET library for image metadata editing without
-pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/IPTC/XMP, static PNG/WebP EXIF/XMP editing and XMP sidecars with conservative safety refusals.**
+pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/IPTC/XMP, static PNG/WebP EXIF/XMP editing and XMP sidecars with conservative safety refusals; read-only classic TIFF layout accounting.**
 This is not general image-format or full RDF/XMP support.
 
 ## Start Here

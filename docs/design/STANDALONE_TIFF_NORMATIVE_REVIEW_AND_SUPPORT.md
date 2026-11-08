@@ -60,3 +60,8 @@ Normative audit: TIFF6 section 2 explicitly requires at least one entry per IFD.
 Zero-entry directories are InvalidTiff, including metadata-only graph nodes; a
 metadata-only directory can instead contain an ordinary Software field. This is
 framing validation, not a restriction on metadata-only child roles.
+
+Files beyond the explicit 4-GiB classic profile refuse UnsupportedFeature before
+reads when the input byte budget would otherwise permit them. Physical stream
+I/O exceptions, including EndOfStreamException raised by a stream, propagate as
+I/O; stable declared out-of-range/truncated framing is rejected by range checks.

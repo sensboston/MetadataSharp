@@ -122,7 +122,7 @@ Safely framed but unsupported recognized compression/sample/pointer layouts retu
 an issue-bearing snapshot, never IsSupported=true. Keep normal argument/I/O and
 cancellation exceptions. No partial snapshot is returned after an exception.
 
-## 3. Framing, graph and pointer decisions requiring approval
+## 3. Approved framing, graph and pointer decisions
 
 - Classic TIFF 6.0, both endian orders, magic 42, 8-byte header, aligned nonzero
   first IFD, 32-bit offsets and 12-byte entries. First profile source at most 4 GiB;

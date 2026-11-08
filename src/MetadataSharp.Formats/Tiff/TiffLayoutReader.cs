@@ -28,8 +28,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
     {
         token.ThrowIfCancellationRequested(); Bounds(start, count); source.Position = start;
         byte[] bytes = new byte[count];
-        try { await ContainerIo.Read(source, bytes, asynchronous, token).ConfigureAwait(false); }
-        catch (IOException e) when (e is EndOfStreamException) { throw Bad(); }
+        await ContainerIo.Read(source, bytes, asynchronous, token).ConfigureAwait(false);
         return bytes;
     }
     private void Range(TiffRangeKind kind, uint? owner, ushort? tag, long start, long count, ushort type = 0, uint n = 0)
@@ -69,7 +68,8 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
     private async Task<TiffLayout> Run()
     {
         if (length > options.Limits.MaxInputBytes) throw Limit();
-        if (length < 8 || length > 4294967296L) throw Bad("Classic TIFF file size is outside the profile.");
+        if (length < 8) throw Bad("Truncated TIFF header.");
+        if (length > 4294967296L) throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Files larger than 4 GiB are outside the classic TIFF profile.");
         byte[] header = await At(0, 8).ConfigureAwait(false);
         order = header[0] == 0x49 && header[1] == 0x49 ? Endianness.LittleEndian : header[0] == 0x4d && header[1] == 0x4d ? Endianness.BigEndian : throw Bad("Invalid TIFF byte order.");
         ushort magic = U16(header, 2);

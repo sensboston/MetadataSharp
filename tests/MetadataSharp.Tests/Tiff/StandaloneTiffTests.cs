@@ -138,6 +138,22 @@ public sealed class StandaloneTiffTests
         f.Directory(8, [(330, 4, [513])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
         f.Directory(8, [(305, 2, [0])]); Assert.Contains(Read(f.Bytes).Issues, i => i.Code == TiffLayoutIssueCode.MissingImageLayout);
     }
+    [Fact]
+    public async Task OrdinaryIoExceptionsRemainIoAndBorrowedSourcesStayOpen()
+    {
+        using var source = new FailedReads(StandaloneTiffFixture.Create().Bytes);
+        Assert.Throws<EndOfStreamException>(() => TiffLayout.Read(source));
+        await Assert.ThrowsAsync<EndOfStreamException>(() => TiffLayout.ReadAsync(source)); Assert.True(source.CanRead);
+        using var huge = new OversizedSource();
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => TiffLayout.Read(huge, new() { Limits = new() { MaxInputBytes = long.MaxValue } })).Code);
+    }
+    private sealed class OversizedSource : MemoryStream
+    { public override long Length => 4294967297L; public override int Read(Span<byte> buffer) => throw new InvalidOperationException("Must refuse before reading."); }
+    private sealed class FailedReads(byte[] bytes) : MemoryStream(bytes)
+    {
+        public override int Read(Span<byte> buffer) => throw new EndOfStreamException("Injected physical input failure.");
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => ValueTask.FromException<int>(new EndOfStreamException("Injected async input failure."));
+    }
     private sealed class HeaderOnlyStream(byte[] bytes) : MemoryStream(bytes)
     {
         public override int Read(Span<byte> buffer)

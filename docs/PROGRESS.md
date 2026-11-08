@@ -681,3 +681,8 @@
   audit tightened TIFF6's explicit nonempty-IFD framing requirement and replaced
   empty synthetic graph nodes with a valid one-field metadata directory. Added
   zero-entry refusal regression, without changing the approved public API/scope.
+
+- Final I/O audit preserves physical stream exceptions without reclassifying them
+  as semantic TIFF errors; configured input budgets and the 4-GiB profile ceiling
+  preflight before reads. Added sync/async failure/borrowed-lifetime and oversized
+  sparse-source tests. No source hashing or future editing authority is implied.
