@@ -99,6 +99,21 @@ class BaselinePolicyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 baseline.verify(before, after, b'Alice\0', allow_segment_reorder=True)
 
+    def test_exact_known_comment_difference_is_visible_and_strict_by_default(self):
+        before = baseline.inspect_jpeg(fixture())
+        before['nonExifParts'].append(baseline.COMMENT_BEFORE)
+        before['nonExif'] = b''.join(before['nonExifParts'])
+        after = copy.deepcopy(before)
+        after['nonExifParts'][-1] = baseline.COMMENT_AFTER
+        after['nonExifParts'].reverse(); after['nonExif'] = b''.join(after['nonExifParts'])
+        with self.assertRaises(ValueError):
+            baseline.verify(before, after, b'Alice\0', allow_segment_reorder=True)
+        self.assertEqual(baseline.COMMENT_DIFFERENCE, baseline.verify(before, after, b'Alice\0', observe_known_comment_difference=True))
+        for extra in ([baseline.COMMENT_AFTER], [b'changed-XMP']):
+            bad = copy.deepcopy(after); bad['nonExifParts'] += extra; bad['nonExif'] = b''.join(bad['nonExifParts'])
+            with self.assertRaises(ValueError):
+                baseline.verify(before, bad, b'Alice\0', allow_segment_reorder=True, observe_known_comment_difference=True)
+
     def test_non_exif_app1_is_not_misclassified(self):
         info = baseline.inspect_jpeg(fixture(xmp=b'Exif-not-a-signature'))
         self.assertIn(b'Exif-not-a-signature', info['nonExif'])

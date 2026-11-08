@@ -31,6 +31,9 @@ OPTIONS = {
 # Measured v0.28.9 verbose keys. PNG's compile switch is separately mandatory;
 # have_libz is a dependency observation, not by itself proof of PNG functionality.
 RUNTIME_FEATURES = ('have_xmptoolkit', 'have_libz', 'have_brotli', 'enable_bmff')
+COMMENT_BEFORE = b'\xff\xfe\x00\x20MetadataSharp authored fixture'
+COMMENT_AFTER = b'\xff\xfe\x00\x21MetadataSharp authored fixture\x00'
+COMMENT_DIFFERENCE = 'D001-authored-COM-trailing-NUL-plus-segment-reordering-NOT-byte-preservation'
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
@@ -118,7 +121,7 @@ def inspect_jpeg(data):
     return dict(tags=tags, scan=scan, nonExif=b''.join(non_exif), nonExifParts=non_exif)
 
 
-def verify(before, after, expected, allow_segment_reorder=False):
+def verify(before, after, expected, allow_segment_reorder=False, observe_known_comment_difference=False):
     target = None if expected is None else (2, len(expected), expected)
     require(after['tags'].get(315) == target, 'Artist raw type/count/value mismatch')
     require({k: v for k, v in before['tags'].items() if k != 315} == {k: v for k, v in after['tags'].items() if k != 315}, 'Non-target TIFF fields changed')
@@ -128,6 +131,8 @@ def verify(before, after, expected, allow_segment_reorder=False):
     old, new = before['nonExifParts'], after['nonExifParts']
     if allow_segment_reorder and Counter(old) == Counter(new):
         return 'byte-identical-segment-permutation-NOT-exact-order'
+    if observe_known_comment_difference and Counter(old)[COMMENT_BEFORE] == 1 and Counter(new)[COMMENT_AFTER] == 1 and Counter(old) - Counter(new) == Counter([COMMENT_BEFORE]) and Counter(new) - Counter(old) == Counter([COMMENT_AFTER]):
+        return COMMENT_DIFFERENCE
     removed = list((Counter(old) - Counter(new)).elements())
     added = list((Counter(new) - Counter(old)).elements())
     raise ValueError('Non-EXIF segments changed: ' + json.dumps(dict(oldCount=len(old), newCount=len(new), removedHex=[s.hex()[:500] for s in removed], addedHex=[s.hex()[:500] for s in added])))
@@ -203,7 +208,7 @@ def main():
             result = target.read_bytes()
             after = inspect_jpeg(result)
             report['currentCase'] = dict(operation=operation, fixture=name)
-            segment_preservation = verify(before, after, expected, allow_segment_reorder=modification is not None)
+            segment_preservation = verify(before, after, expected, allow_segment_reorder=modification is not None, observe_known_comment_difference=modification is not None)
             parse_artist(run([exe, '-P', 'kycv', '-K', 'Exif.Image.Artist', target]), expected)
             require(source.read_bytes() == original, 'Source fixture changed')
             if operation == 'read':
@@ -214,7 +219,7 @@ def main():
                 fixtureRights='repository-authored generator; MIT; no upstream fixture',
                 independentExpected=None if expected is None else dict(type=2, count=len(expected), rawHex=expected.hex()),
                 expectedSource='authored literal; TIFF6 ASCII type/count/raw bytes; not reference-derived',
-                preserved=dict(scanSha256=digest(after['scan']), nonExifSegmentsBeforeSha256=digest(before['nonExif']), nonExifSegmentsAfterSha256=digest(after['nonExif']), nonExifSegmentPreservation=segment_preservation, nonTargetIfd0=True),
+                preserved=dict(scanSha256=digest(after['scan']), nonExifSegmentsBeforeSha256=digest(before['nonExif']), nonExifSegmentsAfterSha256=digest(after['nonExif']), nonExifSegmentPreservation=segment_preservation, nonExifBytesAndOrderExact=segment_preservation == 'exact-bytes-and-order', nonExifPayloadBytesExact=segment_preservation != COMMENT_DIFFERENCE, knownReferenceDifference='D001' if segment_preservation == COMMENT_DIFFERENCE else None, nonTargetIfd0=True),
                 baselineObservation='passed-independent-byte-and-print-check',
                 metadataSharpVerification='not-scored; generated input is not bidirectional operation parity', limits='Only this fixture variant, not full JPEG/EXIF support'))
             save()
