@@ -1162,3 +1162,9 @@ stream explicit and portable, with an extra regression rejecting zero/missing-
 DEFLATE framing; do NOT relax production BoundedZlib. Correct existing target
 expectations, retaining explicit runtime/loaded-asset checks. New floor 450.
 No production parsing algorithm/API or safety contract changed.
+
+Strengthened consumer independence: each net8/net10 package consumer now has its
+own SDK-major global.json and commands execute from that consumer directory.
+Check selected SDK major as well as host runtime. A net8 test under SDK 10 alone
+would not prove a net8 SDK consumer can restore/use the dual-target package; both
+consumer SDKs are installed by the matrix. Record consumer SDK in package receipt.

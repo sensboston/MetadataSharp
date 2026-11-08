@@ -19,8 +19,8 @@ if TARGET not in TARGETS:
 OUT = ROOT / 'artifacts' / 'audit' / TARGET
 FEED = OUT / 'packages'
 
-def run(*args):
-    result = subprocess.run(args, cwd=ROOT, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def run(*args, cwd=ROOT):
+    result = subprocess.run(args, cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     print(result.stdout, flush=True)
     if result.returncode:
         message = result.stdout[-12000:].replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
@@ -71,6 +71,10 @@ def main():
             reports.append(dict(package=package.name, sha256=hashlib.sha256(package.read_bytes()).hexdigest(), entries=names,
                                 dependencyGroups=groups, documentedMembers=docs))
     consumer = OUT / 'consumer'; consumer.mkdir(exist_ok=True)
+    major = TARGET[3:].split('.')[0]
+    (consumer / 'global.json').write_text(json.dumps({'sdk': {'version': major + '.0.100', 'rollForward': 'latestFeature', 'allowPrerelease': False}}))
+    consumer_sdk = subprocess.check_output(['dotnet', '--version'], cwd=consumer, text=True).strip()
+    assert consumer_sdk.startswith(major + '.'), consumer_sdk
     (consumer / 'NuGet.Config').write_text(f'<configuration><packageSources><clear/><add key="audit" value="{FEED.as_posix()}"/></packageSources></configuration>')
     # A unique cache and cleared sources ensure the smoke cannot use project references or an internet feed.
     (consumer / 'consumer.csproj').write_text('''<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>AUDIT_TARGET</TargetFramework><ImplicitUsings>enable</ImplicitUsings><IsPackable>false</IsPackable></PropertyGroup><ItemGroup><PackageReference Include="MetadataSharp.Formats" Version="[0.0.0-audit]"/></ItemGroup></Project>'''.replace('AUDIT_TARGET', TARGET))
@@ -82,9 +86,9 @@ using var reopened = TiffMetadataDocument.Open(output);
 if (reopened.ReadValue(new(reopened.Layout.FirstIfdOffset, 305))?.Count != 6) throw new Exception("Package consumer mismatch.");
 if (System.Environment.Version.Major != EXPECTED_MAJOR) throw new Exception("Consumer ran on wrong runtime.");
 Console.WriteLine("Offline package consumer passed.");'''.replace('EXPECTED_MAJOR', TARGET[3:].split('.')[0]))
-    run('dotnet', 'restore', str(consumer / 'consumer.csproj'), '--configfile', str(consumer / 'NuGet.Config'), '--packages', str(OUT / 'isolated-cache'))
-    run('dotnet', 'run', '--project', str(consumer / 'consumer.csproj'), '-c', 'Release', '--no-restore', '--', str(OUT / 'consumer.tif'))
-    report = dict(schema=2, targetFramework=TARGET, publicSignatureSha256=signature_hash, publicSignatureCount=len(surfaces['net8.0']['signatures']), sourceCommit=os.getenv('AUDIT_SOURCE_COMMIT'), sdkInfo=subprocess.check_output(['dotnet', '--info'], text=True), packages=reports, offlineConsumer='passed',
+    run('dotnet', 'restore', str(consumer / 'consumer.csproj'), '--configfile', str(consumer / 'NuGet.Config'), '--packages', str(OUT / 'isolated-cache'), cwd=consumer)
+    run('dotnet', 'run', '--project', str(consumer / 'consumer.csproj'), '-c', 'Release', '--no-restore', '--', str(OUT / 'consumer.tif'), cwd=consumer)
+    report = dict(schema=2, targetFramework=TARGET, consumerSdk=consumer_sdk, publicSignatureSha256=signature_hash, publicSignatureCount=len(surfaces['net8.0']['signatures']), sourceCommit=os.getenv('AUDIT_SOURCE_COMMIT'), sdkInfo=subprocess.check_output(['dotnet', '--info'], text=True), packages=reports, offlineConsumer='passed',
                   publication='not attempted', docCaveat='XML member counts are not full API documentation coverage; CS1591 suppressed only for audit candidates')
     (OUT / 'packages.json').write_text(json.dumps(report, indent=2))
     # Persist small machine-readable evidence in Actions logs as well as artifacts.
