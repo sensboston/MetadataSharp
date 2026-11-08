@@ -98,7 +98,7 @@ approval. “Approval?” lists the required gate before implementation.
 
 | ID | Bounded deliverable | Depends on | Approval? |
 | --- | --- | --- | --- |
-| E01-CEN | Finite atomic denominator design: schema for variant rows (encoding, layout, duplicates, sidecars, ICC/comment/preview presence), fixture provenance workflow, and the proposed split of the 31×6 grid into per-format execution batches; two denominators (full baseline + accepted-target) | E01 pinned build (done) | Scope only; no code |
+| E01-CEN | Finite atomic denominator design: schema for variant rows (encoding, layout, duplicates, sidecars, ICC/comment/preview presence), fixture provenance workflow, and the proposed split of the 31×6 grid into per-format execution batches; two denominators (full baseline + accepted-target) — proposed in [EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL](EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md) | E01 pinned build (done) | Scope only; no code |
 | E03 | **Exact .NET architecture & compatibility contracts** — see [DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL](DOTNET_ARCHITECTURE_AND_COMPATIBILITY_CONTRACT_PROPOSAL.md) | E02 (done) | Yes — before any refactor |
 | E05/D1 | Approved narrow read-only DNG (unchanged D0 contract) | E02, E03, normative ledger, owned fixtures/oracles | D0 approved; impl gated |
 | E06a | EXIF/GPS/Interop typed vocabulary: names, enum

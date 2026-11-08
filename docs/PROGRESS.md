@@ -1425,7 +1425,7 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   go-ahead + normative/fixture/oracle prerequisites still required), no E06–E18
   format work, no exclusions/percentages, no publication, Framework deferred.
 
-### D1 narrow read-only DNG inventory profile — 2026-11-08 (PR #21, in flight)
+### D1 narrow read-only DNG inventory profile — 2026-11-08 (PR #21, MERGED at 0d4a516)
 
 - 2026-11-08: developer directed D1 first, then E01-CEN immediately after the
   D1 PR merges (no fresh confirmation required); documentation of current state
@@ -1463,5 +1463,63 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   - TIFF's refusal stays; no D2, no decode/render, no parity percentage,
     no Framework, no publication. D0 is a binding narrow contract; the ledger is
     its binding refinement — public/subset changes require the D0 reapproval path.
-- Receipt (runs/merge SHA) is posted on PR #21; merge only after final head is
-  green on all fifteen jobs.
+- CI hardening landed during review, all on 2026-11-08 before merge:
+  - `DngLayout.Ranges` now accounts Strip ranges (they were added during
+    validation, after the immutable snapshot of the range list was taken); the
+    global sorted overlap check now covers strips/fields/directories.
+  - Thumbnail fixture bug: tag 277 SamplesPerPixel was written SHORT/3 [3,3,3]
+    in BOTH writers; the normative ledger (§4/§5) and DNG/TIFF require SHORT/1.
+    Both writers now emit SHORT/1 [3]; thumbnail fixtures re-pinned — 1034 B,
+    IFD0 strip at 420, raw leaf IFD at 444, raw strip at 1018; SHA-256
+    dng-thumb-ii `3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96`,
+    dng-thumb-mm `5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9`.
+    Raw fixtures unchanged (598 B, `474952a4…` / `64dee070…`).
+  - DNG identity tags 50706/50707 with wrong type/count now throw `InvalidDng`
+    before any framing/bounds interpretation (ledger: malformed DNG identity
+    fields → InvalidDng), so inline-vs-external reinterpretation can no longer
+    mask the DNG-specific error.
+  - Root DNGVersion must equal exactly `01 01 00 00`; anything else safely
+    framed reports an `UnsupportedVersion` issue (`IsSupported=false`) with
+    geometry still established (ledger §1); leaf mirrors obey the same rule.
+  - Next-IFD links are inventoried and reported (`UnsupportedDirectoryRole`)
+    but no longer feed the structural cycle graph, so a self-referencing
+    next-IFD chain reports the profile issue instead of throwing InvalidTiff.
+  - UniqueCameraModel test NUL-overwrite indexed the payload correctly
+    (payload is 19 bytes; overwrite offset 18, not 19).
+  - Reference harness: exiftool `-n` DNGVersion compared by digit sequence
+    (`1100`); TIFF tag 257 is `ImageHeight` in exiftool (not `ImageLength`);
+    exiftool surfaces the DNG raw-SubIFD image tags at top level, so the
+    thumbnail fixture's exiftool expectations were aligned (geometry/role are
+    asserted by the structural oracle and `inspect-dng` instead).
+  - `.NET` job had TreatWarningsAsErrors-driven compile failures fixed earlier
+    (duplicate local, null-assert) — no behavioral code involved.
+- Final head `7d5fc2d`: all fifteen jobs green in
+  [run 42511505561](https://github.com/sensboston/MetadataSharp/actions/runs/42511505561)
+  (net8.0/net10.0 × ubuntu/windows/macos, six audits, both References, pinned
+  Exiv2 0.28.9 observations). **Merged into master as `0d4a516`
+  (2026-11-08T18:46:52Z).** No parity percentage; D2/decode/render/write and
+  publication remain unauthorized.
+
+### E01-CEN finite atomic denominator design — 2026-11-08 (PROPOSAL, not approved)
+
+- 2026-11-08: after D1 merged, developer-pre-authorized next unit E01-CEN was
+  drafted as docs/design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md. It defines:
+  the census row schema (schemaVersion 1; EX0289-pinned row IDs; operations
+  inventory/read/insert/replace/remove/extract; axes valueType/textEncoding/layout/
+  duplicates/sidecar/presence, all bound to a reviewed closed `enumerations` block;
+  invariants incl. no self-oracles and refusals-never-support), the fixture
+  provenance workflow (authored generators, pinned SHA-256 manifests, mutation
+  recipes instead of file copies, rights classes, blocked-rights handling, in-repo
+  budget), the pinned-CLI observation machinery (CI-only black box, ExifTool 12.76
+  secondary differential reference), the proposed per-format batching B0–B14 of the
+  31×6 grid (pilot JPEG first; evidence-rich B0–B6; rights/build-gated B7–B11;
+  cross-cutting applicability B12–B14), and the TWO denominators (D_full = every
+  reviewed row incl. no-claim/blocked/refused; D_accept = D_full minus signed
+  developer exclusions; neither is computed yet; reporting rule defined). It also
+  records 71 no-claim + 1 empty cell (EPS comments) as in-denominator candidates and
+  9 open review questions for the developer.
+- Status: PROPOSAL — scope only; no code, tests, fixtures, package or contract
+  changes; exclusions NOT granted; no parity percentage exists; E01 gate stays open.
+  Awaits developer review; changes land by PR; on approval, record here and open the
+  B0 pilot. Review of §6 (denominators/reporting) is the binding input to any future
+  coverage percentage.
