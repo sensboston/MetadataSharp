@@ -1,0 +1,23 @@
+{
+  "runId": "42518084331",
+  "job": "pinned-exiv2-baseline",
+  "checkRun": 128845393798,
+  "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42518084331",
+  "pullRequest": 24,
+  "sourceCommit": "4dfdae4 (PR #24 head; rehearsal tree e9d68ec-equivalent for the pinned source)",
+  "artifact": {
+    "name": "e01-b0-census-observations",
+    "id": 13631769798,
+    "sizeInBytes": 8238,
+    "digest": "sha256:4ab6e374c25dc2d1867e9dc6d6af0a302d9e200adb07d28ee770f40c60791fcb",
+    "expiresAt": "2026-12-08T20:04:38Z",
+    "note": "Artifact zip digest from the GitHub Actions API (metadata only). Artifact/log bytes are NOT retrievable from the dev sandbox (host allowlist), so the committed observations.json is the locally rehearsed pinned build's output (see README provenance); the CI run re-verified pin integrity, fixture determinism (regenerated and byte-compared against the committed manifest) and completed the batch without infrastructure failure."
+  },
+  "committedObservations": {
+    "path": "docs/research/evidence/e01-b0-census/observations.json",
+    "sha256": "2e4099e73103be3d60487d92f10135e1e85cad1440e29217292dcf910acf0054",
+    "provenance": "local pinned rehearsal against the b0859fc61 source, built with the CI job's CMAKE options",
+    "ciOutcome": "green (1m39s); outcome classes of the CI artifact were not byte-verified from this sandbox; any class-level difference between the committed evidence and the CI artifact would be a finding and is flagged here, not silently waived"
+  },
+  "encoding": "complete zlib/base64 chunks <=2500 bytes (CI notice-encoded; unverified from sandbox)"
+}

@@ -48,19 +48,21 @@ cross-checks it); rights: `owned-synthetic`, MIT. See
 
 ## Provenance and reproduction
 
-- Local rehearsal (this directory's `observations.json` as first committed):
-  pinned source `b0859fc61fea5dedfc898aece6b15893ddf4314e`, built from that
-  source with the same CMAKE options as the CI `pinned-exiv2-baseline` job;
-  observations recorded with `E01_SOURCE_COMMIT=<git sha>` of the rehearsal.
-  Raw JSON is committed as-is; `receipt.json` pins the CI run that re-produced
-  it during the PR.
-- CI (authoritative gate): the `pinned-exiv2-baseline` job rebuilds the pinned
-  CLI and re-runs `python tools/reference/observe_b0.py --upstream
-  artifacts/e01/source --build artifacts/e01/build`, uploading
-  `e01-b0-census-observations` (30-day retention). The job never gates on
+- Local rehearsal (this directory's `observations.json`): pinned source
+  `b0859fc61fea5dedfc898aece6b15893ddf4314e`, built from that source with the
+  same CMAKE options as the CI `pinned-exiv2-baseline` job; observations recorded
+  with `E01_SOURCE_COMMIT=<rehearsal git sha>`. Raw JSON is committed as-is.
+- CI (authoritative gate), receipt `receipt.json`: the `pinned-exiv2-baseline`
+  job on PR #24 rebuilt the pinned CLI, regenerated the fixtures and
+  byte-compared them against the committed manifest, and re-ran the full batch
+  (`observe_b0.py`) without infrastructure failure. The job never gates on
   observation *outcomes* (a refusal is a finding, not a failure); it gates on
   infrastructure integrity (pin drift, modified upstream, fixture
-  regeneration/pin mismatch).
+  regeneration/pin mismatch) and uploads `e01-b0-census-observations`
+  (30-day retention). Artifact bytes are not retrievable from the dev sandbox
+  (host allowlist); the receipt pins the run, job check-run id and the
+  artifact's API digest — it does NOT claim byte-equality between the CI
+  artifact and the committed local rehearsal.
 - Reproduce locally: build the pinned CLI as in that job (or use any local
   0.28.9-pinned build), then run the command above; `observe_b0.py` verifies
   the pin, regenerates fixtures and compares their SHA-256 against the
