@@ -1287,3 +1287,11 @@ byte with multiplicity, scan/IFD0 intact. Root toolkit annotation is separately
 visible serialization metadata, not claimed byte preservation. Explicitly false
 byte flags and both finding IDs; no successful writing parity or production policy
 change. Unknown structures/values/additions/drops still fail the observation gate.
+
+2ed0025/run42449006766: READ/INSERT/REPLACE pass independent checks, D001/D002
+explicitly recorded; REMOVE passes raw value/IFD0/scan/known-difference checks but
+our absent-key filtered print query returns nonzero. Do NOT waive exit failures.
+Use documented full EXIF inventory print (-P Ekycv) for removal and independently
+require exactly Orientation Short 1 1, no Artist/extra field. All invoked commands
+still must return zero; no skipped remove or arbitrary success-exit set. Narrow XML
+reader explicitly accepts UTF-8 only, rejects NUL/DTD outside this authored variant.

@@ -129,7 +129,9 @@ def known_xmp(segment):
     require(segment[:2] == b'\xff\xe1' and segment[4:].startswith(XMP_SIGNATURE), 'Not standard XMP APP1')
     raw = segment[4+len(XMP_SIGNATURE):]
     require(len(raw) <= 65533 and b'<!' not in raw, 'DTD/declaration/comment outside authored XMP variant')
-    root = ET.fromstring(raw)
+    text = raw.decode('utf-8')
+    require('\x00' not in text, 'Only authored UTF-8 XML packet variant')
+    root = ET.fromstring(text)
     rdfns, xns = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', 'adobe:ns:meta/'
     prop = '{http://ns.adobe.com/xap/1.0/}CreatorTool'
     def blank(text):
@@ -249,7 +251,13 @@ def main():
             after = inspect_jpeg(result)
             report['currentCase'] = dict(operation=operation, fixture=name)
             segment_preservation = verify(before, after, expected, allow_segment_reorder=modification is not None, observe_known_comment_difference=modification is not None, observe_known_xmp_difference=modification is not None)
-            parse_artist(run([exe, '-P', 'kycv', '-K', 'Exif.Image.Artist', target]), expected)
+            if expected is None:
+                # A missing-key filtered print returns nonzero in this CLI. Check the
+                # complete remaining EXIF inventory instead; no exit-code waiver.
+                inventory = run([exe, '-P', 'Ekycv', target])
+                require(inventory.split() == ['Exif.Image.Orientation', 'Short', '1', '1'], 'Unexpected EXIF inventory after removal')
+            else:
+                parse_artist(run([exe, '-P', 'kycv', '-K', 'Exif.Image.Artist', target]), expected)
             require(source.read_bytes() == original, 'Source fixture changed')
             if operation == 'read':
                 require(result == original, 'Read operation mutated file')
