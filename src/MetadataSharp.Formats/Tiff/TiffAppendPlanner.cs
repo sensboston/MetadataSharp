@@ -48,7 +48,7 @@ internal sealed class TiffAppendPlanner(TiffLayout layout, TiffEditOptions optio
                 if (!TiffEditPolicy.Shape(f, 1, 0, 0)) throw Unsupported();
                 byte[] old = await read(f.ValueRange.Offset, (int)f.ValueRange.Length).ConfigureAwait(false);
                 ExifValue oldValue = ExifValue.FromRaw((TiffFieldType)f.FieldType, f.Count, order, old);
-                if (!TiffEditPolicy.Value(f.TagId, oldValue, false)) throw Unsupported();
+                if (!TiffEditPolicy.Value(f.TagId, oldValue)) throw Unsupported();
                 if (f.FieldType == (ushort)pair.Value.FieldType && f.Count == pair.Value.Count && old.AsSpan().SequenceEqual(TiffEditPolicy.Bytes(pair.Value, order))) continue;
             }
             effective.Add(pair.Key, pair.Value);

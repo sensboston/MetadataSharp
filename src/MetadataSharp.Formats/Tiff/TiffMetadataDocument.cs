@@ -59,7 +59,7 @@ public sealed class TiffMetadataDocument : IDisposable, IAsyncDisposable
         if (!TiffEditPolicy.Shape(field, 1, 0, 0)) throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Unsupported descriptive target shape.");
         byte[] bytes = await ReadAt(field.ValueRange.Offset, (int)field.ValueRange.Length, asynchronous, token).ConfigureAwait(false);
         ExifValue value = ExifValue.FromRaw((TiffFieldType)field.FieldType, field.Count, Layout.ByteOrder, bytes);
-        if (!TiffEditPolicy.Value(key.TagId, value, false)) throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Unsupported descriptive target content.");
+        if (!TiffEditPolicy.Value(key.TagId, value)) throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Unsupported descriptive target content.");
         token.ThrowIfCancellationRequested(); return value;
     }
     private async Task<TiffAppendPlan?> Prepare(TiffMetadataEdit edit, bool asynchronous, CancellationToken token)

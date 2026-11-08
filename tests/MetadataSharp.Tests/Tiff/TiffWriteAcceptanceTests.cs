@@ -148,6 +148,30 @@ public sealed class TiffWriteAcceptanceTests
         }
         finally { Directory.Delete(dir, true); }
     }
+    [Fact]
+    public void InvalidTargetDateIsOpaqueToUnrelatedEditsButCannotBeReadOrOverwritten()
+    {
+        var f = StandaloneTiffFixture.Create(); var fields = StandaloneTiffFixture.Fields().Append(((ushort)306, (ushort)2, new uint[] { 0 })).ToArray();
+        f.Directory(8, fields); int entry = 8 + 2 + 12 * (fields.Length - 1); f.U32(entry + 4, 20); f.U32(entry + 8, 512);
+        "2026:99:99 99:99:99\0"u8.CopyTo(f.Bytes.AsSpan(512));
+        using var doc = TiffMetadataDocument.Open(new MemoryStream(f.Bytes)); using var output = new MemoryStream();
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => doc.ReadValue(new(8, 306))).Code);
+        var date = new TiffMetadataEdit(); date.Set(new(8, 306), ExifValue.FromRaw(TiffFieldType.Ascii, 20, Endianness.LittleEndian, "2026:11:07 12:34:56\0"u8));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => doc.Save(output, date)).Code); Assert.Empty(output.ToArray());
+        Prefix(f.Bytes, Save(f.Bytes));
+        var remove = new TiffMetadataEdit(); remove.Remove(new(8, 306)); byte[] removed = Save(f.Bytes, remove);
+        using var clean = TiffMetadataDocument.Open(new MemoryStream(removed)); Assert.Null(clean.ReadValue(new(clean.Layout.FirstIfdOffset, 306)));
+    }
+    [Fact]
+    public void WholeFileIsNotLimitedToEmbeddedExifCapacityAndSnapshotsOutliveDocument()
+    {
+        var f = StandaloneTiffFixture.Create(); byte[] source = new byte[128 * 1024]; f.Bytes.CopyTo(source, 0);
+        byte[] output = Save(source); Prefix(source, output); Assert.True(output.Length > source.Length);
+        ExifValue snapshot; TiffLayout layout;
+        using (var doc = TiffMetadataDocument.Open(new MemoryStream(output)))
+        { layout = doc.Layout; snapshot = doc.ReadValue(new(layout.FirstIfdOffset, 305))!; }
+        Array.Clear(output); Assert.True(layout.FirstIfdOffset >= source.Length); Assert.Equal("accepted", Text(snapshot));
+    }
     private sealed class HookSource(byte[] bytes) : MemoryStream(bytes)
     {
         internal Action? Next;

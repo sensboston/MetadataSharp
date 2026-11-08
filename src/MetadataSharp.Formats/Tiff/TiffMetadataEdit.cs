@@ -30,7 +30,7 @@ public sealed class TiffMetadataEdit
     public void Set(TiffFieldKey key, ExifValue value)
     {
         TiffEditPolicy.Key(key); ArgumentNullException.ThrowIfNull(value);
-        if (!TiffEditPolicy.Value(key.TagId, value, true)) throw new ArgumentException("Value is outside the writable TIFF descriptive shape.", nameof(value));
+        if (!TiffEditPolicy.Value(key.TagId, value)) throw new ArgumentException("Value is outside the writable TIFF descriptive shape.", nameof(value));
         changes[key] = value;
     }
     public void Remove(TiffFieldKey key) { TiffEditPolicy.Key(key); changes[key] = null; }
@@ -52,19 +52,20 @@ internal static class TiffEditPolicy
         if (value.FieldType == TiffFieldType.Short && value.ByteOrder != order) Array.Reverse(bytes);
         return bytes;
     }
-    internal static bool Value(ushort tag, ExifValue value, bool writing)
+    internal static bool Value(ushort tag, ExifValue value)
     {
+        if (tag == 274 && (value.FieldType != TiffFieldType.Short || value.Count != 1)) return false;
+        if (tag != 274 && (!Text(tag) || value.FieldType != TiffFieldType.Ascii || value.ByteLength == 0 || (tag == 306 && value.ByteLength != 20))) return false;
         byte[] bytes = new byte[value.ByteLength]; value.CopyRawTo(bytes);
         if (tag == 274)
         {
-            if (value.FieldType != TiffFieldType.Short || value.Count != 1) return false;
             ushort orientation = value.ByteOrder == Endianness.LittleEndian ? BinaryPrimitives.ReadUInt16LittleEndian(bytes) : BinaryPrimitives.ReadUInt16BigEndian(bytes);
             return orientation is >= 1 and <= 8;
         }
         if (!Text(tag) || value.FieldType != TiffFieldType.Ascii || bytes.Length == 0 || bytes[^1] != 0) return false;
         for (int i = 0; i < bytes.Length - 1; i++) if (bytes[i] is < 0x20 or > 0x7e) return false;
         if (tag != 306) return true;
-        return bytes.Length == 20 && (!writing || DateTime.TryParseExact(Encoding.ASCII.GetString(bytes, 0, 19), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out _));
+        return bytes.Length == 20 && DateTime.TryParseExact(Encoding.ASCII.GetString(bytes, 0, 19), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
     }
     internal static bool Shape(TiffFieldInfo f, uint samples, uint extras, int segmentCount)
     {
