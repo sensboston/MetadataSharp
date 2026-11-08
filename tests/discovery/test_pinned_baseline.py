@@ -114,6 +114,36 @@ class BaselinePolicyTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 baseline.verify(before, bad, b'Alice\0', allow_segment_reorder=True, observe_known_comment_difference=True)
 
+    def test_owned_xmp_forms_have_exact_independent_property_expectation(self):
+        prefix = '<x:xmpmeta xmlns:x="adobe:ns:meta/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:p="http://ns.adobe.com/xap/1.0/">'
+        suffix = '</rdf:RDF></x:xmpmeta>'
+        for body in ('<rdf:Description rdf:about="" p:CreatorTool="MetadataSharp"/>', '<rdf:Description rdf:about=""><p:CreatorTool>MetadataSharp</p:CreatorTool></rdf:Description>'):
+            packet = segment(0xe1, baseline.XMP_SIGNATURE+(prefix+'<rdf:RDF>'+body+suffix).encode())
+            baseline.known_xmp(packet)
+            for bad in (packet.replace(b'MetadataSharp', b'Wrong'), packet.replace(b'p:CreatorTool', b'p:Unknown'), packet.replace(b'rdf:about=""', b'rdf:about="other"'), packet.replace(b'<rdf:RDF>', b'<rdf:RDF unexpected="extra">')):
+                with self.assertRaises(ValueError):
+                    baseline.known_xmp(bad)
+        for raw in (b'<!DOCTYPE x><x/>', b'<x/>', b'<broken'):
+            with self.assertRaises((ValueError, baseline.ET.ParseError)):
+                baseline.known_xmp(segment(0xe1, baseline.XMP_SIGNATURE+raw))
+
+    def test_known_xmp_change_never_allows_other_segments_to_change(self):
+        def packet(attribute):
+            desc = '<rdf:Description rdf:about="" p:CreatorTool="MetadataSharp"/>' if attribute else '<rdf:Description rdf:about=""><p:CreatorTool>MetadataSharp</p:CreatorTool></rdf:Description>'
+            xml = '<x:xmpmeta xmlns:x="adobe:ns:meta/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:p="http://ns.adobe.com/xap/1.0/"><rdf:RDF>'+desc+'</rdf:RDF></x:xmpmeta>'
+            return segment(0xe1, baseline.XMP_SIGNATURE+xml.encode())
+        before = baseline.inspect_jpeg(fixture())
+        after = copy.deepcopy(before)
+        before['nonExifParts'] += [baseline.COMMENT_BEFORE, packet(True)]
+        after['nonExifParts'] += [baseline.COMMENT_AFTER, packet(False)]
+        before['nonExif'] = b''.join(before['nonExifParts']); after['nonExif'] = b''.join(after['nonExifParts'])
+        with self.assertRaises(ValueError):
+            baseline.verify(before, after, b'Alice\0', observe_known_comment_difference=True)
+        self.assertEqual(baseline.XMP_DIFFERENCE, baseline.verify(before, after, b'Alice\0', observe_known_comment_difference=True, observe_known_xmp_difference=True))
+        after['nonExifParts'].append(b'unknown'); after['nonExif'] = b''.join(after['nonExifParts'])
+        with self.assertRaises(ValueError):
+            baseline.verify(before, after, b'Alice\0', observe_known_comment_difference=True, observe_known_xmp_difference=True)
+
     def test_non_exif_app1_is_not_misclassified(self):
         info = baseline.inspect_jpeg(fixture(xmp=b'Exif-not-a-signature'))
         self.assertIn(b'Exif-not-a-signature', info['nonExif'])

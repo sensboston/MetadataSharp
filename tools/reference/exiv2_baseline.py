@@ -12,6 +12,7 @@ import struct
 import subprocess
 import traceback
 import zlib
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 PIN = 'b0859fc61fea5dedfc898aece6b15893ddf4314e'
@@ -33,7 +34,9 @@ OPTIONS = {
 RUNTIME_FEATURES = ('have_xmptoolkit', 'have_libz', 'have_brotli', 'enable_bmff')
 COMMENT_BEFORE = b'\xff\xfe\x00\x20MetadataSharp authored fixture'
 COMMENT_AFTER = b'\xff\xfe\x00\x21MetadataSharp authored fixture\x00'
-COMMENT_DIFFERENCE = 'D001-authored-COM-trailing-NUL-plus-segment-reordering-NOT-byte-preservation'
+COMMENT_DIFFERENCE = 'D001-authored-COM-trailing-NUL-NOT-byte-preservation'
+XMP_DIFFERENCE = 'D001+D002-authored-COM-and-single-CreatorTool-XMP-reencoded-NOT-byte-preservation'
+XMP_SIGNATURE = b'http://ns.adobe.com/xap/1.0/\x00'
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
@@ -121,7 +124,33 @@ def inspect_jpeg(data):
     return dict(tags=tags, scan=scan, nonExif=b''.join(non_exif), nonExifParts=non_exif)
 
 
-def verify(before, after, expected, allow_segment_reorder=False, observe_known_comment_difference=False):
+def known_xmp(segment):
+    """Independently check ONLY the single authored simple RDF property, not general XMP."""
+    require(segment[:2] == b'\xff\xe1' and segment[4:].startswith(XMP_SIGNATURE), 'Not standard XMP APP1')
+    raw = segment[4+len(XMP_SIGNATURE):]
+    require(len(raw) <= 65533 and b'<!' not in raw, 'DTD/declaration/comment outside authored XMP variant')
+    root = ET.fromstring(raw)
+    rdfns, xns = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', 'adobe:ns:meta/'
+    prop = '{http://ns.adobe.com/xap/1.0/}CreatorTool'
+    def blank(text):
+        return not (text or '').strip()
+    require(root.tag == '{'+xns+'}xmpmeta' and set(root.attrib) <= {'{'+xns+'}xmptk'} and len(root) == 1 and blank(root.text) and blank(root.tail), 'Unexpected XMP wrapper')
+    rdf = root[0]
+    require(rdf.tag == '{'+rdfns+'}RDF' and not rdf.attrib and len(rdf) == 1 and blank(rdf.text) and blank(rdf.tail), 'Unexpected RDF structure')
+    desc = rdf[0]
+    require(desc.tag == '{'+rdfns+'}Description' and blank(desc.text) and blank(desc.tail), 'Unexpected Description')
+    attrs = dict(desc.attrib)
+    require(attrs.pop('{'+rdfns+'}about', None) == '', 'Unexpected RDF subject')
+    if len(desc) == 0:
+        require(attrs == {prop: 'MetadataSharp'}, 'Unexpected property set/value')
+    else:
+        require(not attrs and len(desc) == 1, 'Extra XMP property')
+        child = desc[0]
+        require(child.tag == prop and not child.attrib and len(child) == 0 and child.text == 'MetadataSharp' and blank(child.tail), 'Unexpected CreatorTool value/qualifier')
+    return digest(raw)
+
+
+def verify(before, after, expected, allow_segment_reorder=False, observe_known_comment_difference=False, observe_known_xmp_difference=False):
     target = None if expected is None else (2, len(expected), expected)
     require(after['tags'].get(315) == target, 'Artist raw type/count/value mismatch')
     require({k: v for k, v in before['tags'].items() if k != 315} == {k: v for k, v in after['tags'].items() if k != 315}, 'Non-target TIFF fields changed')
@@ -131,8 +160,19 @@ def verify(before, after, expected, allow_segment_reorder=False, observe_known_c
     old, new = before['nonExifParts'], after['nonExifParts']
     if allow_segment_reorder and Counter(old) == Counter(new):
         return 'byte-identical-segment-permutation-NOT-exact-order'
-    if observe_known_comment_difference and Counter(old)[COMMENT_BEFORE] == 1 and Counter(new)[COMMENT_AFTER] == 1 and Counter(old) - Counter(new) == Counter([COMMENT_BEFORE]) and Counter(new) - Counter(old) == Counter([COMMENT_AFTER]):
-        return COMMENT_DIFFERENCE
+    if observe_known_comment_difference and Counter(old)[COMMENT_BEFORE] == 1 and Counter(new)[COMMENT_AFTER] == 1:
+        adjusted = Counter(old)
+        adjusted.subtract([COMMENT_BEFORE]); adjusted.update([COMMENT_AFTER])
+        if adjusted == Counter(new):
+            return COMMENT_DIFFERENCE
+        if observe_known_xmp_difference:
+            old_xmp = [s for s in old if s[:2] == b'\xff\xe1' and s[4:].startswith(XMP_SIGNATURE)]
+            new_xmp = [s for s in new if s[:2] == b'\xff\xe1' and s[4:].startswith(XMP_SIGNATURE)]
+            if len(old_xmp) == len(new_xmp) == 1:
+                known_xmp(old_xmp[0]); known_xmp(new_xmp[0])
+                adjusted.subtract(old_xmp); adjusted.update(new_xmp)
+                if adjusted == Counter(new):
+                    return XMP_DIFFERENCE
     removed = list((Counter(old) - Counter(new)).elements())
     added = list((Counter(new) - Counter(old)).elements())
     raise ValueError('Non-EXIF segments changed: ' + json.dumps(dict(oldCount=len(old), newCount=len(new), removedHex=[s.hex()[:500] for s in removed], addedHex=[s.hex()[:500] for s in added])))
@@ -208,7 +248,7 @@ def main():
             result = target.read_bytes()
             after = inspect_jpeg(result)
             report['currentCase'] = dict(operation=operation, fixture=name)
-            segment_preservation = verify(before, after, expected, allow_segment_reorder=modification is not None, observe_known_comment_difference=modification is not None)
+            segment_preservation = verify(before, after, expected, allow_segment_reorder=modification is not None, observe_known_comment_difference=modification is not None, observe_known_xmp_difference=modification is not None)
             parse_artist(run([exe, '-P', 'kycv', '-K', 'Exif.Image.Artist', target]), expected)
             require(source.read_bytes() == original, 'Source fixture changed')
             if operation == 'read':
@@ -219,7 +259,7 @@ def main():
                 fixtureRights='repository-authored generator; MIT; no upstream fixture',
                 independentExpected=None if expected is None else dict(type=2, count=len(expected), rawHex=expected.hex()),
                 expectedSource='authored literal; TIFF6 ASCII type/count/raw bytes; not reference-derived',
-                preserved=dict(scanSha256=digest(after['scan']), nonExifSegmentsBeforeSha256=digest(before['nonExif']), nonExifSegmentsAfterSha256=digest(after['nonExif']), nonExifSegmentPreservation=segment_preservation, nonExifBytesAndOrderExact=segment_preservation == 'exact-bytes-and-order', nonExifPayloadBytesExact=segment_preservation != COMMENT_DIFFERENCE, knownReferenceDifference='D001' if segment_preservation == COMMENT_DIFFERENCE else None, nonTargetIfd0=True),
+                preserved=dict(scanSha256=digest(after['scan']), nonExifSegmentsBeforeSha256=digest(before['nonExif']), nonExifSegmentsAfterSha256=digest(after['nonExif']), nonExifSegmentPreservation=segment_preservation, nonExifBytesAndOrderExact=segment_preservation == 'exact-bytes-and-order', nonExifPayloadBytesExact=segment_preservation not in (COMMENT_DIFFERENCE, XMP_DIFFERENCE), knownReferenceDifferences=['D001', 'D002'] if segment_preservation == XMP_DIFFERENCE else ['D001'] if segment_preservation == COMMENT_DIFFERENCE else [], nonTargetIfd0=True),
                 baselineObservation='passed-independent-byte-and-print-check',
                 metadataSharpVerification='not-scored; generated input is not bidirectional operation parity', limits='Only this fixture variant, not full JPEG/EXIF support'))
             save()
