@@ -8,6 +8,14 @@ namespace MetadataSharp.Formats.Png;
 internal static class BoundedZlib
 {
     private static readonly int[] LengthBase = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258];
+    private static readonly Huffman FixedLiteral = BuildFixedLiteral();
+    private static readonly Huffman FixedDistance = new(Enumerable.Repeat(5, 32).ToArray());
+    private static Huffman BuildFixedLiteral()
+    {
+        int[] lengths = new int[288];
+        for (int i = 0; i < lengths.Length; i++) lengths[i] = i < 144 ? 8 : i < 256 ? 9 : i < 280 ? 7 : 8;
+        return new(lengths);
+    }
     internal static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "Expanded XMP exceeds its budget.");
     private static MetadataException Bad() => PngScanner.Invalid("Invalid or truncated XMP zlib stream.");
     internal static byte[] Expand(byte[] input, int maximum, CancellationToken token)
@@ -29,9 +37,7 @@ internal static class BoundedZlib
             Huffman literal, distance;
             if (type == 1)
             {
-                int[] lengths = new int[288];
-                for (int i = 0; i < lengths.Length; i++) lengths[i] = i < 144 ? 8 : i < 256 ? 9 : i < 280 ? 7 : 8;
-                literal = new(lengths); distance = new(Enumerable.Repeat(5, 32).ToArray());
+                literal = FixedLiteral; distance = FixedDistance;
             }
             else
             {
@@ -84,7 +90,8 @@ internal static class BoundedZlib
             }
             if (zlib.ReadByte() != -1) throw Bad();
             uint a = 1, b = 0;
-            foreach (byte value in output) { a = (a + value) % 65521; b = (b + a) % 65521; }
+            for (int i = 0; i < output.Length; i++)
+            { if ((i & 8191) == 0) token.ThrowIfCancellationRequested(); a = (a + output[i]) % 65521; b = (b + a) % 65521; }
             if (((b << 16) | a) != BinaryPrimitives.ReadUInt32BigEndian(input.AsSpan(input.Length - 4))) throw Bad();
             token.ThrowIfCancellationRequested(); return output;
         }

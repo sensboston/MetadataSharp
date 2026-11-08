@@ -211,6 +211,20 @@ public sealed class PngTests
         Assert.Empty(BoundedZlib.Expand(PngFixture.Compress([]), 1, default));
         Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => BoundedZlib.Expand([0x78, 0x9c, 7, 0, 0, 0, 0, 1], 100, default)).Code);
     }
+    [Fact]
+    public void ManyEmptyFixedBlocksAndConcatenatedStreamsHaveExactTermination()
+    {
+        // Independently authored RFC1951 bits: fixed block + seven-bit EOB, no literals.
+        const int blocks = 10000; byte[] body = new byte[(blocks * 10 + 7) / 8]; int at = 0;
+        for (int block = 0; block < blocks; block++)
+        {
+            int header = block == blocks - 1 ? 3 : 2;
+            for (int bit = 0; bit < 3; bit++, at++) if ((header & (1 << bit)) != 0) body[at / 8] |= (byte)(1 << (at % 8));
+            at += 7;
+        }
+        byte[] compressed = [0x78, 0x9c, .. body, 0, 0, 0, 1]; Assert.Empty(BoundedZlib.Expand(compressed, 1, default));
+        Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => BoundedZlib.Expand([.. compressed, .. compressed], 1, default)).Code);
+    }
     private sealed class AsyncOutput : MemoryStream
     {
         public override void Write(ReadOnlySpan<byte> buffer) => throw new InvalidOperationException("Sync write used.");

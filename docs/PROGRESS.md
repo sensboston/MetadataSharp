@@ -631,3 +631,8 @@
   remains required before code. M16 is not authorized.
 - Final audit head CI is still pending. Do not merge based on predecessor results
   alone; require the final head's platforms and reference checks.
+
+- Hostile-compression audit caches immutable fixed Huffman trees instead of
+  reconstructing them for each empty fixed block; a 10,000-empty-block owned RFC
+  bit fixture and concatenation-refusal test cover exact framing. Adler traversal
+  now checks cancellation at bounded checkpoints. No measured allocation claim.
