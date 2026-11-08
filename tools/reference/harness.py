@@ -121,7 +121,9 @@ def main(argv=None):
                                             Path("tests/MetadataSharp.Tests/Jpeg/JpegFixture.cs"),
                                             Path("tests/MetadataSharp.Tests/Png/PngFixture.cs"),
                                             Path("tests/MetadataSharp.Tests/WebP/WebPFixture.cs"),
-                                            Path("tests/MetadataSharp.Tests/Tiff/StandaloneTiffFixture.cs"))}
+                                            Path("tests/MetadataSharp.Tests/Tiff/StandaloneTiffFixture.cs"),
+                                            Path("tests/MetadataSharp.Tests/Dng/DngFixture.cs"),
+                                            Path("tools/reference/dng_fixtures.py"))}
         report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL, "dwebp": EXPECTED_DWEBP}
         target = os.environ.get("METADATASHARP_REFERENCE_TFM", "net8.0")
         if target not in ("net8.0", "net10.0"):
@@ -346,9 +348,105 @@ def main(argv=None):
                 refreshed = output / f"refreshed-{big}-{tiles}.tif"; ours("rewrite-tiff", changed, refreshed)
                 facts = json.loads(run(["exiftool", "-j", "-IFD0:Software", "-IFD0:Artist", str(refreshed)]))[0]
                 assert facts["Software"] == "Refreshed" and facts["Artist"] == "ExternalTiff", facts
+        # DNG read-only profile: the two independent writers of the owned fixtures must agree byte-for-byte.
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import dng_fixtures
+        for order in ("II", "MM"):
+            for shape in ("raw", "thumb"):
+                data, _info = dng_fixtures.build(order, shape)
+                name = f"dng-{shape}-{'ii' if order == 'II' else 'mm'}.dng"
+                if (output / name).read_bytes() != data:
+                    raise RuntimeError(f"DNG fixture byte mismatch between independent writers: {name}")
+        report["dngFixtureAgreement"] = "byte-identical"
+
+        # Structural oracle, independent of both writers and of the library: classic II/MM magic 42,
+        # sorted unique tags, two-byte payload alignment, exact strip extents, DNGVersion on the raw leaf.
+        import struct
+
+        type_width = {1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 10: 8}
+
+        def dng_file(path):
+            data = path.read_bytes()
+            le = data[:2] == b"II"
+            fmt = "<" if le else ">"
+            order = "little" if le else "big"
+            assert struct.unpack_from(fmt + "HI", data, 2) == (42, 8), path.name
+            def ifd(offset):
+                (n,) = struct.unpack_from(fmt + "H", data, offset)
+                assert 1 <= n <= 64, (path.name, offset)
+                fields = []
+                last = -1
+                for i in range(n):
+                    at = offset + 2 + 12 * i
+                    tag, typ, count = struct.unpack_from(fmt + "HHI", data, at)
+                    assert tag > last and count >= 1, (path.name, offset)
+                    last = tag
+                    width = type_width[typ]
+                    loc = at + 8
+                    if width * count <= 4:
+                        payload = bytes(data[loc:loc + width * count])
+                    else:
+                        (ptr,) = struct.unpack_from(fmt + "I", data, loc)
+                        assert ptr % 2 == 0 and ptr + width * count <= len(data), (path.name, offset)
+                        payload = bytes(data[ptr:ptr + width * count])
+                    fields.append((tag, typ, count, payload))
+                (nxt,) = struct.unpack_from(fmt + "I", data, offset + 2 + 12 * n)
+                assert nxt == 0, (path.name, offset)
+                return fields
+            def field(fields, tag):
+                return next(f for f in fields if f[0] == tag)
+            def unsigned(fields, tag):
+                f = field(fields, tag)
+                return int.from_bytes(f[3][:4], order) if f[1] == 4 else int.from_bytes(f[3][:2], order)
+            def check_image(fields):
+                width = unsigned(fields, 256); height = unsigned(fields, 257)
+                samples = unsigned(fields, 277); photometric = unsigned(fields, 262)
+                bits = field(fields, 258)
+                bps = list(struct.unpack(fmt + "H" * bits[2], bits[3]))
+                expected = [16] if samples == 1 else [8, 8, 8]
+                assert bps == expected, path.name
+                strip = unsigned(fields, 273); strip_bytes = unsigned(fields, 279)
+                assert strip_bytes == width * height * samples * (2 if samples == 1 else 1), path.name
+                assert strip + strip_bytes <= len(data), path.name
+                return width, height, samples, photometric
+            root = ifd(8)
+            sub = unsigned(root, 330) if any(f[0] == 330 for f in root) else None
+            return root, sub, ifd, field, unsigned, check_image, data
+
+        def dng_check(path, expect_leaf):
+            root, sub, ifd, field, unsigned, check_image, data = dng_file(path)
+            dims = check_image(root)
+            if expect_leaf:
+                assert field(root, 50706)[3] == b"\x01\x01\x00\x00", path.name  # DNGVersion 1.1.0.0
+            else:
+                assert sub is not None, path.name
+                raw = ifd(sub)
+                check_image(raw)
+                assert field(raw, 50706)[3] == b"\x01\x01\x00\x00", path.name
+                assert unsigned(raw, 262) == 32803, path.name  # CFA photometric on raw leaf
+            return dims
+        raw_dims = dng_check(output / "dng-raw-ii.dng", True)
+        assert raw_dims[3] == 32803
+        dng_check(output / "dng-raw-mm.dng", True)
+        thumb_dims = dng_check(output / "dng-thumb-ii.dng", False)
+        assert thumb_dims[3] == 2
+        dng_check(output / "dng-thumb-mm.dng", False)
+        dng_version_digits = lambda value: "".join(ch for ch in str(value) if ch.isdigit())
+        facts = json.loads(run(["exiftool", "-j", "-n", "-DNGVersion", "-ImageWidth", "-ImageHeight", "-Compression", "-SamplesPerPixel", "-PhotometricInterpretation", str(output / "dng-raw-ii.dng")]))[0]
+        assert dng_version_digits(facts["DNGVersion"]) == "1100" and facts["ImageWidth"] == 4 and facts["ImageHeight"] == 2 and facts["Compression"] == 1 and facts["SamplesPerPixel"] == 1 and facts["PhotometricInterpretation"] == 32803, facts
+        # exiftool surfaces the raw SubIFD image tags (not the IFD0 thumbnail tags) for DNG,
+        # so SamplesPerPixel/PhotometricInterpretation below reflect the raw leaf; the
+        # thumbnail's own geometry/role is asserted by the structural oracle and inspect-dng.
+        facts = json.loads(run(["exiftool", "-j", "-n", "-DNGVersion", "-ImageWidth", "-ImageHeight", "-Compression", "-SamplesPerPixel", "-PhotometricInterpretation", str(output / "dng-thumb-ii.dng")]))[0]
+        assert dng_version_digits(facts["DNGVersion"]) == "1100" and facts["ImageWidth"] == 4 and facts["ImageHeight"] == 2 and facts["Compression"] == 1 and facts["SamplesPerPixel"] == 1 and facts["PhotometricInterpretation"] == 32803, facts
+        own_dng = json.loads(ours("inspect-dng", output / "dng-raw-ii.dng"))
+        assert own_dng == {"width": 4, "height": 2, "bitsPerSample": 16, "samplesPerPixel": 1, "supported": True, "role": "CfaRaw", "strips": 1}, own_dng
+        own_dng = json.loads(ours("inspect-dng", output / "dng-thumb-ii.dng"))
+        assert own_dng == {"width": 4, "height": 2, "bitsPerSample": 8, "samplesPerPixel": 3, "supported": True, "role": "RgbThumbnail", "strips": 1}, own_dng
+
         report["fixtures"] = [{"name": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                                "source": "MetadataSharp authored synthetic generator", "license": "MIT"}
-                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png", ".webp", ".tif")]
+                              for p in sorted(output.iterdir()) if p.suffix in (".jpg", ".xmp", ".png", ".webp", ".tif", ".dng")]
         report["status"] = "passed"; save()
         print("PASS: external reads, reverse edits, byte preservation and validation classification")
         return 0

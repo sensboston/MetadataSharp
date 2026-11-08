@@ -1424,3 +1424,44 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
 - E03 gate discharged. Standing non-goals remain binding: no D1 start (explicit
   go-ahead + normative/fixture/oracle prerequisites still required), no E06–E18
   format work, no exclusions/percentages, no publication, Framework deferred.
+
+### D1 narrow read-only DNG inventory profile — 2026-11-08 (PR #21, in flight)
+
+- 2026-11-08: developer directed D1 first, then E01-CEN immediately after the
+  D1 PR merges (no fresh confirmation required); documentation of current state
+  requested; already-completed stages may be consolidated.
+- D1 implemented on arena/cdb43c96-metadatasharp (cut from master 8fe9886, the
+  PR #19/#20 merge head):
+  - NEW src/MetadataSharp.Formats/Dng/* — dedicated internal reader/models/options
+    (DngReader, DngLayout, DngModels, DngReadOptions). TIFF's DNG refusal
+    (50706 ⇒ UnsupportedFeature in TiffLayoutReader) is UNCHANGED; only neutral
+    Core/Tiff primitives are shared. Profile per D0 §3: classic II/MM magic 42,
+    DNGVersion exactly 1.1.0.0 at root, one 16-bit CFA raw IFD, optional RGB
+    thumbnail root + single LONG/1 SubIFD 330 raw leaf, uncompressed strips with
+    checked `width*rows*bytesPerSample` accounting, whitelist-only fields,
+    D0 §4 logical charge model, owned immutable snapshot, IsSupported iff the
+    profile holds and Issues is empty.
+  - `MetadataErrorCode.InvalidDng` appended; existing numeric values unchanged.
+    DNG identity type/count violations throw InvalidDng; absent root DNGVersion
+    is UnsupportedFeature; framing is InvalidTiff; bounds are LimitExceeded.
+  - Gates (D0 §5): gate 1 closed by docs/design/DNG_D1_NORMATIVE_LEDGER.md
+    (field/count/role/constraint ledger incl. root-vs-raw-leaf 50706/50707/
+    50708/50721/50728/50778 mirror rules, CFA semantics, error mapping, known
+    gaps); gate 2 closed by docs/design/DNG_D1_FIXTURES_AND_ORACLES.md (four
+    authored fixtures × II/MM, two independent writers compared byte-for-byte in
+    CI, offline Python policy suite, pinned-ExifTool 12.76 inventory assertions,
+    explicit blocker-class raw-decode oracle gap — accepted, never a silent
+    skip); gate 3: tests/MetadataSharp.Tests/Dng/* (52 tests; both shapes ×
+    II/MM; mutation boundaries; known-byte SHA-256; limits; cancellation;
+    short async reads; snapshot survival); gate 4 (E02/E03) already available.
+  - tools/MetadataSharp.ReferenceFixture gains `inspect-dng`; harness.py builds
+    the owned fixtures with both writers and requires byte equality; on any
+    mismatch the external-reference job fails.
+  - Fixture authoring error caught and fixed before merge: DefaultCropSize is
+    now full-frame [4,2] (was [2,4], inconsistent with the 4×2 raw grid);
+    committed hashes re-pinned (tests/fixtures/dng/*).
+  - TIFF's refusal stays; no D2, no decode/render, no parity percentage,
+    no Framework, no publication. D0 is a binding narrow contract; the ledger is
+    its binding refinement — public/subset changes require the D0 reapproval path.
+- Receipt (runs/merge SHA) is posted on PR #21; merge only after final head is
+  green on all fifteen jobs.

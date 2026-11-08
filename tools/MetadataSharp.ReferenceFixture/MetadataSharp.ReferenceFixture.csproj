@@ -10,5 +10,6 @@
     <Compile Include="../../tests/MetadataSharp.Tests/Png/PngFixture.cs" Link="PngFixture.cs" />
     <Compile Include="../../tests/MetadataSharp.Tests/WebP/WebPFixture.cs" Link="WebPFixture.cs" />
     <Compile Include="../../tests/MetadataSharp.Tests/Tiff/StandaloneTiffFixture.cs" Link="StandaloneTiffFixture.cs" />
+    <Compile Include="../../tests/MetadataSharp.Tests/Dng/DngFixture.cs" Link="DngFixture.cs" />
   </ItemGroup>
 </Project>

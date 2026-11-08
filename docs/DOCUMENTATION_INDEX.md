@@ -13,7 +13,13 @@
 - research/EXIV2_CAPABILITY_BASELINE.md and EXIV2_REQUIREMENTS_TRIAGE.md: bounded
   first-pass evidence, snapshot JSON, unresolved full E01 inventory work.
 - design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md: exact new API/subset proposal,
-  explicitly approved 2026-11-07, with normative/oracle/runtime gates before implementation.
+  explicitly approved 2026-11-07, with normative/oracle/runtime gates; gates 1–3
+  are closed for D1 (see below), implementation is PR #21.
+- design/DNG_D1_NORMATIVE_LEDGER.md: binding field/count/role/constraint ledger for
+  the D1 profile (root-vs-raw-leaf identity mirror rules, error mapping, known gaps).
+- design/DNG_D1_FIXTURES_AND_ORACLES.md: owned fixtures provenance (two independent
+  writers, CI byte cross-check), structural oracle + pinned ExifTool 12.76 inventory
+  assertions, explicit raw-decode oracle gap (blocker-class, accepted).
 - DEVELOPMENT.md: standing safety, licensing, verification and workflow policy.
 - BUILD_AND_TEST.md: reproduction and historical observed results.
 

@@ -227,3 +227,12 @@ that same contract approval again unless a public/subset/safety promise changes.
 **D1 code must not begin until these prerequisites are closed.** Approval does not
 authorize D2 writing, digest algorithms, broad DNG support or legacy-runtime support.
 This document remains a contract record; no parser or enum was implemented here.
+
+
+---
+
+Gates status (2026-11-08, editorial addendum; this approval record is unchanged):
+Gate 1 (normative field ledger) is closed by `docs/design/DNG_D1_NORMATIVE_LEDGER.md`;
+Gate 2 (owned fixtures and independent oracles, incl. the accepted raw-decode
+oracle gap) is closed by `docs/design/DNG_D1_FIXTURES_AND_ORACLES.md`.
+Gate 3 (tests) and Gate 4 (E02/E03) accompany the D1 implementation.
