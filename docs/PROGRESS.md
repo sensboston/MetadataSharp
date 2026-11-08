@@ -1382,7 +1382,7 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   additive surface, sections 3/5/7 policies, and the verification plan; the developer
   may adjust later. net8.0 + net10.0 are retained despite net8 end of servicing
   (2026-11-10); .NET Framework remains deferred; no publication authorization.
-- Implemented on arena/7a35ad89-metadatasharp:
+- Implemented on arena/d4158be1-metadatasharp:
   - NEW src/MetadataSharp.Core/MetadataCapabilities.cs — exact approved surface:
     MetadataContainer (Unknown=0 + 31 documented baseline rows, XMP row as
     XmpSidecar), MetadataFamily (Exif=0, IptcIim, Xmp, Icc, Comment, Thumbnail,

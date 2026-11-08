@@ -5,11 +5,12 @@ approvals/diagnostics remain in PROGRESS; older session instructions there are h
 
 ## Active branch and scope
 
-Assigned branch **arena/7a35ad89-metadatasharp**, cut from master 79992da
-(PR #17 merge). Never switch to master or another branch. Standing authorization
-covers commit/push and completed green PR merge, not package publication or unseen
-public contracts. The previous public-visibility billing blocker is resolved in
-observed runs; no CI exception applies.
+Assigned branch **arena/d4158be1-metadatasharp**, cut from master fa548e92
+(PR #18 merge, which carried the parity master plan and E03 proposal). Never
+switch to master or another branch. Standing authorization covers commit/push
+and completed green PR merge, not package publication or unseen public contracts.
+The previous public-visibility billing blocker is resolved in observed runs; no CI
+exception applies.
 
 Programme: roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md (E00–E18).
 Developer approved independent near-complete Exiv2 functionality, idiomatic .NET,
@@ -116,8 +117,8 @@ python -m unittest discover -s tests/reference -q
 python -m unittest discover -s tests/discovery -q
 python tools/reference/build_capability_seeds.py --check
 git diff --check
-gh pr view 16 --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
-gh run list --branch arena/7a35ad89-metadatasharp --limit 4
+gh pr view --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
+gh run list --branch arena/d4158be1-metadatasharp --limit 4
 # With both SDKs/runtimes installed:
 dotnet restore MetadataSharp.sln
 dotnet build MetadataSharp.sln -c Release --no-restore
