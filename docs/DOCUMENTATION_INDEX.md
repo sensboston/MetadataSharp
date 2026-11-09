@@ -76,5 +76,10 @@ E01 pinned execution (bounded, not E01 closure):
   SHA-256 pinned in tests/fixtures/webp/census-manifest.json (the audit's
   tests/fixtures/webp/provenance.json is deliberately untouched); receipt.json records
   the merge run (metadata-only digests).
+- research/evidence/e01-b4-census: B4 TIFF inventory/comments(noDocumentedClaim)/EXIF/ICC/
+  IPTC/thumbnail/XMP observation JSON (49 observed rows — 49 accepted, 0 accepted-
+  unexpected, 1 static not-applicable) + README; fixtures owned-synthetic,
+  SHA-256 pinned in tests/fixtures/tiff/manifest.json; IFD0 strip/tile payload bytes
+  preserved 49/49.
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.

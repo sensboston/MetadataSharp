@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "JPEG/comments",
@@ -22,6 +22,13 @@
       "PNG/iptc",
       "PNG/thumbnail",
       "PNG/xmp",
+      "TIFF/comments",
+      "TIFF/exif",
+      "TIFF/icc",
+      "TIFF/inventory",
+      "TIFF/iptc",
+      "TIFF/thumbnail",
+      "TIFF/xmp",
       "WEBP/comments",
       "WEBP/exif",
       "WEBP/icc",
@@ -33,7 +40,8 @@
     "inventoryTrack": [
       "JPEG",
       "PNG",
-      "WEBP"
+      "WEBP",
+      "TIFF"
     ],
     "pendingSeedIds": [
       "EX0289-ARW-COMMENTS",
@@ -192,12 +200,6 @@
       "EX0289-TGA-IPTC",
       "EX0289-TGA-THUMBNAIL",
       "EX0289-TGA-XMP",
-      "EX0289-TIFF-COMMENTS",
-      "EX0289-TIFF-EXIF",
-      "EX0289-TIFF-ICC",
-      "EX0289-TIFF-IPTC",
-      "EX0289-TIFF-THUMBNAIL",
-      "EX0289-TIFF-XMP",
       "EX0289-XMP-COMMENTS",
       "EX0289-XMP-EXIF",
       "EX0289-XMP-ICC",
@@ -249,33 +251,38 @@
         "app1-exif-ifd0-subifd",
         "app1-exif-multiple",
         "png-exif",
-        "webp-exif"
+        "webp-exif",
+        "tiff-exif"
       ],
       "comments": [
         "com-single",
         "com-multiple",
         "png-text",
-        "webp-comments"
+        "webp-comments",
+        "tiff-comments"
       ],
       "icc": [
         "app2-icc-single",
         "app2-icc-segmented",
         "iccp",
-        "webp-iccp"
+        "webp-iccp",
+        "tiff-icc"
       ],
       "xmp": [
         "app1-xmp-standard",
         "app1-xmp-extended",
         "itxt-xmp",
         "ztxt-xmp",
-        "webp-xmp"
+        "webp-xmp",
+        "tiff-xmp"
       ],
       "iptc": [
         "app13-8bim-iptc",
         "app13-8bim-iptc-multiple",
         "ztxt-raw-profile-iptc",
         "itxt-raw-profile-iptc",
-        "webp-iptc"
+        "webp-iptc",
+        "tiff-iptc"
       ],
       "thumbnail": [
         "exif-ifd1-jpeg",
@@ -10066,6 +10073,1650 @@
       "batch": "B3",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-thumb-raw.webp"
+    },
+    {
+      "rowId": "EX0289-TIFF-INVENTORY-INVENTORY-0001",
+      "format": "TIFF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-tiles.tif",
+        "sha256": "d6821466c87dce4e5fc558638ff5320cc2b251ac31a6c54600c30c19ddfd0fcc",
+        "length": 932,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-tile-16x16-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-tiles.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-COMMENTS-READ-0001",
+      "format": "TIFF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-comments",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "tiff-comments.tif",
+        "sha256": "3409ea132c7f2ec8635c570d652313686c6cb3ef04c1b9f200242ab6f8d8531c",
+        "length": 225,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xpcomment-tag-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-comments.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-EXIF-READ-0001",
+      "format": "TIFF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-exif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif.tif",
+        "sha256": "7fd5b11a03b14e9d22c54c093310d41b5f97a7d3cac3d406fd3d2ef9b2bf832f",
+        "length": 173,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-exif-orientation-artist-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-EXIF-READ-0002",
+      "format": "TIFF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-exif",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-dup.tif",
+        "sha256": "89175bc3d16d5f79cc04c323a722694128c5e892a3f53495fdab7dbb5822c465",
+        "length": 185,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-exif-ifd0-artist-twice-alice-bob-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-EXIF-INSERT-0001",
+      "format": "TIFF",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-exif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-base.tif",
+        "sha256": "e2be18695abebb85d4fa7f684a7d876be2188b2a02e450967329182c1b51f818",
+        "length": 155,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-strip-bare-ifd0-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-base.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-EXIF-INSERT-0002",
+      "format": "TIFF",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-exif",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-dup.tif",
+        "sha256": "89175bc3d16d5f79cc04c323a722694128c5e892a3f53495fdab7dbb5822c465",
+        "length": 185,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-exif-ifd0-artist-twice-alice-bob-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-EXIF-REPLACE-0001",
+      "format": "TIFF",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-exif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif.tif",
+        "sha256": "7fd5b11a03b14e9d22c54c093310d41b5f97a7d3cac3d406fd3d2ef9b2bf832f",
+        "length": 173,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-exif-orientation-artist-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-EXIF-REPLACE-0002",
+      "format": "TIFF",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-exif",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-dup.tif",
+        "sha256": "89175bc3d16d5f79cc04c323a722694128c5e892a3f53495fdab7dbb5822c465",
+        "length": 185,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-exif-ifd0-artist-twice-alice-bob-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-EXIF-REMOVE-0001",
+      "format": "TIFF",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-exif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif.tif",
+        "sha256": "7fd5b11a03b14e9d22c54c093310d41b5f97a7d3cac3d406fd3d2ef9b2bf832f",
+        "length": 173,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-exif-orientation-artist-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-EXIF-REMOVE-0002",
+      "format": "TIFF",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-exif",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-dup.tif",
+        "sha256": "89175bc3d16d5f79cc04c323a722694128c5e892a3f53495fdab7dbb5822c465",
+        "length": 185,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-exif-ifd0-artist-twice-alice-bob-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-ICC-READ-0001",
+      "format": "TIFF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-icc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iccp.tif",
+        "sha256": "abb7733cd9b0c3827110379744207a7111409e691cebcc449795b8e8e42a921b",
+        "length": 359,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iccp-single-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iccp.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-ICC-READ-0002",
+      "format": "TIFF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-icc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iccp-dup.tif",
+        "sha256": "4126e1fa82dcff81aa931379cf5e4e10cd90ec14c95c188f123b1dee93e1f24b",
+        "length": 563,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iccp-ifd0-tag-twice-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iccp-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-ICC-INSERT-0001",
+      "format": "TIFF",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-icc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iccp.tif",
+        "sha256": "abb7733cd9b0c3827110379744207a7111409e691cebcc449795b8e8e42a921b",
+        "length": 359,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iccp-single-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iccp.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-ICC-INSERT-0002",
+      "format": "TIFF",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-icc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iccp-dup.tif",
+        "sha256": "4126e1fa82dcff81aa931379cf5e4e10cd90ec14c95c188f123b1dee93e1f24b",
+        "length": 563,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iccp-ifd0-tag-twice-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iccp-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-ICC-REPLACE-0001",
+      "format": "TIFF",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-icc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iccp.tif",
+        "sha256": "abb7733cd9b0c3827110379744207a7111409e691cebcc449795b8e8e42a921b",
+        "length": 359,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iccp-single-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iccp.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-ICC-REPLACE-0002",
+      "format": "TIFF",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-icc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iccp-dup.tif",
+        "sha256": "4126e1fa82dcff81aa931379cf5e4e10cd90ec14c95c188f123b1dee93e1f24b",
+        "length": 563,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iccp-ifd0-tag-twice-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iccp-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-ICC-REMOVE-0001",
+      "format": "TIFF",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-icc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iccp.tif",
+        "sha256": "abb7733cd9b0c3827110379744207a7111409e691cebcc449795b8e8e42a921b",
+        "length": 359,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iccp-single-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iccp.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-ICC-REMOVE-0002",
+      "format": "TIFF",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-icc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iccp-dup.tif",
+        "sha256": "4126e1fa82dcff81aa931379cf5e4e10cd90ec14c95c188f123b1dee93e1f24b",
+        "length": 563,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iccp-ifd0-tag-twice-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iccp-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-IPTC-READ-0001",
+      "format": "TIFF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-iptc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iptc.tif",
+        "sha256": "1e9cfa317c0d03203528185699017fce801ff0870c6b8536da426a35305edaa6",
+        "length": 213,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iptc-raw-iim-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iptc.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-IPTC-READ-0002",
+      "format": "TIFF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-iptc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iptc-dup.tif",
+        "sha256": "0e78867bbb540e13b72fd66b918c36d18709810e67faba49b9c6658289ae1031",
+        "length": 271,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iptc-ifd0-tag-twice-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iptc-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-IPTC-INSERT-0001",
+      "format": "TIFF",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-iptc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-base.tif",
+        "sha256": "e2be18695abebb85d4fa7f684a7d876be2188b2a02e450967329182c1b51f818",
+        "length": 155,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-strip-bare-ifd0-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-base.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-IPTC-INSERT-0002",
+      "format": "TIFF",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-iptc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iptc-dup.tif",
+        "sha256": "0e78867bbb540e13b72fd66b918c36d18709810e67faba49b9c6658289ae1031",
+        "length": 271,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iptc-ifd0-tag-twice-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iptc-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-IPTC-REPLACE-0001",
+      "format": "TIFF",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-iptc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iptc.tif",
+        "sha256": "1e9cfa317c0d03203528185699017fce801ff0870c6b8536da426a35305edaa6",
+        "length": 213,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iptc-raw-iim-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iptc.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-IPTC-REPLACE-0002",
+      "format": "TIFF",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-iptc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iptc-dup.tif",
+        "sha256": "0e78867bbb540e13b72fd66b918c36d18709810e67faba49b9c6658289ae1031",
+        "length": 271,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iptc-ifd0-tag-twice-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iptc-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-IPTC-REMOVE-0001",
+      "format": "TIFF",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-iptc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iptc.tif",
+        "sha256": "1e9cfa317c0d03203528185699017fce801ff0870c6b8536da426a35305edaa6",
+        "length": 213,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iptc-raw-iim-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iptc.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-IPTC-REMOVE-0002",
+      "format": "TIFF",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tiff-iptc",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-iptc-dup.tif",
+        "sha256": "0e78867bbb540e13b72fd66b918c36d18709810e67faba49b9c6658289ae1031",
+        "length": 271,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-iptc-ifd0-tag-twice-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-iptc-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-READ-0001",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tiff-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp.tif",
+        "sha256": "0c3d6dd80c9991dabffb9bd0fb2a087693014347e5c86074b37d76df3119f284",
+        "length": 523,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-tag-700-standard-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-READ-0002",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "tiff-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-nonutf8.tif",
+        "sha256": "405d3b505524be02b6115db2afafce6ae10aa284ab783aa59927c6c269df907d",
+        "length": 181,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-nonutf8.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-READ-0003",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tiff-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-dup.tif",
+        "sha256": "a3197e8425e28807d7fb545c5640ae84c8ca62bb76c49bcbf82efdd937512292",
+        "length": 893,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-ifd0-tag-twice-a-b-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-READ-0004",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "tiff-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-nonutf8.tif",
+        "sha256": "405d3b505524be02b6115db2afafce6ae10aa284ab783aa59927c6c269df907d",
+        "length": 181,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-nonutf8.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-INSERT-0001",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tiff-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-base.tif",
+        "sha256": "e2be18695abebb85d4fa7f684a7d876be2188b2a02e450967329182c1b51f818",
+        "length": 155,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-strip-bare-ifd0-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-base.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-INSERT-0002",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "tiff-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-base.tif",
+        "sha256": "e2be18695abebb85d4fa7f684a7d876be2188b2a02e450967329182c1b51f818",
+        "length": 155,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-strip-bare-ifd0-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-base.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-INSERT-0003",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tiff-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-dup.tif",
+        "sha256": "a3197e8425e28807d7fb545c5640ae84c8ca62bb76c49bcbf82efdd937512292",
+        "length": 893,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-ifd0-tag-twice-a-b-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-INSERT-0004",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "tiff-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-nonutf8.tif",
+        "sha256": "405d3b505524be02b6115db2afafce6ae10aa284ab783aa59927c6c269df907d",
+        "length": 181,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-nonutf8.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-REPLACE-0001",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tiff-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp.tif",
+        "sha256": "0c3d6dd80c9991dabffb9bd0fb2a087693014347e5c86074b37d76df3119f284",
+        "length": 523,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-tag-700-standard-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-REPLACE-0002",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "tiff-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-nonutf8.tif",
+        "sha256": "405d3b505524be02b6115db2afafce6ae10aa284ab783aa59927c6c269df907d",
+        "length": 181,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-nonutf8.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-REPLACE-0003",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tiff-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-dup.tif",
+        "sha256": "a3197e8425e28807d7fb545c5640ae84c8ca62bb76c49bcbf82efdd937512292",
+        "length": 893,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-ifd0-tag-twice-a-b-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-REPLACE-0004",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "tiff-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-nonutf8.tif",
+        "sha256": "405d3b505524be02b6115db2afafce6ae10aa284ab783aa59927c6c269df907d",
+        "length": 181,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-nonutf8.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-REMOVE-0001",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tiff-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp.tif",
+        "sha256": "0c3d6dd80c9991dabffb9bd0fb2a087693014347e5c86074b37d76df3119f284",
+        "length": 523,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-tag-700-standard-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-REMOVE-0002",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "tiff-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-nonutf8.tif",
+        "sha256": "405d3b505524be02b6115db2afafce6ae10aa284ab783aa59927c6c269df907d",
+        "length": 181,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-nonutf8.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-REMOVE-0003",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tiff-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-dup.tif",
+        "sha256": "a3197e8425e28807d7fb545c5640ae84c8ca62bb76c49bcbf82efdd937512292",
+        "length": 893,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-ifd0-tag-twice-a-b-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-dup.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-REMOVE-0004",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "tiff-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp-nonutf8.tif",
+        "sha256": "405d3b505524be02b6115db2afafce6ae10aa284ab783aa59927c6c269df907d",
+        "length": 181,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp-nonutf8.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-THUMBNAIL-READ-0001",
+      "format": "TIFF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-thumb-jpeg.tif",
+        "sha256": "c20983114ff66f0f896fae22d1bb888fe8a67e940da64dc08598c0a76f8d2cc4",
+        "length": 346,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-ifd0-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-thumb-jpeg.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-THUMBNAIL-READ-0002",
+      "format": "TIFF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-thumb-raw.tif",
+        "sha256": "7c65fc402365495dbd98dc6920d02c1a9cc1ee7c4f3ca8b7c126377ebb3a8216",
+        "length": 449,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-ifd0-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-thumb-raw.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-THUMBNAIL-INSERT-0001",
+      "format": "TIFF",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif.tif",
+        "sha256": "7fd5b11a03b14e9d22c54c093310d41b5f97a7d3cac3d406fd3d2ef9b2bf832f",
+        "length": 173,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-exif-orientation-artist-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-THUMBNAIL-INSERT-0002",
+      "format": "TIFF",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "axis collapse; not applicable: pinned CLI exposes no uncompressed-thumbnail write path (-i t embeds JPEG thumbnails only); revisit if the CLI grows the capability; flagged for developer review at denominators"
+      },
+      "baselineObservation": "not-applicable",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG pilot static not-applicable (B4): pinned CLI exposes no uncompressed-thumbnail write path (-i t embeds JPEG thumbnails only); revisit if the CLI grows the capability; flagged for developer review at denominators"
+    },
+    {
+      "rowId": "EX0289-TIFF-THUMBNAIL-REPLACE-0001",
+      "format": "TIFF",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-thumb-jpeg.tif",
+        "sha256": "c20983114ff66f0f896fae22d1bb888fe8a67e940da64dc08598c0a76f8d2cc4",
+        "length": 346,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-ifd0-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-thumb-jpeg.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-THUMBNAIL-REPLACE-0002",
+      "format": "TIFF",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-thumb-raw.tif",
+        "sha256": "7c65fc402365495dbd98dc6920d02c1a9cc1ee7c4f3ca8b7c126377ebb3a8216",
+        "length": 449,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-ifd0-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-thumb-raw.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-THUMBNAIL-REMOVE-0001",
+      "format": "TIFF",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-thumb-jpeg.tif",
+        "sha256": "c20983114ff66f0f896fae22d1bb888fe8a67e940da64dc08598c0a76f8d2cc4",
+        "length": 346,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-ifd0-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-thumb-jpeg.tif"
+    },
+    {
+      "rowId": "EX0289-TIFF-THUMBNAIL-REMOVE-0002",
+      "format": "TIFF",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-exif-thumb-raw.tif",
+        "sha256": "7c65fc402365495dbd98dc6920d02c1a9cc1ee7c4f3ca8b7c126377ebb3a8216",
+        "length": 449,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-ifd0-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b4-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B4",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-thumb-raw.tif"
     }
   ]
 }

@@ -1765,3 +1765,57 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   artifact bytes not retrievable from the sandbox — flagged, not waived).
   Census stays 303 rows; `denominatorFrozen: false`; verification not-assessed;
   no percentage; D2/publication not authorized; E01 gate OPEN. Next: B4 (TIFF + inventory).
+### E01 B4 census batch — TIFF + inventory — 2026-11-09
+
+- 2026-11-09: B4 executed in the approved §5 numeric order. Owned synthetic classic
+  II/42 TIFF fixtures authored by `tools/reference/tiff_owned_fixtures.py` (stdlib
+  byte-level TIFF writer on the shared primitives of tools/reference/jpeg_owned_fixtures.py;
+  14 fixtures, SHA-256 pinned in tests/fixtures/tiff/manifest.json, regenerated
+  byte-deterministically; IPTC carrier is raw IIM datasets in tag 0x83BB after the
+  first rehearsal showed the pinned CLI normalizing the 8BIM-wrapped variant on
+  rewrite; duplicate carriers are authored as repeated entries in one IFD0 — an
+  invalid-but-authored layout on purpose to record CLI duplicate handling).
+- tools/reference/observe_b4.py mirrors the B3 observer (pinned source identity +
+  CMAKE policy checks, fixture regeneration + manifest byte-compare, per-row recording,
+  `nonzero-exit-artifact-produced` class, never gated on outcome). TIFF analog of the
+  scan invariant: **IFD0 strip/tile image payload bytes preserved in 49/49 observed
+  rows** (`scanPreserved: true`; IFD1/SubIFD entries deliberately excluded — metadata
+  rewrites legitimately rewrite them), plus a strict classic II/42 + IFD structural
+  parse of every mutated file (typed via the shared parser, extended with
+  UNDEFINED/RATIONAL/SRATIONAL/FLOAT/DOUBLE/IFD type sizes after the CLI rewrote ICC
+  tag 0x8773 as type 7 UNDEFINED — the spec-correct type). 49 rows observed; 1 static
+  not-applicable (`exif-ifd1-uncompressed` thumbnail INSERT — the pinned CLI has no
+  uncompressed-thumbnail write path; the same CLI limitation as the JPEG/PNG/WebP
+  analogs; candidate for denominators, never self-granted). Outcome counts:
+  49 accepted, 0 accepted-unexpected, 1 static-not-applicable.
+  Notable pinned-CLI behaviors recorded, not gated:
+  `EX0289-TIFF-THUMBNAIL-REPLACE-0001`: replace on an uncompressed-strip IFD1 yields
+  a **mixed state** (strip tags AND JPEG thumbnail tags coexist — CLI-defined,
+  record-only, mirroring the B1/B2/B3 findings); `-i t` embeds a JPEG thumbnail only.
+  `EX0289-TIFF-IPTC-*-0002` (duplicate `0x83BB` entries, record-only): `add` applies
+  to BOTH entries; `del` is a **silent no-op** (rc=0, datasets still present).
+  EXIF duplicates (`Artist` authored twice): `set` rewrites the FIRST entry only,
+  `del` removes from BOTH. XMP duplicates (`0x02BC` twice, packets A/B): `set`
+  rewrites the FIRST packet only while `-pa` prints the LAST (first-wins write,
+  last-wins print). ICC duplicates: writes collapse to a single entry; `-d C`
+  removes exactly one of the two. XMP `del Xmp.xmp.CreatorTool` removes the WHOLE
+  `0x02BC` tag with rc=0 (unlike the WebP B3 silent no-op). IPTC rewrite
+  normalization: the CLI rewrites tag `0x83BB` to raw IIM (no 8BIM wrapper).
+  `-iC -l <dir>` reads `<dir>/<target-stem>.icc`; `-i t` from a thumbnail-free
+  EXIF-only base creates the IFD1 JPEG thumbnail (spec-derived, verified at
+  observation time). Both documented-claim IPTC cells and the whole batch observe
+  rc=0 across all 49 rows. The one noDocumentedClaim row
+  (`EX0289-TIFF-COMMENTS-READ-0001`) observes rc=0 with NOTHING surfaced by `-pc`
+  on an `XPComment` (0x9C9C, UTF-16LE) carrier; the carrier tag is recorded in facts,
+  nothing asserted.
+- docs/research/evidence/e01-b4-census/ — committed observations.json + README.
+  Census regenerated: 353 rows (B0 135 + B1 58 + B2 67 + B3 43 + B4 50); every B4
+  row observed-cli (49) or statically not-applicable (1); inventory track is now
+  JPEG, PNG, WebP, TIFF. `denominatorFrozen` stays false; verification stays
+  not-assessed everywhere; no percentage computed; D2/publication NOT authorized;
+  E01 gate remains OPEN. Next batch: B5.
+- Discovery suite: 94/94 local (13 census + 13 WebP fixture tests + 14 new TIFF
+  fixture tests included).
+- CI: `pinned-exiv2-baseline` job re-runs all batches (observe_b0.py --batch all,
+  observe_b2.py, observe_b3.py, observe_b4.py) and uploads `e01-b4-census-observations`
+  next to the B0/B1/B2/B3 artifacts; the workflow was extended accordingly.

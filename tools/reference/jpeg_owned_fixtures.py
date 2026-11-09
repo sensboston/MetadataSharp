@@ -21,7 +21,14 @@ import sys
 from pathlib import Path
 
 T_BYTE, T_ASCII, T_SHORT, T_LONG = 1, 2, 3, 4
-SIZEOF = {T_BYTE: 1, T_ASCII: 1, T_SHORT: 2, T_LONG: 4}
+SIZEOF = {T_BYTE: 1, T_ASCII: 1, T_SHORT: 2, T_LONG: 4,
+          5: 8,   # RATIONAL (two LONGs)
+          7: 1,   # UNDEFINED (CLI rewrites ICC/XMP payloads into this type)
+          10: 8,  # SRATIONAL
+          11: 4,  # FLOAT
+          12: 8,  # DOUBLE
+          13: 4,  # IFD
+          }
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / 'tests/fixtures/jpeg/manifest.json'
 PROVENANCE = ROOT / 'tests/fixtures/jpeg/provenance.json'

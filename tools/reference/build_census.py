@@ -4,7 +4,8 @@ Expands the documented 31x6 capability seeds into census rows for the batches
 enumerated so far. B0 enumerates JPEG x {exif, comments, icc} and the JPEG
 inventory track; B1 enumerates JPEG x {xmp, iptc, thumbnail}; B2 enumerates
 PNG x {inventory, comments, exif, icc, iptc, thumbnail, xmp}; B3 enumerates
-WebP x {inventory, comments, exif, icc, iptc, thumbnail, xmp}. All rows are
+WebP x {inventory, comments, exif, icc, iptc, thumbnail, xmp}; B4 enumerates
+TIFF x {inventory, comments, exif, icc, iptc, thumbnail, xmp}. All rows are
 generated deterministically; the artifact is immutable between reviews
 (`--check` fails on drift). This is enumeration, not observation: every row
 starts as not-run / not-assessed and no denominator is computed here.
@@ -21,17 +22,20 @@ SEEDS = ROOT / 'docs/research/EXIV2_OPERATION_SEEDS.json'
 OUTPUT = ROOT / 'docs/research/EXIV2_CENSUS.json'
 # NOTE: tests/fixtures/webp/provenance.json is reserved for the .NET library's
 # PNG/WebP-group audit (Pillow-encoded single-pixel fixtures); the E01 census
-# batch fixtures pin their own manifest/provenance pair there.
+# batch fixtures pin their own manifest/provenance pair there. The TIFF batch
+# fixtures follow the same pattern with tests/fixtures/tiff/{manifest,provenance}.json.
 EVIDENCE_BY_BATCH = {
     'B0': ROOT / 'docs/research/evidence/e01-b0-census/observations.json',
     'B1': ROOT / 'docs/research/evidence/e01-b1-census/observations.json',
     'B2': ROOT / 'docs/research/evidence/e01-b2-census/observations.json',
     'B3': ROOT / 'docs/research/evidence/e01-b3-census/observations.json',
+    'B4': ROOT / 'docs/research/evidence/e01-b4-census/observations.json',
 }
 FIXTURE_MANIFESTS = {
     'JPEG': ROOT / 'tests/fixtures/jpeg/manifest.json',
     'PNG': ROOT / 'tests/fixtures/png/manifest.json',
     'WEBP': ROOT / 'tests/fixtures/webp/census-manifest.json',
+    'TIFF': ROOT / 'tests/fixtures/tiff/manifest.json',
 }
 
 # Axis collapses that are statically impossible, reviewed with the B0 pilot and B1.
@@ -67,11 +71,11 @@ EXTRACT_FAMILIES = ['comments', 'icc', 'thumbnail']
 TEXT_ENCODINGS = ['ascii', 'utf-8', 'unknown-raw', 'not-applicable']
 VALUE_TYPES = ['any-documented', 'opaque', 'text-bytes']  # 'any-documented': B14 splits EXIF
 LAYOUTS = {
-    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple', 'png-exif', 'webp-exif'],
-    'comments': ['com-single', 'com-multiple', 'png-text', 'webp-comments'],
-    'icc': ['app2-icc-single', 'app2-icc-segmented', 'iccp', 'webp-iccp'],
-    'xmp': ['app1-xmp-standard', 'app1-xmp-extended', 'itxt-xmp', 'ztxt-xmp', 'webp-xmp'],
-    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple', 'ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc', 'webp-iptc'],
+    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple', 'png-exif', 'webp-exif', 'tiff-exif'],
+    'comments': ['com-single', 'com-multiple', 'png-text', 'webp-comments', 'tiff-comments'],
+    'icc': ['app2-icc-single', 'app2-icc-segmented', 'iccp', 'webp-iccp', 'tiff-icc'],
+    'xmp': ['app1-xmp-standard', 'app1-xmp-extended', 'itxt-xmp', 'ztxt-xmp', 'webp-xmp', 'tiff-xmp'],
+    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple', 'ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc', 'webp-iptc', 'tiff-iptc'],
     'thumbnail': ['exif-ifd1-jpeg', 'exif-ifd1-uncompressed'],
     'inventory': ['container'],
 }
@@ -260,6 +264,54 @@ def build_rows(seeds):
             emit('WEBP', 'thumbnail', operation, value_type='opaque', text_encoding='not-applicable',
                  layout=layout, duplicates='none', batch='B3',
                  notes='embedded EXIF IFD1 thumbnail container operation; bytes opaque')
+
+    # TIFF inventory track (recognition is never metadata support).
+    emit('TIFF', 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
+         layout='container', duplicates='none', batch='B4',
+         notes='recognize/dimensions/MIME without decoding; count tracked separately, never support')
+
+    tiff = {s['family']: s for s in seeds['seeds'] if s['format'] == 'TIFF'}
+    assert set(tiff) == set(FAMILIES), 'TIFF seeds missing a family'
+    # TIFF noDocumentedClaim cells (claim '-'): one read row each, observed via pinned CLI.
+    emit('TIFF', 'comments', 'read', value_type='text-bytes', text_encoding='not-applicable',
+         layout='tiff-comments', duplicates='none', batch='B4', no_claim=True,
+         notes='no documented claim (seed EX0289-TIFF-COMMENTS); pinned-CLI observation recorded, nothing asserted; '
+               'XPComment carrier tag 0x9C9C (UTF-16LE) not surfaced by the pinned CLI')
+    # TIFF EXIF (B4): classic II TIFF, Artist in IFD0 (0x013B); duplicate carriers share IFD0.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for duplicates in ('none', 'first-wins'):
+            emit('TIFF', 'exif', operation, value_type='any-documented', text_encoding='not-applicable',
+                 layout='tiff-exif', duplicates=duplicates, batch='B4',
+                 notes='classic II TIFF IFD0; Artist entry authored twice in the duplicates fixture; '
+                       'duplicate-carrier behavior recorded, never pre-asserted')
+    # TIFF ICC (B4): raw profile bytes in tag 0x8773; no profile decode.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for duplicates in ('none', 'first-wins'):
+            emit('TIFF', 'icc', operation, value_type='opaque', text_encoding='not-applicable',
+                 layout='tiff-icc', duplicates=duplicates, batch='B4',
+                 notes='ICC profile in tag 0x8773 (raw profile bytes); opaque bytes, no profile decoding/validation claimed; '
+                       'duplicate-carrier behavior recorded, never pre-asserted')
+    # TIFF IPTC (B4): raw IIM/8BIM (IPTC resource 0x0404) bytes in tag 0x83BB; documented Read/Write.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for duplicates in ('none', 'first-wins'):
+            emit('TIFF', 'iptc', operation, value_type='opaque', text_encoding='not-applicable',
+                 layout='tiff-iptc', duplicates=duplicates, batch='B4',
+                 notes='IPTC-NAA datasets as raw IIM/8BIM bytes in tag 0x83BB; no dataset interpretation claimed; '
+                       'duplicate-carrier behavior recorded, never pre-asserted')
+    # TIFF XMP (B4): raw XMP packet bytes in tag 0x02BC; no Extended-XMP analog in this batch.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for duplicates in ('none', 'first-wins'):
+            for encoding in ('utf-8', 'unknown-raw'):
+                emit('TIFF', 'xmp', operation, value_type='text-bytes',
+                     text_encoding=encoding, layout='tiff-xmp', duplicates=duplicates, batch='B4',
+                     notes='XMP packet as stored in tag 0x02BC; interpretation left to the caller')
+    # TIFF thumbnail (B4): IFD1 embedded thumbnail (JPEG-compressed vs uncompressed strip), chained IFD0->IFD1.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for layout in ('exif-ifd1-jpeg', 'exif-ifd1-uncompressed'):
+            emit('TIFF', 'thumbnail', operation, value_type='opaque', text_encoding='not-applicable',
+                 layout=layout, duplicates='none', batch='B4',
+                 notes='IFD1 embedded thumbnail container operation; bytes opaque; uncompressed-strip insert '
+                       'has no pinned write path and is statically not-applicable')
     return rows
 
 
@@ -324,10 +376,11 @@ def apply_observations(rows):
 def build(seeds):
     rows = build_rows(seeds)
     rows, applied_batches = apply_observations(rows)
-    enumerated = ({'JPEG/inventory', 'PNG/inventory', 'WEBP/inventory'}
+    enumerated = ({'JPEG/inventory', 'PNG/inventory', 'WEBP/inventory', 'TIFF/inventory'}
                   | {f'JPEG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
                   | {f'PNG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
-                  | {f'WEBP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
+                  | {f'WEBP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
+                  | {f'TIFF/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
     pending = sorted(s['seedId'] for s in seeds['seeds']
                      if f"{s['format']}/{s['family']}" not in {e for e in enumerated if 'inventory' not in e})
     assert len({r['rowId'] for r in rows}) == len(rows)
@@ -362,6 +415,8 @@ def build(seeds):
                'thumbnail, xmp}. '
                'B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, '
                'iptc (noDocumentedClaim), thumbnail, xmp}. '
+               'B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, '
+               'iptc, thumbnail, xmp}. '
                + ((f'Pinned-CLI observation complete for batch(es) {", ".join(applied_batches)}: '
                     'rows flipped to observed-cli/not-applicable; no coverage percentage; '
                     'no denominator computed. ') if applied_batches else
@@ -369,7 +424,7 @@ def build(seeds):
                + 'Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.'),
         coverage={
             'enumerated': sorted(enumerated - {'JPEG/inventory'}),
-            'inventoryTrack': ['JPEG', 'PNG', 'WEBP'],
+            'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF'],
             'pendingSeedIds': pending,
         },
         enumerations=enumerations,
