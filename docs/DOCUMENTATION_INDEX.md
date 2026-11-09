@@ -97,6 +97,7 @@ E01 pinned execution (bounded, not E01 closure):
   layout enumerations in the first PR #37 run and the GitHub-side phantom failures in
   the twin push run).
 - research/E01_B7_RIGHTS_AND_ORACLE_REVIEW.md: preliminary B7 format rights and oracle ledger; no fixture clearance.
+- research/evidence/e01-b8-psd-preflight: authored PSD local secondary reference, decoder sanity checks and recovered CI preflight.
 - research/E01_B8_RIGHTS_AND_ORACLE_REVIEW.md: per-format B8 rights and oracle decisions before fixture creation.
 - research/evidence/e01-b7-census: B7 Exiv2/ExifTool observations, CI receipt and explicit CR3/metadata/decoder gaps.
 - research/evidence/e01-b6-census: 88 local pinned-CLI DNG observations and

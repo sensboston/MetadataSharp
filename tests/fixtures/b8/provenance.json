@@ -1,11 +1,14 @@
 {
   "schema": 1,
-  "fixture": "owned-flat-rgb.psd",
+  "fixture": [
+    "owned-flat-rgb.psd",
+    "owned-metadata-rgb.psd"
+  ],
   "rights": "owned-synthetic",
-  "authorship": "The generator independently constructs a 2 by 2 RGB pixel array and PSD header and section lengths from scratch; no external images, samples, code, metadata or camera data were used.",
+  "authorship": "The generator independently constructs a 2 by 2 RGB pixel array and PSD header and section lengths, and for the metadata variant authors TIFF/IFD0 Artist, XMP CreatorTool and IPTC keyword values; no external images, samples, code, metadata or camera data were used.",
   "generator": "tools/reference/b8_psd_fixture.py",
   "dependencies": "Python standard library only",
   "review": "docs/research/E01_B8_RIGHTS_AND_ORACLE_REVIEW.md",
   "formatReference": "https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/",
-  "limitations": "PSD v1 flat uncompressed RGB, empty resources and layers only; no metadata, PSB, color management, layered content, complete conformance, patent clearance or format support claimed."
+  "limitations": "PSD v1 flat uncompressed RGB; one empty-resource file and one EXIF/XMP/IPTC resource file. ICC, thumbnail, PSB, color management, layered content, complete conformance, patent clearance and format support are not established."
 }

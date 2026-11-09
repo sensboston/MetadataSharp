@@ -20,6 +20,19 @@ reference; ExifTool 12.76 is secondary, not a normative oracle.
 | EXV | No independent layout and sample-rights review completed. It is an Exiv2-associated metadata format, not necessarily a normal raster image. | No fixture cleared yet. Do not copy Exiv2 implementation, tests, dictionaries or output as a normative oracle. |
 | DCP | Adobe [Digital Negative Specification 1.7.1.0](https://helpx.adobe.com/content/dam/help/en/camera-raw/digital-negative/jcr_content/root/content/flex/items/position/position-par/download_section_733958301/download-1/DNG_Spec_1_7_1_0.pdf) describes camera profile IFDs and a `0x4352` magic in the ExtraCameraProfiles discussion. | DCP is a camera profile, not an ordinary TIFF image. No camera profile fixture cleared yet: establish the applicable standalone profile layout and required tags, independent oracle and rights before authoring. Do not fabricate camera data or infer standalone validity from the embedded-IFD description. |
 
+## PSD image-resource extension — reviewed before authoring
+
+Adobe's November 2019 specification, Image Resource Blocks and Image Resource
+IDs sections, describes `8BIM` blocks with a two-byte ID, even-padded Pascal
+name, four-byte data length and even-padded data. It identifies 1028 as IPTC,
+1058 as EXIF data 1, and 1060 as XMP. Permit a second independently authored
+PSD v1 using the same owned pixels and only independently authored values in
+those three resources. Record exact byte lengths/padding, payloads and
+independent extraction checks. This does not clear ICC or thumbnail resources,
+PSB, layer structures, copied samples, or any other format; Adobe's overview of
+EXIF does not by itself resolve every EXIF prefix/encoding ambiguity, so both
+external references' actual behavior and independent parsing must be recorded.
+
 ## General gate
 
 For each later format decision, document the specific source, rights for the

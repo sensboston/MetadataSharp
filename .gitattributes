@@ -4,3 +4,5 @@ docs/research/evidence/e01-b6-census/ci-observations.json text eol=lf
 # B7 receipt hashes exact observation bytes across OS checkout modes.
 docs/research/evidence/e01-b7-census/observations.json text eol=lf
 docs/research/evidence/e01-b7-census/ci-observations.json text eol=lf
+# B8 PSD preflight receipt hashes exact observation bytes.
+docs/research/evidence/e01-b8-psd-preflight/ci-observations.json text eol=lf
