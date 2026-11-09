@@ -11,6 +11,14 @@ version, inputs, commands and results are in the report. The report SHA-256
 is `0a4eb17f861e085732d531bf61832e6acdf90abe0da0358a1985d0308fbcd938`.
 CI reruns the batch independently; no CI-artifact equivalence is assumed.
 
+## CI reconciliation
+
+PR #39 merged at `e6325be`; run 42698556762 was 15/15 green. The complete
+B6 JSON was recovered from seven check-run annotation chunks and saved as
+`ci-observations.json`. All 88 observation objects and the fixture manifest
+match the local rehearsal exactly; full report provenance and paths differ.
+`receipt.json` records hashes, artifact metadata, and recovery limitations.
+
 ## Scope and outcomes
 
 88 rows: four inventory, four undocumented-comment probes, and read/insert/

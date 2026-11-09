@@ -98,7 +98,8 @@ E01 pinned execution (bounded, not E01 closure):
   the twin push run).
 - research/evidence/e01-b6-census: 88 local pinned-CLI DNG observations and
   limitations, including the raw-decode gap and structural IFD1 probe caveat;
-  CI/merge pending, not MetadataSharp verification.
+  PR #39 merged; receipt and annotation-recovered CI observations included;
+  not MetadataSharp verification.
 - research/evidence/e01-b6-preflight: separate exploratory D1 probes; not census rows.
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.
