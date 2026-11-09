@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. Pinned-CLI observation complete for batch(es) B0, B1, B2: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "JPEG/comments",
@@ -21,11 +21,19 @@
       "PNG/inventory",
       "PNG/iptc",
       "PNG/thumbnail",
-      "PNG/xmp"
+      "PNG/xmp",
+      "WEBP/comments",
+      "WEBP/exif",
+      "WEBP/icc",
+      "WEBP/inventory",
+      "WEBP/iptc",
+      "WEBP/thumbnail",
+      "WEBP/xmp"
     ],
     "inventoryTrack": [
       "JPEG",
-      "PNG"
+      "PNG",
+      "WEBP"
     ],
     "pendingSeedIds": [
       "EX0289-ARW-COMMENTS",
@@ -190,12 +198,6 @@
       "EX0289-TIFF-IPTC",
       "EX0289-TIFF-THUMBNAIL",
       "EX0289-TIFF-XMP",
-      "EX0289-WEBP-COMMENTS",
-      "EX0289-WEBP-EXIF",
-      "EX0289-WEBP-ICC",
-      "EX0289-WEBP-IPTC",
-      "EX0289-WEBP-THUMBNAIL",
-      "EX0289-WEBP-XMP",
       "EX0289-XMP-COMMENTS",
       "EX0289-XMP-EXIF",
       "EX0289-XMP-ICC",
@@ -246,29 +248,34 @@
         "app1-exif-ifd0",
         "app1-exif-ifd0-subifd",
         "app1-exif-multiple",
-        "png-exif"
+        "png-exif",
+        "webp-exif"
       ],
       "comments": [
         "com-single",
         "com-multiple",
-        "png-text"
+        "png-text",
+        "webp-comments"
       ],
       "icc": [
         "app2-icc-single",
         "app2-icc-segmented",
-        "iccp"
+        "iccp",
+        "webp-iccp"
       ],
       "xmp": [
         "app1-xmp-standard",
         "app1-xmp-extended",
         "itxt-xmp",
-        "ztxt-xmp"
+        "ztxt-xmp",
+        "webp-xmp"
       ],
       "iptc": [
         "app13-8bim-iptc",
         "app13-8bim-iptc-multiple",
         "ztxt-raw-profile-iptc",
-        "itxt-raw-profile-iptc"
+        "itxt-raw-profile-iptc",
+        "webp-iptc"
       ],
       "thumbnail": [
         "exif-ifd1-jpeg",
@@ -8646,6 +8653,1419 @@
       "batch": "B2",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B2 pinned-CLI observation: outcome=accepted; exit-observed; fixture=png-exif-thumb-raw.png"
+    },
+    {
+      "rowId": "EX0289-WEBP-INVENTORY-INVENTORY-0001",
+      "format": "WEBP",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-base.webp",
+        "sha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+        "length": 56,
+        "rights": "owned-synthetic",
+        "recipe": "webp-vp8x-base-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-base.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-COMMENTS-READ-0001",
+      "format": "WEBP",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "webp-comments",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "webp-comments.webp",
+        "sha256": "608c82d4358d1bd5d657848db86c8ce8f9dd35723583cd41e450af97b883c00f",
+        "length": 88,
+        "rights": "owned-synthetic",
+        "recipe": "webp-com-chunk-carrier-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-comments.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-IPTC-READ-0001",
+      "format": "WEBP",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "webp-iptc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "webp-iptc.webp",
+        "sha256": "c39c15b3528a9b4d65665b6b5e4532a1110fa7f5e100d3db62d52d089ef4850c",
+        "length": 122,
+        "rights": "owned-synthetic",
+        "recipe": "webp-iptc-chunk-carrier-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-iptc.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-EXIF-READ-0001",
+      "format": "WEBP",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif.webp",
+        "sha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+        "length": 108,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-orientation-artist-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-EXIF-READ-0002",
+      "format": "WEBP",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "webp-exif",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-dup.webp",
+        "sha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+        "length": 160,
+        "rights": "owned-synthetic",
+        "recipe": "webp-two-exif-chunks-distinct-artists-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-EXIF-INSERT-0001",
+      "format": "WEBP",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-base.webp",
+        "sha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+        "length": 56,
+        "rights": "owned-synthetic",
+        "recipe": "webp-vp8x-base-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-base.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-EXIF-INSERT-0002",
+      "format": "WEBP",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "webp-exif",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-dup.webp",
+        "sha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+        "length": 160,
+        "rights": "owned-synthetic",
+        "recipe": "webp-two-exif-chunks-distinct-artists-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-EXIF-REPLACE-0001",
+      "format": "WEBP",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif.webp",
+        "sha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+        "length": 108,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-orientation-artist-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-EXIF-REPLACE-0002",
+      "format": "WEBP",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "webp-exif",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-dup.webp",
+        "sha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+        "length": 160,
+        "rights": "owned-synthetic",
+        "recipe": "webp-two-exif-chunks-distinct-artists-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-EXIF-REMOVE-0001",
+      "format": "WEBP",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif.webp",
+        "sha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+        "length": 108,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-orientation-artist-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-EXIF-REMOVE-0002",
+      "format": "WEBP",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "webp-exif",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-dup.webp",
+        "sha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+        "length": 160,
+        "rights": "owned-synthetic",
+        "recipe": "webp-two-exif-chunks-distinct-artists-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-ICC-READ-0001",
+      "format": "WEBP",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-iccp.webp",
+        "sha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+        "length": 256,
+        "rights": "owned-synthetic",
+        "recipe": "webp-iccp-single-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-iccp.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-ICC-READ-0002",
+      "format": "WEBP",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-iccp-dup.webp",
+        "sha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+        "length": 456,
+        "rights": "owned-synthetic",
+        "recipe": "webp-iccp-two-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-iccp-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-ICC-INSERT-0001",
+      "format": "WEBP",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-iccp.webp",
+        "sha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+        "length": 256,
+        "rights": "owned-synthetic",
+        "recipe": "webp-iccp-single-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-iccp.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-ICC-INSERT-0002",
+      "format": "WEBP",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-iccp-dup.webp",
+        "sha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+        "length": 456,
+        "rights": "owned-synthetic",
+        "recipe": "webp-iccp-two-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-iccp-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-ICC-REPLACE-0001",
+      "format": "WEBP",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-iccp.webp",
+        "sha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+        "length": 256,
+        "rights": "owned-synthetic",
+        "recipe": "webp-iccp-single-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-iccp.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-ICC-REPLACE-0002",
+      "format": "WEBP",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-iccp-dup.webp",
+        "sha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+        "length": 456,
+        "rights": "owned-synthetic",
+        "recipe": "webp-iccp-two-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-iccp-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-ICC-REMOVE-0001",
+      "format": "WEBP",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-iccp.webp",
+        "sha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+        "length": 256,
+        "rights": "owned-synthetic",
+        "recipe": "webp-iccp-single-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-iccp.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-ICC-REMOVE-0002",
+      "format": "WEBP",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-iccp-dup.webp",
+        "sha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+        "length": 456,
+        "rights": "owned-synthetic",
+        "recipe": "webp-iccp-two-byte-identical-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-iccp-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-READ-0001",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp.webp",
+        "sha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+        "length": 420,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-chunk-standard-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-READ-0002",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-nonutf8.webp",
+        "sha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+        "length": 78,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-nonutf8.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-READ-0003",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-dup.webp",
+        "sha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+        "length": 788,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-two-chunks-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-READ-0004",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-nonutf8.webp",
+        "sha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+        "length": 78,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-nonutf8.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-INSERT-0001",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-base.webp",
+        "sha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+        "length": 56,
+        "rights": "owned-synthetic",
+        "recipe": "webp-vp8x-base-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-base.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-INSERT-0002",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-base.webp",
+        "sha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+        "length": 56,
+        "rights": "owned-synthetic",
+        "recipe": "webp-vp8x-base-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-base.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-INSERT-0003",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-dup.webp",
+        "sha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+        "length": 788,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-two-chunks-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-INSERT-0004",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-nonutf8.webp",
+        "sha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+        "length": 78,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-nonutf8.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-REPLACE-0001",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp.webp",
+        "sha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+        "length": 420,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-chunk-standard-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-REPLACE-0002",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-nonutf8.webp",
+        "sha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+        "length": 78,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-nonutf8.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-REPLACE-0003",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-dup.webp",
+        "sha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+        "length": 788,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-two-chunks-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-REPLACE-0004",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-nonutf8.webp",
+        "sha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+        "length": 78,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-nonutf8.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-REMOVE-0001",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp.webp",
+        "sha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+        "length": 420,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-chunk-standard-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted-unexpected; exit-observed; fixture=webp-xmp.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-REMOVE-0002",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-nonutf8.webp",
+        "sha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+        "length": 78,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-nonutf8.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-REMOVE-0003",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-dup.webp",
+        "sha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+        "length": 788,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-two-chunks-different-creators-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-dup.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-REMOVE-0004",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp-nonutf8.webp",
+        "sha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+        "length": 78,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-non-utf8-payload-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp-nonutf8.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-THUMBNAIL-READ-0001",
+      "format": "WEBP",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-thumb-jpeg.webp",
+        "sha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+        "length": 282,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-thumb-jpeg.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-THUMBNAIL-READ-0002",
+      "format": "WEBP",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-thumb-raw.webp",
+        "sha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+        "length": 384,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-thumb-raw.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-THUMBNAIL-INSERT-0001",
+      "format": "WEBP",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif.webp",
+        "sha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+        "length": 108,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-orientation-artist-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-THUMBNAIL-INSERT-0002",
+      "format": "WEBP",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "axis collapse; not applicable: pinned CLI exposes no uncompressed-thumbnail write path (-i t embeds JPEG thumbnails only); revisit if the CLI grows the capability; flagged for developer review at denominators"
+      },
+      "baselineObservation": "not-applicable",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "JPEG pilot static not-applicable (B3): pinned CLI exposes no uncompressed-thumbnail write path (-i t embeds JPEG thumbnails only); revisit if the CLI grows the capability; flagged for developer review at denominators"
+    },
+    {
+      "rowId": "EX0289-WEBP-THUMBNAIL-REPLACE-0001",
+      "format": "WEBP",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-thumb-jpeg.webp",
+        "sha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+        "length": 282,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-thumb-jpeg.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-THUMBNAIL-REPLACE-0002",
+      "format": "WEBP",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-thumb-raw.webp",
+        "sha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+        "length": 384,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-thumb-raw.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-THUMBNAIL-REMOVE-0001",
+      "format": "WEBP",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-thumb-jpeg.webp",
+        "sha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+        "length": 282,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-ifd1-jpeg-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-thumb-jpeg.webp"
+    },
+    {
+      "rowId": "EX0289-WEBP-THUMBNAIL-REMOVE-0002",
+      "format": "WEBP",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-exif-thumb-raw.webp",
+        "sha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+        "length": 384,
+        "rights": "owned-synthetic",
+        "recipe": "webp-exif-ifd1-uncompressed-thumbnail-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b3-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B3",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B3 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-exif-thumb-raw.webp"
     }
   ]
 }

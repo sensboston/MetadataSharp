@@ -1704,3 +1704,52 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   cycle, freeze only after B14; Q5 = no percentages printed before freeze. No percentage,
   no freeze, no exclusion, verification stays not-assessed, D2/publication NOT
   authorized. E01 gate remains OPEN. Next: B2 (PNG + inventory).
+### E01 B3 census batch — WebP + inventory — 2026-11-09
+
+- 2026-11-09: B3 executed in the approved §5 numeric order. Owned synthetic WebP fixtures
+  authored by `tools/reference/webp_owned_fixtures.py` (stdlib byte-level RIFF writer;
+  hand-authored fake VP8 keyframe header as the coded-image analog — not a decodable
+  frame; metadata ops never decode it and the pinned CLI rewrites it byte-for-byte;
+  VP8X flags/8x8 canvas; EXIF chunks carry classic II TIFF payloads without APP1 prefix;
+  ICCP carries raw minimal synthetic RGB profiles; XMP rides the raw 'XMP ' chunk; IPTC
+  ('IPTC' chunk, IIM/8BIM payload) and comments ('COM ' chunk) are undocumented carriers
+  the CLI does not surface; 12 fixtures, SHA-256 pinned in
+  tests/fixtures/webp/census-manifest.json (byte-deterministic regeneration in CI)).
+  IMPORTANT: tests/fixtures/webp/provenance.json belongs to the .NET library's
+  PNG/WebP-group audit (Pillow-encoded single-pixel fixtures) and was left untouched;
+  this batch pins its own census-manifest.json / census-provenance.json pair.
+- tools/reference/observe_b3.py: B3 observer mirroring the B0/B1/B2 design (pinned
+  source identity + CMAKE policy checks, fixture regeneration + census-manifest byte-compare,
+  per-row recording, `nonzero-exit-artifact-produced` class, never gated on outcome).
+  WebP analog of the scan invariant: **VP8/VP8L bitstream chunk payload stream preserved
+  in 42/42 observed rows** (recorded as `scanPreserved`, the key the census reads), plus
+  a strict RIFF/WebP structural parse (RIFF size, chunk tree, even-size padding) of every
+  mutated file. 42 rows observed; 1 static not-applicable
+  (`exif-ifd1-uncompressed` thumbnail INSERT — the pinned CLI embeds JPEG thumbnails only;
+  the same CLI limitation as the JPEG/PNG analogs; candidate for denominators, never
+  self-granted). Outcome counts: 41 accepted, 1 accepted-unexpected, 1 static-not-applicable.
+  Notable pinned-CLI behaviors recorded, not gated:
+  `EX0289-WEBP-XMP-REMOVE-0001` (`accepted-unexpected`): `-M "del Xmp.xmp.CreatorTool"`
+  exits rc=0 but NEVER rewrites the raw XMP chunk (PNG B2 analog on the iTXt carrier:
+  accepted, property removed; same authored packet bytes). XMP insert of unknown-raw
+  bytes from-nothing: rc=0, stderr Invalid-UTF-8 error, no chunk written (record-only).
+  Duplicate XMP chunks: `set` collapses to a single chunk (last-wins on print); duplicate
+  EXIF chunks: `set` applies to the FIRST chunk only, while `del` removes from BOTH
+  (record-only). `-iC -l <dir>` reads `<dir>/<target-stem>.icc`; `-d C` removes ICCP;
+  `-pC` dumps raw profile bytes; `-pa` prints both EXIF chunks vs last XMP packet;
+  unknown-raw XMP prints no tags with rc=0; `-i t` from a thumbnail-free EXIF base embeds
+  a JPEG thumbnail (spec-derived, verified); replace on an uncompressed-strip IFD1 yields
+  the CLI-defined mixed state. Both noDocumentedClaim rows (comments/IPTC) observe rc=0
+  with NOTHING surfaced; `-M add Iptc.Application2.Keywords` rc=0 yet silently dropped
+  without an EXIF chunk (datasets land in the EXIF TIFF when one exists). Nothing
+  asserted (cells carry no documented claim); unverified carriers recorded, never claimed.
+- docs/research/evidence/e01-b3-census/ — committed observations.json + README.
+  Census regenerated: 303 rows (B0 135 + B1 58 + B2 67 + B3 43); every B3 row
+  observed-cli (42) or statically not-applicable (1); `denominatorFrozen` stays false;
+  verification stays not-assessed everywhere; no percentage computed;
+  D2/publication NOT authorized; E01 gate remains OPEN. Next batch: B4 (TIFF + inventory).
+- Discovery suite: 79/79 local (13 census + 13 new WebP fixture tests included;
+  includes a guard that the .NET audit's tests/fixtures/webp/provenance.json is untouched).
+- CI: `pinned-exiv2-baseline` job re-runs all batches (observe_b0.py --batch all,
+  observe_b2.py, observe_b3.py) and uploads `e01-b3-census-observations` next to the
+  B0/B1/B2 artifacts; the workflow was extended accordingly.

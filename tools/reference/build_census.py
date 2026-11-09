@@ -2,7 +2,9 @@
 
 Expands the documented 31x6 capability seeds into census rows for the batches
 enumerated so far. B0 enumerates JPEG x {exif, comments, icc} and the JPEG
-inventory track; B1 enumerates JPEG x {xmp, iptc, thumbnail}. All rows are
+inventory track; B1 enumerates JPEG x {xmp, iptc, thumbnail}; B2 enumerates
+PNG x {inventory, comments, exif, icc, iptc, thumbnail, xmp}; B3 enumerates
+WebP x {inventory, comments, exif, icc, iptc, thumbnail, xmp}. All rows are
 generated deterministically; the artifact is immutable between reviews
 (`--check` fails on drift). This is enumeration, not observation: every row
 starts as not-run / not-assessed and no denominator is computed here.
@@ -17,14 +19,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SEEDS = ROOT / 'docs/research/EXIV2_OPERATION_SEEDS.json'
 OUTPUT = ROOT / 'docs/research/EXIV2_CENSUS.json'
+# NOTE: tests/fixtures/webp/provenance.json is reserved for the .NET library's
+# PNG/WebP-group audit (Pillow-encoded single-pixel fixtures); the E01 census
+# batch fixtures pin their own manifest/provenance pair there.
 EVIDENCE_BY_BATCH = {
     'B0': ROOT / 'docs/research/evidence/e01-b0-census/observations.json',
     'B1': ROOT / 'docs/research/evidence/e01-b1-census/observations.json',
     'B2': ROOT / 'docs/research/evidence/e01-b2-census/observations.json',
+    'B3': ROOT / 'docs/research/evidence/e01-b3-census/observations.json',
 }
 FIXTURE_MANIFESTS = {
     'JPEG': ROOT / 'tests/fixtures/jpeg/manifest.json',
     'PNG': ROOT / 'tests/fixtures/png/manifest.json',
+    'WEBP': ROOT / 'tests/fixtures/webp/census-manifest.json',
 }
 
 # Axis collapses that are statically impossible, reviewed with the B0 pilot and B1.
@@ -60,11 +67,11 @@ EXTRACT_FAMILIES = ['comments', 'icc', 'thumbnail']
 TEXT_ENCODINGS = ['ascii', 'utf-8', 'unknown-raw', 'not-applicable']
 VALUE_TYPES = ['any-documented', 'opaque', 'text-bytes']  # 'any-documented': B14 splits EXIF
 LAYOUTS = {
-    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple', 'png-exif'],
-    'comments': ['com-single', 'com-multiple', 'png-text'],
-    'icc': ['app2-icc-single', 'app2-icc-segmented', 'iccp'],
-    'xmp': ['app1-xmp-standard', 'app1-xmp-extended', 'itxt-xmp', 'ztxt-xmp'],
-    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple', 'ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc'],
+    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple', 'png-exif', 'webp-exif'],
+    'comments': ['com-single', 'com-multiple', 'png-text', 'webp-comments'],
+    'icc': ['app2-icc-single', 'app2-icc-segmented', 'iccp', 'webp-iccp'],
+    'xmp': ['app1-xmp-standard', 'app1-xmp-extended', 'itxt-xmp', 'ztxt-xmp', 'webp-xmp'],
+    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple', 'ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc', 'webp-iptc'],
     'thumbnail': ['exif-ifd1-jpeg', 'exif-ifd1-uncompressed'],
     'inventory': ['container'],
 }
@@ -213,6 +220,46 @@ def build_rows(seeds):
             emit('PNG', 'thumbnail', operation, value_type='opaque', text_encoding='not-applicable',
                  layout=layout, duplicates='none', batch='B2',
                  notes='embedded EXIF IFD1 thumbnail container operation; bytes opaque')
+
+    # WebP inventory track (recognition is never metadata support).
+    emit('WEBP', 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
+         layout='container', duplicates='none', batch='B3',
+         notes='recognize/dimensions/MIME without decoding; count tracked separately, never support')
+
+    webp = {s['family']: s for s in seeds['seeds'] if s['format'] == 'WEBP'}
+    assert set(webp) == set(FAMILIES), 'WEBP seeds missing a family'
+    # WebP noDocumentedClaim cells (claim '-'): one read row each, observed via pinned CLI.
+    emit('WEBP', 'comments', 'read', value_type='text-bytes', text_encoding='not-applicable',
+         layout='webp-comments', duplicates='none', batch='B3', no_claim=True,
+         notes='no documented claim (seed EX0289-WEBP-COMMENTS); pinned-CLI observation recorded, nothing asserted')
+    emit('WEBP', 'iptc', 'read', value_type='opaque', text_encoding='not-applicable',
+         layout='webp-iptc', duplicates='none', batch='B3', no_claim=True,
+         notes='no documented claim (seed EX0289-WEBP-IPTC); pinned-CLI observation recorded, nothing asserted')
+    # WebP EXIF (B3): classic II TIFF in an 'EXIF' chunk; at most one EXIF chunk per spec.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for duplicates in ('none', 'first-wins'):
+            emit('WEBP', 'exif', operation, value_type='any-documented', text_encoding='not-applicable',
+                 layout='webp-exif', duplicates=duplicates, batch='B3',
+                 notes='classic II TIFF in a WebP EXIF chunk; duplicate-EXIF behavior recorded, never pre-asserted')
+    # WebP ICC (B3): raw profile bytes in an 'ICCP' chunk; no profile decode.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for duplicates in ('none', 'first-wins'):  # at most one ICCP chunk per spec
+            emit('WEBP', 'icc', operation, value_type='opaque', text_encoding='not-applicable',
+                 layout='webp-iccp', duplicates=duplicates, batch='B3',
+                 notes='WebP ICCP chunk (raw profile bytes); opaque bytes, no profile decoding/validation claimed')
+    # WebP XMP (B3): raw 'XMP ' chunk carrier (note the trailing space); no Extended-XMP analog in this batch.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for duplicates in ('none', 'first-wins'):
+            for encoding in ('utf-8', 'unknown-raw'):
+                emit('WEBP', 'xmp', operation, value_type='text-bytes',
+                     text_encoding=encoding, layout='webp-xmp', duplicates=duplicates, batch='B3',
+                     notes='XMP packet as stored in a raw XMP chunk; interpretation left to the caller')
+    # WebP thumbnail (B3): EXIF IFD1 embedded thumbnail (JPEG-compressed vs uncompressed strip).
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for layout in ('exif-ifd1-jpeg', 'exif-ifd1-uncompressed'):
+            emit('WEBP', 'thumbnail', operation, value_type='opaque', text_encoding='not-applicable',
+                 layout=layout, duplicates='none', batch='B3',
+                 notes='embedded EXIF IFD1 thumbnail container operation; bytes opaque')
     return rows
 
 
@@ -277,9 +324,10 @@ def apply_observations(rows):
 def build(seeds):
     rows = build_rows(seeds)
     rows, applied_batches = apply_observations(rows)
-    enumerated = ({'JPEG/inventory', 'PNG/inventory'}
+    enumerated = ({'JPEG/inventory', 'PNG/inventory', 'WEBP/inventory'}
                   | {f'JPEG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
-                  | {f'PNG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
+                  | {f'PNG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
+                  | {f'WEBP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
     pending = sorted(s['seedId'] for s in seeds['seeds']
                      if f"{s['format']}/{s['family']}" not in {e for e in enumerated if 'inventory' not in e})
     assert len({r['rowId'] for r in rows}) == len(rows)
@@ -312,6 +360,8 @@ def build(seeds):
                'B1 enumeration for JPEG x {xmp, iptc, thumbnail}; '
                'B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, '
                'thumbnail, xmp}. '
+               'B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, '
+               'iptc (noDocumentedClaim), thumbnail, xmp}. '
                + ((f'Pinned-CLI observation complete for batch(es) {", ".join(applied_batches)}: '
                     'rows flipped to observed-cli/not-applicable; no coverage percentage; '
                     'no denominator computed. ') if applied_batches else
@@ -319,7 +369,7 @@ def build(seeds):
                + 'Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.'),
         coverage={
             'enumerated': sorted(enumerated - {'JPEG/inventory'}),
-            'inventoryTrack': ['JPEG', 'PNG'],
+            'inventoryTrack': ['JPEG', 'PNG', 'WEBP'],
             'pendingSeedIds': pending,
         },
         enumerations=enumerations,

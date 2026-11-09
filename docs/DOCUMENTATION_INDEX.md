@@ -17,8 +17,8 @@
   fixture provenance, batching, two denominators); APPROVED by developer 2026-11-08
   (decisions in §6/§7). Denominators not frozen yet; no percentage exists.
 - research/EXIV2_CENSUS.json: generated census (schemaVersion 1; B0/B1 JPEG + B2 PNG
-  batches so far); regenerate only via tools/reference/build_census.py
-  (--check enforced in CI).
+  + B3 WebP batches so far; 303 rows); regenerate only via
+  tools/reference/build_census.py (--check enforced in CI).
 - research/EXIV2_CAPABILITY_BASELINE.md and EXIV2_REQUIREMENTS_TRIAGE.md: bounded
   first-pass evidence, snapshot JSON, unresolved full E01 inventory work.
 - design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md: exact new API/subset proposal,
@@ -70,5 +70,10 @@ E01 pinned execution (bounded, not E01 closure):
 - research/evidence/e01-b2-census: B2 PNG inventory/comments/exif(noDocumentedClaim)/ICC/
   IPTC/thumbnail/XMP observation JSON (66 observed rows, 1 static not-applicable) +
   README; fixtures owned-synthetic, SHA-256 pinned in tests/fixtures/png/manifest.json.
+- research/evidence/e01-b3-census: B3 WebP inventory/comments(noDocumentedClaim)/EXIF/ICCP/
+  IPTC(noDocumentedClaim)/thumbnail/XMP observation JSON (42 observed rows — 41 accepted +
+  1 accepted-unexpected, 1 static not-applicable) + README; fixtures owned-synthetic,
+  SHA-256 pinned in tests/fixtures/webp/census-manifest.json (the audit's
+  tests/fixtures/webp/provenance.json is deliberately untouched).
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.

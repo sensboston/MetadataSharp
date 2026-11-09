@@ -23,27 +23,31 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
 
 ## Current evidence and actual implementation
 
-- B0, B1 and B2 observation batches DONE (2026-11-08): docs/research/EXIV2_CENSUS.json
-  carries 260 rows (135 B0 + 58 B1 JPEG, 67 B2 PNG); every B0 row is observed-cli (97) or statically
-  not-applicable (38, axis collapses recorded per row) and every B1 row is
-  observed-cli (57) or statically not-applicable (1: `exif-ifd1-uncompressed`
-  thumbnail insert — the pinned CLI exposes no uncompressed-thumbnail write path);
-  fixtures owned-synthetic and SHA-256 pinned (tests/fixtures/jpeg/manifest.json, 31
-  fixtures; tests/fixtures/png/manifest.json, 17 fixtures); evidence committed at
-  docs/research/evidence/e01-b0-census/, docs/research/evidence/e01-b1-census/ and
-  docs/research/evidence/e01-b2-census/ (observations.json + README); CI job
-  `pinned-exiv2-baseline` re-runs all batches and uploads `e01-b0-census-observations`,
-  `e01-b1-census-observations` and `e01-b2-census-observations`. B2: 66 observed-cli rows
-  (all accepted; IDAT payload stream preserved 66/66; chunk CRC-32 verified) + 1 static
-  not-applicable (`exif-ifd1-uncompressed` thumbnail insert — the pinned CLI embeds JPEG
-  thumbnails only). B2 noDocumentedClaim cells (PNG comments/exif) observed with rc=0 and
-  content printed; nothing asserted (cells carry no documented claim). B0: 89 accepted / 8 refused (all ICC duplicate-profile
+- B0, B1, B2 and B3 observation batches DONE (2026-11-08/09): docs/research/EXIV2_CENSUS.json
+  carries 303 rows (135 B0 + 58 B1 JPEG, 67 B2 PNG, 43 B3 WebP); every B0 row is
+  observed-cli (97) or statically not-applicable (38, axis collapses recorded per row) and
+  every B1 row is observed-cli (57) or statically not-applicable (1:
+  `exif-ifd1-uncompressed` thumbnail insert — the pinned CLI exposes no
+  uncompressed-thumbnail write path) and every B3 row is observed-cli (42) or statically
+  not-applicable (1: the same axis collapse on the WebP fixtures); fixtures
+  owned-synthetic and SHA-256 pinned (tests/fixtures/jpeg/manifest.json, 31 fixtures;
+  tests/fixtures/png/manifest.json, 17 fixtures; tests/fixtures/webp/census-manifest.json,
+  12 fixtures — NOTE: tests/fixtures/webp/provenance.json is reserved for the .NET
+  library's PNG/WebP-group audit and is untouched); evidence committed at
+  docs/research/evidence/e01-b0-census/, docs/research/evidence/e01-b1-census/,
+  docs/research/evidence/e01-b2-census/ and docs/research/evidence/e01-b3-census/
+  (observations.json + README); CI job `pinned-exiv2-baseline` re-runs all batches and
+  uploads `e01-b0-census-observations`, `e01-b1-census-observations`,
+  `e01-b2-census-observations` and `e01-b3-census-observations`. B3: 41 accepted /
+  1 accepted-unexpected (`EX0289-WEBP-XMP-REMOVE-0001`: `del Xmp.xmp.CreatorTool` rc=0
+  but the raw XMP chunk is never rewritten; PNG B2 analog accepted) /
+  VP8-bitstream chunk payload stream preserved 42/42. B3 noDocumentedClaim cells (WebP
+  comments/IPTC) observed with rc=0 and nothing surfaced; nothing asserted (cells carry
+  no documented claim). B0: 89 accepted / 8 refused (all ICC duplicate-profile
   rows; `Not a valid ICC Profile`). B1: 55 accepted / 2 nonzero-exit-artifact-produced
   (thumbnail extract exits 137/46 by CLI quirk with the artifact produced; JPEG
-  thumbnail extract verified byte-exact) / 1 not-applicable. Scan preserved 193/193.
-  B0 evidence refreshed this batch: the four unknown-raw comment READ rows now observe
-  genuinely non-UTF-8 COM fixtures (`com-raw*.jpg`); B0 outcome counts unchanged; the
-  coded scan is still preserved 135/135. Verification stays not-assessed; NO
+  thumbnail extract verified byte-exact) / 1 not-applicable. B2: 66 accepted / 1 static.
+  Scan preserved 235/235 observed rows (193 B0-B2 + 42 B3). Verification stays not-assessed; NO
   denominator frozen; NO coverage percentage; exclusions (if any) go to the
   developer at the denominators step; D2/publication NOT authorized.
   2026-11-08 (step 3 ANSWERED, freeze pending B2–B14): the developer answered the
@@ -51,7 +55,7 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   Q2 thumbnail-insert stays not-applicable, no exclusions signed; Q3 nonzero-exit-artifact-
   produced its own class, never a pass; Q4 numeric order B2→B14, all in this cycle;
   Q5 no percentages pre-freeze). Recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md
-  §9; freeze happens in its own PR after B14; gate stays OPEN; next batch B3 (WebP).
+  §9; freeze happens in its own PR after B14; gate stays OPEN; next batch B4 (TIFF).
 - B2 merged via PR #29 (`ba52ac1`, run 42558351437, 15/15 green); receipt at
   docs/research/evidence/e01-b2-census/receipt.json (metadata-only; artifact bytes
   not retrievable from the sandbox).
@@ -186,6 +190,7 @@ SDK/blob downloads. Bounded failed-TRX/command diagnostics and compressed comple
 JSON annotations work; tools/audit/collect.py validates run/source/chunk receipts.
 Audit AUDIT_TFM and reference METADATASHARP_REFERENCE_TFM default net8.0, accept
 net10.0. Tools now need explicit -f for dotnet run; no target may silently fall back.
-Python discovery suite is 65/65 locally at the B2 checkpoint (13 census + 11 PNG fixture
-tests included; B2 observations rehearsed via the pinned CLI, status passed).
+Python discovery suite is 79/79 locally at the B3 checkpoint (13 census + 11 PNG fixture
+tests + 13 WebP fixture tests included; B3 observations rehearsed via the pinned CLI,
+status passed).
 Merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/15).
