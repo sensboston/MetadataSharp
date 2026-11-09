@@ -96,5 +96,9 @@ E01 pinned execution (bounded, not E01 closure):
   records the merge run (metadata-only digests; notes the real CI catch on the closed
   layout enumerations in the first PR #37 run and the GitHub-side phantom failures in
   the twin push run).
+- research/evidence/e01-b6-census: 88 local pinned-CLI DNG observations and
+  limitations, including the raw-decode gap and structural IFD1 probe caveat;
+  CI/merge pending, not MetadataSharp verification.
+- research/evidence/e01-b6-preflight: separate exploratory D1 probes; not census rows.
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.

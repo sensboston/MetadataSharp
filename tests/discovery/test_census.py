@@ -196,7 +196,12 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual('B6', evidence['batch'])
         self.assertEqual({r['rowId'] for r in rows}, {o['id'] for o in evidence['observations']})
         self.assertEqual({'observed-cli'}, {r['baselineObservation'] for r in rows})
-        self.assertEqual(88, sum(evidence['outcomeCounts'].values()))
+        self.assertEqual({'accepted': 84, 'nonzero-exit-artifact-produced': 4,
+                          'static-not-applicable': 0}, evidence['outcomeCounts'])
+        self.assertEqual(88, sum(o['facts'].get('scanPreserved') is True for o in evidence['observations']))
+        nonzero = [o for o in evidence['observations'] if o['outcome'] == 'nonzero-exit-artifact-produced']
+        self.assertEqual(4, len(nonzero))
+        self.assertTrue(all(o['family'] == 'thumbnail' and o['operation'] == 'read' for o in nonzero))
         self.assertFalse(evidence['denominatorFrozen'])
         for row in rows:
             self.assertEqual('not-assessed', row['verification'])
