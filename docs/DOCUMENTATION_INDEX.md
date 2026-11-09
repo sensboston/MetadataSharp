@@ -74,6 +74,7 @@ E01 pinned execution (bounded, not E01 closure):
   IPTC(noDocumentedClaim)/thumbnail/XMP observation JSON (42 observed rows — 41 accepted +
   1 accepted-unexpected, 1 static not-applicable) + README; fixtures owned-synthetic,
   SHA-256 pinned in tests/fixtures/webp/census-manifest.json (the audit's
-  tests/fixtures/webp/provenance.json is deliberately untouched).
+  tests/fixtures/webp/provenance.json is deliberately untouched); receipt.json records
+  the merge run (metadata-only digests).
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.
