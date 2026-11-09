@@ -1,0 +1,3 @@
+# B6 receipt hashes the committed JSON bytes on every operating system.
+docs/research/evidence/e01-b6-census/observations.json text eol=lf
+docs/research/evidence/e01-b6-census/ci-observations.json text eol=lf
