@@ -20,8 +20,12 @@ OUTPUT = ROOT / 'docs/research/EXIV2_CENSUS.json'
 EVIDENCE_BY_BATCH = {
     'B0': ROOT / 'docs/research/evidence/e01-b0-census/observations.json',
     'B1': ROOT / 'docs/research/evidence/e01-b1-census/observations.json',
+    'B2': ROOT / 'docs/research/evidence/e01-b2-census/observations.json',
 }
-FIXTURE_MANIFEST = ROOT / 'tests/fixtures/jpeg/manifest.json'
+FIXTURE_MANIFESTS = {
+    'JPEG': ROOT / 'tests/fixtures/jpeg/manifest.json',
+    'PNG': ROOT / 'tests/fixtures/png/manifest.json',
+}
 
 # Axis collapses that are statically impossible, reviewed with the B0 pilot and B1.
 # (family, layout, duplicates or None for all, operation or None for all) -> reason
@@ -56,11 +60,11 @@ EXTRACT_FAMILIES = ['comments', 'icc', 'thumbnail']
 TEXT_ENCODINGS = ['ascii', 'utf-8', 'unknown-raw', 'not-applicable']
 VALUE_TYPES = ['any-documented', 'opaque', 'text-bytes']  # 'any-documented': B14 splits EXIF
 LAYOUTS = {
-    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple'],
-    'comments': ['com-single', 'com-multiple'],
-    'icc': ['app2-icc-single', 'app2-icc-segmented'],
-    'xmp': ['app1-xmp-standard', 'app1-xmp-extended'],
-    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple'],
+    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple', 'png-exif'],
+    'comments': ['com-single', 'com-multiple', 'png-text'],
+    'icc': ['app2-icc-single', 'app2-icc-segmented', 'iccp'],
+    'xmp': ['app1-xmp-standard', 'app1-xmp-extended', 'itxt-xmp', 'ztxt-xmp'],
+    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple', 'ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc'],
     'thumbnail': ['exif-ifd1-jpeg', 'exif-ifd1-uncompressed'],
     'inventory': ['container'],
 }
@@ -72,7 +76,7 @@ ORACLE_TYPES = ['specification', 'pinned-cli', 'exiftool', 'independent']
 
 
 def _row(row_id, fmt, family, operation, *, value_type, text_encoding, layout, duplicates,
-         batch, notes):
+         batch, notes, no_claim=False):
     return dict(
         rowId=row_id,
         format=fmt,
@@ -84,7 +88,7 @@ def _row(row_id, fmt, family, operation, *, value_type, text_encoding, layout, d
         duplicates=duplicates,
         sidecar='none',
         presence={'icc': 'unknown', 'comment': 'unknown', 'preview': 'unknown'},
-        noDocumentedClaim=False,
+        noDocumentedClaim=no_claim,
         fixture=None,
         oracle={'type': 'specification', 'detail': 'container/spec + documentation blob; pinned-CLI observation pending'},
         baselineObservation='not-run',
@@ -116,7 +120,7 @@ def build_rows(seeds):
 
     # JPEG EXIF: generic value types; vocabulary split is B14, recorded as any-documented.
     for operation in ('read', 'insert', 'replace', 'remove'):
-        for layout in LAYOUTS['exif']:
+        for layout in ('app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple'):
             for duplicates in DUPLICATES:
                 emit('JPEG', 'exif', operation, value_type='any-documented',
                      text_encoding='not-applicable', layout=layout, duplicates=duplicates,
@@ -124,13 +128,13 @@ def build_rows(seeds):
 
     # JPEG comments: payload encodings are distinct atomic behaviors.
     for operation in ('read', 'insert', 'replace', 'remove'):
-        for layout in LAYOUTS['comments']:
+        for layout in ('com-single', 'com-multiple'):
             for duplicates in DUPLICATES:
                 for encoding in ('ascii', 'utf-8', 'unknown-raw'):
                     emit('JPEG', 'comments', operation, value_type='text-bytes',
                          text_encoding=encoding, layout=layout, duplicates=duplicates,
                          notes='JPEG COM payload as stored; interpretation left to the caller')
-    for layout in LAYOUTS['comments']:
+    for layout in ('com-single', 'com-multiple'):
         for duplicates in DUPLICATES:
             emit('JPEG', 'comments', 'extract', value_type='opaque', text_encoding='not-applicable',
                  layout=layout, duplicates=duplicates,
@@ -138,7 +142,7 @@ def build_rows(seeds):
 
     # JPEG ICC: single vs multi-segment APP2 profile; opaque bytes, no decode.
     for operation in ('read', 'insert', 'replace', 'remove', 'extract'):
-        for layout in LAYOUTS['icc']:
+        for layout in ('app2-icc-single', 'app2-icc-segmented'):
             for duplicates in ('none', 'first-wins'):
                 emit('JPEG', 'icc', operation, value_type='opaque', text_encoding='not-applicable',
                      layout=layout, duplicates=duplicates,
@@ -147,7 +151,7 @@ def build_rows(seeds):
     # JPEG XMP (B1): standard APP1 packet vs base+extension chunks (Extended XMP).
     # The ascii cell is omitted: a pure-ASCII XMP packet is byte-identical to utf-8 behavior.
     for operation in ('read', 'insert', 'replace', 'remove'):
-        for layout in LAYOUTS['xmp']:
+        for layout in ('app1-xmp-standard', 'app1-xmp-extended'):
             for duplicates in ('none', 'first-wins'):
                 for encoding in ('utf-8', 'unknown-raw'):
                     emit('JPEG', 'xmp', operation, value_type='text-bytes',
@@ -155,16 +159,59 @@ def build_rows(seeds):
                          notes='XMP packet as stored; interpretation left to the caller')
     # JPEG IPTC (B1): Photoshop 8BIM 0x0404 resource; dataset-level duplication axis.
     for operation in ('read', 'insert', 'replace', 'remove'):
-        for layout in LAYOUTS['iptc']:
+        for layout in ('app13-8bim-iptc', 'app13-8bim-iptc-multiple'):
             for duplicates in ('none', 'first-wins'):
                 emit('JPEG', 'iptc', operation, value_type='opaque', text_encoding='not-applicable',
                      layout=layout, duplicates=duplicates, batch='B1',
                      notes='IPTC-NAA datasets as raw bytes; no dataset interpretation claimed')
     # JPEG thumbnail (B1): EXIF IFD1 embedded thumbnail (JPEG-compressed vs uncompressed strip).
     for operation in ('read', 'insert', 'replace', 'remove', 'extract'):
-        for layout in LAYOUTS['thumbnail']:
+        for layout in ('exif-ifd1-jpeg', 'exif-ifd1-uncompressed'):
             emit('JPEG', 'thumbnail', operation, value_type='opaque', text_encoding='not-applicable',
                  layout=layout, duplicates='none', batch='B1',
+                 notes='embedded EXIF IFD1 thumbnail container operation; bytes opaque')
+
+    # PNG inventory track (recognition is never metadata support).
+    emit('PNG', 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
+         layout='container', duplicates='none', batch='B2',
+         notes='recognize/dimensions/MIME without decoding; count tracked separately, never support')
+
+    png = {s['family']: s for s in seeds['seeds'] if s['format'] == 'PNG'}
+    assert set(png) == set(FAMILIES), 'PNG seeds missing a family'
+    # PNG noDocumentedClaim cells (claim '-'): one read row each, observed via pinned CLI.
+    emit('PNG', 'comments', 'read', value_type='text-bytes', text_encoding='not-applicable',
+         layout='png-text', duplicates='none', batch='B2', no_claim=True,
+         notes='no documented claim (seed EX0289-PNG-COMMENTS); pinned-CLI observation recorded, nothing asserted')
+    emit('PNG', 'exif', 'read', value_type='any-documented', text_encoding='not-applicable',
+         layout='png-exif', duplicates='none', batch='B2', no_claim=True,
+         notes='no documented claim (seed EX0289-PNG-EXIF); pinned-CLI observation recorded, nothing asserted')
+    # PNG ICC (B2): iCCP chunk carries a zlib-compressed profile (container ops, no profile decode).
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for duplicates in ('none', 'first-wins'):  # PNG allows at most one iCCP chunk
+            emit('PNG', 'icc', operation, value_type='opaque', text_encoding='not-applicable',
+                 layout='iccp', duplicates=duplicates, batch='B2',
+                 notes='PNG iCCP chunk (zlib-compressed profile); opaque bytes, no profile decoding/validation claimed')
+    # PNG XMP (B2): uncompressed iTXt vs zTXt-compressed carrier; no Extended-XMP analog in this batch.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for layout in ('itxt-xmp', 'ztxt-xmp'):
+            for duplicates in ('none', 'first-wins'):
+                for encoding in ('utf-8', 'unknown-raw'):
+                    emit('PNG', 'xmp', operation, value_type='text-bytes',
+                         text_encoding=encoding, layout=layout, duplicates=duplicates, batch='B2',
+                         notes='XMP packet as stored in iTXt/zTXt; interpretation left to the caller')
+    # PNG IPTC (B2): the CLI reads the hex-encoded IIM/8BIM "raw profile type iptc" carrier;
+    # the same raw text in an uncompressed iTXt is spec-legal but the pinned CLI rejects it.
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for layout in ('ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc'):
+            for duplicates in ('none', 'first-wins'):
+                emit('PNG', 'iptc', operation, value_type='opaque', text_encoding='not-applicable',
+                     layout=layout, duplicates=duplicates, batch='B2',
+                     notes='IPTC-NAA datasets as raw bytes in a raw-profile carrier; no dataset interpretation claimed')
+    # PNG thumbnail (B2): eXIf chunk with an IFD1 thumbnail (JPEG-compressed vs uncompressed strip).
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for layout in ('exif-ifd1-jpeg', 'exif-ifd1-uncompressed'):
+            emit('PNG', 'thumbnail', operation, value_type='opaque', text_encoding='not-applicable',
+                 layout=layout, duplicates='none', batch='B2',
                  notes='embedded EXIF IFD1 thumbnail container operation; bytes opaque')
     return rows
 
@@ -176,7 +223,8 @@ def apply_observations(rows):
     the artifact is stable either way; with it, each row is flipped to
     observed-cli (or statically not-applicable) and pinned to its fixture.
     """
-    manifest = {entry['file']: entry for entry in json.loads(FIXTURE_MANIFEST.read_text())}
+    manifests = {fmt: {entry['file']: entry for entry in json.loads(path.read_text())}
+                 for fmt, path in FIXTURE_MANIFESTS.items()}
     evidence_by_batch = {}
     for batch, path in EVIDENCE_BY_BATCH.items():
         if path.exists():
@@ -203,7 +251,7 @@ def apply_observations(rows):
         observed = {item['id']: item for item in evidence['observations']}
         item = observed.get(row['rowId'])
         assert item is not None, f'observation missing for applicable row {row["rowId"]}'
-        fixture = manifest[item['fixture']]
+        fixture = manifests[row['format']][item['fixture']]
         assert fixture['sha256'] == item['fixtureSha256'], \
             f'fixture/evidence hash mismatch for {row["rowId"]}'
         row['fixture'] = {'file': fixture['file'], 'sha256': fixture['sha256'], 'length': fixture['length'],
@@ -229,9 +277,11 @@ def apply_observations(rows):
 def build(seeds):
     rows = build_rows(seeds)
     rows, applied_batches = apply_observations(rows)
-    enumerated = {'JPEG/inventory'} | {f'JPEG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
+    enumerated = ({'JPEG/inventory', 'PNG/inventory'}
+                  | {f'JPEG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
+                  | {f'PNG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
     pending = sorted(s['seedId'] for s in seeds['seeds']
-                     if f"{s['format']}/{s['family']}" not in {e for e in enumerated if e != 'JPEG/inventory'})
+                     if f"{s['format']}/{s['family']}" not in {e for e in enumerated if 'inventory' not in e})
     assert len({r['rowId'] for r in rows}) == len(rows)
     enumerations = dict(
         reviewStatus='reviewed',
@@ -259,7 +309,9 @@ def build(seeds):
         generatedBy='tools/reference/build_census.py',
         denominatorFrozen=False,
         scope=('B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; '
-               'B1 enumeration for JPEG x {xmp, iptc, thumbnail}. '
+               'B1 enumeration for JPEG x {xmp, iptc, thumbnail}; '
+               'B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, '
+               'thumbnail, xmp}. '
                + ((f'Pinned-CLI observation complete for batch(es) {", ".join(applied_batches)}: '
                     'rows flipped to observed-cli/not-applicable; no coverage percentage; '
                     'no denominator computed. ') if applied_batches else
@@ -267,7 +319,7 @@ def build(seeds):
                + 'Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.'),
         coverage={
             'enumerated': sorted(enumerated - {'JPEG/inventory'}),
-            'inventoryTrack': ['JPEG'],
+            'inventoryTrack': ['JPEG', 'PNG'],
             'pendingSeedIds': pending,
         },
         enumerations=enumerations,
