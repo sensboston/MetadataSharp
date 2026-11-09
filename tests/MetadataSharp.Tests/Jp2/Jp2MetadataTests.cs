@@ -51,6 +51,20 @@ public sealed class Jp2MetadataTests
     }
 
     [Fact]
+    public void BoxCountBudgetIsEnforced()
+    {
+        byte[] original = Fixture();
+        byte[] data = new byte[original.Length + 1025 * 8];
+        original.CopyTo(data, 0);
+        for (int i = original.Length; i < data.Length; i += 8)
+        {
+            BinaryPrimitives.WriteUInt32BigEndian(data.AsSpan(i, 4), 8);
+            "free"u8.CopyTo(data.AsSpan(i + 4, 4));
+        }
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Error(data));
+    }
+
+    [Fact]
     public void BadLengthsOrderingAndUnsupportedBoxesAreRefused()
     {
         byte[] original = Fixture();

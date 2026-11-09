@@ -2090,3 +2090,14 @@ no denominator freeze, publication or DNG D2 write.
   `-pc`, `-pC` returned zero, `-et` returned 253 with no EXIF; all inputs
   unchanged. Empty metadata probes do not establish support. ExifTool reports
   8×8 JP2; full JP2 normative conformance is not implied. EPS CI pending.
+
+- EPS CI preflight recovered from 42713667205 (head `3759862`): Exiv2 returned
+  unsupported for `-pS`/`-pC`, zero with no metadata for `-pa`/`-pc`, and 253
+  for absent EXIF thumbnail; all five inputs unchanged, no artifact. ExifTool
+  reported bounding box `0 0 10 12`. See e01-b8-eps-preflight receipt; these
+  are not metadata-present support or a rendering oracle. Run 42713667205 was
+  15/15 green with 562 passing tests in each of six OS/TFM jobs. Previous run
+  42713118803 failed offline reference-policy tests on both Windows jobs. Logs
+  were not retrievable; text fixture CRLF was a suspected cause, not confirmed.
+  Explicit LF attributes were added and the next full run passed unchanged
+  hash tests. Further count-budget tests and receipt are pending final CI.

@@ -401,8 +401,8 @@ JP2 32-bit boxes, dimensions and opaque top-level XML boxes. No pixel decode,
 metadata interpretation, full validation, editing or preservation is claimed.
 Unsupported structures fail closed; capabilities for parsed metadata remain
 NotSupported. Independent rights review precedes authored JPEG 2000 fixture;
-PSD has existing authored fixture and pinned preflight, JP2 pinned preflight is
-added but CI results pending. E01 census is not modified or verified by these
+PSD has existing authored fixture and pinned preflight, JP2 pinned preflight is recorded at
+`docs/research/evidence/e01-b8-jp2-preflight/`. E01 census is not modified or verified by these
 new product tests; no percentages or denominator freeze. Remaining B8 formats
 PGF, EPS, EXV and DCP and broad PSD/JP2 variants still require implementation
 and rights/oracle work. B7 CR3 stays blocked. Full contract:
@@ -414,4 +414,7 @@ After a separate EPS rights review, added a small independently authored EPSF
 3.0 fixture and `EpsHeader.Read`, a bounded DSC bounding-box scanner. It never
 executes, interprets or validates PostScript, nor verifies rendering. It only
 accepts immediate four integer coordinates and explicit EndComments. Pinned
-reference preflight is configured but awaits CI. PGF/EXV/DCP remain unresolved.
+reference preflight run 42713667205 passed and is committed in
+`docs/research/evidence/e01-b8-eps-preflight/`; six OS/TFM jobs each passed 562
+tests. CI after the receipt and additional budget tests is pending. PGF/EXV/DCP
+remain unresolved.

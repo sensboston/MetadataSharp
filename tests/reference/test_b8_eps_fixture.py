@@ -19,6 +19,22 @@ class EpsFixtureTests(unittest.TestCase):
         self.assertIn(b'%%EndComments', lines)
         self.assertEqual(b'%%EOF', lines[-1])
 
+    def test_recovered_ci_preflight(self):
+        import json
+        evidence = Path(__file__).resolve().parents[2] / 'docs/research/evidence/e01-b8-eps-preflight'
+        report_bytes = (evidence / 'ci-observations.json').read_bytes()
+        receipt = json.loads((evidence / 'receipt.json').read_text())
+        self.assertEqual(receipt['ciObservationsSha256'], hashlib.sha256(report_bytes).hexdigest())
+        report = json.loads(report_bytes)
+        self.assertEqual(receipt['headCommit'], report['sourceCommit'])
+        self.assertEqual('passed', report['status'])
+        self.assertFalse(report['denominatorFrozen'])
+        self.assertEqual([fixture.verify()], report['fixtureManifest'])
+        ops = report['observations'][0]['operations']
+        self.assertEqual([1, 0, 0, 1, 253], [o['exitCode'] for o in ops])
+        self.assertTrue(all(o['inputUnchanged'] and not o['artifacts'] for o in ops))
+        self.assertEqual('0 0 10 12', report['secondary'][0]['json'][0]['PostScript:BoundingBox'])
+
 
 if __name__ == '__main__':
     unittest.main()

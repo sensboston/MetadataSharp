@@ -82,6 +82,24 @@ public sealed class PsdMetadataTests
     }
 
     [Fact]
+    public void ResourceCountBudgetIsEnforced()
+    {
+        byte[] original = Fixture("owned-flat-rgb.psd");
+        const int count = 1025;
+        byte[] data = new byte[original.Length + count * 12];
+        original.AsSpan(0, 34).CopyTo(data);
+        BinaryPrimitives.WriteUInt32BigEndian(data.AsSpan(30, 4), count * 12);
+        for (int i = 0; i < count; i++)
+        {
+            int at = 34 + i * 12;
+            "8BIM"u8.CopyTo(data.AsSpan(at, 4));
+            BinaryPrimitives.WriteUInt16BigEndian(data.AsSpan(at + 4, 2), (ushort)i);
+        }
+        original.AsSpan(34).CopyTo(data.AsSpan(34 + count * 12));
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Error(data));
+    }
+
+    [Fact]
     public void RejectsUnreviewedNonemptyLayerSection()
     {
         byte[] bytes = Fixture("owned-flat-rgb.psd");
