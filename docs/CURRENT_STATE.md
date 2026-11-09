@@ -1,5 +1,11 @@
 # Current development state and recovery checkpoint
 
+B7 receipt PR #44 merged as `c164d2b`; B8 preliminary rights review and PSD
+fixture work are in progress on `arena/6af63d5a-metadatasharp`. CR3 remains
+blocked; no denominator freeze, MetadataSharp verification, publication or DNG
+D2 write is authorized. See the B8 checkpoint below.
+
+
 B7 bounded census merged via PR #43; receipt on `arena/b5ec38f5-metadatasharp`. Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
@@ -353,3 +359,18 @@ five-fixture regeneration passed. No denominator frozen, verification remains
 not-assessed, and no parity percentage or publication is authorized. Even if
 this bounded batch is merged, unattempted CR3 no-claim rows cannot be silently
 closed before freeze; remaining metadata-present and decoder-oracle gaps persist.
+
+## B8 preliminary checkpoint
+
+B8's separate per-format rights and oracle ledger is
+`docs/research/E01_B8_RIGHTS_AND_ORACLE_REVIEW.md`, committed before fixture
+authoring. Only a narrow owned PSD probe is cleared so far; JP2, PGF, EPS, EXV
+and DCP remain pending review, not refused or excluded. DCP is a camera profile,
+not an ordinary TIFF image. The owned 52-byte 2×2 RGB PSD v1 has no image
+resources, layers or metadata. `tools/reference/b8_psd_fixture.py` regenerates
+the bytes using only the standard library; tests independently check header,
+section lengths and planar pixel bytes. Local ImageMagick 6.9.11-60 `identify`
+recognized PSD at 2×2 and `convert -depth 8 rgb:-` returned the authored pixels.
+That external decoder is a local sanity check, not a pinned-CLI census
+observation or proof of full PSD conformance. No B8 rows observed yet;
+metadata-present cases and other formats still require research and evidence.

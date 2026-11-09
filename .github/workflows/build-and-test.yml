@@ -253,6 +253,8 @@ jobs:
                   raise SystemExit('B7 fixture re-encoding mismatch: ' + name)
       - name: B7 census observation batch (pinned CLI and secondary reference, outcomes recorded not gated)
         run: python tools/reference/observe_b7.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
+      - name: Verify authored B8 flat PSD research fixture
+        run: python tools/reference/b8_psd_fixture.py verify
       - name: Upload authored observations and reproducibility metadata (no executables/source)
         if: always()
         uses: actions/upload-artifact@v4
