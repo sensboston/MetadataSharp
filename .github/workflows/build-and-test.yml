@@ -225,6 +225,34 @@ jobs:
         run: python tools/reference/observe_b5.py --upstream artifacts/e01/source --build artifacts/e01/build
       - name: B6 census observation batch (pinned CLI, outcomes recorded not gated)
         run: python tools/reference/observe_b6.py --upstream artifacts/e01/source --build artifacts/e01/build
+      - name: Checkout pinned ExifTool secondary reference (never a product dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: ExifTool/exiftool
+          ref: 212f02cf22b9484674752181cad3b73089ce9694
+          path: artifacts/e01/exiftool
+          persist-credentials: false
+      - name: Select Python 3.11 for reproducible B7 fixture encoders
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install hash-pinned external B7 fixture encoders
+        run: python -m pip install --require-hashes -r tools/reference/b7-encoder-requirements.txt
+      - name: Re-encode and verify authored B7 fixtures
+        shell: python
+        run: |
+          import sys
+          sys.path.insert(0, 'tools/reference')
+          import b7_owned_fixtures as fixtures
+          manifest = fixtures.verify()
+          encoded = fixtures.encode_catalog()
+          if set(encoded) != {entry['file'] for entry in manifest}:
+              raise SystemExit('B7 generated fixture set differs from manifest')
+          for name, data in encoded.items():
+              if data != (fixtures.FIXTURES / name).read_bytes():
+                  raise SystemExit('B7 fixture re-encoding mismatch: ' + name)
+      - name: B7 census observation batch (pinned CLI and secondary reference, outcomes recorded not gated)
+        run: python tools/reference/observe_b7.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
       - name: Upload authored observations and reproducibility metadata (no executables/source)
         if: always()
         uses: actions/upload-artifact@v4
@@ -296,5 +324,14 @@ jobs:
           name: e01-b6-census-observations
           path: |
             artifacts/e01/b6/observations.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload B7 census observations (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b7-census-observations
+          path: |
+            artifacts/e01/b7/observations.json
           if-no-files-found: error
           retention-days: 30
