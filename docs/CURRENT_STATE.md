@@ -1,6 +1,6 @@
 # Current development state and recovery checkpoint
 
-Updated 2026-11-09 (preliminary status summary added at master `33e3a88`). Read
+Updated 2026-11-09 (B5 census batch on branch `arena/0cfec909-metadatasharp`). Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
 
@@ -23,20 +23,23 @@ authorized**.
   targeting (42446034373); E03 contracts + implementation; E04/D0 exact DNG proposal
   approved (no implementation); E05/D1 narrow read-only DNG (PR #21); E01-CEN census
   design approved 2026-11-08.
-- Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): batches **B0–B4 DONE**
-  — 353 rows (B0 135 + B1 58 + B2 67 + B3 43 + B4 50); 311 `observed-cli` + 42
-  static `not-applicable`; coded payload/scan preserved **284/284** observed rows;
-  all 353 rows `verification: not-assessed`; **`denominatorFrozen: false`; no
-  coverage percentage is computed or implied; freeze is a separate,
-  developer-authorized step after B14**; no exclusion signed; `nonzero-exit-
-  artifact-produced` kept as its own class. Evidence + receipts under
-  `docs/research/evidence/e01-b0-census/` … `e01-b4-census/` (each with
-  `receipt.json`; artifact digests are metadata-only — bytes not retrievable from
+- Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): batches **B0–B5 DONE
+  (B5 on branch, merged via its PR)** — 379 rows (B0 135 + B1 58 + B2 67 + B3 43 +
+  B4 50 + B5 26); 337 `observed-cli` + 42 static `not-applicable`; coded
+  payload/scan preserved **284/284** observed in-image rows (B5 packet documents
+  carry no coded payload; SHA-256/length/xpacket facts recorded instead); all 379
+  rows `verification: not-assessed`; **`denominatorFrozen: false`; no coverage
+  percentage is computed or implied; freeze is a separate, developer-authorized
+  step after B14**; no exclusion signed; `nonzero-exit-artifact-produced` kept as
+  its own class. Evidence under `docs/research/evidence/e01-b0-census/` …
+  `e01-b5-census/` (b0–b4 carry `receipt.json`; B5 receipt lands with its
+  receipt PR; artifact digests are metadata-only — bytes not retrievable from
   this sandbox).
-- Enumeration breadth today: JPEG, PNG, WebP, TIFF (4 of 31 seed formats; 27 of 186
-  seed cells enumerated, 162 pending — B5–B14).
-- Next in §5 numeric order: **B5 (XMP packets + sidecars)** → … → B14, then the
-  final freeze PR (developer-authorized). Not started: E06 typed vocabulary
+- Enumeration breadth today: JPEG, PNG, WebP, TIFF, XMP (5 of 31 seed formats;
+  XMP sidecar axis adds 6 `unknown-raw` observed rows; 30 seed cells enumerated,
+  156 pending — B6–B14).
+- Next in §5 numeric order: **B6 (DNG)** → … → B14, then the final freeze PR
+  (developer-authorized). Not started: E06 typed vocabulary
   breadth; E07 container gap closure + MetadataSharp-side verification (until then
   verification stays not-assessed); E08–E12 new format families; E13–E15
   editing/preview/workflow breadth; E16 evidence-backed improvements; E17
@@ -45,7 +48,9 @@ authorized**.
 - GitHub availability: transient GitHub-side Actions failure 2026-11-09T18:23Z hit
   the two first runs of PR #33 (2/0 of 15 jobs started, no logs); a PR
   close/reopen produced 15/15 green runs with no content changes. Recorded in the
-  B4 receipt. githubstatus.com is not reachable from this sandbox; live status was
+  B4 receipt. The B5 batch is on branch `arena/0cfec909-metadatasharp`
+  (PR pending; local rehearsal complete; CI re-verifies).
+  githubstatus.com is not reachable from this sandbox; live status was
   verified via api.github.com ("GitHub lives!") and observed CI results.
 
 **Standing refusals/limits.** DNG D2 write: NOT authorized. Package publication:
@@ -66,9 +71,8 @@ PROGRESS.md.
 
 ## Active branch and scope
 
-Assigned branch **arena/3db41ee3-metadatasharp**, at master `33e3a88` (PR #34
-receipt merge, 2026-11-09; B4 implementation merged as `1720d7b` via PR #33); never
-switch to master or another branch. Standing authorization
+Assigned branch **arena/0cfec909-metadatasharp** (B5 census batch; based on master
+`1e6dc55`); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -85,26 +89,37 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
 
 ## Current evidence and actual implementation
 
-- B0, B1, B2, B3 and B4 observation batches DONE (2026-11-08/09): docs/research/EXIV2_CENSUS.json
-  carries 353 rows (135 B0 + 58 B1 JPEG, 67 B2 PNG, 43 B3 WebP, 50 B4 TIFF); every B0 row is
+- B0, B1, B2, B3, B4 and B5 observation batches DONE (2026-11-08/09): docs/research/EXIV2_CENSUS.json
+  carries 379 rows (135 B0 + 58 B1 JPEG, 67 B2 PNG, 43 B3 WebP, 50 B4 TIFF, 26 B5 XMP); every B0 row is
   observed-cli (97) or statically not-applicable (38, axis collapses recorded per row) and
   every B1 row is observed-cli (57) or statically not-applicable (1:
   `exif-ifd1-uncompressed` thumbnail insert — the pinned CLI exposes no
   uncompressed-thumbnail write path) and every B3 row is observed-cli (42) or statically
   not-applicable (1: the same axis collapse on the WebP fixtures); every B4 row is
   observed-cli (49) or statically not-applicable (1: the same axis collapse on the TIFF
-  fixtures); fixtures owned-synthetic and SHA-256 pinned (tests/fixtures/jpeg/manifest.json,
+  fixtures) and every B5 row is observed-cli (26; 0 static not-applicable).
+  Fixtures owned-synthetic and SHA-256 pinned (tests/fixtures/jpeg/manifest.json,
   31 fixtures; tests/fixtures/png/manifest.json, 17 fixtures;
   tests/fixtures/webp/census-manifest.json, 12 fixtures — NOTE: tests/fixtures/webp/provenance.json
   is reserved for the .NET library's PNG/WebP-group audit and is untouched;
   tests/fixtures/tiff/manifest.json, 14 fixtures, plain manifest/provenance pair — no .NET audit
-  reservation); evidence committed at docs/research/evidence/e01-b0-census/,
+  reservation; tests/fixtures/xmp/manifest.json, 6 owned XMP packet fixtures); evidence
+  committed at docs/research/evidence/e01-b0-census/,
   docs/research/evidence/e01-b1-census/, docs/research/evidence/e01-b2-census/,
-  docs/research/evidence/e01-b3-census/ and docs/research/evidence/e01-b4-census/
+  docs/research/evidence/e01-b3-census/, docs/research/evidence/e01-b4-census/ and
+  docs/research/evidence/e01-b5-census/
   (observations.json + README); CI job `pinned-exiv2-baseline` re-runs all batches and
   uploads `e01-b0-census-observations`, `e01-b1-census-observations`,
-  `e01-b2-census-observations`, `e01-b3-census-observations` and `e01-b4-census-observations`.
-  B4: 49 accepted / 0 accepted-unexpected (all 49 rows rc=0; XMP `del` removes the
+  `e01-b2-census-observations`, `e01-b3-census-observations`, `e01-b4-census-observations`
+  and `e01-b5-census-observations`.
+  B5: 17 accepted / 2 accepted-unexpected (REMOVE is a silent no-op in the pinned CLI on
+  both layouts — rc=0, file byte-identical; B3 WebP analog) / 6 accepted-unparseable
+  (unknown-raw READ/REPLACE: rc=0 with `XMP Toolkit error` on stderr; REPLACE rows gain a
+  partial leading canonical packet, xpacket PI counts 1→2) / 1 refused (`-pS` on a bare
+  .xmp — `Image type ... is not supported`, rc=1) / 0 not-applicable; the four
+  sidecar-presence read probes record SIDECARPROBE token absent from printed output
+  (adjacency never consulted; applied writes stay E15); zero scan-changed; B5 packets
+  carry no coded payload (SHA-256/length/xpacket facts recorded instead). B4: 49 accepted / 0 accepted-unexpected (all 49 rows rc=0; XMP `del` removes the
   whole 0x02BC tag unlike the WebP silent no-op; duplicate-carrier writes are
   first-wins while `-pa` prints last-wins; IPTC duplicates `del` is a silent no-op;
   ICC writes collapse duplicates to a single entry; ICC tag 0x8773 is rewritten as
@@ -117,7 +132,8 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   rows; `Not a valid ICC Profile`). B1: 55 accepted / 2 nonzero-exit-artifact-produced
   (thumbnail extract exits 137/46 by CLI quirk with the artifact produced; JPEG
   thumbnail extract verified byte-exact) / 1 not-applicable. B2: 66 accepted / 1 static.
-  Scan preserved 284/284 observed rows (193 B0-B2 + 42 B3 + 49 B4). Verification stays not-assessed; NO
+  Scan preserved 284/284 observed in-image rows (193 B0-B2 + 42 B3 + 49 B4; B5 = packet documents,
+  no coded payload). Verification stays not-assessed; NO
   denominator frozen; NO coverage percentage; exclusions (if any) go to the
   developer at the denominators step; D2/publication NOT authorized.
   2026-11-09 (step 3 ANSWERED, freeze pending B2–B14): the developer answered the
@@ -126,7 +142,7 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   produced its own class, never a pass; Q4 numeric order B2→B14, all in this cycle;
   Q5 no percentages pre-freeze). Recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md
   §9; freeze happens in its own PR after B14; gate stays OPEN; B4 (TIFF) implemented;
-  next batch B5.
+  B5 (XMP) implemented on this branch; next batch B6 (DNG).
 - B2 merged via PR #29 (`ba52ac1`, run 42558351437, 15/15 green); receipt at
   docs/research/evidence/e01-b2-census/receipt.json (metadata-only; artifact bytes
   not retrievable from the sandbox).
@@ -143,6 +159,13 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   changes. Census 353 rows; all 49 applicable rows observed-cli (0 accepted-unexpected);
   1 static not-applicable (`EX0289-TIFF-THUMBNAIL-INSERT-0002`); IFD0 strip/tile
   payload bytes preserved 49/49.
+- B5 observation batch ready on branch `arena/0cfec909-metadatasharp` (rehearsal
+  passed locally; CI `pinned-exiv2-baseline` re-verifies in the PR): 26 rows,
+  outcome counts 17 accepted / 2 accepted-unexpected / 6 accepted-unparseable /
+  1 refused / 0 static not-applicable / 0 scan-changed; inventory track extended to
+  XMP; sidecar-presence read probes record the sidecar token absent from the
+  image's printed output on JPEG/PNG/WebP/TIFF; Census 379 rows; denominatorFrozen
+  stays false; no percentage; E01 gate OPEN; next batch B6.
 
 - E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
   42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.
@@ -274,7 +297,9 @@ SDK/blob downloads. Bounded failed-TRX/command diagnostics and compressed comple
 JSON annotations work; tools/audit/collect.py validates run/source/chunk receipts.
 Audit AUDIT_TFM and reference METADATASHARP_REFERENCE_TFM default net8.0, accept
 net10.0. Tools now need explicit -f for dotnet run; no target may silently fall back.
-Python discovery suite is 94/94 locally at the B4 checkpoint (14 census + 13 PNG fixture
-tests + 13 WebP fixture tests + 14 TIFF fixture tests included; B4 observations
-rehearsed via the pinned CLI, status passed).
+Python discovery suite is 103/103 locally at the B5 checkpoint (incl. census-policy and
+XMP fixture tests; the closed layout enumerations gained 'xmp-packet' for the
+comments/exif/icc/iptc/thumbnail families as a B5-additive extension discovered by CI
+in PR #37); B5 observations rehearsed via the pinned CLI, status passed; reference
+suite 17/17.
 Merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/15).

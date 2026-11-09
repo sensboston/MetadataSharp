@@ -221,6 +221,8 @@ jobs:
         run: python tools/reference/observe_b3.py --upstream artifacts/e01/source --build artifacts/e01/build
       - name: B4 census observation batch (pinned CLI, outcomes recorded not gated)
         run: python tools/reference/observe_b4.py --upstream artifacts/e01/source --build artifacts/e01/build
+      - name: B5 census observation batch (pinned CLI, outcomes recorded not gated)
+        run: python tools/reference/observe_b5.py --upstream artifacts/e01/source --build artifacts/e01/build
       - name: Upload authored observations and reproducibility metadata (no executables/source)
         if: always()
         uses: actions/upload-artifact@v4
@@ -274,5 +276,14 @@ jobs:
           name: e01-b4-census-observations
           path: |
             artifacts/e01/b4/observations.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload B5 census observations and fixture manifest (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b5-census-observations
+          path: |
+            artifacts/e01/b5/observations.json
           if-no-files-found: error
           retention-days: 30

@@ -5,7 +5,12 @@ enumerated so far. B0 enumerates JPEG x {exif, comments, icc} and the JPEG
 inventory track; B1 enumerates JPEG x {xmp, iptc, thumbnail}; B2 enumerates
 PNG x {inventory, comments, exif, icc, iptc, thumbnail, xmp}; B3 enumerates
 WebP x {inventory, comments, exif, icc, iptc, thumbnail, xmp}; B4 enumerates
-TIFF x {inventory, comments, exif, icc, iptc, thumbnail, xmp}. All rows are
+TIFF x {inventory, comments, exif, icc, iptc, thumbnail, xmp}; B5 enumerates
+XMP (the standalone packet document / sidecar artifact) x {inventory, exif
+(noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim),
+iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} plus the B5
+sidecar-presence read probes for JPEG/PNG/WebP/TIFF (presence is in scope;
+xmp-applied writes stay E15 per the approved denominators). All rows are
 generated deterministically; the artifact is immutable between reviews
 (`--check` fails on drift). This is enumeration, not observation: every row
 starts as not-run / not-assessed and no denominator is computed here.
@@ -30,12 +35,14 @@ EVIDENCE_BY_BATCH = {
     'B2': ROOT / 'docs/research/evidence/e01-b2-census/observations.json',
     'B3': ROOT / 'docs/research/evidence/e01-b3-census/observations.json',
     'B4': ROOT / 'docs/research/evidence/e01-b4-census/observations.json',
+    'B5': ROOT / 'docs/research/evidence/e01-b5-census/observations.json',
 }
 FIXTURE_MANIFESTS = {
     'JPEG': ROOT / 'tests/fixtures/jpeg/manifest.json',
     'PNG': ROOT / 'tests/fixtures/png/manifest.json',
     'WEBP': ROOT / 'tests/fixtures/webp/census-manifest.json',
     'TIFF': ROOT / 'tests/fixtures/tiff/manifest.json',
+    'XMP': ROOT / 'tests/fixtures/xmp/manifest.json',
 }
 
 # Axis collapses that are statically impossible, reviewed with the B0 pilot and B1.
@@ -62,32 +69,37 @@ def static_not_applicable(row):
             return reason
     return None
 
-# --- Approved enumerations (design review 2026-11-08) -----------------------
+# --- Approved enumerations (design review 2026-11-08; extended 2026-11-09) ----
 # Every axis value used by a row MUST come from this block (closed world).
 # Adding a value = PR + review; it never happens inside a row.
+# 2026-11-09 extension (B5, approved batch): 'xmp-packet' added as a legal carrier
+# layout for the comments/exif/icc/iptc/thumbnail families — the XMP-format
+# noDocumentedClaim probe cells of B5 ride inside the standalone packet document
+# itself; no row of another format may use it (no such rows exist).
 FAMILIES = ['exif', 'iptc', 'xmp', 'comments', 'icc', 'thumbnail']
 OPERATIONS = ['inventory', 'read', 'insert', 'replace', 'remove', 'extract']
 EXTRACT_FAMILIES = ['comments', 'icc', 'thumbnail']
 TEXT_ENCODINGS = ['ascii', 'utf-8', 'unknown-raw', 'not-applicable']
 VALUE_TYPES = ['any-documented', 'opaque', 'text-bytes']  # 'any-documented': B14 splits EXIF
 LAYOUTS = {
-    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple', 'png-exif', 'webp-exif', 'tiff-exif'],
-    'comments': ['com-single', 'com-multiple', 'png-text', 'webp-comments', 'tiff-comments'],
-    'icc': ['app2-icc-single', 'app2-icc-segmented', 'iccp', 'webp-iccp', 'tiff-icc'],
-    'xmp': ['app1-xmp-standard', 'app1-xmp-extended', 'itxt-xmp', 'ztxt-xmp', 'webp-xmp', 'tiff-xmp'],
-    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple', 'ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc', 'webp-iptc', 'tiff-iptc'],
-    'thumbnail': ['exif-ifd1-jpeg', 'exif-ifd1-uncompressed'],
+    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple', 'png-exif', 'webp-exif', 'tiff-exif', 'xmp-packet'],
+    'comments': ['com-single', 'com-multiple', 'png-text', 'webp-comments', 'tiff-comments', 'xmp-packet'],
+    'icc': ['app2-icc-single', 'app2-icc-segmented', 'iccp', 'webp-iccp', 'tiff-icc', 'xmp-packet'],
+    'xmp': ['app1-xmp-standard', 'app1-xmp-extended', 'itxt-xmp', 'ztxt-xmp', 'webp-xmp', 'tiff-xmp',
+            'xmp-packet', 'xmp-packet-unwrapped'],
+    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple', 'ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc', 'webp-iptc', 'tiff-iptc', 'xmp-packet'],
+    'thumbnail': ['exif-ifd1-jpeg', 'exif-ifd1-uncompressed', 'xmp-packet'],
     'inventory': ['container'],
 }
 DUPLICATES = ['none', 'first-wins', 'multiple-independent']
-SIDECARS = ['none']  # JPEG pilot rows; xmp rows enumerated in a later batch
+SIDECARS = ['none', 'xmp-present']  # B5 adds the presence-probe value (xmp-applied stays E15)
 PRESENCE_VALUES = ['true', 'false', 'unknown']
 RIGHTS_CLASSES = ['owned-synthetic', 'cc0-verified', 'public-domain-verified', 'licensed-embedded', 'blocked', 'not-applicable']
 ORACLE_TYPES = ['specification', 'pinned-cli', 'exiftool', 'independent']
 
 
 def _row(row_id, fmt, family, operation, *, value_type, text_encoding, layout, duplicates,
-         batch, notes, no_claim=False):
+         batch, notes, no_claim=False, sidecar='none'):
     return dict(
         rowId=row_id,
         format=fmt,
@@ -97,7 +109,7 @@ def _row(row_id, fmt, family, operation, *, value_type, text_encoding, layout, d
         textEncoding=text_encoding,
         layout=layout,
         duplicates=duplicates,
-        sidecar='none',
+        sidecar=sidecar,
         presence={'icc': 'unknown', 'comment': 'unknown', 'preview': 'unknown'},
         noDocumentedClaim=no_claim,
         fixture=None,
@@ -114,12 +126,12 @@ def build_rows(seeds):
     rows = []
     counters = {}
 
-    def emit(fmt, family, operation, batch='B0', **kwargs):
+    def emit(fmt, family, operation, batch='B0', sidecar='none', **kwargs):
         key = (fmt, family, operation)
         counter = counters.get(key, 0) + 1
         counters[key] = counter
         rows.append(_row(f'EX0289-{fmt}-{family.upper()}-{operation.upper()}-{counter:04d}',
-                         fmt, family, operation, batch=batch, **kwargs))
+                         fmt, family, operation, batch=batch, sidecar=sidecar, **kwargs))
 
     # JPEG inventory track (recognition is never metadata support).
     emit('JPEG', 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
@@ -312,6 +324,56 @@ def build_rows(seeds):
                  layout=layout, duplicates='none', batch='B4',
                  notes='IFD1 embedded thumbnail container operation; bytes opaque; uncompressed-strip insert '
                        'has no pinned write path and is statically not-applicable')
+
+    # XMP packet inventory track (a standalone .xmp file IS an XMP packet document;
+    # recognition is never metadata support).
+    emit('XMP', 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
+         layout='container', duplicates='none', batch='B5',
+         notes='recognize an XMP packet document without decoding the payload; count tracked separately, never support')
+
+    xmpf = {s['family']: s for s in seeds['seeds'] if s['format'] == 'XMP'}
+    assert set(xmpf) == set(FAMILIES), 'XMP seeds missing a family'
+    # XMP noDocumentedClaim cells (claim '-'): one read row each, observed via pinned CLI.
+    emit('XMP', 'exif', 'read', value_type='any-documented', text_encoding='not-applicable',
+         layout='xmp-packet', duplicates='none', batch='B5', no_claim=True,
+         notes='no documented claim (seed EX0289-XMP-EXIF); pinned-CLI observation recorded, nothing asserted')
+    emit('XMP', 'iptc', 'read', value_type='opaque', text_encoding='not-applicable',
+         layout='xmp-packet', duplicates='none', batch='B5', no_claim=True,
+         notes='no documented claim (seed EX0289-XMP-IPTC); pinned-CLI observation recorded, nothing asserted')
+    emit('XMP', 'comments', 'read', value_type='text-bytes', text_encoding='not-applicable',
+         layout='xmp-packet', duplicates='none', batch='B5', no_claim=True,
+         notes='no documented claim (seed EX0289-XMP-COMMENTS); pinned-CLI observation recorded, nothing asserted')
+    emit('XMP', 'icc', 'read', value_type='opaque', text_encoding='not-applicable',
+         layout='xmp-packet', duplicates='none', batch='B5', no_claim=True,
+         notes='no documented claim (seed EX0289-XMP-ICC); pinned-CLI observation recorded, nothing asserted')
+    emit('XMP', 'thumbnail', 'read', value_type='opaque', text_encoding='not-applicable',
+         layout='xmp-packet', duplicates='none', batch='B5', no_claim=True,
+         notes='no documented claim (seed EX0289-XMP-THUMBNAIL); pinned-CLI observation recorded, nothing asserted')
+    # XMP x XMP (documented Read/Write): the standalone packet document. The wrapped layout is the
+    # canonical packet the in-image fixtures already carry; the unwrapped layout omits the optional
+    # wrapper per XMP Part 1 SS7.3-SS7.5 (editions/blobs pinned in
+    # docs/design/XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md). Leading raw BOMs, double packets and
+    # Extended-XMP-style segmentation are deliberate non-goals of this batch (recorded in README/limits).
+    for operation in ('read', 'insert', 'replace', 'remove'):
+        for layout in ('xmp-packet', 'xmp-packet-unwrapped'):
+            for encoding in ('utf-8', 'unknown-raw'):
+                emit('XMP', 'xmp', operation, value_type='text-bytes',
+                     text_encoding=encoding, layout=layout, duplicates='none', batch='B5',
+                     notes='XMP packet document as stored; interpretation left to the caller; '
+                           'optional-wrapper layout per XMP Part 1 SS7.3-SS7.5 (pinned normative review)')
+    # B5 sidecar-presence read probes (presence only; xmp-applied writes stay E15 per the
+    # approved denominators, section 6(v)/section 7 of the census design and its 2026-11-08
+    # answers). A <stem>.xmp sidecar is placed adjacent to each observed image fixture; the
+    # pinned CLI opens the image only, so the sidecar never influences the image's behavior.
+    # One probe per observed image format; presence is deliberately NOT re-enumerated across
+    # operations (recorded pruning): the image operation is byte-identical with or without the
+    # adjacent sidecar, and the full image XMP operation grid is already covered by B1-B4.
+    for fmt, layout in (('JPEG', 'app1-xmp-standard'), ('PNG', 'itxt-xmp'),
+                        ('WEBP', 'webp-xmp'), ('TIFF', 'tiff-xmp')):
+        emit(fmt, 'xmp', 'read', value_type='text-bytes', text_encoding='utf-8',
+             layout=layout, duplicates='none', batch='B5', sidecar='xmp-present',
+             notes=f'presence probe: adjacent <stem>.xmp sidecar next to the {fmt} fixture; the pinned CLI '
+                   'opens the image only; presence never implies application; xmp-applied writes stay E15')
     return rows
 
 
@@ -376,18 +438,19 @@ def apply_observations(rows):
 def build(seeds):
     rows = build_rows(seeds)
     rows, applied_batches = apply_observations(rows)
-    enumerated = ({'JPEG/inventory', 'PNG/inventory', 'WEBP/inventory', 'TIFF/inventory'}
+    enumerated = ({'JPEG/inventory', 'PNG/inventory', 'WEBP/inventory', 'TIFF/inventory', 'XMP/inventory'}
                   | {f'JPEG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
                   | {f'PNG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
                   | {f'WEBP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
-                  | {f'TIFF/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
+                  | {f'TIFF/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
+                  | {f'XMP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
     pending = sorted(s['seedId'] for s in seeds['seeds']
                      if f"{s['format']}/{s['family']}" not in {e for e in enumerated if 'inventory' not in e})
     assert len({r['rowId'] for r in rows}) == len(rows)
     enumerations = dict(
         reviewStatus='reviewed',
-        reviewedAt='2026-11-08',
-        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md',
+        reviewedAt='2026-11-09',
+        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; 2026-11-09 extension adds xmp-packet carrier layouts under the approved B5 batch',
         family=[*FAMILIES, 'inventory'],
         operation=OPERATIONS,
         extractFamilies=EXTRACT_FAMILIES,
@@ -417,6 +480,9 @@ def build(seeds):
                'iptc (noDocumentedClaim), thumbnail, xmp}. '
                'B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, '
                'iptc, thumbnail, xmp}. '
+               'B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), '
+               'icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and '
+               'the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. '
                + ((f'Pinned-CLI observation complete for batch(es) {", ".join(applied_batches)}: '
                     'rows flipped to observed-cli/not-applicable; no coverage percentage; '
                     'no denominator computed. ') if applied_batches else
@@ -424,7 +490,7 @@ def build(seeds):
                + 'Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.'),
         coverage={
             'enumerated': sorted(enumerated - {'JPEG/inventory'}),
-            'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF'],
+            'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF', 'XMP'],
             'pendingSeedIds': pending,
         },
         enumerations=enumerations,
