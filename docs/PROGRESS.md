@@ -1681,6 +1681,18 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   false; verification stays not-assessed everywhere; no percentage computed;
   D2/publication NOT authorized; E01 gate remains OPEN. Next batch: B3 (WebP).
 - Discovery suite: 65/65 local (13 census + 11 new PNG fixture tests included).
+### E01 B2 census batch — PR #29 merged — 2026-11-08
+
+- 2026-11-08: PR #29 merged (`ba52ac1e8322615fd06e3fbea163e14a3c88943c`, run
+  42558351437, 15/15 green). The `pinned-exiv2-baseline` job rebuilt the pinned
+  CLI, regenerated and byte-compared the 17 owned PNG fixtures against
+  tests/fixtures/png/manifest.json, and re-ran B0+B1+B2; artifacts uploaded
+  (`e01-b2-census-observations` id 13648024215, digest sha256:ccab5875…,
+  `e01-b0/b1-census-observations` refreshed). Receipt committed as
+  docs/research/evidence/e01-b2-census/receipt.json (metadata-only digests;
+  artifact bytes not retrievable from the sandbox — flagged, not waived).
+  Census stays 260 rows; `denominatorFrozen: false`; verification not-assessed;
+  no percentage; D2/publication not authorized; E01 gate OPEN. Next: B3 (WebP).
 ### E01 denominators — developer answers recorded — 2026-11-08
 
 - 2026-11-08: the developer answered the pre-freeze review package five questions

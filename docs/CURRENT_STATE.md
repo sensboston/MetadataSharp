@@ -52,6 +52,9 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   produced its own class, never a pass; Q4 numeric order B2→B14, all in this cycle;
   Q5 no percentages pre-freeze). Recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md
   §9; freeze happens in its own PR after B14; gate stays OPEN; next batch B3 (WebP).
+- B2 merged via PR #29 (`ba52ac1`, run 42558351437, 15/15 green); receipt at
+  docs/research/evidence/e01-b2-census/receipt.json (metadata-only; artifact bytes
+  not retrievable from the sandbox).
 
 - E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
   42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.
