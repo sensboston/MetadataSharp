@@ -1,0 +1,61 @@
+{
+  "encoder": "None (authored byte-level XMP packet writer; tools/reference/xmp_owned_fixtures.py)",
+  "recipe": "Deterministic authored XMP packets: xpacket begin/end PIs (the BOM char rides the begin PI per XMP Part 1); the wrapped layout carries x:xmpmeta (the shape the in-image XMP fixtures of the JPEG/PNG/WebP/TIFF batches already hold); the unwrapped layout omits the optional wrapper per Part 1 SS7.3-SS7.5 (editions/blobs pinned in docs/design/XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md). CreatorTool is the single simple property; non-UTF-8 variants swap the CreatorTool value for raw invalid-UTF-8 bytes (record-only; never asserted). Standalone .xmp files ARE XMP packet documents (the sidecar artifact); no image bytes are present. Pinned by tests/fixtures/xmp/manifest.json; CI regenerates and compares SHA-256.",
+  "inputRights": "MetadataSharp authored synthetic XMP fixtures, MIT; no imported packets, no Adobe SDK material, no upstream fixture corpus.",
+  "fixtures": [
+    {
+      "file": "xmp-base.xmp",
+      "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+      "length": 352,
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "recipe": "xmp-sidecar-standard-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-no-props.xmp",
+      "sha256": "23bb7150f1b26eccba07744a6bb91f60f66fe00b26046155e6942abd00ff925b",
+      "length": 287,
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "recipe": "xmp-sidecar-standard-empty-desc-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-nonutf8.xmp",
+      "sha256": "04a140771d72ec349d88ce01ed5d70f33ea1a61e7c774a8246b81a06ed0a113e",
+      "length": 353,
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "recipe": "xmp-sidecar-standard-nonutf8-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-unwrapped-no-props.xmp",
+      "sha256": "a5ee94917905f5151e24e20dd80f716c9410e121ea3d34a5ecb8033707d01e85",
+      "length": 215,
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "recipe": "xmp-sidecar-unwrapped-empty-desc-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-unwrapped-nonutf8.xmp",
+      "sha256": "8f0a0f07c1a6598c9940e334a4b3a19e00569f0ecb6d84b16be0eb4a210199e6",
+      "length": 281,
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "recipe": "xmp-sidecar-unwrapped-nonutf8-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "xmp-unwrapped.xmp",
+      "sha256": "8377e2236c52b31e48ea4049c5dbe66e4792dbaad3011109b6a871929ae3feca",
+      "length": 280,
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "recipe": "xmp-sidecar-unwrapped-v1",
+      "rights": "owned-synthetic"
+    }
+  ]
+}

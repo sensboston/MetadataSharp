@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4, B5: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "JPEG/comments",
@@ -35,13 +35,21 @@
       "WEBP/inventory",
       "WEBP/iptc",
       "WEBP/thumbnail",
-      "WEBP/xmp"
+      "WEBP/xmp",
+      "XMP/comments",
+      "XMP/exif",
+      "XMP/icc",
+      "XMP/inventory",
+      "XMP/iptc",
+      "XMP/thumbnail",
+      "XMP/xmp"
     ],
     "inventoryTrack": [
       "JPEG",
       "PNG",
       "WEBP",
-      "TIFF"
+      "TIFF",
+      "XMP"
     ],
     "pendingSeedIds": [
       "EX0289-ARW-COMMENTS",
@@ -199,13 +207,7 @@
       "EX0289-TGA-ICC",
       "EX0289-TGA-IPTC",
       "EX0289-TGA-THUMBNAIL",
-      "EX0289-TGA-XMP",
-      "EX0289-XMP-COMMENTS",
-      "EX0289-XMP-EXIF",
-      "EX0289-XMP-ICC",
-      "EX0289-XMP-IPTC",
-      "EX0289-XMP-THUMBNAIL",
-      "EX0289-XMP-XMP"
+      "EX0289-TGA-XMP"
     ]
   },
   "enumerations": {
@@ -274,7 +276,9 @@
         "itxt-xmp",
         "ztxt-xmp",
         "webp-xmp",
-        "tiff-xmp"
+        "tiff-xmp",
+        "xmp-packet",
+        "xmp-packet-unwrapped"
       ],
       "iptc": [
         "app13-8bim-iptc",
@@ -298,7 +302,8 @@
       "multiple-independent"
     ],
     "sidecar": [
-      "none"
+      "none",
+      "xmp-present"
     ],
     "presenceValues": [
       "true",
@@ -11717,6 +11722,864 @@
       "batch": "B4",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B4 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-exif-thumb-raw.tif"
+    },
+    {
+      "rowId": "EX0289-XMP-INVENTORY-INVENTORY-0001",
+      "format": "XMP",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-base.xmp",
+        "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+        "length": 352,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=refused; exit-observed; fixture=xmp-base.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-EXIF-READ-0001",
+      "format": "XMP",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "xmp-base.xmp",
+        "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+        "length": 352,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-base.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-IPTC-READ-0001",
+      "format": "XMP",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "xmp-base.xmp",
+        "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+        "length": 352,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-base.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-COMMENTS-READ-0001",
+      "format": "XMP",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "xmp-base.xmp",
+        "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+        "length": 352,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-base.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-ICC-READ-0001",
+      "format": "XMP",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "xmp-base.xmp",
+        "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+        "length": 352,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-base.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-THUMBNAIL-READ-0001",
+      "format": "XMP",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "xmp-base.xmp",
+        "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+        "length": 352,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-base.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-READ-0001",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-base.xmp",
+        "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+        "length": 352,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-base.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-READ-0002",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-nonutf8.xmp",
+        "sha256": "04a140771d72ec349d88ce01ed5d70f33ea1a61e7c774a8246b81a06ed0a113e",
+        "length": 353,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-nonutf8-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted-unparseable; exit-observed; fixture=xmp-nonutf8.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-READ-0003",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-unwrapped.xmp",
+        "sha256": "8377e2236c52b31e48ea4049c5dbe66e4792dbaad3011109b6a871929ae3feca",
+        "length": 280,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-unwrapped-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-unwrapped.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-READ-0004",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-unwrapped-nonutf8.xmp",
+        "sha256": "8f0a0f07c1a6598c9940e334a4b3a19e00569f0ecb6d84b16be0eb4a210199e6",
+        "length": 281,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-unwrapped-nonutf8-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted-unparseable; exit-observed; fixture=xmp-unwrapped-nonutf8.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-INSERT-0001",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-no-props.xmp",
+        "sha256": "23bb7150f1b26eccba07744a6bb91f60f66fe00b26046155e6942abd00ff925b",
+        "length": 287,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-empty-desc-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-no-props.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-INSERT-0002",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-no-props.xmp",
+        "sha256": "23bb7150f1b26eccba07744a6bb91f60f66fe00b26046155e6942abd00ff925b",
+        "length": 287,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-empty-desc-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-no-props.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-INSERT-0003",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-unwrapped-no-props.xmp",
+        "sha256": "a5ee94917905f5151e24e20dd80f716c9410e121ea3d34a5ecb8033707d01e85",
+        "length": 215,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-unwrapped-empty-desc-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-unwrapped-no-props.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-INSERT-0004",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-unwrapped-no-props.xmp",
+        "sha256": "a5ee94917905f5151e24e20dd80f716c9410e121ea3d34a5ecb8033707d01e85",
+        "length": 215,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-unwrapped-empty-desc-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-unwrapped-no-props.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-REPLACE-0001",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-base.xmp",
+        "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+        "length": 352,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-base.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-REPLACE-0002",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-nonutf8.xmp",
+        "sha256": "04a140771d72ec349d88ce01ed5d70f33ea1a61e7c774a8246b81a06ed0a113e",
+        "length": 353,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-nonutf8-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted-unparseable; exit-observed; fixture=xmp-nonutf8.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-REPLACE-0003",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-unwrapped.xmp",
+        "sha256": "8377e2236c52b31e48ea4049c5dbe66e4792dbaad3011109b6a871929ae3feca",
+        "length": 280,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-unwrapped-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-unwrapped.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-REPLACE-0004",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-unwrapped-nonutf8.xmp",
+        "sha256": "8f0a0f07c1a6598c9940e334a4b3a19e00569f0ecb6d84b16be0eb4a210199e6",
+        "length": 281,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-unwrapped-nonutf8-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted-unparseable; exit-observed; fixture=xmp-unwrapped-nonutf8.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-REMOVE-0001",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-base.xmp",
+        "sha256": "ef17d323772f9d2a17754b4b93a2d16fecd0946fd0f0c490e189770e9f900e03",
+        "length": 352,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted-unexpected; exit-observed; fixture=xmp-base.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-REMOVE-0002",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "xmp-packet",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-nonutf8.xmp",
+        "sha256": "04a140771d72ec349d88ce01ed5d70f33ea1a61e7c774a8246b81a06ed0a113e",
+        "length": 353,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-standard-nonutf8-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted-unparseable; exit-observed; fixture=xmp-nonutf8.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-REMOVE-0003",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-unwrapped.xmp",
+        "sha256": "8377e2236c52b31e48ea4049c5dbe66e4792dbaad3011109b6a871929ae3feca",
+        "length": 280,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-unwrapped-v1"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted-unexpected; exit-observed; fixture=xmp-unwrapped.xmp"
+    },
+    {
+      "rowId": "EX0289-XMP-XMP-REMOVE-0004",
+      "format": "XMP",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "unknown-raw",
+      "layout": "xmp-packet-unwrapped",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-unwrapped-nonutf8.xmp",
+        "sha256": "8f0a0f07c1a6598c9940e334a4b3a19e00569f0ecb6d84b16be0eb4a210199e6",
+        "length": 281,
+        "rights": "owned-synthetic",
+        "recipe": "xmp-sidecar-unwrapped-nonutf8-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted-unparseable; exit-observed; fixture=xmp-unwrapped-nonutf8.xmp"
+    },
+    {
+      "rowId": "EX0289-JPEG-XMP-READ-0009",
+      "format": "JPEG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "app1-xmp-standard",
+      "duplicates": "none",
+      "sidecar": "xmp-present",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "xmp-standard.jpg",
+        "sha256": "9caace1e155603a05306aa4e91845ca50863b77771a722acfbf4dd810606aecb",
+        "length": 526,
+        "rights": "owned-synthetic",
+        "recipe": "jpeg-xmp-standard-packet-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=xmp-standard.jpg"
+    },
+    {
+      "rowId": "EX0289-PNG-XMP-READ-0009",
+      "format": "PNG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "itxt-xmp",
+      "duplicates": "none",
+      "sidecar": "xmp-present",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "png-xmp.png",
+        "sha256": "a7acb76c9059435a4c3d293068fe89215509066a8befd23b0dd856e87e4eae9e",
+        "length": 462,
+        "rights": "owned-synthetic",
+        "recipe": "png-xmp-itxt-standard-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=png-xmp.png"
+    },
+    {
+      "rowId": "EX0289-WEBP-XMP-READ-0005",
+      "format": "WEBP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "sidecar": "xmp-present",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "webp-xmp.webp",
+        "sha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+        "length": 420,
+        "rights": "owned-synthetic",
+        "recipe": "webp-xmp-chunk-standard-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=webp-xmp.webp"
+    },
+    {
+      "rowId": "EX0289-TIFF-XMP-READ-0005",
+      "format": "TIFF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tiff-xmp",
+      "duplicates": "none",
+      "sidecar": "xmp-present",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "tiff-xmp.tif",
+        "sha256": "0c3d6dd80c9991dabffb9bd0fb2a087693014347e5c86074b37d76df3119f284",
+        "length": 523,
+        "rights": "owned-synthetic",
+        "recipe": "tiff-xmp-tag-700-standard-v1"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b5-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B5",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp.tif"
     }
   ]
 }

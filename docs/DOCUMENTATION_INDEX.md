@@ -82,5 +82,16 @@ E01 pinned execution (bounded, not E01 closure):
   SHA-256 pinned in tests/fixtures/tiff/manifest.json; IFD0 strip/tile payload bytes
   preserved 49/49; receipt.json records the merge run (metadata-only digests; notes the
   transient GitHub-side failure of the two first runs and the close/reopen retrigger).
+- research/evidence/e01-b5-census: B5 XMP (standalone packet document / sidecar
+  artifact) inventory/exif(noDocumentedClaim)/iptc(noDocumentedClaim)/comments
+  (noDocumentedClaim)/icc(noDocumentedClaim)/thumbnail(noDocumentedClaim)/xmp
+  observation JSON + README; fixtures owned-synthetic, SHA-256 pinned in
+  tests/fixtures/xmp/manifest.json; outcome counts 17 accepted, 2 accepted-unexpected
+  (REMOVE is a silent no-op in the pinned CLI, both layouts — B3 WEBP analog),
+  6 accepted-unparseable (unknown-raw, rc=0 with XMP Toolkit decode errors),
+  1 refused (`-pS`: bare .xmp is not a supported image type, rc=1); the four
+  sidecar-presence read probes (JPEG/PNG/WebP/TIFF) record SIDECARPROBE token absent
+  from the image's printed output (presence never implies application; applied writes
+  stay E15); observations recorded not gated; no parity percentage implied.
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.

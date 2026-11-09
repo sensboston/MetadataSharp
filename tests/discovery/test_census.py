@@ -148,13 +148,49 @@ class CensusPolicyTests(unittest.TestCase):
             self.assertEqual('not-assessed', row['verification'])
         self.assertEqual(1, evidence['outcomeCounts'].get('static-not-applicable'))
 
+    def test_b5_batch_is_fully_observed(self):
+        evidence = load_evidence('b5')
+        self.assertIsNotNone(evidence, 'B5 pinned-CLI observation evidence is required')
+        self.assertEqual('passed', evidence['status'])
+        self.assertEqual('B5', evidence['batch'])
+        self.assertEqual('b0859fc61fea5dedfc898aece6b15893ddf4314e', evidence['sourceCommit'])
+        b5 = [r for r in self.report['rows'] if r['batch'] == 'B5']
+        self.assertEqual(26, len(b5))
+        observed = {r['rowId'] for r in b5 if r['baselineObservation'] == 'observed-cli'}
+        self.assertEqual({o['id'] for o in evidence['observations']}, observed)
+        self.assertEqual(26, len(observed))
+        self.assertEqual({'observed-cli'}, {r['baselineObservation'] for r in b5})
+        self.assertEqual({'accepted': 17, 'accepted-unexpected': 2, 'accepted-unparseable': 6,
+                          'refused': 1, 'static-not-applicable': 0}, evidence['outcomeCounts'])
+        self.assertEqual(0, evidence['outcomeCounts'].get('scan-changed', 0))
+        # Pinned-CLI reality of this batch, recorded not gated: `del Xmp.xmp.CreatorTool`
+        # exits 0 on a standalone packet but leaves the bytes untouched (B3 WEBP analog).
+        unexpected = [o for o in evidence['observations'] if o['outcome'] == 'accepted-unexpected']
+        self.assertEqual(['EX0289-XMP-XMP-REMOVE-0001', 'EX0289-XMP-XMP-REMOVE-0003'],
+                         sorted(o['id'] for o in unexpected))
+        # `-pS` on a bare XMP packet: the pinned CLI prints
+        # "Image type ... is not supported" (rc=1); recorded as refused, never a pass.
+        refused = [o for o in evidence['observations'] if o['outcome'] == 'refused']
+        self.assertEqual(['EX0289-XMP-INVENTORY-INVENTORY-0001'], [o['id'] for o in refused])
+        # Sidecar presence probes: adjacent SIDECARPROBE <stem>.xmp files are never
+        # consulted when the pinned CLI operates on the image.
+        probes = [o for o in evidence['observations'] if o['sidecar'] == 'xmp-present']
+        self.assertEqual({'EX0289-JPEG-XMP-READ-0009', 'EX0289-PNG-XMP-READ-0009',
+                          'EX0289-WEBP-XMP-READ-0005', 'EX0289-TIFF-XMP-READ-0005'},
+                         {o['id'] for o in probes})
+        for probe in probes:
+            self.assertFalse(probe['facts']['sidecarTokenInStdout'], probe['id'])
+            self.assertTrue(probe['facts']['imageTokenInStdout'], probe['id'])
+        for row in b5:
+            self.assertEqual('not-assessed', row['verification'])
+
     def test_verification_stays_not_assessed(self):
         for row in self.report['rows']:
             self.assertEqual('not-assessed', row['verification'])
 
     def test_observed_rows_carry_pinned_owned_synthetic_fixtures(self):
         manifests = {}
-        for fmt in ('JPEG', 'PNG', 'TIFF'):
+        for fmt in ('JPEG', 'PNG', 'TIFF', 'XMP'):
             manifests[fmt] = {e['file']: e for e in json.loads((ROOT / f'tests/fixtures/{fmt.lower()}/manifest.json').read_text())}
         manifests['WEBP'] = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/webp/census-manifest.json').read_text())}
         for row in self.report['rows']:
@@ -173,13 +209,14 @@ class CensusPolicyTests(unittest.TestCase):
     def test_scope_is_observed_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
         self.assertEqual({'exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail', 'inventory'}, families)
-        self.assertEqual(4, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
+        self.assertEqual(5, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
         self.assertEqual(135, sum(1 for r in self.report['rows'] if r['batch'] == 'B0'))
         self.assertEqual(58, sum(1 for r in self.report['rows'] if r['batch'] == 'B1'))
         self.assertEqual(67, sum(1 for r in self.report['rows'] if r['batch'] == 'B2'))
         self.assertEqual(43, sum(1 for r in self.report['rows'] if r['batch'] == 'B3'))
         self.assertEqual(50, sum(1 for r in self.report['rows'] if r['batch'] == 'B4'))
-        self.assertEqual(353, len(self.report['rows']))
+        self.assertEqual(26, sum(1 for r in self.report['rows'] if r['batch'] == 'B5'))
+        self.assertEqual(379, len(self.report['rows']))
 
     def test_pending_cells_partition_the_seed_grid(self):
         enumerated = set(self.report['coverage']['enumerated'])
@@ -188,17 +225,20 @@ class CensusPolicyTests(unittest.TestCase):
         enumerated_seeds = {s['seedId'] for s in self.seeds['seeds']
                              if f"{s['format']}/{s['family']}" in enumerated}
         self.assertEqual(all_seeds, enumerated_seeds | pending)
-        self.assertEqual(24, len(enumerated_seeds))
+        self.assertEqual(30, len(enumerated_seeds))
 
-    def test_no_claim_rows_are_only_the_undocumented_png_webp_and_tiff_cells(self):
+    def test_no_claim_rows_are_only_the_undocumented_cells(self):
         no_claim = {r['rowId'] for r in self.report['rows'] if r['noDocumentedClaim']}
         self.assertEqual({'EX0289-PNG-COMMENTS-READ-0001', 'EX0289-PNG-EXIF-READ-0001',
                           'EX0289-WEBP-COMMENTS-READ-0001', 'EX0289-WEBP-IPTC-READ-0001',
-                          'EX0289-TIFF-COMMENTS-READ-0001'}, no_claim)
+                          'EX0289-TIFF-COMMENTS-READ-0001',
+                          'EX0289-XMP-EXIF-READ-0001', 'EX0289-XMP-IPTC-READ-0001',
+                          'EX0289-XMP-COMMENTS-READ-0001', 'EX0289-XMP-ICC-READ-0001',
+                          'EX0289-XMP-THUMBNAIL-READ-0001'}, no_claim)
         for row in self.report['rows']:
             if row['noDocumentedClaim']:
                 self.assertEqual('read', row['operation'])
-                self.assertIn(row['batch'], ('B2', 'B3', 'B4'))
+                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5'))
 
     def test_rows_never_use_metadataSharp_as_oracle(self):
         for row in self.report['rows']:

@@ -1866,3 +1866,54 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   `d4158be1`(#19,#20), `d5125ece`(#13), `e082b0ba`(#29,#30). Remote heads are now
   exactly `master` and `arena/3db41ee3-metadatasharp`. No tags deleted
   (`sdk_bootstrap` preserved); no history rewrite; nothing merged out-of-gate.
+### E01 B5 census batch — XMP packets + sidecars — 2026-11-09
+
+- 2026-11-09: B5 executed in the approved §5 numeric order (next after B4). Scope: the
+  standalone `.xmp` packet document (the sidecar artifact) as a metadata carrier —
+  XMP × {inventory, exif/iptc/comments/icc/thumbnail (noDocumentedClaim reads), xmp
+  (documented Read/Write)} plus four **sidecar-presence read probes** (JPEG/PNG/WebP/
+  TIFF). Owned synthetic XMP packet fixtures authored by `tools/reference/xmp_owned_fixtures.py`
+  (stdlib byte-level writer; wrapped layout carrying xpacket PIs + `<x:xmpmeta>` and the
+  optional-wrapper-omitted variant per XMP Part 1 §7.3–§7.5, layout per the approved
+  encoding/structure cat; UTF-8 plus invalid-UTF-8 `unknown-raw` cells; 6 fixtures,
+  SHA-256 pinned in tests/fixtures/xmp/manifest.json, byte-deterministic regeneration;
+  rights owned-synthetic, MIT; no fixture binaries committed).
+- tools/reference/observe_b5.py mirrors the B3/B4 observer (pinned source identity +
+  CMAKE policy checks, fixture regeneration + manifest byte-compare, per-row recording,
+  `nonzero-exit-artifact-produced` class, never gated on outcome). The in-image "scan
+  preserved" invariant has no image analog here (the packet IS the file), so each row
+  records SHA-256/length before/after and the xpacket PI counts; a strict XMP parse
+  (well-formedness + UTF-8 check) of every authored/rewritten packet is the structural
+  analog. 26 rows observed; 0 static not-applicable. Outcome counts:
+  17 accepted, 2 accepted-unexpected, 6 accepted-unparseable, 1 refused,
+  0 scan-changed.
+- Notable pinned-CLI behaviors recorded, not gated (rehearsal run; CI re-verifies):
+  `EX0289-XMP-XMP-REMOVE-0001/0003` (utf-8, both layouts, `accepted-unexpected`):
+  `del Xmp.xmp.CreatorTool` exits rc=0 with the file **byte-identical** — the same
+  silent no-op class as the B3 WebP analog. UTF-8 READ/INSERT/REPLACE all accepted with
+  spec-derived expectations held (insert from nothing creates the property; replace swaps
+  Alice→Bob); every successful write **re-serializes** the packet (CLI XMP Core
+  4.4.0-Exiv2, attribute-form properties, canonical xpacket id `W5M0MpCehiHzreSzNTczkc9d`
+  replaces the authored id; lexical form/attribute order/size NOT preserved; the wrapped
+  layout is emitted even for the unwrapped input). The invalid-UTF-8 `unknown-raw`
+  READ/REPLACE cells are rc=0 with `XMP Toolkit error` on stderr (`accepted-unparseable`;
+  REPLACE rows gain a leading partial canonical packet, xpacket PI counts 1→2).
+  `EX0289-XMP-INVENTORY-INVENTORY-0001` (`refused`): `-pS` on a bare `.xmp` prints
+  `Image type ... is not supported`, rc=1 — the pinned CLI does not inventory standalone
+  XMP packets. The four sidecar-presence read probes record the SIDECARPROBE token
+  **absent** from the printed output for all four formats (rc=0; adjacency never
+  consulted; the image's own token printed); `xmp-applied` writes stay E15 per the
+  approved denominators.
+- docs/research/evidence/e01-b5-census/ — committed observations.json (raw JSON as-is) +
+  README (provenance, reproduction, limits). Census regenerated: 379 rows
+  (B0 135 + B1 58 + B2 67 + B3 43 + B4 50 + B5 26); every B5 row is observed-cli
+  (26); inventory track now JPEG, PNG, WebP, TIFF, XMP. `denominatorFrozen` stays false;
+  verification stays not-assessed everywhere; no percentage computed; D2/publication NOT
+  authorized; E01 gate remains OPEN. Next batch: B6 (DNG) per §5 order.
+- Discovery suite: 111/111 local (13 census + 4 new XMP fixture tests included);
+  reference suite 17/17 local.
+- CI: `pinned-exiv2-baseline` job re-runs all batches (observe_b0.py --batch all,
+  observe_b2.py, observe_b3.py, observe_b4.py, observe_b5.py) and uploads
+  `e01-b5-census-observations` next to the B0–B4 artifacts; the workflow was extended
+  accordingly (B5 step + artifact upload). Coverage denominators remain pending
+  developer sign-off after the batch set completes (freeze only after B14).
