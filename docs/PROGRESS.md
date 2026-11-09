@@ -2166,9 +2166,19 @@ no denominator freeze, publication or DNG D2 write.
   recovered through the annotation channel and is committed byte-pinned in
   `docs/research/evidence/e01-b8-census/observations.json` with `README.md` and
   `receipt.json`. This sandbox has no cmake/ninja and no expat/zlib development
-  headers, so there is **no local reproduction** and none is claimed: the CI report
-  is the single B8 evidence source (B6/B7 kept a local file and a `ci-` file; B8 has
-  one file and says so in `receipt.provenance`).
+  headers, so there is **no local run** and none is claimed. Instead of B6/B7's
+  local/CI pair, B8 keeps a second CI sample: the same recorder re-ran on head
+  `dd4c9be` (run 42723616969) and is committed as `ci-observations.json`.
+  `observations`, `blocked`, `fixtureManifest` and `outcomeCounts` matched
+  byte-for-byte across the two runs; what differs is `sourceCommit`, the ExifTool
+  `System:File*Date` fields (and that report's raw stdout digest), and
+  `baseline.executableSha256` plus the `time=` line of the version banner, because the
+  reference build embeds its own timestamp. So the recorded conclusion is narrow: the
+  **observations are reproducible, the compiled binary is not**, and the receipt pins
+  the digest of the exact build that produced the primary evidence rather than claiming
+  a reproducible build. The discovery suite asserts all of this, including that the
+  envelope digest genuinely differs, so the normalization cannot be mistaken for a
+  stronger claim.
 - Recorded outcome counts: 18 accepted, 13 refused, 22 blocked-rights,
   0 static-not-applicable, 0 scan-changed; all 31 inputs stayed byte-identical and no
   command produced an artifact. Census: 568 rows, B8 = 31 `observed-cli` + 22 `blocked`;

@@ -362,7 +362,36 @@ class CensusPolicyTests(unittest.TestCase):
                          hashlib.sha256(json.dumps(evidence, separators=(',', ':'),
                                                    sort_keys=True).encode()).hexdigest())
         self.assertEqual(3, recovery['chunks'])
+        self.assertEqual(3, recovery['ciChunks'])
         self.assertEqual(evidence['sourceCommit'], receipt['run']['headCommit'])
+        # Cross-run reproduction. There is no local B8 run, so the second sample is
+        # another CI run of the same recorder on a later head: the observation payload
+        # must match byte-for-byte, while the compiled reference binary legitimately
+        # differs because the build embeds its own timestamp.
+        ci_path = receipt_dir / 'ci-observations.json'
+        ci = json.loads(ci_path.read_text())
+        self.assertEqual(recovery['ciObservationsSha256'],
+                         hashlib.sha256(ci_path.read_bytes()).hexdigest())
+        for section in ('observations', 'blocked', 'fixtureManifest', 'outcomeCounts'):
+            self.assertEqual(evidence[section], ci[section], f'{section} drifted across runs')
+        self.assertNotEqual(evidence['sourceCommit'], ci['sourceCommit'])
+        self.assertNotEqual(evidence['baseline']['executableSha256'], ci['baseline']['executableSha256'])
+        for key in ('cmakeCacheSha256', 'licenseSha256', 'sourceCommit', 'version'):
+            self.assertEqual(evidence['baseline'][key], ci['baseline'][key])
+        # The ExifTool report prints file timestamps, so its raw stdout digest cannot
+        # match across runs by construction: compare the stable facts, not the envelope.
+        def stable(item):
+            return {'exitCode': item['exitCode'], 'interpretation': item['interpretation'],
+                    'fixtureSha256': item['fixtureSha256'], 'fixtureLength': item['fixtureLength'],
+                    'json': [{k: v for k, v in entry.items()
+                              if not k.startswith('System:') and k != 'SourceFile'}
+                             for entry in item['json']]}
+        self.assertEqual({name: stable(item) for name, item in evidence['secondaryObservations'].items()},
+                         {name: stable(item) for name, item in ci['secondaryObservations'].items()})
+        self.assertNotEqual(evidence['secondaryObservations']['owned-flat-rgb.psd']['stdoutSha256'],
+                            ci['secondaryObservations']['owned-flat-rgb.psd']['stdoutSha256'])
+        self.assertEqual(len(set(evidence['baseline']['verboseVersion'].splitlines())
+                           ^ set(ci['baseline']['verboseVersion'].splitlines())), 2)
         self.assertEqual(len(evidence['observations']), receipt['tally']['observed'])
         self.assertEqual(len(evidence['blocked']), receipt['tally']['blocked'])
         self.assertTrue(receipt['tally']['inputsUnchanged'])

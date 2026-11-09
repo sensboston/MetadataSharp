@@ -2,6 +2,9 @@
   "annotationRecovery": {
     "channel": "check-run annotations (the Actions bulk-log host is unreachable from this environment)",
     "chunks": 3,
+    "ciChunks": 3,
+    "ciObservationsSha256": "05da698dafeddf8bcd3583cd334c7981d37bca977ccfb41b064e56f8d8c3ba20",
+    "ciRawPayloadSha256": "44f38747b0c9b4f0de5a9611ef959ea057ba5e5d62ee5f02cc88381893b9c936",
     "encoding": "zlib + base64, 4000-byte chunks",
     "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder",
     "observationsFileSha256": "d2a628108fac280e3f3c90f1be9b2316be6fb4d5dc6763569231b2b125c6d963",
@@ -75,6 +78,39 @@
     "PGF/EXV/DCP, B7 CR3, PSD ICC/thumbnail and JP2/EPS metadata-present gaps stay open"
   ],
   "provenance": "CI-only evidence. This sandbox has no pinned Exiv2 build (no cmake/ninja and no expat/zlib development headers, and package installs are unreachable), so there is no local observation run to compare against. The committed report is the recovered CI run, not a second independent reproduction; no cross-environment equality claim is made.",
+  "reproduction": {
+    "claim": "observations are reproducible; the compiled reference binary is not bit-reproducible",
+    "excludedDifferences": {
+      "baseline.executableSha256": "the build embeds its own timestamp, so the binary is not bit-reproducible",
+      "baseline.verboseVersion": "the only banner difference is the time= line (plus one reordered library line)",
+      "secondaryObservations": "ExifTool System:FileAccessDate/System:FileModifyDate/System:FileInodeChangeDate",
+      "sourceCommit": "different head commits"
+    },
+    "heads": [
+      "e43dc06746748acd86c9e6d62c7ebb44093b32a1",
+      "dd4c9be179357c66693e744dae20c1ed5f9b6fe1"
+    ],
+    "identicalSections": [
+      "observations",
+      "blocked",
+      "fixtureManifest",
+      "outcomeCounts"
+    ],
+    "identicalSectionsExactBytes": true,
+    "runs": [
+      42721442673,
+      42723616969
+    ],
+    "stillIdentical": [
+      "baseline.cmakeCacheSha256",
+      "baseline.effectiveCmake",
+      "baseline.licenseSha256",
+      "baseline.sourceCommit",
+      "baseline.version",
+      "every observation exit code, digest, token list and structure fact"
+    ],
+    "whyThisSecondSample": "B8 has no local observation run, so reproducibility is measured between two independent CI runs of the same recorder on different heads instead."
+  },
   "run": {
     "attempt": 1,
     "headCommit": "e43dc06746748acd86c9e6d62c7ebb44093b32a1",

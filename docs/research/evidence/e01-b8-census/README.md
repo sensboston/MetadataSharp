@@ -7,12 +7,40 @@ still pending. 53 census rows in total: 31 observed, 22 blocked.
 
 Files here:
 
-- `observations.json` — the CI report, byte-pinned by `receipt.json`. This is the
-  only B8 evidence: the recorder ran in CI because this developer sandbox has no
-  pinned Exiv2 build and cannot obtain one (no cmake/ninja, no `expat`/`zlib`
-  development headers, package installs and the Actions log host are unreachable).
+- `observations.json` — the primary CI report (run 42721442673, head `e43dc06`),
+  byte-pinned by `receipt.json`. There is no local counterpart: this developer
+  sandbox has no pinned Exiv2 build and cannot obtain one (no cmake/ninja, no
+  `expat`/`zlib` development headers, package installs and the Actions log host are
+  unreachable), so the usual "local file + CI file" pair of earlier batches is
+  replaced by two CI runs.
+- `ci-observations.json` — the same recorder re-run in CI on the following head
+  (run 42723616969, head `dd4c9be`), kept as the reproduction sample.
 - `receipt.json` — provenance, the annotation-recovery channel and its hashes, the
-  baseline digests, the tally and the explicit `notClaimed` list.
+  baseline digests, the tally, the `reproduction` record and the explicit
+  `notClaimed` list.
+
+## Reproduction across runs
+
+`observations`, `blocked`, `fixtureManifest` and `outcomeCounts` are **identical
+byte-for-byte between the two runs**, including every exit code, stdout digest,
+token list and container structure fact. What legitimately differs:
+
+- `sourceCommit` — the two runs validated different heads;
+- `baseline.executableSha256` — the reference binary is not bit-reproducible because
+  the build embeds its own timestamp; `baseline.verboseVersion` differs only by that
+  `time=` line, so the pinned source, CMake option set, cache digest, license digest
+  and runtime feature set all still match;
+- `secondaryObservations` — ExifTool's `System:FileAccessDate`,
+  `System:FileModifyDate` and `System:FileInodeChangeDate`, and therefore also that
+  report's raw `stdoutSha256`, because the digest covers those timestamps. The
+  discovery test compares the stable facts (exit code, interpretation, fixture digest
+  and length, and the JSON entries minus `System:*`/`SourceFile`) the way batch B7
+  did, and asserts the envelope digest really does differ, so the normalization is
+  never mistaken for a stronger claim.
+
+The conclusion is narrow on purpose: **the observations are reproducible, the compiled
+reference binary is not**, so `receipt.json` pins the digest of the exact build that
+produced the primary evidence instead of claiming a reproducible build.
 
 Census rows flip from this file through `tools/reference/build_census.py`;
 `python tools/reference/build_census.py --check` re-derives them.
