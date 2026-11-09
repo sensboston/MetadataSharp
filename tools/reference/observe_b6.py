@@ -209,7 +209,8 @@ def main():
         # GitHub retains at most ten notice annotations per step. Use a larger
         # chunk for this report and fail explicitly rather than emit an incomplete
         # recoverable-looking sequence when the report grows beyond that cap.
-        chunks = [encoded[i:i + 6000] for i in range(0, len(encoded), 6000)]
+        # Check-run annotation messages are truncated at 4096 characters.
+        chunks = [encoded[i:i + 4000] for i in range(0, len(encoded), 4000)]
         if len(chunks) > 10:
             raise ValueError('B6 report exceeds the ten-annotation recovery limit')
         for i, chunk in enumerate(chunks):
