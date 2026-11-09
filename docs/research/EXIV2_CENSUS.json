@@ -6,9 +6,23 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4, B5, B6: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4, B5, B6: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
+      "AVIF/comments",
+      "AVIF/exif",
+      "AVIF/icc",
+      "AVIF/inventory",
+      "AVIF/iptc",
+      "AVIF/thumbnail",
+      "AVIF/xmp",
+      "CR3/comments",
+      "CR3/exif",
+      "CR3/icc",
+      "CR3/inventory",
+      "CR3/iptc",
+      "CR3/thumbnail",
+      "CR3/xmp",
       "DNG/comments",
       "DNG/exif",
       "DNG/icc",
@@ -16,12 +30,33 @@
       "DNG/iptc",
       "DNG/thumbnail",
       "DNG/xmp",
+      "HEIC/comments",
+      "HEIC/exif",
+      "HEIC/icc",
+      "HEIC/inventory",
+      "HEIC/iptc",
+      "HEIC/thumbnail",
+      "HEIC/xmp",
+      "HEIF/comments",
+      "HEIF/exif",
+      "HEIF/icc",
+      "HEIF/inventory",
+      "HEIF/iptc",
+      "HEIF/thumbnail",
+      "HEIF/xmp",
       "JPEG/comments",
       "JPEG/exif",
       "JPEG/icc",
       "JPEG/iptc",
       "JPEG/thumbnail",
       "JPEG/xmp",
+      "JXL/comments",
+      "JXL/exif",
+      "JXL/icc",
+      "JXL/inventory",
+      "JXL/iptc",
+      "JXL/thumbnail",
+      "JXL/xmp",
       "PNG/comments",
       "PNG/exif",
       "PNG/icc",
@@ -57,7 +92,12 @@
       "WEBP",
       "TIFF",
       "XMP",
-      "DNG"
+      "DNG",
+      "AVIF",
+      "HEIF",
+      "HEIC",
+      "CR3",
+      "JXL"
     ],
     "pendingSeedIds": [
       "EX0289-ARW-COMMENTS",
@@ -66,12 +106,6 @@
       "EX0289-ARW-IPTC",
       "EX0289-ARW-THUMBNAIL",
       "EX0289-ARW-XMP",
-      "EX0289-AVIF-COMMENTS",
-      "EX0289-AVIF-EXIF",
-      "EX0289-AVIF-ICC",
-      "EX0289-AVIF-IPTC",
-      "EX0289-AVIF-THUMBNAIL",
-      "EX0289-AVIF-XMP",
       "EX0289-BMP-COMMENTS",
       "EX0289-BMP-EXIF",
       "EX0289-BMP-ICC",
@@ -84,12 +118,6 @@
       "EX0289-CR2-IPTC",
       "EX0289-CR2-THUMBNAIL",
       "EX0289-CR2-XMP",
-      "EX0289-CR3-COMMENTS",
-      "EX0289-CR3-EXIF",
-      "EX0289-CR3-ICC",
-      "EX0289-CR3-IPTC",
-      "EX0289-CR3-THUMBNAIL",
-      "EX0289-CR3-XMP",
       "EX0289-CRW-COMMENTS",
       "EX0289-CRW-EXIF",
       "EX0289-CRW-ICC",
@@ -120,30 +148,12 @@
       "EX0289-GIF-IPTC",
       "EX0289-GIF-THUMBNAIL",
       "EX0289-GIF-XMP",
-      "EX0289-HEIC-COMMENTS",
-      "EX0289-HEIC-EXIF",
-      "EX0289-HEIC-ICC",
-      "EX0289-HEIC-IPTC",
-      "EX0289-HEIC-THUMBNAIL",
-      "EX0289-HEIC-XMP",
-      "EX0289-HEIF-COMMENTS",
-      "EX0289-HEIF-EXIF",
-      "EX0289-HEIF-ICC",
-      "EX0289-HEIF-IPTC",
-      "EX0289-HEIF-THUMBNAIL",
-      "EX0289-HEIF-XMP",
       "EX0289-JP2-COMMENTS",
       "EX0289-JP2-EXIF",
       "EX0289-JP2-ICC",
       "EX0289-JP2-IPTC",
       "EX0289-JP2-THUMBNAIL",
       "EX0289-JP2-XMP",
-      "EX0289-JXL-COMMENTS",
-      "EX0289-JXL-EXIF",
-      "EX0289-JXL-ICC",
-      "EX0289-JXL-IPTC",
-      "EX0289-JXL-THUMBNAIL",
-      "EX0289-JXL-XMP",
       "EX0289-MRW-COMMENTS",
       "EX0289-MRW-EXIF",
       "EX0289-MRW-ICC",
@@ -215,7 +225,7 @@
   "enumerations": {
     "reviewStatus": "reviewed",
     "reviewedAt": "2026-11-09",
-    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts",
+    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts",
     "family": [
       "exif",
       "iptc",
@@ -261,7 +271,13 @@
         "dng-raw-ii",
         "dng-raw-mm",
         "dng-preview-ii",
-        "dng-preview-mm"
+        "dng-preview-mm",
+        "bmff-avif",
+        "bmff-heif-hevc",
+        "bmff-heic-hevc",
+        "bmff-cr3",
+        "jxl-container",
+        "jxl-codestream"
       ],
       "comments": [
         "com-single",
@@ -273,7 +289,13 @@
         "dng-raw-ii",
         "dng-raw-mm",
         "dng-preview-ii",
-        "dng-preview-mm"
+        "dng-preview-mm",
+        "bmff-avif",
+        "bmff-heif-hevc",
+        "bmff-heic-hevc",
+        "bmff-cr3",
+        "jxl-container",
+        "jxl-codestream"
       ],
       "icc": [
         "app2-icc-single",
@@ -285,7 +307,13 @@
         "dng-raw-ii",
         "dng-raw-mm",
         "dng-preview-ii",
-        "dng-preview-mm"
+        "dng-preview-mm",
+        "bmff-avif",
+        "bmff-heif-hevc",
+        "bmff-heic-hevc",
+        "bmff-cr3",
+        "jxl-container",
+        "jxl-codestream"
       ],
       "xmp": [
         "app1-xmp-standard",
@@ -299,7 +327,13 @@
         "dng-raw-ii",
         "dng-raw-mm",
         "dng-preview-ii",
-        "dng-preview-mm"
+        "dng-preview-mm",
+        "bmff-avif",
+        "bmff-heif-hevc",
+        "bmff-heic-hevc",
+        "bmff-cr3",
+        "jxl-container",
+        "jxl-codestream"
       ],
       "iptc": [
         "app13-8bim-iptc",
@@ -312,7 +346,13 @@
         "dng-raw-ii",
         "dng-raw-mm",
         "dng-preview-ii",
-        "dng-preview-mm"
+        "dng-preview-mm",
+        "bmff-avif",
+        "bmff-heif-hevc",
+        "bmff-heic-hevc",
+        "bmff-cr3",
+        "jxl-container",
+        "jxl-codestream"
       ],
       "thumbnail": [
         "exif-ifd1-jpeg",
@@ -321,14 +361,26 @@
         "dng-raw-ii",
         "dng-raw-mm",
         "dng-preview-ii",
-        "dng-preview-mm"
+        "dng-preview-mm",
+        "bmff-avif",
+        "bmff-heif-hevc",
+        "bmff-heic-hevc",
+        "bmff-cr3",
+        "jxl-container",
+        "jxl-codestream"
       ],
       "inventory": [
         "container",
         "dng-raw-ii",
         "dng-raw-mm",
         "dng-preview-ii",
-        "dng-preview-mm"
+        "dng-preview-mm",
+        "bmff-avif",
+        "bmff-heif-hevc",
+        "bmff-heic-hevc",
+        "bmff-cr3",
+        "jxl-container",
+        "jxl-codestream"
       ]
     },
     "duplicates": [
@@ -15519,6 +15571,1302 @@
       "batch": "B6",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-AVIF-INVENTORY-INVENTORY-0001",
+      "format": "AVIF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-avif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition does not establish valid decode"
+    },
+    {
+      "rowId": "EX0289-AVIF-EXIF-READ-0001",
+      "format": "AVIF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-avif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-AVIF-IPTC-READ-0001",
+      "format": "AVIF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-avif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-AVIF-XMP-READ-0001",
+      "format": "AVIF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "bmff-avif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-AVIF-COMMENTS-READ-0001",
+      "format": "AVIF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-avif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-AVIF-ICC-READ-0001",
+      "format": "AVIF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-avif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-AVIF-THUMBNAIL-READ-0001",
+      "format": "AVIF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-avif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-AVIF-THUMBNAIL-EXTRACT-0001",
+      "format": "AVIF",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-avif",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+    },
+    {
+      "rowId": "EX0289-HEIF-INVENTORY-INVENTORY-0001",
+      "format": "HEIF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heif-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition does not establish valid decode"
+    },
+    {
+      "rowId": "EX0289-HEIF-EXIF-READ-0001",
+      "format": "HEIF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heif-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIF-IPTC-READ-0001",
+      "format": "HEIF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heif-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIF-XMP-READ-0001",
+      "format": "HEIF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "bmff-heif-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIF-COMMENTS-READ-0001",
+      "format": "HEIF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heif-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIF-ICC-READ-0001",
+      "format": "HEIF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heif-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIF-THUMBNAIL-READ-0001",
+      "format": "HEIF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heif-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIF-THUMBNAIL-EXTRACT-0001",
+      "format": "HEIF",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heif-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+    },
+    {
+      "rowId": "EX0289-HEIC-INVENTORY-INVENTORY-0001",
+      "format": "HEIC",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heic-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition does not establish valid decode"
+    },
+    {
+      "rowId": "EX0289-HEIC-EXIF-READ-0001",
+      "format": "HEIC",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heic-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIC-IPTC-READ-0001",
+      "format": "HEIC",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heic-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIC-XMP-READ-0001",
+      "format": "HEIC",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "bmff-heic-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIC-COMMENTS-READ-0001",
+      "format": "HEIC",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heic-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIC-ICC-READ-0001",
+      "format": "HEIC",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heic-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIC-THUMBNAIL-READ-0001",
+      "format": "HEIC",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heic-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-HEIC-THUMBNAIL-EXTRACT-0001",
+      "format": "HEIC",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-heic-hevc",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+    },
+    {
+      "rowId": "EX0289-CR3-INVENTORY-INVENTORY-0001",
+      "format": "CR3",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-cr3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition does not establish valid decode"
+    },
+    {
+      "rowId": "EX0289-CR3-EXIF-READ-0001",
+      "format": "CR3",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-cr3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-CR3-IPTC-READ-0001",
+      "format": "CR3",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-cr3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-CR3-XMP-READ-0001",
+      "format": "CR3",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "bmff-cr3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-CR3-COMMENTS-READ-0001",
+      "format": "CR3",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-cr3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-CR3-ICC-READ-0001",
+      "format": "CR3",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-cr3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-CR3-THUMBNAIL-READ-0001",
+      "format": "CR3",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-cr3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-CR3-THUMBNAIL-EXTRACT-0001",
+      "format": "CR3",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmff-cr3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+    },
+    {
+      "rowId": "EX0289-JXL-INVENTORY-INVENTORY-0001",
+      "format": "JXL",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition does not establish valid decode"
+    },
+    {
+      "rowId": "EX0289-JXL-EXIF-READ-0001",
+      "format": "JXL",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-IPTC-READ-0001",
+      "format": "JXL",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-XMP-READ-0001",
+      "format": "JXL",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "jxl-container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-COMMENTS-READ-0001",
+      "format": "JXL",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-ICC-READ-0001",
+      "format": "JXL",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-THUMBNAIL-READ-0001",
+      "format": "JXL",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-THUMBNAIL-EXTRACT-0001",
+      "format": "JXL",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-container",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+    },
+    {
+      "rowId": "EX0289-JXL-INVENTORY-INVENTORY-0002",
+      "format": "JXL",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-codestream",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition does not establish valid decode"
+    },
+    {
+      "rowId": "EX0289-JXL-EXIF-READ-0002",
+      "format": "JXL",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-codestream",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-IPTC-READ-0002",
+      "format": "JXL",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-codestream",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-XMP-READ-0002",
+      "format": "JXL",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "jxl-codestream",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-COMMENTS-READ-0002",
+      "format": "JXL",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-codestream",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-ICC-READ-0002",
+      "format": "JXL",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-codestream",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-THUMBNAIL-READ-0002",
+      "format": "JXL",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-codestream",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only probe; absent metadata and recognition are not support claims"
+    },
+    {
+      "rowId": "EX0289-JXL-THUMBNAIL-EXTRACT-0002",
+      "format": "JXL",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jxl-codestream",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B7",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
     }
   ]
 }

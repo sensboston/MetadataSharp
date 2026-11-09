@@ -37,6 +37,7 @@ EVIDENCE_BY_BATCH = {
     'B4': ROOT / 'docs/research/evidence/e01-b4-census/observations.json',
     'B5': ROOT / 'docs/research/evidence/e01-b5-census/observations.json',
     'B6': ROOT / 'docs/research/evidence/e01-b6-census/observations.json',
+    'B7': ROOT / 'docs/research/evidence/e01-b7-census/observations.json',
 }
 FIXTURE_MANIFESTS = {
     'JPEG': ROOT / 'tests/fixtures/jpeg/manifest.json',
@@ -45,6 +46,7 @@ FIXTURE_MANIFESTS = {
     'TIFF': ROOT / 'tests/fixtures/tiff/manifest.json',
     'XMP': ROOT / 'tests/fixtures/xmp/manifest.json',
     'DNG': ROOT / 'tests/fixtures/dng/census-manifest.json',
+    **{fmt: ROOT / 'tests/fixtures/b7/manifest.json' for fmt in ('AVIF', 'HEIF', 'HEIC', 'JXL')},
 }
 
 # Axis collapses that are statically impossible, reviewed with the B0 pilot and B1.
@@ -97,6 +99,13 @@ LAYOUTS = {
 DNG_LAYOUTS = ['dng-raw-ii', 'dng-raw-mm', 'dng-preview-ii', 'dng-preview-mm']
 for _family in FAMILIES + ['inventory']:
     LAYOUTS[_family].extend(DNG_LAYOUTS)
+
+# B7 read-only probe layouts; CR3 stays present as a blocked rights cell.
+B7_FORMAT_LAYOUTS = [('AVIF', 'bmff-avif'), ('HEIF', 'bmff-heif-hevc'),
+                     ('HEIC', 'bmff-heic-hevc'), ('CR3', 'bmff-cr3'),
+                     ('JXL', 'jxl-container'), ('JXL', 'jxl-codestream')]
+for _family in FAMILIES + ['inventory']:
+    LAYOUTS[_family].extend(layout for _, layout in B7_FORMAT_LAYOUTS)
 
 DUPLICATES = ['none', 'first-wins', 'multiple-independent']
 SIDECARS = ['none', 'xmp-present']  # B5 adds the presence-probe value (xmp-applied stays E15)
@@ -399,6 +408,25 @@ def build_rows(seeds):
                 emit('DNG', family, operation, value_type=value_type, text_encoding=encoding,
                      layout=layout, duplicates='none', batch='B6',
                      notes='D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle')
+    # B7: observation and honest blocked rows are both retained. The HEIF and
+    # HEIC inputs are distinct HEVC encodes with the same HEIC brand, not two
+    # independent codec claims; JXL codestream and container remain distinct.
+    for fmt, layout in B7_FORMAT_LAYOUTS:
+        emit(fmt, 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
+             layout=layout, duplicates='none', batch='B7',
+             notes='read-only container probe; recognition does not establish valid decode')
+        for family in FAMILIES:
+            claim = next(s for s in seeds['seeds'] if s['format'] == fmt and s['family'] == family)
+            no_claim = claim['documentedClaim'] in ('-', '')
+            value_type = 'any-documented' if family == 'exif' else 'text-bytes' if family in ('xmp', 'comments') else 'opaque'
+            encoding = 'utf-8' if family == 'xmp' else 'not-applicable'
+            emit(fmt, family, 'read', value_type=value_type, text_encoding=encoding, layout=layout,
+                 duplicates='none', batch='B7', no_claim=no_claim,
+                 notes='read-only probe; absent metadata and recognition are not support claims')
+            if family == 'thumbnail' and not no_claim:
+                emit(fmt, family, 'extract', value_type='opaque', text_encoding='not-applicable', layout=layout,
+                     duplicates='none', batch='B7',
+                     notes='thumbnail extract attempted; absence of an authored thumbnail is recorded')
     return rows
 
 
@@ -435,9 +463,21 @@ def apply_observations(rows):
             return row  # batch pending observation; stays not-run/not-assessed
         row = dict(row)
         observed = {item['id']: item for item in evidence['observations']}
+        blocked = {item['id']: item for item in evidence.get('blocked', [])}
+        assert not (observed.keys() & blocked.keys()), 'row both observed and blocked'
+        if row['rowId'] in blocked:
+            assert batch == 'B7' and row['format'] == 'CR3', 'unexpected blocked row'
+            reason = blocked[row['rowId']]['reason']
+            assert reason, 'blocked reason required'
+            row['baselineObservation'] = 'blocked'
+            row['oracle'] = {'type': 'specification', 'detail': 'pending rights and independent fixture/oracle review'}
+            row['notes'] = 'B7 blocked-rights: ' + reason
+            return row
         item = observed.get(row['rowId'])
         assert item is not None, f'observation missing for applicable row {row["rowId"]}'
         fixture = manifests[row['format']][item['fixture']]
+        if batch == 'B7':
+            assert fixture['format'] == row['format'], f'fixture format mismatch for {row["rowId"]}'
         assert fixture['sha256'] == item['fixtureSha256'], \
             f'fixture/evidence hash mismatch for {row["rowId"]}'
         row['fixture'] = {'file': fixture['file'], 'sha256': fixture['sha256'], 'length': fixture['length'],
@@ -445,8 +485,9 @@ def apply_observations(rows):
         row['baselineObservation'] = 'observed-cli'
         evidence_dir = EVIDENCE_BY_BATCH[batch].parent.name
         if item['recordOnly'] or item['expectOk'] is None:
-            row['oracle'] = {'type': 'pinned-cli',
-                             'detail': 'spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/' + evidence_dir}
+            detail = ('record-only bounded probe; no independent expectation or support assertion' if batch == 'B7'
+                      else 'spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior)')
+            row['oracle'] = {'type': 'pinned-cli', 'detail': detail + '; see evidence/' + evidence_dir}
         else:
             row['oracle'] = {'type': 'specification',
                              'detail': 'spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/' + evidence_dir}
@@ -469,14 +510,16 @@ def build(seeds):
                   | {f'WEBP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
                   | {f'TIFF/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
                   | {f'XMP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
-                  | {f'DNG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
+                  | {f'DNG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
+                  | {f'{fmt}/{family}' for fmt in ('AVIF', 'HEIF', 'HEIC', 'CR3', 'JXL') for family in FAMILIES}
+                  | {f'{fmt}/inventory' for fmt in ('AVIF', 'HEIF', 'HEIC', 'CR3', 'JXL')})
     pending = sorted(s['seedId'] for s in seeds['seeds']
                      if f"{s['format']}/{s['family']}" not in {e for e in enumerated if 'inventory' not in e})
     assert len({r['rowId'] for r in rows}) == len(rows)
     enumerations = dict(
         reviewStatus='reviewed',
         reviewedAt='2026-11-09',
-        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts',
+        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts',
         family=[*FAMILIES, 'inventory'],
         operation=OPERATIONS,
         extractFamilies=EXTRACT_FAMILIES,
@@ -510,14 +553,15 @@ def build(seeds):
                'icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and '
                'the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. '
                'B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. '
+               'B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. '
                + ((f'Pinned-CLI observation complete for batch(es) {", ".join(applied_batches)}: '
-                    'rows flipped to observed-cli/not-applicable; no coverage percentage; '
+                    'rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; '
                     'no denominator computed. ') if applied_batches else
                   'All rows not-run/not-assessed; no coverage percentage; no denominator computed. ')
                + 'Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.'),
         coverage={
             'enumerated': sorted(enumerated - {'JPEG/inventory'}),
-            'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF', 'XMP', 'DNG'],
+            'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF', 'XMP', 'DNG', 'AVIF', 'HEIF', 'HEIC', 'CR3', 'JXL'],
             'pendingSeedIds': pending,
         },
         enumerations=enumerations,
