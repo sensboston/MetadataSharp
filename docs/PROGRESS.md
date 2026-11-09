@@ -1963,3 +1963,18 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   false; no percentage. Reference tests 34/34, discovery 104/104, census check
   passed. User authorized subsequent stages without a new confirmation, not
   publication, DNG D2 write or denominator freeze.
+
+### E01 B6 — PR #39 merged; CI observation reconciliation
+
+- PR #39 merged as `e6325beddea4b53f7297eb5f01aac4e769a4f30d` after
+  pull-request run 42698556762 went 15/15 green. The B6 job and upload passed;
+  CI artifact id 13709699612, digest sha256:c40837cb72be52ba0d1bfd6dfa08f9440aee51e56604c6659406bea4587bf8e7.
+  Seven of seven check-run B6 annotations were decoded to `ci-observations.json`;
+  all 88 observation objects and the fixture manifest match the local rehearsal
+  exactly. Full reports differ in environment/provenance. Receipt records hashes.
+  Earlier attempts at annotation recovery exceeded the 10-notice limit or the
+  4096-character message limit; the final run used seven 4000-character chunks.
+  B6 limitations remain: no raw decoding, unproven full IFD1 DNG conformance,
+  record-only IPTC/XMP semantics, denominator unfrozen and verification
+  not-assessed. Next B7, no new user confirmation required; rights and oracle
+  reviews still apply.

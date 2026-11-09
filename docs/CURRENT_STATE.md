@@ -1,6 +1,6 @@
 # Current development state and recovery checkpoint
 
-B6 census observations prepared on `arena/3dc8aab2-metadatasharp`; CI/merge pending. Read
+B6 merged via PR #39; receipt work on `arena/3dc8aab2-metadatasharp`. Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
 
@@ -24,18 +24,19 @@ authorized**.
   approved (no implementation); E05/D1 narrow read-only DNG (PR #21); E01-CEN census
   design approved 2026-11-08.
 - Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): B0–B5 merged;
-  B6 observed locally on this branch, **CI and merge pending**. 467 rows
+  B6 merged via PR #39 (`e6325be`, run 42698556762, 15/15 green). 467 rows
   (135 + 58 + 67 + 43 + 50 + 26 + 88); 425 observed-cli, 42 static
   not-applicable. B6 CFA strip bytes preserved 88/88 in local observations;
   no raw decode or rendered equivalence is established. Four thumbnail reads
   produced matching output but returned 137 and are classified separately.
   All rows `verification: not-assessed`; `denominatorFrozen: false`; no coverage
-  percentage. B0–B5 receipts are metadata-only; B6 local evidence is under
-  `docs/research/evidence/e01-b6-census/`, without a CI receipt yet.
+  percentage. B0–B5 receipts are metadata-only; B6 evidence is under `docs/research/evidence/e01-b6-census/`; the receipt
+  recovers CI observations from complete check-run annotation chunks and records
+  an exact match of all 88 observation objects and the fixture manifest.
 - Enumeration breadth: JPEG, PNG, WebP, TIFF, XMP, DNG; 36 seed cells
   enumerated, 150 pending. B6 fixture and oracle limitations are recorded in
   its evidence README; no exclusion or DNG write support is implied.
-- Next in §5 numeric order: **B6 (DNG; in progress)** → … → B14, then the final freeze PR
+- Next in §5 numeric order: **B7 (BMFF probe set)** → … → B14, then the final freeze PR
   (developer-authorized). Not started: E06 typed vocabulary
   breadth; E07 container gap closure + MetadataSharp-side verification (until then
   verification stays not-assessed); E08–E12 new format families; E13–E15
@@ -68,8 +69,8 @@ PROGRESS.md.
 
 ## Active branch and scope
 
-Assigned branch **arena/3dc8aab2-metadatasharp** (B6 census; based on master
-`6a4d493`); never switch to master or another branch. Standing authorization
+Assigned branch **arena/3dc8aab2-metadatasharp** (B6 receipt; based on master
+`e6325be`); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -139,7 +140,7 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   produced its own class, never a pass; Q4 numeric order B2→B14, all in this cycle;
   Q5 no percentages pre-freeze). Recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md
   §9; freeze happens in its own PR after B14; gate stays OPEN; B4 (TIFF) implemented;
-  B5 (XMP) merged; B6 (DNG) in progress.
+  B5 (XMP) and B6 (DNG) merged; B7 follows.
 - B2 merged via PR #29 (`ba52ac1`, run 42558351437, 15/15 green); receipt at
   docs/research/evidence/e01-b2-census/receipt.json (metadata-only; artifact bytes
   not retrievable from the sandbox).
@@ -307,7 +308,7 @@ Merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/
 
 ## B6 working checkpoint
 
-B6 is in progress on `arena/3dc8aab2-metadatasharp`. The user authorized
+B6 merged via PR #39; its receipt is being recorded on `arena/3dc8aab2-metadatasharp`. The user authorized
 continuation to subsequent stages without another confirmation; existing separate
 publication, D2 write and denominator-freeze restrictions remain in force.
 `tools/reference/dng_raw_oracle.py` adds a bounded classic-TIFF CFA strip-byte
@@ -326,6 +327,7 @@ were unchanged. The raw facts and build/linkage limitations are recorded in
 `docs/research/evidence/e01-b6-preflight/`; these are not census observations
 or MetadataSharp verification. B6's implemented observer now records 88 local
 rows, integrated into the census and CI workflow; local evidence and limitations
-are in `docs/research/evidence/e01-b6-census/`. CI and PR merge remain pending.
-After green-CI merge and a receipt, continue to B7 without a new user confirmation,
+are in `docs/research/evidence/e01-b6-census/`. CI and PR merge completed. CI annotation-recovered observations match all 88
+local observation objects and the fixture manifest; see the receipt.
+After the receipt PR, continue to B7 without a new user confirmation,
 while maintaining format rights/oracle reviews and the separate release limits.

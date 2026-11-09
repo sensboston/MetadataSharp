@@ -203,6 +203,19 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(4, len(nonzero))
         self.assertTrue(all(o['family'] == 'thumbnail' and o['operation'] == 'read' for o in nonzero))
         self.assertFalse(evidence['denominatorFrozen'])
+        receipt_dir = ROOT / 'docs/research/evidence/e01-b6-census'
+        receipt_path = receipt_dir / 'receipt.json'
+        if receipt_path.exists():
+            import hashlib
+            receipt = json.loads(receipt_path.read_text())
+            ci_path = receipt_dir / 'ci-observations.json'
+            ci = json.loads(ci_path.read_text())
+            self.assertEqual(receipt['annotationRecovery']['ciObservationsSha256'],
+                             hashlib.sha256(ci_path.read_bytes()).hexdigest())
+            self.assertEqual(receipt['annotationRecovery']['localObservationsSha256'],
+                             hashlib.sha256((receipt_dir / 'observations.json').read_bytes()).hexdigest())
+            self.assertEqual(evidence['observations'], ci['observations'])
+            self.assertEqual(evidence['fixtureManifest'], ci['fixtureManifest'])
         for row in rows:
             self.assertEqual('not-assessed', row['verification'])
 
