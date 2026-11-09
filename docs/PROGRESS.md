@@ -1991,3 +1991,9 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   comparison, CI and review are still pending. User authorized continuing stages
   without further confirmation; separate publication, D2 write and freeze
   restrictions remain. See docs/research/E01_B7_RIGHTS_AND_ORACLE_REVIEW.md.
+
+- B7 groundwork PR #41 merged at `49b7e0d2320c6c46faa3200f33c73c8a27f268b6`,
+  run 42701867621, 15/15 green. Subsequent in-progress work adds a bounded generic
+  extent accounting helper (not an `iloc` parser) and records preliminary
+  AVIF brand/box source review. No B7 image fixture is cleared or authored;
+  unresolved normative/rights/decode gaps are not treated as observation.

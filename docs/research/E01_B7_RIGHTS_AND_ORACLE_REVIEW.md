@@ -37,6 +37,22 @@ table as an observation, a refusal, or an exclusion.
 | CR3 | No Canon-specific normative layout or individual capture rights reviewed. Vendor camera samples and Exiv2 fixtures are not authorized. | Establish a rights-safe documented layout and source; if unavailable, record blocked/pending rather than fabricate a representative capture or claim valid RAW decoding. |
 | JXL | [JPEG XL format overview](https://github.com/libjxl/libjxl/blob/eaae1abb2478c23b2fc487359619740cb4b72259/doc/format_overview.md) describes distinct bare codestream and ISO-BMFF container forms. The repository's BSD-3-Clause label does not establish individual sample rights or complete normative coverage. | Review pinned ISO/IEC 18181-1/-2 sources, independent container and codestream cases separately, provenance, and a suitable decoder/metadata oracle; do not copy libjxl test material. |
 
+## AVIF source review progress
+
+The pinned AOM source's `brands-overview`, `image-and-image-collection-brand`,
+`avif-boxes` and `avif-required-boxes` sections were inspected without copying
+its fixtures or implementation. They distinguish brand identification from
+actual compliance, identify AV1 primary-image relationships, and give a required
+box hierarchy based on ISOBMFF/HEIF/MIAF. A bare `ftyp`/brand is therefore not
+enough to claim a valid AVIF. Underlying normative editions, sample rights,
+AV1-coded item provenance and independent decode remain unresolved: this review
+does **not** clear an AVIF fixture or assert supported decoding.
+
+`tools/reference/bmff_extents.py` accounts for caller-supplied byte ranges and
+reports duplicates/overlap with finite limits. It does not parse `iloc` or infer
+how a construction method resolves; such claims need reviewed normative sources.
+Its tests use generic byte strings, not format fixtures.
+
 The Exiv2 operation seed ledger records read claims for EXIF, IPTC, XMP, and
 thumbnail, and no documented claim for comments and ICC, for each of these
 five formats. A no-claim cell remains in scope and must be attempted or honestly

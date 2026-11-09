@@ -1,6 +1,6 @@
 # Current development state and recovery checkpoint
 
-B6 and receipt merged via PR #39/#40; B7 work on `arena/963177eb-metadatasharp`. Read
+B6 and receipt merged via PR #39/#40; B7 groundwork PR #41 merged. Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
 
@@ -70,7 +70,7 @@ PROGRESS.md.
 ## Active branch and scope
 
 Assigned branch **arena/963177eb-metadatasharp** (B7; based on master
-`32ce9b4`); never switch to master or another branch. Standing authorization
+`49b7e0d`); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -348,3 +348,11 @@ disappear. Next: complete format-specific rights/spec reviews before authoring
 fixtures, then independently check item extents, compare pinned CLI observations
 and secondary-oracle results, and mark any gaps honestly. No B7 write support,
 exclusion, parity percentage or denominator freeze is implied.
+
+B7 groundwork PR #41 merged at `49b7e0d` after run 42701867621 passed
+15/15. Subsequent work adds a bounded, format-neutral extent-byte accounting
+helper; it does not parse `iloc` or establish normative construction methods.
+The pinned AOM AVIF source was reviewed for brand and required-box context;
+a brand alone is not conformance, and underlying normative sources and coded
+item rights remain unresolved. No image fixture has been cleared or authored.
+Local tests: reference 48/48, discovery 104/104, census check passed.
