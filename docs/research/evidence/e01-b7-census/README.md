@@ -10,7 +10,17 @@ observation JSON: `08e52b583e1d188b73c9e9dce65c12e4857db17033d72de906adca0fa2282
 The local Exiv2 build's effective CMake options, verbose version, executable
 hash, individual commands, return codes, stderr, and secondary results are in
 that JSON. CI reruns both references; local results are not assumed identical
-until the CI output is recovered and compared.
+until the CI output is recovered and compared (see receipt).
+
+## CI reconciliation
+
+PR #43 merged as `514ed0b`; pull-request run 42707052713 passed 15/15 and
+regenerated all five fixture bytes. The complete report was recovered from three
+check-run annotation chunks and preserved as `ci-observations.json`. All 40
+observation objects match after replacing absolute target paths in stderr; the
+blocked rows and fixture manifest match exactly. ExifTool JSON matches after
+excluding environment-dependent System fields and SourceFile. See `receipt.json`
+for exact hashes and artifact metadata. The ZIP artifact bytes were not retrieved.
 
 ## Scope
 

@@ -1,6 +1,6 @@
 # Current development state and recovery checkpoint
 
-B7 local census observations on `arena/b5ec38f5-metadatasharp`; CI/merge pending. Read
+B7 bounded census merged via PR #43; receipt on `arena/b5ec38f5-metadatasharp`. Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
 
@@ -24,8 +24,7 @@ authorized**.
   approved (no implementation); E05/D1 narrow read-only DNG (PR #21); E01-CEN census
   design approved 2026-11-08.
 - Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): B0–B5 merged;
-  B6 merged via PR #39 (`e6325be`, run 42698556762, 15/15 green). B7 local
-  evidence is in review: census has 515 rows (B0–B6 467, B7 48): 465
+  B6 merged via PR #39 (`e6325be`, run 42698556762, 15/15 green). B7 bounded evidence merged via PR #43 (`514ed0b`): census has 515 rows (B0–B6 467, B7 48): 465
   observed-cli, 42 static not-applicable, eight CR3 blocked on rights. B6 CFA strip bytes preserved 88/88 in local observations;
   no raw decode or rendered equivalence is established. Four thumbnail reads
   produced matching output but returned 137 and are classified separately.
@@ -37,7 +36,7 @@ authorized**.
   CR3 and JXL; 66 seed cells enumerated, 120 pending. CR3 is enumerated but
   remains blocked, not observed or excluded. B6 fixture and oracle limitations are recorded in
   its evidence README; no exclusion or DNG write support is implied.
-- Next in §5 numeric order: **B7 (BMFF probe set)** → … → B14, then the final freeze PR
+- Next in §5 numeric order: **B8**, with B7 rights/metadata gaps retained → … → B14, then the final freeze PR
   (developer-authorized). Not started: E06 typed vocabulary
   breadth; E07 container gap closure + MetadataSharp-side verification (until then
   verification stays not-assessed); E08–E12 new format families; E13–E15
@@ -71,7 +70,7 @@ PROGRESS.md.
 ## Active branch and scope
 
 Assigned branch **arena/b5ec38f5-metadatasharp** (B7; based on master
-`7fe82c2`); never switch to master or another branch. Standing authorization
+`514ed0b`); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -346,7 +345,9 @@ The 48-row read-only B7 local rehearsal recorded 32 accepted record-only,
 IPTC/ICC/comments/thumbnail are absent, so those probes do not prove support.
 ExifTool 12.76 is recorded as the secondary reference. HEIC/HEIF coded ispe
 64×64 and clean-aperture display 8×8 must remain distinct. Raw evidence and
-limitations: `docs/research/evidence/e01-b7-census/`. CI and merge pending.
+limitations: `docs/research/evidence/e01-b7-census/`. PR #43 run 42707052713
+was 15/15 green; recovered CI report matches 40 observations after normalizing
+target paths in stderr, and five secondary reports after excluding system data.
 Local checks: reference 54/54, discovery 105/105, census check and exact
 five-fixture regeneration passed. No denominator frozen, verification remains
 not-assessed, and no parity percentage or publication is authorized. Even if

@@ -2015,3 +2015,19 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   Census now 515 rows (465 observed, 42 static-NA, 8 blocked); all verification
   not-assessed, denominator unfrozen. Local tests: reference 54/54, discovery
   105/105, census check and exact pinned-wheel regeneration passed.
+
+### E01 B7 — bounded probe PR #43 merged; unresolved gaps remain
+
+- PR #43 merged as `514ed0b379750b7c58c73035e49c297826625890`; pull-request
+  run 42707052713 passed 15/15, including hash-pinned re-encoding of all five
+  fixtures, pinned Exiv2/ExifTool observation and artifact upload. All three
+  B7 annotation chunks recovered the CI report. The 40 observations match local
+  after normalizing only absolute target paths in stderr; all eight blocked
+  records and the fixture manifest match exactly. Secondary ExifTool JSON matches
+  after removing `System:*` and SourceFile; full reports still differ in paths,
+  timestamps and provenance. Receipt records the hashes and artifact metadata.
+- Eight CR3 cases are blocked, not observed, refused, excluded or waived.
+  Metadata-present IPTC/ICC/comments/thumbnail and independent JXL decode remain
+  gaps. This bounded B7 probe batch is merged, but the user request for full B7
+  cannot honestly be described as completely resolved while these gaps remain.
+  Do not freeze the denominator or claim verification/parity.
