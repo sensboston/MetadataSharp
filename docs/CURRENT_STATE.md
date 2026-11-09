@@ -5,7 +5,7 @@ approvals/diagnostics remain in PROGRESS; older session instructions there are h
 
 ## Active branch and scope
 
-Assigned branch **arena/45659746-metadatasharp**, at master `e9d68ec` (PR #23
+Assigned branch **arena/e082b0ba-metadatasharp**, at master `4e2a637` (PR #28
 merge, 2026-11-08); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
@@ -23,16 +23,21 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
 
 ## Current evidence and actual implementation
 
-- B0 and B1 observation batches DONE (2026-11-08, this branch): docs/research/EXIV2_CENSUS.json
-  carries 193 JPEG rows; every B0 row is observed-cli (97) or statically
+- B0, B1 and B2 observation batches DONE (2026-11-08): docs/research/EXIV2_CENSUS.json
+  carries 260 rows (135 B0 + 58 B1 JPEG, 67 B2 PNG); every B0 row is observed-cli (97) or statically
   not-applicable (38, axis collapses recorded per row) and every B1 row is
   observed-cli (57) or statically not-applicable (1: `exif-ifd1-uncompressed`
   thumbnail insert — the pinned CLI exposes no uncompressed-thumbnail write path);
   fixtures owned-synthetic and SHA-256 pinned (tests/fixtures/jpeg/manifest.json, 31
-  fixtures); evidence committed at docs/research/evidence/e01-b0-census/ and
-  docs/research/evidence/e01-b1-census/ (observations.json + README); CI job
-  `pinned-exiv2-baseline` re-runs both batches and uploads `e01-b0-census-observations`
-  and `e01-b1-census-observations`. B0: 89 accepted / 8 refused (all ICC duplicate-profile
+  fixtures; tests/fixtures/png/manifest.json, 17 fixtures); evidence committed at
+  docs/research/evidence/e01-b0-census/, docs/research/evidence/e01-b1-census/ and
+  docs/research/evidence/e01-b2-census/ (observations.json + README); CI job
+  `pinned-exiv2-baseline` re-runs all batches and uploads `e01-b0-census-observations`,
+  `e01-b1-census-observations` and `e01-b2-census-observations`. B2: 66 observed-cli rows
+  (all accepted; IDAT payload stream preserved 66/66; chunk CRC-32 verified) + 1 static
+  not-applicable (`exif-ifd1-uncompressed` thumbnail insert — the pinned CLI embeds JPEG
+  thumbnails only). B2 noDocumentedClaim cells (PNG comments/exif) observed with rc=0 and
+  content printed; nothing asserted (cells carry no documented claim). B0: 89 accepted / 8 refused (all ICC duplicate-profile
   rows; `Not a valid ICC Profile`). B1: 55 accepted / 2 nonzero-exit-artifact-produced
   (thumbnail extract exits 137/46 by CLI quirk with the artifact produced; JPEG
   thumbnail extract verified byte-exact) / 1 not-applicable. Scan preserved 193/193.
@@ -46,7 +51,7 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   Q2 thumbnail-insert stays not-applicable, no exclusions signed; Q3 nonzero-exit-artifact-
   produced its own class, never a pass; Q4 numeric order B2→B14, all in this cycle;
   Q5 no percentages pre-freeze). Recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md
-  §9; freeze happens in its own PR after B14; gate stays OPEN; next batch B2 (PNG).
+  §9; freeze happens in its own PR after B14; gate stays OPEN; next batch B3 (WebP).
 
 - E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
   42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.
@@ -178,5 +183,6 @@ SDK/blob downloads. Bounded failed-TRX/command diagnostics and compressed comple
 JSON annotations work; tools/audit/collect.py validates run/source/chunk receipts.
 Audit AUDIT_TFM and reference METADATASHARP_REFERENCE_TFM default net8.0, accept
 net10.0. Tools now need explicit -f for dotnet run; no target may silently fall back.
-Python historical policy 12/12 and discovery/observation/collector 26/26 pass locally;
-merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/15).
+Python discovery suite is 65/65 locally at the B2 checkpoint (13 census + 11 PNG fixture
+tests included; B2 observations rehearsed via the pinned CLI, status passed).
+Merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/15).
