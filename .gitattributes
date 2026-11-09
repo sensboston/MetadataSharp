@@ -8,3 +8,5 @@ docs/research/evidence/e01-b7-census/ci-observations.json text eol=lf
 docs/research/evidence/e01-b8-psd-preflight/ci-observations.json text eol=lf
 # B8 JP2 preflight receipt hashes exact observation bytes.
 docs/research/evidence/e01-b8-jp2-preflight/ci-observations.json text eol=lf
+# The owned EPS is a byte-pinned fixture, not a platform-normalized text file.
+tests/fixtures/b8/owned-vector.eps text eol=lf
