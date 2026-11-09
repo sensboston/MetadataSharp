@@ -1,12 +1,73 @@
 # Current development state and recovery checkpoint
 
-Updated 2026-11-09. Read first; verify against live branch/Git/PR/CI. Chronological
-approvals/diagnostics remain in PROGRESS; older session instructions there are history.
+Updated 2026-11-09 (preliminary status summary added at master `33e3a88`). Read
+first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
+remain in PROGRESS; older session instructions there are history.
+
+## Preliminary status summary — 2026-11-09 (at master `33e3a88`)
+
+**Product.** MetadataSharp is an MIT-licensed managed .NET 8/10 library for image
+metadata editing without pixel decoding or recompression. Implemented, audited and
+merged (M00–M18): restricted JPEG EXIF/IPTC/XMP editing; static PNG/WebP EXIF/XMP
+editing; standalone TIFF layout accounting + restricted descriptive editing (M15/M16);
+XMP sidecars (bounded RDF profile); IPTC IIM codec (M12a/b); narrow read-only DNG
+inventory profile (D1, PR #21, TIFF DNG refusal unchanged); additive
+`MetadataCapabilities` discovery API (E03, merged `ea8e056`). Zero third-party
+runtime dependencies; net8.0+net10.0 dual targeting; Framework 4.8.x deferred;
+548 passed in latest green CI (run 42675033289, net8.0/macos annotation; floor
+450 per OS/TFM). Packages remain local audit candidates; **publication NOT
+authorized**.
+
+**Exiv2 programme (E00–E18; pinned baseline v0.28.9 / b0859fc61).**
+- Merged/approved: E00; E01 bounded pinned-CLI foundation (PR #16); E02 dual
+  targeting (42446034373); E03 contracts + implementation; E04/D0 exact DNG proposal
+  approved (no implementation); E05/D1 narrow read-only DNG (PR #21); E01-CEN census
+  design approved 2026-11-08.
+- Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): batches **B0–B4 DONE**
+  — 353 rows (B0 135 + B1 58 + B2 67 + B3 43 + B4 50); 311 `observed-cli` + 42
+  static `not-applicable`; coded payload/scan preserved **284/284** observed rows;
+  all 353 rows `verification: not-assessed`; **`denominatorFrozen: false`; no
+  coverage percentage is computed or implied; freeze is a separate,
+  developer-authorized step after B14**; no exclusion signed; `nonzero-exit-
+  artifact-produced` kept as its own class. Evidence + receipts under
+  `docs/research/evidence/e01-b0-census/` … `e01-b4-census/` (each with
+  `receipt.json`; artifact digests are metadata-only — bytes not retrievable from
+  this sandbox).
+- Enumeration breadth today: JPEG, PNG, WebP, TIFF (4 of 31 seed formats; 27 of 186
+  seed cells enumerated, 162 pending — B5–B14).
+- Next in §5 numeric order: **B5 (XMP packets + sidecars)** → … → B14, then the
+  final freeze PR (developer-authorized). Not started: E06 typed vocabulary
+  breadth; E07 container gap closure + MetadataSharp-side verification (until then
+  verification stays not-assessed); E08–E12 new format families; E13–E15
+  editing/preview/workflow breadth; E16 evidence-backed improvements; E17
+  reconciliation (two denominators, two-way reference facts); E18 release audit
+  (publication approval separate). D2/public write-up NOT authorized.
+- GitHub availability: transient GitHub-side Actions failure 2026-11-09T18:23Z hit
+  the two first runs of PR #33 (2/0 of 15 jobs started, no logs); a PR
+  close/reopen produced 15/15 green runs with no content changes. Recorded in the
+  B4 receipt. githubstatus.com is not reachable from this sandbox; live status was
+  verified via api.github.com ("GitHub lives!") and observed CI results.
+
+**Standing refusals/limits.** DNG D2 write: NOT authorized. Package publication:
+NOT authorized. Exclusions: none signed. Denoms: frozen only after B14. E01 gate
+open. Retained absolutes: own fixtures only; pinned-CLI black-box observation;
+committed evidence; green-CI merges; ≥450 TRX six OS/TFM combos; net8.0+net10.0;
+no TIFF DNG weakening.
+
+**Branch hygiene.** Remote `arena/*` branches merged into master are being pruned
+on 2026-11-09; execution and verification protocol (ancestor-of-master proof,
+merged-PR mapping, no open PRs, active branch and master excluded) recorded in
+PROGRESS.md.
+
+**Live verification:** `gh pr list`, latest master CI run,
+`python3 tools/reference/build_census.py --check`,
+`python -m unittest discover -s tests/discovery`,
+`python -m unittest discover -s tests/reference`.
 
 ## Active branch and scope
 
-Assigned branch **arena/c7e53ae9-metadatasharp**, at master `e2ea9d8` (PR #32
-receipt merge, 2026-11-09; B3 implementation merged as `f119a45` via PR #31); never
+Assigned branch **arena/3db41ee3-metadatasharp**, at master `33e3a88` (PR #34
+receipt merge, 2026-11-09; B4 implementation merged as `1720d7b` via PR #33); never
 switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
