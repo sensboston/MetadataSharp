@@ -1,0 +1,13 @@
+{
+  "rights": "owned-synthetic",
+  "fixture": "owned-rgb.jp2",
+  "generator": "tools/reference/b8_jp2_fixture.py",
+  "input": "Authored deterministic 8x8 RGB pixel bytes, byte i = (i * 37 + 11) modulo 256; no external image or camera capture.",
+  "encoder": "CPython 3.11 Linux x86_64 Pillow 11.3.0 manylinux wheel, OpenJPEG 2.5.3; research tool only, never a runtime dependency.",
+  "wheel": "pillow-11.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+  "wheelSha256": "106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f",
+  "recipe": "Lossless 5-3 transform, 3 resolutions, boxed JP2; exact command/options and pixels in generator; manifest pins file hash.",
+  "review": "docs/research/E01_B8_RIGHTS_AND_ORACLE_REVIEW.md",
+  "localDecode": "ImageMagick 6.9.11-60 identified 8x8 and returned exactly the authored RGB pixels; its JPEG 2000 codec may share OpenJPEG, so this is not a fully independent codec oracle.",
+  "limitations": "No external sample or upstream code imported. No full ISO/IEC 15444 conformance, patent clearance, broad codec support or metadata-present coverage is claimed."
+}

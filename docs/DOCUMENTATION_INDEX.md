@@ -21,6 +21,7 @@
   tools/reference/build_census.py (--check enforced in CI).
 - research/EXIV2_CAPABILITY_BASELINE.md and EXIV2_REQUIREMENTS_TRIAGE.md: bounded
   first-pass evidence, snapshot JSON, unresolved full E01 inventory work.
+- design/E08_PSD_JP2_BOUNDED_READ_CONTRACT.md: restricted read-only PSD/JP2 inventory and opaque resource APIs; exclusions and limits.
 - design/DNG_D0_READ_ONLY_CONTRACT_PROPOSAL.md: exact new API/subset proposal,
   explicitly approved 2026-11-07, with normative/oracle/runtime gates; gates 1–3
   are closed for D1 (see below), implementation merged via PR #21.

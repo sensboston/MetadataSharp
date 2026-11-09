@@ -2066,3 +2066,19 @@ discovery 105/105, fixture regeneration and census --check passed.
   reported no thumbnail/no artifact despite rc=0, and `-pS`/`-pC` returned
   unsupported. These are limited observations, not census coverage or support.
   Local and CI secondary JSON agree excluding environment-specific fields.
+
+### E08 — bounded PSD and JP2 read-only implementation under review
+
+The user requested implementation of other formats in one larger PR. Added
+PSD v1 flat 8-bit RGB resource inspection (opaque defensive payload copies)
+and boxed JP2 declared dimensions / opaque top-level XML inspection, both with
+finite limits and fail-closed unsupported layouts. Neither decodes pixels,
+interprets metadata families, performs writes or claims general support.
+No capability status is changed because raw resources are not parsed family
+metadata. PSD fixtures and preflight were previously merged; JP2 rights review
+`0e37d2a` preceded a new authored pinned-encoder 8×8 fixture. Local ImageMagick
+6.9.11-60 decoded it exactly but may share the OpenJPEG codec family; CI fixture
+regeneration and pinned Exiv2/ExifTool preflight are pending. Local reference
+62/62, discovery 105/105, census --check and JP2 regeneration passed; no local
+.NET SDK, so .NET build/tests await CI. B8 census not closed, CR3 remains blocked;
+no denominator freeze, publication or DNG D2 write.

@@ -22,7 +22,7 @@ def run_probe(exe, source, work):
     for flag in ('-pS', '-pa', '-pc', '-pC', '-et'):
         subdir = work / flag[1:]
         subdir.mkdir(parents=True, exist_ok=True)
-        target = subdir / 'case.psd'
+        target = subdir / ('case' + source.suffix)
         target.write_bytes(original)
         rc, stdout, stderr = common.soft_run(commands, [exe, flag, target], cwd=subdir)
         output = target.read_bytes()
