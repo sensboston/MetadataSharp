@@ -5,8 +5,9 @@ format API or write support. The developer authorized continuation without
 another confirmation, but the approved census design still requires a separate
 rights review for each format before authoring its fixtures. This ledger permits
 narrow independently authored synthetic probes below; no imported sample is cleared.
-The 30 B7 metadata seed cells and inventory remain pending. Do not treat this
-table as an observation, a refusal, or an exclusion.
+The initial table below records review history, not an observation, refusal or
+exclusion. B7 observations are in `evidence/e01-b7-census/`; eight CR3 rows
+remain rights-blocked and other metadata/decoder gaps remain open.
 
 ## Source and sample policy
 
@@ -19,8 +20,8 @@ table as an observation, a refusal, or an exclusion.
   the secondary differential reference. The Git tag `12.76` resolves to
   `212f02cf22b9484674752181cad3b73089ce9694`; a prior local external checkout
   reported version 12.76. It was not vendored and is not present in every
-  workspace. CI setup, version verification, and invocations remain to be
-  designed; availability is not an observation.
+  workspace. The observer and CI now verify the pinned checkout and record invocations;
+  availability alone is not an observation.
 - Neither tool's source, code, tag dictionary, tests, or outputs are a
   normative oracle or a production dependency. Recognition or metadata read
   does not prove an image decodes. BMFF item extents and relationships require

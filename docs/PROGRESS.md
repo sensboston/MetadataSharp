@@ -2031,3 +2031,16 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   gaps. This bounded B7 probe batch is merged, but the user request for full B7
   cannot honestly be described as completely resolved while these gaps remain.
   Do not freeze the denominator or claim verification/parity.
+
+### E01 B8 — preliminary format review and one owned PSD
+
+- B7 receipt PR #44 merged at `c164d2b` following run 42707691788 green;
+  blocked CR3 and metadata/decoder gaps remain. B8 per-format rights review
+  was committed before fixture authoring (`0d03c93`); five formats are pending
+  review, not refused or excluded, and DCP is not ordinary TIFF.
+- Authored a 52-byte 2×2 flat RGB PSD with empty resource/layer sections and
+  no metadata using standard-library code; independent structural assertions
+  and local ImageMagick 6.9.11-60 2×2 pixel readback check passed. This is not
+  pinned-CLI evidence, full format conformance or a metadata-support claim.
+  B8 census/secondary observations, all other formats and metadata-present PSD
+  cases remain pending. Denominator unfrozen, verification not-assessed.
