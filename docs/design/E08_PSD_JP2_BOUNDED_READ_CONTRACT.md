@@ -1,4 +1,4 @@
-# E08 — PSD and JP2 narrowly bounded read-only contracts
+# E08 — PSD, JP2 and EPS narrowly bounded read-only contracts
 
 The user requested implementation of the remaining formats, grouped into one
 larger PR. This is an initial **subset**, not a claim that all requested formats
@@ -30,6 +30,18 @@ JPX, ICC semantics, metadata editing and full JPEG 2000 support remain outside
 this unit. Budgets are fixed and documented in the API. Both readers are
 synchronous buffer APIs with caller-owned input; they do not do file I/O.
 
+## EPS
+
+`EpsHeader.Read(ReadOnlySpan<byte>)` only reads an ASCII EPSF 3.0 DSC header
+up to an explicit `%%EndComments`, returning the four immediate signed integer
+BoundingBox declarations. It rejects missing, repeated, deferred, malformed or
+nonpositive boxes and bounds header/file size. It does not read/validate or
+execute the PostScript body, support binary previews or other EPS versions,
+interpret metadata, verify rendering or guarantee safety of executing the input.
+EPS files are programs: callers must not interpret this inspection as permission
+to execute untrusted data. Budgets: 8 MiB file, 4096 bytes per header line,
+1024 header lines.
+
 ## Limits and verification
 
 PSD fixtures are independently authored; JP2 uses independently authored pixel
@@ -41,4 +53,4 @@ Exiv2/ExifTool preflight is already recorded; JP2 evidence remains pending until
 actually observed. Tests cover valid files, bounds, malformed and unsupported
 cases, duplicate/padding and defensive-copy behavior. No publication, DNG D2
 write, denominator freeze, coverage percentage or unverified general support is
-implied. Other B8 formats, B7 CR3 and broad real-world interoperability remain open.
+implied. PGF, EXV, DCP, B7 CR3 and broad real-world interoperability remain open.

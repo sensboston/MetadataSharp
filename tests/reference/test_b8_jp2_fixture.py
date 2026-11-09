@@ -37,6 +37,25 @@ class Jp2FixtureTests(unittest.TestCase):
         self.assertEqual(b'\xff\x4f', parts[3][1][:2])
         fixture.verify()
 
+    def test_committed_ci_preflight_receipt(self):
+        import json
+        evidence = Path(__file__).resolve().parents[2] / 'docs/research/evidence/e01-b8-jp2-preflight'
+        receipt = json.loads((evidence / 'receipt.json').read_text())
+        data = (evidence / 'ci-observations.json').read_bytes()
+        self.assertEqual(receipt['ciObservationsSha256'], hashlib.sha256(data).hexdigest())
+        report = json.loads(data)
+        self.assertEqual(receipt['headCommit'], report['sourceCommit'])
+        self.assertEqual('passed', report['status'])
+        self.assertFalse(report['denominatorFrozen'])
+        self.assertEqual('not-assessed', report['verification'])
+        self.assertEqual([fixture.verify()], report['fixtureManifest'])
+        ops = report['observations'][0]['operations']
+        self.assertEqual([0, 0, 0, 0, 253], [o['exitCode'] for o in ops])
+        self.assertTrue(all(o['inputUnchanged'] and not o['artifacts'] for o in ops))
+        secondary = report['secondary'][0]['json'][0]
+        self.assertEqual('JP2', secondary['File:FileType'])
+        self.assertEqual((8, 8), (secondary['Jpeg2000:ImageWidth'], secondary['Jpeg2000:ImageHeight']))
+
     def test_modified_fixture_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp, patch.object(fixture, 'DIRECTORY', Path(tmp)):
             original = Path(__file__).resolve().parents[1] / 'fixtures/b8'

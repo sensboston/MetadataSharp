@@ -264,8 +264,20 @@ jobs:
           fixture.verify()
           if fixture.encode() != (fixture.DIRECTORY / fixture.FILE).read_bytes():
               raise SystemExit('B8 JP2 fixture regeneration mismatch')
+      - name: Verify authored B8 EPS research fixture
+        run: python tools/reference/b8_eps_fixture.py verify
       - name: B8 PSD preflight (read-only, outcomes recorded not gated)
         run: python tools/reference/probe_b8_psd.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
+      - name: B8 EPS preflight (read-only, PostScript never executed)
+        run: python tools/reference/probe_b8_eps.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
+      - name: Upload B8 EPS preflight (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b8-eps-preflight
+          path: artifacts/e01/b8-eps-preflight/observations.json
+          if-no-files-found: error
+          retention-days: 30
       - name: B8 JP2 preflight (read-only, outcomes recorded not gated)
         run: python tools/reference/probe_b8_jp2.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
       - name: Upload B8 JP2 preflight (no executables/source)

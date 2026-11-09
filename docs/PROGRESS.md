@@ -2082,3 +2082,11 @@ regeneration and pinned Exiv2/ExifTool preflight are pending. Local reference
 62/62, discovery 105/105, census --check and JP2 regeneration passed; no local
 .NET SDK, so .NET build/tests await CI. B8 census not closed, CR3 remains blocked;
 no denominator freeze, publication or DNG D2 write.
+
+- EPS was added to the same PR after individual rights review commit `380f882`:
+  owned ASCII fixture and bounded EPSF 3.0 bounding-box header reader; no
+  PostScript is executed, interpreted or validated. Initial PSD/JP2 CI run
+  42712354021 passed 15/15 and pinned JP2 preflight was recovered: `-pS`, `-pa`,
+  `-pc`, `-pC` returned zero, `-et` returned 253 with no EXIF; all inputs
+  unchanged. Empty metadata probes do not establish support. ExifTool reports
+  8×8 JP2; full JP2 normative conformance is not implied. EPS CI pending.

@@ -407,3 +407,11 @@ new product tests; no percentages or denominator freeze. Remaining B8 formats
 PGF, EPS, EXV and DCP and broad PSD/JP2 variants still require implementation
 and rights/oracle work. B7 CR3 stays blocked. Full contract:
 `docs/design/E08_PSD_JP2_BOUNDED_READ_CONTRACT.md`.
+
+### EPS header inspection added to the same E08 PR
+
+After a separate EPS rights review, added a small independently authored EPSF
+3.0 fixture and `EpsHeader.Read`, a bounded DSC bounding-box scanner. It never
+executes, interprets or validates PostScript, nor verifies rendering. It only
+accepts immediate four integer coordinates and explicit EndComments. Pinned
+reference preflight is configured but awaits CI. PGF/EXV/DCP remain unresolved.
