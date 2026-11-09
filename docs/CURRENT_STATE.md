@@ -317,6 +317,10 @@ oracle for the owned D1 raw and SubIFD fixtures, with both byte orders and
 fail-closed malformed-input tests in `tests/reference/test_dng_raw_oracle.py`.
 It is not a raw-image decoder, and does not establish rendered pixel equivalence.
 Local reference tests: 21/21; discovery: 103/103; census `--check` passed.
-No B6 CLI observations or census rows have yet been produced. Next: build the
-pinned Exiv2 environment, design and run the B6 observer against owned fixtures,
-and record actual results before changing the census or marking B6 complete.
+A pinned-source local Exiv2 preflight exercised 28 exploratory CLI probes across
+four owned D1 fixtures: all commands/readbacks returned zero and CFA strip bytes
+were unchanged. The raw facts and build/linkage limitations are recorded in
+`docs/research/evidence/e01-b6-preflight/`; these are not census observations
+or MetadataSharp verification. Next: design and run the complete B6 observer,
+including remaining families and operation variants, against owned fixtures;
+record actual results before changing the census or marking B6 complete.
