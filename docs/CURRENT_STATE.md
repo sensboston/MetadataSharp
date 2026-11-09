@@ -1,6 +1,6 @@
 # Current development state and recovery checkpoint
 
-B6 merged via PR #39; receipt work on `arena/3dc8aab2-metadatasharp`. Read
+B6 and receipt merged via PR #39/#40; B7 work on `arena/963177eb-metadatasharp`. Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
 
@@ -69,8 +69,8 @@ PROGRESS.md.
 
 ## Active branch and scope
 
-Assigned branch **arena/3dc8aab2-metadatasharp** (B6 receipt; based on master
-`e6325be`); never switch to master or another branch. Standing authorization
+Assigned branch **arena/963177eb-metadatasharp** (B7; based on master
+`32ce9b4`); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -331,3 +331,20 @@ are in `docs/research/evidence/e01-b6-census/`. CI and PR merge completed. CI an
 local observation objects and the fixture manifest; see the receipt.
 After the receipt PR, continue to B7 without a new user confirmation,
 while maintaining format rights/oracle reviews and the separate release limits.
+
+## B7 working checkpoint
+
+B7 is underway on `arena/963177eb-metadatasharp`; the developer authorized
+continuation without another confirmation. A preliminary format-by-format rights
+and oracle ledger is in `docs/research/E01_B7_RIGHTS_AND_ORACLE_REVIEW.md`:
+no format fixtures cleared or authored, no B7 census rows observed.
+`tools/reference/bmff_structure.py` is a bounded flat-box, ftyp and JXL-signature
+helper tested with non-image toy bytes, not a format/conformance validator.
+`tools/reference/b7_exiftool_probe.py` records read-only observations from a clean
+external ExifTool 12.76 checkout at commit `212f02cf22b9484674752181cad3b73089ce9694`.
+A local D1-owned-fixture smoke returned exit 0 and one JSON object; this tests
+the harness only, not B7 image formats. External artifacts are ignored and may
+disappear. Next: complete format-specific rights/spec reviews before authoring
+fixtures, then independently check item extents, compare pinned CLI observations
+and secondary-oracle results, and mark any gaps honestly. No B7 write support,
+exclusion, parity percentage or denominator freeze is implied.

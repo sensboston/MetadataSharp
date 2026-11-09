@@ -96,6 +96,7 @@ E01 pinned execution (bounded, not E01 closure):
   records the merge run (metadata-only digests; notes the real CI catch on the closed
   layout enumerations in the first PR #37 run and the GitHub-side phantom failures in
   the twin push run).
+- research/E01_B7_RIGHTS_AND_ORACLE_REVIEW.md: preliminary B7 format rights and oracle ledger; no fixture clearance.
 - research/evidence/e01-b6-census: 88 local pinned-CLI DNG observations and
   limitations, including the raw-decode gap and structural IFD1 probe caveat;
   PR #39 merged; receipt and annotation-recovered CI observations included;

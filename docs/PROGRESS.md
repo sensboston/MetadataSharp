@@ -1978,3 +1978,16 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   record-only IPTC/XMP semantics, denominator unfrozen and verification
   not-assessed. Next B7, no new user confirmation required; rights and oracle
   reviews still apply.
+
+### E01 B7 — preliminary rights and oracle groundwork
+
+- Began per-format rights/source review for AVIF, HEIF, HEIC, CR3 and JXL; no
+  B7 fixture is cleared or authored, and no B7 census row is observed. Added
+  bounded flat-BMFF/ftyp/JXL-signature helper and toy structural tests (not image
+  samples), plus a read-only secondary ExifTool probe pinned to 12.76 and commit
+  212f02cf22b9484674752181cad3b73089ce9694. The probe's local smoke on an owned
+  D1 DNG returned exit 0 and a JSON object; this is not evidence of B7 support.
+  Per-format rights/spec review, owned fixtures, Exiv2 observation, ExifTool
+  comparison, CI and review are still pending. User authorized continuing stages
+  without further confirmation; separate publication, D2 write and freeze
+  restrictions remain. See docs/research/E01_B7_RIGHTS_AND_ORACLE_REVIEW.md.
