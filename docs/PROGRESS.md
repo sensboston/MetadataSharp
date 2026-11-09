@@ -1836,3 +1836,33 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   artifact bytes not retrievable from the sandbox — flagged, not waived).
   Census stays 353 rows; `denominatorFrozen: false`; verification not-assessed;
   no percentage; D2/publication not authorized; E01 gate OPEN. Next: B5.
+### Preliminary status summary + merged-branch cleanup — 2026-11-09
+
+- 2026-11-09: CURRENT_STATE.md consolidated with a preliminary status summary
+  (PR #35, merged `68fc4703c9cf03202fd0d6ac12821b98b6bd6b2c`, run 42676746713,
+  15/15 green; docs-only) — product state (M00–M18 complete; restricted
+  JPEG/PNG/WebP/TIFF editing, XMP sidecars, IPTC IIM, DNG D1 read-only, E03
+  additive `MetadataCapabilities`; zero runtime deps; net8.0+net10.0; 548 passed in
+  latest CI annotation), programme state (E01 bounded CLI + E02 + E03 merged/approved;
+  census B0–B4 DONE: 353 rows, 311 observed-cli + 42 not-applicable, payload
+  preserved 284/284, all rows verification not-assessed, denominatorFrozen false,
+  freeze only after B14), next batch B5 (XMP packets + sidecars) in §5 order,
+  E06–E18 not started, publication NOT authorized, and the GitHub-side 18:23Z
+  Actions failure recorded.
+- 2026-11-09: Remote-branch cleanup of obsolete merged `arena/*` heads per developer
+  request. GitHub availability checked first: `https://www.githubstatus.com/` is NOT
+  reachable from this sandbox (http 000); live status verified via
+  `https://api.github.com/status` ("GitHub lives!") and observed CI behavior
+  (15/15 green runs for PRs #33–#35 after the earlier transient failure). Full
+  history fetched (`git fetch --unshallow origin`, 170 commits). No open PRs at
+  cleanup time. Each candidate was required to be (a) the head of at least one merged
+  PR, (b) an ancestor of `origin/master` (`git merge-base --is-ancestor`, re-verified
+  immediately before deletion), (c) not `master`, not the active branch
+  `arena/3db41ee3-metadatasharp`. All 18 candidates passed and were deleted via the
+  refs API (tips recorded): `08b4bad9`(#25), `1af1ed4a`(#15), `250ddde9`(#28),
+  `3c179e97`(#31), `45659746`(#24), `49d49a4f`(#16), `67d6975a`(#32),
+  `7706fd42`(#27), `7a35ad89`(#18), `96e3dfa2`(#26), `c08c2ef6`(#23),
+  `c321dc16`(#17), `c7e53ae9`(#33,#34), `cdb43c96`(#21,#22), `d0eec35b`(#14),
+  `d4158be1`(#19,#20), `d5125ece`(#13), `e082b0ba`(#29,#30). Remote heads are now
+  exactly `master` and `arena/3db41ee3-metadatasharp`. No tags deleted
+  (`sdk_bootstrap` preserved); no history rewrite; nothing merged out-of-gate.
