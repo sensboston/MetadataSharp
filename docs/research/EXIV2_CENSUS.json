@@ -212,8 +212,8 @@
   },
   "enumerations": {
     "reviewStatus": "reviewed",
-    "reviewedAt": "2026-11-08",
-    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md",
+    "reviewedAt": "2026-11-09",
+    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; 2026-11-09 extension adds xmp-packet carrier layouts under the approved B5 batch",
     "family": [
       "exif",
       "iptc",
@@ -254,21 +254,24 @@
         "app1-exif-multiple",
         "png-exif",
         "webp-exif",
-        "tiff-exif"
+        "tiff-exif",
+        "xmp-packet"
       ],
       "comments": [
         "com-single",
         "com-multiple",
         "png-text",
         "webp-comments",
-        "tiff-comments"
+        "tiff-comments",
+        "xmp-packet"
       ],
       "icc": [
         "app2-icc-single",
         "app2-icc-segmented",
         "iccp",
         "webp-iccp",
-        "tiff-icc"
+        "tiff-icc",
+        "xmp-packet"
       ],
       "xmp": [
         "app1-xmp-standard",
@@ -286,11 +289,13 @@
         "ztxt-raw-profile-iptc",
         "itxt-raw-profile-iptc",
         "webp-iptc",
-        "tiff-iptc"
+        "tiff-iptc",
+        "xmp-packet"
       ],
       "thumbnail": [
         "exif-ifd1-jpeg",
-        "exif-ifd1-uncompressed"
+        "exif-ifd1-uncompressed",
+        "xmp-packet"
       ],
       "inventory": [
         "container"

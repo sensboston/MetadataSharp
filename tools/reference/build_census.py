@@ -69,22 +69,26 @@ def static_not_applicable(row):
             return reason
     return None
 
-# --- Approved enumerations (design review 2026-11-08) -----------------------
+# --- Approved enumerations (design review 2026-11-08; extended 2026-11-09) ----
 # Every axis value used by a row MUST come from this block (closed world).
 # Adding a value = PR + review; it never happens inside a row.
+# 2026-11-09 extension (B5, approved batch): 'xmp-packet' added as a legal carrier
+# layout for the comments/exif/icc/iptc/thumbnail families — the XMP-format
+# noDocumentedClaim probe cells of B5 ride inside the standalone packet document
+# itself; no row of another format may use it (no such rows exist).
 FAMILIES = ['exif', 'iptc', 'xmp', 'comments', 'icc', 'thumbnail']
 OPERATIONS = ['inventory', 'read', 'insert', 'replace', 'remove', 'extract']
 EXTRACT_FAMILIES = ['comments', 'icc', 'thumbnail']
 TEXT_ENCODINGS = ['ascii', 'utf-8', 'unknown-raw', 'not-applicable']
 VALUE_TYPES = ['any-documented', 'opaque', 'text-bytes']  # 'any-documented': B14 splits EXIF
 LAYOUTS = {
-    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple', 'png-exif', 'webp-exif', 'tiff-exif'],
-    'comments': ['com-single', 'com-multiple', 'png-text', 'webp-comments', 'tiff-comments'],
-    'icc': ['app2-icc-single', 'app2-icc-segmented', 'iccp', 'webp-iccp', 'tiff-icc'],
+    'exif': ['app1-exif-ifd0', 'app1-exif-ifd0-subifd', 'app1-exif-multiple', 'png-exif', 'webp-exif', 'tiff-exif', 'xmp-packet'],
+    'comments': ['com-single', 'com-multiple', 'png-text', 'webp-comments', 'tiff-comments', 'xmp-packet'],
+    'icc': ['app2-icc-single', 'app2-icc-segmented', 'iccp', 'webp-iccp', 'tiff-icc', 'xmp-packet'],
     'xmp': ['app1-xmp-standard', 'app1-xmp-extended', 'itxt-xmp', 'ztxt-xmp', 'webp-xmp', 'tiff-xmp',
             'xmp-packet', 'xmp-packet-unwrapped'],
-    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple', 'ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc', 'webp-iptc', 'tiff-iptc'],
-    'thumbnail': ['exif-ifd1-jpeg', 'exif-ifd1-uncompressed'],
+    'iptc': ['app13-8bim-iptc', 'app13-8bim-iptc-multiple', 'ztxt-raw-profile-iptc', 'itxt-raw-profile-iptc', 'webp-iptc', 'tiff-iptc', 'xmp-packet'],
+    'thumbnail': ['exif-ifd1-jpeg', 'exif-ifd1-uncompressed', 'xmp-packet'],
     'inventory': ['container'],
 }
 DUPLICATES = ['none', 'first-wins', 'multiple-independent']
@@ -445,8 +449,8 @@ def build(seeds):
     assert len({r['rowId'] for r in rows}) == len(rows)
     enumerations = dict(
         reviewStatus='reviewed',
-        reviewedAt='2026-11-08',
-        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md',
+        reviewedAt='2026-11-09',
+        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; 2026-11-09 extension adds xmp-packet carrier layouts under the approved B5 batch',
         family=[*FAMILIES, 'inventory'],
         operation=OPERATIONS,
         extractFamilies=EXTRACT_FAMILIES,

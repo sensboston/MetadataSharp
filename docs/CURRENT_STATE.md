@@ -297,7 +297,9 @@ SDK/blob downloads. Bounded failed-TRX/command diagnostics and compressed comple
 JSON annotations work; tools/audit/collect.py validates run/source/chunk receipts.
 Audit AUDIT_TFM and reference METADATASHARP_REFERENCE_TFM default net8.0, accept
 net10.0. Tools now need explicit -f for dotnet run; no target may silently fall back.
-Python discovery suite is 111/111 locally at the B5 checkpoint (13 census + 13 PNG fixture
-tests + 13 WebP fixture tests + 14 TIFF fixture tests + 4 XMP fixture tests included;
-B5 observations rehearsed via the pinned CLI, status passed); reference suite 17/17.
+Python discovery suite is 103/103 locally at the B5 checkpoint (incl. census-policy and
+XMP fixture tests; the closed layout enumerations gained 'xmp-packet' for the
+comments/exif/icc/iptc/thumbnail families as a B5-additive extension discovered by CI
+in PR #37); B5 observations rehearsed via the pinned CLI, status passed; reference
+suite 17/17.
 Merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/15).

@@ -1910,7 +1910,11 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   (26); inventory track now JPEG, PNG, WebP, TIFF, XMP. `denominatorFrozen` stays false;
   verification stays not-assessed everywhere; no percentage computed; D2/publication NOT
   authorized; E01 gate remains OPEN. Next batch: B6 (DNG) per §5 order.
-- Discovery suite: 111/111 local (13 census + 4 new XMP fixture tests included);
+- Enumerations: the closed per-family layout enums in build_census.py gain
+  'xmp-packet' for the comments/exif/icc/iptc/thumbnail families — the XMP-format
+  noDocumentedClaim probe cells of B5 ride inside the standalone packet document
+  itself. B5-additive extension under the approved batch (reviewedAt re-stamped
+  2026-11-09; no row/value repurposed). Discovery suite: 103/103 local;
   reference suite 17/17 local.
 - CI: `pinned-exiv2-baseline` job re-runs all batches (observe_b0.py --batch all,
   observe_b2.py, observe_b3.py, observe_b4.py, observe_b5.py) and uploads
