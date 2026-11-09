@@ -242,6 +242,29 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(5, len(evidence['secondaryObservations']))
         self.assertTrue(all(o['exitCode'] == 0 and o['jsonParseError'] is None for o in evidence['secondaryObservations'].values()))
         self.assertFalse(evidence['denominatorFrozen'])
+        receipt_dir = ROOT / 'docs/research/evidence/e01-b7-census'
+        if (receipt_dir / 'receipt.json').exists():
+            import copy, hashlib, re
+            receipt = json.loads((receipt_dir / 'receipt.json').read_text())
+            ci_path = receipt_dir / 'ci-observations.json'
+            ci = json.loads(ci_path.read_text())
+            self.assertEqual(receipt['annotationRecovery']['ciObservationsSha256'], hashlib.sha256(ci_path.read_bytes()).hexdigest())
+            self.assertEqual(receipt['annotationRecovery']['localObservationsSha256'], hashlib.sha256((receipt_dir / 'observations.json').read_bytes()).hexdigest())
+            def normalize(rows):
+                result = copy.deepcopy(rows)
+                for item in result:
+                    item['facts']['stderr'] = re.sub(r'/[^\s:]*?/case\.(?:jxl|avif|heic|heif)', '<fixture>', item['facts']['stderr'])
+                return result
+            def stable_secondary(item):
+                return {key: value for key, value in item['json'][0].items()
+                        if not key.startswith('System:') and key != 'SourceFile'}
+            self.assertEqual(normalize(evidence['observations']), normalize(ci['observations']))
+            self.assertEqual(evidence['blocked'], ci['blocked'])
+            self.assertEqual(evidence['fixtureManifest'], ci['fixtureManifest'])
+            self.assertEqual(set(evidence['secondaryObservations']), set(ci['secondaryObservations']))
+            for name in evidence['secondaryObservations']:
+                self.assertEqual(stable_secondary(evidence['secondaryObservations'][name]),
+                                 stable_secondary(ci['secondaryObservations'][name]))
 
     def test_verification_stays_not_assessed(self):
         for row in self.report['rows']:

@@ -1,0 +1,25 @@
+{
+  "pullRequest": 43,
+  "mergeCommit": "514ed0b379750b7c58c73035e49c297826625890",
+  "headCommit": "ba12e951a2f3c10fa4e4da1df2bce637fc5eaeee",
+  "runId": 42707052713,
+  "jobId": 129466491931,
+  "runUrl": "https://github.com/sensboston/MetadataSharp/actions/runs/42707052713",
+  "artifact": {
+    "name": "e01-b7-census-observations",
+    "id": 13714640670,
+    "sizeInBytes": 9164,
+    "digest": "sha256:898e5cccc7670213d66846754f1f7678cfdb0579eebd5448939fe100001e3811",
+    "expiresAt": "2026-12-09T21:57:52Z",
+    "note": "Artifact ZIP metadata from GitHub API; ZIP bytes not retrieved."
+  },
+  "annotationRecovery": {
+    "source": "GitHub check-run B7Z annotations, all 3 chunks concatenated in index order, base64 decoded and zlib decompressed",
+    "checkRunId": 129466491931,
+    "ciObservationsPath": "docs/research/evidence/e01-b7-census/ci-observations.json",
+    "ciObservationsSha256": "bdc9d3c193ab0f57fe713845300c21b0d7846ebce8cbcc661c2793495a854fd5",
+    "localObservationsSha256": "08e52b583e1d188b73c9e9dce65c12e4857db17033d72de906adca0fa22823ce",
+    "comparison": "All 40 observation objects match after replacing the absolute case-file paths in stderr with <fixture>; all eight blocked records and fixture manifests match exactly. All five secondary ExifTool JSON objects match after excluding System:* fields and SourceFile. Full reports and stdout hashes differ in environment-dependent paths and timestamps."
+  },
+  "limitations": "CR3 remains blocked (no CLI attempts); metadata-present IPTC/ICC/comments/thumbnail cases and independent JXL decoder remain uncovered. Local and CI agreement is not a conformance or support assertion."
+}
