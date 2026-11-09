@@ -33,6 +33,10 @@ PSB, layer structures, copied samples, or any other format; Adobe's overview of
 EXIF does not by itself resolve every EXIF prefix/encoding ambiguity, so both
 external references' actual behavior and independent parsing must be recorded.
 
+## JP2 owned-fixture decision — reviewed before authoring
+
+The [Library of Congress JPEG 2000 profile](https://www.loc.gov/ndnp/guidelines/docs/NDNP_JP2HistNewsProfile.pdf), appendix A, describes JP2 signature and file-type box order, the JP2 header superbox and contiguous codestream; it is a profile/overview, not a full ISO/IEC 15444-1 conformance oracle. [Pillow's JPEG 2000 documentation](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html) distinguishes boxed JP2 from bare codestream and describes its OpenJPEG encoder. Permit only an independently authored RGB pixel array encoded to boxed JP2 using pinned research-only Pillow/OpenJPEG, with wheel hashes, independently checked box framing, deterministic regeneration and decoder sanity check. No external images, Exiv2 implementation or samples are copied; no patent clearance or full normative conformance is implied. Metadata-present JP2 requires its own later review.
+
 ## General gate
 
 For each later format decision, document the specific source, rights for the
