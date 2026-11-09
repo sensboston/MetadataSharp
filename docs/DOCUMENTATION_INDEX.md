@@ -80,6 +80,7 @@ E01 pinned execution (bounded, not E01 closure):
   IPTC/thumbnail/XMP observation JSON (49 observed rows — 49 accepted, 0 accepted-
   unexpected, 1 static not-applicable) + README; fixtures owned-synthetic,
   SHA-256 pinned in tests/fixtures/tiff/manifest.json; IFD0 strip/tile payload bytes
-  preserved 49/49.
+  preserved 49/49; receipt.json records the merge run (metadata-only digests; notes the
+  transient GitHub-side failure of the two first runs and the close/reopen retrigger).
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.
