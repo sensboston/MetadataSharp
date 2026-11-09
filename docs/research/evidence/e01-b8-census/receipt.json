@@ -1,0 +1,100 @@
+{
+  "annotationRecovery": {
+    "channel": "check-run annotations (the Actions bulk-log host is unreachable from this environment)",
+    "chunks": 3,
+    "encoding": "zlib + base64, 4000-byte chunks",
+    "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder",
+    "observationsFileSha256": "d2a628108fac280e3f3c90f1be9b2316be6fb4d5dc6763569231b2b125c6d963",
+    "rawPayloadSha256": "659fcaaae1647735710524427a49f573ca2a8acbda79be708e5ed6746525e93b",
+    "recoveredKeys": [
+      "baseline",
+      "batch",
+      "blocked",
+      "denominatorFrozen",
+      "fixtureManifest",
+      "limitations",
+      "observations",
+      "outcomeCounts",
+      "schema",
+      "scope",
+      "secondaryObservations",
+      "sourceCommit",
+      "status",
+      "verification"
+    ],
+    "title": "B8Z observations.json"
+  },
+  "baseline": {
+    "cmakeCacheSha256": "8f13f98e9fd2e35b240d5086f2570f88f2f4a57e78e52b5306688ae61817f98f",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "executableSha256": "3f0f5c0c3e3e24039ce0651cbf958da1f073d4afc31650551d0f0da2291d062f",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov  9 2026\ntime=23:35:00\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
+    "version": "0.28.9"
+  },
+  "batch": "B8",
+  "denominatorFrozen": false,
+  "notClaimed": [
+    "no MetadataSharp verification (verification stays not-assessed)",
+    "no coverage percentage and no denominator freeze",
+    "no metadata-support or format-conformance claim",
+    "no write behavior (no B8 write row is enumerated)",
+    "per-family attribution of the shared -pa output is not established",
+    "PGF/EXV/DCP, B7 CR3, PSD ICC/thumbnail and JP2/EPS metadata-present gaps stay open"
+  ],
+  "provenance": "CI-only evidence. This sandbox has no pinned Exiv2 build (no cmake/ninja and no expat/zlib development headers, and package installs are unreachable), so there is no local observation run to compare against. The committed report is the recovered CI run, not a second independent reproduction; no cross-environment equality claim is made.",
+  "run": {
+    "attempt": 1,
+    "headCommit": "e43dc06746748acd86c9e6d62c7ebb44093b32a1",
+    "id": 42721442673,
+    "job": "Exiv2 0.28.9 / bounded E01 observations",
+    "pullRequest": 48,
+    "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42721442673"
+  },
+  "schema": 1,
+  "tally": {
+    "artifactsProduced": 0,
+    "blocked": 22,
+    "censusRows": 53,
+    "inputsUnchanged": true,
+    "observed": 31,
+    "outcomeCounts": {
+      "accepted": 18,
+      "blocked-rights": 22,
+      "refused": 13,
+      "static-not-applicable": 0
+    }
+  }
+}

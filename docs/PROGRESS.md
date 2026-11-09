@@ -2156,3 +2156,41 @@ no denominator freeze, publication or DNG D2 write.
   suboperation is enumerated or observed because no owned writable fixture and no
   owned ICC/thumbnail payload is cleared yet; B7 CR3 and its metadata/oracle gaps stay
   open. Nothing here freezes a denominator, authorizes publication or DNG D2 write.
+
+### E01 B8 — CI observations recovered and folded into the census
+
+- PR #48 head run 42721442673 passed 15/15; the `Exiv2 0.28.9 / bounded E01
+  observations` job ran `tools/reference/observe_b8.py` against the pinned
+  0.28.9 build and emitted the report as three `B8Z observations.json` check-run
+  annotations. The Actions bulk-log host is unreachable here, so the report was
+  recovered through the annotation channel and is committed byte-pinned in
+  `docs/research/evidence/e01-b8-census/observations.json` with `README.md` and
+  `receipt.json`. This sandbox has no cmake/ninja and no expat/zlib development
+  headers, so there is **no local reproduction** and none is claimed: the CI report
+  is the single B8 evidence source (B6/B7 kept a local file and a `ci-` file; B8 has
+  one file and says so in `receipt.provenance`).
+- Recorded outcome counts: 18 accepted, 13 refused, 22 blocked-rights,
+  0 static-not-applicable, 0 scan-changed; all 31 inputs stayed byte-identical and no
+  command produced an artifact. Census: 568 rows, B8 = 31 `observed-cli` + 22 `blocked`;
+  `denominatorFrozen: false` and `verification: not-assessed` on every row.
+- Actual pinned-CLI behavior on the owned fixtures: the resource-bearing PSD answers
+  `-pa` with exit 0 and one 206-byte print containing all three authored tokens, so
+  the EXIF, IPTC, XMP and thumbnail **read rows share one identical output** and no row
+  may be read as an independent per-family claim (the discovery suite now asserts that
+  equality instead of trusting prose); `-pc` exits 0 with a single newline byte, `-pC`
+  exits 1 and `-et` exits 0 with nothing produced; `-pS` exits 1 on both PSD layouts,
+  which is why the flat PSD records eight refusals rather than eight "absent metadata"
+  results. JP2 recognizes the file (`-pS` exit 0, 379-byte print) but every family probe
+  prints nothing and `-et` exits 253. EPS refuses `-pS`/`-pC` and prints nothing for
+  `-pa`/`-pc`; PostScript was never executed by anything in this repository.
+- Local validation after the flip: `python -m unittest discover -s tests/discovery`
+  106/106 (including receipt hash equality for both the committed file and the exact
+  recovered annotation payload), `tests/reference` 81/81, `build_census.py --check`
+  exit 0, `build_capability_seeds.py --check` exit 0, `git diff --check` clean.
+  No .NET build or test was run locally (no SDK); the CI six OS/TFM jobs are the
+  .NET evidence.
+- Still open after this batch, and not closed by it: every B8 write suboperation
+  (no owned writable fixture, no owned ICC/thumbnail payload), PSD ICC/thumbnail
+  resources and PSB/layers, JP2/EPS metadata-present fixtures, PGF/EXV/DCP
+  rights and oracles, and the B7 CR3 block. No exclusion is signed, no denominator is
+  frozen, publication and DNG D2 write remain unauthorized.

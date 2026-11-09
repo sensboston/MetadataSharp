@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7, B8: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "AVIF/comments",
@@ -17179,16 +17179,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-metadata-rgb.psd",
+        "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+        "length": 358,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-metadata-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-EXIF-READ-0001",
@@ -17206,16 +17212,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-metadata-rgb.psd",
+        "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+        "length": 358,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-metadata-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-IPTC-READ-0001",
@@ -17233,16 +17245,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-metadata-rgb.psd",
+        "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+        "length": 358,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-metadata-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-XMP-READ-0001",
@@ -17260,16 +17278,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-metadata-rgb.psd",
+        "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+        "length": 358,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-metadata-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-COMMENTS-READ-0001",
@@ -17287,16 +17311,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-metadata-rgb.psd",
+        "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+        "length": 358,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-metadata-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-ICC-READ-0001",
@@ -17314,16 +17344,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-metadata-rgb.psd",
+        "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+        "length": 358,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-metadata-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-THUMBNAIL-READ-0001",
@@ -17341,16 +17377,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-metadata-rgb.psd",
+        "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+        "length": 358,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-metadata-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-THUMBNAIL-EXTRACT-0001",
@@ -17368,16 +17410,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-metadata-rgb.psd",
+        "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+        "length": 358,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; no authored thumbnail exists, so absence is recorded"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-metadata-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-INVENTORY-INVENTORY-0002",
@@ -17395,16 +17443,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-flat-rgb.psd",
+        "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+        "length": 52,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-flat-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-EXIF-READ-0002",
@@ -17422,16 +17476,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-flat-rgb.psd",
+        "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+        "length": 52,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-flat-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-IPTC-READ-0002",
@@ -17449,16 +17509,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-flat-rgb.psd",
+        "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+        "length": 52,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-flat-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-XMP-READ-0002",
@@ -17476,16 +17542,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-flat-rgb.psd",
+        "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+        "length": 52,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-flat-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-COMMENTS-READ-0002",
@@ -17503,16 +17575,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-flat-rgb.psd",
+        "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+        "length": 52,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-flat-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-ICC-READ-0002",
@@ -17530,16 +17608,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-flat-rgb.psd",
+        "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+        "length": 52,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-flat-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-THUMBNAIL-READ-0002",
@@ -17557,16 +17641,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-flat-rgb.psd",
+        "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+        "length": 52,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-flat-rgb.psd"
     },
     {
       "rowId": "EX0289-PSD-THUMBNAIL-EXTRACT-0002",
@@ -17584,16 +17674,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-flat-rgb.psd",
+        "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+        "length": 52,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; no authored thumbnail exists, so absence is recorded"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-flat-rgb.psd"
     },
     {
       "rowId": "EX0289-JP2-INVENTORY-INVENTORY-0001",
@@ -17611,16 +17707,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rgb.jp2",
+        "sha256": "5590ea8a66fe8729c6cf986f61a8cb52ee537d5dadc63b96ba8aa2ce0099ee6f",
+        "length": 428,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_jp2_fixture.py; Pillow 11.3.0 / OpenJPEG 2.5.3, 8x8 RGB"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rgb.jp2"
     },
     {
       "rowId": "EX0289-JP2-EXIF-READ-0001",
@@ -17638,16 +17740,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rgb.jp2",
+        "sha256": "5590ea8a66fe8729c6cf986f61a8cb52ee537d5dadc63b96ba8aa2ce0099ee6f",
+        "length": 428,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_jp2_fixture.py; Pillow 11.3.0 / OpenJPEG 2.5.3, 8x8 RGB"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rgb.jp2"
     },
     {
       "rowId": "EX0289-JP2-IPTC-READ-0001",
@@ -17665,16 +17773,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rgb.jp2",
+        "sha256": "5590ea8a66fe8729c6cf986f61a8cb52ee537d5dadc63b96ba8aa2ce0099ee6f",
+        "length": 428,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_jp2_fixture.py; Pillow 11.3.0 / OpenJPEG 2.5.3, 8x8 RGB"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rgb.jp2"
     },
     {
       "rowId": "EX0289-JP2-XMP-READ-0001",
@@ -17692,16 +17806,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rgb.jp2",
+        "sha256": "5590ea8a66fe8729c6cf986f61a8cb52ee537d5dadc63b96ba8aa2ce0099ee6f",
+        "length": 428,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_jp2_fixture.py; Pillow 11.3.0 / OpenJPEG 2.5.3, 8x8 RGB"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rgb.jp2"
     },
     {
       "rowId": "EX0289-JP2-COMMENTS-READ-0001",
@@ -17719,16 +17839,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rgb.jp2",
+        "sha256": "5590ea8a66fe8729c6cf986f61a8cb52ee537d5dadc63b96ba8aa2ce0099ee6f",
+        "length": 428,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_jp2_fixture.py; Pillow 11.3.0 / OpenJPEG 2.5.3, 8x8 RGB"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rgb.jp2"
     },
     {
       "rowId": "EX0289-JP2-ICC-READ-0001",
@@ -17746,16 +17872,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rgb.jp2",
+        "sha256": "5590ea8a66fe8729c6cf986f61a8cb52ee537d5dadc63b96ba8aa2ce0099ee6f",
+        "length": 428,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_jp2_fixture.py; Pillow 11.3.0 / OpenJPEG 2.5.3, 8x8 RGB"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rgb.jp2"
     },
     {
       "rowId": "EX0289-JP2-THUMBNAIL-READ-0001",
@@ -17773,16 +17905,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rgb.jp2",
+        "sha256": "5590ea8a66fe8729c6cf986f61a8cb52ee537d5dadc63b96ba8aa2ce0099ee6f",
+        "length": 428,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_jp2_fixture.py; Pillow 11.3.0 / OpenJPEG 2.5.3, 8x8 RGB"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rgb.jp2"
     },
     {
       "rowId": "EX0289-JP2-THUMBNAIL-EXTRACT-0001",
@@ -17800,16 +17938,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rgb.jp2",
+        "sha256": "5590ea8a66fe8729c6cf986f61a8cb52ee537d5dadc63b96ba8aa2ce0099ee6f",
+        "length": 428,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_jp2_fixture.py; Pillow 11.3.0 / OpenJPEG 2.5.3, 8x8 RGB"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; no authored thumbnail exists, so absence is recorded"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-rgb.jp2"
     },
     {
       "rowId": "EX0289-EPS-INVENTORY-INVENTORY-0001",
@@ -17827,16 +17971,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-vector.eps",
+        "sha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+        "length": 168,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_eps_fixture.py; authored ASCII EPSF 3.0 single page"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-vector.eps"
     },
     {
       "rowId": "EX0289-EPS-EXIF-READ-0001",
@@ -17854,16 +18004,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-vector.eps",
+        "sha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+        "length": 168,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_eps_fixture.py; authored ASCII EPSF 3.0 single page"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-vector.eps"
     },
     {
       "rowId": "EX0289-EPS-IPTC-READ-0001",
@@ -17881,16 +18037,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-vector.eps",
+        "sha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+        "length": 168,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_eps_fixture.py; authored ASCII EPSF 3.0 single page"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-vector.eps"
     },
     {
       "rowId": "EX0289-EPS-XMP-READ-0001",
@@ -17908,16 +18070,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-vector.eps",
+        "sha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+        "length": 168,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_eps_fixture.py; authored ASCII EPSF 3.0 single page"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-vector.eps"
     },
     {
       "rowId": "EX0289-EPS-COMMENTS-READ-0001",
@@ -17935,16 +18103,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-vector.eps",
+        "sha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+        "length": 168,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_eps_fixture.py; authored ASCII EPSF 3.0 single page"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-vector.eps"
     },
     {
       "rowId": "EX0289-EPS-ICC-READ-0001",
@@ -17962,16 +18136,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-vector.eps",
+        "sha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+        "length": 168,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_eps_fixture.py; authored ASCII EPSF 3.0 single page"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-vector.eps"
     },
     {
       "rowId": "EX0289-EPS-THUMBNAIL-READ-0001",
@@ -17989,16 +18169,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-vector.eps",
+        "sha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+        "length": 168,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b8_eps_fixture.py; authored ASCII EPSF 3.0 single page"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b8-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-vector.eps"
     },
     {
       "rowId": "EX0289-PGF-INVENTORY-INVENTORY-0001",
@@ -18019,13 +18205,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+      "notes": "B8 blocked-rights: No independent normative specification or encoder rights review is complete, so no PGF fixture is cleared; a magic-byte stub would not be a valid image."
     },
     {
       "rowId": "EX0289-PGF-EXIF-READ-0001",
@@ -18046,13 +18232,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent normative specification or encoder rights review is complete, so no PGF fixture is cleared; a magic-byte stub would not be a valid image."
     },
     {
       "rowId": "EX0289-PGF-IPTC-READ-0001",
@@ -18073,13 +18259,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent normative specification or encoder rights review is complete, so no PGF fixture is cleared; a magic-byte stub would not be a valid image."
     },
     {
       "rowId": "EX0289-PGF-XMP-READ-0001",
@@ -18100,13 +18286,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent normative specification or encoder rights review is complete, so no PGF fixture is cleared; a magic-byte stub would not be a valid image."
     },
     {
       "rowId": "EX0289-PGF-COMMENTS-READ-0001",
@@ -18127,13 +18313,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent normative specification or encoder rights review is complete, so no PGF fixture is cleared; a magic-byte stub would not be a valid image."
     },
     {
       "rowId": "EX0289-PGF-ICC-READ-0001",
@@ -18154,13 +18340,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent normative specification or encoder rights review is complete, so no PGF fixture is cleared; a magic-byte stub would not be a valid image."
     },
     {
       "rowId": "EX0289-PGF-THUMBNAIL-READ-0001",
@@ -18181,13 +18367,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent normative specification or encoder rights review is complete, so no PGF fixture is cleared; a magic-byte stub would not be a valid image."
     },
     {
       "rowId": "EX0289-EXV-INVENTORY-INVENTORY-0001",
@@ -18208,13 +18394,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+      "notes": "B8 blocked-rights: No independent layout review and no rights-safe sample; EXV is an Exiv2-associated metadata file, not a reviewed raster container."
     },
     {
       "rowId": "EX0289-EXV-EXIF-READ-0001",
@@ -18235,13 +18421,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent layout review and no rights-safe sample; EXV is an Exiv2-associated metadata file, not a reviewed raster container."
     },
     {
       "rowId": "EX0289-EXV-IPTC-READ-0001",
@@ -18262,13 +18448,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent layout review and no rights-safe sample; EXV is an Exiv2-associated metadata file, not a reviewed raster container."
     },
     {
       "rowId": "EX0289-EXV-XMP-READ-0001",
@@ -18289,13 +18475,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent layout review and no rights-safe sample; EXV is an Exiv2-associated metadata file, not a reviewed raster container."
     },
     {
       "rowId": "EX0289-EXV-COMMENTS-READ-0001",
@@ -18316,13 +18502,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent layout review and no rights-safe sample; EXV is an Exiv2-associated metadata file, not a reviewed raster container."
     },
     {
       "rowId": "EX0289-EXV-ICC-READ-0001",
@@ -18343,13 +18529,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent layout review and no rights-safe sample; EXV is an Exiv2-associated metadata file, not a reviewed raster container."
     },
     {
       "rowId": "EX0289-EXV-THUMBNAIL-READ-0001",
@@ -18370,13 +18556,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: No independent layout review and no rights-safe sample; EXV is an Exiv2-associated metadata file, not a reviewed raster container."
     },
     {
       "rowId": "EX0289-EXV-THUMBNAIL-EXTRACT-0001",
@@ -18397,13 +18583,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; no authored thumbnail exists, so absence is recorded"
+      "notes": "B8 blocked-rights: No independent layout review and no rights-safe sample; EXV is an Exiv2-associated metadata file, not a reviewed raster container."
     },
     {
       "rowId": "EX0289-DCP-INVENTORY-INVENTORY-0001",
@@ -18424,13 +18610,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+      "notes": "B8 blocked-rights: DCP is a camera profile, not an ordinary TIFF image; no standalone profile layout, required-tag set or independent oracle has been reviewed and no fixture cleared."
     },
     {
       "rowId": "EX0289-DCP-EXIF-READ-0001",
@@ -18451,13 +18637,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: DCP is a camera profile, not an ordinary TIFF image; no standalone profile layout, required-tag set or independent oracle has been reviewed and no fixture cleared."
     },
     {
       "rowId": "EX0289-DCP-IPTC-READ-0001",
@@ -18478,13 +18664,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: DCP is a camera profile, not an ordinary TIFF image; no standalone profile layout, required-tag set or independent oracle has been reviewed and no fixture cleared."
     },
     {
       "rowId": "EX0289-DCP-XMP-READ-0001",
@@ -18505,13 +18691,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: DCP is a camera profile, not an ordinary TIFF image; no standalone profile layout, required-tag set or independent oracle has been reviewed and no fixture cleared."
     },
     {
       "rowId": "EX0289-DCP-COMMENTS-READ-0001",
@@ -18532,13 +18718,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: DCP is a camera profile, not an ordinary TIFF image; no standalone profile layout, required-tag set or independent oracle has been reviewed and no fixture cleared."
     },
     {
       "rowId": "EX0289-DCP-ICC-READ-0001",
@@ -18559,13 +18745,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: DCP is a camera profile, not an ordinary TIFF image; no standalone profile layout, required-tag set or independent oracle has been reviewed and no fixture cleared."
     },
     {
       "rowId": "EX0289-DCP-THUMBNAIL-READ-0001",
@@ -18586,13 +18772,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+      "notes": "B8 blocked-rights: DCP is a camera profile, not an ordinary TIFF image; no standalone profile layout, required-tag set or independent oracle has been reviewed and no fixture cleared."
     }
   ]
 }

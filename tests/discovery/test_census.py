@@ -336,6 +336,39 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertTrue(all(o['facts']['inputUnchanged'] for o in evidence['observations']))
         self.assertTrue(all(o['recordOnly'] and o['expectOk'] is None for o in evidence['observations']))
         self.assertEqual(0, evidence['outcomeCounts'].get('scan-changed', 0))
+        # The shared `-pa` output is proved by the evidence itself, not only by prose:
+        # every metadata-family read row on the resource-bearing PSD printed the same
+        # bytes, so no row may be read as an independent per-family claim.
+        rich_pa = [o for o in evidence['observations']
+                   if o['flag'] == '-pa' and o['layout'] == 'flat-rgb-v1-metadata']
+        self.assertEqual(4, len(rich_pa))
+        self.assertEqual(1, len({o['facts']['stdoutSha256'] for o in rich_pa}))
+        self.assertTrue(all(o['facts']['printedTokens'] == ['B8Artist', 'B8Keyword', 'B8Tool']
+                             for o in rich_pa))
+        self.assertTrue(all(not o['facts']['printedTokens'] for o in evidence['observations']
+                            if o['layout'] != 'flat-rgb-v1-metadata'))
+        # Receipt integrity: the committed report must be exactly the recovered payload.
+        import hashlib
+        receipt_dir = ROOT / 'docs/research/evidence/e01-b8-census'
+        receipt_path = receipt_dir / 'receipt.json'
+        if not receipt_path.exists():
+            self.skipTest('B8 receipt not committed')
+        receipt = json.loads(receipt_path.read_text())
+        evidence_path = receipt_dir / 'observations.json'
+        recovery = receipt['annotationRecovery']
+        self.assertEqual(recovery['observationsFileSha256'],
+                         hashlib.sha256(evidence_path.read_bytes()).hexdigest())
+        self.assertEqual(recovery['rawPayloadSha256'],
+                         hashlib.sha256(json.dumps(evidence, separators=(',', ':'),
+                                                   sort_keys=True).encode()).hexdigest())
+        self.assertEqual(3, recovery['chunks'])
+        self.assertEqual(evidence['sourceCommit'], receipt['run']['headCommit'])
+        self.assertEqual(len(evidence['observations']), receipt['tally']['observed'])
+        self.assertEqual(len(evidence['blocked']), receipt['tally']['blocked'])
+        self.assertTrue(receipt['tally']['inputsUnchanged'])
+        self.assertEqual(0, receipt['tally']['artifactsProduced'])
+        self.assertFalse(receipt['denominatorFrozen'])
+        self.assertTrue(any('verification' in claim for claim in receipt['notClaimed']))
 
     def test_scope_is_observed_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
