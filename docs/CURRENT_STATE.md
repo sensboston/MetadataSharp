@@ -1,6 +1,6 @@
 # Current development state and recovery checkpoint
 
-Updated 2026-11-09 (B5 census batch on branch `arena/0cfec909-metadatasharp`). Read
+Updated 2026-11-09 (B5 merged via PR #37; receipt PR on `arena/d254f2b2-metadatasharp`). Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
 
@@ -23,8 +23,8 @@ authorized**.
   targeting (42446034373); E03 contracts + implementation; E04/D0 exact DNG proposal
   approved (no implementation); E05/D1 narrow read-only DNG (PR #21); E01-CEN census
   design approved 2026-11-08.
-- Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): batches **B0–B5 DONE
-  (B5 on branch, merged via its PR)** — 379 rows (B0 135 + B1 58 + B2 67 + B3 43 +
+- Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): batches **B0–B5 DONE**
+  — 379 rows (B0 135 + B1 58 + B2 67 + B3 43 +
   B4 50 + B5 26); 337 `observed-cli` + 42 static `not-applicable`; coded
   payload/scan preserved **284/284** observed in-image rows (B5 packet documents
   carry no coded payload; SHA-256/length/xpacket facts recorded instead); all 379
@@ -32,9 +32,8 @@ authorized**.
   percentage is computed or implied; freeze is a separate, developer-authorized
   step after B14**; no exclusion signed; `nonzero-exit-artifact-produced` kept as
   its own class. Evidence under `docs/research/evidence/e01-b0-census/` …
-  `e01-b5-census/` (b0–b4 carry `receipt.json`; B5 receipt lands with its
-  receipt PR; artifact digests are metadata-only — bytes not retrievable from
-  this sandbox).
+  `e01-b5-census/` (b0–b5 carry `receipt.json`; artifact digests are
+  metadata-only — bytes not retrievable from this sandbox).
 - Enumeration breadth today: JPEG, PNG, WebP, TIFF, XMP (5 of 31 seed formats;
   XMP sidecar axis adds 6 `unknown-raw` observed rows; 30 seed cells enumerated,
   156 pending — B6–B14).
@@ -48,8 +47,8 @@ authorized**.
 - GitHub availability: transient GitHub-side Actions failure 2026-11-09T18:23Z hit
   the two first runs of PR #33 (2/0 of 15 jobs started, no logs); a PR
   close/reopen produced 15/15 green runs with no content changes. Recorded in the
-  B4 receipt. The B5 batch is on branch `arena/0cfec909-metadatasharp`
-  (PR pending; local rehearsal complete; CI re-verifies).
+  B4 receipt. B5 merged via PR #37 (`7b4bc97`, run 42683793923, 15/15 green);
+  receipt at docs/research/evidence/e01-b5-census/receipt.json.
   githubstatus.com is not reachable from this sandbox; live status was
   verified via api.github.com ("GitHub lives!") and observed CI results.
 
@@ -71,8 +70,8 @@ PROGRESS.md.
 
 ## Active branch and scope
 
-Assigned branch **arena/0cfec909-metadatasharp** (B5 census batch; based on master
-`1e6dc55`); never switch to master or another branch. Standing authorization
+Assigned branch **arena/d254f2b2-metadatasharp** (B5 receipt PR; based on master
+`7b4bc97`); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -159,8 +158,12 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   changes. Census 353 rows; all 49 applicable rows observed-cli (0 accepted-unexpected);
   1 static not-applicable (`EX0289-TIFF-THUMBNAIL-INSERT-0002`); IFD0 strip/tile
   payload bytes preserved 49/49.
-- B5 observation batch ready on branch `arena/0cfec909-metadatasharp` (rehearsal
-  passed locally; CI `pinned-exiv2-baseline` re-verifies in the PR): 26 rows,
+- B5 merged via PR #37 (`7b4bc97`, run 42683793923, 15/15 green). The first PR run
+  failed all six OS/TFM jobs on the closed layout enumeration (`xmp-packet` missing
+  for the comments/exif/icc/iptc/thumbnail families) — a real CI catch, fixed in
+  81281d6; the twin push run additionally showed three id-less GitHub-side phantom
+  failures (same class as the 18:23Z PR #33 incident). Receipt at
+  docs/research/evidence/e01-b5-census/receipt.json. 26 rows,
   outcome counts 17 accepted / 2 accepted-unexpected / 6 accepted-unparseable /
   1 refused / 0 static not-applicable / 0 scan-changed; inventory track extended to
   XMP; sidecar-presence read probes record the sidecar token absent from the

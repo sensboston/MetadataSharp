@@ -92,6 +92,9 @@ E01 pinned execution (bounded, not E01 closure):
   1 refused (`-pS`: bare .xmp is not a supported image type, rc=1); the four
   sidecar-presence read probes (JPEG/PNG/WebP/TIFF) record SIDECARPROBE token absent
   from the image's printed output (presence never implies application; applied writes
-  stay E15); observations recorded not gated; no parity percentage implied.
+  stay E15); observations recorded not gated; no parity percentage implied; receipt.json
+  records the merge run (metadata-only digests; notes the real CI catch on the closed
+  layout enumerations in the first PR #37 run and the GitHub-side phantom failures in
+  the twin push run).
 - research/evidence/e01-pinned-jpeg: complete successful observation JSON + source-
   bound recovery receipt for 601a20b/run42449222307; no binary/source catalogs.
