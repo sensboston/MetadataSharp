@@ -1,0 +1,115 @@
+{
+  "encoder": "None (authored byte-level writer; tools/reference/webp_owned_fixtures.py)",
+  "recipe": "Deterministic WebP (RIFF) writer: RIFF header + VP8X (flags/8x8 canvas) + authored metadata chunks + VP8 fake keyframe header (18 bytes). The VP8 payload is not a decodable frame: metadata operations never decode it and the pinned CLI rewrites it byte-for-byte (the B3 analog of the JPEG coded-scan invariant, verified at observation time). EXIF chunks carry classic II TIFF payloads (no Exif\\0\\0 prefix); ICCP carries a minimal synthetic RGB profile (never decodable real-world data); XMP rides the raw XMP chunk; the IPTC and COM chunks are undocumented carriers the pinned CLI does not surface (observed, never asserted). Pinned by tests/fixtures/webp/manifest.json; CI regenerates and compares SHA-256.",
+  "inputRights": "MetadataSharp authored synthetic WebP fixtures, MIT; no imported images, no imported codec code/tests, no upstream fixture corpus.",
+  "fixtures": [
+    {
+      "file": "webp-base.webp",
+      "sha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "length": 56,
+      "layout": "container",
+      "duplicates": "none",
+      "recipe": "webp-vp8x-base-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-comments.webp",
+      "sha256": "608c82d4358d1bd5d657848db86c8ce8f9dd35723583cd41e450af97b883c00f",
+      "length": 88,
+      "layout": "webp-comments",
+      "duplicates": "none",
+      "recipe": "webp-com-chunk-carrier-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-exif-dup.webp",
+      "sha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "length": 160,
+      "layout": "webp-exif",
+      "duplicates": "multiple-independent",
+      "recipe": "webp-two-exif-chunks-distinct-artists-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-exif-thumb-jpeg.webp",
+      "sha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+      "length": 282,
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "recipe": "webp-exif-ifd1-jpeg-thumbnail-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-exif-thumb-raw.webp",
+      "sha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+      "length": 384,
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "recipe": "webp-exif-ifd1-uncompressed-thumbnail-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-exif.webp",
+      "sha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "length": 108,
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "recipe": "webp-exif-orientation-artist-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-iccp-dup.webp",
+      "sha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "length": 456,
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "recipe": "webp-iccp-two-byte-identical-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-iccp.webp",
+      "sha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "length": 256,
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "recipe": "webp-iccp-single-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-iptc.webp",
+      "sha256": "c39c15b3528a9b4d65665b6b5e4532a1110fa7f5e100d3db62d52d089ef4850c",
+      "length": 122,
+      "layout": "webp-iptc",
+      "duplicates": "none",
+      "recipe": "webp-iptc-chunk-carrier-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-xmp-dup.webp",
+      "sha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "length": 788,
+      "layout": "webp-xmp",
+      "duplicates": "last-wins",
+      "recipe": "webp-xmp-two-chunks-different-creators-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-xmp-nonutf8.webp",
+      "sha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "length": 78,
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "recipe": "webp-xmp-non-utf8-payload-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-xmp.webp",
+      "sha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+      "length": 420,
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "recipe": "webp-xmp-chunk-standard-v1",
+      "rights": "owned-synthetic"
+    }
+  ]
+}

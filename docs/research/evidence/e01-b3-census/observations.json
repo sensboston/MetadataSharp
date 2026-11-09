@@ -1,0 +1,1729 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "batch": "B3",
+  "sourceCommit": "46fc50d487b7362e7ca8d59d14738dfdc8832820",
+  "baseline": {
+    "version": "0.28.9",
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "cmakeCacheSha256": "7b661ac6dc1d0e69712e444ac91d18b8654c653ee6ab09ccce0a6803baf2d1df",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "executableSha256": "1389d6994ccc5a20639050d06ee10f6cc33ebc498afe2f1fbbc8f5b13b3e8364"
+  },
+  "commands": [
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "825e033c606737a732f94eff5a39957b14086a7cc964c3b83eedbbcababd4fdb",
+      "stdout": "exiv2 0.28.9\n\nThis program is free software; you can redistribute it and/or\nmodify it under the terms of the GNU General Public License\nas published by the Free Software Foundation; either version 2\nof the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful,\nbut WITHOUT ANY WARRANTY; without even the implied warranty of\nMERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\nGNU General Public License for more details.\n\nYou should have received a copy of the GNU General Public\nLicense along with this program; if not, write to the Free\nSoftware Foundation, Inc., 51 Franklin Street, Fifth Floor,\nBoston, MA 02110-1301 USA\n"
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pS",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-base.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "3549689ef91bc38b61bd027c8bd05039f2d846481a0f13de7a5fc9b1c3a88e03",
+      "stdout": "STRUCTURE OF WEBP FILE: /home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-base.webp\n Chunk |   Length |   Offset | Payload\n  RIFF |       48 |        0 | WEBP\n  VP8X |       10 |       12 | .........\n  VP8  |       18 |       30 | .....*...........\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pc",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-comments.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "stdout": "\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pi",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-iptc.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-exif.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "a171363426d8b322e60240bdecec61635ea3343f6fed90810df1c06104700e59",
+      "stdout": "Exif.Image.Orientation                       Short       1  top, left\nExif.Image.Artist                            Ascii       6  Alice\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-exif-dup.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "988b3907e2a66475f968fb02034d50c63f701ad3cdc88ea0ba0da3cdbf896d6f",
+      "stdout": "Exif.Image.Orientation                       Short       1  top, left\nExif.Image.Artist                            Ascii       6  Alice\nExif.Image.Orientation                       Short       1  top, left\nExif.Image.Artist                            Ascii       6  Bob  \n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii MetadataSharpAdded",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0005/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii MetadataSharpAdded",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0006/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii MetadataSharpReplacement",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0007/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Exif.Image.Artist Ascii MetadataSharpReplacement",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0008/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "del Exif.Image.Artist",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0009/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "del Exif.Image.Artist",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0010/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pC",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-iccp.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "bc139aa383785cdf0ee2e53ca9c2617a2ad2a9f428467580b915c022b9d3e170",
+      "stdout": "\u0000\u0000\u0000\ufffdSOBS\u00040\u0000\u0000mntrRGB XYZ \u0007\ufffd\u0000\u000b\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000acspSOBR\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd\ufffd\u0000\u0001\u0000\u0000\u0000\u0000\ufffd-MetadataSharp synthetic ICC authored\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001desc\u0000\u0000\u0000\ufffd\u0000\u0000\u00000desc\u0000\u0000\u0000\u001cMetadataSharp ICC profile A\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pC",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-iccp-dup.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "0d7993090f07aa8197997362c29b1a0d2d10f9cf80aef57d684d50dccb86d3d0",
+      "stdout": "\u0000\u0000\u0000\ufffdSOBS\u00040\u0000\u0000mntrRGB XYZ \u0007\ufffd\u0000\u000b\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000acspSOBR\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd\ufffd\u0000\u0001\u0000\u0000\u0000\u0000\ufffd-MetadataSharp synthetic ICC authored\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001desc\u0000\u0000\u0000\ufffd\u0000\u0000\u00000desc\u0000\u0000\u0000\u001cMetadataSharp ICC profile A\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffdSOBS\u00040\u0000\u0000mntrRGB XYZ \u0007\ufffd\u0000\u000b\u0000\b\u0000\u0000\u0000\u0000\u0000\u0000acspSOBR\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\ufffd\ufffd\u0000\u0001\u0000\u0000\u0000\u0000\ufffd-MetadataSharp synthetic ICC authored\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001desc\u0000\u0000\u0000\ufffd\u0000\u0000\u00000desc\u0000\u0000\u0000\u001cMetadataSharp ICC profile A\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-iC",
+        "-l",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0013/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0013/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-iC",
+        "-l",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0014/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0014/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-iC",
+        "-l",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0015/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0015/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-iC",
+        "-l",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0016/icc-src",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0016/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-d",
+        "C",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0017/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-d",
+        "C",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0018/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-xmp.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "363f4b08083406650f667d2d7769dab56c00f1044ab82f8edc534bc7f0ab497b",
+      "stdout": "Xmp.xmp.CreatorTool                          XmpText    13  MetadataSharp\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-xmp-nonutf8.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Error: XMP Toolkit error 201: Error in XMLValidator\nWarning: Failed to decode XMP metadata.\n"
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-xmp-dup.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "007cd2dc77305fbbc610b0edb4be5c08e08cc41b2e8a91b8b7ad459d37b37988",
+      "stdout": "Xmp.xmp.CreatorTool                          XmpText    14  MetadataSharpB\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-xmp-nonutf8.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Error: XMP Toolkit error 201: Error in XMLValidator\nWarning: Failed to decode XMP metadata.\n"
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Xmp.xmp.CreatorTool XmpText MetadataSharp B3 \u00e9 \u2713",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0023/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0023/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "b97691ea78ff8a0710275aa147f831033e8e525d8d77ccc6f8a59afca8ee1cbc",
+      "stdout": "Xmp.xmp.CreatorTool                          XmpText    23  MetadataSharp B3 \u00e9 \u2713\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Xmp.xmp.CreatorTool XmpText \\x89RAW\\xff\\xfe",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0024/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Error: XMP Toolkit error 4: Invalid UTF-8 sequence length\n"
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Xmp.xmp.CreatorTool XmpText MetadataSharp B3 \u00e9 \u2713",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0025/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Xmp.xmp.CreatorTool XmpText \\x89RAW\\xff\\xfe",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0026/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Error: XMP Toolkit error 201: Error in XMLValidator\nWarning: Failed to decode XMP metadata.\nError: XMP Toolkit error 4: Invalid UTF-8 sequence length\nError: XMP Toolkit error 4: Invalid UTF-8 sequence length\n"
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Xmp.xmp.CreatorTool XmpText Bob",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0027/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0027/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "9177e2565709931268467cc147a1a669a2cdebb976b73689d6ec02fcf5616889",
+      "stdout": "Xmp.xmp.CreatorTool                          XmpText     3  Bob\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Xmp.xmp.CreatorTool XmpText \\x89RAW\\xff\\xfe",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0028/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Error: XMP Toolkit error 201: Error in XMLValidator\nWarning: Failed to decode XMP metadata.\nError: XMP Toolkit error 4: Invalid UTF-8 sequence length\nError: XMP Toolkit error 4: Invalid UTF-8 sequence length\n"
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Xmp.xmp.CreatorTool XmpText Bob",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0029/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "set Xmp.xmp.CreatorTool XmpText \\x89RAW\\xff\\xfe",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0030/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Error: XMP Toolkit error 201: Error in XMLValidator\nWarning: Failed to decode XMP metadata.\nError: XMP Toolkit error 4: Invalid UTF-8 sequence length\nError: XMP Toolkit error 4: Invalid UTF-8 sequence length\n"
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "del Xmp.xmp.CreatorTool",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0031/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0031/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "363f4b08083406650f667d2d7769dab56c00f1044ab82f8edc534bc7f0ab497b",
+      "stdout": "Xmp.xmp.CreatorTool                          XmpText    13  MetadataSharp\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "del Xmp.xmp.CreatorTool",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0032/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Error: XMP Toolkit error 201: Error in XMLValidator\nWarning: Failed to decode XMP metadata.\n"
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "del Xmp.xmp.CreatorTool",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0033/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-M",
+        "del Xmp.xmp.CreatorTool",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0034/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": "Error: XMP Toolkit error 201: Error in XMLValidator\nWarning: Failed to decode XMP metadata.\n"
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-exif-thumb-jpeg.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "cac48603da3f2ae363e2c22335efc707a0f7fa0600587706e077533915b01402",
+      "stdout": "Exif.Image.Orientation                       Short       1  top, left\nExif.Thumbnail.Compression                   Short       1  JPEG (old-style)\nExif.Thumbnail.PhotometricInterpretation     Short       1  RGB\nExif.Thumbnail.JPEGInterchangeFormat         Long        1  80\nExif.Thumbnail.JPEGInterchangeFormatLength   Long        1  137\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-pa",
+        "/home/user/MetadataSharp/artifacts/e01/b3/fixtures/webp-exif-thumb-raw.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "d54a4389b819a59e833b0ab2c90df3abcd46d3794e8d802367d8f38c4338db2a",
+      "stdout": "Exif.Image.Orientation                       Short       1  top, left\nExif.Thumbnail.ImageWidth                    Short       1  8\nExif.Thumbnail.ImageLength                   Short       1  8\nExif.Thumbnail.Compression                   Short       1  Uncompressed\nExif.Thumbnail.PhotometricInterpretation     Short       1  RGB\nExif.Thumbnail.StripOffsets                  Long        1  128\nExif.Thumbnail.SamplesPerPixel               Short       1  3\nExif.Thumbnail.RowsPerStrip                  Short       1  8\nExif.Thumbnail.StripByteCounts               Long        1  192\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-i",
+        "t",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0037/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-i",
+        "t",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0039/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-i",
+        "t",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0040/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-d",
+        "t",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0041/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/user/MetadataSharp/artifacts/e01/build/bin/exiv2",
+        "-d",
+        "t",
+        "/home/user/MetadataSharp/artifacts/e01/b3/work/0042/case.webp"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "observations": [
+    {
+      "id": "EX0289-WEBP-INVENTORY-INVENTORY-0001",
+      "seedId": "EX0289-WEBP-INVENTORY",
+      "operation": "inventory",
+      "family": "inventory",
+      "layout": "container",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-base.webp",
+      "fixtureSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "outputSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-COMMENTS-READ-0001",
+      "seedId": "EX0289-WEBP-COMMENTS",
+      "operation": "read",
+      "family": "comments",
+      "layout": "webp-comments",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-comments.webp",
+      "fixtureSha256": "608c82d4358d1bd5d657848db86c8ce8f9dd35723583cd41e450af97b883c00f",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "608c82d4358d1bd5d657848db86c8ce8f9dd35723583cd41e450af97b883c00f",
+      "outputSha256": "608c82d4358d1bd5d657848db86c8ce8f9dd35723583cd41e450af97b883c00f",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "carrierFourccs": [
+          "COM "
+        ],
+        "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "stdoutPreview": "\n",
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-IPTC-READ-0001",
+      "seedId": "EX0289-WEBP-IPTC",
+      "operation": "read",
+      "family": "iptc",
+      "layout": "webp-iptc",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-iptc.webp",
+      "fixtureSha256": "c39c15b3528a9b4d65665b6b5e4532a1110fa7f5e100d3db62d52d089ef4850c",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "c39c15b3528a9b4d65665b6b5e4532a1110fa7f5e100d3db62d52d089ef4850c",
+      "outputSha256": "c39c15b3528a9b4d65665b6b5e4532a1110fa7f5e100d3db62d52d089ef4850c",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "carrierFourccs": [
+          "IPTC"
+        ],
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutPreview": "",
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-EXIF-READ-0001",
+      "seedId": "EX0289-WEBP-EXIF",
+      "operation": "read",
+      "family": "exif",
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif.webp",
+      "fixtureSha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "outputSha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "stdoutPreview": "Exif.Image.Orientation                       Short       1  top, left\nExif.Image.Artist                            Ascii       6  Alice\n",
+        "exifChunkCount": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-EXIF-READ-0002",
+      "seedId": "EX0289-WEBP-EXIF",
+      "operation": "read",
+      "family": "exif",
+      "layout": "webp-exif",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-dup.webp",
+      "fixtureSha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "outputSha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "stdoutPreview": "Exif.Image.Orientation                       Short       1  top, left\nExif.Image.Artist                            Ascii       6  Alice\nExif.Image.Orientation                       Short       1  top, left\nExif.Image.Artist                            Ascii       6  Bob  \n",
+        "exifChunkCount": 2,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-EXIF-INSERT-0001",
+      "seedId": "EX0289-WEBP-EXIF",
+      "operation": "insert",
+      "family": "exif",
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-base.webp",
+      "fixtureSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "outputSha256": "087a321b29a9576bbf0993aa0ec28e16ac7ae32ad3545e0f3f3dfaf8ba84e794",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "artistValues": [
+          "MetadataSharpAdded"
+        ],
+        "exifChunkCount": 0,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-EXIF-INSERT-0002",
+      "seedId": "EX0289-WEBP-EXIF",
+      "operation": "insert",
+      "family": "exif",
+      "layout": "webp-exif",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-dup.webp",
+      "fixtureSha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "outputSha256": "6fc0e4888f6fac50521d75c8d409a9e996bc487130eecd137c1c28c343dc6815",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "artistValues": [
+          "MetadataSharpAdded",
+          "Bob  "
+        ],
+        "exifChunkCount": 2,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-EXIF-REPLACE-0001",
+      "seedId": "EX0289-WEBP-EXIF",
+      "operation": "replace",
+      "family": "exif",
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif.webp",
+      "fixtureSha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "outputSha256": "2aa9034547813f385ef4f6c325a956d130347049ea2a287fa715d312e1a71d5d",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "artistValues": [
+          "MetadataSharpReplacement"
+        ],
+        "exifChunkCount": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-EXIF-REPLACE-0002",
+      "seedId": "EX0289-WEBP-EXIF",
+      "operation": "replace",
+      "family": "exif",
+      "layout": "webp-exif",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-dup.webp",
+      "fixtureSha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "outputSha256": "762bc3f84e3acac41941e55ead31e421f4723ff0f47d9507a3b804bea047e214",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "artistValues": [
+          "MetadataSharpReplacement",
+          "Bob  "
+        ],
+        "exifChunkCount": 2,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-EXIF-REMOVE-0001",
+      "seedId": "EX0289-WEBP-EXIF",
+      "operation": "remove",
+      "family": "exif",
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif.webp",
+      "fixtureSha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "outputSha256": "86c6de2e589e8aaa2e93c613f5af5ac7291c0c294478820779093af03891607b",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "artistValues": [],
+        "exifChunkCount": 1,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-EXIF-REMOVE-0002",
+      "seedId": "EX0289-WEBP-EXIF",
+      "operation": "remove",
+      "family": "exif",
+      "layout": "webp-exif",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-dup.webp",
+      "fixtureSha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "outputSha256": "d21ac3946f05688b9ad74489c9b964660803a9e89ad541b84793fd128ad98db6",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "artistValues": [],
+        "exifChunkCount": 2,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-ICC-READ-0001",
+      "seedId": "EX0289-WEBP-ICC",
+      "operation": "read",
+      "family": "icc",
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-iccp.webp",
+      "fixtureSha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "outputSha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "recordOnly": false,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "stdoutEqualsProfileA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-ICC-READ-0002",
+      "seedId": "EX0289-WEBP-ICC",
+      "operation": "read",
+      "family": "icc",
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-iccp-dup.webp",
+      "fixtureSha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "outputSha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "stdoutEqualsProfileA": false,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-ICC-INSERT-0001",
+      "seedId": "EX0289-WEBP-ICC",
+      "operation": "insert",
+      "family": "icc",
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-iccp.webp",
+      "fixtureSha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "outputSha256": "06429a2a188e748f62ced28a253eaa04f496c97b7d3bd08ec33f524c3ee1a1fc",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCount": 1,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-ICC-INSERT-0002",
+      "seedId": "EX0289-WEBP-ICC",
+      "operation": "insert",
+      "family": "icc",
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-iccp-dup.webp",
+      "fixtureSha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "outputSha256": "06429a2a188e748f62ced28a253eaa04f496c97b7d3bd08ec33f524c3ee1a1fc",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCount": 1,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-ICC-REPLACE-0001",
+      "seedId": "EX0289-WEBP-ICC",
+      "operation": "replace",
+      "family": "icc",
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-iccp.webp",
+      "fixtureSha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "outputSha256": "06429a2a188e748f62ced28a253eaa04f496c97b7d3bd08ec33f524c3ee1a1fc",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCount": 1,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-ICC-REPLACE-0002",
+      "seedId": "EX0289-WEBP-ICC",
+      "operation": "replace",
+      "family": "icc",
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-iccp-dup.webp",
+      "fixtureSha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "outputSha256": "06429a2a188e748f62ced28a253eaa04f496c97b7d3bd08ec33f524c3ee1a1fc",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCount": 1,
+        "iccProfileEqualsA": true,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-ICC-REMOVE-0001",
+      "seedId": "EX0289-WEBP-ICC",
+      "operation": "remove",
+      "family": "icc",
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-iccp.webp",
+      "fixtureSha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "outputSha256": "129ce0406204d9cb41ef8e68454a5fd440b606987c423fe672ccb8421691d893",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCountAfter": 0,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-ICC-REMOVE-0002",
+      "seedId": "EX0289-WEBP-ICC",
+      "operation": "remove",
+      "family": "icc",
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-iccp-dup.webp",
+      "fixtureSha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "outputSha256": "129ce0406204d9cb41ef8e68454a5fd440b606987c423fe672ccb8421691d893",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "iccProfileCountAfter": 0,
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-READ-0001",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "read",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "webp-xmp.webp",
+      "fixtureSha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+      "outputSha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "0a0d30a7e87cd955885098c657c0bf26ec2f764da5415ec3fa68d0c975fded5d"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-READ-0002",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "read",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "webp-xmp-nonutf8.webp",
+      "fixtureSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "outputSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "fd98e7cc76044b38fc25b954daeb9942e35abba5f7354ef665f3cdf8e147a083"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-READ-0003",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "read",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "textEncoding": "utf-8",
+      "fixture": "webp-xmp-dup.webp",
+      "fixtureSha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "outputSha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 2,
+        "xmpPacketSha256": [
+          "0737145e2d6a488277af1c93009e9f0d1b2cdad5719d01f6849a1e0ff94202e7",
+          "f9311b782cf4ec53fabb7051c858be1f85188d7a53e228f035d600d26b46cc02"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-READ-0004",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "read",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "textEncoding": "unknown-raw",
+      "fixture": "webp-xmp-nonutf8.webp",
+      "fixtureSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "outputSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "fd98e7cc76044b38fc25b954daeb9942e35abba5f7354ef665f3cdf8e147a083"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-INSERT-0001",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "insert",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "webp-base.webp",
+      "fixtureSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "outputSha256": "dee54c823eebca0f497aedd4a890db7b278f675bb19c7d83729d825e5db40837",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "stdoutCreatorToolAfter": "Xmp.xmp.CreatorTool                          XmpText    23  MetadataSharp B3 \u00e9 \u2713\n",
+        "xmpPacketCount": 0,
+        "xmpPacketSha256": [],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-INSERT-0002",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "insert",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "webp-base.webp",
+      "fixtureSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "outputSha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 0,
+        "xmpPacketSha256": [],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-INSERT-0003",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "insert",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "textEncoding": "utf-8",
+      "fixture": "webp-xmp-dup.webp",
+      "fixtureSha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "outputSha256": "dee54c823eebca0f497aedd4a890db7b278f675bb19c7d83729d825e5db40837",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 2,
+        "xmpPacketSha256": [
+          "0737145e2d6a488277af1c93009e9f0d1b2cdad5719d01f6849a1e0ff94202e7",
+          "f9311b782cf4ec53fabb7051c858be1f85188d7a53e228f035d600d26b46cc02"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-INSERT-0004",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "insert",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "textEncoding": "unknown-raw",
+      "fixture": "webp-xmp-nonutf8.webp",
+      "fixtureSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "outputSha256": "1a83e722c62f8a50aa89562824b745b9ac3ef784b4a29533b4a351963836fbc9",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "fd98e7cc76044b38fc25b954daeb9942e35abba5f7354ef665f3cdf8e147a083"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-REPLACE-0001",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "replace",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "webp-xmp.webp",
+      "fixtureSha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+      "outputSha256": "918fa413194b10332b38f4aeb5e4662be97030bf9b6ed3ce278a3cdbf045f73b",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "stdoutCreatorToolAfter": "Xmp.xmp.CreatorTool                          XmpText     3  Bob\n",
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "0a0d30a7e87cd955885098c657c0bf26ec2f764da5415ec3fa68d0c975fded5d"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-REPLACE-0002",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "replace",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "webp-xmp-nonutf8.webp",
+      "fixtureSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "outputSha256": "1a83e722c62f8a50aa89562824b745b9ac3ef784b4a29533b4a351963836fbc9",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "fd98e7cc76044b38fc25b954daeb9942e35abba5f7354ef665f3cdf8e147a083"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-REPLACE-0003",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "replace",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "textEncoding": "utf-8",
+      "fixture": "webp-xmp-dup.webp",
+      "fixtureSha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "outputSha256": "918fa413194b10332b38f4aeb5e4662be97030bf9b6ed3ce278a3cdbf045f73b",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 2,
+        "xmpPacketSha256": [
+          "0737145e2d6a488277af1c93009e9f0d1b2cdad5719d01f6849a1e0ff94202e7",
+          "f9311b782cf4ec53fabb7051c858be1f85188d7a53e228f035d600d26b46cc02"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-REPLACE-0004",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "replace",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "textEncoding": "unknown-raw",
+      "fixture": "webp-xmp-nonutf8.webp",
+      "fixtureSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "outputSha256": "1a83e722c62f8a50aa89562824b745b9ac3ef784b4a29533b4a351963836fbc9",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "fd98e7cc76044b38fc25b954daeb9942e35abba5f7354ef665f3cdf8e147a083"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-REMOVE-0001",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "remove",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "textEncoding": "utf-8",
+      "fixture": "webp-xmp.webp",
+      "fixtureSha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+      "outputSha256": "a8f680e42579319dad54bc938bf4fbadfb5fe553c0b6ea2993f6d424779c8af3",
+      "recordOnly": false,
+      "expectOk": false,
+      "outcome": "accepted-unexpected",
+      "facts": {
+        "stdoutCreatorToolAfter": "Xmp.xmp.CreatorTool                          XmpText    13  MetadataSharp\n",
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "0a0d30a7e87cd955885098c657c0bf26ec2f764da5415ec3fa68d0c975fded5d"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-REMOVE-0002",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "remove",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "textEncoding": "unknown-raw",
+      "fixture": "webp-xmp-nonutf8.webp",
+      "fixtureSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "outputSha256": "1a83e722c62f8a50aa89562824b745b9ac3ef784b4a29533b4a351963836fbc9",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "fd98e7cc76044b38fc25b954daeb9942e35abba5f7354ef665f3cdf8e147a083"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-REMOVE-0003",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "remove",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "textEncoding": "utf-8",
+      "fixture": "webp-xmp-dup.webp",
+      "fixtureSha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "outputSha256": "e71262b92292bb4c649131de60e75fcce2671aea6b25bfdd4de88d650fa8e8db",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 2,
+        "xmpPacketSha256": [
+          "0737145e2d6a488277af1c93009e9f0d1b2cdad5719d01f6849a1e0ff94202e7",
+          "f9311b782cf4ec53fabb7051c858be1f85188d7a53e228f035d600d26b46cc02"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-XMP-REMOVE-0004",
+      "seedId": "EX0289-WEBP-XMP",
+      "operation": "remove",
+      "family": "xmp",
+      "layout": "webp-xmp",
+      "duplicates": "first-wins",
+      "textEncoding": "unknown-raw",
+      "fixture": "webp-xmp-nonutf8.webp",
+      "fixtureSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "outputSha256": "1a83e722c62f8a50aa89562824b745b9ac3ef784b4a29533b4a351963836fbc9",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "xmpPacketCount": 1,
+        "xmpPacketSha256": [
+          "fd98e7cc76044b38fc25b954daeb9942e35abba5f7354ef665f3cdf8e147a083"
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-THUMBNAIL-READ-0001",
+      "seedId": "EX0289-WEBP-THUMBNAIL",
+      "operation": "read",
+      "family": "thumbnail",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-thumb-jpeg.webp",
+      "fixtureSha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+      "outputSha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "thumbnailTagsBefore": [
+          259,
+          513,
+          514
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-THUMBNAIL-READ-0002",
+      "seedId": "EX0289-WEBP-THUMBNAIL",
+      "operation": "read",
+      "family": "thumbnail",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-thumb-raw.webp",
+      "fixtureSha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+      "outputSha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "thumbnailTagsBefore": [
+          256,
+          257,
+          259,
+          273,
+          277,
+          278,
+          279
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-THUMBNAIL-INSERT-0001",
+      "seedId": "EX0289-WEBP-THUMBNAIL",
+      "operation": "insert",
+      "family": "thumbnail",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif.webp",
+      "fixtureSha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "outputSha256": "83a7f200e7627a16442d61b4674ce92ded0e4449649ed518daf4e6359e9c5b17",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "thumbnailTagsAfter": [
+          259,
+          513,
+          514
+        ],
+        "thumbnailTagsBefore": [],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-THUMBNAIL-REPLACE-0001",
+      "seedId": "EX0289-WEBP-THUMBNAIL",
+      "operation": "replace",
+      "family": "thumbnail",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-thumb-jpeg.webp",
+      "fixtureSha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+      "outputSha256": "c74db78d4cafadf8d0dd872f0371041c9e9e04f89090c9b965301a3727a8b1b5",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "thumbnailTagsAfter": [
+          259,
+          513,
+          514
+        ],
+        "thumbnailTagsBefore": [
+          259,
+          513,
+          514
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-THUMBNAIL-REPLACE-0002",
+      "seedId": "EX0289-WEBP-THUMBNAIL",
+      "operation": "replace",
+      "family": "thumbnail",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-thumb-raw.webp",
+      "fixtureSha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+      "outputSha256": "74fd8c7442a00d36b714f8408b9f1a6f8bf7f59c89f46cea66627ec42cae6b0f",
+      "recordOnly": true,
+      "expectOk": null,
+      "outcome": "accepted",
+      "facts": {
+        "thumbnailTagsAfter": [
+          256,
+          257,
+          259,
+          273,
+          277,
+          278,
+          279,
+          513,
+          514
+        ],
+        "thumbnailTagsBefore": [
+          256,
+          257,
+          259,
+          273,
+          277,
+          278,
+          279
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-THUMBNAIL-REMOVE-0001",
+      "seedId": "EX0289-WEBP-THUMBNAIL",
+      "operation": "remove",
+      "family": "thumbnail",
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-thumb-jpeg.webp",
+      "fixtureSha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+      "outputSha256": "86c6de2e589e8aaa2e93c613f5af5ac7291c0c294478820779093af03891607b",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "thumbnailTagsAfter": [],
+        "thumbnailTagsBefore": [
+          259,
+          513,
+          514
+        ],
+        "scanPreserved": true
+      }
+    },
+    {
+      "id": "EX0289-WEBP-THUMBNAIL-REMOVE-0002",
+      "seedId": "EX0289-WEBP-THUMBNAIL",
+      "operation": "remove",
+      "family": "thumbnail",
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "textEncoding": "not-applicable",
+      "fixture": "webp-exif-thumb-raw.webp",
+      "fixtureSha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+      "fixtureRights": "owned-synthetic",
+      "inputSha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+      "outputSha256": "86c6de2e589e8aaa2e93c613f5af5ac7291c0c294478820779093af03891607b",
+      "recordOnly": false,
+      "expectOk": true,
+      "outcome": "accepted",
+      "facts": {
+        "thumbnailTagsAfter": [],
+        "thumbnailTagsBefore": [
+          256,
+          257,
+          259,
+          273,
+          277,
+          278,
+          279
+        ],
+        "scanPreserved": true
+      }
+    }
+  ],
+  "staticNotApplicable": [
+    {
+      "id": "EX0289-WEBP-THUMBNAIL-INSERT-0002",
+      "reason": "pinned CLI exposes no uncompressed-thumbnail write path (-i t embeds JPEG thumbnails only); revisit if the CLI grows the capability; flagged for developer review at denominators"
+    }
+  ],
+  "outcomeCounts": {
+    "accepted": 41,
+    "accepted-unexpected": 1,
+    "static-not-applicable": 1
+  },
+  "denominatorFrozen": false,
+  "fixtureManifest": [
+    {
+      "file": "webp-base.webp",
+      "sha256": "c6b58a0171f7c3f285dc5df1d040b724c7e97f4e851fd2ac1041fc80842bde4d",
+      "length": 56,
+      "layout": "container",
+      "duplicates": "none",
+      "recipe": "webp-vp8x-base-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-comments.webp",
+      "sha256": "608c82d4358d1bd5d657848db86c8ce8f9dd35723583cd41e450af97b883c00f",
+      "length": 88,
+      "layout": "webp-comments",
+      "duplicates": "none",
+      "recipe": "webp-com-chunk-carrier-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-exif-dup.webp",
+      "sha256": "3ef2960aa8a4fa5314d446595eda337590a5c6803e9b87113f66a62a9293c43e",
+      "length": 160,
+      "layout": "webp-exif",
+      "duplicates": "multiple-independent",
+      "recipe": "webp-two-exif-chunks-distinct-artists-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-exif-thumb-jpeg.webp",
+      "sha256": "203b5ae1b83af4cde1f4f3ed91364f3e2b77ea9f9ef11e7d845d1dac7108fc40",
+      "length": 282,
+      "layout": "exif-ifd1-jpeg",
+      "duplicates": "none",
+      "recipe": "webp-exif-ifd1-jpeg-thumbnail-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-exif-thumb-raw.webp",
+      "sha256": "28c35c546fd118af22cee28561b078f959f88b136fe55e3aa60c9eac548aa113",
+      "length": 384,
+      "layout": "exif-ifd1-uncompressed",
+      "duplicates": "none",
+      "recipe": "webp-exif-ifd1-uncompressed-thumbnail-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-exif.webp",
+      "sha256": "4d82e6f1c53dc942804f1e682f93fffc714f8413a09147c145f75f6637a699b4",
+      "length": 108,
+      "layout": "webp-exif",
+      "duplicates": "none",
+      "recipe": "webp-exif-orientation-artist-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-iccp-dup.webp",
+      "sha256": "693ee6cbfc323c6a10cf0cce915f28a37043f07ae93298e1553ec5bf188f6a26",
+      "length": 456,
+      "layout": "webp-iccp",
+      "duplicates": "first-wins",
+      "recipe": "webp-iccp-two-byte-identical-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-iccp.webp",
+      "sha256": "d7d63723c56dbfa0a5e427d335a86b8339b290d210c8c9cc1cde82f673ab588b",
+      "length": 256,
+      "layout": "webp-iccp",
+      "duplicates": "none",
+      "recipe": "webp-iccp-single-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-iptc.webp",
+      "sha256": "c39c15b3528a9b4d65665b6b5e4532a1110fa7f5e100d3db62d52d089ef4850c",
+      "length": 122,
+      "layout": "webp-iptc",
+      "duplicates": "none",
+      "recipe": "webp-iptc-chunk-carrier-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-xmp-dup.webp",
+      "sha256": "fac4ffbb9d7568511e48066a2d2e414dd3566502134a4ef36f3c6d20f2c00194",
+      "length": 788,
+      "layout": "webp-xmp",
+      "duplicates": "last-wins",
+      "recipe": "webp-xmp-two-chunks-different-creators-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-xmp-nonutf8.webp",
+      "sha256": "69c994362869855d610081984862f122ef4c32b28e0a1dbf48b536526d4c59ed",
+      "length": 78,
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "recipe": "webp-xmp-non-utf8-payload-v1",
+      "rights": "owned-synthetic"
+    },
+    {
+      "file": "webp-xmp.webp",
+      "sha256": "1f3147e1ed81b0a69fe76e5e9cedec89bd936f123be0a2aae49a6df560b226cc",
+      "length": 420,
+      "layout": "webp-xmp",
+      "duplicates": "none",
+      "recipe": "webp-xmp-chunk-standard-v1",
+      "rights": "owned-synthetic"
+    }
+  ]
+}
