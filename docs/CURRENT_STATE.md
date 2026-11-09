@@ -37,7 +37,7 @@ authorized**.
 - Enumeration breadth today: JPEG, PNG, WebP, TIFF, XMP (5 of 31 seed formats;
   XMP sidecar axis adds 6 `unknown-raw` observed rows; 30 seed cells enumerated,
   156 pending — B6–B14).
-- Next in §5 numeric order: **B6 (DNG)** → … → B14, then the final freeze PR
+- Next in §5 numeric order: **B6 (DNG; in progress)** → … → B14, then the final freeze PR
   (developer-authorized). Not started: E06 typed vocabulary
   breadth; E07 container gap closure + MetadataSharp-side verification (until then
   verification stays not-assessed); E08–E12 new format families; E13–E15
@@ -141,7 +141,7 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   produced its own class, never a pass; Q4 numeric order B2→B14, all in this cycle;
   Q5 no percentages pre-freeze). Recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md
   §9; freeze happens in its own PR after B14; gate stays OPEN; B4 (TIFF) implemented;
-  B5 (XMP) implemented on this branch; next batch B6 (DNG).
+  B5 (XMP) merged; B6 (DNG) in progress.
 - B2 merged via PR #29 (`ba52ac1`, run 42558351437, 15/15 green); receipt at
   docs/research/evidence/e01-b2-census/receipt.json (metadata-only; artifact bytes
   not retrievable from the sandbox).
@@ -168,7 +168,7 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   1 refused / 0 static not-applicable / 0 scan-changed; inventory track extended to
   XMP; sidecar-presence read probes record the sidecar token absent from the
   image's printed output on JPEG/PNG/WebP/TIFF; Census 379 rows; denominatorFrozen
-  stays false; no percentage; E01 gate OPEN; next batch B6.
+  stays false; no percentage; E01 gate OPEN; B6 in progress.
 
 - E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
   42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.
@@ -306,3 +306,17 @@ comments/exif/icc/iptc/thumbnail families as a B5-additive extension discovered 
 in PR #37); B5 observations rehearsed via the pinned CLI, status passed; reference
 suite 17/17.
 Merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/15).
+
+## B6 working checkpoint
+
+B6 is in progress on `arena/3dc8aab2-metadatasharp`. The user authorized
+continuation to subsequent stages without another confirmation; existing separate
+publication, D2 write and denominator-freeze restrictions remain in force.
+`tools/reference/dng_raw_oracle.py` adds a bounded classic-TIFF CFA strip-byte
+oracle for the owned D1 raw and SubIFD fixtures, with both byte orders and
+fail-closed malformed-input tests in `tests/reference/test_dng_raw_oracle.py`.
+It is not a raw-image decoder, and does not establish rendered pixel equivalence.
+Local reference tests: 21/21; discovery: 103/103; census `--check` passed.
+No B6 CLI observations or census rows have yet been produced. Next: build the
+pinned Exiv2 environment, design and run the B6 observer against owned fixtures,
+and record actual results before changing the census or marking B6 complete.
