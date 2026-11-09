@@ -1,6 +1,6 @@
 # Current development state and recovery checkpoint
 
-B6 and receipt merged via PR #39/#40; B7 groundwork PR #41 merged. Read
+B7 local census observations on `arena/b5ec38f5-metadatasharp`; CI/merge pending. Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
 
@@ -24,17 +24,18 @@ authorized**.
   approved (no implementation); E05/D1 narrow read-only DNG (PR #21); E01-CEN census
   design approved 2026-11-08.
 - Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): B0–B5 merged;
-  B6 merged via PR #39 (`e6325be`, run 42698556762, 15/15 green). 467 rows
-  (135 + 58 + 67 + 43 + 50 + 26 + 88); 425 observed-cli, 42 static
-  not-applicable. B6 CFA strip bytes preserved 88/88 in local observations;
+  B6 merged via PR #39 (`e6325be`, run 42698556762, 15/15 green). B7 local
+  evidence is in review: census has 515 rows (B0–B6 467, B7 48): 465
+  observed-cli, 42 static not-applicable, eight CR3 blocked on rights. B6 CFA strip bytes preserved 88/88 in local observations;
   no raw decode or rendered equivalence is established. Four thumbnail reads
   produced matching output but returned 137 and are classified separately.
   All rows `verification: not-assessed`; `denominatorFrozen: false`; no coverage
   percentage. B0–B5 receipts are metadata-only; B6 evidence is under `docs/research/evidence/e01-b6-census/`; the receipt
   recovers CI observations from complete check-run annotation chunks and records
   an exact match of all 88 observation objects and the fixture manifest.
-- Enumeration breadth: JPEG, PNG, WebP, TIFF, XMP, DNG; 36 seed cells
-  enumerated, 150 pending. B6 fixture and oracle limitations are recorded in
+- Enumeration breadth: JPEG, PNG, WebP, TIFF, XMP, DNG, AVIF, HEIF, HEIC,
+  CR3 and JXL; 66 seed cells enumerated, 120 pending. CR3 is enumerated but
+  remains blocked, not observed or excluded. B6 fixture and oracle limitations are recorded in
   its evidence README; no exclusion or DNG write support is implied.
 - Next in §5 numeric order: **B7 (BMFF probe set)** → … → B14, then the final freeze PR
   (developer-authorized). Not started: E06 typed vocabulary
@@ -69,8 +70,8 @@ PROGRESS.md.
 
 ## Active branch and scope
 
-Assigned branch **arena/963177eb-metadatasharp** (B7; based on master
-`49b7e0d`); never switch to master or another branch. Standing authorization
+Assigned branch **arena/b5ec38f5-metadatasharp** (B7; based on master
+`7fe82c2`); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -334,25 +335,20 @@ while maintaining format rights/oracle reviews and the separate release limits.
 
 ## B7 working checkpoint
 
-B7 is underway on `arena/963177eb-metadatasharp`; the developer authorized
-continuation without another confirmation. A preliminary format-by-format rights
-and oracle ledger is in `docs/research/E01_B7_RIGHTS_AND_ORACLE_REVIEW.md`:
-no format fixtures cleared or authored, no B7 census rows observed.
-`tools/reference/bmff_structure.py` is a bounded flat-box, ftyp and JXL-signature
-helper tested with non-image toy bytes, not a format/conformance validator.
-`tools/reference/b7_exiftool_probe.py` records read-only observations from a clean
-external ExifTool 12.76 checkout at commit `212f02cf22b9484674752181cad3b73089ce9694`.
-A local D1-owned-fixture smoke returned exit 0 and one JSON object; this tests
-the harness only, not B7 image formats. External artifacts are ignored and may
-disappear. Next: complete format-specific rights/spec reviews before authoring
-fixtures, then independently check item extents, compare pinned CLI observations
-and secondary-oracle results, and mark any gaps honestly. No B7 write support,
-exclusion, parity percentage or denominator freeze is implied.
-
-B7 groundwork PR #41 merged at `49b7e0d` after run 42701867621 passed
-15/15. Subsequent work adds a bounded, format-neutral extent-byte accounting
-helper; it does not parse `iloc` or establish normative construction methods.
-The pinned AOM AVIF source was reviewed for brand and required-box context;
-a brand alone is not conformance, and underlying normative sources and coded
-item rights remain unresolved. No image fixture has been cleared or authored.
-Local tests: reference 48/48, discovery 104/104, census check passed.
+B7 groundwork PR #41/#42 is merged. On `arena/b5ec38f5-metadatasharp`,
+separate format rights reviews now allow narrowly scoped owned-synthetic probes
+for AVIF, HEIF, HEIC and JXL; CR3 remains blocked. Five 8×8 files and pinned
+encoder recipes are in `tests/fixtures/b7/`; HEIF and HEIC both use HEVC/HEIC
+brand; JXL has distinct container and naked codestream. Their complete normative
+conformance, codec patent clearance and independent JXL decode are not established.
+The 48-row read-only B7 local rehearsal recorded 32 accepted record-only,
+8 refused on bare JXL, 8 CR3 blocked. EXIF/XMP are present on four fixtures;
+IPTC/ICC/comments/thumbnail are absent, so those probes do not prove support.
+ExifTool 12.76 is recorded as the secondary reference. HEIC/HEIF coded ispe
+64×64 and clean-aperture display 8×8 must remain distinct. Raw evidence and
+limitations: `docs/research/evidence/e01-b7-census/`. CI and merge pending.
+Local checks: reference 54/54, discovery 105/105, census check and exact
+five-fixture regeneration passed. No denominator frozen, verification remains
+not-assessed, and no parity percentage or publication is authorized. Even if
+this bounded batch is merged, unattempted CR3 no-claim rows cannot be silently
+closed before freeze; remaining metadata-present and decoder-oracle gaps persist.

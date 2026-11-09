@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4, B5, B6: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "AVIF/comments",
@@ -15588,16 +15588,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.avif",
+        "sha256": "6c05def4e0378a98fe16ae4d59a359d0fd4247aff6e95a2b326fce3013852774",
+        "length": 765,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 23"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition does not establish valid decode"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.avif"
     },
     {
       "rowId": "EX0289-AVIF-EXIF-READ-0001",
@@ -15615,16 +15621,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.avif",
+        "sha256": "6c05def4e0378a98fe16ae4d59a359d0fd4247aff6e95a2b326fce3013852774",
+        "length": 765,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 23"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.avif"
     },
     {
       "rowId": "EX0289-AVIF-IPTC-READ-0001",
@@ -15642,16 +15654,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.avif",
+        "sha256": "6c05def4e0378a98fe16ae4d59a359d0fd4247aff6e95a2b326fce3013852774",
+        "length": 765,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 23"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.avif"
     },
     {
       "rowId": "EX0289-AVIF-XMP-READ-0001",
@@ -15669,16 +15687,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.avif",
+        "sha256": "6c05def4e0378a98fe16ae4d59a359d0fd4247aff6e95a2b326fce3013852774",
+        "length": 765,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 23"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.avif"
     },
     {
       "rowId": "EX0289-AVIF-COMMENTS-READ-0001",
@@ -15696,16 +15720,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.avif",
+        "sha256": "6c05def4e0378a98fe16ae4d59a359d0fd4247aff6e95a2b326fce3013852774",
+        "length": 765,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 23"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.avif"
     },
     {
       "rowId": "EX0289-AVIF-ICC-READ-0001",
@@ -15723,16 +15753,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.avif",
+        "sha256": "6c05def4e0378a98fe16ae4d59a359d0fd4247aff6e95a2b326fce3013852774",
+        "length": 765,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 23"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.avif"
     },
     {
       "rowId": "EX0289-AVIF-THUMBNAIL-READ-0001",
@@ -15750,16 +15786,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.avif",
+        "sha256": "6c05def4e0378a98fe16ae4d59a359d0fd4247aff6e95a2b326fce3013852774",
+        "length": 765,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 23"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.avif"
     },
     {
       "rowId": "EX0289-AVIF-THUMBNAIL-EXTRACT-0001",
@@ -15777,16 +15819,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.avif",
+        "sha256": "6c05def4e0378a98fe16ae4d59a359d0fd4247aff6e95a2b326fce3013852774",
+        "length": 765,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 23"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.avif"
     },
     {
       "rowId": "EX0289-HEIF-INVENTORY-INVENTORY-0001",
@@ -15804,16 +15852,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heif",
+        "sha256": "66d3eaf5e9b6d040a213c76415159573911606f010f1e0f9dbb10eb15b55277e",
+        "length": 1003,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 29"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition does not establish valid decode"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heif"
     },
     {
       "rowId": "EX0289-HEIF-EXIF-READ-0001",
@@ -15831,16 +15885,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heif",
+        "sha256": "66d3eaf5e9b6d040a213c76415159573911606f010f1e0f9dbb10eb15b55277e",
+        "length": 1003,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 29"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heif"
     },
     {
       "rowId": "EX0289-HEIF-IPTC-READ-0001",
@@ -15858,16 +15918,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heif",
+        "sha256": "66d3eaf5e9b6d040a213c76415159573911606f010f1e0f9dbb10eb15b55277e",
+        "length": 1003,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 29"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heif"
     },
     {
       "rowId": "EX0289-HEIF-XMP-READ-0001",
@@ -15885,16 +15951,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heif",
+        "sha256": "66d3eaf5e9b6d040a213c76415159573911606f010f1e0f9dbb10eb15b55277e",
+        "length": 1003,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 29"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heif"
     },
     {
       "rowId": "EX0289-HEIF-COMMENTS-READ-0001",
@@ -15912,16 +15984,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heif",
+        "sha256": "66d3eaf5e9b6d040a213c76415159573911606f010f1e0f9dbb10eb15b55277e",
+        "length": 1003,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 29"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heif"
     },
     {
       "rowId": "EX0289-HEIF-ICC-READ-0001",
@@ -15939,16 +16017,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heif",
+        "sha256": "66d3eaf5e9b6d040a213c76415159573911606f010f1e0f9dbb10eb15b55277e",
+        "length": 1003,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 29"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heif"
     },
     {
       "rowId": "EX0289-HEIF-THUMBNAIL-READ-0001",
@@ -15966,16 +16050,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heif",
+        "sha256": "66d3eaf5e9b6d040a213c76415159573911606f010f1e0f9dbb10eb15b55277e",
+        "length": 1003,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 29"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heif"
     },
     {
       "rowId": "EX0289-HEIF-THUMBNAIL-EXTRACT-0001",
@@ -15993,16 +16083,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heif",
+        "sha256": "66d3eaf5e9b6d040a213c76415159573911606f010f1e0f9dbb10eb15b55277e",
+        "length": 1003,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 29"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heif"
     },
     {
       "rowId": "EX0289-HEIC-INVENTORY-INVENTORY-0001",
@@ -16020,16 +16116,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heic",
+        "sha256": "0b38be512b902a8e4589a0d7c7fc35462e35b22c6d68696922a675aed9e70548",
+        "length": 1029,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 31"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition does not establish valid decode"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heic"
     },
     {
       "rowId": "EX0289-HEIC-EXIF-READ-0001",
@@ -16047,16 +16149,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heic",
+        "sha256": "0b38be512b902a8e4589a0d7c7fc35462e35b22c6d68696922a675aed9e70548",
+        "length": 1029,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 31"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heic"
     },
     {
       "rowId": "EX0289-HEIC-IPTC-READ-0001",
@@ -16074,16 +16182,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heic",
+        "sha256": "0b38be512b902a8e4589a0d7c7fc35462e35b22c6d68696922a675aed9e70548",
+        "length": 1029,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 31"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heic"
     },
     {
       "rowId": "EX0289-HEIC-XMP-READ-0001",
@@ -16101,16 +16215,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heic",
+        "sha256": "0b38be512b902a8e4589a0d7c7fc35462e35b22c6d68696922a675aed9e70548",
+        "length": 1029,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 31"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heic"
     },
     {
       "rowId": "EX0289-HEIC-COMMENTS-READ-0001",
@@ -16128,16 +16248,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heic",
+        "sha256": "0b38be512b902a8e4589a0d7c7fc35462e35b22c6d68696922a675aed9e70548",
+        "length": 1029,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 31"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heic"
     },
     {
       "rowId": "EX0289-HEIC-ICC-READ-0001",
@@ -16155,16 +16281,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heic",
+        "sha256": "0b38be512b902a8e4589a0d7c7fc35462e35b22c6d68696922a675aed9e70548",
+        "length": 1029,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 31"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heic"
     },
     {
       "rowId": "EX0289-HEIC-THUMBNAIL-READ-0001",
@@ -16182,16 +16314,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heic",
+        "sha256": "0b38be512b902a8e4589a0d7c7fc35462e35b22c6d68696922a675aed9e70548",
+        "length": 1029,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 31"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heic"
     },
     {
       "rowId": "EX0289-HEIC-THUMBNAIL-EXTRACT-0001",
@@ -16209,16 +16347,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned.heic",
+        "sha256": "0b38be512b902a8e4589a0d7c7fc35462e35b22c6d68696922a675aed9e70548",
+        "length": 1029,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 31"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned.heic"
     },
     {
       "rowId": "EX0289-CR3-INVENTORY-INVENTORY-0001",
@@ -16239,13 +16383,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition does not establish valid decode"
+      "notes": "B7 blocked-rights: No independently reviewed CR3 layout and owned or verified CC0/public-domain CR3 image; no pinned CLI attempt possible without a rights-safe fixture."
     },
     {
       "rowId": "EX0289-CR3-EXIF-READ-0001",
@@ -16266,13 +16410,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 blocked-rights: No independently reviewed CR3 layout and owned or verified CC0/public-domain CR3 image; no pinned CLI attempt possible without a rights-safe fixture."
     },
     {
       "rowId": "EX0289-CR3-IPTC-READ-0001",
@@ -16293,13 +16437,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 blocked-rights: No independently reviewed CR3 layout and owned or verified CC0/public-domain CR3 image; no pinned CLI attempt possible without a rights-safe fixture."
     },
     {
       "rowId": "EX0289-CR3-XMP-READ-0001",
@@ -16320,13 +16464,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 blocked-rights: No independently reviewed CR3 layout and owned or verified CC0/public-domain CR3 image; no pinned CLI attempt possible without a rights-safe fixture."
     },
     {
       "rowId": "EX0289-CR3-COMMENTS-READ-0001",
@@ -16347,13 +16491,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 blocked-rights: No independently reviewed CR3 layout and owned or verified CC0/public-domain CR3 image; no pinned CLI attempt possible without a rights-safe fixture."
     },
     {
       "rowId": "EX0289-CR3-ICC-READ-0001",
@@ -16374,13 +16518,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 blocked-rights: No independently reviewed CR3 layout and owned or verified CC0/public-domain CR3 image; no pinned CLI attempt possible without a rights-safe fixture."
     },
     {
       "rowId": "EX0289-CR3-THUMBNAIL-READ-0001",
@@ -16401,13 +16545,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 blocked-rights: No independently reviewed CR3 layout and owned or verified CC0/public-domain CR3 image; no pinned CLI attempt possible without a rights-safe fixture."
     },
     {
       "rowId": "EX0289-CR3-THUMBNAIL-EXTRACT-0001",
@@ -16428,13 +16572,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+      "notes": "B7 blocked-rights: No independently reviewed CR3 layout and owned or verified CC0/public-domain CR3 image; no pinned CLI attempt possible without a rights-safe fixture."
     },
     {
       "rowId": "EX0289-JXL-INVENTORY-INVENTORY-0001",
@@ -16452,16 +16596,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-container.jxl",
+        "sha256": "86bd77046b2525a4d5d202881c46a3950879d857a41b6b39e441d901966b49f9",
+        "length": 503,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition does not establish valid decode"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-container.jxl"
     },
     {
       "rowId": "EX0289-JXL-EXIF-READ-0001",
@@ -16479,16 +16629,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-container.jxl",
+        "sha256": "86bd77046b2525a4d5d202881c46a3950879d857a41b6b39e441d901966b49f9",
+        "length": 503,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-container.jxl"
     },
     {
       "rowId": "EX0289-JXL-IPTC-READ-0001",
@@ -16506,16 +16662,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-container.jxl",
+        "sha256": "86bd77046b2525a4d5d202881c46a3950879d857a41b6b39e441d901966b49f9",
+        "length": 503,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-container.jxl"
     },
     {
       "rowId": "EX0289-JXL-XMP-READ-0001",
@@ -16533,16 +16695,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-container.jxl",
+        "sha256": "86bd77046b2525a4d5d202881c46a3950879d857a41b6b39e441d901966b49f9",
+        "length": 503,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-container.jxl"
     },
     {
       "rowId": "EX0289-JXL-COMMENTS-READ-0001",
@@ -16560,16 +16728,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-container.jxl",
+        "sha256": "86bd77046b2525a4d5d202881c46a3950879d857a41b6b39e441d901966b49f9",
+        "length": 503,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-container.jxl"
     },
     {
       "rowId": "EX0289-JXL-ICC-READ-0001",
@@ -16587,16 +16761,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-container.jxl",
+        "sha256": "86bd77046b2525a4d5d202881c46a3950879d857a41b6b39e441d901966b49f9",
+        "length": 503,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-container.jxl"
     },
     {
       "rowId": "EX0289-JXL-THUMBNAIL-READ-0001",
@@ -16614,16 +16794,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-container.jxl",
+        "sha256": "86bd77046b2525a4d5d202881c46a3950879d857a41b6b39e441d901966b49f9",
+        "length": 503,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-container.jxl"
     },
     {
       "rowId": "EX0289-JXL-THUMBNAIL-EXTRACT-0001",
@@ -16641,16 +16827,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-container.jxl",
+        "sha256": "86bd77046b2525a4d5d202881c46a3950879d857a41b6b39e441d901966b49f9",
+        "length": 503,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+      "notes": "B7 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-container.jxl"
     },
     {
       "rowId": "EX0289-JXL-INVENTORY-INVENTORY-0002",
@@ -16668,16 +16860,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-codestream.jxl",
+        "sha256": "62b9d1f37508b16c21d2f85a4fec589050746c4f7ab682fb35f12788256307cf",
+        "length": 187,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only container probe; recognition does not establish valid decode"
+      "notes": "B7 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-codestream.jxl"
     },
     {
       "rowId": "EX0289-JXL-EXIF-READ-0002",
@@ -16695,16 +16893,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-codestream.jxl",
+        "sha256": "62b9d1f37508b16c21d2f85a4fec589050746c4f7ab682fb35f12788256307cf",
+        "length": 187,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-codestream.jxl"
     },
     {
       "rowId": "EX0289-JXL-IPTC-READ-0002",
@@ -16722,16 +16926,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-codestream.jxl",
+        "sha256": "62b9d1f37508b16c21d2f85a4fec589050746c4f7ab682fb35f12788256307cf",
+        "length": 187,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-codestream.jxl"
     },
     {
       "rowId": "EX0289-JXL-XMP-READ-0002",
@@ -16749,16 +16959,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-codestream.jxl",
+        "sha256": "62b9d1f37508b16c21d2f85a4fec589050746c4f7ab682fb35f12788256307cf",
+        "length": 187,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-codestream.jxl"
     },
     {
       "rowId": "EX0289-JXL-COMMENTS-READ-0002",
@@ -16776,16 +16992,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-codestream.jxl",
+        "sha256": "62b9d1f37508b16c21d2f85a4fec589050746c4f7ab682fb35f12788256307cf",
+        "length": 187,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-codestream.jxl"
     },
     {
       "rowId": "EX0289-JXL-ICC-READ-0002",
@@ -16803,16 +17025,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-codestream.jxl",
+        "sha256": "62b9d1f37508b16c21d2f85a4fec589050746c4f7ab682fb35f12788256307cf",
+        "length": 187,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-codestream.jxl"
     },
     {
       "rowId": "EX0289-JXL-THUMBNAIL-READ-0002",
@@ -16830,16 +17058,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-codestream.jxl",
+        "sha256": "62b9d1f37508b16c21d2f85a4fec589050746c4f7ab682fb35f12788256307cf",
+        "length": 187,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "read-only probe; absent metadata and recognition are not support claims"
+      "notes": "B7 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-codestream.jxl"
     },
     {
       "rowId": "EX0289-JXL-THUMBNAIL-EXTRACT-0002",
@@ -16857,16 +17091,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-codestream.jxl",
+        "sha256": "62b9d1f37508b16c21d2f85a4fec589050746c4f7ab682fb35f12788256307cf",
+        "length": 187,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b7-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "thumbnail extract attempted; absence of an authored thumbnail is recorded"
+      "notes": "B7 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-codestream.jxl"
     }
   ]
 }

@@ -554,7 +554,7 @@ def build(seeds):
                'the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. '
                'B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. '
                'B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. '
-               + ((f'Pinned-CLI observation complete for batch(es) {", ".join(applied_batches)}: '
+               + ((f'Pinned-CLI evidence recorded for batch(es) {", ".join(applied_batches)}: '
                     'rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; '
                     'no denominator computed. ') if applied_batches else
                   'All rows not-run/not-assessed; no coverage percentage; no denominator computed. ')

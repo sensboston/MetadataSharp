@@ -236,9 +236,11 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual({r['rowId'] for r in rows if r['format'] == 'CR3'}, blocked)
         self.assertEqual(blocked, {r['rowId'] for r in rows if r['baselineObservation'] == 'blocked'})
         self.assertEqual(observed, {r['rowId'] for r in rows if r['baselineObservation'] == 'observed-cli'})
-        self.assertEqual(8, evidence['outcomeCounts']['blocked-rights'])
+        self.assertEqual({'accepted': 32, 'blocked-rights': 8, 'refused': 8}, evidence['outcomeCounts'])
         self.assertTrue(all(o['facts']['inputUnchanged'] for o in evidence['observations']))
+        self.assertTrue(all(o['layout'] == 'jxl-codestream' for o in evidence['observations'] if o['outcome'] == 'refused'))
         self.assertEqual(5, len(evidence['secondaryObservations']))
+        self.assertTrue(all(o['exitCode'] == 0 and o['jsonParseError'] is None for o in evidence['secondaryObservations'].values()))
         self.assertFalse(evidence['denominatorFrozen'])
 
     def test_verification_stays_not_assessed(self):

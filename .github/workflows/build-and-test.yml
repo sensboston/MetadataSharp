@@ -244,8 +244,10 @@ jobs:
           import sys
           sys.path.insert(0, 'tools/reference')
           import b7_owned_fixtures as fixtures
-          fixtures.verify()
+          manifest = fixtures.verify()
           encoded = fixtures.encode_catalog()
+          if set(encoded) != {entry['file'] for entry in manifest}:
+              raise SystemExit('B7 generated fixture set differs from manifest')
           for name, data in encoded.items():
               if data != (fixtures.FIXTURES / name).read_bytes():
                   raise SystemExit('B7 fixture re-encoding mismatch: ' + name)

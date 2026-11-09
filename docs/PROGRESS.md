@@ -1997,3 +1997,21 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   extent accounting helper (not an `iloc` parser) and records preliminary
   AVIF brand/box source review. No B7 image fixture is cleared or authored;
   unresolved normative/rights/decode gaps are not treated as observation.
+
+### E01 B7 — owned probes and local observation; CI pending
+
+- Groundwork PR #41/#42 merged; authored five small 8×8 AVIF, HEVC-in-HEIF,
+  HEVC-in-HEIC and JXL container/codestream fixtures using pinned external
+  encoders and local input bytes. The two HEVC files carry the same HEIC brand;
+  JXL codestream and container are distinct. Per-format rights and codec/decode
+  limits are documented; no external sample or production dependency imported.
+- Implemented 48-row B7 read-only observer with pinned Exiv2 + ExifTool 12.76
+  secondary results. Local rehearsal: 32 accepted record-only, eight refused
+  (bare JXL), eight CR3 blocked-rights; all 40 attempted reads left input
+  unchanged. HEVC ispe 64×64 vs decoded clean aperture 8×8 is explicit.
+  IPTC/ICC/comments/thumbnail absent in fixtures; no successful metadata
+  extraction is inferred. CR3 no-claim rows remain unattempted before freeze.
+  The local evidence is at docs/research/evidence/e01-b7-census/; CI pending.
+  Census now 515 rows (465 observed, 42 static-NA, 8 blocked); all verification
+  not-assessed, denominator unfrozen. Local tests: reference 54/54, discovery
+  105/105, census check and exact pinned-wheel regeneration passed.
