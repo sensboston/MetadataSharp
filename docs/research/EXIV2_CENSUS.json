@@ -6,9 +6,16 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4, B5: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4, B5, B6: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
+      "DNG/comments",
+      "DNG/exif",
+      "DNG/icc",
+      "DNG/inventory",
+      "DNG/iptc",
+      "DNG/thumbnail",
+      "DNG/xmp",
       "JPEG/comments",
       "JPEG/exif",
       "JPEG/icc",
@@ -49,7 +56,8 @@
       "PNG",
       "WEBP",
       "TIFF",
-      "XMP"
+      "XMP",
+      "DNG"
     ],
     "pendingSeedIds": [
       "EX0289-ARW-COMMENTS",
@@ -94,12 +102,6 @@
       "EX0289-DCP-IPTC",
       "EX0289-DCP-THUMBNAIL",
       "EX0289-DCP-XMP",
-      "EX0289-DNG-COMMENTS",
-      "EX0289-DNG-EXIF",
-      "EX0289-DNG-ICC",
-      "EX0289-DNG-IPTC",
-      "EX0289-DNG-THUMBNAIL",
-      "EX0289-DNG-XMP",
       "EX0289-EPS-COMMENTS",
       "EX0289-EPS-EXIF",
       "EX0289-EPS-ICC",
@@ -213,7 +215,7 @@
   "enumerations": {
     "reviewStatus": "reviewed",
     "reviewedAt": "2026-11-09",
-    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; 2026-11-09 extension adds xmp-packet carrier layouts under the approved B5 batch",
+    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts",
     "family": [
       "exif",
       "iptc",
@@ -255,7 +257,11 @@
         "png-exif",
         "webp-exif",
         "tiff-exif",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "comments": [
         "com-single",
@@ -263,7 +269,11 @@
         "png-text",
         "webp-comments",
         "tiff-comments",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "icc": [
         "app2-icc-single",
@@ -271,7 +281,11 @@
         "iccp",
         "webp-iccp",
         "tiff-icc",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "xmp": [
         "app1-xmp-standard",
@@ -281,7 +295,11 @@
         "webp-xmp",
         "tiff-xmp",
         "xmp-packet",
-        "xmp-packet-unwrapped"
+        "xmp-packet-unwrapped",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "iptc": [
         "app13-8bim-iptc",
@@ -290,15 +308,27 @@
         "itxt-raw-profile-iptc",
         "webp-iptc",
         "tiff-iptc",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "thumbnail": [
         "exif-ifd1-jpeg",
         "exif-ifd1-uncompressed",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "inventory": [
-        "container"
+        "container",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ]
     },
     "duplicates": [
@@ -12585,6 +12615,2910 @@
       "batch": "B5",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp.tif"
+    },
+    {
+      "rowId": "EX0289-DNG-INVENTORY-INVENTORY-0001",
+      "format": "DNG",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-COMMENTS-READ-0001",
+      "format": "DNG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-READ-0001",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-INSERT-0001",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-empty.dng",
+        "sha256": "758c123d5aeb9fbbcd94474e6a1177549bd483cf28b5b9981f6b5fe7a2ab4f98",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REPLACE-0001",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REMOVE-0001",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-READ-0001",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-INSERT-0001",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-empty.dng",
+        "sha256": "758c123d5aeb9fbbcd94474e6a1177549bd483cf28b5b9981f6b5fe7a2ab4f98",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REPLACE-0001",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REMOVE-0001",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-READ-0001",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-INSERT-0001",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-empty.dng",
+        "sha256": "758c123d5aeb9fbbcd94474e6a1177549bd483cf28b5b9981f6b5fe7a2ab4f98",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REPLACE-0001",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REMOVE-0001",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-READ-0001",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-INSERT-0001",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-empty.dng",
+        "sha256": "758c123d5aeb9fbbcd94474e6a1177549bd483cf28b5b9981f6b5fe7a2ab4f98",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REPLACE-0001",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REMOVE-0001",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present.dng",
+        "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-READ-0001",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present-ifd1.dng",
+        "sha256": "6a4a2b6fe8c79b2bc64d60344467075a36ff8690c480d3cf3126acc342a27809",
+        "length": 1447,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=b6-raw-ii-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-INSERT-0001",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-empty.dng",
+        "sha256": "758c123d5aeb9fbbcd94474e6a1177549bd483cf28b5b9981f6b5fe7a2ab4f98",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REPLACE-0001",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present-ifd1.dng",
+        "sha256": "6a4a2b6fe8c79b2bc64d60344467075a36ff8690c480d3cf3126acc342a27809",
+        "length": 1447,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REMOVE-0001",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-ii-present-ifd1.dng",
+        "sha256": "6a4a2b6fe8c79b2bc64d60344467075a36ff8690c480d3cf3126acc342a27809",
+        "length": 1447,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-ii-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-INVENTORY-INVENTORY-0002",
+      "format": "DNG",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-COMMENTS-READ-0002",
+      "format": "DNG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-READ-0002",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-INSERT-0002",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-empty.dng",
+        "sha256": "4180e2180bb590f5958c8c0ff1f6b66947a8b8a4c4e9be4e27a768691f2f536e",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REPLACE-0002",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REMOVE-0002",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-READ-0002",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-INSERT-0002",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-empty.dng",
+        "sha256": "4180e2180bb590f5958c8c0ff1f6b66947a8b8a4c4e9be4e27a768691f2f536e",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REPLACE-0002",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REMOVE-0002",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-READ-0002",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-INSERT-0002",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-empty.dng",
+        "sha256": "4180e2180bb590f5958c8c0ff1f6b66947a8b8a4c4e9be4e27a768691f2f536e",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REPLACE-0002",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REMOVE-0002",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-READ-0002",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-INSERT-0002",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-empty.dng",
+        "sha256": "4180e2180bb590f5958c8c0ff1f6b66947a8b8a4c4e9be4e27a768691f2f536e",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REPLACE-0002",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REMOVE-0002",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present.dng",
+        "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+        "length": 1256,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-READ-0002",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present-ifd1.dng",
+        "sha256": "97dea37a03a337366e30701d96cbb90df9cfbd5f4fb8bac50e8fe84b9bf970b8",
+        "length": 1447,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=b6-raw-mm-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-INSERT-0002",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-empty.dng",
+        "sha256": "4180e2180bb590f5958c8c0ff1f6b66947a8b8a4c4e9be4e27a768691f2f536e",
+        "length": 572,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REPLACE-0002",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present-ifd1.dng",
+        "sha256": "97dea37a03a337366e30701d96cbb90df9cfbd5f4fb8bac50e8fe84b9bf970b8",
+        "length": 1447,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REMOVE-0002",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-raw-mm-present-ifd1.dng",
+        "sha256": "97dea37a03a337366e30701d96cbb90df9cfbd5f4fb8bac50e8fe84b9bf970b8",
+        "length": 1447,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-raw-mm-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-INVENTORY-INVENTORY-0003",
+      "format": "DNG",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-COMMENTS-READ-0003",
+      "format": "DNG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-READ-0003",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-INSERT-0003",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-empty.dng",
+        "sha256": "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REPLACE-0003",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REMOVE-0003",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-READ-0003",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-INSERT-0003",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-empty.dng",
+        "sha256": "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REPLACE-0003",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REMOVE-0003",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-READ-0003",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-INSERT-0003",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-empty.dng",
+        "sha256": "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REPLACE-0003",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REMOVE-0003",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-READ-0003",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-INSERT-0003",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-empty.dng",
+        "sha256": "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REPLACE-0003",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REMOVE-0003",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present.dng",
+        "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-READ-0003",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present-ifd1.dng",
+        "sha256": "d66869c7c8f60d4a02912a8b6e1cc3fe252baa4667ce1cf17ec754ac7f701c0b",
+        "length": 1909,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=b6-thumb-ii-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-INSERT-0003",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-empty.dng",
+        "sha256": "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REPLACE-0003",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present-ifd1.dng",
+        "sha256": "d66869c7c8f60d4a02912a8b6e1cc3fe252baa4667ce1cf17ec754ac7f701c0b",
+        "length": 1909,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REMOVE-0003",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-ii-present-ifd1.dng",
+        "sha256": "d66869c7c8f60d4a02912a8b6e1cc3fe252baa4667ce1cf17ec754ac7f701c0b",
+        "length": 1909,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-ii-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-INVENTORY-INVENTORY-0004",
+      "format": "DNG",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-COMMENTS-READ-0004",
+      "format": "DNG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-READ-0004",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-INSERT-0004",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-empty.dng",
+        "sha256": "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REPLACE-0004",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REMOVE-0004",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-READ-0004",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-INSERT-0004",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-empty.dng",
+        "sha256": "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REPLACE-0004",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REMOVE-0004",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-READ-0004",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-INSERT-0004",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-empty.dng",
+        "sha256": "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REPLACE-0004",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REMOVE-0004",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-READ-0004",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-INSERT-0004",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-empty.dng",
+        "sha256": "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REPLACE-0004",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REMOVE-0004",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present.dng",
+        "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+        "length": 1718,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior); see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-READ-0004",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present-ifd1.dng",
+        "sha256": "ab599eb914803a4f40b059f2b994e256db3da8b7d4064cdca4f4eba5e9ef8af3",
+        "length": 1909,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=b6-thumb-mm-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-INSERT-0004",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-empty.dng",
+        "sha256": "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9",
+        "length": 1034,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-empty.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REPLACE-0004",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present-ifd1.dng",
+        "sha256": "ab599eb914803a4f40b059f2b994e256db3da8b7d4064cdca4f4eba5e9ef8af3",
+        "length": 1909,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present-ifd1.dng"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REMOVE-0004",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": {
+        "file": "b6-thumb-mm-present-ifd1.dng",
+        "sha256": "ab599eb914803a4f40b059f2b994e256db3da8b7d4064cdca4f4eba5e9ef8af3",
+        "length": 1909,
+        "rights": "owned-synthetic",
+        "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+      },
+      "oracle": {
+        "type": "specification",
+        "detail": "spec-derived independent expectation checked at observation time; pinned Exiv2 0.28.9 observation recorded; see evidence/e01-b6-census"
+      },
+      "baselineObservation": "observed-cli",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "B6 pinned-CLI observation: outcome=accepted; exit-observed; fixture=b6-thumb-mm-present-ifd1.dng"
     }
   ]
 }

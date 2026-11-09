@@ -1,0 +1,11 @@
+{
+  "rights": "owned-synthetic",
+  "generator": "tools/reference/dng_census_fixtures.py",
+  "manifest": "tests/fixtures/dng/census-manifest.json",
+  "inputs": [
+    "D1 authored DNG tags and 4x2 CFA/RGB sample bytes from tools/reference/dng_fixtures.py",
+    "authored ICC profile, XMP packet and IPTC IIM bytes from the existing B4 owned-fixture generators"
+  ],
+  "description": "Classic TIFF, raw IFD0 or RGB preview IFD0 with CFA SubIFD, in II and MM byte order. Empty and metadata-present IFD0 variants. Present adds Artist, XMP, IPTC, ICC and XPComment; empty removes IFD0 Artist and does not add those carriers. A third variant has a chained IFD1 with authored JPEG thumbnail; this is distinct from the RGB preview root.",
+  "limitations": "No camera captures, raw decoder, compressed raw samples, vendor MakerNotes or general DNG validator. The IFD1 variant's full DNG conformance has not been independently established; treat it as an authored structural probe. Pixel preservation testing compares the stored CFA strip bytes only."
+}

@@ -1,6 +1,6 @@
 # Current development state and recovery checkpoint
 
-Updated 2026-11-09 (B5 merged via PR #37; receipt PR on `arena/d254f2b2-metadatasharp`). Read
+B6 census observations prepared on `arena/3dc8aab2-metadatasharp`; CI/merge pending. Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
 
@@ -23,21 +23,19 @@ authorized**.
   targeting (42446034373); E03 contracts + implementation; E04/D0 exact DNG proposal
   approved (no implementation); E05/D1 narrow read-only DNG (PR #21); E01-CEN census
   design approved 2026-11-08.
-- Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): batches **B0–B5 DONE**
-  — 379 rows (B0 135 + B1 58 + B2 67 + B3 43 +
-  B4 50 + B5 26); 337 `observed-cli` + 42 static `not-applicable`; coded
-  payload/scan preserved **284/284** observed in-image rows (B5 packet documents
-  carry no coded payload; SHA-256/length/xpacket facts recorded instead); all 379
-  rows `verification: not-assessed`; **`denominatorFrozen: false`; no coverage
-  percentage is computed or implied; freeze is a separate, developer-authorized
-  step after B14**; no exclusion signed; `nonzero-exit-artifact-produced` kept as
-  its own class. Evidence under `docs/research/evidence/e01-b0-census/` …
-  `e01-b5-census/` (b0–b5 carry `receipt.json`; artifact digests are
-  metadata-only — bytes not retrievable from this sandbox).
-- Enumeration breadth today: JPEG, PNG, WebP, TIFF, XMP (5 of 31 seed formats;
-  XMP sidecar axis adds 6 `unknown-raw` observed rows; 30 seed cells enumerated,
-  156 pending — B6–B14).
-- Next in §5 numeric order: **B6 (DNG)** → … → B14, then the final freeze PR
+- Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): B0–B5 merged;
+  B6 observed locally on this branch, **CI and merge pending**. 467 rows
+  (135 + 58 + 67 + 43 + 50 + 26 + 88); 425 observed-cli, 42 static
+  not-applicable. B6 CFA strip bytes preserved 88/88 in local observations;
+  no raw decode or rendered equivalence is established. Four thumbnail reads
+  produced matching output but returned 137 and are classified separately.
+  All rows `verification: not-assessed`; `denominatorFrozen: false`; no coverage
+  percentage. B0–B5 receipts are metadata-only; B6 local evidence is under
+  `docs/research/evidence/e01-b6-census/`, without a CI receipt yet.
+- Enumeration breadth: JPEG, PNG, WebP, TIFF, XMP, DNG; 36 seed cells
+  enumerated, 150 pending. B6 fixture and oracle limitations are recorded in
+  its evidence README; no exclusion or DNG write support is implied.
+- Next in §5 numeric order: **B6 (DNG; in progress)** → … → B14, then the final freeze PR
   (developer-authorized). Not started: E06 typed vocabulary
   breadth; E07 container gap closure + MetadataSharp-side verification (until then
   verification stays not-assessed); E08–E12 new format families; E13–E15
@@ -70,8 +68,8 @@ PROGRESS.md.
 
 ## Active branch and scope
 
-Assigned branch **arena/d254f2b2-metadatasharp** (B5 receipt PR; based on master
-`7b4bc97`); never switch to master or another branch. Standing authorization
+Assigned branch **arena/3dc8aab2-metadatasharp** (B6 census; based on master
+`6a4d493`); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -141,7 +139,7 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   produced its own class, never a pass; Q4 numeric order B2→B14, all in this cycle;
   Q5 no percentages pre-freeze). Recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md
   §9; freeze happens in its own PR after B14; gate stays OPEN; B4 (TIFF) implemented;
-  B5 (XMP) implemented on this branch; next batch B6 (DNG).
+  B5 (XMP) merged; B6 (DNG) in progress.
 - B2 merged via PR #29 (`ba52ac1`, run 42558351437, 15/15 green); receipt at
   docs/research/evidence/e01-b2-census/receipt.json (metadata-only; artifact bytes
   not retrievable from the sandbox).
@@ -168,7 +166,7 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
   1 refused / 0 static not-applicable / 0 scan-changed; inventory track extended to
   XMP; sidecar-presence read probes record the sidecar token absent from the
   image's printed output on JPEG/PNG/WebP/TIFF; Census 379 rows; denominatorFrozen
-  stays false; no percentage; E01 gate OPEN; next batch B6.
+  stays false; no percentage; E01 gate OPEN; B6 in progress.
 
 - E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
   42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.
@@ -306,3 +304,28 @@ comments/exif/icc/iptc/thumbnail families as a B5-additive extension discovered 
 in PR #37); B5 observations rehearsed via the pinned CLI, status passed; reference
 suite 17/17.
 Merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/15).
+
+## B6 working checkpoint
+
+B6 is in progress on `arena/3dc8aab2-metadatasharp`. The user authorized
+continuation to subsequent stages without another confirmation; existing separate
+publication, D2 write and denominator-freeze restrictions remain in force.
+`tools/reference/dng_raw_oracle.py` adds a bounded classic-TIFF CFA strip-byte
+oracle for the owned D1 raw and SubIFD fixtures, with both byte orders and
+fail-closed malformed-input tests in `tests/reference/test_dng_raw_oracle.py`.
+It is not a raw-image decoder, and does not establish rendered pixel equivalence.
+Local reference tests: 34/34; discovery: 104/104; census `--check` passed.
+B6 also has 12 owned D1-derived fixture variants with separately pinned manifest
+and provenance: both endian orders, raw/preview root, empty/present IFD0 carriers,
+and present variants with a chained JPEG IFD1. The preview root is not the IFD1;
+the IFD1 variant's full DNG conformance is not independently established. A
+bounded IFD0 byte oracle extracts selected metadata carriers without decoding.
+A pinned-source local Exiv2 preflight exercised 28 exploratory CLI probes across
+four owned D1 fixtures: all commands/readbacks returned zero and CFA strip bytes
+were unchanged. The raw facts and build/linkage limitations are recorded in
+`docs/research/evidence/e01-b6-preflight/`; these are not census observations
+or MetadataSharp verification. B6's implemented observer now records 88 local
+rows, integrated into the census and CI workflow; local evidence and limitations
+are in `docs/research/evidence/e01-b6-census/`. CI and PR merge remain pending.
+After green-CI merge and a receipt, continue to B7 without a new user confirmation,
+while maintaining format rights/oracle reviews and the separate release limits.

@@ -1947,3 +1947,19 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   Census stays 379 rows; denominatorFrozen stays false; verification not-assessed;
   no percentage; D2/publication NOT authorized; E01 gate OPEN. Next: B6 (DNG) per
   §5 order (not started; pending developer «гоу»).
+
+### E01 B6 — local observations, CI pending
+
+- Implemented D1-derived DNG fixture catalog, bounded CFA/IFD0/IFD1 oracles,
+  88-row census observer and CI step on `arena/3dc8aab2-metadatasharp`.
+  Local rehearsal (observer source b1acd7a, Exiv2 source b0859fc61) recorded
+  84 accepted and 4 nonzero-exit-artifact-produced; the latter are matching
+  JPEG thumbnail extractions returning 137. CFA strip bytes unchanged in 88/88;
+  this does not decode raw pixels. IFD1 variant full DNG conformance is not
+  independently established. See `docs/research/evidence/e01-b6-census/` for
+  scope, CLI-only semantic checks and local build provenance. B6 requires green
+  CI and merge before calling the batch done. Census 467 rows, 425 observed-cli
+  and 42 static not-applicable; all verification not-assessed, denominatorFrozen
+  false; no percentage. Reference tests 34/34, discovery 104/104, census check
+  passed. User authorized subsequent stages without a new confirmation, not
+  publication, DNG D2 write or denominator freeze.

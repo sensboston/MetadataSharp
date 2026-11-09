@@ -36,6 +36,7 @@ EVIDENCE_BY_BATCH = {
     'B3': ROOT / 'docs/research/evidence/e01-b3-census/observations.json',
     'B4': ROOT / 'docs/research/evidence/e01-b4-census/observations.json',
     'B5': ROOT / 'docs/research/evidence/e01-b5-census/observations.json',
+    'B6': ROOT / 'docs/research/evidence/e01-b6-census/observations.json',
 }
 FIXTURE_MANIFESTS = {
     'JPEG': ROOT / 'tests/fixtures/jpeg/manifest.json',
@@ -43,6 +44,7 @@ FIXTURE_MANIFESTS = {
     'WEBP': ROOT / 'tests/fixtures/webp/census-manifest.json',
     'TIFF': ROOT / 'tests/fixtures/tiff/manifest.json',
     'XMP': ROOT / 'tests/fixtures/xmp/manifest.json',
+    'DNG': ROOT / 'tests/fixtures/dng/census-manifest.json',
 }
 
 # Axis collapses that are statically impossible, reviewed with the B0 pilot and B1.
@@ -91,6 +93,11 @@ LAYOUTS = {
     'thumbnail': ['exif-ifd1-jpeg', 'exif-ifd1-uncompressed', 'xmp-packet'],
     'inventory': ['container'],
 }
+# B6: exact byte order and raw-root versus preview-root are distinct fixture layouts.
+DNG_LAYOUTS = ['dng-raw-ii', 'dng-raw-mm', 'dng-preview-ii', 'dng-preview-mm']
+for _family in FAMILIES + ['inventory']:
+    LAYOUTS[_family].extend(DNG_LAYOUTS)
+
 DUPLICATES = ['none', 'first-wins', 'multiple-independent']
 SIDECARS = ['none', 'xmp-present']  # B5 adds the presence-probe value (xmp-applied stays E15)
 PRESENCE_VALUES = ['true', 'false', 'unknown']
@@ -374,6 +381,24 @@ def build_rows(seeds):
              layout=layout, duplicates='none', batch='B5', sidecar='xmp-present',
              notes=f'presence probe: adjacent <stem>.xmp sidecar next to the {fmt} fixture; the pinned CLI '
                    'opens the image only; presence never implies application; xmp-applied writes stay E15')
+    # B6: D1-derived DNGs, separating byte order and raw/preview roots.
+    # EXIF IFD1 JPEG is used for thumbnail operations, and is distinct from
+    # the reduced RGB root preview; conformance of that authored IFD1 variant
+    # remains unverified. Duplicate and raw-encoding grids remain future work.
+    for layout in DNG_LAYOUTS:
+        emit('DNG', 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
+             layout=layout, duplicates='none', batch='B6',
+             notes='owned D1-derived DNG recognition probe; raw CFA bytes checked, no raw decode')
+        emit('DNG', 'comments', 'read', value_type='text-bytes', text_encoding='not-applicable',
+             layout=layout, duplicates='none', batch='B6', no_claim=True,
+             notes='no documented comments claim; XPComment is a structural probe, not support')
+        for family in ('exif', 'icc', 'iptc', 'xmp', 'thumbnail'):
+            for operation in ('read', 'insert', 'replace', 'remove'):
+                value_type = 'any-documented' if family == 'exif' else 'text-bytes' if family == 'xmp' else 'opaque'
+                encoding = 'utf-8' if family == 'xmp' else 'not-applicable'
+                emit('DNG', family, operation, value_type=value_type, text_encoding=encoding,
+                     layout=layout, duplicates='none', batch='B6',
+                     notes='D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle')
     return rows
 
 
@@ -438,19 +463,20 @@ def apply_observations(rows):
 def build(seeds):
     rows = build_rows(seeds)
     rows, applied_batches = apply_observations(rows)
-    enumerated = ({'JPEG/inventory', 'PNG/inventory', 'WEBP/inventory', 'TIFF/inventory', 'XMP/inventory'}
+    enumerated = ({'JPEG/inventory', 'PNG/inventory', 'WEBP/inventory', 'TIFF/inventory', 'XMP/inventory', 'DNG/inventory'}
                   | {f'JPEG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
                   | {f'PNG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
                   | {f'WEBP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
                   | {f'TIFF/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
-                  | {f'XMP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
+                  | {f'XMP/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')}
+                  | {f'DNG/{family}' for family in ('exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail')})
     pending = sorted(s['seedId'] for s in seeds['seeds']
                      if f"{s['format']}/{s['family']}" not in {e for e in enumerated if 'inventory' not in e})
     assert len({r['rowId'] for r in rows}) == len(rows)
     enumerations = dict(
         reviewStatus='reviewed',
         reviewedAt='2026-11-09',
-        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; 2026-11-09 extension adds xmp-packet carrier layouts under the approved B5 batch',
+        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts',
         family=[*FAMILIES, 'inventory'],
         operation=OPERATIONS,
         extractFamilies=EXTRACT_FAMILIES,
@@ -483,6 +509,7 @@ def build(seeds):
                'B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), '
                'icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and '
                'the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. '
+               'B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. '
                + ((f'Pinned-CLI observation complete for batch(es) {", ".join(applied_batches)}: '
                     'rows flipped to observed-cli/not-applicable; no coverage percentage; '
                     'no denominator computed. ') if applied_batches else
@@ -490,7 +517,7 @@ def build(seeds):
                + 'Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.'),
         coverage={
             'enumerated': sorted(enumerated - {'JPEG/inventory'}),
-            'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF', 'XMP'],
+            'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF', 'XMP', 'DNG'],
             'pendingSeedIds': pending,
         },
         enumerations=enumerations,
