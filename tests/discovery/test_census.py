@@ -108,6 +108,27 @@ class CensusPolicyTests(unittest.TestCase):
         for row in b3:
             self.assertEqual('not-assessed', row['verification'])
 
+    def test_b4_batch_is_fully_observed_or_static_not_applicable(self):
+        evidence = load_evidence('b4')
+        self.assertIsNotNone(evidence, 'B4 pinned-CLI observation evidence is required')
+        self.assertEqual('passed', evidence['status'])
+        self.assertEqual('B4', evidence['batch'])
+        b4 = [r for r in self.report['rows'] if r['batch'] == 'B4']
+        static = {row['rowId'] for row in b4 if census.static_not_applicable(row)}
+        observed = {r['rowId'] for r in b4 if r['baselineObservation'] == 'observed-cli'}
+        not_applicable = {r['rowId'] for r in b4 if r['baselineObservation'] == 'not-applicable'}
+        self.assertEqual(len(b4), len(observed) + len(not_applicable))
+        self.assertEqual(static, not_applicable)
+        self.assertEqual({'EX0289-TIFF-THUMBNAIL-INSERT-0002'}, static)
+        self.assertEqual({o['id'] for o in evidence['observations']}, observed)
+        self.assertEqual(1, evidence['outcomeCounts'].get('static-not-applicable'))
+        self.assertEqual(0, evidence['outcomeCounts'].get('scan-changed', 0))
+        self.assertEqual(49, len(observed))
+        unexpected = [o for o in evidence['observations'] if o['outcome'] == 'accepted-unexpected']
+        self.assertEqual([], [o['id'] for o in unexpected])
+        for row in b4:
+            self.assertEqual('not-assessed', row['verification'])
+
     def test_b1_batch_is_fully_observed_or_static_not_applicable(self):
         evidence = load_evidence('b1')
         self.assertIsNotNone(evidence, 'B1 pinned-CLI observation evidence is required')
@@ -133,7 +154,7 @@ class CensusPolicyTests(unittest.TestCase):
 
     def test_observed_rows_carry_pinned_owned_synthetic_fixtures(self):
         manifests = {}
-        for fmt in ('JPEG', 'PNG'):
+        for fmt in ('JPEG', 'PNG', 'TIFF'):
             manifests[fmt] = {e['file']: e for e in json.loads((ROOT / f'tests/fixtures/{fmt.lower()}/manifest.json').read_text())}
         manifests['WEBP'] = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/webp/census-manifest.json').read_text())}
         for row in self.report['rows']:
@@ -152,12 +173,13 @@ class CensusPolicyTests(unittest.TestCase):
     def test_scope_is_observed_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
         self.assertEqual({'exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail', 'inventory'}, families)
-        self.assertEqual(3, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
+        self.assertEqual(4, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
         self.assertEqual(135, sum(1 for r in self.report['rows'] if r['batch'] == 'B0'))
         self.assertEqual(58, sum(1 for r in self.report['rows'] if r['batch'] == 'B1'))
         self.assertEqual(67, sum(1 for r in self.report['rows'] if r['batch'] == 'B2'))
         self.assertEqual(43, sum(1 for r in self.report['rows'] if r['batch'] == 'B3'))
-        self.assertEqual(303, len(self.report['rows']))
+        self.assertEqual(50, sum(1 for r in self.report['rows'] if r['batch'] == 'B4'))
+        self.assertEqual(353, len(self.report['rows']))
 
     def test_pending_cells_partition_the_seed_grid(self):
         enumerated = set(self.report['coverage']['enumerated'])
@@ -166,16 +188,17 @@ class CensusPolicyTests(unittest.TestCase):
         enumerated_seeds = {s['seedId'] for s in self.seeds['seeds']
                              if f"{s['format']}/{s['family']}" in enumerated}
         self.assertEqual(all_seeds, enumerated_seeds | pending)
-        self.assertEqual(18, len(enumerated_seeds))
+        self.assertEqual(24, len(enumerated_seeds))
 
-    def test_no_claim_rows_are_only_the_undocumented_png_and_webp_cells(self):
+    def test_no_claim_rows_are_only_the_undocumented_png_webp_and_tiff_cells(self):
         no_claim = {r['rowId'] for r in self.report['rows'] if r['noDocumentedClaim']}
         self.assertEqual({'EX0289-PNG-COMMENTS-READ-0001', 'EX0289-PNG-EXIF-READ-0001',
-                          'EX0289-WEBP-COMMENTS-READ-0001', 'EX0289-WEBP-IPTC-READ-0001'}, no_claim)
+                          'EX0289-WEBP-COMMENTS-READ-0001', 'EX0289-WEBP-IPTC-READ-0001',
+                          'EX0289-TIFF-COMMENTS-READ-0001'}, no_claim)
         for row in self.report['rows']:
             if row['noDocumentedClaim']:
                 self.assertEqual('read', row['operation'])
-                self.assertIn(row['batch'], ('B2', 'B3'))
+                self.assertIn(row['batch'], ('B2', 'B3', 'B4'))
 
     def test_rows_never_use_metadataSharp_as_oracle(self):
         for row in self.report['rows']:
