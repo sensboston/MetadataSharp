@@ -12,3 +12,8 @@ docs/research/evidence/e01-b8-jp2-preflight/ci-observations.json text eol=lf
 tests/fixtures/b8/owned-vector.eps text eol=lf
 # B8 EPS preflight receipt hashes exact observation bytes.
 docs/research/evidence/e01-b8-eps-preflight/ci-observations.json text eol=lf
+# The B8 census receipt hashes exact observation bytes across OS checkout modes.
+docs/research/evidence/e01-b8-census/observations.json text eol=lf
+docs/research/evidence/e01-b8-census/ci-observations.json text eol=lf
+# The B8 census manifest is hashed as committed bytes by the discovery tests.
+tests/fixtures/b8/census-manifest.json text eol=lf

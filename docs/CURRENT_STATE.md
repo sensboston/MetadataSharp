@@ -1,10 +1,14 @@
 # Current development state and recovery checkpoint
 
-B8 PSD preflight PR #46 merged; the user requested format implementation in
-a larger PR. Narrow PSD/JP2 readers are under review on
-`arena/4eea2642-metadatasharp`. CR3 remains
-blocked; no denominator freeze, MetadataSharp verification, publication or DNG
-D2 write is authorized. See the B8 checkpoint below.
+E08 bounded read-only PSD/JP2/EPS inspection merged via PR #47. B8 census batch is
+recorded on `arena/d14591cf-metadatasharp` (PR #48): 53 rows, 31 `observed-cli` from
+the pinned CI Exiv2 0.28.9 job plus 22 explicit `blocked` rows for PGF/EXV/DCP whose
+fixture and oracle review is still pending. Evidence lives in
+`docs/research/evidence/e01-b8-census/` (CI-only: no local reproduction exists and
+none is claimed). Every B8 write suboperation, PSD ICC/thumbnail resources, and the
+JP2/EPS metadata-present fixtures stay open. CR3 remains blocked; no denominator
+freeze, MetadataSharp verification, publication or DNG D2 write is authorized. See the
+B8 checkpoint below.
 
 
 B7 bounded census merged via PR #43; receipt on `arena/b5ec38f5-metadatasharp`. Read
@@ -31,8 +35,13 @@ authorized**.
   approved (no implementation); E05/D1 narrow read-only DNG (PR #21); E01-CEN census
   design approved 2026-11-08.
 - Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): B0–B5 merged;
-  B6 merged via PR #39 (`e6325be`, run 42698556762, 15/15 green). B7 bounded evidence merged via PR #43 (`514ed0b`): census has 515 rows (B0–B6 467, B7 48): 465
-  observed-cli, 42 static not-applicable, eight CR3 blocked on rights. B6 CFA strip bytes preserved 88/88 in local observations;
+  B6 merged via PR #39 (`e6325be`, run 42698556762, 15/15 green). B7 bounded evidence merged via PR #43 (`514ed0b`). B8 enumerated
+  on the current branch (PR #48): census has 568 rows (B0–B7 515, B8 53). B0–B7 hold 465
+  observed-cli, 42 static not-applicable and eight CR3 blocked-on-rights rows. B8 adds 31
+  observed-cli read-only probes and 22 blocked-rights rows, with 0 scan-changed and every
+  input byte-identical; the resource-bearing PSD's four `-pa` family rows share one
+  identical 206-byte print, so no per-family attribution is claimed. B8 evidence is CI-only
+  (annotation recovery, three chunks, hashes in `receipt.json`). B6 CFA strip bytes preserved 88/88 in local observations;
   no raw decode or rendered equivalence is established. Four thumbnail reads
   produced matching output but returned 137 and are classified separately.
   All rows `verification: not-assessed`; `denominatorFrozen: false`; no coverage
@@ -40,11 +49,15 @@ authorized**.
   recovers CI observations from complete check-run annotation chunks and records
   an exact match of all 88 observation objects and the fixture manifest.
 - Enumeration breadth: JPEG, PNG, WebP, TIFF, XMP, DNG, AVIF, HEIF, HEIC,
-  CR3 and JXL; 66 seed cells enumerated, 120 pending. CR3 is enumerated but
-  remains blocked, not observed or excluded. B6 fixture and oracle limitations are recorded in
+  CR3, JXL, PSD, JP2, EPS, PGF, EXV and DCP; 102 seed cells enumerated, 84 pending.
+  CR3 and the three pending B8 formats are enumerated but
+  remain blocked, not observed or excluded. B6 fixture and oracle limitations are recorded in
   its evidence README; no exclusion or DNG write support is implied.
-- Next in §5 numeric order: **B8**, with B7 rights/metadata gaps retained → … → B14, then the final freeze PR
-  (developer-authorized). Not started: E06 typed vocabulary
+- Next in §5 numeric order: **B9** (RAW wave 1), with the B7 rights/metadata gaps and B8's
+  own gaps retained → … → B14, then the final freeze PR
+  (developer-authorized). B8's open gaps stay visible: JP2/PSD metadata-present variants,
+  PSD ICC/thumbnail resources, every B8 write suboperation and PGF/EXV/DCP fixtures.
+  Not started: E06 typed vocabulary
   breadth; E07 container gap closure + MetadataSharp-side verification (until then
   verification stays not-assessed); E08–E12 new format families; E13–E15
   editing/preview/workflow breadth; E16 evidence-backed improvements; E17
@@ -76,8 +89,10 @@ PROGRESS.md.
 
 ## Active branch and scope
 
-Assigned branch **arena/4eea2642-metadatasharp** (E08 work; based on master
-`0441e77`); never switch to master or another branch. Standing authorization
+Assigned branch **arena/d14591cf-metadatasharp** (E01 B8 census; based on master
+`a3d4727`, which already contains the merged E08 PSD/JP2/EPS work from
+PR #47 on `arena/4eea2642-metadatasharp`); never switch to master or another
+branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.

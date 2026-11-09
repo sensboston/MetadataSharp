@@ -2101,3 +2101,106 @@ no denominator freeze, publication or DNG D2 write.
   were not retrievable; text fixture CRLF was a suspected cause, not confirmed.
   Explicit LF attributes were added and the next full run passed unchanged
   hash tests. Further count-budget tests and receipt are pending final CI.
+
+### E01 B8 — census enumeration and pinned-CLI recorder
+
+- Authorization: the developer selected "B8 census now" on 2026-11-09 (skip the
+  standalone documentation checkpoint; PGF/EXV/DCP rights review stays separate).
+  Existing publication, DNG D2 write and denominator-freeze refusals remain in force.
+- Enumeration: `tools/reference/build_census.py` adds batch **B8** with 53 rows over
+  seven layouts — `flat-rgb-v1-metadata` and `flat-rgb-v1-no-resources` (PSD),
+  `jp2-boxed-rgb` (JP2), `eps-dsc-bounding-box` (EPS) and the pending-format cells
+  `pgf-unobserved`, `exv-unobserved`, `dcp-unobserved`. Each layout gets an inventory
+  probe, six family reads and a thumbnail extract row only where the pinned seed
+  claims one; `noDocumentedClaim` is derived from the same seed table. Census totals:
+  568 rows (B0–B7 515 unchanged), 102 seed cells enumerated, 84 pending,
+  22 inventory rows, `denominatorFrozen: false` and `verification: not-assessed`
+  on every row. Closed enumerations gained the seven layouts for all seven axis
+  families; no other value was added.
+- Recorder: `tools/reference/observe_b8.py` runs exactly one read-only pinned-CLI
+  probe per row (`-pS`, `-pa`, `-pc`, `-pC`, `-et`), pins the Exiv2 source head,
+  CMake cache, license and executable digests, refuses to record anything before
+  `E01_SOURCE_COMMIT` and the 53-row census are verified, and classifies through the
+  shared `observe_b0.classify` rules so a refusal stays a refusal and any input
+  mutation becomes `scan-changed`. Rows for layouts with no cleared fixture are
+  emitted as `blocked` with a per-format reason taken from
+  `docs/research/E01_B8_RIGHTS_AND_ORACLE_REVIEW.md`. Command stdout is kept as
+  digests plus the three authored token facts; the whole report must fit the
+  ten-annotation recovery budget (`chunks()` raises instead of truncating).
+- Fixture catalog: `tools/reference/b8_census_fixtures.py` joins the three
+  independently authored B8 fixtures to one census manifest
+  (`tests/fixtures/b8/census-manifest.json`, four entries with recipes) and derives
+  container structure from the bytes with the standard library only: PSD header,
+  section lengths and `8BIM` resource accounting; JP2 top-level box walk; a bounded
+  EPS DSC scan that never executes PostScript. Existing per-format manifests and the
+  merged preflight evidence were not touched, so no previously pinned hash moved.
+- Validation actually run locally: `python3 tools/reference/b8_census_fixtures.py
+  verify` (4 fixtures) and `generate` reproduced the committed manifest byte-for-byte;
+  `python -m unittest discover -s tests/reference` 81/81 OK (16 new offline tests for
+  the catalog and the recorder, including fail-closed truncated/overrun PSD bytes,
+  trailing JP2 box bytes, binary and marker-less EPS bytes, refusal/artifact/mutation
+  classification, stderr path normalization and the annotation-size guard);
+  `python -m unittest discover -s tests/discovery` 106/106 OK;
+  `python tools/reference/build_census.py --check` exit 0;
+  `python tools/reference/build_capability_seeds.py --check` exit 0;
+  `git diff --check` clean.
+- Not run and not claimed: no pinned Exiv2 or ExifTool exists in this sandbox and the
+  SDK is still absent, so **no B8 row is observed by this commit** and no .NET build or
+  test executed locally. The pinned observations, their CI receipt and the census flip
+  to `observed-cli`/`blocked` come from the CI job added here
+  (`B8 census observation batch` plus the `e01-b8-census-observations` artifact) and a
+  follow-up evidence commit on this branch.
+- Retained B8 gaps, deliberately visible: JP2 and EPS fixtures carry no metadata, so
+  their empty probes prove nothing about metadata-present reading; PSD ICC and
+  thumbnail resources, PSB, layers and codec conformance are untested; no B8 write
+  suboperation is enumerated or observed because no owned writable fixture and no
+  owned ICC/thumbnail payload is cleared yet; B7 CR3 and its metadata/oracle gaps stay
+  open. Nothing here freezes a denominator, authorizes publication or DNG D2 write.
+
+### E01 B8 — CI observations recovered and folded into the census
+
+- PR #48 head run 42721442673 passed 15/15; the `Exiv2 0.28.9 / bounded E01
+  observations` job ran `tools/reference/observe_b8.py` against the pinned
+  0.28.9 build and emitted the report as three `B8Z observations.json` check-run
+  annotations. The Actions bulk-log host is unreachable here, so the report was
+  recovered through the annotation channel and is committed byte-pinned in
+  `docs/research/evidence/e01-b8-census/observations.json` with `README.md` and
+  `receipt.json`. This sandbox has no cmake/ninja and no expat/zlib development
+  headers, so there is **no local run** and none is claimed. Instead of B6/B7's
+  local/CI pair, B8 keeps a second CI sample: the same recorder re-ran on head
+  `dd4c9be` (run 42723616969) and is committed as `ci-observations.json`.
+  `observations`, `blocked`, `fixtureManifest` and `outcomeCounts` matched
+  byte-for-byte across the two runs; what differs is `sourceCommit`, the ExifTool
+  `System:File*Date` fields (and that report's raw stdout digest), and
+  `baseline.executableSha256` plus the `time=` line of the version banner, because the
+  reference build embeds its own timestamp. So the recorded conclusion is narrow: the
+  **observations are reproducible, the compiled binary is not**, and the receipt pins
+  the digest of the exact build that produced the primary evidence rather than claiming
+  a reproducible build. The discovery suite asserts all of this, including that the
+  envelope digest genuinely differs, so the normalization cannot be mistaken for a
+  stronger claim.
+- Recorded outcome counts: 18 accepted, 13 refused, 22 blocked-rights,
+  0 static-not-applicable, 0 scan-changed; all 31 inputs stayed byte-identical and no
+  command produced an artifact. Census: 568 rows, B8 = 31 `observed-cli` + 22 `blocked`;
+  `denominatorFrozen: false` and `verification: not-assessed` on every row.
+- Actual pinned-CLI behavior on the owned fixtures: the resource-bearing PSD answers
+  `-pa` with exit 0 and one 206-byte print containing all three authored tokens, so
+  the EXIF, IPTC, XMP and thumbnail **read rows share one identical output** and no row
+  may be read as an independent per-family claim (the discovery suite now asserts that
+  equality instead of trusting prose); `-pc` exits 0 with a single newline byte, `-pC`
+  exits 1 and `-et` exits 0 with nothing produced; `-pS` exits 1 on both PSD layouts,
+  which is why the flat PSD records eight refusals rather than eight "absent metadata"
+  results. JP2 recognizes the file (`-pS` exit 0, 379-byte print) but every family probe
+  prints nothing and `-et` exits 253. EPS refuses `-pS`/`-pC` and prints nothing for
+  `-pa`/`-pc`; PostScript was never executed by anything in this repository.
+- Local validation after the flip: `python -m unittest discover -s tests/discovery`
+  106/106 (including receipt hash equality for both the committed file and the exact
+  recovered annotation payload), `tests/reference` 81/81, `build_census.py --check`
+  exit 0, `build_capability_seeds.py --check` exit 0, `git diff --check` clean.
+  No .NET build or test was run locally (no SDK); the CI six OS/TFM jobs are the
+  .NET evidence.
+- Still open after this batch, and not closed by it: every B8 write suboperation
+  (no owned writable fixture, no owned ICC/thumbnail payload), PSD ICC/thumbnail
+  resources and PSB/layers, JP2/EPS metadata-present fixtures, PGF/EXV/DCP
+  rights and oracles, and the B7 CR3 block. No exclusion is signed, no denominator is
+  frozen, publication and DNG D2 write remain unauthorized.
