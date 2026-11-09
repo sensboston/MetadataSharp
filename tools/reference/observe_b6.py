@@ -206,7 +206,12 @@ def main():
         report['status'] = 'passed'
         save()
         encoded = base64.b64encode(zlib.compress(json.dumps(report, separators=(',', ':')).encode())).decode()
-        chunks = [encoded[i:i + 2500] for i in range(0, len(encoded), 2500)]
+        # GitHub retains at most ten notice annotations per step. Use a larger
+        # chunk for this report and fail explicitly rather than emit an incomplete
+        # recoverable-looking sequence when the report grows beyond that cap.
+        chunks = [encoded[i:i + 6000] for i in range(0, len(encoded), 6000)]
+        if len(chunks) > 10:
+            raise ValueError('B6 report exceeds the ten-annotation recovery limit')
         for i, chunk in enumerate(chunks):
             print(f'::notice title=B6Z observations.json {i}/{len(chunks)}::{chunk}', flush=True)
     except Exception:
