@@ -2066,3 +2066,38 @@ discovery 105/105, fixture regeneration and census --check passed.
   reported no thumbnail/no artifact despite rc=0, and `-pS`/`-pC` returned
   unsupported. These are limited observations, not census coverage or support.
   Local and CI secondary JSON agree excluding environment-specific fields.
+
+### E08 — bounded PSD and JP2 read-only implementation under review
+
+The user requested implementation of other formats in one larger PR. Added
+PSD v1 flat 8-bit RGB resource inspection (opaque defensive payload copies)
+and boxed JP2 declared dimensions / opaque top-level XML inspection, both with
+finite limits and fail-closed unsupported layouts. Neither decodes pixels,
+interprets metadata families, performs writes or claims general support.
+No capability status is changed because raw resources are not parsed family
+metadata. PSD fixtures and preflight were previously merged; JP2 rights review
+`0e37d2a` preceded a new authored pinned-encoder 8×8 fixture. Local ImageMagick
+6.9.11-60 decoded it exactly but may share the OpenJPEG codec family; CI fixture
+regeneration and pinned Exiv2/ExifTool preflight are pending. Local reference
+62/62, discovery 105/105, census --check and JP2 regeneration passed; no local
+.NET SDK, so .NET build/tests await CI. B8 census not closed, CR3 remains blocked;
+no denominator freeze, publication or DNG D2 write.
+
+- EPS was added to the same PR after individual rights review commit `380f882`:
+  owned ASCII fixture and bounded EPSF 3.0 bounding-box header reader; no
+  PostScript is executed, interpreted or validated. Initial PSD/JP2 CI run
+  42712354021 passed 15/15 and pinned JP2 preflight was recovered: `-pS`, `-pa`,
+  `-pc`, `-pC` returned zero, `-et` returned 253 with no EXIF; all inputs
+  unchanged. Empty metadata probes do not establish support. ExifTool reports
+  8×8 JP2; full JP2 normative conformance is not implied. EPS CI pending.
+
+- EPS CI preflight recovered from 42713667205 (head `3759862`): Exiv2 returned
+  unsupported for `-pS`/`-pC`, zero with no metadata for `-pa`/`-pc`, and 253
+  for absent EXIF thumbnail; all five inputs unchanged, no artifact. ExifTool
+  reported bounding box `0 0 10 12`. See e01-b8-eps-preflight receipt; these
+  are not metadata-present support or a rendering oracle. Run 42713667205 was
+  15/15 green with 562 passing tests in each of six OS/TFM jobs. Previous run
+  42713118803 failed offline reference-policy tests on both Windows jobs. Logs
+  were not retrievable; text fixture CRLF was a suspected cause, not confirmed.
+  Explicit LF attributes were added and the next full run passed unchanged
+  hash tests. Further count-budget tests and receipt are pending final CI.

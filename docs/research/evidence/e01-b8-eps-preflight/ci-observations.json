@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "status": "passed",
+  "scope": "B8 EPS preflight only; no census rows",
+  "sourceCommit": "3759862e2f414255fe6c555e01f32ba4e3c92ccc",
+  "baseline": {
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "version": "0.28.9",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "cmakeCacheSha256": "8f13f98e9fd2e35b240d5086f2570f88f2f4a57e78e52b5306688ae61817f98f",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "executableSha256": "754e487465ff01ad589a7c1f7718c4d01164468f700468e68670612d590eae98",
+    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov  9 2026\ntime=22:39:56\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n"
+  },
+  "denominatorFrozen": false,
+  "verification": "not-assessed",
+  "observations": [
+    {
+      "fixture": "owned-vector.eps",
+      "fixtureSha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+      "operations": [
+        {
+          "flag": "-pS",
+          "exitCode": 1,
+          "inputUnchanged": true,
+          "stdout": "",
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pS/case.eps:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pS/case.eps is not supported\n",
+          "artifacts": []
+        },
+        {
+          "flag": "-pa",
+          "exitCode": 0,
+          "inputUnchanged": true,
+          "stdout": "",
+          "stderr": "",
+          "artifacts": []
+        },
+        {
+          "flag": "-pc",
+          "exitCode": 0,
+          "inputUnchanged": true,
+          "stdout": "\n",
+          "stderr": "",
+          "artifacts": []
+        },
+        {
+          "flag": "-pC",
+          "exitCode": 1,
+          "inputUnchanged": true,
+          "stdout": "",
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pC/case.eps:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pC/case.eps is not supported\n",
+          "artifacts": []
+        },
+        {
+          "flag": "-et",
+          "exitCode": 253,
+          "inputUnchanged": true,
+          "stdout": "",
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/et/case.eps: No Exif data found in the file\n",
+          "artifacts": []
+        }
+      ],
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pS/case.eps"
+          ],
+          "exitCode": 1,
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "",
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pS/case.eps:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pS/case.eps is not supported\n"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pa/case.eps"
+          ],
+          "exitCode": 0,
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "",
+          "stderr": ""
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pc/case.eps"
+          ],
+          "exitCode": 0,
+          "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+          "stdout": "\n",
+          "stderr": ""
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pC/case.eps"
+          ],
+          "exitCode": 1,
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "",
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pC/case.eps:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/pC/case.eps is not supported\n"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/et/case.eps"
+          ],
+          "exitCode": 253,
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout": "",
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b8-eps-preflight/work/owned-vector/et/case.eps: No Exif data found in the file\n"
+        }
+      ]
+    }
+  ],
+  "secondary": [
+    {
+      "tool": "ExifTool",
+      "version": "12.76",
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "fixtureSha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+      "fixtureLength": 168,
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "ceb489572dff1c3fd0ef762d1f17234f3a70ee32a947d0a14486caa778bd65b9",
+      "stderr": "",
+      "json": [
+        {
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b8/owned-vector.eps",
+          "ExifTool:ExifToolVersion": 12.76,
+          "System:FileName": "owned-vector.eps",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b8",
+          "System:FileSize": "168 bytes",
+          "System:FileModifyDate": "2026:11:09 22:39:10+00:00",
+          "System:FileAccessDate": "2026:11:09 22:40:28+00:00",
+          "System:FileInodeChangeDate": "2026:11:09 22:39:10+00:00",
+          "System:FilePermissions": "-rw-r--r--",
+          "File:FileType": "EPS",
+          "File:FileTypeExtension": "eps",
+          "File:MIMEType": "application/postscript",
+          "PostScript:BoundingBox": "0 0 10 12",
+          "PostScript:Creator": "MetadataSharp B8",
+          "Composite:ImageHeight": 12,
+          "Composite:ImageWidth": 10,
+          "Composite:ImageSize": "10x12",
+          "Composite:Megapixels": 0.00012
+        }
+      ],
+      "jsonParseError": null,
+      "interpretation": "secondary-observation-not-conformance"
+    }
+  ],
+  "fixtureManifest": [
+    {
+      "file": "owned-vector.eps",
+      "format": "EPS",
+      "length": 168,
+      "sha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+      "rights": "owned-synthetic",
+      "boundingBox": [
+        0,
+        0,
+        10,
+        12
+      ],
+      "metadata": "none"
+    }
+  ]
+}

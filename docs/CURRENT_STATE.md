@@ -1,7 +1,8 @@
 # Current development state and recovery checkpoint
 
-B7 receipt PR #44 and B8 groundwork PR #45 merged; B8 PSD metadata
-research continues on `arena/92db23e9-metadatasharp`. CR3 remains
+B8 PSD preflight PR #46 merged; the user requested format implementation in
+a larger PR. Narrow PSD/JP2 readers are under review on
+`arena/4eea2642-metadatasharp`. CR3 remains
 blocked; no denominator freeze, MetadataSharp verification, publication or DNG
 D2 write is authorized. See the B8 checkpoint below.
 
@@ -75,8 +76,8 @@ PROGRESS.md.
 
 ## Active branch and scope
 
-Assigned branch **arena/b5ec38f5-metadatasharp** (B7; based on master
-`514ed0b`); never switch to master or another branch. Standing authorization
+Assigned branch **arena/4eea2642-metadatasharp** (E08 work; based on master
+`0441e77`); never switch to master or another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -390,3 +391,30 @@ its recovered report records flat file five unknown-type refusals and rich
 file three printed metadata values, empty/no-thumbnail outcomes and -pS/-pC
 not-supported. All ten inputs unchanged. No B8 census rows have yet been observed. ICC and thumbnail are absent. JP2, PGF,
 EPS, EXV, DCP and B7 CR3 remain unresolved; no denominator freeze.
+
+## E08 bounded PSD and JP2 implementation — working branch
+
+User requested implementation of the remaining formats and maximal work in one
+PR. New `PsdMetadata` and `Jp2Metadata` implement bounded synchronous buffer
+inspection only: PSD v1 uncompressed flat RGB image resources as opaque copies;
+JP2 32-bit boxes, dimensions and opaque top-level XML boxes. No pixel decode,
+metadata interpretation, full validation, editing or preservation is claimed.
+Unsupported structures fail closed; capabilities for parsed metadata remain
+NotSupported. Independent rights review precedes authored JPEG 2000 fixture;
+PSD has existing authored fixture and pinned preflight, JP2 pinned preflight is recorded at
+`docs/research/evidence/e01-b8-jp2-preflight/`. E01 census is not modified or verified by these
+new product tests; no percentages or denominator freeze. Remaining B8 formats
+PGF, EPS, EXV and DCP and broad PSD/JP2 variants still require implementation
+and rights/oracle work. B7 CR3 stays blocked. Full contract:
+`docs/design/E08_PSD_JP2_BOUNDED_READ_CONTRACT.md`.
+
+### EPS header inspection added to the same E08 PR
+
+After a separate EPS rights review, added a small independently authored EPSF
+3.0 fixture and `EpsHeader.Read`, a bounded DSC bounding-box scanner. It never
+executes, interprets or validates PostScript, nor verifies rendering. It only
+accepts immediate four integer coordinates and explicit EndComments. Pinned
+reference preflight run 42713667205 passed and is committed in
+`docs/research/evidence/e01-b8-eps-preflight/`; six OS/TFM jobs each passed 562
+tests. CI after the receipt and additional budget tests is pending. PGF/EXV/DCP
+remain unresolved.

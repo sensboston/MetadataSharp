@@ -4,6 +4,13 @@ An MIT-licensed managed .NET library for image metadata editing without
 pixel decoding or recompression. **Early implementation: restricted JPEG EXIF/IPTC/XMP, static PNG/WebP EXIF/XMP editing and XMP sidecars with conservative safety refusals; classic TIFF layout accounting and restricted descriptive editing (obsolete bytes retained).**
 This is not general image-format or full RDF/XMP support.
 
+Narrow read-only PSD, JP2 and EPS buffer inspection is also available: PSD exposes
+opaque image-resource payloads for flat, uncompressed 8-bit RGB files; JP2
+reports declared dimensions and opaque XML boxes; EPS reads a restricted DSC
+bounding box and never executes PostScript. These readers do not decode pixels,
+validate metadata payloads, support all variants or write files. See the
+[bounded contracts](docs/design/E08_PSD_JP2_BOUNDED_READ_CONTRACT.md).
+
 ## Current expansion programme
 
 [Independent Exiv2 capability coverage and .NET 8/10 programme](docs/roadmaps/EXIV2_PARITY_AND_DOTNET_PROGRAM.md)

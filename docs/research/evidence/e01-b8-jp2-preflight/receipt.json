@@ -1,0 +1,18 @@
+{
+  "pullRequest": 47,
+  "headCommit": "35010695638589724670749f690f628d7e8b0b39",
+  "runId": 42712354021,
+  "jobId": 129484941509,
+  "runUrl": "https://github.com/sensboston/MetadataSharp/actions/runs/42712354021",
+  "annotationChunks": 2,
+  "recovery": "two check-run annotations concatenated, base64-decoded and zlib-decompressed, JSON pretty-printed with final LF",
+  "ciObservationsSha256": "b6a1222e3efa9fa11812f344e54c83ea25ff5b8f1ece4a912a30133c2c6348c5",
+  "artifact": {
+    "id": 13717195496,
+    "name": "e01-b8-jp2-preflight",
+    "digest": "sha256:5a1c3b95bcc6a4f9ce9f2b464c2683a8d664c69ebfbd1b5340758cb8c35867ca",
+    "expiresAt": "2026-12-09T22:31:38Z",
+    "note": "Artifact ZIP metadata only; ZIP not downloaded."
+  },
+  "scope": "read-only preflight; absent metadata; not E01 census rows or complete JP2 conformance"
+}

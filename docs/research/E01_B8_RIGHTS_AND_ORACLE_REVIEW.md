@@ -33,6 +33,14 @@ PSB, layer structures, copied samples, or any other format; Adobe's overview of
 EXIF does not by itself resolve every EXIF prefix/encoding ambiguity, so both
 external references' actual behavior and independent parsing must be recorded.
 
+## JP2 owned-fixture decision — reviewed before authoring
+
+The [Library of Congress JPEG 2000 profile](https://www.loc.gov/ndnp/guidelines/docs/NDNP_JP2HistNewsProfile.pdf), appendix A, describes JP2 signature and file-type box order, the JP2 header superbox and contiguous codestream; it is a profile/overview, not a full ISO/IEC 15444-1 conformance oracle. [Pillow's JPEG 2000 documentation](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html) distinguishes boxed JP2 from bare codestream and describes its OpenJPEG encoder. Permit only an independently authored RGB pixel array encoded to boxed JP2 using pinned research-only Pillow/OpenJPEG, with wheel hashes, independently checked box framing, deterministic regeneration and decoder sanity check. No external images, Exiv2 implementation or samples are copied; no patent clearance or full normative conformance is implied. Metadata-present JP2 requires its own later review.
+
+## EPS owned-fixture decision — reviewed before authoring
+
+Adobe's [EPSF 3.0 specification](https://printtechnologies.org/standards/files/epsf_spec_v3_0.pdf) describes required identifying and BoundingBox DSC comments and the single-page enclosing rectangle. Permit only a small independently authored ASCII EPS with a simple geometrical drawing, no external data, no binaries, no fonts, no preview and no copied examples. A bounded header scanner must never execute PostScript; checking a bounding box does not prove EPS or PostScript conformance, safe execution, rendering, metadata support or that the box actually encloses the marks. Other EPS variants, deferred bounding boxes and previews are not cleared by this decision.
+
 ## General gate
 
 For each later format decision, document the specific source, rights for the
