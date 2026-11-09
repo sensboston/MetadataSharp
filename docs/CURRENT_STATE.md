@@ -385,6 +385,8 @@ pinned ExifTool 12.76 read all three authored rich metadata values. ExifTool
 reports Compression Unknown (12183) on both although the authored compression
 field is zero; this is an unresolved discrepancy, not a diagnosed error. See
 `docs/research/evidence/e01-b8-psd-preflight/`. New CI preflight runs pinned
-Exiv2 and ExifTool and records outcomes, but no B8 census rows have yet been
-observed and CI evidence is pending. ICC and thumbnail are absent. JP2, PGF,
+Exiv2 and ExifTool and records outcomes. CI run 42710532014 passed 15/15;
+its recovered report records flat file five unknown-type refusals and rich
+file three printed metadata values, empty/no-thumbnail outcomes and -pS/-pC
+not-supported. All ten inputs unchanged. No B8 census rows have yet been observed. ICC and thumbnail are absent. JP2, PGF,
 EPS, EXV, DCP and B7 CR3 remain unresolved; no denominator freeze.

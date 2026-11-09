@@ -2058,3 +2058,11 @@ secondary-reference CI preflight is added; recorded outcomes do not constitute
 census completion or product verification. B8 other formats, ICC and thumbnail
 metadata-present cases, and B7 CR3 remain open. Local reference tests 59/59,
 discovery 105/105, fixture regeneration and census --check passed.
+
+- PR #46 preliminary CI run 42710532014 passed 15/15. Both compressed report
+  chunks were recovered and recorded with receipt. All ten inputs unchanged;
+  the flat PSD gave unknown image type on all five Exiv2 commands. Rich PSD
+  `-pa` printed all three authored tokens; `-pc` printed no comment, `-et`
+  reported no thumbnail/no artifact despite rc=0, and `-pS`/`-pC` returned
+  unsupported. These are limited observations, not census coverage or support.
+  Local and CI secondary JSON agree excluding environment-specific fields.

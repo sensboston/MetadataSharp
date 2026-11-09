@@ -24,8 +24,18 @@ The workflow runs `tools/reference/probe_b8_psd.py` using pinned Exiv2 0.28.9
 and ExifTool 12.76. It verifies fixture bytes, source versions/build features,
 records each CLI command, exit, outputs, extraction artifacts, unchanged input,
 and emits compressed annotations plus an artifact. Outcomes are recorded, not
-gated as support assertions. CI output and results are not claimed here until
-recovered and inspected. Exiv2/ExifTool are external tools only; no upstream
+gated as support assertions. PR #46 run 42710532014 passed 15/15; the complete two-chunk annotation report
+was recovered and stored as `ci-observations.json` (see receipt). In that run,
+all ten read-only probes left their inputs unchanged. On the 52-byte flat file,
+all five commands returned 1 with unknown image type; on the metadata-rich file,
+`-pa` returned 0 and printed all three authored values, `-pc` returned 0 with
+empty content, `-et` returned 0 with a no-thumbnail message and no artifact,
+while `-pS` and `-pC` returned 1 saying image type not supported. Do not infer
+why the two files differ or equate an empty success with successful extraction.
+Local and CI ExifTool JSON match after removing environment-specific `System:*`
+and `SourceFile` fields; report hashes and ZIP metadata are recorded in the
+receipt, but ZIP bytes were not retrieved. This is a CI preflight against PR head
+`5fc0ae0`, not a completed census. Exiv2/ExifTool are external tools only; no upstream
 fixtures/code are copied into the project or linked into production.
 
 These probes have **not** been folded into the census, and do not complete B8.
