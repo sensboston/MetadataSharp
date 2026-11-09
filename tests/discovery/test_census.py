@@ -278,6 +278,9 @@ class CensusPolicyTests(unittest.TestCase):
             manifests[fmt] = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b7/manifest.json').read_text())}
         manifests['DNG'] = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/dng/census-manifest.json').read_text())}
         manifests['WEBP'] = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/webp/census-manifest.json').read_text())}
+        b8 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b8/census-manifest.json').read_text())}
+        for fmt in ('PSD', 'JP2', 'EPS'):
+            manifests[fmt] = b8
         for row in self.report['rows']:
             if row['baselineObservation'] == 'not-applicable':
                 self.assertIsNone(row['fixture'])
@@ -294,10 +297,50 @@ class CensusPolicyTests(unittest.TestCase):
             self.assertEqual('owned-synthetic', fixture['rights'])
             self.assertIn(f"{row['batch']} pinned-CLI observation", row['notes'])
 
+    def test_b8_rows_partition_observed_and_blocked(self):
+        rows = [r for r in self.report['rows'] if r['batch'] == 'B8']
+        self.assertEqual(53, len(rows))
+        self.assertEqual({'PSD', 'JP2', 'EPS', 'PGF', 'EXV', 'DCP'}, {r['format'] for r in rows})
+        # Two PSD layouts, one JP2 and one EPS fixture are cleared; the pending formats
+        # keep exactly one unobserved layout each.
+        self.assertEqual({'flat-rgb-v1-metadata', 'flat-rgb-v1-no-resources'},
+                         {r['layout'] for r in rows if r['format'] == 'PSD'})
+        self.assertEqual({'jp2-boxed-rgb'}, {r['layout'] for r in rows if r['format'] == 'JP2'})
+        self.assertEqual({'eps-dsc-bounding-box'}, {r['layout'] for r in rows if r['format'] == 'EPS'})
+        # No B8 write suboperation is enumerated yet: no owned writable fixture is cleared.
+        for row in rows:
+            self.assertEqual('not-assessed', row['verification'])
+            self.assertIn(row['operation'], ('inventory', 'read', 'extract'))
+        evidence = load_evidence('b8')
+        blocked_layouts = {'pgf-unobserved', 'exv-unobserved', 'dcp-unobserved'}
+        if evidence is None:
+            self.assertEqual({'not-run'}, {r['baselineObservation'] for r in rows})
+            self.assertTrue(all(r['fixture'] is None for r in rows),
+                            'B8 evidence arrives with its own receipt PR')
+            return
+        self.assertEqual('passed', evidence['status'])
+        self.assertEqual('B8', evidence['batch'])
+        self.assertFalse(evidence['denominatorFrozen'])
+        self.assertEqual('not-assessed', evidence['verification'])
+        observed = {o['id'] for o in evidence['observations']}
+        blocked = {o['id'] for o in evidence['blocked']}
+        self.assertEqual(31, len(observed))
+        self.assertEqual(22, len(blocked))
+        self.assertFalse(observed & blocked)
+        self.assertEqual({r['rowId'] for r in rows}, observed | blocked)
+        self.assertEqual(blocked, {r['rowId'] for r in rows if r['layout'] in blocked_layouts})
+        self.assertEqual(blocked, {r['rowId'] for r in rows if r['baselineObservation'] == 'blocked'})
+        self.assertEqual(observed, {r['rowId'] for r in rows if r['baselineObservation'] == 'observed-cli'})
+        # Read-only probes must never mutate an owned fixture, and the pinned CLI is the
+        # only oracle here, so every row is recorded, not judged.
+        self.assertTrue(all(o['facts']['inputUnchanged'] for o in evidence['observations']))
+        self.assertTrue(all(o['recordOnly'] and o['expectOk'] is None for o in evidence['observations']))
+        self.assertEqual(0, evidence['outcomeCounts'].get('scan-changed', 0))
+
     def test_scope_is_observed_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
         self.assertEqual({'exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail', 'inventory'}, families)
-        self.assertEqual(15, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
+        self.assertEqual(22, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
         self.assertEqual(135, sum(1 for r in self.report['rows'] if r['batch'] == 'B0'))
         self.assertEqual(58, sum(1 for r in self.report['rows'] if r['batch'] == 'B1'))
         self.assertEqual(67, sum(1 for r in self.report['rows'] if r['batch'] == 'B2'))
@@ -306,7 +349,8 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(26, sum(1 for r in self.report['rows'] if r['batch'] == 'B5'))
         self.assertEqual(88, sum(1 for r in self.report['rows'] if r['batch'] == 'B6'))
         self.assertEqual(48, sum(1 for r in self.report['rows'] if r['batch'] == 'B7'))
-        self.assertEqual(515, len(self.report['rows']))
+        self.assertEqual(53, sum(1 for r in self.report['rows'] if r['batch'] == 'B8'))
+        self.assertEqual(568, len(self.report['rows']))
 
     def test_pending_cells_partition_the_seed_grid(self):
         enumerated = set(self.report['coverage']['enumerated'])
@@ -315,7 +359,8 @@ class CensusPolicyTests(unittest.TestCase):
         enumerated_seeds = {s['seedId'] for s in self.seeds['seeds']
                              if f"{s['format']}/{s['family']}" in enumerated}
         self.assertEqual(all_seeds, enumerated_seeds | pending)
-        self.assertEqual(66, len(enumerated_seeds))
+        self.assertEqual(102, len(enumerated_seeds))
+        self.assertEqual(84, len(pending))
 
     def test_no_claim_rows_are_only_the_undocumented_cells(self):
         no_claim = {r['rowId'] for r in self.report['rows'] if r['noDocumentedClaim']}
@@ -330,11 +375,21 @@ class CensusPolicyTests(unittest.TestCase):
                          {f'EX0289-{fmt}-{family}-READ-{num:04d}'
                           for fmt in ('AVIF', 'HEIF', 'HEIC', 'CR3', 'JXL')
                           for family in ('COMMENTS', 'ICC')
-                          for num in (range(1, 3) if fmt == 'JXL' else range(1, 2))}, no_claim)
+                          for num in (range(1, 3) if fmt == 'JXL' else range(1, 2))} |
+                         # B8 undocumented cells, derived from the pinned seed claims.
+                         {'EX0289-PSD-COMMENTS-READ-0001', 'EX0289-PSD-COMMENTS-READ-0002',
+                          'EX0289-PSD-ICC-READ-0001', 'EX0289-PSD-ICC-READ-0002',
+                          'EX0289-JP2-COMMENTS-READ-0001',
+                          'EX0289-EPS-COMMENTS-READ-0001', 'EX0289-EPS-EXIF-READ-0001',
+                          'EX0289-EPS-ICC-READ-0001', 'EX0289-EPS-IPTC-READ-0001',
+                          'EX0289-EPS-THUMBNAIL-READ-0001', 'EX0289-PGF-THUMBNAIL-READ-0001',
+                          'EX0289-DCP-COMMENTS-READ-0001', 'EX0289-DCP-ICC-READ-0001',
+                          'EX0289-DCP-IPTC-READ-0001', 'EX0289-DCP-THUMBNAIL-READ-0001',
+                          'EX0289-DCP-XMP-READ-0001'}, no_claim)
         for row in self.report['rows']:
             if row['noDocumentedClaim']:
                 self.assertEqual('read', row['operation'])
-                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7'))
+                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8'))
 
     def test_rows_never_use_metadataSharp_as_oracle(self):
         for row in self.report['rows']:

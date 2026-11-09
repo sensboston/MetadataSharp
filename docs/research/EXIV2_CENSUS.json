@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "AVIF/comments",
@@ -23,6 +23,13 @@
       "CR3/iptc",
       "CR3/thumbnail",
       "CR3/xmp",
+      "DCP/comments",
+      "DCP/exif",
+      "DCP/icc",
+      "DCP/inventory",
+      "DCP/iptc",
+      "DCP/thumbnail",
+      "DCP/xmp",
       "DNG/comments",
       "DNG/exif",
       "DNG/icc",
@@ -30,6 +37,20 @@
       "DNG/iptc",
       "DNG/thumbnail",
       "DNG/xmp",
+      "EPS/comments",
+      "EPS/exif",
+      "EPS/icc",
+      "EPS/inventory",
+      "EPS/iptc",
+      "EPS/thumbnail",
+      "EPS/xmp",
+      "EXV/comments",
+      "EXV/exif",
+      "EXV/icc",
+      "EXV/inventory",
+      "EXV/iptc",
+      "EXV/thumbnail",
+      "EXV/xmp",
       "HEIC/comments",
       "HEIC/exif",
       "HEIC/icc",
@@ -44,6 +65,13 @@
       "HEIF/iptc",
       "HEIF/thumbnail",
       "HEIF/xmp",
+      "JP2/comments",
+      "JP2/exif",
+      "JP2/icc",
+      "JP2/inventory",
+      "JP2/iptc",
+      "JP2/thumbnail",
+      "JP2/xmp",
       "JPEG/comments",
       "JPEG/exif",
       "JPEG/icc",
@@ -57,6 +85,13 @@
       "JXL/iptc",
       "JXL/thumbnail",
       "JXL/xmp",
+      "PGF/comments",
+      "PGF/exif",
+      "PGF/icc",
+      "PGF/inventory",
+      "PGF/iptc",
+      "PGF/thumbnail",
+      "PGF/xmp",
       "PNG/comments",
       "PNG/exif",
       "PNG/icc",
@@ -64,6 +99,13 @@
       "PNG/iptc",
       "PNG/thumbnail",
       "PNG/xmp",
+      "PSD/comments",
+      "PSD/exif",
+      "PSD/icc",
+      "PSD/inventory",
+      "PSD/iptc",
+      "PSD/thumbnail",
+      "PSD/xmp",
       "TIFF/comments",
       "TIFF/exif",
       "TIFF/icc",
@@ -124,36 +166,12 @@
       "EX0289-CRW-IPTC",
       "EX0289-CRW-THUMBNAIL",
       "EX0289-CRW-XMP",
-      "EX0289-DCP-COMMENTS",
-      "EX0289-DCP-EXIF",
-      "EX0289-DCP-ICC",
-      "EX0289-DCP-IPTC",
-      "EX0289-DCP-THUMBNAIL",
-      "EX0289-DCP-XMP",
-      "EX0289-EPS-COMMENTS",
-      "EX0289-EPS-EXIF",
-      "EX0289-EPS-ICC",
-      "EX0289-EPS-IPTC",
-      "EX0289-EPS-THUMBNAIL",
-      "EX0289-EPS-XMP",
-      "EX0289-EXV-COMMENTS",
-      "EX0289-EXV-EXIF",
-      "EX0289-EXV-ICC",
-      "EX0289-EXV-IPTC",
-      "EX0289-EXV-THUMBNAIL",
-      "EX0289-EXV-XMP",
       "EX0289-GIF-COMMENTS",
       "EX0289-GIF-EXIF",
       "EX0289-GIF-ICC",
       "EX0289-GIF-IPTC",
       "EX0289-GIF-THUMBNAIL",
       "EX0289-GIF-XMP",
-      "EX0289-JP2-COMMENTS",
-      "EX0289-JP2-EXIF",
-      "EX0289-JP2-ICC",
-      "EX0289-JP2-IPTC",
-      "EX0289-JP2-THUMBNAIL",
-      "EX0289-JP2-XMP",
       "EX0289-MRW-COMMENTS",
       "EX0289-MRW-EXIF",
       "EX0289-MRW-ICC",
@@ -178,18 +196,6 @@
       "EX0289-PEF-IPTC",
       "EX0289-PEF-THUMBNAIL",
       "EX0289-PEF-XMP",
-      "EX0289-PGF-COMMENTS",
-      "EX0289-PGF-EXIF",
-      "EX0289-PGF-ICC",
-      "EX0289-PGF-IPTC",
-      "EX0289-PGF-THUMBNAIL",
-      "EX0289-PGF-XMP",
-      "EX0289-PSD-COMMENTS",
-      "EX0289-PSD-EXIF",
-      "EX0289-PSD-ICC",
-      "EX0289-PSD-IPTC",
-      "EX0289-PSD-THUMBNAIL",
-      "EX0289-PSD-XMP",
       "EX0289-RAF-COMMENTS",
       "EX0289-RAF-EXIF",
       "EX0289-RAF-ICC",
@@ -225,7 +231,7 @@
   "enumerations": {
     "reviewStatus": "reviewed",
     "reviewedAt": "2026-11-09",
-    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts",
+    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts; B8 adds owned PSD/JP2/EPS probe layouts and the pending-format unobserved layouts",
     "family": [
       "exif",
       "iptc",
@@ -277,7 +283,14 @@
         "bmff-heic-hevc",
         "bmff-cr3",
         "jxl-container",
-        "jxl-codestream"
+        "jxl-codestream",
+        "flat-rgb-v1-metadata",
+        "flat-rgb-v1-no-resources",
+        "jp2-boxed-rgb",
+        "eps-dsc-bounding-box",
+        "pgf-unobserved",
+        "exv-unobserved",
+        "dcp-unobserved"
       ],
       "comments": [
         "com-single",
@@ -295,7 +308,14 @@
         "bmff-heic-hevc",
         "bmff-cr3",
         "jxl-container",
-        "jxl-codestream"
+        "jxl-codestream",
+        "flat-rgb-v1-metadata",
+        "flat-rgb-v1-no-resources",
+        "jp2-boxed-rgb",
+        "eps-dsc-bounding-box",
+        "pgf-unobserved",
+        "exv-unobserved",
+        "dcp-unobserved"
       ],
       "icc": [
         "app2-icc-single",
@@ -313,7 +333,14 @@
         "bmff-heic-hevc",
         "bmff-cr3",
         "jxl-container",
-        "jxl-codestream"
+        "jxl-codestream",
+        "flat-rgb-v1-metadata",
+        "flat-rgb-v1-no-resources",
+        "jp2-boxed-rgb",
+        "eps-dsc-bounding-box",
+        "pgf-unobserved",
+        "exv-unobserved",
+        "dcp-unobserved"
       ],
       "xmp": [
         "app1-xmp-standard",
@@ -333,7 +360,14 @@
         "bmff-heic-hevc",
         "bmff-cr3",
         "jxl-container",
-        "jxl-codestream"
+        "jxl-codestream",
+        "flat-rgb-v1-metadata",
+        "flat-rgb-v1-no-resources",
+        "jp2-boxed-rgb",
+        "eps-dsc-bounding-box",
+        "pgf-unobserved",
+        "exv-unobserved",
+        "dcp-unobserved"
       ],
       "iptc": [
         "app13-8bim-iptc",
@@ -352,7 +386,14 @@
         "bmff-heic-hevc",
         "bmff-cr3",
         "jxl-container",
-        "jxl-codestream"
+        "jxl-codestream",
+        "flat-rgb-v1-metadata",
+        "flat-rgb-v1-no-resources",
+        "jp2-boxed-rgb",
+        "eps-dsc-bounding-box",
+        "pgf-unobserved",
+        "exv-unobserved",
+        "dcp-unobserved"
       ],
       "thumbnail": [
         "exif-ifd1-jpeg",
@@ -367,7 +408,14 @@
         "bmff-heic-hevc",
         "bmff-cr3",
         "jxl-container",
-        "jxl-codestream"
+        "jxl-codestream",
+        "flat-rgb-v1-metadata",
+        "flat-rgb-v1-no-resources",
+        "jp2-boxed-rgb",
+        "eps-dsc-bounding-box",
+        "pgf-unobserved",
+        "exv-unobserved",
+        "dcp-unobserved"
       ],
       "inventory": [
         "container",
@@ -380,7 +428,14 @@
         "bmff-heic-hevc",
         "bmff-cr3",
         "jxl-container",
-        "jxl-codestream"
+        "jxl-codestream",
+        "flat-rgb-v1-metadata",
+        "flat-rgb-v1-no-resources",
+        "jp2-boxed-rgb",
+        "eps-dsc-bounding-box",
+        "pgf-unobserved",
+        "exv-unobserved",
+        "dcp-unobserved"
       ]
     },
     "duplicates": [
@@ -17107,6 +17162,1437 @@
       "batch": "B7",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B7 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-codestream.jxl"
+    },
+    {
+      "rowId": "EX0289-PSD-INVENTORY-INVENTORY-0001",
+      "format": "PSD",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-metadata",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-PSD-EXIF-READ-0001",
+      "format": "PSD",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-metadata",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-IPTC-READ-0001",
+      "format": "PSD",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-metadata",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-XMP-READ-0001",
+      "format": "PSD",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "flat-rgb-v1-metadata",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-COMMENTS-READ-0001",
+      "format": "PSD",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-metadata",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-ICC-READ-0001",
+      "format": "PSD",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-metadata",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-THUMBNAIL-READ-0001",
+      "format": "PSD",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-metadata",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-THUMBNAIL-EXTRACT-0001",
+      "format": "PSD",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-metadata",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; no authored thumbnail exists, so absence is recorded"
+    },
+    {
+      "rowId": "EX0289-PSD-INVENTORY-INVENTORY-0002",
+      "format": "PSD",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-no-resources",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-PSD-EXIF-READ-0002",
+      "format": "PSD",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-no-resources",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-IPTC-READ-0002",
+      "format": "PSD",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-no-resources",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-XMP-READ-0002",
+      "format": "PSD",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "flat-rgb-v1-no-resources",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-COMMENTS-READ-0002",
+      "format": "PSD",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-no-resources",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-ICC-READ-0002",
+      "format": "PSD",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-no-resources",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-THUMBNAIL-READ-0002",
+      "format": "PSD",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-no-resources",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PSD-THUMBNAIL-EXTRACT-0002",
+      "format": "PSD",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "flat-rgb-v1-no-resources",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; no authored thumbnail exists, so absence is recorded"
+    },
+    {
+      "rowId": "EX0289-JP2-INVENTORY-INVENTORY-0001",
+      "format": "JP2",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jp2-boxed-rgb",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-JP2-EXIF-READ-0001",
+      "format": "JP2",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "jp2-boxed-rgb",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-JP2-IPTC-READ-0001",
+      "format": "JP2",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jp2-boxed-rgb",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-JP2-XMP-READ-0001",
+      "format": "JP2",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "jp2-boxed-rgb",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-JP2-COMMENTS-READ-0001",
+      "format": "JP2",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "jp2-boxed-rgb",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-JP2-ICC-READ-0001",
+      "format": "JP2",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jp2-boxed-rgb",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-JP2-THUMBNAIL-READ-0001",
+      "format": "JP2",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jp2-boxed-rgb",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-JP2-THUMBNAIL-EXTRACT-0001",
+      "format": "JP2",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "jp2-boxed-rgb",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; no authored thumbnail exists, so absence is recorded"
+    },
+    {
+      "rowId": "EX0289-EPS-INVENTORY-INVENTORY-0001",
+      "format": "EPS",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "eps-dsc-bounding-box",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-EPS-EXIF-READ-0001",
+      "format": "EPS",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "eps-dsc-bounding-box",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EPS-IPTC-READ-0001",
+      "format": "EPS",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "eps-dsc-bounding-box",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EPS-XMP-READ-0001",
+      "format": "EPS",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "eps-dsc-bounding-box",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EPS-COMMENTS-READ-0001",
+      "format": "EPS",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "eps-dsc-bounding-box",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EPS-ICC-READ-0001",
+      "format": "EPS",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "eps-dsc-bounding-box",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EPS-THUMBNAIL-READ-0001",
+      "format": "EPS",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "eps-dsc-bounding-box",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PGF-INVENTORY-INVENTORY-0001",
+      "format": "PGF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "pgf-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-PGF-EXIF-READ-0001",
+      "format": "PGF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "pgf-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PGF-IPTC-READ-0001",
+      "format": "PGF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "pgf-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PGF-XMP-READ-0001",
+      "format": "PGF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "pgf-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PGF-COMMENTS-READ-0001",
+      "format": "PGF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "pgf-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PGF-ICC-READ-0001",
+      "format": "PGF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "pgf-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-PGF-THUMBNAIL-READ-0001",
+      "format": "PGF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "pgf-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EXV-INVENTORY-INVENTORY-0001",
+      "format": "EXV",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exv-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-EXV-EXIF-READ-0001",
+      "format": "EXV",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "exv-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EXV-IPTC-READ-0001",
+      "format": "EXV",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exv-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EXV-XMP-READ-0001",
+      "format": "EXV",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "exv-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EXV-COMMENTS-READ-0001",
+      "format": "EXV",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "exv-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EXV-ICC-READ-0001",
+      "format": "EXV",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exv-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EXV-THUMBNAIL-READ-0001",
+      "format": "EXV",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exv-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-EXV-THUMBNAIL-EXTRACT-0001",
+      "format": "EXV",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "exv-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "thumbnail extract attempted; no authored thumbnail exists, so absence is recorded"
+    },
+    {
+      "rowId": "EX0289-DCP-INVENTORY-INVENTORY-0001",
+      "format": "DCP",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dcp-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only container probe; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-DCP-EXIF-READ-0001",
+      "format": "DCP",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dcp-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-DCP-IPTC-READ-0001",
+      "format": "DCP",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dcp-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-DCP-XMP-READ-0001",
+      "format": "DCP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dcp-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-DCP-COMMENTS-READ-0001",
+      "format": "DCP",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "dcp-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-DCP-ICC-READ-0001",
+      "format": "DCP",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dcp-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
+    },
+    {
+      "rowId": "EX0289-DCP-THUMBNAIL-READ-0001",
+      "format": "DCP",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dcp-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B8",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "read-only bounded probe; absent or unreadable metadata is recorded, nothing asserted"
     }
   ]
 }
