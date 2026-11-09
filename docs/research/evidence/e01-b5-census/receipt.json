@@ -1,0 +1,69 @@
+{
+  "runId": "42683793923",
+  "job": "pinned-exiv2-baseline",
+  "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42683793923",
+  "pullRequest": 37,
+  "sourceCommit": "81281d6e0151c9da2b3d30e82a2f78e7a53cab6d (PR #37 head; committed observations were generated at rehearsal time with E01_SOURCE_COMMIT=b0859fc61fea5dedfc898aece6b15893ddf4314e from the local pinned build; B5 inputs — observer, fixtures, census rows — were present and unchanged at commit time)",
+  "mergeCommit": "7b4bc97d4e1ba85120aae620aedf480dc3883377",
+  "notes": "PR #37 first pull_request run (42683123936, 2026-11-09T19:25Z) failed on all six OS/TFM test jobs in 'Verify discovery seed policy' — a real failure, not GitHub-side: the closed layout enumerations did not list 'xmp-packet' for the comments/exif/icc/iptc/thumbnail families used by the B5 noDocumentedClaim probe rows. Fixed in 81281d6 (B5-additive enum extension, reviewedAt re-stamped 2026-11-09; census regenerated; discovery 103/103). The push-event twin run (42683074718) additionally showed three id-less phantom failures at 19:25Z - the same GitHub-side phantom-failure class recorded 2026-11-09T18:23Z on PR #33 (jobs with null ids, zero work, no logs); it is recorded here and needs no content remedy. The re-fired pull_request run 42683793923 went 15/15 green at 19:30Z (incl. 'Verify discovery seed policy' and the 'Exiv2 0.28.9 / bounded E01 observations' job, whose B5 step and B5 artifact-upload step both succeeded).",
+  "artifact": {
+    "name": "e01-b5-census-observations",
+    "id": 13703453617,
+    "sizeInBytes": 5628,
+    "digest": "sha256:0d6d623094c56eeb5b73c3405aef5e363def3a53f7e6e96cb1013ed23109803c",
+    "expiresAt": "2026-12-09T19:30:57Z",
+    "note": "Artifact zip digest from the GitHub Actions API (metadata only). Artifact/log bytes are NOT retrievable from the dev sandbox (host allowlist), so the committed observations.json is the locally rehearsed pinned build's output (see README provenance); the CI run re-verified pin integrity (b0859fc61), fixture determinism (regenerated and byte-compared against the committed tests/fixtures/xmp/manifest.json) and completed B0+B1+B2+B3+B4+B5 without infrastructure failure (15/15 green). The CI artifact is 5628 bytes vs 53522 for the committed rehearsal JSON (indented pretty-print + CI's own verbose-version command digest embedded); any class-level outcome difference would be a finding and is flagged here, not silently waived."
+  },
+  "artifacts": [
+    {
+      "name": "e01-b4-census-observations",
+      "id": 13703069211,
+      "sizeInBytes": 8701,
+      "digest": "sha256:bab1688aff27842754a05521c93d9f4c7891a38ebf28d31ad2d12e7dbad29bf8",
+      "note": "re-uploaded by the same run; B4 evidence freshness re-confirmed"
+    },
+    {
+      "name": "e01-b3-census-observations",
+      "id": 13703233987,
+      "sizeInBytes": 6774,
+      "digest": "sha256:137056ff374801e92f606ab02bba2ad4082f4fa679d5c0724671cc7779741e8e",
+      "note": "re-uploaded by the same run; B3 evidence freshness re-confirmed"
+    },
+    {
+      "name": "e01-b2-census-observations",
+      "id": 13703717720,
+      "sizeInBytes": 7812,
+      "digest": "sha256:770346409914b682228274f6daf7948fa8b765540e3c0cd6628831b3c93bb7a2",
+      "note": "re-uploaded by the same run; B2 evidence freshness re-confirmed"
+    },
+    {
+      "name": "e01-b1-census-observations",
+      "id": 13703293979,
+      "sizeInBytes": 8869,
+      "digest": "sha256:6a680a673f6a24b701e1b2a0876600954aa7eca2cdaa4d8ad6bdff20c99f19f8",
+      "note": "re-uploaded by the same run; B1 evidence freshness re-confirmed"
+    },
+    {
+      "name": "e01-b0-census-observations",
+      "id": 13703138878,
+      "sizeInBytes": 9493,
+      "digest": "sha256:43cb43d8fe5013347f8f7ff2351751163540bf33ba8037bc8e18c59a36952796",
+      "note": "re-uploaded by the same run; B0 evidence freshness re-confirmed"
+    },
+    {
+      "name": "e01-exiv2-0289-observations",
+      "id": 13703697696,
+      "sizeInBytes": 5878,
+      "digest": "sha256:3c6425eba0ceaac3ffd2c4c00d845c3351cbb802cae0f9babaa53778fcd63eb4"
+    }
+  ],
+  "committedObservations": [
+    {
+      "path": "docs/research/evidence/e01-b5-census/observations.json",
+      "sha256": "133ec93078a7952248602e26364d8f4df628dc47d6d13fd24e7b4a9cf4f1b916",
+      "provenance": "local pinned rehearsal against the b0859fc61 source, built with the CI job's CMAKE options (static zlib 1.3.1 / expat 2.6.2 / brotli 1.1.0 / inih r59, hand-built on the Debian-class sandbox; see README provenance)",
+      "ciOutcome": "green (15/15, run 42683793923); outcome classes of the CI artifact were not byte-verified from this sandbox; any class-level difference between the committed evidence and the CI artifact would be a finding and is flagged here, not silently waived"
+    }
+  ],
+  "encoding": "complete zlib/base64 chunks <=2500 bytes (CI notice-encoded; unverified from sandbox)"
+}

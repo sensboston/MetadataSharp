@@ -1921,3 +1921,29 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   `e01-b5-census-observations` next to the B0–B4 artifacts; the workflow was extended
   accordingly (B5 step + artifact upload). Coverage denominators remain pending
   developer sign-off after the batch set completes (freeze only after B14).
+### E01 B5 census batch — PR #37 merged — 2026-11-09
+
+- 2026-11-09: PR #37 merged (`7b4bc97d4e1ba85120aae620aedf480dc3883377`,
+  run 42683793923, 15/15 green). NOTE: the first pull_request run for PR #37
+  (42683123936, 19:25Z) failed ALL SIX OS/TFM test jobs — a real failure caught by
+  CI, not GitHub-side: the closed per-family layout enumerations in
+  tools/reference/build_census.py did not list 'xmp-packet' for the
+  comments/exif/icc/iptc/thumbnail families used by the B5 noDocumentedClaim probe
+  rows. Fixed in 81281d6 (B5-additive enum extension; reviewedAt re-stamped
+  2026-11-09; census regenerated; discovery 103/103; reference 17/17). The
+  twin push-event run (42683074718) additionally showed three id-less phantom
+  failures at 19:25Z (net8/net10 ubuntu, net10 macos) — the same GitHub-side
+  phantom-failure class recorded on 2026-11-09T18:23Z for PR #33; no content remedy.
+  The re-fired pull_request run went 15/15 green at 19:30Z (the
+  `pinned-exiv2-baseline` job rebuilt the pinned CLI, regenerated and byte-compared
+  the 6 owned XMP fixtures against tests/fixtures/xmp/manifest.json, and re-ran
+  B0+B1+B2+B3+B4+B5); artifacts uploaded (`e01-b5-census-observations` id 13703453617,
+  digest sha256:0d6d6230…, size 5628, expires 2026-12-09;
+  `e01-b0…b4-census-observations` and `e01-exiv2-0289-observations` refreshed).
+  Receipt committed as docs/research/evidence/e01-b5-census/receipt.json
+  (metadata-only digests; artifact bytes not retrievable from the sandbox — flagged,
+  not waived; committed rehearsal observations are 53522 bytes vs the CI artifact
+  zip's 5628 — see the README provenance sections for the reconciliation).
+  Census stays 379 rows; denominatorFrozen stays false; verification not-assessed;
+  no percentage; D2/publication NOT authorized; E01 gate OPEN. Next: B6 (DNG) per
+  §5 order (not started; pending developer «гоу»).
