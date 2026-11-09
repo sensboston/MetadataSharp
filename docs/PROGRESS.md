@@ -1753,3 +1753,15 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
 - CI: `pinned-exiv2-baseline` job re-runs all batches (observe_b0.py --batch all,
   observe_b2.py, observe_b3.py) and uploads `e01-b3-census-observations` next to the
   B0/B1/B2 artifacts; the workflow was extended accordingly.
+### E01 B3 census batch — PR #31 merged — 2026-11-09
+
+- 2026-11-09: PR #31 merged (`f119a45281542de1d52d207eb8099e6443ca20ce`, run
+  42661263750, 15/15 green). The `pinned-exiv2-baseline` job rebuilt the pinned
+  CLI, regenerated and byte-compared the 12 owned WebP fixtures against
+  tests/fixtures/webp/census-manifest.json, and re-ran B0+B1+B2+B3; artifacts uploaded
+  (`e01-b3-census-observations` id 13695650344, digest sha256:992a5af7…,
+  `e01-b0/b1/b2-census-observations` refreshed). Receipt committed as
+  docs/research/evidence/e01-b3-census/receipt.json (metadata-only digests;
+  artifact bytes not retrievable from the sandbox — flagged, not waived).
+  Census stays 303 rows; `denominatorFrozen: false`; verification not-assessed;
+  no percentage; D2/publication not authorized; E01 gate OPEN. Next: B4 (TIFF + inventory).

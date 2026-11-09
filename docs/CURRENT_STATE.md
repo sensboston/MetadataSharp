@@ -59,6 +59,12 @@ is in DEVELOPMENT.md section 7 and EXIV2_PARITY_MASTER_PLAN.md section 2.
 - B2 merged via PR #29 (`ba52ac1`, run 42558351437, 15/15 green); receipt at
   docs/research/evidence/e01-b2-census/receipt.json (metadata-only; artifact bytes
   not retrievable from the sandbox).
+- B3 merged via PR #31 (`f119a45`, run 42661263750, 15/15 green); receipt at
+  docs/research/evidence/e01-b3-census/receipt.json (metadata-only; artifact bytes
+  not retrievable from the sandbox). B3: 41 accepted / 1 accepted-unexpected
+  (`EX0289-WEBP-XMP-REMOVE-0001` — `del Xmp.xmp.CreatorTool` rc=0 but the raw XMP
+  chunk is never rewritten) / 1 static not-applicable; VP8-bitstream payload stream
+  preserved 42/42; verification stays not-assessed; no percentage; D2 NOT authorized.
 
 - E00 and D0/E04 documentation PR #14 merged at 716c00b, final 74bd83e passed
   42445526473/42445522806. D0 exact contract explicitly APPROVED, not implemented.
