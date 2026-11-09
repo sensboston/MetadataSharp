@@ -2044,3 +2044,17 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
   pinned-CLI evidence, full format conformance or a metadata-support claim.
   B8 census/secondary observations, all other formats and metadata-present PSD
   cases remain pending. Denominator unfrozen, verification not-assessed.
+
+### E01 B8 — PSD metadata-present preflight in progress
+
+PSD resource review `6c2b877` preceded a second independently authored 2×2
+fixture with 8BIM EXIF/XMP/IPTC resources. Byte-level structural tests check
+lengths, padding, TIFF, XML, IIM and uncompressed pixel bytes; local ImageMagick
+6.9.11-60 decoded both images to the intended pixels. Pinned ExifTool 12.76
+recognized 2×2 and printed B8Artist/B8Tool/B8Keyword in the rich fixture; its
+Compression field says Unknown (12183) for both despite a zero authored field.
+No root cause or conformance claim is asserted. A read-only pinned Exiv2 plus
+secondary-reference CI preflight is added; recorded outcomes do not constitute
+census completion or product verification. B8 other formats, ICC and thumbnail
+metadata-present cases, and B7 CR3 remain open. Local reference tests 59/59,
+discovery 105/105, fixture regeneration and census --check passed.

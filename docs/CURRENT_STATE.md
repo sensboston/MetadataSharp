@@ -1,7 +1,7 @@
 # Current development state and recovery checkpoint
 
-B7 receipt PR #44 merged as `c164d2b`; B8 preliminary rights review and PSD
-fixture work are in progress on `arena/6af63d5a-metadatasharp`. CR3 remains
+B7 receipt PR #44 and B8 groundwork PR #45 merged; B8 PSD metadata
+research continues on `arena/92db23e9-metadatasharp`. CR3 remains
 blocked; no denominator freeze, MetadataSharp verification, publication or DNG
 D2 write is authorized. See the B8 checkpoint below.
 
@@ -374,3 +374,17 @@ recognized PSD at 2×2 and `convert -depth 8 rgb:-` returned the authored pixels
 That external decoder is a local sanity check, not a pinned-CLI census
 observation or proof of full PSD conformance. No B8 rows observed yet;
 metadata-present cases and other formats still require research and evidence.
+
+### B8 PSD metadata preflight (current working branch)
+
+After an additional PSD resource review committed before authoring, a second
+owned 2×2 PSD adds EXIF Artist B8Artist, XMP CreatorTool B8Tool and IPTC keyword
+B8Keyword. Independent tests inspect section sizes, padding, payload contents and
+planar pixels. Locally ImageMagick 6.9.11-60 decoded both fixture pixel arrays;
+pinned ExifTool 12.76 read all three authored rich metadata values. ExifTool
+reports Compression Unknown (12183) on both although the authored compression
+field is zero; this is an unresolved discrepancy, not a diagnosed error. See
+`docs/research/evidence/e01-b8-psd-preflight/`. New CI preflight runs pinned
+Exiv2 and ExifTool and records outcomes, but no B8 census rows have yet been
+observed and CI evidence is pending. ICC and thumbnail are absent. JP2, PGF,
+EPS, EXV, DCP and B7 CR3 remain unresolved; no denominator freeze.
