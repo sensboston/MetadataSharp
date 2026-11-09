@@ -1,0 +1,62 @@
+{
+  "runId": "42674518556",
+  "job": "pinned-exiv2-baseline",
+  "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42674518556",
+  "pullRequest": 33,
+  "sourceCommit": "1fb3a3fa2056628c6d003014030dbcb3a606e715 (PR #33 head; committed observations were generated at rehearsal time with E01_SOURCE_COMMIT=b0859fc61fea5dedfc898aece6b15893ddf4314e from the local pinned build; B4 inputs \u2014 observer, fixtures, census rows \u2014 were present and unchanged at commit time)",
+  "mergeCommit": "1720d7be2c229bd12100b9bfaab0341a53b96d54",
+  "notes": "The first two runs for PR #33 (push 42673623285, pull_request 42673654413, both 2026-11-09T18:23Z) failed on the GitHub side with 2/0 of 15 jobs started and no logs or job records for the rest; the workflow revision was fully green on master 20 minutes earlier, and the PR was closed and reopened to fire a fresh pull_request run (42674518556, all 15 jobs green 2026-11-09T18:31Z). The transient GitHub-side failure is recorded here; no content changes accompanied the reopen.",
+  "artifact": {
+    "name": "e01-b4-census-observations",
+    "id": 13698689024,
+    "sizeInBytes": 8701,
+    "digest": "sha256:5088f05c0790635618bd76c0eb85f76a608464749a2e401bcaecfbda58ae0218",
+    "expiresAt": "2026-12-09T18:32:11Z",
+    "note": "Artifact zip digest from the GitHub Actions API (metadata only). Artifact/log bytes are NOT retrievable from the dev sandbox (host allowlist), so the committed observations.json is the locally rehearsed pinned build's output (see README provenance); the CI run re-verified pin integrity (b0859fc61), fixture determinism (regenerated and byte-compared against the committed tests/fixtures/tiff/manifest.json) and completed B0+B1+B2+B3+B4 without infrastructure failure (15/15 green)."
+  },
+  "artifacts": [
+    {
+      "name": "e01-b3-census-observations",
+      "id": 13698294233,
+      "sizeInBytes": 6772,
+      "digest": "sha256:e923a9d682b62c8b14fa3c223cbfcccf95d5f1637899bf1a8568c82f408f7a77",
+      "note": "re-uploaded by the same run; B3 evidence freshness re-confirmed"
+    },
+    {
+      "name": "e01-b2-census-observations",
+      "id": 13700375698,
+      "sizeInBytes": 7812,
+      "digest": "sha256:b02d681217d1386284d512ed69e8e93577afb44d05c9c617b77230cc68c0ae2c",
+      "note": "re-uploaded by the same run; B2 evidence freshness re-confirmed"
+    },
+    {
+      "name": "e01-b1-census-observations",
+      "id": 13700315783,
+      "sizeInBytes": 8868,
+      "digest": "sha256:86f1bfe7dcf820a1f88c1cf07e68e8fd32bbf08ca5309441ebdb0cd17a571378",
+      "note": "re-uploaded by the same run; B1 evidence freshness re-confirmed"
+    },
+    {
+      "name": "e01-b0-census-observations",
+      "id": 13699153923,
+      "sizeInBytes": 9493,
+      "digest": "sha256:0b9cd9956a4840f60c9dbe75eb0c9dd59bb7a69d88ac25ad7355c3bb60f4f567",
+      "note": "re-uploaded by the same run; B0 evidence freshness re-confirmed"
+    },
+    {
+      "name": "e01-exiv2-0289-observations",
+      "id": 13700076220,
+      "sizeInBytes": 5869,
+      "digest": "sha256:357d3f548c345b136d8acff71251882588e9a4e09a0ad95124eff07a6f249812"
+    }
+  ],
+  "committedObservations": [
+    {
+      "path": "docs/research/evidence/e01-b4-census/observations.json",
+      "sha256": "88895e4196c1d9a1c0fd4e47a5910f7a7198bb99925bdbdbf9ba1b1341d4e052",
+      "provenance": "local pinned rehearsal against the b0859fc61 source, built with the CI job's CMAKE options",
+      "ciOutcome": "green (15/15, run 42674518556); outcome classes of the CI artifact were not byte-verified from this sandbox; any class-level difference between the committed evidence and the CI artifact would be a finding and is flagged here, not silently waived"
+    }
+  ],
+  "encoding": "complete zlib/base64 chunks <=2500 bytes (CI notice-encoded; unverified from sandbox)"
+}

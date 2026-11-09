@@ -1819,3 +1819,20 @@ E01 breadth and E03 exact proposal next; D1 stays blocked, D0 approval not reope
 - CI: `pinned-exiv2-baseline` job re-runs all batches (observe_b0.py --batch all,
   observe_b2.py, observe_b3.py, observe_b4.py) and uploads `e01-b4-census-observations`
   next to the B0/B1/B2/B3 artifacts; the workflow was extended accordingly.
+### E01 B4 census batch — PR #33 merged — 2026-11-09
+
+- 2026-11-09: PR #33 merged (`1720d7be2c229bd12100b9bfaab0341a53b96d54`,
+  run 42674518556, 15/15 green). NOTE: the first two runs for PR #33 (push
+  42673623285, pull_request 42673654413, 2026-11-09T18:23Z) failed on the GitHub side
+  with 2/0 of 15 jobs started (no job logs; the workflow revision was fully green on
+  master 20 minutes earlier); the PR was closed and reopened to fire a fresh
+  pull_request run, which went 15/15 green at 18:31Z — no content changes
+  accompanied the reopen. The `pinned-exiv2-baseline` job rebuilt the pinned CLI
+  (b0859fc61), regenerated and byte-compared the 14 owned TIFF fixtures against
+  tests/fixtures/tiff/manifest.json, and re-ran B0+B1+B2+B3+B4; artifacts uploaded
+  (`e01-b4-census-observations` id 13698689024, digest sha256:5088f05c…, expires
+  2026-12-09; `e01-b0/b1/b2/b3-census-observations` refreshed). Receipt committed as
+  docs/research/evidence/e01-b4-census/receipt.json (metadata-only digests;
+  artifact bytes not retrievable from the sandbox — flagged, not waived).
+  Census stays 353 rows; `denominatorFrozen: false`; verification not-assessed;
+  no percentage; D2/publication not authorized; E01 gate OPEN. Next: B5.
