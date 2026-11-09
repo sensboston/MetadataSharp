@@ -316,11 +316,17 @@ publication, D2 write and denominator-freeze restrictions remain in force.
 oracle for the owned D1 raw and SubIFD fixtures, with both byte orders and
 fail-closed malformed-input tests in `tests/reference/test_dng_raw_oracle.py`.
 It is not a raw-image decoder, and does not establish rendered pixel equivalence.
-Local reference tests: 21/21; discovery: 103/103; census `--check` passed.
+Local reference tests: 28/28; discovery: 103/103; census `--check` passed.
+B6 also has 12 owned D1-derived fixture variants with separately pinned manifest
+and provenance: both endian orders, raw/preview root, empty/present IFD0 carriers,
+and present variants with a chained JPEG IFD1. The preview root is not the IFD1;
+the IFD1 variant's full DNG conformance is not independently established. A
+bounded IFD0 byte oracle extracts selected metadata carriers without decoding.
 A pinned-source local Exiv2 preflight exercised 28 exploratory CLI probes across
 four owned D1 fixtures: all commands/readbacks returned zero and CFA strip bytes
 were unchanged. The raw facts and build/linkage limitations are recorded in
 `docs/research/evidence/e01-b6-preflight/`; these are not census observations
 or MetadataSharp verification. Next: design and run the complete B6 observer,
-including remaining families and operation variants, against owned fixtures;
+including ICC, IFD1 thumbnail and remaining operation variants against the pinned
+B6 fixtures, enumerate reviewed axes and integrate CI;
 record actual results before changing the census or marking B6 complete.

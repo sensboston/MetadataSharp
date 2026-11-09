@@ -1,0 +1,122 @@
+[
+  {
+    "file": "b6-raw-ii-empty.dng",
+    "length": 572,
+    "sha256": "758c123d5aeb9fbbcd94474e6a1177549bd483cf28b5b9981f6b5fe7a2ab4f98",
+    "byteOrder": "II",
+    "shape": "raw",
+    "metadata": "empty",
+    "ifd1Jpeg": false,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-raw-ii-present.dng",
+    "length": 1256,
+    "sha256": "06737fa3a54a72268b2713fafc954864fa80918a48d5db24c99969667f2998ac",
+    "byteOrder": "II",
+    "shape": "raw",
+    "metadata": "present",
+    "ifd1Jpeg": false,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-raw-ii-present-ifd1.dng",
+    "length": 1447,
+    "sha256": "6a4a2b6fe8c79b2bc64d60344467075a36ff8690c480d3cf3126acc342a27809",
+    "byteOrder": "II",
+    "shape": "raw",
+    "metadata": "present",
+    "ifd1Jpeg": true,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-thumb-ii-empty.dng",
+    "length": 1034,
+    "sha256": "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96",
+    "byteOrder": "II",
+    "shape": "thumb",
+    "metadata": "empty",
+    "ifd1Jpeg": false,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-thumb-ii-present.dng",
+    "length": 1718,
+    "sha256": "9fea31b63c083917f055c317f3f49c8b25686719579fef385b66e5f9cc078c86",
+    "byteOrder": "II",
+    "shape": "thumb",
+    "metadata": "present",
+    "ifd1Jpeg": false,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-thumb-ii-present-ifd1.dng",
+    "length": 1909,
+    "sha256": "d66869c7c8f60d4a02912a8b6e1cc3fe252baa4667ce1cf17ec754ac7f701c0b",
+    "byteOrder": "II",
+    "shape": "thumb",
+    "metadata": "present",
+    "ifd1Jpeg": true,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-raw-mm-empty.dng",
+    "length": 572,
+    "sha256": "4180e2180bb590f5958c8c0ff1f6b66947a8b8a4c4e9be4e27a768691f2f536e",
+    "byteOrder": "MM",
+    "shape": "raw",
+    "metadata": "empty",
+    "ifd1Jpeg": false,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-raw-mm-present.dng",
+    "length": 1256,
+    "sha256": "2cb2aeedb54832e3701204b522b479e0a0da55faf12d32a5bd962710d8972c24",
+    "byteOrder": "MM",
+    "shape": "raw",
+    "metadata": "present",
+    "ifd1Jpeg": false,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-raw-mm-present-ifd1.dng",
+    "length": 1447,
+    "sha256": "97dea37a03a337366e30701d96cbb90df9cfbd5f4fb8bac50e8fe84b9bf970b8",
+    "byteOrder": "MM",
+    "shape": "raw",
+    "metadata": "present",
+    "ifd1Jpeg": true,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-thumb-mm-empty.dng",
+    "length": 1034,
+    "sha256": "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9",
+    "byteOrder": "MM",
+    "shape": "thumb",
+    "metadata": "empty",
+    "ifd1Jpeg": false,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-thumb-mm-present.dng",
+    "length": 1718,
+    "sha256": "5119e974d3c634ef9141019d93b32366916c1b114d9bab69500bf08e15e67f84",
+    "byteOrder": "MM",
+    "shape": "thumb",
+    "metadata": "present",
+    "ifd1Jpeg": false,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  },
+  {
+    "file": "b6-thumb-mm-present-ifd1.dng",
+    "length": 1909,
+    "sha256": "ab599eb914803a4f40b059f2b994e256db3da8b7d4064cdca4f4eba5e9ef8af3",
+    "byteOrder": "MM",
+    "shape": "thumb",
+    "metadata": "present",
+    "ifd1Jpeg": true,
+    "recipe": "tools/reference/dng_census_fixtures.py build: D1-derived, owned synthetic"
+  }
+]
