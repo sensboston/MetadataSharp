@@ -6,9 +6,16 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4, B5: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. Pinned-CLI observation complete for batch(es) B0, B1, B2, B3, B4, B5: rows flipped to observed-cli/not-applicable; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
+      "DNG/comments",
+      "DNG/exif",
+      "DNG/icc",
+      "DNG/inventory",
+      "DNG/iptc",
+      "DNG/thumbnail",
+      "DNG/xmp",
       "JPEG/comments",
       "JPEG/exif",
       "JPEG/icc",
@@ -49,7 +56,8 @@
       "PNG",
       "WEBP",
       "TIFF",
-      "XMP"
+      "XMP",
+      "DNG"
     ],
     "pendingSeedIds": [
       "EX0289-ARW-COMMENTS",
@@ -94,12 +102,6 @@
       "EX0289-DCP-IPTC",
       "EX0289-DCP-THUMBNAIL",
       "EX0289-DCP-XMP",
-      "EX0289-DNG-COMMENTS",
-      "EX0289-DNG-EXIF",
-      "EX0289-DNG-ICC",
-      "EX0289-DNG-IPTC",
-      "EX0289-DNG-THUMBNAIL",
-      "EX0289-DNG-XMP",
       "EX0289-EPS-COMMENTS",
       "EX0289-EPS-EXIF",
       "EX0289-EPS-ICC",
@@ -213,7 +215,7 @@
   "enumerations": {
     "reviewStatus": "reviewed",
     "reviewedAt": "2026-11-09",
-    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; 2026-11-09 extension adds xmp-packet carrier layouts under the approved B5 batch",
+    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts",
     "family": [
       "exif",
       "iptc",
@@ -255,7 +257,11 @@
         "png-exif",
         "webp-exif",
         "tiff-exif",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "comments": [
         "com-single",
@@ -263,7 +269,11 @@
         "png-text",
         "webp-comments",
         "tiff-comments",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "icc": [
         "app2-icc-single",
@@ -271,7 +281,11 @@
         "iccp",
         "webp-iccp",
         "tiff-icc",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "xmp": [
         "app1-xmp-standard",
@@ -281,7 +295,11 @@
         "webp-xmp",
         "tiff-xmp",
         "xmp-packet",
-        "xmp-packet-unwrapped"
+        "xmp-packet-unwrapped",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "iptc": [
         "app13-8bim-iptc",
@@ -290,15 +308,27 @@
         "itxt-raw-profile-iptc",
         "webp-iptc",
         "tiff-iptc",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "thumbnail": [
         "exif-ifd1-jpeg",
         "exif-ifd1-uncompressed",
-        "xmp-packet"
+        "xmp-packet",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ],
       "inventory": [
-        "container"
+        "container",
+        "dng-raw-ii",
+        "dng-raw-mm",
+        "dng-preview-ii",
+        "dng-preview-mm"
       ]
     },
     "duplicates": [
@@ -12585,6 +12615,2382 @@
       "batch": "B5",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B5 pinned-CLI observation: outcome=accepted; exit-observed; fixture=tiff-xmp.tif"
+    },
+    {
+      "rowId": "EX0289-DNG-INVENTORY-INVENTORY-0001",
+      "format": "DNG",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "owned D1-derived DNG recognition probe; raw CFA bytes checked, no raw decode"
+    },
+    {
+      "rowId": "EX0289-DNG-COMMENTS-READ-0001",
+      "format": "DNG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "no documented comments claim; XPComment is a structural probe, not support"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-READ-0001",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-INSERT-0001",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REPLACE-0001",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REMOVE-0001",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-READ-0001",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-INSERT-0001",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REPLACE-0001",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REMOVE-0001",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-READ-0001",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-INSERT-0001",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REPLACE-0001",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REMOVE-0001",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-READ-0001",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-INSERT-0001",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REPLACE-0001",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REMOVE-0001",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-READ-0001",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-INSERT-0001",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REPLACE-0001",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REMOVE-0001",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-INVENTORY-INVENTORY-0002",
+      "format": "DNG",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "owned D1-derived DNG recognition probe; raw CFA bytes checked, no raw decode"
+    },
+    {
+      "rowId": "EX0289-DNG-COMMENTS-READ-0002",
+      "format": "DNG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "no documented comments claim; XPComment is a structural probe, not support"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-READ-0002",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-INSERT-0002",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REPLACE-0002",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REMOVE-0002",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-READ-0002",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-INSERT-0002",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REPLACE-0002",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REMOVE-0002",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-READ-0002",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-INSERT-0002",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REPLACE-0002",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REMOVE-0002",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-READ-0002",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-INSERT-0002",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REPLACE-0002",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REMOVE-0002",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-READ-0002",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-INSERT-0002",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REPLACE-0002",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REMOVE-0002",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-raw-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-INVENTORY-INVENTORY-0003",
+      "format": "DNG",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "owned D1-derived DNG recognition probe; raw CFA bytes checked, no raw decode"
+    },
+    {
+      "rowId": "EX0289-DNG-COMMENTS-READ-0003",
+      "format": "DNG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "no documented comments claim; XPComment is a structural probe, not support"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-READ-0003",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-INSERT-0003",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REPLACE-0003",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REMOVE-0003",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-READ-0003",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-INSERT-0003",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REPLACE-0003",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REMOVE-0003",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-READ-0003",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-INSERT-0003",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REPLACE-0003",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REMOVE-0003",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-READ-0003",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-INSERT-0003",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REPLACE-0003",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REMOVE-0003",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-READ-0003",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-INSERT-0003",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REPLACE-0003",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REMOVE-0003",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-INVENTORY-INVENTORY-0004",
+      "format": "DNG",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "owned D1-derived DNG recognition probe; raw CFA bytes checked, no raw decode"
+    },
+    {
+      "rowId": "EX0289-DNG-COMMENTS-READ-0004",
+      "format": "DNG",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "no documented comments claim; XPComment is a structural probe, not support"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-READ-0004",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-INSERT-0004",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "insert",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REPLACE-0004",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "replace",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-EXIF-REMOVE-0004",
+      "format": "DNG",
+      "family": "exif",
+      "operation": "remove",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-READ-0004",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-INSERT-0004",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REPLACE-0004",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-ICC-REMOVE-0004",
+      "format": "DNG",
+      "family": "icc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-READ-0004",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-INSERT-0004",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REPLACE-0004",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-IPTC-REMOVE-0004",
+      "format": "DNG",
+      "family": "iptc",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-READ-0004",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-INSERT-0004",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "insert",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REPLACE-0004",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "replace",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-XMP-REMOVE-0004",
+      "format": "DNG",
+      "family": "xmp",
+      "operation": "remove",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-READ-0004",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-INSERT-0004",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "insert",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REPLACE-0004",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "replace",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
+    },
+    {
+      "rowId": "EX0289-DNG-THUMBNAIL-REMOVE-0004",
+      "format": "DNG",
+      "family": "thumbnail",
+      "operation": "remove",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "dng-preview-mm",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B6",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "D1-derived DNG probe; CFA strip-byte invariant is not a raw-decode oracle"
     }
   ]
 }

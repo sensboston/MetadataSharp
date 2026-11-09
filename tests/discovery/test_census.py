@@ -184,6 +184,23 @@ class CensusPolicyTests(unittest.TestCase):
         for row in b5:
             self.assertEqual('not-assessed', row['verification'])
 
+    def test_b6_batch_pending_or_fully_observed(self):
+        rows = [r for r in self.report['rows'] if r['batch'] == 'B6']
+        self.assertEqual(88, len(rows))
+        self.assertEqual(4, sum(r['family'] == 'inventory' for r in rows))
+        evidence = load_evidence('b6')
+        if evidence is None:
+            self.assertEqual({'not-run'}, {r['baselineObservation'] for r in rows})
+            return
+        self.assertEqual('passed', evidence['status'])
+        self.assertEqual('B6', evidence['batch'])
+        self.assertEqual({r['rowId'] for r in rows}, {o['id'] for o in evidence['observations']})
+        self.assertEqual({'observed-cli'}, {r['baselineObservation'] for r in rows})
+        self.assertEqual(88, sum(evidence['outcomeCounts'].values()))
+        self.assertFalse(evidence['denominatorFrozen'])
+        for row in rows:
+            self.assertEqual('not-assessed', row['verification'])
+
     def test_verification_stays_not_assessed(self):
         for row in self.report['rows']:
             self.assertEqual('not-assessed', row['verification'])
@@ -192,11 +209,15 @@ class CensusPolicyTests(unittest.TestCase):
         manifests = {}
         for fmt in ('JPEG', 'PNG', 'TIFF', 'XMP'):
             manifests[fmt] = {e['file']: e for e in json.loads((ROOT / f'tests/fixtures/{fmt.lower()}/manifest.json').read_text())}
+        manifests['DNG'] = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/dng/census-manifest.json').read_text())}
         manifests['WEBP'] = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/webp/census-manifest.json').read_text())}
         for row in self.report['rows']:
             if row['baselineObservation'] == 'not-applicable':
                 self.assertIsNone(row['fixture'])
                 self.assertIn('static not-applicable', row['notes'])
+                continue
+            if row['baselineObservation'] == 'not-run':
+                self.assertIsNone(row['fixture'])
                 continue
             fixture = row['fixture']
             pin = manifests[row['format']][fixture['file']]
@@ -209,14 +230,15 @@ class CensusPolicyTests(unittest.TestCase):
     def test_scope_is_observed_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
         self.assertEqual({'exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail', 'inventory'}, families)
-        self.assertEqual(5, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
+        self.assertEqual(9, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
         self.assertEqual(135, sum(1 for r in self.report['rows'] if r['batch'] == 'B0'))
         self.assertEqual(58, sum(1 for r in self.report['rows'] if r['batch'] == 'B1'))
         self.assertEqual(67, sum(1 for r in self.report['rows'] if r['batch'] == 'B2'))
         self.assertEqual(43, sum(1 for r in self.report['rows'] if r['batch'] == 'B3'))
         self.assertEqual(50, sum(1 for r in self.report['rows'] if r['batch'] == 'B4'))
         self.assertEqual(26, sum(1 for r in self.report['rows'] if r['batch'] == 'B5'))
-        self.assertEqual(379, len(self.report['rows']))
+        self.assertEqual(88, sum(1 for r in self.report['rows'] if r['batch'] == 'B6'))
+        self.assertEqual(467, len(self.report['rows']))
 
     def test_pending_cells_partition_the_seed_grid(self):
         enumerated = set(self.report['coverage']['enumerated'])
@@ -225,7 +247,7 @@ class CensusPolicyTests(unittest.TestCase):
         enumerated_seeds = {s['seedId'] for s in self.seeds['seeds']
                              if f"{s['format']}/{s['family']}" in enumerated}
         self.assertEqual(all_seeds, enumerated_seeds | pending)
-        self.assertEqual(30, len(enumerated_seeds))
+        self.assertEqual(36, len(enumerated_seeds))
 
     def test_no_claim_rows_are_only_the_undocumented_cells(self):
         no_claim = {r['rowId'] for r in self.report['rows'] if r['noDocumentedClaim']}
@@ -234,11 +256,13 @@ class CensusPolicyTests(unittest.TestCase):
                           'EX0289-TIFF-COMMENTS-READ-0001',
                           'EX0289-XMP-EXIF-READ-0001', 'EX0289-XMP-IPTC-READ-0001',
                           'EX0289-XMP-COMMENTS-READ-0001', 'EX0289-XMP-ICC-READ-0001',
-                          'EX0289-XMP-THUMBNAIL-READ-0001'}, no_claim)
+                          'EX0289-XMP-THUMBNAIL-READ-0001',
+                          'EX0289-DNG-COMMENTS-READ-0001', 'EX0289-DNG-COMMENTS-READ-0002',
+                          'EX0289-DNG-COMMENTS-READ-0003', 'EX0289-DNG-COMMENTS-READ-0004'}, no_claim)
         for row in self.report['rows']:
             if row['noDocumentedClaim']:
                 self.assertEqual('read', row['operation'])
-                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5'))
+                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6'))
 
     def test_rows_never_use_metadataSharp_as_oracle(self):
         for row in self.report['rows']:
