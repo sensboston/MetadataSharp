@@ -77,6 +77,8 @@ def run(upstream, build, output):
                 result = subprocess.run([str(exe), *args, str(path)], capture_output=True,
                                         env=env, timeout=30)
                 after = path.read_bytes()
+                readback = subprocess.run([str(exe), '-pa', str(path)], capture_output=True,
+                                          env=env, timeout=30)
                 try:
                     raw_after = dng_raw_oracle.raw_strip_fingerprints(after)
                     raw_error = None
@@ -86,6 +88,9 @@ def run(upstream, build, output):
                                          'probe': name, 'args': args, 'exitCode': result.returncode,
                                          'stdout': result.stdout.decode('utf-8', errors='replace'),
                                          'stderr': result.stderr.decode('utf-8', errors='replace'),
+                                         'readbackExitCode': readback.returncode,
+                                         'readbackStdout': readback.stdout.decode('utf-8', errors='replace'),
+                                         'readbackStderr': readback.stderr.decode('utf-8', errors='replace'),
                                          'outputSha256': digest(after), 'rawBefore': before,
                                          'rawAfter': raw_after, 'rawOracleError': raw_error,
                                          'rawPreserved': None if raw_after is None else raw_after == before})
