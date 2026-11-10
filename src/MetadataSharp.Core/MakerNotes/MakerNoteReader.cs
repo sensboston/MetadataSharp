@@ -12,7 +12,7 @@ internal static class MakerNoteReader
     private static ReadOnlySpan<byte> NikonSignature => "Nikon\0"u8;
 
     internal static MakerNote? TryRead(ReadOnlySpan<byte> tiff, int start, int length, Endianness order,
-        ReadOnlySpan<byte> make, MetadataLimits limits, long retainedBudget)
+        ReadOnlySpan<byte> make, ReadOnlySpan<byte> model, MetadataLimits limits, long retainedBudget)
     {
         if (start < 0 || length < 2 || start > tiff.Length - length)
             return null;
@@ -65,7 +65,7 @@ internal static class MakerNoteReader
         if (make.StartsWith("NIKON"u8) || make.StartsWith("Nikon"u8))
         {
             if (note.StartsWith(NikonSignature) && note.Length >= 18 && note[6] == 0x02)
-                return Nikon3(tiff, start, length, limits, retainedBudget);
+                return Nikon3(tiff, start, length, model, limits, retainedBudget);
             if (note.StartsWith(NikonSignature) && note.Length >= 10 && note[6] == 0x01 && note[7] == 0x00)
                 return Directory(MakerNoteFormat.Nikon2, tiff, start + 8, start + length, 0, order, 0, limits,
                     retainedBudget, NikonMakerNoteNames.Nikon2, null);
@@ -78,8 +78,8 @@ internal static class MakerNoteReader
 
     /// <summary>"Nikon\0", a two-byte version, two bytes, then a TIFF header that the IFD and its
     /// value offsets are relative to; that header carries its own byte order.</summary>
-    private static MakerNote? Nikon3(ReadOnlySpan<byte> tiff, int start, int length, MetadataLimits limits,
-        long retainedBudget)
+    private static MakerNote? Nikon3(ReadOnlySpan<byte> tiff, int start, int length, ReadOnlySpan<byte> model,
+        MetadataLimits limits, long retainedBudget)
     {
         int header = start + 10;
         ReadOnlySpan<byte> h = tiff.Slice(header, 8);
@@ -92,8 +92,37 @@ internal static class MakerNoteReader
             : BinaryPrimitives.ReadUInt32BigEndian(h[4..]);
         if (ifd < 8 || ifd >= (uint)(length - 10))
             return null;
-        return Directory(MakerNoteFormat.Nikon3, tiff, header + (int)ifd, start + length, header, order, 0,
+        MakerNote? note = Directory(MakerNoteFormat.Nikon3, tiff, header + (int)ifd, start + length, header, order, 0,
             limits, retainedBudget, NikonMakerNoteNames.Nikon3, NikonMakerNoteArrays.Decompose);
+        return note is null ? null : DecryptNikon3(note, model);
+    }
+
+    /// <summary>Splits the encrypted Nikon3 arrays when the serial number and shutter count are present.</summary>
+    private static MakerNote DecryptNikon3(MakerNote note, ReadOnlySpan<byte> model)
+    {
+        if (!note.TryGetEntry(0x00A7, out MakerNoteEntry? count) || count.Value.FieldType != TiffFieldType.Long ||
+            count.Value.Count == 0 || !note.TryGetEntry(0x001D, out MakerNoteEntry? serial) ||
+            serial.Value.FieldType != TiffFieldType.Ascii)
+            return note;
+        ReadOnlySpan<byte> c = count.Value.RawBytes;
+        uint shutterCount = note.ByteOrder == Endianness.LittleEndian
+            ? BinaryPrimitives.ReadUInt32LittleEndian(c) : BinaryPrimitives.ReadUInt32BigEndian(c);
+        if (NikonMakerNoteCipher.SerialKey(serial.Value.RawBytes, model) is not uint key)
+            return note;
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        bool changed = false;
+        foreach (MakerNoteEntry entry in note.Entries)
+        {
+            if (entry.Fields.Count == 0 && entry.TagId is 0x0091 or 0x0097 or 0x0098 &&
+                NikonMakerNoteArrays.DecomposeEncrypted(entry.TagId, entry.Value, shutterCount, key) is { Count: > 0 } fields)
+            {
+                entries.Add(new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields));
+                changed = true;
+            }
+            else
+                entries.Add(entry);
+        }
+        return changed ? new MakerNote(note.Format, note.ByteOrder, entries) : note;
     }
 
     /// <summary>

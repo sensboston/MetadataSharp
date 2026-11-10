@@ -232,3 +232,63 @@ public sealed class NikonMakerNoteArrayTests
         Assert.Equal(Endianness.BigEndian, expansion.Value.ByteOrder);
     }
 }
+
+public sealed class NikonMakerNoteCipherTests
+{
+    [Fact]
+    public void TheCipherIsItsOwnInverseAndLeavesThePrefix()
+    {
+        byte[] plain = Enumerable.Range(0, 64).Select(i => (byte)i).ToArray();
+        byte[] once = Core.MakerNotes.NikonMakerNoteCipher.Decrypt(plain, 4, 12345, 0x60);
+        Assert.Equal(plain[..4], once[..4]);
+        Assert.NotEqual(plain[4..], once[4..]);
+        Assert.Equal(plain, Core.MakerNotes.NikonMakerNoteCipher.Decrypt(once, 4, 12345, 0x60));
+        Assert.NotEqual(once, Core.MakerNotes.NikonMakerNoteCipher.Decrypt(plain, 4, 12346, 0x60));
+    }
+
+    [Theory]
+    [InlineData("3001234\0", "NIKON D3", 3001234u)]
+    [InlineData("No= 30015\0", "NIKON D50", 0x22u)]
+    [InlineData("ABC\0", "NIKON D70", 0x60u)]
+    public void TheSerialKeyIsTheNumberOrAModelDefault(string serial, string model, uint expected) =>
+        Assert.Equal(expected, Core.MakerNotes.NikonMakerNoteCipher.SerialKey(Encoding.ASCII.GetBytes(serial), Encoding.ASCII.GetBytes(model)));
+
+    [Fact]
+    public void WithoutANumericSerialOrAModelThereIsNoKey() =>
+        Assert.Null(Core.MakerNotes.NikonMakerNoteCipher.SerialKey("ABC\0"u8, default));
+
+    [Fact]
+    public void EncryptedLensDataIsSplitAfterDecryption()
+    {
+        byte[] plain = new byte[20];
+        "0204"u8.CopyTo(plain);
+        plain[12] = 0x8A; // LensIDNumber
+        plain[14] = 0x18; // MinFocalLength
+        byte[] stored = Core.MakerNotes.NikonMakerNoteCipher.Decrypt(plain, 4, 777, 3001234);
+        var value = ExifValue.FromRaw(TiffFieldType.Undefined, (uint)stored.Length, Endianness.LittleEndian, stored);
+        Assert.Empty(Core.MakerNotes.NikonMakerNoteArrays.Decompose(0x0098, value));
+        IReadOnlyList<MakerNoteField> fields = Core.MakerNotes.NikonMakerNoteArrays.DecomposeEncrypted(0x0098, value, 777, 3001234);
+        byte[] one = new byte[1];
+        fields.Single(f => f.Name == "LensIDNumber").Value.CopyRawTo(one);
+        Assert.Equal(0x8A, one[0]);
+        fields.Single(f => f.Name == "MinFocalLength").Value.CopyRawTo(one);
+        Assert.Equal(0x18, one[0]);
+        Assert.Empty(Core.MakerNotes.NikonMakerNoteArrays.DecomposeEncrypted(0x0098,
+            ExifValue.FromRaw(TiffFieldType.Undefined, 20, Endianness.LittleEndian, [.. "0999"u8, .. new byte[16]]), 777, 1));
+    }
+
+    [Fact]
+    public void ColorBalanceDecryptionStartsLate()
+    {
+        byte[] plain = new byte[300];
+        "0219"u8.CopyTo(plain);
+        BinaryPrimitives.WriteUInt16LittleEndian(plain.AsSpan(290), 512);
+        byte[] stored = Core.MakerNotes.NikonMakerNoteCipher.Decrypt(plain, 284, 5, 6);
+        Assert.Equal(plain[..284], stored[..284]);
+        var value = ExifValue.FromRaw(TiffFieldType.Undefined, 300, Endianness.LittleEndian, stored);
+        MakerNoteField levels = Core.MakerNotes.NikonMakerNoteArrays.DecomposeEncrypted(0x0097, value, 5, 6).Single(f => f.Name == "WB_RGGBLevels");
+        byte[] raw = new byte[8];
+        levels.Value.CopyRawTo(raw);
+        Assert.Equal(512, BinaryPrimitives.ReadUInt16LittleEndian(raw));
+    }
+}

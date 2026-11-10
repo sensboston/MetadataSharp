@@ -16,8 +16,42 @@ internal static class NikonMakerNoteArrays
     {
         if (value.FieldType is not (TiffFieldType.Undefined or TiffFieldType.Byte) || Select(tag, value.RawBytes) is not Layout layout)
             return [];
+        return Split(layout, value.RawBytes, value.ByteOrder);
+    }
+
+    /// <summary>
+    /// Splits an encrypted array tag after decrypting it with the camera's serial key and shutter
+    /// count. Unknown versions, and versions whose layout differs by camera, are not split.
+    /// </summary>
+    internal static IReadOnlyList<MakerNoteField> DecomposeEncrypted(ushort tag, ExifValue value, uint shutterCount, uint serialKey)
+    {
+        if (value.FieldType is not (TiffFieldType.Undefined or TiffFieldType.Byte))
+            return [];
         ReadOnlySpan<byte> raw = value.RawBytes;
-        Endianness order = layout.BigEndian ? Endianness.BigEndian : value.ByteOrder;
+        (Layout? layout, int start) = SelectEncrypted(tag, raw);
+        if (layout is null || raw.Length <= start)
+            return [];
+        return Split(layout, NikonMakerNoteCipher.Decrypt(raw, start, shutterCount, serialKey), value.ByteOrder);
+    }
+
+    private static bool Major02(ReadOnlySpan<byte> raw) => raw.Length >= 4 && raw[0] == (byte)'0' && raw[1] == (byte)'2';
+
+    private static (Layout?, int) SelectEncrypted(ushort tag, ReadOnlySpan<byte> raw) => tag switch
+    {
+        0x0098 when Version(raw, "0201") || Version(raw, "0202") || Version(raw, "0203") => (LensData0101, 4),
+        0x0098 when Version(raw, "0204") => (LensData0204, 4),
+        0x0098 when Version(raw, "0800") || Version(raw, "0801") || Version(raw, "0802") => (LensData0800, 4),
+        // Version 02xx ShotInfo, except the D80, D40 and D300 layouts.
+        0x0091 when Major02(raw) && !Version(raw, "0208") && !Version(raw, "0209") && !Version(raw, "0210") => (ShotInfo02, 4),
+        // Version 02xx ColorBalance, except the layouts of 0205, 0209, 0212 and 0214.
+        0x0097 when Major02(raw) && !Version(raw, "0205") && !Version(raw, "0209") && !Version(raw, "0212") &&
+            !Version(raw, "0214") => (ColorBalance02, 284),
+        _ => (null, 0)
+    };
+
+    private static IReadOnlyList<MakerNoteField> Split(Layout layout, ReadOnlySpan<byte> raw, Endianness parentOrder)
+    {
+        Endianness order = layout.BigEndian ? Endianness.BigEndian : parentOrder;
         var fields = new List<MakerNoteField>(layout.Fields.Length);
         foreach (Field field in layout.Fields)
         {
@@ -89,6 +123,33 @@ internal static class NikonMakerNoteArrays
         new(13, "MinFocalLength"), new(14, "MaxFocalLength"), new(15, "MaxApertureAtMinFocal"),
         new(16, "MaxApertureAtMaxFocal"), new(17, "MCUVersion"), new(18, "EffectiveMaxAperture"),
     ]);
+
+    private static readonly Layout LensData0204 = new(
+    [
+        new(0, "Version", U, 4), new(4, "ExitPupilPosition"), new(5, "AFAperture"), new(8, "FocusPosition"),
+        new(10, "FocusDistance"), new(11, "FocalLength"), new(12, "LensIDNumber"), new(13, "LensFStops"),
+        new(14, "MinFocalLength"), new(15, "MaxFocalLength"), new(16, "MaxApertureAtMinFocal"),
+        new(17, "MaxApertureAtMaxFocal"), new(18, "MCUVersion"), new(19, "EffectiveMaxAperture"),
+    ]);
+
+    private static readonly Layout LensData0800 = new(
+    [
+        new(0, "Version", U, 4), new(4, "ExitPupilPosition"), new(5, "AFAperture"), new(9, "FocusPosition"),
+        new(11, "FocusDistance"), new(12, "FocalLength"), new(13, "LensIDNumber"), new(14, "LensFStops"),
+        new(15, "MinFocalLength"), new(16, "MaxFocalLength"), new(17, "MaxApertureAtMinFocal"),
+        new(18, "MaxApertureAtMaxFocal"), new(19, "MCUVersion"), new(20, "EffectiveMaxAperture"),
+        new(48, "LensID", S), new(54, "MaxAperture", S), new(56, "FNumber", S), new(60, "FocalLength2", S),
+        new(78, "FocusDistance2", S),
+    ]);
+
+    private static readonly Layout ShotInfo02 = new(
+    [
+        new(0, "Version", U, 4), new(106, "ShutterCount1", TiffFieldType.Long), new(110, "DeletedImageCount", TiffFieldType.Long),
+        new(117, "VibrationReduction"), new(130, "VibrationReduction1"), new(343, "ShutterCount2", U, 2),
+        new(430, "VibrationReduction2"), new(598, "ISO"), new(630, "ShutterCount", TiffFieldType.Long),
+    ], BigEndian: true);
+
+    private static readonly Layout ColorBalance02 = new([new(0, "Version", U, 4), new(290, "WB_RGGBLevels", S, 4)]);
 
     private static readonly Layout FlashInfo0100 = new(
     [

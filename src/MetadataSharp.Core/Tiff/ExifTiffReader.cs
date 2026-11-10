@@ -88,18 +88,23 @@ internal ref struct ExifTiffReader
     {
         long budget = limits.MaxRetainedMetadataBytes - retainedBytes;
         if (makerNoteLength != 0)
-            return MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Make(), limits, budget);
+            return MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Make(), Model(), limits, budget);
         // Pentax DNGs carry their MakerNote in DNGPrivateData instead of the Exif MakerNote tag.
         if (dngPrivateLength != 0 && data.Slice(dngPrivateStart, dngPrivateLength).StartsWith("PENTAX \0"u8))
-            return MakerNotes.MakerNoteReader.TryRead(data, dngPrivateStart, dngPrivateLength, order, Make(), limits, budget);
+            return MakerNotes.MakerNoteReader.TryRead(data, dngPrivateStart, dngPrivateLength, order, Make(), Model(), limits, budget);
         return null;
     }
 
     /// <summary>The raw bytes of the 0th IFD ASCII Make tag, or empty.</summary>
-    private readonly ReadOnlySpan<byte> Make()
+    private readonly ReadOnlySpan<byte> Make() => Ifd0Ascii(0x010F);
+
+    /// <summary>The raw bytes of the 0th IFD ASCII Model tag, or empty.</summary>
+    private readonly ReadOnlySpan<byte> Model() => Ifd0Ascii(0x0110);
+
+    private readonly ReadOnlySpan<byte> Ifd0Ascii(ushort tag)
     {
         foreach (ExifEntry entry in entries)
-            if (entry.Key == new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F))
+            if (entry.Key == new ExifTagKey(ExifDirectoryKind.Ifd0, tag))
                 return entry.Value.FieldType == TiffFieldType.Ascii ? entry.Value.RawBytes : default;
         return default;
     }
