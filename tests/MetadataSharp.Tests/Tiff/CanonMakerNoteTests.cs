@@ -128,7 +128,7 @@ public sealed class CanonMakerNoteTests
     }
 
     [Theory]
-    [InlineData("Nikon")]
+    [InlineData("Sony ")]
     [InlineData("canon")]
     public void AnotherMakeLeavesTheMakerNoteOpaque(string make)
     {

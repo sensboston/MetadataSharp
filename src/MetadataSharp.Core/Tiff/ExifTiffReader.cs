@@ -82,24 +82,19 @@ internal ref struct ExifTiffReader
 
     private MakerNote? ReadMakerNote()
     {
-        if (makerNoteLength == 0 || !IsCanon())
+        if (makerNoteLength == 0)
             return null;
-        return MakerNotes.CanonMakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, limits,
+        return MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Make(), limits,
             limits.MaxRetainedMetadataBytes - retainedBytes);
     }
 
-    /// <summary>The 0th IFD Make tag starts with "Canon".</summary>
-    private bool IsCanon()
+    /// <summary>The raw bytes of the 0th IFD ASCII Make tag, or empty.</summary>
+    private readonly ReadOnlySpan<byte> Make()
     {
         foreach (ExifEntry entry in entries)
-        {
-            if (entry.Key != new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F))
-                continue;
-            if (entry.Value.FieldType != TiffFieldType.Ascii)
-                return false;
-            return entry.Value.RawBytes.StartsWith("Canon"u8);
-        }
-        return false;
+            if (entry.Key == new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F))
+                return entry.Value.FieldType == TiffFieldType.Ascii ? entry.Value.RawBytes : default;
+        return default;
     }
 
     private void Schedule(uint offset, ExifDirectoryKind kind, int depth)

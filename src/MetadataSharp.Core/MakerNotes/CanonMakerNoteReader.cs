@@ -1,5 +1,4 @@
 using System.Buffers.Binary;
-using MetadataSharp.Core.Binary;
 
 namespace MetadataSharp.Core.MakerNotes;
 
@@ -20,47 +19,9 @@ internal static class CanonMakerNoteReader
     {
         if (start < 0 || length < 2 || start > tiff.Length - length)
             return null;
-        bool little = order == Endianness.LittleEndian;
-        int count = U16(tiff, start, little);
-        if (count == 0 || count > limits.MaxEntriesPerDirectory)
-            return null;
-        long directoryLength = 2L + count * 12L;
-        if (directoryLength > length)
-            return null;
-
-        long delta = FooterDelta(tiff, start, length, little);
-        var entries = new List<MakerNoteEntry>(count);
-        var seen = new HashSet<ushort>();
-        long decoded = 0;
-        for (int i = 0; i < count; i++)
-        {
-            int p = start + 2 + i * 12;
-            ushort tag = U16(tiff, p, little);
-            ushort typeCode = U16(tiff, p + 2, little);
-            uint valueCount = U32(tiff, p + 4, little);
-            if (typeCode is < 1 or > 12)
-                continue; // Not a TIFF field type; the entry is vendor-private padding.
-            var type = (TiffFieldType)typeCode;
-            if (!CheckedRange.TryMultiply(valueCount, ExifValue.GetWidth(type), out int byteLength) ||
-                byteLength > limits.MaxValueBytes)
-                return null;
-            long valueStart = p + 8;
-            if (byteLength > 4)
-            {
-                valueStart = U32(tiff, p + 8, little) + delta;
-                if (valueStart < 0 || valueStart > tiff.Length - byteLength)
-                    return null;
-            }
-            decoded += byteLength;
-            if (decoded > retainedBudget)
-                return null;
-            if (!seen.Add(tag))
-                continue; // Keep the first occurrence, as a lookup by tag would.
-            ExifValue value = ExifValue.FromRaw(type, valueCount, order,
-                tiff.Slice((int)valueStart, byteLength));
-            entries.Add(new MakerNoteEntry(tag, Name(tag), value, CanonMakerNoteArrays.Decompose(tag, value)));
-        }
-        return new MakerNote(MakerNoteFormat.Canon, order, entries);
+        long delta = FooterDelta(tiff, start, length, order == Endianness.LittleEndian);
+        return MakerNoteReader.Directory(MakerNoteFormat.Canon, tiff, start, start + length, 0, order, delta,
+            limits, retainedBudget, Name, CanonMakerNoteArrays.Decompose);
     }
 
     /// <summary>The offset correction implied by the footer, or 0 when there is none.</summary>
@@ -80,27 +41,7 @@ internal static class CanonMakerNoteReader
         return start - (long)original;
     }
 
-    private static ushort U16(ReadOnlySpan<byte> s, int p, bool little) => little
-        ? BinaryPrimitives.ReadUInt16LittleEndian(s.Slice(p, 2))
-        : BinaryPrimitives.ReadUInt16BigEndian(s.Slice(p, 2));
-
-    private static uint U32(ReadOnlySpan<byte> s, int p, bool little) => little
-        ? BinaryPrimitives.ReadUInt32LittleEndian(s.Slice(p, 4))
-        : BinaryPrimitives.ReadUInt32BigEndian(s.Slice(p, 4));
-
-    internal static string? Name(ushort tag)
-    {
-        int lo = 0, hi = Names.Length - 1;
-        while (lo <= hi)
-        {
-            int mid = (lo + hi) >>> 1;
-            ushort id = Names[mid].Id;
-            if (id == tag)
-                return Names[mid].Name;
-            if (id < tag) lo = mid + 1; else hi = mid - 1;
-        }
-        return null;
-    }
+    internal static string? Name(ushort tag) => MakerNoteReader.Lookup(Names, tag);
 
     /// <summary>Canon MakerNote tag names, ascending by ID.</summary>
     internal static readonly (ushort Id, string Name)[] Names =

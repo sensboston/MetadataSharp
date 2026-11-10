@@ -6,7 +6,17 @@ namespace MetadataSharp.Core;
 public enum MakerNoteFormat
 {
     /// <summary>Canon: a headerless IFD whose value offsets are relative to the TIFF header.</summary>
-    Canon
+    Canon,
+
+    /// <summary>Nikon, early Coolpix: a headerless IFD whose value offsets are relative to the TIFF header.</summary>
+    Nikon1,
+
+    /// <summary>Nikon, Coolpix: an 8-byte "Nikon" signature, then an IFD whose value offsets are relative to the TIFF header.</summary>
+    Nikon2,
+
+    /// <summary>Nikon, most cameras: a "Nikon" signature and a version, then an embedded TIFF header (with its own
+    /// byte order) that the IFD and its value offsets are relative to.</summary>
+    Nikon3
 }
 
 /// <summary>One named field inside an array-valued MakerNote tag.</summary>
