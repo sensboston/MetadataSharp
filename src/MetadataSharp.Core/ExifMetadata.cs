@@ -7,6 +7,9 @@ public sealed class ExifMetadata
 {
     private readonly Dictionary<ExifTagKey, ExifEntry> lookup;
 
+    internal ExifMetadata(Endianness byteOrder, IReadOnlyList<ExifEntry> entries, MakerNote? makerNote)
+        : this(byteOrder, entries) => MakerNote = makerNote;
+
     internal ExifMetadata(Endianness byteOrder, IReadOnlyList<ExifEntry> entries)
     {
         if (byteOrder is not Endianness.LittleEndian and not Endianness.BigEndian)
@@ -30,6 +33,12 @@ public sealed class ExifMetadata
 
     public Endianness ByteOrder { get; }
     public IReadOnlyList<ExifEntry> Entries { get; }
+
+    /// <summary>
+    /// A read-only decoding of the MakerNote when its vendor layout is recognised, otherwise null.
+    /// Null after an edit: the decoded view describes the bytes as read, not a planned output.
+    /// </summary>
+    public MakerNote? MakerNote { get; }
 
     /// <summary>Looks up a directory/tag pair without interpreting the tag ID.</summary>
     public bool TryGetEntry(ExifTagKey key, [NotNullWhen(true)] out ExifEntry? entry) =>

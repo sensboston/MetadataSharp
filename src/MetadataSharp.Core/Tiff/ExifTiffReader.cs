@@ -18,6 +18,8 @@ internal ref struct ExifTiffReader
     private readonly HashSet<ExifDirectoryKind> roles;
     private int totalEntries;
     private long retainedBytes;
+    private int makerNoteStart;
+    private int makerNoteLength;
 
     private ExifTiffReader(ReadOnlySpan<byte> data, MetadataLimits limits, long sourceBase)
     {
@@ -33,6 +35,8 @@ internal ref struct ExifTiffReader
         roles = [];
         totalEntries = 0;
         retainedBytes = data.Length;
+        makerNoteStart = 0;
+        makerNoteLength = 0;
     }
 
     internal static TiffReadResult Read(ReadOnlySpan<byte> tiff, MetadataLimits? limits = null,
@@ -71,8 +75,31 @@ internal ref struct ExifTiffReader
             ReadDirectory(item.Offset, item.Kind, item.Depth);
         }
         byte[]? thumbnail = ReadThumbnail();
-        return new TiffReadResult(new ExifMetadata(order, entries),
+        MakerNote? makerNote = ReadMakerNote();
+        return new TiffReadResult(new ExifMetadata(order, entries, makerNote),
             directories.AsReadOnly(), thumbnail);
+    }
+
+    private MakerNote? ReadMakerNote()
+    {
+        if (makerNoteLength == 0 || !IsCanon())
+            return null;
+        return MakerNotes.CanonMakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, limits,
+            limits.MaxRetainedMetadataBytes - retainedBytes);
+    }
+
+    /// <summary>The 0th IFD Make tag starts with "Canon".</summary>
+    private bool IsCanon()
+    {
+        foreach (ExifEntry entry in entries)
+        {
+            if (entry.Key != new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F))
+                continue;
+            if (entry.Value.FieldType != TiffFieldType.Ascii)
+                return false;
+            return entry.Value.RawBytes.StartsWith("Canon"u8);
+        }
+        return false;
     }
 
     private void Schedule(uint offset, ExifDirectoryKind kind, int depth)
@@ -149,8 +176,13 @@ internal ref struct ExifTiffReader
             }
             if (tag is 0x014A or 0x0111 or 0x0117 or 0x0144 or 0x0145)
                 throw Error(MetadataErrorCode.UnsupportedFeature, "SubIFDs, strips and tiles are outside the EXIF subset.", p);
-            if (tag == 0x927C && kind == ExifDirectoryKind.Exif && type != TiffFieldType.Undefined)
-                throw Error(MetadataErrorCode.InvalidExif, "MakerNote must use the Undefined field type.", p);
+            if (tag == 0x927C && kind == ExifDirectoryKind.Exif)
+            {
+                if (type != TiffFieldType.Undefined)
+                    throw Error(MetadataErrorCode.InvalidExif, "MakerNote must use the Undefined field type.", p);
+                makerNoteStart = valueStart;
+                makerNoteLength = byteLength;
+            }
         }
         uint next = U32(start + 2 + count * 12);
         if (next != 0)
