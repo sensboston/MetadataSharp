@@ -58,6 +58,18 @@ class ObserveB11Tests(unittest.TestCase):
         self.assertEqual({'CRW'}, set(observer.BLOCK_REASONS))
         self.assertEqual(observer.SEED_FORMATS + observer.VIDEO_FORMATS, observer.FORMATS)
 
+    def test_the_manifest_carries_exactly_one_entry_with_no_file(self):
+        # The "every cleared fixture was probed" guard in main() filters on a null `file`, so
+        # the invariant it depends on belongs in a test: the blocked cell is in the catalog,
+        # has no bytes, and must not be demanded of the recorder. (The first CI run of B11
+        # died here: the guard compared against all 18 manifest entries and the 18th is null.)
+        manifest = catalog.verify()
+        self.assertEqual(18, len(manifest))
+        self.assertEqual(17, len([e for e in manifest if e['file']]))
+        self.assertEqual(1, len([e for e in manifest if not e['file']]))
+        self.assertEqual({'ciff-vendor-private-unobserved'},
+                         {e['layout'] for e in manifest if not e['file']})
+
     def test_exactly_one_read_only_probe_per_row_and_the_narrowest_flag_for_it(self):
         for r in b11_rows():
             if r['layout'] not in catalog.FIXTURES:

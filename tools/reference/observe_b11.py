@@ -293,8 +293,13 @@ def main():
                                                     if r['layout'] not in catalog.FIXTURES}:
             raise ValueError('B11 blocked set does not match the unobserved layouts')
         used = sorted({o['fixture'] for o in report['observations']})
-        if set(used) != {entry['file'] for entry in report['fixtureManifest']}:
-            raise ValueError('a cleared B11 fixture was never probed')
+        # The manifest carries the blocked cell too, with `file: null` -- it is enumerated in
+        # the catalog precisely so the blocked layout cannot quietly gain a fixture later, so
+        # the "was everything cleared probed" comparison has to skip it rather than demand a
+        # probe of bytes that do not exist.
+        cleared = {entry['file'] for entry in report['fixtureManifest'] if entry['file']}
+        if set(used) != cleared:
+            raise ValueError(f'a cleared B11 fixture was never probed: {sorted(cleared - set(used))}')
         for item in report['observations']:
             semantics = item['facts']['extractSemantics']
             if semantics is not None and not semantics['exitCodeEqualsArtifactBytes']:

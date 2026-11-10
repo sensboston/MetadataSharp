@@ -625,3 +625,42 @@ jobs:
           path: artifacts/e01/b11-container-preflight/observations.json
           if-no-files-found: error
           retention-days: 30
+      # The artifact blob host and the Actions log are both unreachable from the environment that
+      # recovers this repo's evidence, so a red B11 leg has to explain itself in annotations or it
+      # costs a whole extra push to learn anything: the first B11 run failed on a guard that compared
+      # the probed-fixture set against all 18 manifest entries, including the blocked cell that has
+      # no bytes, and that was only obvious after reading the recorder source. Both recorders
+      # save() their report -- with `failure` set to the tail of the traceback -- before re-raising,
+      # so this step has something to read even when the process died mid-batch. Annotation budget:
+      # the two recorders emit at most 8 each only on failure (a successful run never gets here), so
+      # the 30 + 12 chunk caps above still hold for the evidence path.
+      - name: Report failed B11 recorder detail
+        if: failure()
+        shell: python
+        run: |
+          from pathlib import Path
+          import json
+
+          def escape(text):
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+
+          for name, path in (('census', 'artifacts/e01/b11/observations.json'),
+                             ('preflight', 'artifacts/e01/b11-container-preflight/observations.json')):
+              report_path = Path(path)
+              if not report_path.exists():
+                  print('::error title=B11 %s::no report file: the recorder died before its first '
+                        'save()' % name)
+                  continue
+              report = json.loads(report_path.read_text(encoding='utf-8'))
+              summary = ('status=%s observations=%s blocked=%s outcomes=%s' % (
+                  report.get('status'), len(report.get('observations', [])),
+                  len(report.get('blocked', [])),
+                  json.dumps(report.get('outcomeCounts', {}), sort_keys=True)))
+              print('::error title=B11 %s summary::%s' % (name, escape(summary)[:1500]))
+              trace = escape(report.get('failure') or 'no failure field: the step failed outside the '
+                                                     'recorder (see the step name above)')
+              chunks = [trace[i:i + 2500] for i in range(0, len(trace), 2500)]
+              if len(chunks) > 3:
+                  chunks = chunks[:3] + ['traceback truncated: %d characters total' % len(trace)]
+              for i, chunk in enumerate(chunks):
+                  print('::error title=B11 %s traceback %d/%d::%s' % (name, i + 1, len(chunks), chunk))
