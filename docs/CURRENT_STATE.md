@@ -1,17 +1,21 @@
 # Current development state and recovery checkpoint
 
-E08 bounded read-only PSD/JP2/EPS inspection merged via PR #47. B8 census batch is
-recorded on `arena/d14591cf-metadatasharp` (PR #48): 53 rows, 31 `observed-cli` from
-the pinned CI Exiv2 0.28.9 job plus 22 explicit `blocked` rows for PGF/EXV/DCP whose
-fixture and oracle review is still pending. Evidence lives in
-`docs/research/evidence/e01-b8-census/` (CI-only: no local reproduction exists and
-none is claimed). Every B8 write suboperation, PSD ICC/thumbnail resources, and the
-JP2/EPS metadata-present fixtures stay open. CR3 remains blocked; no denominator
-freeze, MetadataSharp verification, publication or DNG D2 write is authorized. See the
-B8 checkpoint below.
+**E01 B8 census batch is MERGED** via PR #48 (master `8825377`; master run
+42724819709 green 15/15): 53 rows — 31 `observed-cli` from the pinned CI Exiv2 0.28.9
+job plus 22 explicit `blocked` rows for PGF/EXV/DCP, whose fixture and oracle review is
+still pending. Census total is **568 rows**, 102 seed cells enumerated, 84 pending,
+`denominatorFrozen: false`. Evidence: `docs/research/evidence/e01-b8-census/`
+(CI-only, plus a second CI run kept as a cross-run reproduction sample; there is no
+local run and none is claimed). E08's bounded read-only PSD/JP2/EPS inspection merged
+earlier via PR #47. Still open from B8: every write suboperation, PSD ICC/thumbnail
+resources, and the JP2/EPS metadata-present fixtures. CR3 remains blocked; no
+denominator freeze, MetadataSharp verification, publication or DNG D2 write is
+authorized. Next unit in §5 numeric order: **B9** (RAW wave 1). See the B8 checkpoint
+and "B8 census closed" sections below.
 
 
-B7 bounded census merged via PR #43; receipt on `arena/b5ec38f5-metadatasharp`. Read
+B7 bounded census merged via PR #43; receipt in
+`docs/research/evidence/e01-b7-census/` (its working branch has since been pruned). Read
 first; verify against live branch/Git/PR/CI. Chronological approvals/diagnostics
 remain in PROGRESS; older session instructions there are history.
 
@@ -25,8 +29,8 @@ XMP sidecars (bounded RDF profile); IPTC IIM codec (M12a/b); narrow read-only DN
 inventory profile (D1, PR #21, TIFF DNG refusal unchanged); additive
 `MetadataCapabilities` discovery API (E03, merged `ea8e056`). Zero third-party
 runtime dependencies; net8.0+net10.0 dual targeting; Framework 4.8.x deferred;
-548 passed in latest green CI (run 42675033289, net8.0/macos annotation; floor
-450 per OS/TFM). Packages remain local audit candidates; **publication NOT
+564 passed in latest green CI (master run 42724819709 at `8825377`, net8.0/macos
+annotation; floor 450 per OS/TFM). Packages remain local audit candidates; **publication NOT
 authorized**.
 
 **Exiv2 programme (E00–E18; pinned baseline v0.28.9 / b0859fc61).**
@@ -77,10 +81,17 @@ open. Retained absolutes: own fixtures only; pinned-CLI black-box observation;
 committed evidence; green-CI merges; ≥450 TRX six OS/TFM combos; net8.0+net10.0;
 no TIFF DNG weakening.
 
-**Branch hygiene.** Remote `arena/*` branches merged into master are being pruned
-on 2026-11-09; execution and verification protocol (ancestor-of-master proof,
-merged-PR mapping, no open PRs, active branch and master excluded) recorded in
-PROGRESS.md.
+**Branch hygiene.** Completed on 2026-11-10: all **10** remote `arena/*` branches were
+deleted after proving each one fully merged — `gh api .../compare/master...<branch>`
+returned `ahead_by: 0` for every branch, and each head commit mapped to a merged PR
+(#36–#48) via `.../commits/<sha>/pulls`; `gh pr list --state open` was empty, and the
+active branch and `master` were excluded. `origin` now carries only `master`. PR pages
+and their file lists remain readable after deletion (checked on #48: 16 files), so no
+evidence or discussion was lost. Because this clone is **shallow** (`.git/shallow`,
+`rev-list --count HEAD` = 1), `git rev-list --count origin/master..<branch>`
+over-reports divergence and must not be used as a merged-ness proof; use the compare API
+or `git diff --name-only --diff-filter=A origin/master <branch>` (0 files = nothing
+unmerged). That check also showed the previous looping session stranded no work.
 
 **Live verification:** `gh pr list`, latest master CI run,
 `python3 tools/reference/build_census.py --check`,
@@ -89,10 +100,10 @@ PROGRESS.md.
 
 ## Active branch and scope
 
-Assigned branch **arena/d14591cf-metadatasharp** (E01 B8 census; based on master
-`a3d4727`, which already contains the merged E08 PSD/JP2/EPS work from
-PR #47 on `arena/4eea2642-metadatasharp`); never switch to master or another
-branch. Standing authorization
+Assigned branch **arena/308dfd7b-metadatasharp** (post-B8 housekeeping: merged-branch
+prune and recovery-checkpoint refresh; based on master `8825377`, which already contains
+B8 via PR #48 and the E08 PSD/JP2/EPS work via PR #47); never switch to master or
+another branch. Standing authorization
 covers commit/push and completed green PR merge, not package publication or
 unseen public contracts. The previous public-visibility billing blocker is resolved
 in observed runs; no CI exception applies.
@@ -308,7 +319,9 @@ python -m unittest discover -s tests/discovery -q
 python tools/reference/build_capability_seeds.py --check
 git diff --check
 gh pr view --json state,isDraft,headRefOid,statusCheckRollup,mergeCommit
-gh run list --branch arena/d4158be1-metadatasharp --limit 4
+gh run list --branch master --limit 4
+python3 tools/reference/b8_census_fixtures.py verify
+python tools/reference/build_census.py --check
 # With both SDKs/runtimes installed:
 dotnet restore MetadataSharp.sln
 dotnet build MetadataSharp.sln -c Release --no-restore
@@ -330,7 +343,8 @@ Merged final-head CI for this checkpoint is PR42449478931 / push42449474066 (15/
 
 ## B6 working checkpoint
 
-B6 merged via PR #39; its receipt is being recorded on `arena/3dc8aab2-metadatasharp`. The user authorized
+B6 merged via PR #39; its receipt is in `docs/research/evidence/e01-b6-census/`
+(with a `ci-` twin), recorded on a branch since pruned. The user authorized
 continuation to subsequent stages without another confirmation; existing separate
 publication, D2 write and denominator-freeze restrictions remain in force.
 `tools/reference/dng_raw_oracle.py` adds a bounded classic-TIFF CFA strip-byte
@@ -356,7 +370,7 @@ while maintaining format rights/oracle reviews and the separate release limits.
 
 ## B7 working checkpoint
 
-B7 groundwork PR #41/#42 is merged. On `arena/b5ec38f5-metadatasharp`,
+B7 groundwork PR #41/#42 is merged. On the B7 working branch (since pruned),
 separate format rights reviews now allow narrowly scoped owned-synthetic probes
 for AVIF, HEIF, HEIC and JXL; CR3 remains blocked. Five 8×8 files and pinned
 encoder recipes are in `tests/fixtures/b7/`; HEIF and HEIC both use HEVC/HEIC
@@ -388,8 +402,9 @@ the bytes using only the standard library; tests independently check header,
 section lengths and planar pixel bytes. Local ImageMagick 6.9.11-60 `identify`
 recognized PSD at 2×2 and `convert -depth 8 rgb:-` returned the authored pixels.
 That external decoder is a local sanity check, not a pinned-CLI census
-observation or proof of full PSD conformance. No B8 rows observed yet;
-metadata-present cases and other formats still require research and evidence.
+observation or proof of full PSD conformance. No B8 rows were observed at that point;
+metadata-present cases and other formats still require research and evidence
+(superseded for the cleared formats by "B8 census closed" below).
 
 ### B8 PSD metadata preflight (current working branch)
 
@@ -404,10 +419,49 @@ field is zero; this is an unresolved discrepancy, not a diagnosed error. See
 Exiv2 and ExifTool and records outcomes. CI run 42710532014 passed 15/15;
 its recovered report records flat file five unknown-type refusals and rich
 file three printed metadata values, empty/no-thumbnail outcomes and -pS/-pC
-not-supported. All ten inputs unchanged. No B8 census rows have yet been observed. ICC and thumbnail are absent. JP2, PGF,
+not-supported. All ten inputs unchanged. No B8 census rows had been observed at that
+point. ICC and thumbnail are absent. JP2, PGF,
 EPS, EXV, DCP and B7 CR3 remain unresolved; no denominator freeze.
 
-## E08 bounded PSD and JP2 implementation — working branch
+## B8 census closed — observed in the pinned CI job (PR #48)
+
+B8 is enumerated and recorded: 53 rows over seven layouts, 31 `observed-cli` and 22
+`blocked` (PGF/EXV/DCP). `tools/reference/observe_b8.py` runs exactly one read-only
+pinned-CLI flag per row and refuses to emit a report that would not fit the
+ten-annotation recovery budget; `tools/reference/b8_census_fixtures.py` re-derives the
+container framing (PSD sections and `8BIM` accounting, JP2 box walk, bounded EPS DSC
+scan that never executes PostScript) with the standard library only, so the catalog
+verifies offline. Evidence: `docs/research/evidence/e01-b8-census/`.
+
+Recorded facts worth keeping, because they are what the honesty constraints rest on: the
+resource-bearing PSD answers `-pa` with one 206-byte print containing all three authored
+tokens, so its four metadata-family read rows share identical bytes and **no per-family
+attribution is claimed** (the discovery suite asserts that equality instead of trusting
+prose); `-pC` exits 1 and `-et` exits 0 with nothing produced; `-pS` exits 1 on **both**
+PSD layouts, which is why the flat file records eight refusals rather than eight
+"metadata absent" results. JP2 is recognized (`-pS` exit 0, 379-byte print) but prints
+nothing for every family and `-et` exits 253; EPS refuses `-pS`/`-pC` and prints nothing
+for `-pa`/`-pc`. Zero `scan-changed`, every input byte-identical before and after, no
+artifact produced.
+
+Reproduction: B8 has no local run (no cmake/ninja or expat/zlib headers in this sandbox,
+and the Actions log host is unreachable), so the second sample is another CI run —
+`observations`, `blocked`, `fixtureManifest` and `outcomeCounts` matched byte-for-byte
+between runs, while `sourceCommit`, the ExifTool `System:File*Date` fields,
+`baseline.executableSha256` and the `time=` banner line differ (the reference build
+embeds its own timestamp). So the conclusion is deliberately narrow: **observations are
+reproducible, the compiled binary is not**, and `receipt.json` pins the digest of the
+exact build that produced the primary evidence.
+
+Still open, not closed by this batch: every B8 write suboperation (no owned writable
+fixture and no owned ICC/thumbnail payload is cleared), PSD ICC (1039) and thumbnail
+(1036) resources, PSB/layers/colour management, JP2 and EPS metadata-present fixtures,
+PGF/EXV/DCP rights and oracles, and the B7 CR3 block. Verification stays `not-assessed`
+on all 568 rows, no denominator is frozen, and publication and DNG D2 write stay
+unauthorized. Next unit: **B9** (TIFF-derived RAW wave 1), which needs vendor layout
+specs and per-format rights review before any fixture is authored.
+
+## E08 bounded PSD, JP2 and EPS implementation — merged via PR #47
 
 User requested implementation of the remaining formats and maximal work in one
 PR. New `PsdMetadata` and `Jp2Metadata` implement bounded synchronous buffer

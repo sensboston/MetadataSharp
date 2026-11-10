@@ -2204,3 +2204,63 @@ no denominator freeze, publication or DNG D2 write.
   resources and PSB/layers, JP2/EPS metadata-present fixtures, PGF/EXV/DCP
   rights and oracles, and the B7 CR3 block. No exclusion is signed, no denominator is
   frozen, publication and DNG D2 write remain unauthorized.
+
+### B8 merge receipt, recovery-checkpoint refresh and remote branch prune (2026-11-10)
+
+- **Merged.** PR #48 landed as master `8825377`. The master push run 42724819709
+  completed with **15/15 jobs green**; its net8.0/macos "Executed test count" annotation
+  reads **Validated 564 passing tests**, which supersedes the 548 figure previously
+  recorded in `docs/CURRENT_STATE.md`. B8 is therefore closed for its bounded scope:
+  53 rows (31 `observed-cli`, 22 `blocked`), census total 568, `denominatorFrozen:
+  false`, `verification: not-assessed` everywhere, no coverage percentage published.
+- **Why these docs needed a second attempt.** After PR #48 merged, the recovery
+  checkpoint refresh (`docs/CURRENT_STATE.md`, this file,
+  `docs/research/EXIV2_CAPABILITY_BASELINE.md`) was committed locally on
+  `arena/d14591cf-metadatasharp` but could not be pushed: once a session branch's PR is
+  merged, the Arena sandbox blocks remote GitHub access for that branch (git reported a
+  TLS handshake failure; `gh` reported the explicit "Remote GitHub access is blocked for
+  this branch because its pull request was merged or closed"). Starting the new session
+  branch re-cloned the workspace from master, so those two local commits
+  (`6e52465`, `1156d69`) were discarded — no repository content was lost because master
+  already carried every B8 fact, and this entry re-applies the documentation refresh on
+  `arena/308dfd7b-metadatasharp` instead. Recorded so a later session does not hunt for
+  the lost commits or conclude that B8 evidence is missing.
+- **CURRENT_STATE corrections applied:** head block rewritten to merged state with the
+  live counts; the "Latest green CI" figure updated to 564 with the master run id; the
+  E08 section retitled to merged-via-PR-#47 (it had been left as "working branch" after
+  that merge); the two "no B8 rows observed yet" sentences rewritten as past-tense
+  history with an explicit superseded pointer rather than deleted; a new
+  "B8 census closed" section added carrying the pinned-CLI facts, the narrow
+  cross-run reproduction conclusion and the open gaps; and every pointer at a now-deleted
+  branch replaced by the committed evidence path (`e01-b6-census/`, `e01-b7-census/`,
+  "the B7 working branch (since pruned)"), plus the dead
+  `gh run list --branch arena/d4158be1-metadatasharp` command replaced by
+  `gh run list --branch master`, `b8_census_fixtures.py verify` and
+  `build_census.py --check` in the reproduction block.
+- **Remote prune completed.** 2026-11-09 recorded the protocol; on 2026-11-10 it was
+  executed to zero: all 10 remote `arena/*` branches deleted. Per-branch proof, recorded
+  rather than assumed: `gh api repos/sensboston/MetadataSharp/compare/master...<branch>`
+  returned `ahead_by: 0` for every branch (so each was fully contained in master), and
+  `gh api .../commits/<sha>/pulls` mapped each head to a merged PR (#36–#48: 81281d6→37,
+  37f4f04→36, 030702e→40, 4bd47fe→47, 70ba046→45, b334890→46, a559e8a→42, deb84e9→44,
+  43acbae→48, 15d452a→38). `gh pr list --state open` was empty first, `master` and the
+  active branch were excluded, and PR #48 was re-read after deletion (state MERGED, 16
+  files) to confirm the file lists and evidence survived the branch removal. `origin` now
+  exposes only `master`.
+- **Shallow-clone caveat, because it is the trap in this checkout:** `git rev-list --count
+  origin/master..<branch>` reported 175–212 for branches that were in fact fully merged,
+  because the clone has `.git/shallow` with a single reachable commit. Merged-ness here is
+  proven with the compare API or `git diff --name-only --diff-filter=A origin/master
+  <branch>` (0 files). This also settles the earlier worry about the looping session: none
+  of its work was stranded.
+- **Not applicable:** `docs/research/CAPABILITY_MATRIX.md` was listed as a deferred
+  follow-up in an earlier note; no such file exists in this repository and nothing
+  references it. The live capability document is `docs/research/EXIV2_CAPABILITY_BASELINE.md`,
+  which now records the census growth explicitly, with the same limits.
+- Local validation for this docs-only change: `build_census.py --check` exit 0,
+  `build_capability_seeds.py --check` exit 0, `b8_census_fixtures.py verify` (4
+  fixtures), discovery 106/106, reference 81/81, `git diff --check` clean, and an inline
+  Markdown sweep over all 89 `*.md` files checking local link targets and balanced fenced
+  blocks (no problems). No .NET change, so no local build/test was attempted (no SDK in
+  this sandbox); Actions remains the .NET evidence. No denominator freeze, no coverage
+  percentage, no publication and no DNG D2 write is implied by this housekeeping.

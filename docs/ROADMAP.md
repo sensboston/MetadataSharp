@@ -112,7 +112,8 @@ implementation is not part of those three remaining roadmap milestones.
 ## M17–M18 grouped final roadmap audit
 
 The developer explicitly requested both remaining units in one pass/PR on the new
-arena/b166bb08-metadatasharp branch. M17 [DNG feasibility](design/DNG_SCOPE.md) and
+arena/b166bb08-metadatasharp branch (merged and delivered through master; the session
+branches are pruned after merge, so that ref no longer exists on the remote). M17 [DNG feasibility](design/DNG_SCOPE.md) and
 [proposed follow-up prompts](prompts/followups/DNG_PROPOSED_SEQUENCE.md) are complete;
 the proposed future implementation sequence still requires approval. M17 passed
 42439542366 before M18 tooling began. M18 [measured/package audit](audits/PERFORMANCE_AND_PACKAGING_AUDIT.md)

@@ -1,7 +1,8 @@
 # E03: proposed .NET architecture and compatibility contracts
 
 Status: **APPROVED by the developer on 2026-11-08 and IMPLEMENTED on branch
-arena/d4158be1-metadatasharp (additive capability-discovery surface in
+arena/d4158be1-metadatasharp (since pruned after merge; the code is in master:
+additive capability-discovery surface in
 `MetadataSharp.Core.MetadataCapabilities.cs`, pinned test table, test-local
 zero-`PackageReference` guard).** Approval covered the exact signatures in
 section 4 and the policies in sections 3/5/7 in full; the developer reserved
