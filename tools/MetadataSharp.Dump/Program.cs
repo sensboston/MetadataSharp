@@ -244,6 +244,15 @@ internal static class Program
         0x0012 => "Pi",
         0x0093 => "Fi",
         0x00A0 => "Pr",
+        0x0035 => "Ti",
+        0x4013 => "AfMiAdj",
+        0x4016 => "VigCor2",
+        0x4018 => "LiOp",
+        0x4019 => "Le",
+        0x4020 => "Am",
+        0x4021 => "Me",
+        0x4025 => "Hdr",
+        0x4028 => "AfC",
         _ => "0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
     };
 
