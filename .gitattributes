@@ -18,6 +18,13 @@ docs/research/evidence/e01-b8-census/ci-observations.json text eol=lf
 # The B8 census manifest is hashed as committed bytes by the discovery tests.
 tests/fixtures/b8/census-manifest.json text eol=lf
 # The B9 census fixtures are byte-authored and hashed as committed bytes in CI.
+# The B10 wave-2 fixtures are byte-authored containers (MRW block chain, RAF offset
+# table, RW2 header, generic TIFF marker) and are hashed as committed bytes in CI.
+tests/fixtures/b10/census-manifest.json text eol=lf
+tests/fixtures/b10/owned-marker-sr2.sr2 -text
+tests/fixtures/b10/owned-mrw-ttw.mrw -text
+tests/fixtures/b10/owned-raf-fujifilm.raf -text
+tests/fixtures/b10/owned-rw2-root24.rw2 -text
 tests/fixtures/b9/census-manifest.json text eol=lf
 tests/fixtures/b9/owned-marker-arw.arw -text
 tests/fixtures/b9/owned-marker-cr2.cr2 -text
@@ -28,3 +35,15 @@ tests/fixtures/b9/owned-marker-srw.srw -text
 # The B9 census receipt will hash exact observation bytes across OS checkout modes.
 docs/research/evidence/e01-b9-census/observations.json text eol=lf
 docs/research/evidence/e01-b9-census/ci-observations.json text eol=lf
+docs/research/evidence/e01-b9-census/master-observations.json text eol=lf
+docs/research/evidence/e01-b9-census/receipt.json text eol=lf
+
+# Evidence receipts hash *committed bytes*, and the Windows runners check text out with
+# core.autocrlf=true: an unpinned LF file arrives as CRLF and every digest in the receipt stops
+# matching. B10 hit exactly that -- net8.0/net10.0 windows-latest failed on the discovery suite
+# (run 42744015517) while every Linux job stayed green, because only a CRLF checkout can show
+# it. The per-batch lines above were the fix one batch at a time; this pins the whole evidence
+# tree so the next batch cannot forget, and tests/discovery/test_census.py checks both halves of
+# that: the rule is present, and every evidence file a receipt hashes still matches its own blob
+# byte-for-byte after checkout.
+docs/research/evidence/**/*.json text eol=lf

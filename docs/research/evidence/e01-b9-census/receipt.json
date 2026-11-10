@@ -90,6 +90,43 @@
       "SRW": 192
     }
   },
+  "masterRunReproduction": {
+    "annotationTitles": [
+      "B9Z observations.json <i>/<n> for the census report; B9RAW observations.json <i>/<n> for the per-fixture preflight report"
+    ],
+    "checkRunId": 129563656007,
+    "chunks": 4,
+    "conclusion": "three independent runs (two PR heads and master) reproduce the observation payload byte-for-byte; nothing about the compiled binary or the ExifTool envelope is claimed",
+    "differenceCauses": {
+      "baseline": "the reference build embeds its own timestamp, so executableSha256 and the time= line of the version banner change per run; the pinned source commit, CMake option set, cache digest and license digest still match",
+      "secondaryObservations": "ExifTool System:FileAccessDate/System:FileModifyDate/System:FileInodeChangeDate only; every exit code, fixture digest and parsed value still matches",
+      "sourceCommit": "the master run validates the merge commit, the primary evidence came from the pull-request head"
+    },
+    "differingSections": [
+      "baseline",
+      "secondaryObservations",
+      "sourceCommit"
+    ],
+    "headCommit": "4d4804b7346fe1b3fdf26bc6871133df6e5cc73e",
+    "identicalSections": [
+      "batch",
+      "blocked",
+      "denominatorFrozen",
+      "fixtureManifest",
+      "limitations",
+      "observations",
+      "outcomeCounts",
+      "schema",
+      "scope",
+      "status",
+      "verification"
+    ],
+    "observationsFile": "docs/research/evidence/e01-b9-census/master-observations.json",
+    "observationsFileSha256": "dd2696649a502b75237d692559c04fa262f99418df4046e4deadcbdb82a207f0",
+    "rawPayloadSha256": "62d00a477833ce61cd4b245908dafcde00d48cd7cd7aeaa1e6e4b87c39291370",
+    "runId": 42735514666,
+    "whyThisSample": "the post-merge master run validates the merged tree, so it re-runs the recorder against the committed evidence itself rather than against a pull-request head"
+  },
   "notClaimed": [
     "no MetadataSharp verification (verification stays not-assessed)",
     "no coverage percentage and no denominator freeze",

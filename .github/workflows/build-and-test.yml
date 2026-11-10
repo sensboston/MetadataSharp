@@ -42,12 +42,40 @@ jobs:
       - name: Build Release
         run: dotnet build MetadataSharp.sln --configuration Release --no-restore
       - name: Test offline reference-harness policy
-        run: python -m unittest discover -s tests/reference -v
+        shell: bash
+        run: python -m unittest discover -s tests/reference -v 2>&1 | tee reference.log
       - name: Verify discovery seed policy
+        shell: bash
         run: |
           python tools/reference/build_capability_seeds.py --check
           python tools/reference/build_census.py --check
-          python -m unittest discover -s tests/discovery -v
+          python -m unittest discover -s tests/discovery -v 2>&1 | tee discovery.log
+      # Python-suite detail is published the same way the .NET trx failures below are. The
+      # Actions log host is not readable from every environment that recovers this repo's
+      # evidence, and a red leg that reports only "exit code 1" costs a whole round trip:
+      # a Windows-only line-ending failure in the B10 evidence digests sat behind exactly that
+      # for two pushes. unittest writes failures to stderr, so the steps above tee their merged
+      # output to a file and this step turns the failing names into annotations.
+      - name: Report failed Python policy details
+        if: failure()
+        shell: python
+        run: |
+          from pathlib import Path
+          found = False
+          for log in (Path('reference.log'), Path('discovery.log')):
+              if not log.exists():
+                  continue
+              lines = log.read_text(encoding='utf-8', errors='replace').splitlines()
+              picked = [line for line in lines
+                        if line.startswith(('FAIL:', 'ERROR:', 'AssertionError', 'Traceback',
+                                            'FAILED', 'Ran '))][:24]
+              for line in picked or lines[-12:]:
+                  text = line[:2000].replace('%', '%25').replace('\r', '%0D')
+                  print('::error title=Python policy failure (' + log.name + ')::' + text)
+                  found = True
+          if not found:
+              print('::error title=Python policy failure::no suite log: a step failed before '
+                    'writing one (check the --check scripts and the step order)')
       - name: Test Release
         run: dotnet test tests/MetadataSharp.Tests/MetadataSharp.Tests.csproj --framework ${{ matrix.tfm }} --configuration Release --no-build --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults/${{ matrix.tfm }}
       - name: Report failed test details
@@ -456,5 +484,74 @@ jobs:
         with:
           name: e01-b9-raw-preflight
           path: artifacts/e01/b9-raw-preflight/observations.json
+          if-no-files-found: error
+          retention-days: 30
+  # B10 is wave 2 of the RAW series: MRW / RW2 / SR2 / RAF. It gets its own job for the
+  # same reason B9 does, and the arithmetic is the binding constraint rather than a style
+  # choice. GitHub caps a check run at 50 annotations and drops the overflow silently, the
+  # B0-B8 baseline job already emits exactly 50, and the Actions log and artifact blob are
+  # unreachable from the recovery environment -- so an annotation-overflowed batch would
+  # look like a batch that never ran. B10's two recorders cap themselves at 10 chunks
+  # each (see `chunks(..., limit=10)` and the preflight's own guard), so this job stays
+  # inside a fresh budget even when both reports are recovered whole. The `count=` marker
+  # in each annotation title is checked during recovery before any evidence is trusted.
+  # It rebuilds the same pinned source; no .NET SDK is needed for observation.
+  pinned-exiv2-b10:
+    name: Exiv2 0.28.9 / bounded E01 B10 wave-2 RAW observations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      LC_ALL: C
+      E01_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout pinned external black-box source (never production dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/e01/source
+          persist-credentials: false
+      - name: Install external build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev
+      - name: Configure external black-box build with explicit policy
+        shell: python
+        run: |
+          import subprocess, sys
+          sys.path.insert(0, 'tools/reference')
+          from exiv2_baseline import OPTIONS
+          subprocess.run(['cmake', '-S', 'artifacts/e01/source', '-B', 'artifacts/e01/build', '-G', 'Ninja',
+                          *[f'-D{k}={v}' for k, v in OPTIONS.items()]], check=True)
+      - name: Build only external executable (no upstream tests or fixture imports)
+        run: cmake --build artifacts/e01/build --target exiv2 --parallel 2
+      - name: Checkout pinned ExifTool secondary reference (never a product dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: ExifTool/exiftool
+          ref: 212f02cf22b9484674752181cad3b73089ce9694
+          path: artifacts/e01/exiftool
+          persist-credentials: false
+      - name: Verify the B10 census fixture catalog and byte structure
+        run: python tools/reference/b10_raw_fixtures.py verify
+      - name: B10 wave-2 preflight (read-only, vendor-private blocks never invented)
+        run: python tools/reference/probe_b10_raw.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
+      - name: B10 census observation batch (pinned CLI and secondary reference, outcomes recorded not gated)
+        run: python tools/reference/observe_b10.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
+      - name: Upload B10 census observations (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b10-census-observations
+          path: artifacts/e01/b10/observations.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload B10 wave-2 preflight (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b10-raw-preflight
+          path: artifacts/e01/b10-raw-preflight/observations.json
           if-no-files-found: error
           retention-days: 30

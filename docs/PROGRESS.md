@@ -2207,6 +2207,11 @@ no denominator freeze, publication or DNG D2 write.
 
 ### B8 merge receipt, recovery-checkpoint refresh and remote branch prune (2026-11-10)
 
+- **Merged.** This housekeeping PR landed as master `1d7019d9` (PR #49); its checks were
+  green on head `70ba046`-equivalent final state and it changed documentation only, so the
+  test count it records (564) is the count master carried at that time. The next entry (B9)
+  supersedes the census totals quoted here.
+
 - **Merged.** PR #48 landed as master `8825377`. The master push run 42724819709
   completed with **15/15 jobs green**; its net8.0/macos "Executed test count" annotation
   reads **Validated 564 passing tests**, which supersedes the 548 figure previously
@@ -2334,8 +2339,57 @@ no denominator freeze, publication or DNG D2 write.
   and the receipt pins the digest of the exact build that produced the primary evidence.
   The discovery suite asserts all of it, including that the secondary envelope digest
   genuinely differs, so the normalization cannot be read as a stronger claim.
+- Third sample, from master: the post-merge run 42735514666 (head `4d4804b7`) re-ran the
+  recorder against the merged tree, and its report is committed as
+  `master-observations.json`. Eleven of fourteen sections — including `observations`,
+  `blocked`, `fixtureManifest`, `outcomeCounts`, `limitations`, `status` and
+  `verification` — match the committed evidence byte-for-byte; only `sourceCommit`,
+  `baseline` and the ExifTool `System:File*Date` fields differ, for the same two reasons
+  already recorded. `receipt.masterRunReproduction` carries the digests, and the discovery
+  suite asserts the section-by-section verdict rather than trusting this prose.
+- The `-et` exit code, explained from the pinned source after the fact (the B9 evidence
+  recorded `rc=137` with a 137-byte artifact and deliberately did not diagnose it):
+  `Extract::writeThumbnail` returns **the number of bytes written** as its status
+  (`app/actions.cpp:858` → `ExifThumbC::writeFile` at `src/exif.cpp:389` →
+  `Exiv2::writeFile` at `src/basicio.cpp:1757` → `file.write`), and it prints
+  "Exif data doesn't contain a thumbnail" only when that count is 0
+  (`app/actions.cpp:860`). So for this build `-et` exits 0 on *failure* and exits
+  *(bytes mod 256)* on success: the exit code is a size, not a status. The invariant held
+  for all six B9 fixtures (`rc == artifact length == 137`), and B10's recorder must
+  classify `-et` rows by that rule instead of by sign.
 - Local validation: `build_census.py --check` and `build_capability_seeds.py --check`
   exit 0, `b9_raw_fixtures.py verify` (6 fixtures), discovery 107/107, reference
   104/104, `git diff --check` clean, Markdown link/fence sweep clean over 90 files.
   No .NET change, so Actions remains the only .NET evidence (test count unchanged at
   564). No publication, no denominator freeze, no DNG D2 write, no new public contract.
+
+### E01 B10 — rights and oracle review for wave 2 (in progress)
+
+- Scope read from the programme (§5 B10): MRW/RW2/SR2/RAF plus inventory, "RAF documented as
+  partial in baseline (recorded)", same high risk and same "no real captures / `blocked-rights`
+  allowed" rules as B9. The gate document is
+  `docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md`, written before any fixture exists.
+- Grounded entirely from the pinned sources read at `b0859fc61` through the contents API:
+  MRW = `\0MRM` + BE block walk to a `TTW` block holding a whole embedded TIFF
+  (`src/mrwimage.cpp:60-112`, and ExifTool's `MinoltaRaw.pm` agrees on the `\0MR([MI])`
+  shape); RW2 = magic 85 with header size 24 (`src/rw2image_int.cpp:6`) and a
+  self-declaring `RW2 IMAGE` structure print plus a two-preview warning branch
+  (`src/rw2image.cpp:62-120`); RAF = `FUJIFILM` plus fixed big-endian offsets at 84/88 and
+  100/104, an embedded preview JPEG whose Exif/IPTC/XMP/comment are copied, two synthesized
+  `Exif.Image2.*` keys, and an embedded TIFF gated on `II*\0`/`MM\0*`
+  (`src/rafimage.cpp:224-320`). MRW has no `printStructure`, so `-pS` throws
+  `kerUnsupportedImageType` (`src/image.cpp:136`) — a real per-format inventory difference.
+- SR2 gets no invented structure: the pinned build registers it as generic TIFF
+  (`src/image.cpp:91`), `mimeTypeList` has no SR2 entry, and the only Sony-specific code in that
+  path is the maker-note mapping that B12 owns. SR2's fixture is a plain generic-TIFF marker and
+  its cells record the absence of an SR2-specific observable.
+- Batch-wide gate: all four formats are `amRead` with `amNone` comment mode in the registry, so
+  **no B10 write suboperation is enumerable** and the batch is record-only (64 rows: 32
+  observation-eligible, 32 `blocked-rights`; census total 664 → 728).
+- Correction to the B9 record, from `app/actions.cpp:858` → `src/exif.cpp:389` →
+  `src/basicio.cpp:1757`: `-et`'s exit code **is the number of bytes written**, and a *missing*
+  thumbnail exits 0. `rc == artifact length` held for all six B9 fixtures and is now asserted in
+  the discovery suite across all three B9 samples. This changes how extract rows must be
+  classified in B10 and later batches.
+- No vendor layout spec was reviewed, including the two URLs the RAF reader itself cites; those
+  cells stay blocked and the fixture never calls its offset-92 filler a CFA structure.

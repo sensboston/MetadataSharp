@@ -1,0 +1,374 @@
+{
+  "schema": 1,
+  "batch": "B10",
+  "provenance": "CI-only evidence. This sandbox has no pinned Exiv2 build (no cmake/ninja, no expat/zlib development headers, and the package-install, Actions log and artifact-blob hosts are unreachable), so there is no local observation run to compare against. The committed report is the recovered CI run; no cross-environment equality claim is made.",
+  "run": {
+    "id": 42742515073,
+    "job": "Exiv2 0.28.9 / bounded E01 B10 wave-2 RAW observations",
+    "checkRunId": 129586778952,
+    "headCommit": "a147cf2ec0674b702f1d2a547d5b8987a6dd24ff",
+    "attempt": 1,
+    "pullRequest": 51,
+    "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42742515073"
+  },
+  "denominatorFrozen": false,
+  "verification": "not-assessed",
+  "baseline": {
+    "cmakeCacheSha256": "8f13f98e9fd2e35b240d5086f2570f88f2f4a57e78e52b5306688ae61817f98f",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "executableSha256": "2811cf9f64a4e695b93fcd3e66f1c28d607cc56e7d7899d2f0dfb5cbb2c401b4",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov 10 2026\ntime=02:25:26\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
+    "version": "0.28.9"
+  },
+  "tally": {
+    "censusRows": 64,
+    "observed": 32,
+    "blocked": 32,
+    "inputsUnchanged": true,
+    "artifactsProduced": 2,
+    "outcomeCounts": {
+      "accepted": 26,
+      "blocked-rights": 32,
+      "nonzero-exit-artifact-produced": 2,
+      "refused": 2,
+      "static-not-applicable": 0,
+      "zero-exit-no-artifact": 2
+    }
+  },
+  "annotationRecovery": {
+    "channel": "check-run annotations (the Actions bulk-log host and the artifact blob host are unreachable from this environment)",
+    "title": "B10Z observations.json",
+    "markerTitle": "B10Z observations.json count",
+    "encoding": "zlib + base64, 4000-byte chunks",
+    "decoding": "concatenate chunk messages in index order, base64-decode, single zlib inflate",
+    "expectedChunks": 4,
+    "chunks": 4,
+    "markerVerified": true,
+    "observationsFileSha256": "df3579722822b6fb393c9536c5d47d11fe2d2bbd204797e28018ec42456cc8a9",
+    "rawPayloadSha256": "72b524b2be4feaf6e61284a1bd25f0a446c98a4803e125672e6f1e2c4bd60172",
+    "recoveredKeys": [
+      "baseline",
+      "batch",
+      "blocked",
+      "denominatorFrozen",
+      "fixtureManifest",
+      "limitations",
+      "observations",
+      "outcomeCounts",
+      "schema",
+      "scope",
+      "secondaryObservations",
+      "sourceCommit",
+      "status",
+      "verification"
+    ],
+    "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder",
+    "ciChunks": 4,
+    "ciObservationsSha256": "4163b8cd8e24dccec44e1f4fe607228d6ababe0c779d55be2cf793bd13bf7e18",
+    "ciRawPayloadSha256": "757153fde529f933552810f257c6203f287b045dafd61f79965af9578abf486d",
+    "ciRunId": 42744015517
+  },
+  "preflightRecovery": {
+    "title": "B10RAW observations.json",
+    "markerTitle": "B10RAW observations.json count",
+    "chunks": 4,
+    "expectedChunks": 4,
+    "markerVerified": true,
+    "observationsFileSha256": "0b8e108d745a2cb73e2588925ff78bfed9b442ef37ff3fb9504459cf47d8a6e8",
+    "rawPayloadSha256": "96563accc070b31039f0cee26a45b7ea4f7e8fe81d06b493f8be9b9c0b5deab3",
+    "why": "the census record keeps stdout digests, not stdout; the preflight keeps the first 1200 bytes of each print, which is what makes the print-form findings below checkable without re-running the pinned build"
+  },
+  "annotationBudget": {
+    "perCheckRunLimit": 50,
+    "thisRunAnnotationsUsed": 11,
+    "finding": "B9 evidence was lost in run 42729776775 (head 39ee8c9) without any CI failure: the B0-B8 job already emits 50 annotations and GitHub drops the overflow of a check run silently. B10 therefore runs in its own job, whose two recorders cap themselves at 10 chunks each; this job used 11 of 50 and the count markers for both reports were matched before any evidence was trusted."
+  },
+  "printForms": {
+    "MRW": {
+      "inventory": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0,
+        "tokens": []
+      },
+      "pa": {
+        "stdoutLength": 3785,
+        "tokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stdoutSha256": "5e2864c925e2ee35205cdef7aaaffc8c0103c86d58ce3ebb165fe02bd9fe0b1a"
+      },
+      "comment": {
+        "stdoutLength": 1,
+        "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      "icc": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "extract": {
+        "exitCode": 137,
+        "outcome": "nonzero-exit-artifact-produced",
+        "artifactBytes": 137,
+        "exitCodeEqualsArtifactBytes": true
+      }
+    },
+    "RAF": {
+      "inventory": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 846,
+        "tokens": []
+      },
+      "pa": {
+        "stdoutLength": 1941,
+        "tokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stdoutSha256": "b51cfc05672cd0ab270de7ffc4f1e3030d9817649484b7d0ec9bfeec64b527e2"
+      },
+      "comment": {
+        "stdoutLength": 14,
+        "stdoutSha256": "c9081bd87878786801e4884a369f291c4563a5c827d7383cff58f2666e0709d9"
+      },
+      "icc": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "extract": {
+        "exitCode": 0,
+        "outcome": "zero-exit-no-artifact",
+        "artifactBytes": 0,
+        "exitCodeEqualsArtifactBytes": true
+      }
+    },
+    "RW2": {
+      "inventory": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 2326,
+        "tokens": [
+          "B10Artist",
+          "B10Tool"
+        ]
+      },
+      "pa": {
+        "stdoutLength": 563,
+        "tokens": [],
+        "stdoutSha256": "bcd20f44bde9c0914ce1a6f6f334d3c3abc46b0fbcc9c09e1fd19bfb1dc52bfc"
+      },
+      "comment": {
+        "stdoutLength": 1,
+        "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      "icc": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 202
+      },
+      "extract": {
+        "exitCode": 0,
+        "outcome": "zero-exit-no-artifact",
+        "artifactBytes": 0,
+        "exitCodeEqualsArtifactBytes": true
+      }
+    },
+    "SR2": {
+      "inventory": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 2318,
+        "tokens": [
+          "B10Artist",
+          "B10Tool"
+        ]
+      },
+      "pa": {
+        "stdoutLength": 3789,
+        "tokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stdoutSha256": "01b665836a20ac512fc44b40179e12e0120b32d53e4eed424a23ac7a31e9d8b8"
+      },
+      "comment": {
+        "stdoutLength": 1,
+        "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      "icc": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 192
+      },
+      "extract": {
+        "exitCode": 137,
+        "outcome": "nonzero-exit-artifact-produced",
+        "artifactBytes": 137,
+        "exitCodeEqualsArtifactBytes": true
+      }
+    }
+  },
+  "commentPrintForm": {
+    "authoredComment": "B10RafComment",
+    "rafMatchesAuthoredCommentPlusNewline": true,
+    "otherFormatsPrintOneNewlineByte": true
+  },
+  "iccPrintForm": {
+    "authoredProfileLength": 192,
+    "stdoutLengthByFormat": {
+      "MRW": 0,
+      "RAF": 0,
+      "RW2": 202,
+      "SR2": 192
+    },
+    "note": "the generic TIFF print (SR2) returned exactly the authored profile, the RW2 print returned 202 bytes because Rw2Image::printStructure prints \"RW2 IMAGE\" before the profile (src/rw2image.cpp:63), the RAF print succeeded but was empty, and the MRW print threw the same kerUnsupportedImageType as its -pS because all -p modes share Image::printStructure (app/actions.cpp:1983-1990).",
+    "b9AnomalyResolved": "this also explains B9's ORF 202-byte -pC print for a 192-byte profile: OrfImage::printStructure prints \"ORF IMAGE\" first (src/orfimage.cpp:55). B9 recorded that difference as undiagnosed; it is a print-form banner, not a profile difference. B9's rows are not rewritten."
+  },
+  "thumbnailRoundTrip": {
+    "byteExactCopyProducedByPinnedCli": true,
+    "rows": 2,
+    "authoredThumbnailSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+    "authoredThumbnailLength": 137,
+    "extractionSucceededFor": [
+      "MRW",
+      "SR2"
+    ],
+    "extractionReturnedNothingFor": [
+      "RAF",
+      "RW2"
+    ]
+  },
+  "recognition": {
+    "dispatchByFormat": {
+      "MRW": [
+        "mrw"
+      ],
+      "RAF": [
+        "raf"
+      ],
+      "RW2": [
+        "rw2"
+      ],
+      "SR2": [
+        "tiff"
+      ]
+    },
+    "note": "MRW is claimed by \\0MRM ahead of the TIFF entry, RW2 by magic 0x0055 which the generic TIFF check rejects, RAF by the FUJIFILM header, and SR2 by nothing: it dispatches to the generic TIFF reader because the pinned registry has no SR2 entry, so its rows record generic behaviour rather than an SR2 identity."
+  },
+  "checkoutPolicy": {
+    "requirement": "the digests in this receipt are taken over committed bytes, so a checkout that rewrites line endings invalidates them",
+    "windowsRunnerDefault": "core.autocrlf=true converts LF text to CRLF at checkout",
+    "pin": "docs/research/evidence/**/*.json text eol=lf in .gitattributes",
+    "finding": "three Windows-only failures, two of them real. (1) 4322b70 / run 42744015517: the B10 evidence files had been written without an eol pin, so the Windows checkout hashed CRLF bytes against LF-recorded digests while every Linux and macOS job stayed green -- fixed by the pin above, reproducible locally with `git -c core.autocrlf=true checkout-index -a -f`. (2) 611a8f5 / run 42746390202: the *guard* for that fix asked `git check-attr` and parsed its output, and that output did not parse on the Windows runner, so every evidence file looked unpinned -- a test that was itself platform-fragile, red on the platform it was meant to protect. The guard now asserts the rule is present and compares each hashed evidence file against its own blob in `HEAD`, which bites on every platform. (3) Diagnosing (2) cost two round trips because the python steps published no detail: they now tee their output and a failure-only step turns the `FAIL:`/`AssertionError` lines into annotations, mirroring the .NET trx step."
+  },
+  "secondaryReference": {
+    "tool": "ExifTool 12.76 (pinned 212f02cf2)",
+    "files": [
+      "owned-marker-sr2.sr2",
+      "owned-mrw-ttw.mrw",
+      "owned-raf-fujifilm.raf",
+      "owned-rw2-root24.rw2"
+    ],
+    "role": "secondary observation, never an oracle"
+  },
+  "reproduction": {
+    "claim": "observations are reproducible; the compiled reference binary is not",
+    "runs": [
+      {
+        "head": "a147cf2ec0674b702f1d2a547d5b8987a6dd24ff",
+        "runId": 42742515073,
+        "payload": "observations.json"
+      },
+      {
+        "head": "4322b70790226471252b18124b675bfa76018b64",
+        "runId": 42744015517,
+        "payload": "ci-observations.json"
+      }
+    ],
+    "status": "two independent CI runs of the same recorder agree on the observation payload byte-for-byte; only the build timestamp, the validated head and ExifTool file dates move",
+    "excludedDifferences": {
+      "baseline.executableSha256": "the build embeds its own timestamp, so the binary is not bit-reproducible",
+      "baseline.verboseVersion": "the banner differs by the time= value and by where the library= line sits; the parsed field set is the same",
+      "secondaryObservations": "ExifTool System:FileAccessDate/ModifyDate/InodeChangeDate only",
+      "sourceCommit": "successive runs validate different heads"
+    },
+    "identicalSections": [
+      "batch",
+      "blocked",
+      "denominatorFrozen",
+      "fixtureManifest",
+      "limitations",
+      "observations",
+      "outcomeCounts",
+      "schema",
+      "scope",
+      "status",
+      "verification"
+    ],
+    "differingSections": [
+      "baseline",
+      "secondaryObservations",
+      "sourceCommit"
+    ],
+    "stillIdentical": [
+      "blocked",
+      "fixtureManifest",
+      "observations",
+      "outcomeCounts"
+    ],
+    "baselineDifference": {
+      "executableSha256Differs": true,
+      "cmakeCacheSha256Equal": true,
+      "effectiveCmakeEqual": true
+    },
+    "secondaryDriftBeyondFileDates": []
+  },
+  "notClaimed": [
+    "no MetadataSharp verification (verification stays not-assessed)",
+    "no coverage percentage and no denominator freeze",
+    "no metadata-support or vendor-format conformance claim",
+    "no write behavior: no B10 write row is enumerated, and mrw/rw2/sr2/raf being amRead in the pinned registry is a reference-build fact, not an accepted exclusion",
+    "per-family attribution of the shared -pa output is not established (four rows per layout print one identical digest)",
+    "nothing about the vendor-private structures is established: those 32 cells stay blocked",
+    "RW2's two-preview path is not attempted, so the \"more than one preview\" branch is unobserved",
+    "that any authored file is a valid capture of the vendor format, or that a camera would read it",
+    "ExifTool reported FileType per its own rules, which consult the extension, so the secondary observation is not a validity proof for these authored containers"
+  ]
+}

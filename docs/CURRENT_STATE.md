@@ -1,14 +1,18 @@
 # Current development state and recovery checkpoint
 
-**E01 B9 (TIFF-derived RAW wave 1) is recorded** on `arena/0e8b5844-metadatasharp`
-(PR #50): 96 rows — 48 `observed-cli` from the pinned Exiv2 0.28.9 CLI on six owned
+**E01 B10 (TIFF-derived RAW wave 2) is in progress** on `arena/6c11e813-metadatasharp`:
+the rights/oracle gate `docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md` is written and
+grounds MRW/RW2/RAF on transcribed pinned readers (SR2 deliberately gets no invented
+structure); no fixture, probe or census row exists for B10 yet, so nothing in the census
+below reflects B10. **E01 B9 (TIFF-derived RAW wave 1) is merged** via PR #50 as master
+`4d4804b7`: 96 rows — 48 `observed-cli` from the pinned Exiv2 0.28.9 CLI on six owned
 synthetic marker fixtures and 48 `blocked` vendor-private cells. Census total is
 **664 rows**, 138 seed cells enumerated, 48 pending, `denominatorFrozen: false`.
-Evidence: `docs/research/evidence/e01-b9-census/` (CI-only, plus a second CI run kept
-as a cross-run reproduction sample: the observation payload matched byte-for-byte between
-runs while `baseline.executableSha256` differs because the reference build embeds its own
-timestamp — observations reproducible, the binary not; there is no local run and none is
-claimed). B8 is merged via PR #48 (53 rows: 31 observed, 22 blocked; evidence
+Evidence: `docs/research/evidence/e01-b9-census/` — CI-only, with two extra samples (a
+second CI run, plus the post-merge master run 42735514666 at `4d4804b7`): the observation
+payload matched byte-for-byte across all three runs while `baseline.executableSha256`
+differs because the reference build embeds its own timestamp — observations reproducible,
+the binary not; there is no local run and none is claimed. B8 is merged via PR #48 (53 rows: 31 observed, 22 blocked; evidence
 in `docs/research/evidence/e01-b8-census/`, which also keeps a second CI run as a
 cross-run reproduction sample). Operationally important: a check run keeps at most 50
 annotations and B0–B8 already emit exactly 50, so B9's evidence was silently dropped in
