@@ -228,7 +228,8 @@ internal static class Program
         return entry.TagId switch
         {
             0x001F => "Vr", 0x0023 => "Pc", 0x0024 => "Wt", 0x0025 => "Ii", 0x0088 => "Af",
-            0x0098 => version == "0100" ? "Ld1" : "Ld2",
+            0x0098 => version switch { "0100" => "Ld1", "0204" => "Ld3", "0800" or "0801" or "0802" => "Ld4", _ => "Ld2" },
+            0x0091 => "Si02xx", 0x0097 => "Cb2b",
             0x00A8 => version switch { "0100" or "0101" => "Fl1", "0102" => "Fl2", "0106" => "Fl6", "0107" or "0108" => "Fl7", _ => "Fl3" },
             0x00B0 => "Me", 0x00B7 => version == "0100" ? "Af2" : "Af22", 0x00B8 => "Fi", 0x00B9 => "AFT",
             _ => "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)
