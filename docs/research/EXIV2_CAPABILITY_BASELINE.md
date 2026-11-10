@@ -97,3 +97,12 @@ MetadataSharp parity or safe-write support. All three reference writes have expl
 non-target byte-preservation failures (COM change; XMP reencoding where present).
 Neither observed differences nor disabled optional web/curl are accepted exclusions.
 186 seeds/348 candidates and all unknown/rights/layout rows stay visible; no score.
+
+Batches B0–B8 have since been enumerated and their bounded pinned-CLI observations
+recorded: the census now holds 568 rows (102 seed cells enumerated, 84 pending), every
+row still carries `verification: not-assessed`, `denominatorFrozen` is false, and no
+coverage percentage is published anywhere in this programme. See
+[census and denominator proposal](../design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md)
+§5 and `docs/research/EXIV2_CENSUS.json`; per-batch evidence is under
+`docs/research/evidence/`. That growth is enumeration plus observation only — it is not
+MetadataSharp verification, not an accepted-exclusion ledger and not a score.
