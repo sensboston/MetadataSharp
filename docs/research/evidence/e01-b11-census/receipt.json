@@ -1002,7 +1002,7 @@
       "disagreementCount": 6,
       "note": "`recognizers()` in tools/reference/b11_container_fixtures.py models the magic tests in the pinned sources (bmpimage.cpp:119-132, quicktimevideo.cpp:1616-1641, bmffimage.cpp:794-812, matroskavideo.cpp:930-945, riffvideo.cpp:771-784) and predicts a match for each of these files. The build still produced no reader, so the rejection happens after the magic test: newXInstance rejects the image it just built unless Image::good() (image.cpp:713-718) re-runs that type's recognizer through ImageFactory::checkType (image.cpp:768-772) on the moved io, and an entry earlier in the registry that matches first would also short-circuit the loop. This evidence cannot separate those two, so it does not try to."
     },
-    "notEstablished": "why these five stubs are refused is not established. What is established is that the refusal is not a format-support statement: it is what this build does with a file that carries its header and nothing else. The cheapest follow-up that would separate the two candidate causes is a same-format fixture long enough that every recognizer read in the scan sees its own bytes (a padded BMP is enough to test it, since BMP needs no more than its two headers); that is a B12 question, not a B11 one.",
+    "notEstablished": "the mechanism behind the 7 refusals is not established, and the count matters for what the follow-up has to show: 6 of them contradict this repository's own model of the magic tests, while the remaining 1 (tga-signature-wrong-name-v1) is the model agreeing that no reader should claim the file -- a different finding, which must not be folded into the six. What is established for all of them is that the refusal is not a format-support statement: it is what this build does with a file that carries its header and nothing else. The cheapest probe that would separate the two candidate causes for the disagreeing rows is a same-format fixture long enough that every recognizer read in the scan sees its own bytes (a padded BMP is enough to test it, since BMP needs no more than its two headers), with a valid-but-short and a magic-valid-but-broken BMP beside it so the outcome can be attributed rather than guessed; that is a B12 question, not a B11 one.",
     "clearedLayoutsThatDidReachAReader": [
       "asf-header-guid-v1",
       "ciff-mapped-v1",
@@ -1205,7 +1205,7 @@
     "per-family attribution of the shared -pa output is not established (the read rows for one layout print one identical digest)",
     "that any authored file is a valid capture of the vendor format, or that a camera would read it",
     "ExifTool reported FileType per its own rules, which consult the extension, so the secondary observation is not a validity proof for these authored containers",
-    "the mechanism behind the five factory refusals (see factoryRefusals.notEstablished)"
+    "the mechanism behind the 7 refusals without a reader, of which 6 contradict this repository's own recognizer model (see factoryRefusals.notEstablished)"
   ],
   "censusCrossRun": {
     "priorRun": {
