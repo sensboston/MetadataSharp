@@ -93,7 +93,7 @@ internal static class MakerNoteReader
         if (ifd < 8 || ifd >= (uint)(length - 10))
             return null;
         return Directory(MakerNoteFormat.Nikon3, tiff, header + (int)ifd, start + length, header, order, 0,
-            limits, retainedBudget, NikonMakerNoteNames.Nikon3, null);
+            limits, retainedBudget, NikonMakerNoteNames.Nikon3, NikonMakerNoteArrays.Decompose);
     }
 
     /// <summary>

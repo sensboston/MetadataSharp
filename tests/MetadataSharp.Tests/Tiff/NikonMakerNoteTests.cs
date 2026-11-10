@@ -166,3 +166,69 @@ public sealed class NikonMakerNoteTests
         }
     }
 }
+
+public sealed class NikonMakerNoteArrayTests
+{
+    private static ExifValue Bytes(Endianness order, params byte[] raw) =>
+        ExifValue.FromRaw(TiffFieldType.Undefined, (uint)raw.Length, order, raw);
+
+    private static IReadOnlyList<MakerNoteField> Split(ushort tag, ExifValue value) =>
+        Core.MakerNotes.NikonMakerNoteArrays.Decompose(tag, value);
+
+    private static byte[] Versioned(string version, int length)
+    {
+        byte[] raw = new byte[length];
+        Encoding.ASCII.GetBytes(version).CopyTo(raw, 0);
+        for (int i = 4; i < length; i++) raw[i] = (byte)i;
+        return raw;
+    }
+
+    [Fact]
+    public void FlashInfoIsChosenByVersionAndIsBigEndian()
+    {
+        byte[] raw = Versioned("0107", 70);
+        raw[6] = 0x01; raw[7] = 0x02;
+        IReadOnlyList<MakerNoteField> fields = Split(0x00A8, Bytes(Endianness.LittleEndian, raw));
+        Assert.Contains(fields, f => f.Name == "WirelessFlashData");
+        MakerNoteField firmware = fields.Single(f => f.Name == "ExternalFlashFirmware");
+        Assert.Equal(Endianness.BigEndian, firmware.Value.ByteOrder);
+        Assert.Equal(TiffFieldType.Short, firmware.Value.FieldType);
+
+        IReadOnlyList<MakerNoteField> old = Split(0x00A8, Bytes(Endianness.LittleEndian, Versioned("0102", 20)));
+        Assert.DoesNotContain(old, f => f.Name is "FlashColorFilter" or "WirelessFlashData");
+        Assert.Contains(old, f => f.Name == "FlashGNDistance");
+    }
+
+    [Fact]
+    public void AnUnknownVersionOrSizeIsNotSplit()
+    {
+        Assert.Empty(Split(0x00A8, Bytes(Endianness.LittleEndian, Versioned("0999", 70))));
+        Assert.Empty(Split(0x00B7, Bytes(Endianness.LittleEndian, Versioned("0100", 31))));
+        Assert.Empty(Split(0x0098, Bytes(Endianness.LittleEndian, Versioned("0204", 40)))); // Encrypted.
+        Assert.Empty(Split(0x0023, ExifValue.FromRaw(TiffFieldType.Short, 2, Endianness.LittleEndian, new byte[4])));
+    }
+
+    [Fact]
+    public void PictureControlTextFieldsAndATruncatedArray()
+    {
+        byte[] raw = Versioned("0100", 58);
+        Encoding.ASCII.GetBytes("STANDARD\0").CopyTo(raw, 4);
+        IReadOnlyList<MakerNoteField> fields = Split(0x0023, Bytes(Endianness.BigEndian, raw));
+        MakerNoteField name = fields.Single(f => f.Name == "Name");
+        Assert.Equal(TiffFieldType.Ascii, name.Value.FieldType);
+        Assert.Equal(20u, name.Value.Count);
+        Assert.Contains(fields, f => f.Name == "ToningSaturation");
+
+        IReadOnlyList<MakerNoteField> cut = Split(0x0023, Bytes(Endianness.BigEndian, raw[..50]));
+        Assert.Equal("QuickAdjust", cut[^1].Name); // Sharpness at byte 50 is past the 50-byte array.
+        Assert.DoesNotContain(cut, f => f.Index >= 50);
+    }
+
+    [Fact]
+    public void ISOInfoIsBigEndianWhateverTheMakerNoteOrder()
+    {
+        byte[] raw = [100, 0, 0, 0, 0x01, 0x02, 0, 0, 0, 0, 0x03, 0x04, 0, 0];
+        MakerNoteField expansion = Split(0x0025, Bytes(Endianness.LittleEndian, raw)).Single(f => f.Name == "ISOExpansion");
+        Assert.Equal(Endianness.BigEndian, expansion.Value.ByteOrder);
+    }
+}
