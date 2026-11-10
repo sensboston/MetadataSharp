@@ -24,7 +24,8 @@ public enum MakerNoteFormat
     /// <summary>Pentax: an "AOC" signature and a byte order, then an IFD; offsets relative to the TIFF header.</summary>
     Pentax,
 
-    /// <summary>Pentax, DNG style: a "PENTAX" signature and a byte order, then an IFD; offsets relative to the MakerNote.</summary>
+    /// <summary>Pentax, DNG style (also found in DNGPrivateData): a "PENTAX" signature and two bytes, then an IFD
+    /// in the TIFF byte order; offsets relative to the MakerNote.</summary>
     PentaxDng,
 
     /// <summary>Sony: a "SONY DSC" signature, then an IFD; offsets relative to the TIFF header.</summary>
