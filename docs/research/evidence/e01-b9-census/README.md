@@ -8,11 +8,12 @@ coverage percentage is computed anywhere in this batch.
 
 Files here:
 
-- `observations.json` — the CI report, byte-pinned by `receipt.json`. There is no
-  local counterpart: this sandbox has no cmake/ninja or expat/zlib headers, cannot
-  install them, and cannot reach the Actions log or artifact-blob hosts, so the CI run
-  is the only observation source (unlike B6/B7, which kept a local file plus a `ci-`
-  twin).
+- `observations.json` — the CI report from the validated head of the census commit,
+  byte-pinned by `receipt.json`. There is no local counterpart: this sandbox has no
+  cmake/ninja or expat/zlib headers, cannot install them, and cannot reach the Actions
+  log or artifact-blob hosts, so CI runs are the only observation source. The B6/B7
+  layout (a local file plus a `ci-` twin) is therefore reversed here: both samples are
+  CI, and the cross-run claim is bounded accordingly.
 - `ci-observations.json` — the same recorder re-run in CI on the following head
   (run 42734184874 at `fe0c500`), kept as the cross-run reproduction sample.
 - `receipt.json` — provenance, the annotation-recovery record and its hashes, the
