@@ -228,6 +228,26 @@ these authored headers at all) the review records them as **open**: CI
 observes, the oracle does not predict, and `static-not-applicable` is never used as a stand-in
 for an unanswered question.
 
+## Observation channel, and why the batch has its own CI job
+
+One read-only command per census row, against the pinned build, in the `pinned-exiv2-b10`
+job: `probe_b10_raw.py` first (the five flags on each fixture, so a header the build refuses
+shows up as a preflight finding rather than as 32 identical census refusals), then
+`observe_b10.py` (exactly the flag each row names, with ExifTool 12.76 recorded as a
+secondary observation and never as an oracle). Both write their report to the runner and
+print it as chunked `::notice` annotations; recovery concatenates the chunk bodies **in index
+order**, then base64-decodes, then inflates once, and trusts nothing until the
+`observations.json count::N` marker matches the number of chunks seen.
+
+The job is separate from `pinned-exiv2-baseline` for a mechanical reason, not a stylistic
+one: GitHub caps a check run at 50 annotations and drops the overflow *silently*, and the
+baseline job already emits exactly 50. That is B9's recorded finding (check run 42729776775),
+where a report's tail vanished without any failure. Artifact download and `--log` are not
+reachable from the recovery environment, so the annotation stream is the only channel: a
+batch whose annotations overflow looks identical to a batch that never ran. B10's two
+recorders each cap themselves at 10 chunks, so the fresh budget in this job is provably
+enough, and `chunks(report, limit=10)` turns a would-be overflow into a build failure.
+
 ## Census enumeration this review authorizes
 
 4 layouts × 8 rows = **32 observation-eligible rows** plus 4 blocked layouts × 8 rows = **32
@@ -242,11 +262,29 @@ existing `rowId` stays stable.
 | `raw-tiff-ep-ii-sr2` | SR2 | 8 — generic-TIFF observation cells only; no SR2 identity, no maker-note payload |
 | `raw-<fmt>-vendor-private-unobserved` | MRW, RW2, SR2, RAF | 8 each, all `blocked-rights` |
 
-`noDocumentedClaim` attaches to the cells this review could not ground: the comment rows for
-MRW/RW2/SR2 (registry `amNone` and no reader that fills `comment_`), the ICC rows for MRW and
-SR2 (no documented carrier reviewed), and RAF's two cells the baseline calls partial (pixel
-dimensions and the offset-92 structure). Every new row keeps `verification: not-assessed`,
-`denominatorFrozen: false`, and no coverage percentage is computed anywhere in this batch.
+`noDocumentedClaim` is **seed-driven, not reviewer-driven**: it attaches to exactly the cells the
+pinned seed grid leaves unclaimed, so it is reproducible from `EXIV2_OPERATION_SEEDS.json` alone.
+For wave 2 the seeds record `documentedClaim: '-'` for **`comments` and `icc`** in all four
+formats, and each of those cells exists in two layouts (marker and blocked vendor-private), so
+the batch carries **16** such rows: {MRW, RAF, RW2, SR2} x {comments, icc} x {marker, vendor}.
+The registry reading agrees with the seeds on comments (`amNone` for these formats, and no
+reader that fills `comment_`). On ICC it stays silent rather than contradicting them: no ICC
+handling appears in any of the four reader source files this review read, so the only path by
+which an authored profile could surface at all is the generic TIFF parse of the embedded block,
+and whether that path reaches a named profile tag for these containers is one of the open
+questions above — CI answers it, the seeds do not pre-empt it. Accordingly this review does not
+upgrade a seed the pinned baseline left unclaimed: a row whose claim came from source reading
+instead of from the frozen seed grid would make the two artifacts disagree, and that is worse
+than an unclaimed cell.
+
+RAF's partiality in the baseline (the offset-92 vendor structure that `rafimage.cpp` prints only
+as "Todo: parse the proprietary metadata structure", and pixel dimensions) is therefore carried
+in the row `notes` and in the blocked `raw-raf-vendor-private-unobserved` layout, not in
+`noDocumentedClaim`: the two exif/iptc seeds for RAF *are* claimed, and mislabelling them would
+understate what the review did read.
+
+Every new row keeps `verification: not-assessed`, `denominatorFrozen: false`, and no coverage
+percentage is computed anywhere in this batch.
 
 ## Not claimed
 

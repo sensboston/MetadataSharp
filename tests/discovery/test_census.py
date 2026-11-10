@@ -405,7 +405,7 @@ class CensusPolicyTests(unittest.TestCase):
     def test_scope_is_observed_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
         self.assertEqual({'exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail', 'inventory'}, families)
-        self.assertEqual(34, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
+        self.assertEqual(42, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
         self.assertEqual(135, sum(1 for r in self.report['rows'] if r['batch'] == 'B0'))
         self.assertEqual(58, sum(1 for r in self.report['rows'] if r['batch'] == 'B1'))
         self.assertEqual(67, sum(1 for r in self.report['rows'] if r['batch'] == 'B2'))
@@ -416,7 +416,86 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(48, sum(1 for r in self.report['rows'] if r['batch'] == 'B7'))
         self.assertEqual(53, sum(1 for r in self.report['rows'] if r['batch'] == 'B8'))
         self.assertEqual(96, sum(1 for r in self.report['rows'] if r['batch'] == 'B9'))
-        self.assertEqual(664, len(self.report['rows']))
+        self.assertEqual(64, sum(1 for r in self.report['rows'] if r['batch'] == 'B10'))
+        self.assertEqual(728, len(self.report['rows']))
+
+    def test_b10_rows_partition_observed_and_blocked(self):
+        rows = [r for r in self.report['rows'] if r['batch'] == 'B10']
+        self.assertEqual(64, len(rows))
+        self.assertEqual({'MRW', 'RAF', 'RW2', 'SR2'}, {r['format'] for r in rows})
+        cleared = {'MRW': 'raw-mrw-ttw-embedded-tiff', 'RAF': 'raw-raf-fujifilm-be-offsets',
+                   'RW2': 'raw-rw2-ii-55-root-24', 'SR2': 'raw-tiff-ep-ii-sr2'}
+        for fmt, layout in sorted(cleared.items()):
+            of_fmt = [r for r in rows if r['format'] == fmt]
+            self.assertEqual(16, len(of_fmt), fmt)
+            # one authored layout and one blocked vendor-private cell, eight rows each
+            self.assertEqual(8, len([r for r in of_fmt if r['layout'] == layout]), fmt)
+            self.assertEqual(8, len([r for r in of_fmt if r['layout'] ==
+                                     f'raw-{fmt.lower()}-vendor-private-unobserved']), fmt)
+        for row in rows:
+            self.assertEqual('not-assessed', row['verification'])
+            self.assertIn(row['operation'], ('inventory', 'read', 'extract'))
+        # The denominator is not moved by this batch: no percentage, no freeze.
+        self.assertFalse(self.report['denominatorFrozen'])
+        self.assertNotIn('percentage', str(self.report['coverage']))
+        evidence = load_evidence('b10')
+        if evidence is None:
+            # Pre-observation state: the batch is enumerated but nothing has been claimed
+            # from it, and no row may point at a fixture the CI has not read.
+            self.assertEqual({'not-run'}, {r['baselineObservation'] for r in rows})
+            self.assertTrue(all(r['fixture'] is None for r in rows),
+                            'B10 evidence arrives with its own receipt commit')
+            return
+        self.assertEqual('passed', evidence['status'])
+        self.assertEqual('B10', evidence['batch'])
+        self.assertFalse(evidence['denominatorFrozen'])
+        self.assertEqual('not-assessed', evidence['verification'])
+        observed = {o['id'] for o in evidence['observations']}
+        blocked = {o['id'] for o in evidence['blocked']}
+        self.assertEqual(32, len(observed))
+        self.assertEqual(32, len(blocked))
+        self.assertFalse(observed & blocked)
+        self.assertEqual({r['rowId'] for r in rows}, observed | blocked)
+        self.assertEqual({r['rowId'] for r in rows if 'vendor-private' in r['layout']}, blocked)
+        self.assertEqual(blocked, {r['rowId'] for r in rows if r['baselineObservation'] == 'blocked'})
+        self.assertEqual(observed, {r['rowId'] for r in rows
+                                    if r['baselineObservation'] == 'observed-cli'})
+        self.assertTrue(all(o['facts']['inputUnchanged'] for o in evidence['observations']))
+        self.assertTrue(all(o['recordOnly'] for o in evidence['observations']))
+        self.assertEqual(0, evidence['outcomeCounts'].get('scan-changed', 0))
+        # Recognition is recorded from the fixture bytes, so the row must name the reader
+        # the pinned registry actually dispatches to -- and for SR2 that is the *generic*
+        # TIFF reader, because the registry has no SR2 entry of its own.
+        dispatch = {fmt: {o['facts']['container']['dispatch'] for o in evidence['observations']
+                          if o['format'] == fmt} for fmt in ('MRW', 'RAF', 'RW2', 'SR2')}
+        self.assertEqual({'mrw'}, dispatch['MRW'])
+        self.assertEqual({'raf'}, dispatch['RAF'])
+        self.assertEqual({'rw2'}, dispatch['RW2'])
+        self.assertEqual({'tiff'}, dispatch['SR2'])
+        # Every extract row must carry the pinned build's byte-count semantics; a status
+        # that is not the byte count is a finding, and it stays in the record.
+        extracts = [o for o in evidence['observations'] if o['operation'] == 'extract']
+        self.assertEqual(4, len(extracts))
+        for item in extracts:
+            self.assertTrue(item['facts']['extractSemantics']['exitCodeIsByteCountInPinnedBuild'])
+            self.assertEqual(item['exitCode'], item['facts']['extractSemantics']['artifactBytes'],
+                             item['id'])
+        # An MRW -pS refusal is a property of the pinned build (no printStructure override),
+        # not a fixture fault: it must be recorded as a refusal and never relabelled.
+        mrw_scan = [o for o in evidence['observations']
+                    if o['format'] == 'MRW' and o['flag'] == '-pS']
+        self.assertEqual(1, len(mrw_scan))
+        self.assertIn(mrw_scan[0]['outcome'], ('refused', 'ok', 'ok-with-issues'))
+        # 'observed-cli' means the probe ran and was recorded whole; it is not a claim that
+        # the build accepted the file. So a row whose outcome is a refusal must still carry
+        # that refusal in its own record instead of disappearing from the evidence.
+        for item in evidence['observations']:
+            if item['outcome'] == 'refused':
+                self.assertTrue(item['facts']['stderr'], item['id'])
+        # Blocked rows carry a per-format reason, never a bare 'unsupported'.
+        reasons = {b['reason'] for b in evidence['blocked']}
+        self.assertEqual(4, len(reasons))
+        self.assertTrue(all('blocked' in r for r in reasons))
 
     def test_b9_rows_partition_observed_and_blocked(self):
         rows = [r for r in self.report['rows'] if r['batch'] == 'B9']
@@ -590,8 +669,8 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(all_seeds, enumerated_seeds | pending)
         # B9 enumerates ARW/CR2/NEF/ORF/PEF/SRW x six families, so 36 seed cells move
         # from pending to enumerated; nothing is dropped from the grid.
-        self.assertEqual(138, len(enumerated_seeds))
-        self.assertEqual(48, len(pending))
+        self.assertEqual(162, len(enumerated_seeds))
+        self.assertEqual(24, len(pending))
 
     def test_no_claim_rows_are_only_the_undocumented_cells(self):
         no_claim = {r['rowId'] for r in self.report['rows'] if r['noDocumentedClaim']}
@@ -624,11 +703,17 @@ class CensusPolicyTests(unittest.TestCase):
                           {f'EX0289-{fmt}-COMMENTS-READ-{num:04d}'
                            for fmt in ('ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW') for num in (1, 2)} |
                           {f'EX0289-{fmt}-ICC-READ-{num:04d}'
-                           for fmt in ('ORF', 'SRW') for num in (1, 2)}, no_claim)
+                           for fmt in ('ORF', 'SRW') for num in (1, 2)} |
+                         # B10 undocumented cells. The pinned registry claims no comment
+                         # mode for any wave-2 format and no ICC cell for any of them, so
+                         # both layouts (marker and blocked vendor-private) are unclaimed.
+                         {f'EX0289-{fmt}-{family}-READ-{num:04d}'
+                          for fmt in ('MRW', 'RAF', 'RW2', 'SR2')
+                          for family in ('COMMENTS', 'ICC') for num in (1, 2)}, no_claim)
         for row in self.report['rows']:
             if row['noDocumentedClaim']:
                 self.assertEqual('read', row['operation'])
-                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9'))
+                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10'))
 
     def test_rows_never_use_metadataSharp_as_oracle(self):
         for row in self.report['rows']:

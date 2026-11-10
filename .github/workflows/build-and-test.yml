@@ -458,3 +458,72 @@ jobs:
           path: artifacts/e01/b9-raw-preflight/observations.json
           if-no-files-found: error
           retention-days: 30
+  # B10 is wave 2 of the RAW series: MRW / RW2 / SR2 / RAF. It gets its own job for the
+  # same reason B9 does, and the arithmetic is the binding constraint rather than a style
+  # choice. GitHub caps a check run at 50 annotations and drops the overflow silently, the
+  # B0-B8 baseline job already emits exactly 50, and the Actions log and artifact blob are
+  # unreachable from the recovery environment -- so an annotation-overflowed batch would
+  # look like a batch that never ran. B10's two recorders cap themselves at 10 chunks
+  # each (see `chunks(..., limit=10)` and the preflight's own guard), so this job stays
+  # inside a fresh budget even when both reports are recovered whole. The `count=` marker
+  # in each annotation title is checked during recovery before any evidence is trusted.
+  # It rebuilds the same pinned source; no .NET SDK is needed for observation.
+  pinned-exiv2-b10:
+    name: Exiv2 0.28.9 / bounded E01 B10 wave-2 RAW observations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      LC_ALL: C
+      E01_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout pinned external black-box source (never production dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/e01/source
+          persist-credentials: false
+      - name: Install external build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev
+      - name: Configure external black-box build with explicit policy
+        shell: python
+        run: |
+          import subprocess, sys
+          sys.path.insert(0, 'tools/reference')
+          from exiv2_baseline import OPTIONS
+          subprocess.run(['cmake', '-S', 'artifacts/e01/source', '-B', 'artifacts/e01/build', '-G', 'Ninja',
+                          *[f'-D{k}={v}' for k, v in OPTIONS.items()]], check=True)
+      - name: Build only external executable (no upstream tests or fixture imports)
+        run: cmake --build artifacts/e01/build --target exiv2 --parallel 2
+      - name: Checkout pinned ExifTool secondary reference (never a product dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: ExifTool/exiftool
+          ref: 212f02cf22b9484674752181cad3b73089ce9694
+          path: artifacts/e01/exiftool
+          persist-credentials: false
+      - name: Verify the B10 census fixture catalog and byte structure
+        run: python tools/reference/b10_raw_fixtures.py verify
+      - name: B10 wave-2 preflight (read-only, vendor-private blocks never invented)
+        run: python tools/reference/probe_b10_raw.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
+      - name: B10 census observation batch (pinned CLI and secondary reference, outcomes recorded not gated)
+        run: python tools/reference/observe_b10.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
+      - name: Upload B10 census observations (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b10-census-observations
+          path: artifacts/e01/b10/observations.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload B10 wave-2 preflight (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b10-raw-preflight
+          path: artifacts/e01/b10-raw-preflight/observations.json
+          if-no-files-found: error
+          retention-days: 30
