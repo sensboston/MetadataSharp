@@ -33,10 +33,10 @@
       "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
       "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
     },
-    "executableSha256": "62e9057d0a599951fee6d66f602a1a3d7f8dc7cebcf558ebef7f6ba8347a2a41",
+    "executableSha256": "a32b542b4833500364057144c3e6e1555b48e6cb882b4c6bbff6a9a13cc70c3c",
     "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
     "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
-    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov 10 2026\ntime=04:44:02\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
+    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov 10 2026\ntime=05:26:52\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
     "version": "0.28.9"
   },
   "batch": "B11",
@@ -885,8 +885,9 @@
         "extractSemantics": {
           "artifactBytes": 0,
           "exitCodeEqualsArtifactBytes": true,
-          "exitCodeIsByteCountInPinnedBuild": true,
-          "reportedNoThumbnail": true
+          "reportedNoThumbnail": true,
+          "statusIsByteCountWritten": false,
+          "statusShape": "no-thumbnail-extension"
         },
         "finding": null,
         "inputUnchanged": true,
@@ -1288,10 +1289,11 @@
         "extractSemantics": {
           "artifactBytes": 137,
           "exitCodeEqualsArtifactBytes": true,
-          "exitCodeIsByteCountInPinnedBuild": true,
           "predictedArtifactBytes": 137,
           "predictionMatched": true,
-          "reportedNoThumbnail": false
+          "reportedNoThumbnail": false,
+          "statusIsByteCountWritten": true,
+          "statusShape": "thumbnail-written"
         },
         "finding": null,
         "inputUnchanged": true,
@@ -1677,10 +1679,11 @@
         "extractSemantics": {
           "artifactBytes": 137,
           "exitCodeEqualsArtifactBytes": true,
-          "exitCodeIsByteCountInPinnedBuild": true,
           "predictedArtifactBytes": 137,
           "predictionMatched": true,
-          "reportedNoThumbnail": false
+          "reportedNoThumbnail": false,
+          "statusIsByteCountWritten": true,
+          "statusShape": "thumbnail-written"
         },
         "finding": null,
         "inputUnchanged": true,
@@ -2036,11 +2039,12 @@
         "extractSemantics": {
           "artifactBytes": 0,
           "exitCodeEqualsArtifactBytes": false,
-          "exitCodeIsByteCountInPinnedBuild": true,
           "finding": "exit code differs from the bytes written; see app/actions.cpp:858",
-          "reportedNoThumbnail": false
+          "reportedNoThumbnail": false,
+          "statusIsByteCountWritten": false,
+          "statusShape": "no-exif-data"
         },
-        "finding": "-et exit code 253 does not equal the 0 bytes the command wrote",
+        "finding": null,
         "inputUnchanged": true,
         "printedTokens": [],
         "stderr": "<fixture>: No Exif data found in the file\n",
@@ -4474,9 +4478,9 @@
           "File:MIMEType": "video/x-ms-asf",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-asf-header.asf",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-asf-header.asf",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "100 bytes"
@@ -4485,7 +4489,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "82f91ab89f08564b84c020170e0f1b9f814aaeb73d581f23ff63a481cb0d6012",
+      "stdoutSha256": "81d9cbc07565f276871a868f9b68664ff4166dd350ad41a89cabd6cc4e38cd9e",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4510,9 +4514,9 @@
           "File:MIMEType": "video/x-msvideo",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-avi-avih.avi",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-avi-avih.avi",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "88 bytes"
@@ -4521,7 +4525,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "e62609c2225d957dd63566ddd051fa23857ba88ef12a70bc9005b50b400413ad",
+      "stdoutSha256": "bd566e5c85e8e80bc470a1cd988739a8f77340bbc2ddea923d2c5cff62a9e40b",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4559,9 +4563,9 @@
           "File:Planes": 1,
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-bmp-dib.bmp",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-bmp-dib.bmp",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "55 bytes"
@@ -4570,7 +4574,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "efcfc88218adf3f8d2e0313051410f9c8730a06d41e2309f08cadb4d2e2510c7",
+      "stdoutSha256": "b93b35215261a76b2caf1a7fddcf5c34435303b7fb4cf5adb71e105731ba1737",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4602,9 +4606,9 @@
           "File:Planes": 1,
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-bmp-os2.bmp",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-bmp-os2.bmp",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "27 bytes"
@@ -4613,7 +4617,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "2da65f27b5fa9d3e69b0b79a5ae7b602606d9ea87efcc87362e0ef5049f996b2",
+      "stdoutSha256": "64779aa9ee7d315abd01f0c9059d8f8ce57d3cb6bcbc1280ed917552951982a2",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4658,9 +4662,9 @@
           "File:MIMEType": "image/x-canon-crw",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-crw-mapped.crw",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-crw-mapped.crw",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "334 bytes"
@@ -4669,7 +4673,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "1ebd2b540c9fc45e3d76ced431905a32e8d30609eb73641ea13c3925e7088848",
+      "stdoutSha256": "b25b971c3d79ef959ceecb7c8bd997f30aaa224aa611fe15255273c9f983dd13",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4696,9 +4700,9 @@
           "File:MIMEType": "image/x-canon-crw",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-crw-preview-thumb.crw",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-crw-preview-thumb.crw",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "326 bytes"
@@ -4707,7 +4711,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "bac3c573464b3095026dda5b8e49df553ff0157c3f598ad4dac3fdb9f8548e86",
+      "stdoutSha256": "ffaf7e6dc00d1997decec89c0e6e76a7773fc2202ed72109334f5e1e0476388e",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4733,9 +4737,9 @@
           "File:MIMEType": "image/x-canon-crw",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-crw-thumb.crw",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-crw-thumb.crw",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "179 bytes"
@@ -4744,7 +4748,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "81adfe9472b4494a88c38000ee6b751509be6e08f0dfbd8f37e74175bf783d5f",
+      "stdoutSha256": "03f832357b4259a1e3853c92f5a7f8a4eff03d56f485ad50177cbd0f30e26d43",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4781,9 +4785,9 @@
           "File:MIMEType": "image/x-canon-crw",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-crw-unmapped.crw",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-crw-unmapped.crw",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "191 bytes"
@@ -4792,7 +4796,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "4202281906dbd67d4dc97965d5155b5e2f4f304fcd5510190f9dabb72fa2b1da",
+      "stdoutSha256": "265d11959b0feefa1228b9deecb0461ff841cf0f83330ac2ea5370f10a7763ae",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4827,9 +4831,9 @@
           "GIF:ImageWidth": 64,
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-gif-lsd.gif",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-gif-lsd.gif",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "13 bytes"
@@ -4838,7 +4842,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "ce3e6ef7e52bdf1445ea31b947ab25a813cddc91dfd231c25d8a65d14ab72ef8",
+      "stdoutSha256": "3922642c749d16b8683beb9fad0c852b8989391e506765ae55359f96eb8f7828",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4867,9 +4871,9 @@
           "File:WordCount": 1,
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-gif-no-lsd.gif",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-gif-no-lsd.gif",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "6 bytes"
@@ -4878,7 +4882,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "237c829f18d2dd2da993a377d2248ca4b25723e70d45e71c7b37312243609cc4",
+      "stdoutSha256": "6d8e6f85d07f9469aacb4580f9990de689eb26e89ef37e53d47e7e0caed6405d",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4901,9 +4905,9 @@
           "ExifTool:Warning": "Truncated Matroska header",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-mkv-header.mkv",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-mkv-header.mkv",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "24 bytes"
@@ -4912,7 +4916,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "b9bff5461ae470353a4f7a37eed1e73c20bf05551255c2efc28ba36a4e0f1ab6",
+      "stdoutSha256": "eaa4555fabe8c399ce3ccc4d747879186cc1d27ea66d4030181ecd50fbb1f4dd",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4939,9 +4943,9 @@
           "QuickTime:MinorVersion": "0.0.0",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-mov-brand.mov",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-mov-brand.mov",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "36 bytes"
@@ -4950,7 +4954,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "6972d43f88b7618ca06867895fc09126ad9cf3875884e64f0ef093368c9fc81a",
+      "stdoutSha256": "08e97055f1fb16dd8aa23bcff4aea6990c97495f69415d611f00e39428665e72",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -4977,9 +4981,9 @@
           "QuickTime:MinorVersion": "0.0.0",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-mov-unknownbrand.mov",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-mov-unknownbrand.mov",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "36 bytes"
@@ -4988,7 +4992,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "81dd884ca8029a7b50b51a94cc5997a421c13ffe15c92abe7b5c1b9d38bc0648",
+      "stdoutSha256": "35e13195dd4331245069d39a96d90f5c6472440cb026045755d84d5c9c4f792e",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -5014,9 +5018,9 @@
           "File:MIMEType": "image/x-cursor",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-tga-full.tga",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-tga-full.tga",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "44 bytes"
@@ -5025,7 +5029,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "b0ea2a95bc3e6be7a0217f2dbc45cf836a670988a00c9f309109353df8192b65",
+      "stdoutSha256": "d40dd0aec2c3ec86cb92307dc6d179efb20237445a257431f35167ad3b5ae3d8",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -5054,9 +5058,9 @@
           "File:WordCount": 4,
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-tga-name-only.tga",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-tga-name-only.tga",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "23 bytes"
@@ -5065,7 +5069,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "0809a979497f8ce3678dac4aed2a5237c328ad8eb6522965d38e2a883c19cbeb",
+      "stdoutSha256": "c9962347e9331bdbe80f5184f8b96fe39344132c113c79d8ad9d56581f9cccff",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -5091,9 +5095,9 @@
           "File:MIMEType": "image/x-cursor",
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-tga-signature-only.targa",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-tga-signature-only.targa",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "44 bytes"
@@ -5102,7 +5106,7 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "227c96540c26a424185d30653c31931d6cf69c1d3d1c9d88a6cbfc84a5ba3552",
+      "stdoutSha256": "cce2c4a796b7043f3f3089c52467c04ee2909ac1e13a7990210cb9d2c494675f",
       "tool": "ExifTool",
       "version": "12.76"
     },
@@ -5133,9 +5137,9 @@
           "RIFF:SampleRate": 8000,
           "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-wav-fmt.wav",
           "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
-          "System:FileAccessDate": "2026:11:10 04:44:16+00:00",
-          "System:FileInodeChangeDate": "2026:11:10 04:43:15+00:00",
-          "System:FileModifyDate": "2026:11:10 04:43:15+00:00",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
           "System:FileName": "owned-wav-fmt.wav",
           "System:FilePermissions": "-rw-r--r--",
           "System:FileSize": "36 bytes"
@@ -5144,12 +5148,12 @@
       "jsonParseError": null,
       "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
       "stderr": "",
-      "stdoutSha256": "af6606aa50c8108b1ca9c6fab4a401469f7865f2ca459f82886e83e811600567",
+      "stdoutSha256": "cc066fcc5e8b1204d203df6aca62534dc64642f62ac2833a9a03248ebe033cbc",
       "tool": "ExifTool",
       "version": "12.76"
     }
   },
-  "sourceCommit": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
+  "sourceCommit": "6bb7d8cb94c42d4d88435171c83d42821f8f0a91",
   "status": "passed",
   "verification": "not-assessed"
 }

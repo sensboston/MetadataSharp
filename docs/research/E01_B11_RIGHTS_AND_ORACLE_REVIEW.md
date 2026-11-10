@@ -574,13 +574,18 @@ What that table licenses B11 to say, and nothing more:
   `tools/reference/write_b10_receipt.py` hardcodes its evidence paths, its `batch`, its CI job's display
   name, its two annotation titles and a RAF-specific `authoredComment` check. B11 therefore gets
   `tools/reference/write_b11_receipt.py`, cloned from it with those six things replaced — the
-  `--ci-run`/`--master-run` reproduction interface and the "recompute, never retype" discipline carry
-  over unchanged, and B11's equivalent of the authored-comment check is the `0x0805` payload digest. Reproduction is claimed only
+  The "recompute, never retype" discipline carries over and B11's equivalent of the authored-comment
+  check is the `0x0805` payload digest, but the sample interface does not: B10 takes `--ci`/`--master`
+  payload paths with `--ci-run`/`--master-run` ids because its second sample arrived *after* the merge,
+  while B11 keeps both run ids as `RUN`/`PRIOR` constants in the builder and exposes only
+  `--prior-census`/`--prior-preflight` paths, because both samples were in hand when the receipt was
+  written. A receipt that hardcodes a run id it cannot re-derive is fine only while it also re-checks
+  the head that payload carries, which it does (`git cat-file` on both). Reproduction is claimed only
   in the B10 wording: *N independent CI runs of the same recorder agree on the observation payload
   byte-for-byte; only the build timestamp, the validated head and ExifTool file dates move*, with the
   `differingSections` list computed by the receipt generator rather than asserted here.
 
-## What the observation showed (run 42757620226, head `c34ee5e`)
+## What the observation showed (run 42762097543, head `6bb7d8c`)
 
 Numbers below are what `receipt.json` recomputes; they are repeated here because this document is the one
 a reviewer reads first.
@@ -614,12 +619,19 @@ a reviewer reads first.
 - **Only one container stub yields readable metadata.** `owned-avi-avih.avi` printed four `Xmp.video.*` keys
   under `-pa`/`-px`; ASF, MKV, WAV and both MOVs printed nothing or threw. That is the video-metadata family
   absence in §3 made visible as behaviour, and it is why the batch enumerates inventory-only cells there.
-- **Reproduction, preflight only so far.** The 107 records in `e01-b11-preflight/observations.json` are
-  byte-identical to `prior-run-observations.json` from run 42757054570 at a different head; the sections that
-  differ are `baseline` (the binary embeds its build timestamp, and two `library=` lines also swap order),
-  `secondary` (ExifTool's `System:File*Date`), and `sourceCommit`. The census has one sample; a second head
-  re-observing the same committed rows is the B10 pattern and would turn "the recorder is deterministic" into
-  a checked statement.
+- **Two samples per recorder, and the census delta is exactly the label.** The 107 preflight records are
+  byte-identical between runs — `observations` is one of the `identicalSections` in `reproduction.
+  priorRunComparison` — and the census payload agrees on 83 of 87 observations. The four that differ are the
+  four `-et` rows, and only in the three fields this batch renamed (`exitCodeIsByteCountInPinnedBuild` out,
+  `statusShape`/`statusIsByteCountWritten` in): `rowsDifferingBeyondShapeLabel` is empty, and exit codes,
+  artifact digests, stderr, outcomes, `blocked` and the fixture manifest are identical across a different head
+  and a different build. That is the B10 pattern achieved, and it turns "the recorder is deterministic" into
+  a checked statement instead of a hope. Sections that differ between any two runs are `baseline` (the binary
+  embeds its build timestamp, and two `library=` lines also swap order), `secondaryObservations`/`secondary`
+  (ExifTool's `System:File*Date`) and `sourceCommit` — the receipt computes those lists, it does not assert
+  them. The preflight from run 42757054570 (head `822fb1d`) is deliberately *not* committed: its census step
+  failed on a recorder bug, and its preflight matched the kept sample on every record, so a third copy would
+  have added bytes without adding a check.
 
 ## Not claimed
 

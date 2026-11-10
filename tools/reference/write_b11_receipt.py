@@ -31,10 +31,12 @@ EVIDENCE = ROOT / 'docs/research/evidence/e01-b11-census'
 PREFLIGHT = ROOT / 'docs/research/evidence/e01-b11-preflight'
 BATCH = 'B11'
 JOB = 'Exiv2 0.28.9 / bounded E01 B11 container and small-format observations'
-# Only the run identities are typed here, and both are re-checked below: the census report
-# carries its own head commit, and an unknown object makes `git cat-file` fail.
-RUN = {'id': 42757620226, 'checkRunId': 129635560547}
-PRIOR = {'id': 42757054570, 'checkRunId': 129633741484}
+# Only the run identities are typed here, and both are re-checked below: each payload carries its
+# own head commit, and an unknown object makes `git cat-file` fail. The two runs are a pair rather
+# than unrelated samples -- each contributed *both* payloads at its own head -- which is what lets
+# the cross-run comparison attribute every difference to a new build instead of to drift.
+RUN = {'id': 42762097543, 'checkRunId': 129649950248}
+PRIOR = {'id': 42757620226, 'checkRunId': 129635560547}
 ANNOTATIONS_PER_CHECK_RUN = 50
 # The recorder's own chunking, duplicated on purpose: the receipt must be able to say the
 # recovery was complete without trusting anyone's count of the annotations.
@@ -114,6 +116,9 @@ def main():
     parser.add_argument('--prior-preflight', type=Path,
                         default=PREFLIGHT / 'prior-run-observations.json',
                         help='previous CI run\'s preflight payload, kept as the reproduction sample')
+    parser.add_argument('--prior-census', type=Path,
+                        default=EVIDENCE / 'prior-run-observations.json',
+                        help="previous CI run's census payload, the pre-shape-label generation")
     args = parser.parse_args()
 
     raw, report = load(EVIDENCE / 'observations.json')
@@ -271,11 +276,13 @@ def main():
         'annotationBudget': {
             'perCheckRunLimit': ANNOTATIONS_PER_CHECK_RUN,
             'thisJobAnnotationsUsed': recorded_chunks(report) + recorded_chunks(preflight) + 2,
+            'emittedAnnotations': 2 * (recorded_chunks(report) + recorded_chunks(preflight)),
             'finding': ('B9 evidence was lost in run 42729776775 without any CI failure because the '
                         'job had already spent the 50-annotation-per-check-run budget and GitHub drops '
-                        'the overflow silently. Both B11 recorders therefore cap themselves well below '
-                        'it (30 chunks for 95 census rows, 12 for 107 preflight records), and the job '
-                        'used a fraction of its budget on this run.'),
+                        'the overflow silently. Both B11 recorders therefore raise rather than truncate '
+                        'when a report would exceed their own cap (30 chunks for the census, 12 for the '
+                        'preflight), which is a different number from what the payloads actually cost: '
+                        'five chunks each, plus one count marker each.'),
         },
         'catalogTieOut': {
             'manifestEntries': len(entries),
@@ -326,7 +333,9 @@ def main():
                 'success flag: the byte count written by ExifThumb::writeFile when a thumbnail '
                 'exists (137 for both CRW layouts that carry a 0x2008 component); 0 with '
                 '"Image does not contain an Exif thumbnail" when Exif data exists but the thumbnail '
-                'extension is empty (ciff-mapped-v1); -3, which main() returns as (-3 % 256) = 253, '
+                'extension is empty (ciff-mapped-v1); -3, which the process exit status shows as 253 '
+                'because `main` returns `static_cast<unsigned int>(returnCode) % 256` '
+                '(app/exiv2.cpp:195), '
                 'with "No Exif data found in the file" when the reader produced no Exif data at all '
                 '(ciff-unmapped-only-v1); and 1 when readMetadata threw before any of that (every '
                 'other format).'),
@@ -437,18 +446,28 @@ def main():
         },
         'reproduction': {
             'claim': 'observations are reproducible; the compiled reference binary is not',
-            'runs': [{'head': head, 'runId': RUN['id'], 'payload': 'observations.json'},
-                     {'head': head, 'runId': RUN['id'], 'payload': 'e01-b11-preflight/observations.json'},
+            'runs': [{'head': head, 'runId': RUN['id'],
+                      'payload': 'e01-b11-census/observations.json'},
+                     {'head': head, 'runId': RUN['id'],
+                      'payload': 'e01-b11-preflight/observations.json'},
+                     {'head': json.loads(args.prior_census.read_text())['sourceCommit'],
+                      'runId': PRIOR['id'],
+                      'payload': f'e01-b11-census/{args.prior_census.name}'},
                      {'head': json.loads(args.prior_preflight.read_text())['sourceCommit'],
                       'runId': PRIOR['id'],
                       'payload': f'e01-b11-preflight/{args.prior_preflight.name}'}],
             'status': (
-                'B11 has two preflight samples and one census sample. The earlier preflight came from '
-                'run 42757054570, whose census step failed on a recorder bug (the coverage guard '
-                'compared probed fixtures against the whole manifest, including the blocked entry that '
-                'deliberately has no file), so that run produced a preflight payload and no census '
-                'payload. Keeping both preflight payloads is what makes the reproduction claim mean '
-                'something: the two were produced from different heads and different builds.'),
+                'Two samples per recorder, each one half of a same-head pair. The census rests on run '
+                f'{RUN["id"]} at head {head[:7]}, the head this receipt lands in, and the second sample '
+                f'comes from run {PRIOR["id"]} at head '
+                f'{json.loads(args.prior_census.read_text())["sourceCommit"][:7]}: a different head, a '
+                'different build, and a payload recorded before the recorder labelled the `-et` shapes. '
+                'That is the comparison worth having, because it isolates the label. The preflight from '
+                'run 42757054570 is deliberately not kept: that run failed its census step on a recorder '
+                'bug (the coverage guard compared probed fixtures against the whole manifest, including '
+                'the blocked entry that deliberately has no file), and its preflight payload matched the '
+                'sample kept in its place on every record, differing only in the three sections that '
+                'differ between any two runs. A third copy would have added bytes without adding a check.'),
             'identicalSections': None,
             'differingSections': None,
             'excludedDifferences': {
@@ -527,6 +546,56 @@ def main():
             },
         })
         receipt['preflightRecovery']['priorChunks'] = recorded_chunks(prior)
+
+    if args.prior_census.exists():
+        # The question is not "did the numbers move" but "did only what we changed move", so compare
+        # row by row and name the fields instead of counting the diffs.
+        prior_census_raw = args.prior_census.read_bytes()
+        prior_census = json.loads(prior_census_raw)
+        assert git('cat-file', '-e', f"{prior_census['sourceCommit']}^{{commit}}").returncode == 0, \
+            'prior census payload head is not a commit here'
+        same = [k for k in sorted(report) if report[k] == prior_census[k]]
+        differing = [k for k in sorted(report) if k not in same]
+        changed_rows, unexplained = [], []
+        for mine, theirs in zip(report['observations'], prior_census['observations']):
+            a, b = json.loads(json.dumps(mine)), json.loads(json.dumps(theirs))
+            for row in (a, b):
+                row['facts'].pop('finding', None)
+                sem = row['facts'].get('extractSemantics')
+                if sem is not None:
+                    for key in ('statusShape', 'statusIsByteCountWritten',
+                                'exitCodeIsByteCountInPinnedBuild'):
+                        sem.pop(key, None)
+                    row['facts']['extractSemantics'] = sem
+            if a != b:
+                unexplained.append(f"{mine['layout']} {mine['flag']}")
+            elif mine != theirs:
+                changed_rows.append(f"{mine['layout']} {mine['flag']}")
+        receipt['censusCrossRun'] = {
+            'priorRun': {'runId': PRIOR['id'], 'checkRunId': PRIOR['checkRunId'],
+                         'head': prior_census['sourceCommit'],
+                         'observationsFileSha256': sha256(prior_census_raw),
+                         'rawPayloadSha256': sha256(canonical(prior_census)),
+                         'status': prior_census['status'],
+                         'observationCount': len(prior_census['observations'])},
+            'identicalSections': same,
+            'differingSections': differing,
+            'observationCountEqual': len(report['observations']) == len(prior_census['observations']),
+            'outcomeCountsEqual': report['outcomeCounts'] == prior_census['outcomeCounts'],
+            'blockedIdsEqual': [b['id'] for b in report['blocked']]
+            == [b['id'] for b in prior_census['blocked']],
+            'fixtureManifestEqual': report['fixtureManifest'] == prior_census['fixtureManifest'],
+            'rowsDifferingOnlyByShapeLabel': sorted(set(changed_rows)),
+            'rowsDifferingBeyondShapeLabel': sorted(set(unexplained)),
+            'shapeLabelKeys': ['exitCodeIsByteCountInPinnedBuild', 'statusIsByteCountWritten',
+                               'statusShape'],
+            'reading': (f'{len(set(changed_rows))} of {len(report["observations"])} observations differ '
+                        'between the two runs, all of them `-et` rows, and only in the three fields this '
+                        'batch renamed. Exit codes, artifact digests, stderr, outcomes, the fixture '
+                        'manifest and every non-extract row are byte-identical across a new head and a '
+                        'new build, so the label is a change of description, not of observation.'),
+        }
+        receipt['annotationRecovery']['priorChunks'] = recorded_chunks(prior_census)
 
     out = EVIDENCE / 'receipt.json'
     out.write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')

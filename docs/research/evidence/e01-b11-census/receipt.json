@@ -3,14 +3,14 @@
   "batch": "B11",
   "provenance": "CI-only evidence. This sandbox has no pinned Exiv2 build (no cmake/ninja, no expat/zlib development headers, and the package-install, Actions log and artifact-blob hosts are unreachable), so there is no local observation run to compare against. Both payloads here were recovered from check-run annotations of the run named below; no cross-environment equality claim is made.",
   "run": {
-    "id": 42757620226,
+    "id": 42762097543,
     "job": "Exiv2 0.28.9 / bounded E01 B11 container and small-format observations",
-    "checkRunId": 129635560547,
-    "headCommit": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
+    "checkRunId": 129649950248,
+    "headCommit": "6bb7d8cb94c42d4d88435171c83d42821f8f0a91",
     "attempt": 1,
     "event": "push",
     "trigger": "push to arena/40805d1c-metadatasharp",
-    "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42757620226",
+    "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42762097543",
     "allStepsGreen": true
   },
   "denominatorFrozen": false,
@@ -49,10 +49,10 @@
       "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
       "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
     },
-    "executableSha256": "62e9057d0a599951fee6d66f602a1a3d7f8dc7cebcf558ebef7f6ba8347a2a41",
+    "executableSha256": "a32b542b4833500364057144c3e6e1555b48e6cb882b4c6bbff6a9a13cc70c3c",
     "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
     "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
-    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov 10 2026\ntime=04:44:02\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
+    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov 10 2026\ntime=05:26:52\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
     "version": "0.28.9"
   },
   "environment": {
@@ -117,7 +117,7 @@
   },
   "annotationRecovery": {
     "channel": "check-run annotations (the Actions bulk-log host and the artifact blob host are unreachable from this environment)",
-    "command": "gh api repos/sensboston/MetadataSharp/check-runs/129635560547/annotations --paginate",
+    "command": "gh api repos/sensboston/MetadataSharp/check-runs/129649950248/annotations --paginate",
     "title": "B11Z observations.json",
     "markerTitle": "B11Z observations.json count",
     "encoding": "zlib + base64, 4000-byte chunks",
@@ -126,8 +126,8 @@
     "chunks": 5,
     "markerVerified": true,
     "losslessRoundTrip": true,
-    "observationsFileSha256": "7fbf4499e0d0c19ce2a823ed1586c1d3afb0449279f4c9edb5b9ff50469e2260",
-    "rawPayloadSha256": "dad3292ecd1051075d1177bea13e0c3c575139f0a498b5965a567dcbe90b5d04",
+    "observationsFileSha256": "9035daac4cabb373c42a6bfd83b8d6a6817a91491d9cb3700062cb7a783305af",
+    "rawPayloadSha256": "2dedce518e5141827855c5a279c00e9b4216783c151a26c6d630d2c554f2e575",
     "recoveredKeys": [
       "baseline",
       "batch",
@@ -145,25 +145,27 @@
       "status",
       "verification"
     ],
-    "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder"
+    "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder",
+    "priorChunks": 5
   },
   "preflightRecovery": {
-    "command": "gh api repos/sensboston/MetadataSharp/check-runs/129635560547/annotations --paginate",
+    "command": "gh api repos/sensboston/MetadataSharp/check-runs/129649950248/annotations --paginate",
     "title": "B11CONT observations.json",
     "markerTitle": "B11CONT observations.json count",
     "chunks": 5,
     "expectedChunks": 5,
     "markerVerified": true,
     "losslessRoundTrip": true,
-    "observationsFileSha256": "3716c29b689fa7c2d572a575371d8e5ecbb243aef78dd7780038187f0e9b7632",
-    "rawPayloadSha256": "00f0a8a47d908379fea4edc6ad4aa942cc0bb28b418f53dd2feeab46a2afad8d",
+    "observationsFileSha256": "8d1e4cd652ea17d0d431506c7f70cc9ddb3963fcfe069c7933d07ee9a39578cc",
+    "rawPayloadSha256": "69494c3615be4e39f7956a764caea9f1f9c2fa0e5feb98177d8929cdfe01d983",
     "why": "the census record keeps stdout digests, not stdout; the preflight keeps the printed text, which is what makes the CIFF mapping and the AVI XMP block below checkable without re-running the pinned build",
     "priorChunks": 5
   },
   "annotationBudget": {
     "perCheckRunLimit": 50,
     "thisJobAnnotationsUsed": 12,
-    "finding": "B9 evidence was lost in run 42729776775 without any CI failure because the job had already spent the 50-annotation-per-check-run budget and GitHub drops the overflow silently. Both B11 recorders therefore cap themselves well below it (30 chunks for 95 census rows, 12 for 107 preflight records), and the job used a fraction of its budget on this run."
+    "emittedAnnotations": 20,
+    "finding": "B9 evidence was lost in run 42729776775 without any CI failure because the job had already spent the 50-annotation-per-check-run budget and GitHub drops the overflow silently. Both B11 recorders therefore raise rather than truncate when a report would exceed their own cap (30 chunks for the census, 12 for the preflight), which is a different number from what the payloads actually cost: five chunks each, plus one count marker each."
   },
   "catalogTieOut": {
     "manifestEntries": 18,
@@ -371,7 +373,7 @@
         "artifacts": [],
         "outcome": "zero-exit-no-artifact",
         "stderr": "<fixture>: Image does not contain an Exif thumbnail",
-        "statusShape": null
+        "statusShape": "no-thumbnail-extension"
       },
       "ciff-preview-plus-thumb-v1": {
         "exitCode": 137,
@@ -385,7 +387,7 @@
         ],
         "outcome": "nonzero-exit-artifact-produced",
         "stderr": "",
-        "statusShape": null
+        "statusShape": "thumbnail-written"
       },
       "ciff-thumb-only-v1": {
         "exitCode": 137,
@@ -399,7 +401,7 @@
         ],
         "outcome": "nonzero-exit-artifact-produced",
         "stderr": "",
-        "statusShape": null
+        "statusShape": "thumbnail-written"
       },
       "ciff-unmapped-only-v1": {
         "exitCode": 253,
@@ -411,10 +413,10 @@
         "artifacts": [],
         "outcome": "refused",
         "stderr": "<fixture>: No Exif data found in the file",
-        "statusShape": null
+        "statusShape": "no-exif-data"
       }
     },
-    "rule": "`exiv2 -et <file>` returns whatever Extract::writeThumbnail returns (app/actions.cpp:823-864), and on this build that is one of four values, not a success flag: the byte count written by ExifThumb::writeFile when a thumbnail exists (137 for both CRW layouts that carry a 0x2008 component); 0 with \"Image does not contain an Exif thumbnail\" when Exif data exists but the thumbnail extension is empty (ciff-mapped-v1); -3, which main() returns as (-3 % 256) = 253, with \"No Exif data found in the file\" when the reader produced no Exif data at all (ciff-unmapped-only-v1); and 1 when readMetadata threw before any of that (every other format).",
+    "rule": "`exiv2 -et <file>` returns whatever Extract::writeThumbnail returns (app/actions.cpp:823-864), and on this build that is one of four values, not a success flag: the byte count written by ExifThumb::writeFile when a thumbnail exists (137 for both CRW layouts that carry a 0x2008 component); 0 with \"Image does not contain an Exif thumbnail\" when Exif data exists but the thumbnail extension is empty (ciff-mapped-v1); -3, which the process exit status shows as 253 because `main` returns `static_cast<unsigned int>(returnCode) % 256` (app/exiv2.cpp:195), with \"No Exif data found in the file\" when the reader produced no Exif data at all (ciff-unmapped-only-v1); and 1 when readMetadata threw before any of that (every other format).",
     "byteCountShapeIsTheSuccessPath": [
       "ciff-preview-plus-thumb-v1",
       "ciff-thumb-only-v1"
@@ -422,11 +424,9 @@
     "exitCodeIsNotAByteCountFor": [
       "ciff-unmapped-only-v1"
     ],
-    "findingsInPayload": {
-      "ciff-unmapped-only-v1": "-et exit code 253 does not equal the 0 bytes the command wrote"
-    },
-    "shapeLabelsInPayload": false,
-    "finding": "ciff-unmapped-only-v1 exits 253 while writing zero bytes, so \"the status is the byte count\" holds only on the success path. The review document asserted exitCode == artifactBytes for every extract row; the observation is what corrected it, and the census row keeps the contradiction visible either way. This payload was produced before the recorder labelled shapes, so the row carries it as a finding; the recorder now classifies it as `no-exif-data` and leaves the finding channel for statuses that no shape explains.",
+    "findingsInPayload": {},
+    "shapeLabelsInPayload": true,
+    "finding": "ciff-unmapped-only-v1 exits 253 while writing zero bytes, so \"the status is the byte count\" holds only on the success path. The review document asserted exitCode == artifactBytes for every extract row; the observation is what corrected it, and the census row keeps the contradiction visible either way. This payload carries the recorder's own shape labels, so the row reads as `no-exif-data` and the finding channel is empty for all four rows, which is where a status that no shape explains would appear.",
     "zeroExitWithArtifactWouldBeAFinding": "no row has it: `zero-exit-artifact-produced` count is 0, and both rows that wrote a thumbnail are nonzero-exit-artifact-produced (their status is the length).",
     "prediction": {
       "layoutsWithPrediction": [
@@ -1095,22 +1095,27 @@
     "claim": "observations are reproducible; the compiled reference binary is not",
     "runs": [
       {
-        "head": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
-        "runId": 42757620226,
-        "payload": "observations.json"
+        "head": "6bb7d8cb94c42d4d88435171c83d42821f8f0a91",
+        "runId": 42762097543,
+        "payload": "e01-b11-census/observations.json"
       },
       {
-        "head": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
-        "runId": 42757620226,
+        "head": "6bb7d8cb94c42d4d88435171c83d42821f8f0a91",
+        "runId": 42762097543,
         "payload": "e01-b11-preflight/observations.json"
       },
       {
-        "head": "822fb1dcc4b732dffae809147ddf199a200daf32",
-        "runId": 42757054570,
+        "head": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
+        "runId": 42757620226,
+        "payload": "e01-b11-census/prior-run-observations.json"
+      },
+      {
+        "head": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
+        "runId": 42757620226,
         "payload": "e01-b11-preflight/prior-run-observations.json"
       }
     ],
-    "status": "B11 has two preflight samples and one census sample. The earlier preflight came from run 42757054570, whose census step failed on a recorder bug (the coverage guard compared probed fixtures against the whole manifest, including the blocked entry that deliberately has no file), so that run produced a preflight payload and no census payload. Keeping both preflight payloads is what makes the reproduction claim mean something: the two were produced from different heads and different builds.",
+    "status": "Two samples per recorder, each one half of a same-head pair. The census rests on run 42762097543 at head 6bb7d8c, the head this receipt lands in, and the second sample comes from run 42757620226 at head c34ee5e: a different head, a different build, and a payload recorded before the recorder labelled the `-et` shapes. That is the comparison worth having, because it isolates the label. The preflight from run 42757054570 is deliberately not kept: that run failed its census step on a recorder bug (the coverage guard compared probed fixtures against the whole manifest, including the blocked entry that deliberately has no file), and its preflight payload matched the sample kept in its place on every record, differing only in the three sections that differ between any two runs. A third copy would have added bytes without adding a check.",
     "identicalSections": [
       "denominatorFrozen",
       "environment",
@@ -1134,11 +1139,11 @@
       "sourceCommit": "successive runs validate different heads"
     },
     "priorRun": {
-      "runId": 42757054570,
-      "checkRunId": 129633741484,
-      "head": "822fb1dcc4b732dffae809147ddf199a200daf32",
-      "observationsFileSha256": "63340bfcbd702e59fc762ba6a048291b3fdeaeb947a67766eae04274b929cbd1",
-      "rawPayloadSha256": "debb90eefa6dc12195940dd2d1fd07f694612cba88a7db25bac26f995131d79e"
+      "runId": 42757620226,
+      "checkRunId": 129635560547,
+      "head": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
+      "observationsFileSha256": "3716c29b689fa7c2d572a575371d8e5ecbb243aef78dd7780038187f0e9b7632",
+      "rawPayloadSha256": "00f0a8a47d908379fea4edc6ad4aa942cc0bb28b418f53dd2feeab46a2afad8d"
     },
     "priorRunComparison": {
       "identicalSections": [
@@ -1183,5 +1188,52 @@
     "that any authored file is a valid capture of the vendor format, or that a camera would read it",
     "ExifTool reported FileType per its own rules, which consult the extension, so the secondary observation is not a validity proof for these authored containers",
     "the mechanism behind the five factory refusals (see factoryRefusals.notEstablished)"
-  ]
+  ],
+  "censusCrossRun": {
+    "priorRun": {
+      "runId": 42757620226,
+      "checkRunId": 129635560547,
+      "head": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
+      "observationsFileSha256": "7fbf4499e0d0c19ce2a823ed1586c1d3afb0449279f4c9edb5b9ff50469e2260",
+      "rawPayloadSha256": "dad3292ecd1051075d1177bea13e0c3c575139f0a498b5965a567dcbe90b5d04",
+      "status": "passed",
+      "observationCount": 87
+    },
+    "identicalSections": [
+      "batch",
+      "blocked",
+      "denominatorFrozen",
+      "environment",
+      "fixtureManifest",
+      "limitations",
+      "outcomeCounts",
+      "schema",
+      "scope",
+      "status",
+      "verification"
+    ],
+    "differingSections": [
+      "baseline",
+      "observations",
+      "secondaryObservations",
+      "sourceCommit"
+    ],
+    "observationCountEqual": true,
+    "outcomeCountsEqual": true,
+    "blockedIdsEqual": true,
+    "fixtureManifestEqual": true,
+    "rowsDifferingOnlyByShapeLabel": [
+      "ciff-mapped-v1 -et",
+      "ciff-preview-plus-thumb-v1 -et",
+      "ciff-thumb-only-v1 -et",
+      "ciff-unmapped-only-v1 -et"
+    ],
+    "rowsDifferingBeyondShapeLabel": [],
+    "shapeLabelKeys": [
+      "exitCodeIsByteCountInPinnedBuild",
+      "statusIsByteCountWritten",
+      "statusShape"
+    ],
+    "reading": "4 of 87 observations differ between the two runs, all of them `-et` rows, and only in the three fields this batch renamed. Exit codes, artifact digests, stderr, outcomes, the fixture manifest and every non-extract row are byte-identical across a new head and a new build, so the label is a change of description, not of observation."
+  }
 }

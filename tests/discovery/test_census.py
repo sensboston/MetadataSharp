@@ -1,6 +1,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -854,6 +855,128 @@ class CensusPolicyTests(unittest.TestCase):
                          sorted(run['head'] for run in reproduction['runs']))
         self.assertEqual({'observations.json', 'ci-observations.json', 'master-observations.json'},
                          {run['payload'] for run in reproduction['runs']})
+
+    def test_b11_receipt_and_cross_run_samples_are_self_consistent(self):
+        """B11's census must rest on a payload that ties out to its own receipt, and the second
+        run's payload may differ only in the fields this batch renamed."""
+        import hashlib
+        evidence_dir = ROOT / 'docs/research/evidence/e01-b11-census'
+        receipt_path = evidence_dir / 'receipt.json'
+        if not receipt_path.exists():
+            self.skipTest('B11 receipt not committed')
+        canonical = lambda doc: json.dumps(doc, sort_keys=True, separators=(',', ':')).encode()
+        receipt = json.loads(receipt_path.read_text())
+        census_raw = (evidence_dir / 'observations.json').read_bytes()
+        evidence = json.loads(census_raw)
+        prior_path = evidence_dir / 'prior-run-observations.json'
+        self.assertTrue(prior_path.exists(), 'B11 cross-run sample must be committed beside the census')
+        prior_raw = prior_path.read_bytes()
+        prior = json.loads(prior_raw)
+
+        recovery = receipt['annotationRecovery']
+        self.assertEqual(recovery['observationsFileSha256'], hashlib.sha256(census_raw).hexdigest())
+        self.assertEqual(recovery['rawPayloadSha256'], hashlib.sha256(canonical(evidence)).hexdigest())
+        self.assertEqual(recovery['chunks'], recovery['expectedChunks'])
+        self.assertEqual(recovery['chunks'], recovery['priorChunks'],
+                         'the two runs must have paid the same recovery cost')
+        self.assertTrue(recovery['markerVerified'], 'the count marker must have been matched')
+        self.assertEqual(evidence['sourceCommit'], receipt['run']['headCommit'])
+        self.assertEqual('passed', evidence['status'])
+
+        # The four payloads are two same-head pairs, so each cross-run comparison is between a
+        # build and a build, never between an observation and a different question.
+        cross = receipt['censusCrossRun']
+        self.assertEqual(cross['priorRun']['head'], prior['sourceCommit'])
+        self.assertEqual(cross['priorRun']['observationsFileSha256'], hashlib.sha256(prior_raw).hexdigest())
+        self.assertEqual(cross['priorRun']['rawPayloadSha256'], hashlib.sha256(canonical(prior)).hexdigest())
+        self.assertEqual(['baseline', 'observations', 'secondaryObservations', 'sourceCommit'],
+                         cross['differingSections'])
+        for section in ('outcomeCounts', 'fixtureManifest', 'blocked', 'environment', 'status',
+                        'verification', 'denominatorFrozen', 'limitations'):
+            self.assertIn(section, cross['identicalSections'], section)
+        self.assertEqual([], cross['rowsDifferingBeyondShapeLabel'])
+        self.assertEqual(['ciff-mapped-v1 -et', 'ciff-preview-plus-thumb-v1 -et',
+                          'ciff-thumb-only-v1 -et', 'ciff-unmapped-only-v1 -et'],
+                         cross['rowsDifferingOnlyByShapeLabel'])
+        self.assertTrue(cross['observationCountEqual'] and cross['outcomeCountsEqual'])
+        self.assertTrue(cross['blockedIdsEqual'] and cross['fixtureManifestEqual'])
+        stated = re.match(r'(\d+) of (\d+) observations differ', cross['reading'])
+        self.assertEqual([len(cross['rowsDifferingOnlyByShapeLabel']), len(evidence['observations'])],
+                         [int(stated.group(1)), int(stated.group(2))],
+                         'the prose tally must be the data tally, not a remembered number')
+        pre_dir = ROOT / 'docs/research/evidence/e01-b11-preflight'
+        pre = json.loads((pre_dir / 'observations.json').read_text())
+        pre_prior = json.loads((pre_dir / 'prior-run-observations.json').read_text())
+        self.assertEqual(evidence['sourceCommit'], pre['sourceCommit'])
+        self.assertEqual(prior['sourceCommit'], pre_prior['sourceCommit'])
+        self.assertTrue(receipt['preflightRecovery']['markerVerified'])
+        comparison = receipt['reproduction']['priorRunComparison']
+        self.assertTrue(comparison['observationsByteIdentical'])
+        self.assertEqual([], comparison['secondaryDriftBeyondFileDates'])
+        self.assertEqual(['baseline', 'secondary', 'sourceCommit'], comparison['differingSections'])
+        self.assertEqual({'e01-b11-census/observations.json',
+                          'e01-b11-census/prior-run-observations.json',
+                          'e01-b11-preflight/observations.json',
+                          'e01-b11-preflight/prior-run-observations.json'},
+                         {run['payload'] for run in receipt['reproduction']['runs']})
+        self.assertEqual(sorted({evidence['sourceCommit'], prior['sourceCommit']}),
+                         sorted({run['head'] for run in receipt['reproduction']['runs']}))
+
+        # The two payload generations differ in exactly one thing: how the -et rows describe
+        # themselves. Asserting the difference is what stops a swapped pair from passing.
+        old_et = {o['layout']: o['facts']['extractSemantics']
+                  for o in prior['observations'] if o['flag'] == '-et'}
+        new_et = {o['layout']: o['facts']['extractSemantics']
+                  for o in evidence['observations'] if o['flag'] == '-et'}
+        self.assertEqual(set(old_et), set(new_et))
+        self.assertTrue(all('exitCodeIsByteCountInPinnedBuild' in sem for sem in old_et.values()))
+        self.assertTrue(all('statusShape' not in sem for sem in old_et.values()))
+        self.assertTrue(all(sem['statusShape'] and 'statusIsByteCountWritten' in sem
+                            for sem in new_et.values()))
+        self.assertEqual({'ciff-unmapped-only-v1'},
+                         {o['layout'] for o in prior['observations'] if o['facts']['finding']})
+        self.assertEqual({}, receipt['extractForm']['findingsInPayload'])
+        self.assertTrue(receipt['extractForm']['shapeLabelsInPayload'],
+                        'the committed payload must be the labeled generation')
+
+        # Each label must follow from the CLI's own wording, read here without the recorder's
+        # classification logic, and from the numbers the row keeps.
+        for layout, sem in sorted(new_et.items()):
+            row = next(o for o in evidence['observations'] if o['layout'] == layout and o['flag'] == '-et')
+            stderr = row['facts']['stderr']
+            derived = ('thumbnail-written' if sem['artifactBytes'] else
+                       'no-thumbnail-extension' if 'does not contain an Exif thumbnail' in stderr else
+                       'no-exif-data' if 'No Exif data found in the file' in stderr else
+                       'reader-threw' if 'Exiv2 exception in extract action' in stderr else
+                       'unclassified')
+            self.assertEqual(derived, sem['statusShape'], layout)
+            expected_rc = {'thumbnail-written': sem['artifactBytes'], 'no-thumbnail-extension': 0,
+                           'no-exif-data': 253, 'reader-threw': 1}[sem['statusShape']]
+            self.assertEqual(expected_rc, row['exitCode'], layout)
+            self.assertEqual(sem['statusShape'] == 'thumbnail-written',
+                             sem['statusIsByteCountWritten'], layout)
+            self.assertEqual(row['exitCode'] == sem['artifactBytes'], sem['exitCodeEqualsArtifactBytes'],
+                             layout)
+        self.assertEqual(['ciff-preview-plus-thumb-v1', 'ciff-thumb-only-v1'],
+                         receipt['extractForm']['byteCountShapeIsTheSuccessPath'])
+        self.assertEqual(['ciff-unmapped-only-v1'], receipt['extractForm']['exitCodeIsNotAByteCountFor'])
+        for needle in ('app/actions.cpp:823-864', 'app/exiv2.cpp:195', '% 256'):
+            self.assertIn(needle, receipt['extractForm']['rule'], needle)
+
+        # Regenerating the census from the *other* payload must produce the same artifact: the
+        # shape labels are description, and no row may depend on which generation was committed.
+        on_disk = json.loads((ROOT / 'docs/research/EXIV2_CENSUS.json').read_text())
+        saved = census.EVIDENCE_BY_BATCH['B11']
+        census.EVIDENCE_BY_BATCH['B11'] = prior_path
+        try:
+            import contextlib, io
+            with contextlib.redirect_stdout(io.StringIO()):
+                from_prior = census.build(self.seeds)
+        finally:
+            census.EVIDENCE_BY_BATCH['B11'] = saved
+        self.assertEqual([r for r in on_disk['rows'] if r['batch'] == 'B11'],
+                         [r for r in from_prior['rows'] if r['batch'] == 'B11'])
+        self.assertEqual(on_disk['rows'], from_prior['rows'])
 
     def test_b9_rows_partition_observed_and_blocked(self):
         rows = [r for r in self.report['rows'] if r['batch'] == 'B9']
