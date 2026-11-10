@@ -651,8 +651,9 @@ class CensusPolicyTests(unittest.TestCase):
                          reproduction['claim'])
         for run in reproduction['runs']:
             self.assertRegex(run['head'], '^[0-9a-f]{40}$')
-        self.assertEqual(sorted({r['head'] for r in reproduction['runs']}),
-                         sorted({evidence['sourceCommit'], ci['sourceCommit']}))
+        self.assertEqual({evidence['sourceCommit'], ci['sourceCommit']},
+                         {r['head'] for r in reproduction['runs'][:2]},
+                         'the first two runs must be the two PR heads')
         self.assertNotEqual(evidence['sourceCommit'], ci['sourceCommit'])
         for section in ('observations', 'blocked', 'fixtureManifest', 'outcomeCounts'):
             self.assertEqual(evidence[section], ci[section], f'{section} drifted across runs')
@@ -671,6 +672,33 @@ class CensusPolicyTests(unittest.TestCase):
                          hashlib.sha256(json.dumps(ci, sort_keys=True,
                                                     separators=(',', ':')).encode()).hexdigest())
         self.assertEqual(recovery['ciRunId'], 42744015517)
+        # The third sample is the post-merge master run: the merged tree re-observing the
+        # committed evidence, which is the strongest form of "this record is stable" available
+        # here. It is kept in its own block so a third run cannot overwrite the second one's
+        # record, and its digests are pinned the same way.
+        master_path = evidence_dir / 'master-observations.json'
+        if not master_path.exists():
+            self.skipTest('B10 post-merge master sample not committed')
+        master = json.loads(master_path.read_text())
+        block = reproduction['masterComparison']
+        self.assertEqual(recovery['masterObservationsSha256'],
+                         hashlib.sha256(master_path.read_bytes()).hexdigest())
+        self.assertEqual(recovery['masterRawPayloadSha256'],
+                         hashlib.sha256(json.dumps(master, sort_keys=True,
+                                                    separators=(',', ':')).encode()).hexdigest())
+        self.assertEqual(recovery['masterRunId'], 42747632654)
+        self.assertEqual(block['head'], master['sourceCommit'])
+        for section in ('observations', 'blocked', 'fixtureManifest', 'outcomeCounts'):
+            self.assertEqual(evidence[section], master[section], f'{section} drifted on master')
+        self.assertEqual(['baseline', 'secondaryObservations', 'sourceCommit'],
+                         block['differingSections'])
+        self.assertEqual([], block['secondaryDriftBeyondFileDates'])
+        self.assertEqual(3, len(reproduction['runs']))
+        self.assertIn('3 independent CI runs', reproduction['status'])
+        self.assertEqual(sorted({evidence['sourceCommit'], ci['sourceCommit'], master['sourceCommit']}),
+                         sorted(run['head'] for run in reproduction['runs']))
+        self.assertEqual({'observations.json', 'ci-observations.json', 'master-observations.json'},
+                         {run['payload'] for run in reproduction['runs']})
 
     def test_b9_rows_partition_observed_and_blocked(self):
         rows = [r for r in self.report['rows'] if r['batch'] == 'B9']
