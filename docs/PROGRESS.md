@@ -2608,7 +2608,9 @@ no denominator freeze, publication or DNG D2 write.
   comparable values instead of 26, **1 486 of them agreeing (98.9 %)**. The 16 `value-diff` rows are not
   new breakage — they are rows that were never comparable before, and they are the pretty-printing gap:
   exiv2 decodes an `Orientation` or a rational, we print the field. That is 4.2b's job, now measured
-  rather than guessed. Corpus B: 4.0 % → **87.5 %** of keys, with 544 of 544 values agreeing.
+  rather than guessed. Corpus B: 4.0 % → **87.5 %** of keys, with 544 of 544 values agreeing. The proof
+  that nothing else moved is the row count: those 57 files printed 1 682 rows before and print 1 682
+  now (1 502 on a reference key, 180 still extra), because only key strings changed.
 - **What the remaining corpus A gap is made of.** Restricting to the rows this vocabulary exists to
   cover - `Exif.<group>.<name>` lines in the 125 expectations whose input has an extension our readers
   claim at all - 3 572 of 3 902 (91.5 %) carry a name our table also uses, and every GPS and thumbnail
