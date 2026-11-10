@@ -2320,9 +2320,20 @@ no denominator freeze, publication or DNG D2 write.
   `observe_b9.chunks()` also rejects a vacuous report, so an empty batch can no longer
   look successful by annotating nothing; the 96-row census guard runs first.
   Recovery was then replayed from the API in a separate call and produced the identical
-  `rawPayloadSha256` (`5b627e3b27bc76a9…`), so the channel is deterministic; unlike B8,
-  no cross-run second sample is claimed yet, and no build-reproducibility claim is made
-  because the reference binary embeds its own build timestamp.
+  `rawPayloadSha256` (`5b627e3b27bc76a9…`), so the channel is deterministic.
+- Cross-run reproduction (the same treatment B8 got): the recorder re-ran in CI on head
+  `fe0c500` (run 42734184874) and that report is committed as `ci-observations.json`.
+  `observations`, `blocked`, `fixtureManifest` and `outcomeCounts` match byte-for-byte
+  across the two runs, including every exit code, stdout digest, token list, artifact
+  list and container fact. What differs is `sourceCommit`, the ExifTool
+  `System:File*Date` fields (and that report's raw stdout digest, which covers them),
+  and `baseline.executableSha256` plus the single `time=` line of the version banner,
+  because the reference build embeds its own timestamp; the pinned source commit, CMake
+  option set, cache digest, license digest and feature set still match. So the recorded
+  conclusion is narrow: **observations are reproducible, the compiled binary is not**,
+  and the receipt pins the digest of the exact build that produced the primary evidence.
+  The discovery suite asserts all of it, including that the secondary envelope digest
+  genuinely differs, so the normalization cannot be read as a stronger claim.
 - Local validation: `build_census.py --check` and `build_capability_seeds.py --check`
   exit 0, `b9_raw_fixtures.py verify` (6 fixtures), discovery 107/107, reference
   104/104, `git diff --check` clean, Markdown link/fence sweep clean over 90 files.

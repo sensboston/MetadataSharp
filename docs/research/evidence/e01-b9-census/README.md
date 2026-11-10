@@ -13,8 +13,11 @@ Files here:
   install them, and cannot reach the Actions log or artifact-blob hosts, so the CI run
   is the only observation source (unlike B6/B7, which kept a local file plus a `ci-`
   twin).
+- `ci-observations.json` — the same recorder re-run in CI on the following head
+  (run 42734184874 at `fe0c500`), kept as the cross-run reproduction sample.
 - `receipt.json` — provenance, the annotation-recovery record and its hashes, the
-  baseline digests, the tally, the annotation-budget finding and the `notClaimed` list.
+  baseline digests, the tally, the annotation-budget finding, the `reproduction`
+  record and the `notClaimed` list.
 - `README.md` — this file.
 
 ## What ran
@@ -74,12 +77,29 @@ against the chunk set before trusting the payload — a lost first chunk is othe
 invisible to a per-chunk `i/n` check. `receipt.annotationBudget` records the cap, the
 10 annotations this run used, and the dropped run.
 
-## Reproduction
+## Reproduction across runs
 
-The report was recovered twice from the same check run by two separate `gh api` calls
-and produced the identical `rawPayloadSha256`
-(`5b627e3b27bc76a9…`), so the recovery path is deterministic. A second CI run on a
-later head would be the cross-run sample; it is deliberately not asserted here, and no
-build-reproducibility claim is made — the reference binary embeds its own build
-timestamp, so `baseline.executableSha256` changes per run by construction (batch B8
-records the same finding).
+Two samples of the report were recovered twice from the same check run (two separate
+`gh api` calls, identical `rawPayloadSha256` `5b627e3b27bc76a9…`), so the recovery path
+is deterministic. The cross-run sample is the second CI run of the same recorder on a
+later head: run 42734184874 at `fe0c500`, committed here as `ci-observations.json`.
+
+`observations`, `blocked`, `fixtureManifest` and `outcomeCounts` are **identical
+byte-for-byte between the two runs** — every exit code, stdout digest, token list,
+artifact list and container fact included. What differs, and why:
+
+- `sourceCommit` — the runs validated different heads;
+- `baseline.executableSha256` — the reference build embeds its own timestamp, so the
+  binary is not bit-reproducible; `baseline.verboseVersion` differs only by that `time=`
+  line, while the pinned source commit, CMake option set, cache digest, license digest
+  and runtime feature set all still match;
+- `secondaryObservations` — ExifTool's `System:FileAccessDate`,
+  `System:FileModifyDate` and `System:FileInodeChangeDate`, and therefore that report's
+  raw `stdoutSha256` too, because the digest covers those timestamps. The discovery test
+  compares the stable facts with `System:*`/`SourceFile` excluded (the batch-B7 rule) and
+  asserts the envelope digest genuinely differs, so the normalization is never mistaken
+  for a stronger claim.
+
+The conclusion is narrow on purpose: **the observations are reproducible, the compiled
+reference binary is not**, which is why `receipt.json` pins the digest of the exact build
+that produced the primary evidence instead of claiming a reproducible build.

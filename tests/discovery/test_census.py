@@ -515,6 +515,35 @@ class CensusPolicyTests(unittest.TestCase):
         # reason this batch has its own job, and it must not be quietly forgotten.
         self.assertEqual(50, receipt['annotationBudget']['perCheckRunLimit'])
         self.assertIn('42729776775', receipt['annotationBudget']['finding'])
+        # Cross-run reproduction. There is no local B9 run, so the second sample is
+        # another CI run of the same recorder on a later head: the observation payload
+        # must match byte-for-byte, while the reference binary legitimately differs
+        # because the build embeds its own timestamp.
+        ci_path = receipt_dir / 'ci-observations.json'
+        ci = json.loads(ci_path.read_text())
+        self.assertEqual(recovery['ciObservationsSha256'],
+                         hashlib.sha256(ci_path.read_bytes()).hexdigest())
+        self.assertEqual(4, recovery['ciChunks'])
+        for section in ('observations', 'blocked', 'fixtureManifest', 'outcomeCounts'):
+            self.assertEqual(evidence[section], ci[section], f'{section} drifted across runs')
+        self.assertNotEqual(evidence['sourceCommit'], ci['sourceCommit'])
+        self.assertNotEqual(evidence['baseline']['executableSha256'], ci['baseline']['executableSha256'])
+        for key in ('cmakeCacheSha256', 'licenseSha256', 'sourceCommit', 'version'):
+            self.assertEqual(evidence['baseline'][key], ci['baseline'][key])
+        self.assertEqual(2, len(set(evidence['baseline']['verboseVersion'].splitlines())
+                                ^ set(ci['baseline']['verboseVersion'].splitlines())))
+        # ExifTool prints file timestamps, so its raw stdout digest cannot match across
+        # runs by construction: compare the stable facts, not the envelope.
+        def stable(item):
+            return {'exitCode': item['exitCode'], 'interpretation': item['interpretation'],
+                    'fixtureSha256': item['fixtureSha256'], 'fixtureLength': item['fixtureLength'],
+                    'json': [{k: v for k, v in entry.items()
+                              if not k.startswith('System:') and k != 'SourceFile'}
+                             for entry in item['json']]}
+        self.assertEqual({name: stable(item) for name, item in evidence['secondaryObservations'].items()},
+                         {name: stable(item) for name, item in ci['secondaryObservations'].items()})
+        self.assertNotEqual(evidence['secondaryObservations']['owned-marker-arw.arw']['stdoutSha256'],
+                            ci['secondaryObservations']['owned-marker-arw.arw']['stdoutSha256'])
 
     def test_pending_cells_partition_the_seed_grid(self):
         enumerated = set(self.report['coverage']['enumerated'])
