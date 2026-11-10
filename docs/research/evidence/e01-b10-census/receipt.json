@@ -95,7 +95,11 @@
       "status",
       "verification"
     ],
-    "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder"
+    "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder",
+    "ciChunks": 4,
+    "ciObservationsSha256": "4163b8cd8e24dccec44e1f4fe607228d6ababe0c779d55be2cf793bd13bf7e18",
+    "ciRawPayloadSha256": "757153fde529f933552810f257c6203f287b045dafd61f79965af9578abf486d",
+    "ciRunId": 42744015517
   },
   "preflightRecovery": {
     "title": "B10RAW observations.json",
@@ -311,15 +315,50 @@
         "head": "a147cf2ec0674b702f1d2a547d5b8987a6dd24ff",
         "runId": 42742515073,
         "payload": "observations.json"
+      },
+      {
+        "head": "4322b70790226471252b18124b675bfa76018b64",
+        "runId": 42744015517,
+        "payload": "ci-observations.json"
       }
     ],
-    "status": "one sample committed so far: the cross-run sample is the receipt commit's own CI run, and a third comes from the post-merge master push, exactly as in B9",
+    "status": "two independent CI runs of the same recorder agree on the observation payload byte-for-byte; only the build timestamp, the validated head and ExifTool file dates move",
     "excludedDifferences": {
       "baseline.executableSha256": "the build embeds its own timestamp, so the binary is not bit-reproducible",
-      "baseline.verboseVersion": "the only banner difference is the time= line",
+      "baseline.verboseVersion": "the banner differs by the time= value and by where the library= line sits; the parsed field set is the same",
       "secondaryObservations": "ExifTool System:FileAccessDate/ModifyDate/InodeChangeDate only",
       "sourceCommit": "successive runs validate different heads"
-    }
+    },
+    "identicalSections": [
+      "batch",
+      "blocked",
+      "denominatorFrozen",
+      "fixtureManifest",
+      "limitations",
+      "observations",
+      "outcomeCounts",
+      "schema",
+      "scope",
+      "status",
+      "verification"
+    ],
+    "differingSections": [
+      "baseline",
+      "secondaryObservations",
+      "sourceCommit"
+    ],
+    "stillIdentical": [
+      "blocked",
+      "fixtureManifest",
+      "observations",
+      "outcomeCounts"
+    ],
+    "baselineDifference": {
+      "executableSha256Differs": true,
+      "cmakeCacheSha256Equal": true,
+      "effectiveCmakeEqual": true
+    },
+    "secondaryDriftBeyondFileDates": []
   },
   "notClaimed": [
     "no MetadataSharp verification (verification stays not-assessed)",

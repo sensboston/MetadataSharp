@@ -533,6 +533,10 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertTrue(hashed, 'expected receipts to hash their evidence files')
         probe = subprocess.run(['git', '-C', str(ROOT), 'check-attr', '--stdin', 'text', 'eol'],
                                input='\n'.join(hashed), capture_output=True, text=True)
+        if 'not a git repository' in probe.stderr:
+            # Line endings are only rewritten by a checkout, and there is no checkout outside a
+            # repository: an unpacked tree cannot exhibit the failure this guard looks for.
+            self.skipTest('git metadata unavailable; no checkout conversion can occur')
         self.assertEqual(0, probe.returncode, probe.stderr)
         attrs = {}
         for line in probe.stdout.splitlines():
@@ -555,6 +559,10 @@ class CensusPolicyTests(unittest.TestCase):
             self.skipTest('B10 receipt not committed')
         receipt = json.loads(receipt_path.read_text())
         evidence = load_evidence('b10')
+        ci_path = evidence_dir / 'ci-observations.json'
+        if not ci_path.exists():
+            self.skipTest('B10 cross-run sample not committed')
+        ci = json.loads(ci_path.read_text())
         recovery = receipt['annotationRecovery']
         self.assertEqual(recovery['observationsFileSha256'],
                          hashlib.sha256((evidence_dir / 'observations.json').read_bytes()).hexdigest())
@@ -628,15 +636,34 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual('not-assessed', receipt['verification'])
         self.assertEqual({'MRW': ['mrw'], 'RAF': ['raf'], 'RW2': ['rw2'], 'SR2': ['tiff']},
                          receipt['recognition']['dispatchByFormat'])
-        # Reproduction is recorded as a bounded claim: one sample until the receipt commit's
-        # own run lands, then the cross-run payload equality is asserted on top of this.
-        self.assertGreaterEqual(len(receipt['reproduction']['runs']), 1)
+        # Reproduction is a bounded claim: the second sample is another CI run of the same
+        # recorder on a later head, so the payload must match section-for-section while the
+        # reference binary legitimately differs (the build embeds its own timestamp).
+        reproduction = receipt['reproduction']
         self.assertEqual('observations are reproducible; the compiled reference binary is not',
-                         receipt['reproduction']['claim'])
-        for run in receipt['reproduction']['runs']:
+                         reproduction['claim'])
+        for run in reproduction['runs']:
             self.assertRegex(run['head'], '^[0-9a-f]{40}$')
-        if len(receipt['reproduction']['runs']) > 1:
-            self.assertIn('observations', receipt['reproduction']['identicalSections'])
+        self.assertEqual(sorted({r['head'] for r in reproduction['runs']}),
+                         sorted({evidence['sourceCommit'], ci['sourceCommit']}))
+        self.assertNotEqual(evidence['sourceCommit'], ci['sourceCommit'])
+        for section in ('observations', 'blocked', 'fixtureManifest', 'outcomeCounts'):
+            self.assertEqual(evidence[section], ci[section], f'{section} drifted across runs')
+        self.assertIn('observations', reproduction['identicalSections'])
+        self.assertEqual(['baseline', 'secondaryObservations', 'sourceCommit'],
+                         reproduction['differingSections'])
+        self.assertEqual([], reproduction['secondaryDriftBeyondFileDates'],
+                         'only ExifTool file dates may move between runs')
+        self.assertTrue(reproduction['baselineDifference']['executableSha256Differs'])
+        self.assertTrue(reproduction['baselineDifference']['cmakeCacheSha256Equal'])
+        self.assertTrue(reproduction['baselineDifference']['effectiveCmakeEqual'])
+        self.assertEqual(recovery['ciChunks'], recovery['expectedChunks'])
+        self.assertEqual(recovery['ciObservationsSha256'],
+                         hashlib.sha256(ci_path.read_bytes()).hexdigest())
+        self.assertEqual(recovery['ciRawPayloadSha256'],
+                         hashlib.sha256(json.dumps(ci, sort_keys=True,
+                                                    separators=(',', ':')).encode()).hexdigest())
+        self.assertEqual(recovery['ciRunId'], 42744015517)
 
     def test_b9_rows_partition_observed_and_blocked(self):
         rows = [r for r in self.report['rows'] if r['batch'] == 'B9']

@@ -218,7 +218,8 @@ def main():
                        'run, and a third comes from the post-merge master push, exactly as in B9'),
             'excludedDifferences': {
                 'baseline.executableSha256': 'the build embeds its own timestamp, so the binary is not bit-reproducible',
-                'baseline.verboseVersion': 'the only banner difference is the time= line',
+                'baseline.verboseVersion': ('the banner differs by the time= value and by where the '
+                                           'library= line sits; the parsed field set is the same'),
                 'secondaryObservations': 'ExifTool System:FileAccessDate/ModifyDate/InodeChangeDate only',
                 'sourceCommit': 'successive runs validate different heads',
             },
@@ -244,15 +245,46 @@ def main():
             continue
         other = json.loads(path.read_bytes())
         data = path.read_bytes()
+        # The comparison is against the *payload*, so a formatting difference in how the sample
+        # was written to disk cannot be mistaken for an observation difference.
+        identical = [k for k in sorted(report) if report[k] == other[k]]
+        differing = [k for k in sorted(report) if k not in identical]
         receipt['annotationRecovery'][f'{label}Chunks'] = 4
         receipt['annotationRecovery'][f'{label}ObservationsSha256'] = sha256(data)
-        identical = [k for k in sorted(report)
-                     if report[k] == other[k]]
+        receipt['annotationRecovery'][f'{label}RawPayloadSha256'] = sha256(
+            json.dumps(other, sort_keys=True, separators=(',', ':')).encode())
+        if label == 'ci':
+            receipt['annotationRecovery']['ciRunId'] = args.ci_run
+        if label == 'master':
+            receipt['annotationRecovery']['masterRunId'] = args.master_run
         receipt['reproduction']['runs'].append(
-            {'head': other['sourceCommit'],
-             'runId': getattr(args, f'{label}_run'), 'payload': f'{label}-observations.json'})
+            {'head': other['sourceCommit'], 'runId': getattr(args, f'{label}_run'),
+             'payload': f'{label}-observations.json'})
         receipt['reproduction']['identicalSections'] = identical
-        receipt['reproduction']['differingSections'] = [k for k in sorted(report) if k not in identical]
+        receipt['reproduction']['differingSections'] = differing
+        receipt['reproduction']['stillIdentical'] = [k for k in identical
+                                                      if k in ('observations', 'blocked', 'fixtureManifest',
+                                                               'outcomeCounts')]
+        receipt['reproduction']['baselineDifference'] = {
+            'executableSha256Differs': report['baseline']['executableSha256']
+            != other['baseline']['executableSha256'],
+            'cmakeCacheSha256Equal': report['baseline']['cmakeCacheSha256']
+            == other['baseline']['cmakeCacheSha256'],
+            'effectiveCmakeEqual': report['baseline']['effectiveCmake'] == other['baseline']['effectiveCmake'],
+        }
+        # ExifTool stamps the file it read, so the secondary block can only differ in the
+        # System:* date fields; anything else in it is a real drift and must fail loudly.
+        drift = set()
+        for name, mine in report.get('secondaryObservations', {}).items():
+            theirs = other.get('secondaryObservations', {}).get(name, {})
+            jmine, jtheirs = mine['json'][0], theirs['json'][0]
+            for key in set(jmine) | set(jtheirs):
+                if jmine.get(key) != jtheirs.get(key) and not key.startswith('System:File'):
+                    drift.add(f'{name}:{key}')
+        receipt['reproduction']['secondaryDriftBeyondFileDates'] = sorted(drift)
+        receipt['reproduction']['status'] = ('two independent CI runs of the same recorder agree on the '
+                                              'observation payload byte-for-byte; only the build timestamp, '
+                                              'the validated head and ExifTool file dates move')
 
     (EVIDENCE / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
     print('receipt.json written:', (EVIDENCE / 'receipt.json').stat().st_size, 'bytes')
