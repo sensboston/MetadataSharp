@@ -544,6 +544,42 @@ class CensusPolicyTests(unittest.TestCase):
                          {name: stable(item) for name, item in ci['secondaryObservations'].items()})
         self.assertNotEqual(evidence['secondaryObservations']['owned-marker-arw.arw']['stdoutSha256'],
                             ci['secondaryObservations']['owned-marker-arw.arw']['stdoutSha256'])
+        # Third sample: the post-merge master run re-observes the merged tree. The receipt
+        # describes it, and the identical/differing split is re-derived here rather than
+        # taken on trust.
+        master_path = receipt_dir / 'master-observations.json'
+        master = json.loads(master_path.read_text())
+        rep = receipt['masterRunReproduction']
+        self.assertEqual(rep['observationsFileSha256'],
+                         hashlib.sha256(master_path.read_bytes()).hexdigest())
+        self.assertEqual(rep['rawPayloadSha256'],
+                         hashlib.sha256(json.dumps(master, sort_keys=True,
+                                                    separators=(',', ':')).encode()).hexdigest())
+        self.assertEqual(4, rep['chunks'])
+        self.assertEqual(42735514666, rep['runId'])
+        self.assertEqual(sorted(master), sorted(evidence))
+        self.assertEqual(
+            {section for section in master
+             if json.dumps(master[section], sort_keys=True)
+             == json.dumps(evidence.get(section), sort_keys=True)},
+            set(rep['identicalSections']))
+        self.assertEqual(['baseline', 'secondaryObservations', 'sourceCommit'],
+                         rep['differingSections'])
+        for section in rep['identicalSections']:
+            self.assertEqual(evidence[section], master[section], f'{section} drifted on master')
+        self.assertNotEqual(evidence['sourceCommit'], master['sourceCommit'])
+        # The pinned CLI's -et returns the number of bytes it wrote (app/actions.cpp:858 ->
+        # src/exif.cpp:389 -> src/basicio.cpp:1757), so its exit code is an artifact size
+        # and not a status. The recorder classifies extract rows by that rule, so pin it
+        # in every sample instead of trusting the prose.
+        for report in (evidence, ci, master):
+            for row in report['observations']:
+                if row['flag'] != '-et':
+                    continue
+                artifacts = row['facts']['artifacts']
+                self.assertEqual(1, len(artifacts), 'one artifact per extract row')
+                self.assertEqual(row['exitCode'], artifacts[0]['length'],
+                                 '-et exit code must equal the bytes written')
 
     def test_pending_cells_partition_the_seed_grid(self):
         enumerated = set(self.report['coverage']['enumerated'])

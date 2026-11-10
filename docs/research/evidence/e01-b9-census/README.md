@@ -16,6 +16,9 @@ Files here:
   CI, and the cross-run claim is bounded accordingly.
 - `ci-observations.json` — the same recorder re-run in CI on the following head
   (run 42734184874 at `fe0c500`), kept as the cross-run reproduction sample.
+- `master-observations.json` — a third sample: the recorder re-run by the post-merge
+  master push (run 42735514666 at `4d4804b7`), i.e. the merged tree re-observing the
+  committed evidence.
 - `receipt.json` — provenance, the annotation-recovery record and its hashes, the
   baseline digests, the tally, the annotation-budget finding, the `reproduction`
   record and the `notClaimed` list.
@@ -101,6 +104,31 @@ artifact list and container fact included. What differs, and why:
   asserts the envelope digest genuinely differs, so the normalization is never mistaken
   for a stronger claim.
 
+The same comparison was repeated once more against the **post-merge master run**
+(`master-observations.json`, run 42735514666 at `4d4804b7`): eleven of fourteen sections
+match, and the only differences are `sourceCommit`, `baseline` and the ExifTool timestamp
+fields — the identical causes, from a run whose head *contains* the committed evidence.
+
 The conclusion is narrow on purpose: **the observations are reproducible, the compiled
 reference binary is not**, which is why `receipt.json` pins the digest of the exact build
 that produced the primary evidence instead of claiming a reproducible build.
+
+## The `-et` exit code, explained after the fact
+
+This evidence records `rc=137` for `-et` alongside a 137-byte artifact and, following batch
+B0's rule, classifies it as `nonzero-exit-artifact-produced` without diagnosing it. The
+pinned source does explain it, so the explanation is recorded here rather than left as
+mystery — note that the payload itself is byte-pinned and unchanged:
+
+- `app/actions.cpp:858` — `rc = static_cast<int>(exifThumb.writeFile(thumb));`, and
+  `app/actions.cpp:860` prints "Exif data doesn't contain a thumbnail" only `if (rc == 0)`.
+- `src/exif.cpp:389` — `ExifThumbC::writeFile` returns `Exiv2::writeFile(buf, name)`.
+- `src/basicio.cpp:1757` — that returns `file.write(...)`, i.e. **the byte count**.
+
+So in this build `-et` uses the *size of the thumbnail it wrote* as its process exit status
+(and 0 when it wrote nothing). `rc == artifact length` held for all six fixtures, which is
+what makes the reading more than a guess. Consequences taken seriously by the next batch:
+a nonzero `-et` exit is not a refusal, a zero `-et` exit with the "doesn't contain a
+thumbnail" message *is* the failure, and `137` is `137 % 256` rather than a signal — a
+larger authored thumbnail would print a different number, and any classification by sign
+would be wrong.

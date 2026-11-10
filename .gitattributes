@@ -28,3 +28,5 @@ tests/fixtures/b9/owned-marker-srw.srw -text
 # The B9 census receipt will hash exact observation bytes across OS checkout modes.
 docs/research/evidence/e01-b9-census/observations.json text eol=lf
 docs/research/evidence/e01-b9-census/ci-observations.json text eol=lf
+docs/research/evidence/e01-b9-census/master-observations.json text eol=lf
+docs/research/evidence/e01-b9-census/receipt.json text eol=lf
