@@ -173,3 +173,70 @@ public sealed class CanonMakerNoteTests
         Assert.Equal(ids.Length, Core.MakerNotes.CanonMakerNoteReader.Names.Select(n => n.Name).Distinct().Count());
     }
 }
+
+public sealed class CanonMakerNoteArrayTests
+{
+    private static ExifValue Shorts(bool big, params ushort[] values)
+    {
+        byte[] raw = new byte[values.Length * 2];
+        for (int i = 0; i < values.Length; i++)
+            if (big) BinaryPrimitives.WriteUInt16BigEndian(raw.AsSpan(i * 2), values[i]);
+            else BinaryPrimitives.WriteUInt16LittleEndian(raw.AsSpan(i * 2), values[i]);
+        return ExifValue.FromRaw(TiffFieldType.Short, (uint)values.Length, big ? Endianness.BigEndian : Endianness.LittleEndian, raw);
+    }
+
+    private static IReadOnlyList<MakerNoteField> Split(ushort tag, ExifValue value) =>
+        Core.MakerNotes.CanonMakerNoteArrays.Decompose(tag, value);
+
+    [Fact]
+    public void CameraSettingsLensSpansThreeElementsAndHidesTheElementsItCovers()
+    {
+        ushort[] cs = new ushort[30];
+        for (int i = 0; i < cs.Length; i++) cs[i] = (ushort)(100 + i);
+        IReadOnlyList<MakerNoteField> fields = Split(0x0001, Shorts(false, cs));
+        MakerNoteField macro = fields.First(f => f.Name == "Macro");
+        Assert.Equal((ushort)1, macro.Index);
+        MakerNoteField lens = fields.Single(f => f.Name == "Lens");
+        Assert.Equal((ushort)23, lens.Index);
+        Assert.Equal(3u, lens.Value.Count);
+        Assert.DoesNotContain(fields, f => f.Name is "ShortFocal" or "FocalUnits");
+        Assert.Contains(fields, f => f.Name == "MaxAperture");
+        // Index 6 has no known meaning and is not reported; nothing past the array's end is either.
+        Assert.DoesNotContain(fields, f => f.Index == 6);
+        Assert.DoesNotContain(fields, f => f.Index >= 30);
+    }
+
+    [Theory]
+    [InlineData(false, 2146202u)]
+    [InlineData(true, 3214540832u)]
+    public void FileInfoFileNumberIsOneLongOverTwoElements(bool big, uint expected)
+    {
+        IReadOnlyList<MakerNoteField> fields = Split(0x0093, Shorts(big, 32, 49050, 32, 0));
+        MakerNoteField number = fields.Single(f => f.Name == "FileNumber");
+        Assert.Equal(TiffFieldType.Long, number.Value.FieldType);
+        byte[] raw = new byte[4];
+        number.Value.CopyRawTo(raw);
+        Assert.Equal(expected, big ? BinaryPrimitives.ReadUInt32BigEndian(raw) : BinaryPrimitives.ReadUInt32LittleEndian(raw));
+        MakerNoteField bracket = fields.Single(f => f.Name == "BracketMode");
+        Assert.Equal(TiffFieldType.SShort, bracket.Value.FieldType);
+        Assert.DoesNotContain(fields, f => f.Name == "BracketValue"); // Index 4 is past the 4-element array.
+    }
+
+    [Fact]
+    public void AnUnknownTagOrANonShortValueIsNotSplit()
+    {
+        Assert.Empty(Split(0x0002, Shorts(false, 1, 2, 3, 4)));
+        Assert.Empty(Split(0x0001, ExifValue.FromRaw(TiffFieldType.Long, 1, Endianness.LittleEndian, new byte[4])));
+        Assert.Empty(Split(0x0001, Shorts(false)));
+    }
+
+    [Fact]
+    public void LayoutIndexesAscendAndAreUnique()
+    {
+        foreach (var (_, indexes) in Core.MakerNotes.CanonMakerNoteArrays.LayoutsForTests())
+        {
+            Assert.Equal(indexes.OrderBy(i => i), indexes);
+            Assert.Equal(indexes.Count, indexes.Distinct().Count());
+        }
+    }
+}

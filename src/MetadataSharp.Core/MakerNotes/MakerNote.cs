@@ -9,14 +9,31 @@ public enum MakerNoteFormat
     Canon
 }
 
+/// <summary>One named field inside an array-valued MakerNote tag.</summary>
+public sealed class MakerNoteField
+{
+    internal MakerNoteField(ushort index, string name, ExifValue value)
+    {
+        Index = index;
+        Name = name;
+        Value = value;
+    }
+
+    /// <summary>The position of the field's first element in the parent array.</summary>
+    public ushort Index { get; }
+    public string Name { get; }
+    public ExifValue Value { get; }
+}
+
 /// <summary>One tag of a decoded MakerNote directory.</summary>
 public sealed class MakerNoteEntry
 {
-    internal MakerNoteEntry(ushort tagId, string? name, ExifValue value)
+    internal MakerNoteEntry(ushort tagId, string? name, ExifValue value, IReadOnlyList<MakerNoteField> fields)
     {
         TagId = tagId;
         Name = name;
         Value = value;
+        Fields = fields;
     }
 
     public ushort TagId { get; }
@@ -24,7 +41,14 @@ public sealed class MakerNoteEntry
     /// <summary>The tag's name, or null when this release does not know the tag.</summary>
     public string? Name { get; }
 
+    /// <summary>The whole raw value, also for tags that are split into <see cref="Fields"/>.</summary>
     public ExifValue Value { get; }
+
+    /// <summary>
+    /// The named fields of an array-valued tag whose layout this release knows, in element order;
+    /// empty otherwise. Elements without a known meaning are not listed.
+    /// </summary>
+    public IReadOnlyList<MakerNoteField> Fields { get; }
 }
 
 /// <summary>

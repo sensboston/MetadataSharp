@@ -179,10 +179,34 @@ internal static class Program
         {
             string group = makerNote.Format switch { MakerNoteFormat.Canon => "Canon", _ => makerNote.Format.ToString() };
             foreach (MakerNoteEntry entry in makerNote.Entries)
+            {
+                // The reference tool prints an array tag it splits as its fields only, under a
+                // group named after the array.
+                if (entry.Fields.Count != 0)
+                {
+                    string fieldGroup = group + ArrayGroup(entry.TagId);
+                    foreach (MakerNoteField field in entry.Fields)
+                        Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
+                            TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value));
+                    continue;
+                }
                 Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
                     TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
+            }
         }
     }
+
+    private static string ArrayGroup(ushort tag) => tag switch
+    {
+        0x0001 => "Cs",
+        0x0004 => "Si",
+        0x0005 => "Pa",
+        0x000F => "Cf",
+        0x0012 => "Pi",
+        0x0093 => "Fi",
+        0x00A0 => "Pr",
+        _ => "0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
+    };
 
     private static void Iptc(IptcPacket packet, StreamWriter stdout)
     {

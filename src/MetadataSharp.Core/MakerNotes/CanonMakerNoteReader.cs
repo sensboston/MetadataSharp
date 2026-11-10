@@ -58,7 +58,7 @@ internal static class CanonMakerNoteReader
                 continue; // Keep the first occurrence, as a lookup by tag would.
             ExifValue value = ExifValue.FromRaw(type, valueCount, order,
                 tiff.Slice((int)valueStart, byteLength));
-            entries.Add(new MakerNoteEntry(tag, Name(tag), value));
+            entries.Add(new MakerNoteEntry(tag, Name(tag), value, CanonMakerNoteArrays.Decompose(tag, value)));
         }
         return new MakerNote(MakerNoteFormat.Canon, order, entries);
     }
