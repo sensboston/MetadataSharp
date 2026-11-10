@@ -175,6 +175,13 @@ internal static class Program
         foreach (ExifEntry entry in metadata.Entries)
             Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
                 TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
+        if (metadata.MakerNote is MakerNote makerNote)
+        {
+            string group = makerNote.Format switch { MakerNoteFormat.Canon => "Canon", _ => makerNote.Format.ToString() };
+            foreach (MakerNoteEntry entry in makerNote.Entries)
+                Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
+                    TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
+        }
     }
 
     private static void Iptc(IptcPacket packet, StreamWriter stdout)
