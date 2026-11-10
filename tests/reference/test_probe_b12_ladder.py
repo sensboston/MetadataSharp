@@ -173,8 +173,8 @@ class ProbeB12Tests(unittest.TestCase):
              'matchesPrediction': False} for flag in probe.FLAGS]}]
         summary = probe.ladder_summary({'observations': rows})['gif']
         self.assertEqual(2, summary['rowsDifferingFromPrediction'])
-        self.assertEqual([(13, '-pS', 'corrupted-metadata', 'throws-during-scan'),
-                          (13, '-pe', 'corrupted-metadata', 'throws-during-scan')], summary['disagreements'])
+        self.assertEqual([[13, '-pS', 'corrupted-metadata', 'throws-during-scan'],
+                          [13, '-pe', 'corrupted-metadata', 'throws-during-scan']], summary['disagreements'])
         self.assertIsNone(summary['flipSize'])
         self.assertEqual([], summary['attributableRungs'])
 
@@ -201,6 +201,113 @@ class ProbeB12Tests(unittest.TestCase):
         # if classify() and predicted_family() ever drift apart, this is where it shows.
         for row in report['observations']:
             self.assertTrue(all(op['matchesPrediction'] for op in row['operations']), row['layout'])
+
+
+class B12EvidenceTests(unittest.TestCase):
+    """The committed ladder payload must tie out -- to the bytes it probed, to the model it was
+    compared against, and to the numbers its own README quotes.
+
+    This is the B11 discipline applied to a diagnostic batch: the report is not evidence because CI
+    printed it, it is evidence because every derived field in it can be recomputed from the committed
+    fixtures and the recorded CLI text. Each `*-observations.json` in the evidence directory is checked
+    the same way, so a second run's payload cannot be committed as a decoration: when more than one is
+    present they must agree on the `observations` section and differ nowhere else without being named.
+    """
+
+    EVIDENCE = ROOT / 'docs/research/evidence/e01-b12-ladder'
+
+    def samples(self):
+        return sorted(path.name for path in self.EVIDENCE.glob('*-observations.json'))
+
+    def test_every_rung_and_flag_is_present(self):
+        entries = ladder.entries()
+        for name in ['observations.json'] + self.samples():
+            report = json.loads((self.EVIDENCE / name).read_text(encoding='utf-8'))
+            self.assertEqual('passed', report['status'], name)
+            self.assertEqual(len(entries), len(report['observations']), name)
+            self.assertEqual(len(entries) * len(probe.FLAGS), report['recordCount'], name)
+            self.assertEqual({e['layout'] for e in entries}, {row['layout'] for row in report['observations']}, name)
+            for row in report['observations']:
+                self.assertEqual(list(probe.FLAGS), row['flags'], name)
+                self.assertEqual(len(probe.FLAGS), len({op['flag'] for op in row['operations']}), name)
+
+    def test_families_summaries_and_predictions_are_recomputable(self):
+        entries = {e['layout']: e for e in ladder.entries()}
+        for name in ['observations.json'] + self.samples():
+            report = json.loads((self.EVIDENCE / name).read_text(encoding='utf-8'))
+            for row in report['observations']:
+                entry = entries[row['layout']]
+                self.assertEqual(entry['size'], row['size'], name)
+                self.assertEqual(entry['sha256'], row['fixtureSha256'], f'{name}: the rung probed is not the rung committed')
+                for op in row['operations']:
+                    family, _ = probe.classify({'exitCode': op['exitCode'], 'stdout': op['stdout'],
+                                                'stderr': op['stderr']})
+                    self.assertEqual(family, op['family'], f"{name}: {row['layout']} {op['flag']}")
+                    self.assertEqual(probe.message_of(op['stderr']), op['message'], name)
+                    predicted = ladder.predicted_outcome(entry['kind'], entry['size'])['predictedFamily']
+                    self.assertEqual(predicted, op['predictedFamily'],
+                                     f"{name}: {row['layout']} was judged against a different model than this one")
+                    self.assertEqual(predicted == op['family'], op['matchesPrediction'], name)
+            self.assertEqual(report['summary'], probe.ladder_summary(report), f'{name}: summary is stale')
+            # Recomputed from the rows rather than trusted: `noArtifactsEverywhere` is re-derived from
+            # the artifact lists themselves, not from the flag the recorder wrote beside them.
+            self.assertEqual(all(op['inputUnchanged'] for r in report['observations'] for op in r['operations']),
+                             report['inputUnchangedEverywhere'], name)
+            self.assertEqual(all(not op['artifacts'] for r in report['observations'] for op in r['operations']),
+                             report['noArtifactsEverywhere'], name)
+            self.assertTrue(all(op['inputUnchanged'] for r in report['observations'] for op in r['operations']),
+                            f'{name}: a read-only probe must report every input unchanged')
+            self.assertTrue(all(not op['artifacts'] for r in report['observations'] for op in r['operations']),
+                            f'{name}: a read-only probe must produce no artifact at any rung')
+            self.assertEqual('not-assessed', report['verification'], name)
+            self.assertFalse(report['denominatorFrozen'], name)
+
+    def test_the_boundary_and_the_short_band_are_what_the_readme_says(self):
+        report = json.loads((self.EVIDENCE / 'observations.json').read_text(encoding='utf-8'))
+        summary, rows = report['summary'], report['observations']
+        self.assertEqual(80, summary['bmp']['flipSize'])
+        self.assertEqual(80, summary['gif']['flipSize'])
+        self.assertEqual(79, summary['bmp']['lastRefusal'])
+        self.assertEqual(79, summary['gif']['lastRefusal'])
+        self.assertTrue(summary['bmp']['monotonic'] and summary['gif']['monotonic'])
+        self.assertIsNone(summary['targa']['flipSize'])
+        self.assertEqual(0, summary['bmp-xmltail']['rowsDifferingFromPrediction'],
+                         'the content control must track its plain twin')
+        by = {(r['kind'], r['size']): r for r in rows}
+        for size in ladder.SIZES:
+            families = {tuple(op['family'] for op in by[(k, size)]['operations']) for k in ('bmp', 'gif', 'targa')}
+            if size < ladder.XMP_WINDOW:
+                self.assertEqual(1, len(families), f'size {size}: the three ladders parted ways')
+        for size in (8, 12, 16, 20):
+            kinds = {by[(k, size)]['operations'][0]['family'] for k in ('bmp', 'gif', 'targa')}
+            self.assertEqual(1, len(kinds), f'size {size} must be format-independent')
+        self.assertEqual('corrupted-metadata', by[('bmp', 12)]['operations'][0]['family'])
+        self.assertFalse(any(op['family'] == 'reader-reached' for r in rows if r['kind'] == 'targa'
+                             for op in r['operations']), 'the .targa control must not have fired')
+
+    def test_readme_numbers_are_derived_not_typed(self):
+        """Every count the README quotes has to be recomputable from the payload, in both directions."""
+        report = json.loads((self.EVIDENCE / 'observations.json').read_text(encoding='utf-8'))
+        readme = (self.EVIDENCE / 'README.md').read_text(encoding='utf-8')
+        rows = report['observations']
+        sizes = {r['size'] for r in rows}
+        needles = [str(len(rows)), str(report['recordCount']), str(len(sizes)),
+                   f"`flipSize` {report['summary']['bmp']['flipSize']}",
+                   f"`lastRefusal` {report['summary']['bmp']['lastRefusal']}",
+                   f"**zero**", str(report['summary']['bmp-xmltail']['rowsDifferingFromPrediction'])]
+        for needle in needles:
+            self.assertIn(needle, readme, f"the README must carry the derived value {needle!r}")
+        # And the claims must not be stale in the other direction: no number in the prose may name a
+        # boundary the payload does not contain.
+        import re as _re
+        for claimed in {int(m) for m in _re.findall(r'(?:flip|flips) (?:at|between .* and )?(\d+) bytes', readme)}:
+            self.assertIn(claimed, sizes | {report['summary'][k]['flipSize'] for k in report['summary']},
+                          f'{claimed}: a boundary quoted but not measured')
+
+    def test_evidence_directory_holds_only_the_recovered_payloads(self):
+        present = {path.name for path in self.EVIDENCE.iterdir()}
+        self.assertTrue({'README.md', 'observations.json'} <= present, present)
+        self.assertTrue(present <= {'README.md', 'observations.json', 'prior-run-observations.json'}, present)
 
 
 if __name__ == '__main__':

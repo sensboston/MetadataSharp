@@ -1,7 +1,8 @@
 # E01 B12 — recognition-ladder rights and oracle review
 
-Status: authored, awaiting review sign-off. Batch B12 is a **diagnostic batch**: it adds no census rows, no seed
-cells and no capability claims, and it changes nothing in `docs/research/EXIV2_CENSUS.json`.
+Status: authored, run, and answered — see "What the run showed" at the end for the outcome and for the two
+places the model below was wrong. Batch B12 is a **diagnostic batch**: it adds no census rows, no seed cells and
+no capability claims, and it changes nothing in `docs/research/EXIV2_CENSUS.json`.
 Baseline reviewed: Exiv2 `b0859fc61fea5dedfc898aece6b15893ddf4314e` (`v0.28.9`), build configuration
 `tools/reference/exiv2_baseline.OPTIONS` (`EXIV2_ENABLE_VIDEO=ON`, `EXIV2_ENABLE_BMFF=ON`, `EXTERNAL_XMP=OFF`).
 Reviewed on 2026-11-10 against sources fetched from that tag; the fetched files are not committed, so every
@@ -175,6 +176,39 @@ image, no decodable media and no embedded artwork: a 54-byte `BITMAPINFOHEADER`,
 * **No B11 file is modified**, so all 823 census rows, the 87-observation payload, the receipt and its
   reproducibility claims are unaffected — the two new tests are additive and `build_census.py --check` must stay
   green with an unchanged 823-row payload.
+
+## What the run showed (added after run `42846898701`; the sections above are the pre-run gate, unchanged)
+
+Recovered to `docs/research/evidence/e01-b12-ladder/observations.json` (47 rungs, 94 rows, every input
+unchanged, no artifact anywhere) and read there with its README. In short:
+
+* **The flip is at 80 bytes, and it is the same flip for both ladders.** `bmp` and `gif` each refuse up to 79
+  and reach a reader from 80 on, monotonically, and their families agree at all 15 sizes — two formats with
+  different magic, different recognizer windows (2 bytes vs 6) and different registry positions (23 vs 20).
+  The figure matches `isXmpType`'s window, which is the only thing in the review that predicts the same number
+  for both.
+* **Length, not content.** `bmp-xmltail` — the same rung with `<?xml ` planted inside the window xmp reads —
+  has zero disagreeing rows. Content is never consulted, which is what the strand model said and what the
+  "the model reads bytes" alternative said would not happen.
+* **B11's unexplained GIF row is resolved, and not in the way either candidate predicted.** Below 25 bytes the
+  message is the same for all three ladders: `Failed to read input data` at 8, 16 and 20, and `corrupted image
+  metadata` at 12. B11's `owned-gif-lsd-v1.gif` is 13 bytes, inside that band, and no GIF code throws
+  `kerCorruptedMetadata` — so that row was never about GIF. A 13-byte file is a *length* observation.
+* **Two places the model was wrong, stated plainly.** The eps band is not "below 26": size 24 already behaves
+  like the ≥ 25 band, so the constant `EPS_READ_BYTES` over-estimated the window by at least one rung, and the
+  8/12/16/20 alternation (including why 12 alone yields `corrupted image metadata`) was not predicted at all.
+  Which entry owns each of those bands stays **not established**: the ladder measures sizes, and it can only
+  implicate entries whose windows fall in the gaps between rungs. Narrowing that is a different instrument —
+  rungs at every byte from 8 to 26 — and it would be its own batch, not a retroactive edit to this
+  prediction table.
+* **The `.targa` control did not fire**: no rung reached a reader at any size, including 128. That is what the
+  model predicted for it, and it is also the one result that argues against `newInstance_` returning null as
+  the explanation for B11's small-file refusals — that path needs the footer route to be reached, and it never
+  was.
+* The ambiguity this document opened with stays open and is *not* papered over by the confirmation: "no entry
+  matched" and "an entry matched and produced no image" remain one message (`src/image.cpp:843-848`); what the
+  ladder adds is that for BMP and GIF the *length* at which they part is 80 bytes, which no reader-side check
+  could produce.
 
 ## Follow-ups this document rules in or out
 

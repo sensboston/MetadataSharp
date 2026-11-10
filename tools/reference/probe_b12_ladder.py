@@ -123,8 +123,10 @@ def ladder_summary(report):
                    if any(o['family'] == 'reader-reached' for o in r['operations'])]
         refused = [r['size'] for r in rows
                    if all(o['family'] in ('unknown-image-type', 'throws-during-scan') for o in r['operations'])]
-        disagree = [(r['size'], o['flag'], o['family'], o['predictedFamily']) for r in rows for o in r['operations']
-                    if not o['matchesPrediction']]
+        # Plain lists, not tuples: the summary is recomputed from a JSON round trip in the evidence
+        # test, and a tuple/list drift would make the committed report unrecomputable.
+        disagree = [[r['size'], o['flag'], o['family'], o['predictedFamily']] for r in rows
+                    for o in r['operations'] if not o['matchesPrediction']]
         out[kind] = {'rungs': len(rows), 'sizes': [r['size'] for r in rows],
                      'flipSize': min(reached) if reached else None,
                      'lastRefusal': max(refused) if refused else None,
