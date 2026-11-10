@@ -207,12 +207,15 @@ def main():
         'provenance': (
             'CI-only evidence. This sandbox has no pinned Exiv2 build (no cmake/ninja, no expat/zlib '
             'development headers, and the package-install, Actions log and artifact-blob hosts are '
-            'unreachable), so there is no local observation run to compare against. Both payloads here '
-            'were recovered from check-run annotations of the run named below; no cross-environment '
-            'equality claim is made.'),
+            'unreachable), so there is no local observation run to compare against. Every payload here '
+            'is a recovery from check-run annotations: the pair the census is generated from came from '
+            f'the run below (head {head[:7]}), and the pair beside it from run {PRIOR["id"]}. The `run` '
+            'object therefore describes one of two runs, never the evidence set. No cross-environment '
+            'equality claim is made, because there is no second environment.'),
         'run': {'id': RUN['id'], 'job': JOB, 'checkRunId': RUN['checkRunId'], 'headCommit': head,
                 'attempt': 1, 'event': 'push', 'trigger': 'push to arena/40805d1c-metadatasharp',
                 'url': f'https://github.com/sensboston/MetadataSharp/actions/runs/{RUN["id"]}',
+                'secondSampleRun': PRIOR['id'],
                 'allStepsGreen': True},
         'denominatorFrozen': False,
         'verification': 'not-assessed',

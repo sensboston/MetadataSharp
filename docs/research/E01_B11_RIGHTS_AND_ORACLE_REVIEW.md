@@ -613,15 +613,15 @@ a reviewer reads first.
   seventh refusal, `owned-tga-signature-only.targa`, is the model agreeing with the build: TGA is claimed by
   file name (`tgaimage.cpp:99-103`), so a TGA-lookalike under another extension reaches nothing. **Why** the
   six are refused is deliberately not established: the two candidate causes are the `Image::good()` re-check
-  in each `newXInstance` (`image.cpp:713-718`) and an earlier registry entry matching first, and this run
-  cannot separate them. A refusal is recorded as a refusal of *these header-only stubs*, never of the format;
+  in each `newXInstance` (`image.cpp:713-718`) and an earlier registry entry matching first; the second run
+  reproduced the refusal exactly, which confirms the observation but does not separate the causes. A refusal is recorded as a refusal of *these header-only stubs*, never of the format;
   the follow-up that would separate the causes (a padded BMP) belongs to the next batch, not to this row set.
 - **Only one container stub yields readable metadata.** `owned-avi-avih.avi` printed four `Xmp.video.*` keys
   under `-pa`/`-px`; ASF, MKV, WAV and both MOVs printed nothing or threw. That is the video-metadata family
   absence in §3 made visible as behaviour, and it is why the batch enumerates inventory-only cells there.
 - **Two samples per recorder, and the census delta is exactly the label.** The 107 preflight records are
-  byte-identical between runs — `observations` is one of the `identicalSections` in `reproduction.
-  priorRunComparison` — and the census payload agrees on 83 of 87 observations. The four that differ are the
+  byte-identical between runs — `observations` appears in `reproduction` › `priorRunComparison` ›
+  `identicalSections` — and the census payload agrees on 83 of 87 observations. The four that differ are the
   four `-et` rows, and only in the three fields this batch renamed (`exitCodeIsByteCountInPinnedBuild` out,
   `statusShape`/`statusIsByteCountWritten` in): `rowsDifferingBeyondShapeLabel` is empty, and exit codes,
   artifact digests, stderr, outcomes, `blocked` and the fixture manifest are identical across a different head

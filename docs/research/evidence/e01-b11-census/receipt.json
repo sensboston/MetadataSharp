@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "batch": "B11",
-  "provenance": "CI-only evidence. This sandbox has no pinned Exiv2 build (no cmake/ninja, no expat/zlib development headers, and the package-install, Actions log and artifact-blob hosts are unreachable), so there is no local observation run to compare against. Both payloads here were recovered from check-run annotations of the run named below; no cross-environment equality claim is made.",
+  "provenance": "CI-only evidence. This sandbox has no pinned Exiv2 build (no cmake/ninja, no expat/zlib development headers, and the package-install, Actions log and artifact-blob hosts are unreachable), so there is no local observation run to compare against. Every payload here is a recovery from check-run annotations: the pair the census is generated from came from the run below (head 6bb7d8c), and the pair beside it from run 42757620226. The `run` object therefore describes one of two runs, never the evidence set. No cross-environment equality claim is made, because there is no second environment.",
   "run": {
     "id": 42762097543,
     "job": "Exiv2 0.28.9 / bounded E01 B11 container and small-format observations",
@@ -11,6 +11,7 @@
     "event": "push",
     "trigger": "push to arena/40805d1c-metadatasharp",
     "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42762097543",
+    "secondSampleRun": 42757620226,
     "allStepsGreen": true
   },
   "denominatorFrozen": false,

@@ -887,6 +887,9 @@ class CensusPolicyTests(unittest.TestCase):
         # build and a build, never between an observation and a different question.
         cross = receipt['censusCrossRun']
         self.assertEqual(cross['priorRun']['head'], prior['sourceCommit'])
+        self.assertEqual(receipt['run']['secondSampleRun'], cross['priorRun']['runId'],
+                         'the run object must name the same second run the comparison uses')
+        self.assertNotEqual(receipt['run']['id'], receipt['run']['secondSampleRun'])
         self.assertEqual(cross['priorRun']['observationsFileSha256'], hashlib.sha256(prior_raw).hexdigest())
         self.assertEqual(cross['priorRun']['rawPayloadSha256'], hashlib.sha256(canonical(prior)).hexdigest())
         self.assertEqual(['baseline', 'observations', 'secondaryObservations', 'sourceCommit'],
