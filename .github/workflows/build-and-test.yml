@@ -42,12 +42,40 @@ jobs:
       - name: Build Release
         run: dotnet build MetadataSharp.sln --configuration Release --no-restore
       - name: Test offline reference-harness policy
-        run: python -m unittest discover -s tests/reference -v
+        shell: bash
+        run: python -m unittest discover -s tests/reference -v 2>&1 | tee reference.log
       - name: Verify discovery seed policy
+        shell: bash
         run: |
           python tools/reference/build_capability_seeds.py --check
           python tools/reference/build_census.py --check
-          python -m unittest discover -s tests/discovery -v
+          python -m unittest discover -s tests/discovery -v 2>&1 | tee discovery.log
+      # Python-suite detail is published the same way the .NET trx failures below are. The
+      # Actions log host is not readable from every environment that recovers this repo's
+      # evidence, and a red leg that reports only "exit code 1" costs a whole round trip:
+      # a Windows-only line-ending failure in the B10 evidence digests sat behind exactly that
+      # for two pushes. unittest writes failures to stderr, so the steps above tee their merged
+      # output to a file and this step turns the failing names into annotations.
+      - name: Report failed Python policy details
+        if: failure()
+        shell: python
+        run: |
+          from pathlib import Path
+          found = False
+          for log in (Path('reference.log'), Path('discovery.log')):
+              if not log.exists():
+                  continue
+              lines = log.read_text(encoding='utf-8', errors='replace').splitlines()
+              picked = [line for line in lines
+                        if line.startswith(('FAIL:', 'ERROR:', 'AssertionError', 'Traceback',
+                                            'FAILED', 'Ran '))][:24]
+              for line in picked or lines[-12:]:
+                  text = line[:2000].replace('%', '%25').replace('\r', '%0D')
+                  print('::error title=Python policy failure (' + log.name + ')::' + text)
+                  found = True
+          if not found:
+              print('::error title=Python policy failure::no suite log: a step failed before '
+                    'writing one (check the --check scripts and the step order)')
       - name: Test Release
         run: dotnet test tests/MetadataSharp.Tests/MetadataSharp.Tests.csproj --framework ${{ matrix.tfm }} --configuration Release --no-build --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults/${{ matrix.tfm }}
       - name: Report failed test details
