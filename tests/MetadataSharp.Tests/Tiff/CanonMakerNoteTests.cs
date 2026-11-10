@@ -222,6 +222,29 @@ public sealed class CanonMakerNoteArrayTests
         Assert.DoesNotContain(fields, f => f.Name == "BracketValue"); // Index 4 is past the 4-element array.
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void LongArraysUseFourByteElements(bool big)
+    {
+        // AFConfig: SLONG elements; element 1 is AFConfigTool, element 19 InitialAFPointInServo.
+        int[] elements = Enumerable.Range(0, 20).Select(i => i == 2 ? -3 : i * 10).ToArray();
+        byte[] raw = new byte[elements.Length * 4];
+        for (int i = 0; i < elements.Length; i++)
+            if (big) BinaryPrimitives.WriteInt32BigEndian(raw.AsSpan(i * 4), elements[i]);
+            else BinaryPrimitives.WriteInt32LittleEndian(raw.AsSpan(i * 4), elements[i]);
+        var value = ExifValue.FromRaw(TiffFieldType.SLong, (uint)elements.Length, big ? Endianness.BigEndian : Endianness.LittleEndian, raw);
+        IReadOnlyList<MakerNoteField> fields = Split(0x4028, value);
+        Assert.Equal(19, fields.Count);
+        MakerNoteField sensitivity = fields.Single(f => f.Name == "AFTrackingSensitivity");
+        Assert.Equal(TiffFieldType.SLong, sensitivity.Value.FieldType);
+        byte[] four = new byte[4];
+        sensitivity.Value.CopyRawTo(four);
+        Assert.Equal(-3, big ? BinaryPrimitives.ReadInt32BigEndian(four) : BinaryPrimitives.ReadInt32LittleEndian(four));
+        // A SHORT-typed value cannot carry a four-byte layout.
+        Assert.Empty(Split(0x4028, Shorts(big, 1, 2, 3, 4)));
+    }
+
     [Fact]
     public void AnUnknownTagOrANonShortValueIsNotSplit()
     {

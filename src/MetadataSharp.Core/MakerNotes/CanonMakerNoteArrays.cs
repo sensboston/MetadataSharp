@@ -13,14 +13,17 @@ internal static class CanonMakerNoteArrays
 
     internal static IReadOnlyList<MakerNoteField> Decompose(ushort tag, ExifValue value)
     {
-        if (value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort))
-            return [];
         if (tag == 0x0026)
-            return AFInfo(value);
+            return value.FieldType is TiffFieldType.Short or TiffFieldType.SShort ? AFInfo(value) : [];
         if (Find(tag) is not Layout layout)
             return [];
+        // Element i of the array sits at i * the element width; the tag's own type must have that width.
+        int element = ExifValue.GetWidth(layout.ElementType);
+        if (value.FieldType is TiffFieldType.Ascii or TiffFieldType.Rational or TiffFieldType.SRational or
+                TiffFieldType.Float or TiffFieldType.Double || ExifValue.GetWidth(value.FieldType) != element)
+            return [];
         ReadOnlySpan<byte> raw = value.RawBytes;
-        int elements = raw.Length / 2;
+        int elements = raw.Length / element;
         var fields = new List<MakerNoteField>(layout.Fields.Length);
         int consumedUntil = 0;
         foreach (Field field in layout.Fields)
@@ -29,13 +32,13 @@ internal static class CanonMakerNoteArrays
                 continue;
             TiffFieldType type = field.Type == 0 ? layout.ElementType : field.Type;
             int width = ExifValue.GetWidth(type);
-            int start = field.Index * 2;
+            int start = field.Index * element;
             int length = width * (int)field.Count;
-            if (start + length > elements * 2)
+            if (start + length > elements * element)
                 break; // Fields are ascending, so nothing later fits either.
             fields.Add(new MakerNoteField(field.Index, field.Name,
                 ExifValue.FromRaw(type, field.Count, value.ByteOrder, raw.Slice(start, length))));
-            consumedUntil = field.Index + (length + 1) / 2;
+            consumedUntil = field.Index + (length + element - 1) / element;
         }
         return fields;
     }
@@ -91,6 +94,15 @@ internal static class CanonMakerNoteArrays
         0x0012 => PictureInfo,
         0x0093 => FileInfo,
         0x00A0 => ProcessingInfo,
+        0x0035 => TimeInfo,
+        0x4013 => AFMicroAdj,
+        0x4016 => VignettingCorr2,
+        0x4018 => LightingOpt,
+        0x4019 => LensInfo,
+        0x4020 => AmbienceInfo,
+        0x4021 => MultiExp,
+        0x4025 => HDRInfo,
+        0x4028 => AFConfig,
         _ => null
     };
 
@@ -150,6 +162,42 @@ internal static class CanonMakerNoteArrays
         new(23, "ShutterMode"), new(25, "FlashExposureLock"), new(32, "AntiFlicker"),
     ]);
 
+    private static readonly Layout TimeInfo = new(TiffFieldType.SLong,
+        [new(1, "TimeZone"), new(2, "TimeZoneCity"), new(3, "DaylightSavings")]);
+
+    private static readonly Layout AFMicroAdj = new(TiffFieldType.SLong,
+        [new(1, "AFMicroAdjMode"), new(2, "AFMicroAdjValue")]);
+
+    private static readonly Layout VignettingCorr2 = new(TiffFieldType.SLong,
+        [new(5, "PeripheralLightingSetting"), new(6, "ChromaticAberrationSetting"), new(7, "DistortionCorrectionSetting")]);
+
+    private static readonly Layout LightingOpt = new(TiffFieldType.SLong,
+    [
+        new(1, "PeripheralIlluminationCorr"), new(2, "AutoLightingOptimizer"), new(3, "HighlightTonePriority"),
+        new(4, "LongExposureNoiseReduction"), new(5, "HighISONoiseReduction"), new(10, "DigitalLensOptimizer"),
+        new(11, "DualPixelRaw"),
+    ]);
+
+    private static readonly Layout LensInfo = new(TiffFieldType.Byte, [new(0, "LensSerialNumber", TiffFieldType.Byte, 5)]);
+
+    private static readonly Layout AmbienceInfo = new(TiffFieldType.SLong, [new(1, "AmbienceSelection")]);
+
+    private static readonly Layout MultiExp = new(TiffFieldType.SLong,
+        [new(1, "MultiExposure"), new(2, "MultiExposureControl"), new(3, "MultiExposureShots")]);
+
+    private static readonly Layout HDRInfo = new(TiffFieldType.SLong, [new(1, "HDR"), new(2, "HDREffect")]);
+
+    private static readonly Layout AFConfig = new(TiffFieldType.SLong,
+    [
+        new(1, "AFConfigTool"), new(2, "AFTrackingSensitivity"), new(3, "AFAccelDecelTracking"),
+        new(4, "AFPointSwitching"), new(5, "AIServoFirstImage"), new(6, "AIServoSecondImage"),
+        new(7, "USMLensElectronicMF"), new(8, "AFAssistBeam"), new(9, "OneShotAFRelease"),
+        new(10, "AutoAFPointSelEOSiTRAF"), new(11, "LensDriveWhenAFImpossible"), new(12, "SelectAFAreaSelectionMode"),
+        new(13, "AFAreaSelectionMethod"), new(14, "OrientationLinkedAF"), new(15, "ManualAFPointSelPattern"),
+        new(16, "AFPointDisplayDuringFocus"), new(17, "VFDisplayIllumination"), new(18, "AFStatusViewfinder"),
+        new(19, "InitialAFPointInServo"),
+    ]);
+
     private static readonly Layout ProcessingInfo = new(TiffFieldType.SShort,
     [
         new(1, "ToneCurve"), new(2, "Sharpness"), new(3, "SharpnessFrequency"), new(4, "SensorRedLevel"),
@@ -160,7 +208,7 @@ internal static class CanonMakerNoteArrays
 
     internal static IEnumerable<(ushort Tag, IReadOnlyList<ushort> Indexes)> LayoutsForTests()
     {
-        foreach (ushort tag in new ushort[] { 0x0001, 0x0004, 0x0005, 0x000F, 0x0012, 0x0093, 0x00A0 })
+        foreach (ushort tag in new ushort[] { 0x0001, 0x0004, 0x0005, 0x000F, 0x0012, 0x0093, 0x00A0, 0x0035, 0x4013, 0x4016, 0x4018, 0x4019, 0x4020, 0x4021, 0x4025, 0x4028 })
             yield return (tag, Find(tag)!.Fields.Select(f => f.Index).ToArray());
     }
 }
