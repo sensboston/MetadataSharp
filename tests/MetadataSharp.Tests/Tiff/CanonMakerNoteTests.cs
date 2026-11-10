@@ -240,3 +240,73 @@ public sealed class CanonMakerNoteArrayTests
         }
     }
 }
+
+public sealed class CanonAFInfoTests
+{
+    // AFInfo of an EOS 6D sample (11 AF points), as 56 SHORT elements.
+    private static readonly ushort[] EightPlusEleven =
+    [
+        112, 2, 11, 11, 5472, 3648, 5472, 3648,
+        82, 82, 82, 82, 98, 120, 98, 82, 82, 82, 82,
+        98, 98, 98, 98, 76, 127, 76, 98, 98, 98, 98,
+        64393, 64989, 64989, 64989, 0, 0, 0, 547, 547, 547, 1143,
+        0, 350, 0, 65186, 488, 0, 65048, 350, 0, 65186, 0,
+        32, 32, 0, 65535,
+    ];
+
+    private static ExifValue Shorts(ushort[] values, bool big = false)
+    {
+        byte[] raw = new byte[values.Length * 2];
+        for (int i = 0; i < values.Length; i++)
+            if (big) BinaryPrimitives.WriteUInt16BigEndian(raw.AsSpan(i * 2), values[i]);
+            else BinaryPrimitives.WriteUInt16LittleEndian(raw.AsSpan(i * 2), values[i]);
+        return ExifValue.FromRaw(TiffFieldType.Short, (uint)values.Length, big ? Endianness.BigEndian : Endianness.LittleEndian, raw);
+    }
+
+    private static short[] Signed(MakerNoteField field)
+    {
+        byte[] raw = new byte[field.Value.ByteLength];
+        field.Value.CopyRawTo(raw);
+        var values = new short[raw.Length / 2];
+        for (int i = 0; i < values.Length; i++)
+            values[i] = field.Value.ByteOrder == Endianness.BigEndian
+                ? BinaryPrimitives.ReadInt16BigEndian(raw.AsSpan(i * 2))
+                : BinaryPrimitives.ReadInt16LittleEndian(raw.AsSpan(i * 2));
+        return values;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TheLayoutFollowsThePointCount(bool big)
+    {
+        IReadOnlyList<MakerNoteField> fields = Core.MakerNotes.CanonMakerNoteArrays.Decompose(0x0026, Shorts(EightPlusEleven, big));
+        Assert.Equal(15, fields.Count);
+        Assert.Equal(new short[] { 11 }, Signed(fields.Single(f => f.Name == "AFNumPoints")));
+        MakerNoteField x = fields.Single(f => f.Name == "AFXPositions");
+        Assert.Equal(TiffFieldType.SShort, x.Value.FieldType);
+        Assert.Equal(new short[] { -1143, -547, -547, -547, 0, 0, 0, 547, 547, 547, 1143 }, Signed(x));
+        MakerNoteField focus = fields.Single(f => f.Name == "AFPointsInFocus");
+        Assert.Equal(TiffFieldType.Short, focus.Value.FieldType);
+        Assert.Equal(1u, focus.Value.Count);
+        Assert.Equal(new short[] { 0 }, Signed(fields.Single(f => f.Name == "AFPointsUnusable")));
+    }
+
+    [Fact]
+    public void ATruncatedArrayKeepsOnlyTheFieldsThatFit()
+    {
+        IReadOnlyList<MakerNoteField> fields = Core.MakerNotes.CanonMakerNoteArrays.Decompose(0x0026, Shorts(EightPlusEleven[..30]));
+        Assert.Equal(new[] { "AFInfoSize", "AFAreaMode", "AFNumPoints", "AFValidPoints", "AFCanonImageWidth",
+            "AFCanonImageHeight", "AFImageWidth", "AFImageHeight", "AFAreaWidths", "AFAreaHeights" }, fields.Select(f => f.Name));
+        Assert.Empty(Core.MakerNotes.CanonMakerNoteArrays.Decompose(0x0026, Shorts(EightPlusEleven[..7])));
+    }
+
+    [Fact]
+    public void AHugePointCountCannotReadPastTheArray()
+    {
+        ushort[] values = (ushort[])EightPlusEleven.Clone();
+        values[2] = 65535;
+        IReadOnlyList<MakerNoteField> fields = Core.MakerNotes.CanonMakerNoteArrays.Decompose(0x0026, Shorts(values));
+        Assert.Equal(8, fields.Count);
+    }
+}

@@ -13,7 +13,11 @@ internal static class CanonMakerNoteArrays
 
     internal static IReadOnlyList<MakerNoteField> Decompose(ushort tag, ExifValue value)
     {
-        if (value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort) || Find(tag) is not Layout layout)
+        if (value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort))
+            return [];
+        if (tag == 0x0026)
+            return AFInfo(value);
+        if (Find(tag) is not Layout layout)
             return [];
         ReadOnlySpan<byte> raw = value.RawBytes;
         int elements = raw.Length / 2;
@@ -35,6 +39,48 @@ internal static class CanonMakerNoteArrays
         }
         return fields;
     }
+
+    /// <summary>
+    /// AFInfo: eight SSHORT header fields, of which the third is the AF point count N; then N area
+    /// widths, N heights, N X positions and N Y positions (SSHORT); then three SHORT bit masks of
+    /// ceil(N / 16) elements each: points in focus, selected and unusable.
+    /// </summary>
+    private static IReadOnlyList<MakerNoteField> AFInfo(ExifValue value)
+    {
+        ReadOnlySpan<byte> raw = value.RawBytes;
+        int elements = raw.Length / 2;
+        if (elements < 8)
+            return [];
+        int n = value.ByteOrder == Endianness.LittleEndian
+            ? System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(raw[4..])
+            : System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(raw[4..]);
+        int masks = (n + 15) / 16;
+        var fields = new List<MakerNoteField>(AFInfoFields.Length);
+        int index = 0;
+        foreach ((string name, TiffFieldType type, int kind) in AFInfoFields)
+        {
+            int count = kind switch { 0 => 1, 1 => n, _ => masks };
+            if (count == 0 || index + count > elements)
+                break;
+            fields.Add(new MakerNoteField((ushort)index, name,
+                ExifValue.FromRaw(type, (uint)count, value.ByteOrder, raw.Slice(index * 2, count * 2))));
+            index += count;
+        }
+        return fields;
+    }
+
+    /// <summary>Name, type, and count kind: 0 = one element, 1 = N elements, 2 = ceil(N / 16).</summary>
+    private static readonly (string Name, TiffFieldType Type, int Kind)[] AFInfoFields =
+    [
+        ("AFInfoSize", TiffFieldType.SShort, 0), ("AFAreaMode", TiffFieldType.SShort, 0),
+        ("AFNumPoints", TiffFieldType.SShort, 0), ("AFValidPoints", TiffFieldType.SShort, 0),
+        ("AFCanonImageWidth", TiffFieldType.SShort, 0), ("AFCanonImageHeight", TiffFieldType.SShort, 0),
+        ("AFImageWidth", TiffFieldType.SShort, 0), ("AFImageHeight", TiffFieldType.SShort, 0),
+        ("AFAreaWidths", TiffFieldType.SShort, 1), ("AFAreaHeights", TiffFieldType.SShort, 1),
+        ("AFXPositions", TiffFieldType.SShort, 1), ("AFYPositions", TiffFieldType.SShort, 1),
+        ("AFPointsInFocus", TiffFieldType.Short, 2), ("AFPointsSelected", TiffFieldType.Short, 2),
+        ("AFPointsUnusable", TiffFieldType.Short, 2),
+    ];
 
     private static Layout? Find(ushort tag) => tag switch
     {
