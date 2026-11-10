@@ -51,6 +51,13 @@ Only supported table/control markers, APP0–APP15 and COM may occur before SOS;
 unsupported marker kinds fail explicitly. Full marker allowlist/ordering tests must
 be checked against the normative sources before M07 implementation.
 
+> Amended 2026-11-10 (JPEG frame-type unit): the frame/scan restrictions in this
+> subsection are withdrawn — every SOF process (0xC0–0xC3, 0xC5–0xC7, 0xC9–0xCB,
+> 0xCD–0xCF), multiple frames, multiple scans and post-scan segments are accepted,
+> while marker grammar, segment arithmetic, budgets and the standalone-marker and
+> trailing-byte refusals stay enforced. See
+> `docs/design/JPEG_MARKER_SCANNING_AND_SUPPORTED_SUBSET.md`. No public API changed.
+
 APP data is opaque except a pre-SOS APP1 beginning with exact `Exif\0\0` bytes.
 An APP1 without this signature is not EXIF. More than one matching EXIF segment
 is an ambiguity error, even if their payloads match. APP lengths include their two

@@ -12,7 +12,7 @@ public sealed class MetadataCapabilitiesTests
 {
     private static readonly (MetadataContainer Container, MetadataFamily Family, MetadataOperation Operation, CapabilityStatus Status, string Note)[] Expected =
     [
-        (MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Supported, "Classic TIFF/EXIF within the approved baseline-JPEG subset; unsupported layouts are refused."),
+        (MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Supported, "Classic TIFF/EXIF within any JPEG frame type or scan count; unsupported layouts are refused."),
         (MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset only (descriptive IFD0/EXIF/GPS tags); unsupported tags are refused."),
         (MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset only (descriptive IFD0/EXIF/GPS tags); unsupported tags are refused."),
         (MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-tag removal within the approved subset; whole-EXIF removal is also supported."),

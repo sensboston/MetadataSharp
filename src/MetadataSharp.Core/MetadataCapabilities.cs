@@ -142,8 +142,8 @@ public static class MetadataCapabilities
     // together with the tests that pin it, in the same reviewed unit.
     private static readonly CapabilityDescriptor[] manifest =
     [
-        // JPEG: baseline single-scan subset; classic II/MM TIFF/EXIF.
-        new(MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Supported, "Classic TIFF/EXIF within the approved baseline-JPEG subset; unsupported layouts are refused."),
+        // JPEG: every frame type and scan count; classic II/MM TIFF/EXIF.
+        new(MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Supported, "Classic TIFF/EXIF within any JPEG frame type or scan count; unsupported layouts are refused."),
         new(MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset only (descriptive IFD0/EXIF/GPS tags); unsupported tags are refused."),
         new(MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset only (descriptive IFD0/EXIF/GPS tags); unsupported tags are refused."),
         new(MetadataContainer.Jpeg, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-tag removal within the approved subset; whole-EXIF removal is also supported."),

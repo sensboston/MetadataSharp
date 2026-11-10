@@ -211,6 +211,11 @@ Use byte-exact signatures, not APP1 marker number alone. Record packet counts an
 extension presence without parsing unrelated metadata. Do not broaden the M07
 single-scan baseline JPEG acceptance subset.
 
+> Amended 2026-11-10: the scanner's frame and scan subset was broadened to every JPEG
+> process and any scan count (see `JPEG_MARKER_SCANNING_AND_SUPPORTED_SUBSET.md`,
+> "Amendment"). That widens where an APP1 packet may be found, not the XMP rules
+> above; no XMP-specific broadening is implied and no public API changed.
+
 Duplicate standard packets cause AmbiguousMetadata for XMP reads/changes, including
 whole removal. Any Extended XMP segment causes UnsupportedFeature for XMP reads
 and effective XMP changes, including whole removal, even without a standard packet.

@@ -41,6 +41,29 @@ public sealed class JpegEditingTests
     }
 
     [Fact]
+    public void ProgressiveArithmeticAndDifferentialFramesRoundTripMetadataVerbatim()
+    {
+        foreach (byte[] image in new[] { JpegFixture.Progressive(), JpegFixture.Arithmetic(),
+            JpegFixture.Build(frameMarker: 0xC1), JpegFixture.Build(frameMarker: 0xC3, scan: [1, 1, 0, 1, 0, 0]) })
+        {
+            byte[] sourceBytes = [.. image[..2], .. JpegFixture.Segment(0xE1, JpegFixture.Exif()), .. image[2..]];
+            using var source = new MemoryStream(sourceBytes);
+            using JpegMetadataDocument document = JpegMetadataDocument.Open(source);
+            Assert.NotNull(document.Exif);
+            var edit = new ExifEdit(); edit.Set(new(ExifDirectoryKind.Ifd0, 0x013B), Text("Alice"));
+            using var output = new MemoryStream();
+            document.Save(output, edit);
+            byte[] saved = output.ToArray();
+            // Everything the edit does not own — tables, frame and scan headers, entropy-coded data,
+            // restart markers and EOI — is copied verbatim, so removing the new APP1 restores the file.
+            Assert.Equal(image, WithoutExif(saved));
+            using var reopened = JpegMetadataDocument.Open(new MemoryStream(saved));
+            Assert.True(reopened.Exif!.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? artist));
+            Assert.Equal("Alice\0", Encoding.ASCII.GetString(artist.Value.RawBytes));
+        }
+    }
+
+    [Fact]
     public void OrdinaryRemovalLastWriteWinsAndMissingRemovalAreIdempotent()
     {
         using var document = JpegMetadataDocument.Open(new MemoryStream(JpegFixture.Build()));
