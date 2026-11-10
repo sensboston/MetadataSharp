@@ -664,8 +664,8 @@ jobs:
                   chunks = chunks[:3] + ['traceback truncated: %d characters total' % len(trace)]
               for i, chunk in enumerate(chunks):
                   print('::error title=B11 %s traceback %d/%d::%s' % (name, i + 1, len(chunks), chunk))
-  pinned-exiv2-b12:
-    name: Exiv2 0.28.9 / bounded E01 B12 recognition-ladder observations
+  pinned-exiv2-b11l:
+    name: Exiv2 0.28.9 / bounded E01 B11L recognition-ladder observations
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -698,24 +698,24 @@ jobs:
       # No ExifTool checkout here, unlike B10/B11: this batch compares its own prediction against the pinned
       # build, and a 24-byte header stub is not something a real-world tool can adjudicate. Dropping it also
       # drops the only File*Date-driven nondeterminism, which makes the two runs of this job directly comparable.
-      - name: Verify the B12 ladder fixture catalog and its length invariants
-        run: python tools/reference/b12_recognition_ladder.py verify
-      - name: B12 recognition-ladder probe (read-only, outcomes recorded not gated)
-        run: python tools/reference/probe_b12_ladder.py --upstream artifacts/e01/source --build artifacts/e01/build
-      - name: Upload B12 ladder observations (no executables/source)
+      - name: Verify the B11L ladder fixture catalog and its length invariants
+        run: python tools/reference/b11l_recognition_ladder.py verify
+      - name: B11L recognition-ladder probe (read-only, outcomes recorded not gated)
+        run: python tools/reference/probe_b11l_ladder.py --upstream artifacts/e01/source --build artifacts/e01/build
+      - name: Upload B11L ladder observations (no executables/source)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e01-b12-ladder-observations
-          path: artifacts/e01/b12-ladder/observations.json
+          name: e01-b11l-ladder-observations
+          path: artifacts/e01/b11l-ladder/observations.json
           if-no-files-found: error
           retention-days: 30
       # Same reasoning as the B11 reporter: the artifact host and the Actions log are both unreachable from
-      # the environment that recovers this repo's evidence, so a red B12 leg has to explain itself here. The
+      # the environment that recovers this repo's evidence, so a red B11L leg has to explain itself here. The
       # recorder save()s its report -- with `failure` set to the traceback tail -- before re-raising, so a
       # crash mid-ladder still has something to read. The annotation channel is the recovery path for the
-      # evidence itself (B12Z chunks), so this step only re-reports the summary and the failure, not the rows.
-      - name: Report failed B12 recorder detail
+      # evidence itself (B11LZ chunks), so this step only re-reports the summary and the failure, not the rows.
+      - name: Report failed B11L recorder detail
         if: failure()
         shell: python
         run: |
@@ -725,9 +725,9 @@ jobs:
           def escape(text):
               return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
 
-          report_path = Path('artifacts/e01/b12-ladder/observations.json')
+          report_path = Path('artifacts/e01/b11l-ladder/observations.json')
           if not report_path.exists():
-              print('::error title=B12 ladder::no report file: the recorder died before its first save()')
+              print('::error title=B11L ladder::no report file: the recorder died before its first save()')
               raise SystemExit(0)
           report = json.loads(report_path.read_text(encoding='utf-8'))
           summary = ('status=%s rungs=%s rows=%s families=%s flip=%s' % (
@@ -735,11 +735,11 @@ jobs:
               json.dumps(report.get('familyCounts', {}), sort_keys=True),
               json.dumps({k: v.get('flipSize') for k, v in (report.get('summary') or {}).items()},
                          sort_keys=True)))
-          print('::error title=B12 ladder summary::%s' % escape(summary)[:1500])
+          print('::error title=B11L ladder summary::%s' % escape(summary)[:1500])
           trace = escape(report.get('failure') or 'no failure field: the step failed outside the '
                                                   'recorder (see the step name above)')
           chunks = [trace[i:i + 2500] for i in range(0, len(trace), 2500)]
           if len(chunks) > 3:
               chunks = chunks[:3] + ['traceback truncated: %d characters total' % len(trace)]
           for i, chunk in enumerate(chunks):
-              print('::error title=B12 ladder traceback %d/%d::%s' % (i + 1, len(chunks), chunk))
+              print('::error title=B11L ladder traceback %d/%d::%s' % (i + 1, len(chunks), chunk))

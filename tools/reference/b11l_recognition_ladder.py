@@ -1,4 +1,4 @@
-"""B12 fixtures: a byte-length ladder over three recognizers, to locate a boundary, not to cover formats.
+"""B11L fixtures: a byte-length ladder over three recognizers, to locate a boundary, not to cover formats.
 
 Standard library only. Every file here is authored by this module -- no camera capture, no vendor
 sample, no decodable media -- and each rung of a ladder is the *same* fixed bytes at a different
@@ -7,7 +7,7 @@ factory handed to no reader, and its review left the cause unresolved between ca
 different predictions about *length*. A ladder measures which length owns the flip, so the question
 can be settled from pinned-build observations alone -- no debugger, and no support claim either way.
 
-Why these three formats (reviewed in docs/research/E01_B12_RIGHTS_AND_ORACLE_REVIEW.md):
+Why these three formats (reviewed in docs/research/E01_B11L_RIGHTS_AND_ORACLE_REVIEW.md):
 
 * BMP  -- ``isBmpType`` (src/bmpimage.cpp:119) reads 2 bytes, ``if (iIo.error() || iIo.eof())
   return false;``, and only afterwards seeks back. Registry index 23.
@@ -43,7 +43,7 @@ import struct
 import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-DIRECTORY = ROOT / 'tests/fixtures/b12'
+DIRECTORY = ROOT / 'tests/fixtures/b11l'
 MANIFEST = DIRECTORY / 'ladder-manifest.json'
 
 # Sizes bracketing every candidate window named above. 8 bytes is the floor -- below the 6-byte GIF
@@ -66,7 +66,7 @@ INDEX = {name: index for name, index, _window in REGISTRY}
 XMP_WINDOW = 80          # src/xmpsidecar.cpp:165 -- const int32_t len = 80
 STRANDED_FORMATS = tuple(name for name, index, _ in REGISTRY if index > INDEX['xmp'])
 
-# The flag pair this batch records. B12 observes recognition only, so it never asks the build to
+# The flag pair this batch records. B11L observes recognition only, so it never asks the build to
 # write: -pS prints the image type the factory reached, -pe is the documented read path, and both
 # are read-only. Adding -pa/-px would let one failure mode (a write that half-happens) contaminate
 # a measurement whose whole point is that nothing about the file changed.
@@ -301,7 +301,7 @@ def model_recognizers(data, kind):
     """This repository's own model of the magic tests, for the record and for the review's prose.
 
     Deliberately a *model* and never evidence: B11's model predicted a match for both BMPs and the
-    build handed them to no reader, which is the whole reason B12 exists.
+    build handed them to no reader, which is the whole reason B11L exists.
     """
     matched = []
     if data[:2] == b'BM':
@@ -329,7 +329,7 @@ def expected_dispatch(data, name, kind):
     """Which reader our *own* model says the factory reaches -- never compared against the build here.
 
     Like B11's `recognizers`, this is a container-framing check over bytes this module wrote; it
-    cannot tell us what the pinned build did, and no B12 claim reads through it.
+    cannot tell us what the pinned build did, and no B11L claim reads through it.
     """
     if kind == 'bmp' or kind == 'bmp-xmltail':
         return 'bmp' if data[:2] == b'BM' else 'none'
@@ -394,7 +394,7 @@ def verify():
             raise ValueError(f'bmp-xmltail len{size}: the 26 bytes the BMP reader reads must survive the plant')
     recorded = json.loads(MANIFEST.read_text(encoding='utf-8')) if MANIFEST.exists() else None
     if recorded != manifest:
-        raise ValueError('B12 ladder manifest differs from the fixture bytes')
+        raise ValueError('B11L ladder manifest differs from the fixture bytes')
     return recorded
 
 
@@ -408,7 +408,7 @@ def main():
     elif sys.argv[1:] != ['verify']:
         raise SystemExit('expected verify or generate')
     manifest = verify()
-    print(f'B12 recognition ladder verified: {len(manifest)} entries over sizes '
+    print(f'B11L recognition ladder verified: {len(manifest)} entries over sizes '
           f'{min(e["size"] for e in manifest)}-{max(e["size"] for e in manifest)} bytes, '
           f'{TGA_MINIMUM}-byte targa floor')
 

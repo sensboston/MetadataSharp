@@ -1,10 +1,10 @@
-"""Offline tests for the B12 recognition-ladder fixture catalog.
+"""Offline tests for the B11L recognition-ladder fixture catalog.
 
 The ladder is the only place in this repository where a *byte length* is the independent variable, so these
 tests are mostly about what would silently destroy that: a rung whose header drifted, a rung that gained a
 second difference besides length, a fixture that grew a payload, a prediction typed by hand instead of
 derived, or a file in the directory that no rung claims. None of them asks what the pinned build did — that
-question is answered only by `probe_b12_ladder.py` in CI, and nothing here may pretend otherwise.
+question is answered only by `probe_b11l_ladder.py` in CI, and nothing here may pretend otherwise.
 """
 from pathlib import Path
 import json
@@ -14,10 +14,10 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/reference'))
-import b12_recognition_ladder as ladder  # noqa: E402
+import b11l_recognition_ladder as ladder  # noqa: E402
 
 
-class B12LadderTests(unittest.TestCase):
+class B11LLadderTests(unittest.TestCase):
     def setUp(self):
         self.entries = ladder.entries()
 
@@ -50,7 +50,7 @@ class B12LadderTests(unittest.TestCase):
         present = {p.name for p in ladder.DIRECTORY.iterdir()}
         self.assertEqual(set(), present - claimed, 'an unclaimed sample in the fixture directory is a rights problem')
         self.assertTrue(all(name.startswith('owned-') for name in present - {ladder.MANIFEST.name}),
-                        'every B12 fixture is authored here and must be named that way')
+                        'every B11L fixture is authored here and must be named that way')
 
     def test_bmp_and_gif_ladders_are_prefix_chains(self):
         """A flip between adjacent rungs must be attributable to length alone, so the prefix must not drift."""
@@ -144,7 +144,7 @@ class B12LadderTests(unittest.TestCase):
                 self.assertIn(data[:6], (b'GIF87a', b'GIF89a'))
 
     def test_fixtures_carry_no_metadata_carrier_of_any_kind(self):
-        """B12 authors no carriers, so no row can be read as an extraction result -- or as a rights question."""
+        """B11L authors no carriers, so no row can be read as an extraction result -- or as a rights question."""
         needles = (b'Exif', b'http://ns.adobe.com', b'Photoshop 3.0', b'8BIM', b'<x:xmpmeta', b'RIFF', b'JFIF')
         for entry in self.entries:
             data = ladder.BUILDERS[entry['kind']](entry['size'])
@@ -178,11 +178,11 @@ class B12LadderTests(unittest.TestCase):
         present and that the numbers in them are the numbers in the code. It cannot check that the
         review's reading of the pinned source is right -- that is what the ladder run is for.
         """
-        doc = ROOT / 'docs/research/E01_B12_RIGHTS_AND_ORACLE_REVIEW.md'
-        self.assertTrue(doc.is_file(), 'B12 is gated on its rights and oracle review')
+        doc = ROOT / 'docs/research/E01_B11L_RIGHTS_AND_ORACLE_REVIEW.md'
+        self.assertTrue(doc.is_file(), 'B11L is gated on its rights and oracle review')
         text = ' '.join(doc.read_text(encoding='utf-8').split())   # wrapping is a typesetting choice
-        for citation in (ladder.__doc__ or '', __import__('probe_b12_ladder').__doc__ or ''):
-            self.assertIn('E01_B12_RIGHTS_AND_ORACLE_REVIEW.md', citation)
+        for citation in (ladder.__doc__ or '', __import__('probe_b11l_ladder').__doc__ or ''):
+            self.assertIn('E01_B11L_RIGHTS_AND_ORACLE_REVIEW.md', citation)
         for heading in ('## Rights', '## Oracle review', '## Method and evidence contract',
                         'One B11 row the model does not explain'):
             self.assertIn(heading, doc.read_text(encoding='utf-8'), heading)
@@ -200,26 +200,29 @@ class B12LadderTests(unittest.TestCase):
             self.assertIn(cite, text, cite)
         # The two admissions that make this a test rather than a confirmation exercise.
         self.assertIn('owned-gif-lsd-v1.gif', text)
-        self.assertIn('batch B12 owns', text)
+        self.assertIn('the Sony maker-note tables batch B12 owns', text)
         self.assertIn('not-establishable-by-this-method', text)
 
     def test_census_is_untouched_by_this_batch(self):
-        """B12 is diagnostic: the published payload must not have gained a row, a batch or a claim."""
+        """B11L is diagnostic: the published payload must not have gained a row, a batch or a claim."""
         payload = json.loads((ROOT / 'docs/research/EXIV2_CENSUS.json').read_text(encoding='utf-8'))
-        self.assertEqual(823, len(payload['rows']), 'B12 must not add census rows')
-        self.assertNotIn('B12', payload['scope'], 'the scope sentence is written by build_census, not here')
-        self.assertEqual(set(), {row.get('batch') for row in payload['rows']} & {'B12', 'B13'},
-                         'a B12 row would turn a diagnostic batch into a coverage claim')
+        self.assertEqual(823, len(payload['rows']), 'B11L must not add census rows')
+        self.assertNotIn('B11L', payload['scope'], 'the scope sentence is written by build_census, not here')
+        self.assertNotIn('ladder', payload['scope'], 'no ladder vocabulary may enter the published scope')
+        self.assertEqual(set(), {row.get('batch') for row in payload['rows']} & {'B11L', 'B12'},
+                         'a ladder row would turn a diagnostic side-batch into a coverage claim')
         layouts = {layout for kinds in payload['enumerations']['layout'].values() for layout in kinds}
         self.assertEqual(set(), layouts & set(ladder.FIXTURES), 'ladder rungs are not census layouts')
-        # The census does mention "B12" -- in B10's blocked-rights notes, where it names the batch that
-        # was *planned* to own the Sony maker-note tables. This batch reuses the label for a different
-        # job by the reviewer's decision, and the collision is recorded rather than quietly rewritten:
-        # editing a committed census string would move bytes that cross-run reproducibility depends on.
+        # The census still says "the Sony maker-note tables batch B12 owns" in B10's blocked-rights
+        # notes. That sentence is *correct*: B12 is the MakerNotes applicability overlay in the master
+        # plan and it has not run -- the ladder was moved out of the number rather than the plan being
+        # edited, because those notes are bytes inside a payload whose cross-run identity is asserted
+        # elsewhere. Pinned here so neither half can drift: the string must stay in the census, it must
+        # appear only on SR2 rows, and no B11L batch may ever appear in the census at all.
         mentions = [row['rowId'] for row in payload['rows'] if 'batch B12 owns' in row.get('notes', '')]
-        self.assertTrue(mentions, 'the pre-existing B12 reference in B10 notes should stay visible')
+        self.assertTrue(mentions, 'the plan claim in B10 notes must stay as recorded')
         self.assertTrue(all(row.startswith('EX0289-SR2-') for row in mentions),
-                        'every B12 mention in the census is the Sony maker-note plan, not this batch')
+                        'the B12 mention is the MakerNotes overlay, not this batch')
 
 
 if __name__ == '__main__':

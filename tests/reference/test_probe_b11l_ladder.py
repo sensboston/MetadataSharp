@@ -1,4 +1,4 @@
-"""Offline tests for the B12 ladder recorder.
+"""Offline tests for the B11L ladder recorder.
 
 These exercise the recorder's own bookkeeping: that a row's family is derived from what the CLI printed, that
 the prediction a row is compared against is the one committed in the manifest (so the comparison cannot be
@@ -18,9 +18,9 @@ import zlib
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/reference'))
-import b12_recognition_ladder as ladder  # noqa: E402
+import b11l_recognition_ladder as ladder  # noqa: E402
 import observe_b0 as common  # noqa: E402
-import probe_b12_ladder as probe  # noqa: E402
+import probe_b11l_ladder as probe  # noqa: E402
 
 # The exact CLI framing, so classify() is tested against the shape the build really produces:
 # `app/actions.cpp:225-227` prints "Exiv2 exception in print action for file <path>:" and then the
@@ -53,7 +53,7 @@ def fake_cli(entry, suffix):
     return run
 
 
-class ProbeB12Tests(unittest.TestCase):
+class ProbeB11LTests(unittest.TestCase):
     def entry(self, layout):
         matches = [e for e in ladder.entries() if e['layout'] == layout]
         self.assertEqual(1, len(matches), layout)
@@ -203,7 +203,7 @@ class ProbeB12Tests(unittest.TestCase):
             self.assertTrue(all(op['matchesPrediction'] for op in row['operations']), row['layout'])
 
 
-class B12EvidenceTests(unittest.TestCase):
+class B11LEvidenceTests(unittest.TestCase):
     """The committed ladder payload must tie out -- to the bytes it probed, to the model it was
     compared against, and to the numbers its own README quotes.
 
@@ -214,7 +214,7 @@ class B12EvidenceTests(unittest.TestCase):
     present they must agree on the `observations` section and differ nowhere else without being named.
     """
 
-    EVIDENCE = ROOT / 'docs/research/evidence/e01-b12-ladder'
+    EVIDENCE = ROOT / 'docs/research/evidence/e01-b11l-ladder'
 
     def samples(self):
         # `observations.json` sorts first, so docs[0] is always the run the review authorised.
@@ -316,7 +316,7 @@ class B12EvidenceTests(unittest.TestCase):
         """
         samples = self.samples()
         self.assertEqual(['observations.json', 'prior-run-observations.json'], samples,
-                         'B12 evidence is a pair: the run the review authorised, and a second run from a new head')
+                         'B11L evidence is a pair: the run the review authorised, and a second run from a new head')
         docs = [json.loads((self.EVIDENCE / name).read_text(encoding='utf-8')) for name in samples]
         canon = lambda doc: json.dumps(doc, sort_keys=True, separators=(',', ':')).encode()
         first, second = docs
@@ -363,7 +363,7 @@ class B12EvidenceTests(unittest.TestCase):
         present = {path.name for path in self.EVIDENCE.iterdir()}
         self.assertTrue({'README.md', 'observations.json'} <= present, present)
         self.assertEqual({'README.md', 'observations.json', 'prior-run-observations.json'}, present,
-                         'the B12 evidence directory is exactly the pair plus its README')
+                         'the B11L evidence directory is exactly the pair plus its README')
 
 
 if __name__ == '__main__':

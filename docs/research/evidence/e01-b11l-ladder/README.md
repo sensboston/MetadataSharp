@@ -1,8 +1,8 @@
-# E01 B12 — recognition-ladder observations (pinned CLI, run 42846898701)
+# E01 B11L — recognition-ladder observations (pinned CLI, run 42846898701)
 
-Recovered from the `pinned-exiv2-b12` job of run `42846898701` (check-run `129936691971`, head
-`a16fc0473a30dae743e1cf9922ea77c5d0ddef75`) through the annotation channel, because the artifact host is not
-reachable from the environment that recovers this repository's evidence:
+Recovered from the CI job that built the pinned executable and ran the ladder in run `42846898701` (check-run
+`129936691971`, head `a16fc0473a30dae743e1cf9922ea77c5d0ddef75`) through the annotation channel, because the
+artifact host is not reachable from the environment that recovers this repository's evidence:
 
 ```
 gh api repos/sensboston/MetadataSharp/check-runs/129936691971/annotations --paginate
@@ -10,6 +10,19 @@ gh api repos/sensboston/MetadataSharp/check-runs/129936691971/annotations --pagi
 # message = base64(zlib(json)); concatenate in index order, verify the count marker, then
 # json.dumps(doc, indent=2) + "\n" -> observations.json (this file)
 ```
+
+**On the two names in this directory.** The batch was committed under the number **B12**, which the master plan
+allocates to the MakerNotes applicability overlay; it was renamed to **B11L** before merge, and the plan, the
+census and the code are consistent again. The payloads themselves still carry the old label inside them —
+`scope: "B12 recognition ladder only; no census rows, no support claims"`, the job title and the `B12Z`
+annotation channel above — because those strings are what the recorded runs emitted, and rewriting a recovered
+payload to fix a name would make it no longer a recovery. Three kinds of string in the payloads carry it: the
+`scope` field above, `prediction.basis` — `docs/research/E01_B12_RIGHTS_AND_ORACLE_REVIEW.md`, the review this
+run was gated by, whose file is now named `E01_B11L_…` — and the scratch paths echoed in the recorded stdout and
+stderr, `artifacts/e01/b12-ladder/work/…`, which is the directory that run actually used. The current recorder
+prints `B11LZ`, reports `scope: "B11L recognition ladder only…"`, and works in `artifacts/e01/b11l-ladder/`.
+Both names describe the same 47 rungs: every derived field in these files is recomputed from the committed
+fixtures by `tests/reference/test_probe_b11l_ladder.py`, so nothing here has to be taken on trust.
 
 `observations.json` is the recorder's report verbatim in structure: one record per rung (47), one row per
 rung × flag (94), each with the exit code, the verbatim stdout/stderr, `inputUnchanged`, the recorded
@@ -29,9 +42,9 @@ digest is `6d76a222f935…` in both. The two sections that differ are `baseline`
 `effectiveCmake` are equal, which is the statement that the *configuration policy* did not drift between the
 runs. The boundary is therefore a property of the pinned build, not of one runner.
 
-`tests/reference/test_probe_b12_ladder.py` recomputes all of that from the two files (including the
+`tests/reference/test_probe_b11l_ladder.py` recomputes all of that from the two files (including the
 "which sections differ" set, so this paragraph cannot go stale silently), and requires each payload's recorded
-prediction to equal what `b12_recognition_ladder.predicted_outcome` derives today — an edited-after-the-fact
+prediction to equal what `b11l_recognition_ladder.predicted_outcome` derives today — an edited-after-the-fact
 expectation fails there.
 
 ## What the run showed
@@ -51,7 +64,7 @@ substituted at offset 30, inside that window — has **zero** disagreeing rows: 
 At sizes 8, 12, 16 and 20 all three ladders print the *same* message: `Failed to read input data` at 8, 16, 20
 and `corrupted image metadata` at 12. The `.targa` ladder — a file that cannot be recognised by name and has
 no header a BMP/GIF test would agree with — behaves identically, so the band is a property of the scan, not of
-BMP, GIF or TGA. This also dissolves the counter-evidence B12's review had to record before running it: B11's
+BMP, GIF or TGA. This also dissolves the counter-evidence B11L's review had to record before running it: B11's
 `owned-gif-lsd-v1.gif` (13 bytes) reported `corrupted image metadata`, which no GIF code throws — 13 falls
 inside the size-12 band, so that row was never about GIF.
 
@@ -73,4 +86,4 @@ No support claim, in either direction, for BMP, GIF, TGA or any format in the re
 `isXmpType` is defective (a 55-byte read that does not restore on a short file is a description of how this
 code reads, not a judgement of how it should); no claim about real files, which are none of them 80 bytes; and
 no census row — `docs/research/EXIV2_CENSUS.json` is unchanged at 823 rows by this batch, and the two
-`tests/reference/test_b12_*` files are what keeps that checked rather than asserted.
+`tests/reference/test_b11l_*` files are what keeps that checked rather than asserted.

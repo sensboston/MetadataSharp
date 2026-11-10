@@ -1,7 +1,7 @@
-"""Pinned, read-only B12 recognition-ladder probe; not a census batch or a support test.
+"""Pinned, read-only B11L recognition-ladder probe; not a census batch or a support test.
 
-B12 asks one question: at how many bytes does this build stop being able to *find* a reader whose magic is
-already at offset 0. The ladder in `b12_recognition_ladder` varies only the total file length, so a flip is a
+B11L asks one question: at how many bytes does this build stop being able to *find* a reader whose magic is
+already at offset 0. The ladder in `b11l_recognition_ladder` varies only the total file length, so a flip is a
 measurement and not an inference about a format. Nothing here edits a fixture, reads the census, or claims
 coverage: the report is observations plus the recorded prediction, and the CI step's own verdict is the one the
 census suite makes about *itself*.
@@ -21,7 +21,7 @@ The write-capable and extract flags B11 used are deliberately absent: a failure 
 half-happens must not disturb a length measurement. `inputUnchanged` is checked for every row instead.
 
 The prediction each row is compared against was written before this recorder existed, in
-docs/research/E01_B12_RIGHTS_AND_ORACLE_REVIEW.md, and is carried into the rows by the fixture manifest: the
+docs/research/E01_B11L_RIGHTS_AND_ORACLE_REVIEW.md, and is carried into the rows by the fixture manifest: the
 recorder copies `entry['prediction']` rather than recomputing it, so a re-run cannot retrofit an expectation.
 """
 import argparse
@@ -34,7 +34,7 @@ import re
 import shutil
 import zlib
 
-import b12_recognition_ladder as ladder
+import b11l_recognition_ladder as ladder
 import exiv2_baseline as baseline
 import observe_b0 as common
 from observe_b11 import environment
@@ -142,19 +142,19 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--upstream', type=Path, required=True)
     parser.add_argument('--build', type=Path, required=True)
-    parser.add_argument('--output', type=Path, default=Path('artifacts/e01/b12-ladder'))
+    parser.add_argument('--output', type=Path, default=Path('artifacts/e01/b11l-ladder'))
     args = parser.parse_args()
     upstream, build, out = args.upstream.resolve(), args.build.resolve(), args.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
     report = {'schema': 1, 'status': 'running',
-              'scope': 'B12 recognition ladder only; no census rows, no support claims',
+              'scope': 'B11L recognition ladder only; no census rows, no support claims',
               'sourceCommit': os.environ.get('E01_SOURCE_COMMIT'), 'baseline': {},
               'environment': environment(),
               'denominatorFrozen': False, 'verification': 'not-assessed',
               'observations': [], 'summary': {}, 'prediction': {
                   'name': 'registry-strand staircase',
                   'basis': 'static reading of the pinned source, recorded before the run; '
-                           'docs/research/E01_B12_RIGHTS_AND_ORACLE_REVIEW.md',
+                           'docs/research/E01_B11L_RIGHTS_AND_ORACLE_REVIEW.md',
                   'epsThrowBandBelow': ladder.EPS_READ_BYTES,
                   'strandedWindow': ladder.XMP_WINDOW,
                   'strandedFormats': list(ladder.STRANDED_FORMATS),
@@ -177,7 +177,7 @@ def main():
         expected = len(report['fixtureManifest']) * len(FLAGS)
         recorded = sum(len(row['operations']) for row in report['observations'])
         if recorded != expected:
-            raise ValueError(f'B12 ladder recorded {recorded} rows, expected {expected}')
+            raise ValueError(f'B11L ladder recorded {recorded} rows, expected {expected}')
         report['recordCount'] = recorded
         report['summary'] = ladder_summary(report)
         report['inputUnchangedEverywhere'] = all(op['inputUnchanged']
@@ -195,8 +195,8 @@ def main():
         if len(chunks) > CHUNK_LIMIT:
             raise ValueError('report too large for complete annotation recovery')
         for i, chunk in enumerate(chunks):
-            print(f'::notice title=B12Z observations.json {i}/{len(chunks)}::{chunk}', flush=True)
-        print(f'::notice title=B12Z observations.json count::{len(chunks)}', flush=True)
+            print(f'::notice title=B11LZ observations.json {i}/{len(chunks)}::{chunk}', flush=True)
+        print(f'::notice title=B11LZ observations.json count::{len(chunks)}', flush=True)
     except Exception:
         import traceback
         report['status'] = 'failed'
