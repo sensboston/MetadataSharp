@@ -17,6 +17,23 @@ prediction and a per-row `matchesPrediction`. `status` is `passed`, `verificatio
 `denominatorFrozen` is `false`, and `inputUnchangedEverywhere` and `noArtifactsEverywhere` are both true — a
 length probe that wrote to its input would not have measured anything.
 
+## Reproducibility: a second run, a different head, one answer
+
+`prior-run-observations.json` is the same recorder's report from run `42848072634` (check-run
+`129940874430`, head `5f58153c8261b62355b73012bc07461d412c6ca3` — the commit that added the payload above), so
+the two samples come from **different commits** and **different compilations** of the same pinned source. They
+agree byte-for-byte on `observations`, `summary`, `fixtureManifest`, `prediction`, `environment`,
+`recordCount`, `familyCounts`, `inputUnchangedEverywhere` and `noArtifactsEverywhere`; the canonical `observations`
+digest is `6d76a222f935…` in both. The two sections that differ are `baseline` and `sourceCommit`, and inside
+`baseline` exactly two fields moved — `executableSha256` and `verboseVersion` — while `cmakeCacheSha256` and
+`effectiveCmake` are equal, which is the statement that the *configuration policy* did not drift between the
+runs. The boundary is therefore a property of the pinned build, not of one runner.
+
+`tests/reference/test_probe_b12_ladder.py` recomputes all of that from the two files (including the
+"which sections differ" set, so this paragraph cannot go stale silently), and requires each payload's recorded
+prediction to equal what `b12_recognition_ladder.predicted_outcome` derives today — an edited-after-the-fact
+expectation fails there.
+
 ## What the run showed
 
 **1. The boundary is at 80 bytes, and it is the same boundary for both formats that were supposed to differ.**

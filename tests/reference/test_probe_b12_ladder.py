@@ -217,11 +217,12 @@ class B12EvidenceTests(unittest.TestCase):
     EVIDENCE = ROOT / 'docs/research/evidence/e01-b12-ladder'
 
     def samples(self):
-        return sorted(path.name for path in self.EVIDENCE.glob('*-observations.json'))
+        # `observations.json` sorts first, so docs[0] is always the run the review authorised.
+        return sorted(path.name for path in self.EVIDENCE.glob('*observations.json'))
 
     def test_every_rung_and_flag_is_present(self):
         entries = ladder.entries()
-        for name in ['observations.json'] + self.samples():
+        for name in self.samples():
             report = json.loads((self.EVIDENCE / name).read_text(encoding='utf-8'))
             self.assertEqual('passed', report['status'], name)
             self.assertEqual(len(entries), len(report['observations']), name)
@@ -233,7 +234,7 @@ class B12EvidenceTests(unittest.TestCase):
 
     def test_families_summaries_and_predictions_are_recomputable(self):
         entries = {e['layout']: e for e in ladder.entries()}
-        for name in ['observations.json'] + self.samples():
+        for name in self.samples():
             report = json.loads((self.EVIDENCE / name).read_text(encoding='utf-8'))
             for row in report['observations']:
                 entry = entries[row['layout']]
@@ -304,10 +305,65 @@ class B12EvidenceTests(unittest.TestCase):
             self.assertIn(claimed, sizes | {report['summary'][k]['flipSize'] for k in report['summary']},
                           f'{claimed}: a boundary quoted but not measured')
 
+    def test_two_runs_two_heads_and_one_set_of_observations(self):
+        """The reproducibility claim B11 earned, applied here: a second payload from a different head.
+
+        Both reports must agree byte-for-byte on everything the measurement is made of
+        (`observations`, `summary`, `fixtureManifest`, `prediction`, `environment`) and be allowed to
+        disagree only on the build identity and the commit that triggered the run. That is the
+        distinction that makes a ladder credible: the *same* pinned source, a *different*
+        compilation of it, and one answer.
+        """
+        samples = self.samples()
+        self.assertEqual(['observations.json', 'prior-run-observations.json'], samples,
+                         'B12 evidence is a pair: the run the review authorised, and a second run from a new head')
+        docs = [json.loads((self.EVIDENCE / name).read_text(encoding='utf-8')) for name in samples]
+        canon = lambda doc: json.dumps(doc, sort_keys=True, separators=(',', ':')).encode()
+        first, second = docs
+        for section in ('observations', 'summary', 'fixtureManifest', 'prediction', 'environment',
+                        'recordCount', 'familyCounts', 'inputUnchangedEverywhere', 'noArtifactsEverywhere'):
+            self.assertEqual(canon(first[section]), canon(second[section]),
+                             f'{section}: the two runs parted ways, so the boundary is not reproducible')
+        differing = {key for key in set(first) | set(second) if canon(first.get(key)) != canon(second.get(key))}
+        self.assertEqual({'baseline', 'sourceCommit'}, differing)
+        moved = {key for key in set(first['baseline']) | set(second['baseline'])
+                 if canon(first['baseline'].get(key)) != canon(second['baseline'].get(key))}
+        self.assertEqual({'executableSha256', 'verboseVersion'}, moved,
+                         'a rebuild may move the binary and its version banner; the CMake policy must not move')
+        self.assertEqual(first['baseline']['cmakeCacheSha256'], second['baseline']['cmakeCacheSha256'])
+        self.assertEqual(first['baseline']['effectiveCmake'], second['baseline']['effectiveCmake'])
+        for doc in docs:
+            self.assertRegex(doc['sourceCommit'], '^[0-9a-f]{40}$')
+        self.assertNotEqual(first['sourceCommit'], second['sourceCommit'],
+                            'the pair is only evidence if the two runs were not the same commit')
+        # Ancestry is asserted when this checkout can resolve both heads, and skipped when not:
+        # a shallow clone must not turn a real claim into a false failure, and the assertion must
+        # not be relaxed into "if it is convenient".
+        import subprocess
+        resolved = {sha: subprocess.run(['git', '-C', str(ROOT), 'cat-file', '-e', f'{sha}^{{commit}}'],
+                                         capture_output=True).returncode == 0
+                    for sha in (first['sourceCommit'], second['sourceCommit'])}
+        if all(resolved.values()):
+            self.assertEqual(0, subprocess.run(['git', '-C', str(ROOT), 'merge-base', '--is-ancestor',
+                                                first['sourceCommit'], second['sourceCommit']],
+                                               capture_output=True).returncode,
+                             'the second run must be taken from a descendant head, not an unrelated tree')
+
+    def test_readme_records_the_pair_it_claims(self):
+        readme = (self.EVIDENCE / 'README.md').read_text(encoding='utf-8')
+        docs = [json.loads((self.EVIDENCE / name).read_text(encoding='utf-8')) for name in self.samples()]
+        differing = sorted({key for key in set(docs[0]) | set(docs[1])
+                            if json.dumps(docs[0].get(key), sort_keys=True)
+                            != json.dumps(docs[1].get(key), sort_keys=True)})
+        self.assertTrue(docs, 'no samples to describe')
+        for needle in (str(len(docs)),) + tuple(f"`{key}`" for key in differing):
+            self.assertIn(needle, readme, f'the README must state the derived pair fact {needle!r}')
+
     def test_evidence_directory_holds_only_the_recovered_payloads(self):
         present = {path.name for path in self.EVIDENCE.iterdir()}
         self.assertTrue({'README.md', 'observations.json'} <= present, present)
-        self.assertTrue(present <= {'README.md', 'observations.json', 'prior-run-observations.json'}, present)
+        self.assertEqual({'README.md', 'observations.json', 'prior-run-observations.json'}, present,
+                         'the B12 evidence directory is exactly the pair plus its README')
 
 
 if __name__ == '__main__':
