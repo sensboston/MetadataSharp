@@ -1,6 +1,6 @@
 # Current state — recovery checkpoint
 
-Refreshed 2026-11-10, at the differential parity harness. The only recovery document; the
+Refreshed 2026-11-11, at the EXIF tag-name vocabulary. The only recovery document; the
 chronological record is `docs/PROGRESS.md` (one short entry per merged PR), everything else reference.
 
 ## How this project is run now (2026-11-10 directive; overrides `EXIV2_PARITY_MASTER_PLAN.md` §5)
@@ -32,27 +32,27 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
 - **PNG** and **WebP** `*MetadataDocument`: EXIF + XMP edit in static files, chunk/RIFF policy.
 - **Standalone TIFF** `TiffMetadataDocument`: layout accounting, restricted descriptive editing
   with obsolete bytes retained; **DNG**, **PSD**, **JP2**, **EPS** are bounded read-only.
+  `ExifTagNames` names EXIF/GPS/Interop tags from those same two published texts; unnamed IDs stay numeric.
 - **Differential parity harness** (`tools/parity`, `tools/MetadataSharp.Dump`, CI job
   `differential-parity`): our readers versus the `exiv2 -Pkycvt` expectations in the pinned upstream
   test tree, plus our own fixtures against the pinned tool built in the same job. Upstream files are
   fetched at CI time and read as data - never vendored, built or executed, and their `tests/*.py`
   (macro-token expectations) are not interpreted. Rates are reported; only a broken run is gated.
-  First green run: 330 corpus + 226 owned files, no structural problem; all 26 and 25 values that
-  had a reference counterpart agreed, and key parity (0.5%, 4.0%) is the numeric-name gap 4.2 closes.
+  First green run: 330 corpus + 226 owned files, no structural problem; the 26 and 25 values with a
+  reference counterpart all agreed, at 0.5% and 4.0% key parity on then-numeric names.
 - `MetadataCapabilities`: 35 model-driven rows (JPEG 12, PNG 8, WebP 8, TIFF 3, XMP sidecar 4).
 - Enforced by tests, not convention: MIT, net8.0+net10.0, zero runtime dependencies, bounded
   hostile-input parsing, refusal instead of unsafe write.
-- Suites: 197 `[Fact]` + 105 `[Theory]` (319 `[InlineData]`) in `tests/MetadataSharp.Tests`;
+- Suites: 201 `[Fact]` + 108 `[Theory]` (344 `[InlineData]`) in `tests/MetadataSharp.Tests`;
   `tests/reference` (224) and `tests/discovery` (112) cover the E01 tooling and owned fixtures,
   `tests/parity` (45) the harness offline. CI requires ≥450 cases per TFM.
-- src is 5.7k lines, C# tests 5.2k. `pip install --break-system-packages pyyaml` before the python
+- src is 6.0k lines, C# tests 5.4k. `pip install --break-system-packages pyyaml` before the python
   suites; the sandbox has **no dotnet SDK**, so compile and xunit run only in CI.
 
 ## What is next, in order
 
-1. **4.2** Typed EXIF/GPS/Interop vocabulary from CIPA DC-008 (Exif 2.32/3.0) + TIFF 6.0: names,
-   types, counts, enum meanings, rationals, date/time, GPS coordinates, human-readable printing.
-   Internal; no approval. It also renames harness rows, since the comparison keys are exiv2's.
+1. **4.2b** Finish the CIPA DC-008 (Exif 2.32/3.0) + TIFF 6.0 vocabulary: types, counts, enum
+   meanings, rationals, date/time, GPS coordinates, human-readable printing. Names are in place.
 2. **4.3** One unified read entry point returning a single immutable snapshot (EXIF, IPTC,
    XMP, ICC, comment) per container. **Public API → short proposal in the PR, then approval.**
 3. **4.4** MakerNotes read-only for Canon, Nikon, Sony, then Fujifilm, Olympus, Panasonic,

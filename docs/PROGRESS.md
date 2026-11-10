@@ -2580,3 +2580,43 @@ no denominator freeze, publication or DNG D2 write.
   `tools/` and `tests/parity`. Offline: parity 45 OK, reference 224 OK, discovery 112 OK, both
   `--check` generators rc 0, and the reference parser still reads 37 781 rows across 330 pinned
   expectation files with zero unparsable key lines.
+
+### EXIF tag names — the vocabulary a reader needs before it can print anything (2026-11-11, PR #60)
+
+- **What landed.** `ExifTagNames` in `MetadataSharp.Core` names the tags of the four directories this
+  library reads: 198 IDs, 76 for the 0th IFD (the Exif subset plus the TIFF 6.0 registry, which is
+  what a standalone TIFF leans on), 89 for the Exif sub-IFD, 32 for GPS Info and 1 for Interoperability.
+  Three methods — `NamedTags(directory)`, `TryGetName(key, out name)` and
+  `TryGetKey(directory, name, out key)` — and nothing else: the thumbnail directory shares the 0th
+  table, every name is an identifier, and an ID outside the table is unnamed rather than guessed at.
+  Types, counts, enum meanings, rational and date/time handling and human-readable printing stay for
+  4.2b; this step is names, because they are what every later feature and the dumper keys hang on.
+- **How the table was built.** The two PDFs already hashed into
+  `docs/design/TIFF_EXIF_NORMATIVE_SOURCES_AND_READ_POLICY.md` were re-fetched and re-verified, their
+  vocabulary tables parsed by a throwaway script, each parsed region swept for rows that script had
+  silently dropped, and every row checked for duplicate IDs, duplicate names and a dec/hex pair that
+  disagreed. Seven rows were lost to that drop-out and added back from the page text by hand:
+  `SubjectArea`, whose count column reads "2 or 3 or 4", and TIFF's `ColorMap`, `InkNames`,
+  `DotRange`, `ExtraSamples`, `SMinSampleValue` and `SMaxSampleValue`, whose count or type columns
+  are expressions. No third-party tag dictionary was opened, and the one disagreement between the two
+  sources — TIFF's appendix misprints 0x0202 as `JPEGInterchangeFormatLngth` — is recorded in the
+  policy note rather than fixed silently.
+- **What the naming costs the parity report.** Measured offline over the 352 pinned expectations,
+  restricted to the 125 whose input has an extension our readers claim at all: of the 3 902
+  `Exif.<group>.<name>` rows the reference prints for them, 3 572 (91.5%) carry a name this table also
+  uses, where #59's green run measured 0.5% and 4.0% on numeric keys. Every GPS and thumbnail row is
+  nameable; the residual is 49 keys over 330 rows (188 Image, 86 Photo, 56 Iop) and they are
+  deliberate divergences, not gaps. `Exif.Image.ExifTag` (90), `Exif.Photo.ISOSpeedRatings` (49) and
+  `Exif.Photo.InteroperabilityTag` (37) point at the tags this table calls `ExifIFDPointer`,
+  `PhotographicSensitivity` — §4.6.6.7.5 records the older name: "this tag was referred to as
+  'ISOSpeedRatings' in versions of this standard up to Version 2.21" — and `InteroperabilityIFDPointer`;
+  `Exif.Iop.InteroperabilityVersion` (36) and `RelatedImageWidth`/`RelatedImageLength` (10 each) come
+  from DCF, which is not in the ledger yet; a dozen-odd are the Exif sub-IFD's fields stored in a
+  0th IFD, which the tables do not name there; the rest are vendor and Adobe-registered fields, DNG
+  included. No name was copied to close those rows, and no classification sidecar was added to excuse
+  them — the CI report will simply show `match-key` wherever the two texts agree on a name.
+- **Public API:** one new static class with three methods, listed in the PR description. No reader,
+  writer or capability semantics changed, and `ExifTiffReader` still refuses exactly what it refused
+  before; the dumper's TIFF path maps a directory's role once and then names through the same table
+  the EXIF path uses. Offline gates: parity 45 OK, reference 224 OK, discovery 112 OK. The sandbox
+  has no .NET SDK, so CI is the compiler and the xunit run.
