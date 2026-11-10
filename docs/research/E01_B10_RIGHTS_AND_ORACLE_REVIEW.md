@@ -226,7 +226,10 @@ the MRW TTW blob surfaces `Exif.Thumbnail.*`, whether RAF's copied comment reach
 the generic reader reaches any `Sony2*` mapping without a maker note, whether ExifTool classifies
 these authored headers at all) the review records them as **open**: CI
 observes, the oracle does not predict, and `static-not-applicable` is never used as a stand-in
-for an unanswered question.
+for an unanswered question. The run that followed answered some of them and narrowed the rest;
+those answers are recorded in **"What the pinned build answered"** below, in the bounded form the
+evidence supports — none of them was written back into the oracle, because an oracle that was
+adjusted to match one observation has stopped being independent.
 
 ## Observation channel, and why the batch has its own CI job
 
@@ -248,11 +251,35 @@ batch whose annotations overflow looks identical to a batch that never ran. B10'
 recorders each cap themselves at 10 chunks, so the fresh budget in this job is provably
 enough, and `chunks(report, limit=10)` turns a would-be overflow into a build failure.
 
+## What the pinned build answered
+
+Recovered from run 42742515073 (job `pinned-exiv2-b10`, head `a147cf2`) and committed in
+`docs/research/evidence/e01-b10-census/` plus the preflight in
+`docs/research/evidence/e01-b10-preflight/`. Each line is what *this build printed*, which is
+the only form this batch is allowed to assert.
+
+| Open question | What the evidence says |
+| --- | --- |
+| Does `Tag::pana` name the RW2 root directory? | Yes, and that is the whole story of the RW2 rows: `-pa` printed `Exif.PanasonicRaw.Make/Model/StripOffsets/Orientation/StripByteCounts/ExifTag` plus `Exif.Photo.*` from the sub-IFD, and 563 bytes with **neither** authored token. Tags the `PanasonicRaw` table does not name — Artist, Software, the thumbnail pointer — are not surfaced at all, so no misspelled key appears either. |
+| Does the MRW TTW blob surface `Exif.Thumbnail.*`? | In the weaker form the record supports, yes: `-et` exited 137 and wrote a byte-exact copy of the authored 137-byte JPEG, which `ExifThumb` can only reach through a thumbnail directory in the decoded Exif data. The census rows carry stdout digests, not stdout, so the *tag spelling* stays unobserved; the preflight excerpt shows `Exif.Image.*` names for the blob and does not reach the thumbnail lines. |
+| Does RAF's copied comment reach `-pc`? | Yes: `-pc` printed exactly 14 bytes whose digest equals `sha256("B10RafComment\n")`. The preview JPEG's comment really does travel through `rafimage.cpp`'s copy into the image comment. Separately, `-pa` and `-pc` both warn `Ignoring IPTC information encoded in the Exif data.` and the XMP twin, so IPTC/XMP that arrive inside the Exif block are **declined** by the print paths even though the raw `Exif.Image.XMLPacket` tag still prints. |
+| Does the generic reader reach any `Sony2*` mapping without a maker note? | Nothing vendor-named appeared: SR2 dispatched to the generic TIFF reader and printed `Exif.Image.*` only, `-pC` returned exactly the 192-byte authored profile and `-et` the exact thumbnail — plain TIFF/EP behaviour. With no maker note authored (B12's territory) no `Sony2*` tag was reachable, so the question is narrowed, not closed. |
+| Does ExifTool classify these authored headers? | Three of four: `MRW`/`image/x-minolta-mrw`, `SR2`/`image/x-sony-sr2`, and `RAF (M-RAW)` with `Warning: Error reading M-RAW header`. The RW2 fixture came back `File:FileType RAW`, `image/x-raw` — not classified as RW2 at all — while the same run reported `IFD0:Artist = B10Artist` for it, the tag the pinned CLI dropped. That disagreement in *both* directions is precisely why the secondary reference is recorded and never used as an oracle. |
+| Why did B9 see a 202-byte ICC print where 192 was authored? | The print path, not the profile: `Rw2Image::printStructure` emits `RW2 IMAGE` before delegating (`src/rw2image.cpp:63`) and `OrfImage::printStructure` emits `ORF IMAGE` (`src/orfimage.cpp:55`); nine characters plus a newline on a 192-byte profile is 202. B10's RW2 row reproduces it, and `-pC` for MRW throws instead of printing because every `-p` mode funnels through the same `Image::printStructure` virtual (`app/actions.cpp:1983-1990`) that MRW does not override. B9's committed rows are left as they were: the correction belongs in this batch's record, not in a rewritten history. |
+
+Still open after the run, and deliberately not folded into a claim: whether the `PanasonicRaw`
+drop of unnamed IFD0 tags is deliberate or incidental (this batch records the drop, not the
+intent); the RW2 more-than-one-preview branch, which no B10 row enumerates; and the exact tag
+spelling of the MRW thumbnail directory. The vendor-private cells stay `blocked-rights` — no
+observation here touches them.
+
 ## Census enumeration this review authorizes
 
 4 layouts × 8 rows = **32 observation-eligible rows** plus 4 blocked layouts × 8 rows = **32
 blocked rows**: **64 new rows**, census total 664 → **728**, appended as the last batch so every
-existing `rowId` stays stable.
+existing `rowId` stays stable. After the run the split landed exactly as enumerated: 32 rows
+`observed-cli` (oracle type `pinned-cli`), 32 rows `blocked` (oracle type `specification`), and
+not one row `not-run`.
 
 | Layout | Formats | Rows |
 | --- | --- | --- |

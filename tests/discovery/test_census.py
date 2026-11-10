@@ -284,6 +284,9 @@ class CensusPolicyTests(unittest.TestCase):
         b9 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b9/census-manifest.json').read_text())}
         for fmt in ('ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW'):
             manifests[fmt] = b9
+        b10 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b10/census-manifest.json').read_text())}
+        for fmt in ('MRW', 'RAF', 'RW2', 'SR2'):
+            manifests[fmt] = b10
         for row in self.report['rows']:
             if row['baselineObservation'] == 'not-applicable':
                 self.assertIsNone(row['fixture'])
@@ -466,8 +469,12 @@ class CensusPolicyTests(unittest.TestCase):
         # Recognition is recorded from the fixture bytes, so the row must name the reader
         # the pinned registry actually dispatches to -- and for SR2 that is the *generic*
         # TIFF reader, because the registry has no SR2 entry of its own.
+        # The observation records carry `layout`, not `format`: the format is a property of
+        # the census row, so recovery reads it from the row table rather than trusting the
+        # recorder to have repeated it.
+        fmt_of = {r['rowId']: r['format'] for r in rows}
         dispatch = {fmt: {o['facts']['container']['dispatch'] for o in evidence['observations']
-                          if o['format'] == fmt} for fmt in ('MRW', 'RAF', 'RW2', 'SR2')}
+                          if fmt_of[o['id']] == fmt} for fmt in ('MRW', 'RAF', 'RW2', 'SR2')}
         self.assertEqual({'mrw'}, dispatch['MRW'])
         self.assertEqual({'raf'}, dispatch['RAF'])
         self.assertEqual({'rw2'}, dispatch['RW2'])
@@ -483,9 +490,10 @@ class CensusPolicyTests(unittest.TestCase):
         # An MRW -pS refusal is a property of the pinned build (no printStructure override),
         # not a fixture fault: it must be recorded as a refusal and never relabelled.
         mrw_scan = [o for o in evidence['observations']
-                    if o['format'] == 'MRW' and o['flag'] == '-pS']
+                    if fmt_of[o['id']] == 'MRW' and o['flag'] == '-pS']
         self.assertEqual(1, len(mrw_scan))
-        self.assertIn(mrw_scan[0]['outcome'], ('refused', 'ok', 'ok-with-issues'))
+        self.assertEqual('refused', mrw_scan[0]['outcome'],
+                         'MRW has no printStructure override, so -pS must stay a refusal')
         # 'observed-cli' means the probe ran and was recorded whole; it is not a claim that
         # the build accepted the file. So a row whose outcome is a refusal must still carry
         # that refusal in its own record instead of disappearing from the evidence.
@@ -496,6 +504,99 @@ class CensusPolicyTests(unittest.TestCase):
         reasons = {b['reason'] for b in evidence['blocked']}
         self.assertEqual(4, len(reasons))
         self.assertTrue(all('blocked' in r for r in reasons))
+
+    def test_b10_receipt_and_print_forms_are_self_consistent(self):
+        """The committed evidence must be exactly the recovered payload, and the findings this
+        batch exists to record must stay stated rather than paraphrased away."""
+        import hashlib
+        evidence_dir = ROOT / 'docs/research/evidence/e01-b10-census'
+        receipt_path = evidence_dir / 'receipt.json'
+        if not receipt_path.exists():
+            self.skipTest('B10 receipt not committed')
+        receipt = json.loads(receipt_path.read_text())
+        evidence = load_evidence('b10')
+        recovery = receipt['annotationRecovery']
+        self.assertEqual(recovery['observationsFileSha256'],
+                         hashlib.sha256((evidence_dir / 'observations.json').read_bytes()).hexdigest())
+        self.assertEqual(recovery['rawPayloadSha256'],
+                         hashlib.sha256(json.dumps(evidence, sort_keys=True,
+                                                    separators=(',', ':')).encode()).hexdigest())
+        self.assertEqual(recovery['chunks'], recovery['expectedChunks'])
+        self.assertTrue(recovery['markerVerified'], 'the count marker must have been matched')
+        # The preflight is the only record that keeps stdout text, so its own digest is pinned.
+        pre_dir = ROOT / 'docs/research/evidence/e01-b10-preflight'
+        pre = json.loads((pre_dir / 'observations.json').read_text())
+        pre_recovery = receipt['preflightRecovery']
+        self.assertEqual(pre_recovery['observationsFileSha256'],
+                         hashlib.sha256((pre_dir / 'observations.json').read_bytes()).hexdigest())
+        self.assertEqual(pre_recovery['chunks'], pre_recovery['expectedChunks'])
+        self.assertEqual('passed', pre['status'])
+        self.assertEqual(evidence['sourceCommit'], pre['sourceCommit'])
+        # Tally against the rows: 64 rows, half observed, half blocked, nothing mutated.
+        self.assertEqual(64, receipt['tally']['censusRows'])
+        self.assertEqual(32, receipt['tally']['observed'])
+        self.assertEqual(32, receipt['tally']['blocked'])
+        self.assertTrue(receipt['tally']['inputsUnchanged'])
+        self.assertEqual(2, receipt['tally']['artifactsProduced'])
+        self.assertEqual(evidence['outcomeCounts'], receipt['tally']['outcomeCounts'])
+        self.assertEqual(receipt['tally']['artifactsProduced'],
+                         sum(1 for o in evidence['observations'] if o['facts']['artifacts']))
+        forms = receipt['printForms']
+        self.assertEqual({'MRW', 'RAF', 'RW2', 'SR2'}, set(forms))
+        # MRW: the TTW block is read for Exif yet the inventory and ICC prints throw, because
+        # every -p mode funnels through Image::printStructure. Refused rows stay refused.
+        self.assertEqual('refused', forms['MRW']['inventory']['outcome'])
+        self.assertEqual('refused', forms['MRW']['icc']['outcome'])
+        self.assertEqual(3785, forms['MRW']['pa']['stdoutLength'])
+        self.assertEqual(['B10Artist', 'B10Tool'], forms['MRW']['pa']['tokens'])
+        # RAF: the preview comment reaches -pc verbatim, and the ICC print succeeds empty.
+        self.assertEqual(14, forms['RAF']['comment']['stdoutLength'])
+        self.assertEqual(hashlib.sha256(b'B10RafComment\n').hexdigest(),
+                         forms['RAF']['comment']['stdoutSha256'],
+                         'the RAF comment print must be exactly the authored string plus a newline')
+        self.assertEqual(0, forms['RAF']['icc']['stdoutLength'])
+        self.assertEqual('accepted', forms['RAF']['icc']['outcome'])
+        # RW2: the pana mapping names the root directory, so the authored IFD0 ASCII pair is
+        # not surfaced. Recorded as an observation about the print, not about the file.
+        self.assertEqual([], forms['RW2']['pa']['tokens'])
+        self.assertTrue(forms['RW2']['inventory']['stdoutLength'] > 2000)
+        # The 202-byte RW2 ICC print is the "RW2 IMAGE" banner plus the 192-byte profile, the
+        # same mechanism that explains B9's ORF 202: stated in the receipt, so a future change
+        # in print form shows up as a failing assertion instead of a quiet drift.
+        self.assertEqual(202, forms['RW2']['icc']['stdoutLength'])
+        self.assertEqual(192, forms['SR2']['icc']['stdoutLength'])
+        self.assertEqual(192, receipt['iccPrintForm']['authoredProfileLength'])
+        self.assertIn('src/rw2image.cpp:63', receipt['iccPrintForm']['note'])
+        self.assertIn('ORF', receipt['iccPrintForm']['b9AnomalyResolved'])
+        # -et: the byte-count rule holds on every extract row, including the two that produced
+        # nothing, which is why 0-with-no-artifact is its own outcome label.
+        trip = receipt['thumbnailRoundTrip']
+        self.assertTrue(trip['byteExactCopyProducedByPinnedCli'])
+        self.assertEqual(['MRW', 'SR2'], trip['extractionSucceededFor'])
+        self.assertEqual(['RAF', 'RW2'], trip['extractionReturnedNothingFor'])
+        extracts = [o for o in evidence['observations'] if o['operation'] == 'extract']
+        for item in extracts:
+            self.assertEqual(item['exitCode'], item['facts']['extractSemantics']['artifactBytes'],
+                             item['id'])
+        for item in [o for o in extracts if o['facts']['artifacts']]:
+            self.assertEqual([trip['authoredThumbnailSha256']],
+                             [a['sha256'] for a in item['facts']['artifacts']])
+        self.assertEqual(50, receipt['annotationBudget']['perCheckRunLimit'])
+        self.assertLessEqual(receipt['annotationBudget']['thisRunAnnotationsUsed'], 50)
+        self.assertIn('42729776775', receipt['annotationBudget']['finding'])
+        self.assertFalse(receipt['denominatorFrozen'])
+        self.assertEqual('not-assessed', receipt['verification'])
+        self.assertEqual({'MRW': ['mrw'], 'RAF': ['raf'], 'RW2': ['rw2'], 'SR2': ['tiff']},
+                         receipt['recognition']['dispatchByFormat'])
+        # Reproduction is recorded as a bounded claim: one sample until the receipt commit's
+        # own run lands, then the cross-run payload equality is asserted on top of this.
+        self.assertGreaterEqual(len(receipt['reproduction']['runs']), 1)
+        self.assertEqual('observations are reproducible; the compiled reference binary is not',
+                         receipt['reproduction']['claim'])
+        for run in receipt['reproduction']['runs']:
+            self.assertRegex(run['head'], '^[0-9a-f]{40}$')
+        if len(receipt['reproduction']['runs']) > 1:
+            self.assertIn('observations', receipt['reproduction']['identicalSections'])
 
     def test_b9_rows_partition_observed_and_blocked(self):
         rows = [r for r in self.report['rows'] if r['batch'] == 'B9']

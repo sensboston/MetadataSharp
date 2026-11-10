@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker fixtures (pinned header contract plus owned metadata carriers); each format also keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed or cleared, and no B9 write suboperation is enumerated. B10 read-only probes for MRW/RW2/SR2/RAF on owned synthetic wave-2 containers (MRW block chain with an embedded TTW TIFF, RAF big-endian offset table with a preview JPEG and a camera-settings TIFF, RW2 magic 0x0055, and a generic TIFF marker that records the absence of an SR2-specific observable); each format also keeps a blocked vendor-private cell because no proprietary layout is reviewed or cleared, and no B10 write suboperation is enumerated because the pinned registry marks all four formats read-only. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7, B8, B9: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker fixtures (pinned header contract plus owned metadata carriers); each format also keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed or cleared, and no B9 write suboperation is enumerated. B10 read-only probes for MRW/RW2/SR2/RAF on owned synthetic wave-2 containers (MRW block chain with an embedded TTW TIFF, RAF big-endian offset table with a preview JPEG and a camera-settings TIFF, RW2 magic 0x0055, and a generic TIFF marker that records the absence of an SR2-specific observable); each format also keeps a blocked vendor-private cell because no proprietary layout is reviewed or cleared, and no B10 write suboperation is enumerated because the pinned registry marks all four formats read-only. Pinned-CLI evidence recorded for batch(es) B0, B1, B10, B2, B3, B4, B5, B6, B7, B8, B9: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "ARW/comments",
@@ -21839,16 +21839,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mrw-ttw.mrw",
+        "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+        "length": 1282,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B10 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-mrw-ttw.mrw"
     },
     {
       "rowId": "EX0289-MRW-EXIF-READ-0001",
@@ -21866,16 +21872,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mrw-ttw.mrw",
+        "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+        "length": 1282,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-mrw-ttw.mrw"
     },
     {
       "rowId": "EX0289-MRW-IPTC-READ-0001",
@@ -21893,16 +21905,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mrw-ttw.mrw",
+        "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+        "length": 1282,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-mrw-ttw.mrw"
     },
     {
       "rowId": "EX0289-MRW-XMP-READ-0001",
@@ -21920,16 +21938,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mrw-ttw.mrw",
+        "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+        "length": 1282,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-mrw-ttw.mrw"
     },
     {
       "rowId": "EX0289-MRW-COMMENTS-READ-0001",
@@ -21947,16 +21971,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mrw-ttw.mrw",
+        "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+        "length": 1282,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-mrw-ttw.mrw"
     },
     {
       "rowId": "EX0289-MRW-ICC-READ-0001",
@@ -21974,16 +22004,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mrw-ttw.mrw",
+        "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+        "length": 1282,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B10 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-mrw-ttw.mrw"
     },
     {
       "rowId": "EX0289-MRW-THUMBNAIL-READ-0001",
@@ -22001,16 +22037,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mrw-ttw.mrw",
+        "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+        "length": 1282,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-mrw-ttw.mrw"
     },
     {
       "rowId": "EX0289-MRW-THUMBNAIL-EXTRACT-0001",
@@ -22028,16 +22070,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mrw-ttw.mrw",
+        "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+        "length": 1282,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored payload only, never a camera preview"
+      "notes": "B10 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-mrw-ttw.mrw"
     },
     {
       "rowId": "EX0289-RAF-INVENTORY-INVENTORY-0001",
@@ -22055,16 +22103,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-raf-fujifilm.raf",
+        "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+        "length": 1322,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-raf-fujifilm.raf"
     },
     {
       "rowId": "EX0289-RAF-EXIF-READ-0001",
@@ -22082,16 +22136,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-raf-fujifilm.raf",
+        "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+        "length": 1322,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-raf-fujifilm.raf"
     },
     {
       "rowId": "EX0289-RAF-IPTC-READ-0001",
@@ -22109,16 +22169,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-raf-fujifilm.raf",
+        "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+        "length": 1322,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-raf-fujifilm.raf"
     },
     {
       "rowId": "EX0289-RAF-XMP-READ-0001",
@@ -22136,16 +22202,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-raf-fujifilm.raf",
+        "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+        "length": 1322,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-raf-fujifilm.raf"
     },
     {
       "rowId": "EX0289-RAF-COMMENTS-READ-0001",
@@ -22163,16 +22235,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-raf-fujifilm.raf",
+        "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+        "length": 1322,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-raf-fujifilm.raf"
     },
     {
       "rowId": "EX0289-RAF-ICC-READ-0001",
@@ -22190,16 +22268,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-raf-fujifilm.raf",
+        "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+        "length": 1322,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-raf-fujifilm.raf"
     },
     {
       "rowId": "EX0289-RAF-THUMBNAIL-READ-0001",
@@ -22217,16 +22301,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-raf-fujifilm.raf",
+        "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+        "length": 1322,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-raf-fujifilm.raf"
     },
     {
       "rowId": "EX0289-RAF-THUMBNAIL-EXTRACT-0001",
@@ -22244,16 +22334,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-raf-fujifilm.raf",
+        "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+        "length": 1322,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored payload only, never a camera preview"
+      "notes": "B10 pinned-CLI observation: outcome=zero-exit-no-artifact; exit-observed; fixture=owned-raf-fujifilm.raf"
     },
     {
       "rowId": "EX0289-RW2-INVENTORY-INVENTORY-0001",
@@ -22271,16 +22367,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rw2-root24.rw2",
+        "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+        "length": 1220,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rw2-root24.rw2"
     },
     {
       "rowId": "EX0289-RW2-EXIF-READ-0001",
@@ -22298,16 +22400,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rw2-root24.rw2",
+        "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+        "length": 1220,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rw2-root24.rw2"
     },
     {
       "rowId": "EX0289-RW2-IPTC-READ-0001",
@@ -22325,16 +22433,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rw2-root24.rw2",
+        "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+        "length": 1220,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rw2-root24.rw2"
     },
     {
       "rowId": "EX0289-RW2-XMP-READ-0001",
@@ -22352,16 +22466,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rw2-root24.rw2",
+        "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+        "length": 1220,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rw2-root24.rw2"
     },
     {
       "rowId": "EX0289-RW2-COMMENTS-READ-0001",
@@ -22379,16 +22499,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rw2-root24.rw2",
+        "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+        "length": 1220,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rw2-root24.rw2"
     },
     {
       "rowId": "EX0289-RW2-ICC-READ-0001",
@@ -22406,16 +22532,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rw2-root24.rw2",
+        "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+        "length": 1220,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rw2-root24.rw2"
     },
     {
       "rowId": "EX0289-RW2-THUMBNAIL-READ-0001",
@@ -22433,16 +22565,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rw2-root24.rw2",
+        "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+        "length": 1220,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-rw2-root24.rw2"
     },
     {
       "rowId": "EX0289-RW2-THUMBNAIL-EXTRACT-0001",
@@ -22460,16 +22598,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-rw2-root24.rw2",
+        "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+        "length": 1220,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored payload only, never a camera preview"
+      "notes": "B10 pinned-CLI observation: outcome=zero-exit-no-artifact; exit-observed; fixture=owned-rw2-root24.rw2"
     },
     {
       "rowId": "EX0289-SR2-INVENTORY-INVENTORY-0001",
@@ -22487,16 +22631,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-sr2.sr2",
+        "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+        "length": 1208,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-sr2.sr2"
     },
     {
       "rowId": "EX0289-SR2-EXIF-READ-0001",
@@ -22514,16 +22664,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-sr2.sr2",
+        "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+        "length": 1208,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-sr2.sr2"
     },
     {
       "rowId": "EX0289-SR2-IPTC-READ-0001",
@@ -22541,16 +22697,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-sr2.sr2",
+        "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+        "length": 1208,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-sr2.sr2"
     },
     {
       "rowId": "EX0289-SR2-XMP-READ-0001",
@@ -22568,16 +22730,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-sr2.sr2",
+        "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+        "length": 1208,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-sr2.sr2"
     },
     {
       "rowId": "EX0289-SR2-COMMENTS-READ-0001",
@@ -22595,16 +22763,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-sr2.sr2",
+        "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+        "length": 1208,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-sr2.sr2"
     },
     {
       "rowId": "EX0289-SR2-ICC-READ-0001",
@@ -22622,16 +22796,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-sr2.sr2",
+        "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+        "length": 1208,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-sr2.sr2"
     },
     {
       "rowId": "EX0289-SR2-THUMBNAIL-READ-0001",
@@ -22649,16 +22829,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-sr2.sr2",
+        "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+        "length": 1208,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B10 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-sr2.sr2"
     },
     {
       "rowId": "EX0289-SR2-THUMBNAIL-EXTRACT-0001",
@@ -22676,16 +22862,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-sr2.sr2",
+        "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+        "length": 1208,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b10-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 wave-2 container fixture: pinned header contract plus owned metadata carriers; no vendor private data, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored payload only, never a camera preview"
+      "notes": "B10 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-marker-sr2.sr2"
     },
     {
       "rowId": "EX0289-MRW-INVENTORY-INVENTORY-0002",
@@ -22706,13 +22898,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B10 blocked-rights: MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-MRW-EXIF-READ-0002",
@@ -22733,13 +22925,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B10 blocked-rights: MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-MRW-IPTC-READ-0002",
@@ -22760,13 +22952,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B10 blocked-rights: MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-MRW-XMP-READ-0002",
@@ -22787,13 +22979,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B10 blocked-rights: MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-MRW-COMMENTS-READ-0002",
@@ -22814,13 +23006,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B10 blocked-rights: MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-MRW-ICC-READ-0002",
@@ -22841,13 +23033,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B10 blocked-rights: MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-MRW-THUMBNAIL-READ-0002",
@@ -22868,13 +23060,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B10 blocked-rights: MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-MRW-THUMBNAIL-EXTRACT-0002",
@@ -22895,13 +23087,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; thumbnail extract attempted against the authored payload only, never a camera preview"
+      "notes": "B10 blocked-rights: MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RAF-INVENTORY-INVENTORY-0002",
@@ -22922,13 +23114,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B10 blocked-rights: RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RAF-EXIF-READ-0002",
@@ -22949,13 +23141,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B10 blocked-rights: RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RAF-IPTC-READ-0002",
@@ -22976,13 +23168,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B10 blocked-rights: RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RAF-XMP-READ-0002",
@@ -23003,13 +23195,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B10 blocked-rights: RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RAF-COMMENTS-READ-0002",
@@ -23030,13 +23222,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B10 blocked-rights: RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RAF-ICC-READ-0002",
@@ -23057,13 +23249,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B10 blocked-rights: RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RAF-THUMBNAIL-READ-0002",
@@ -23084,13 +23276,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B10 blocked-rights: RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RAF-THUMBNAIL-EXTRACT-0002",
@@ -23111,13 +23303,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RAF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; thumbnail extract attempted against the authored payload only, never a camera preview"
+      "notes": "B10 blocked-rights: RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RW2-INVENTORY-INVENTORY-0002",
@@ -23138,13 +23330,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B10 blocked-rights: RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RW2-EXIF-READ-0002",
@@ -23165,13 +23357,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B10 blocked-rights: RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RW2-IPTC-READ-0002",
@@ -23192,13 +23384,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B10 blocked-rights: RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RW2-XMP-READ-0002",
@@ -23219,13 +23411,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B10 blocked-rights: RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RW2-COMMENTS-READ-0002",
@@ -23246,13 +23438,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B10 blocked-rights: RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RW2-ICC-READ-0002",
@@ -23273,13 +23465,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B10 blocked-rights: RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RW2-THUMBNAIL-READ-0002",
@@ -23300,13 +23492,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B10 blocked-rights: RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-RW2-THUMBNAIL-EXTRACT-0002",
@@ -23327,13 +23519,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "RW2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; thumbnail extract attempted against the authored payload only, never a camera preview"
+      "notes": "B10 blocked-rights: RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SR2-INVENTORY-INVENTORY-0002",
@@ -23354,13 +23546,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B10 blocked-rights: SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SR2-EXIF-READ-0002",
@@ -23381,13 +23573,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B10 blocked-rights: SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SR2-IPTC-READ-0002",
@@ -23408,13 +23600,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B10 blocked-rights: SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SR2-XMP-READ-0002",
@@ -23435,13 +23627,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B10 blocked-rights: SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SR2-COMMENTS-READ-0002",
@@ -23462,13 +23654,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B10 blocked-rights: SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SR2-ICC-READ-0002",
@@ -23489,13 +23681,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B10 blocked-rights: SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SR2-THUMBNAIL-READ-0002",
@@ -23516,13 +23708,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B10 blocked-rights: SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SR2-THUMBNAIL-EXTRACT-0002",
@@ -23543,13 +23735,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary structure, so the cell is blocked, not refused; thumbnail extract attempted against the authored payload only, never a camera preview"
+      "notes": "B10 blocked-rights: SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
     }
   ]
 }
