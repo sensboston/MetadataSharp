@@ -664,3 +664,82 @@ jobs:
                   chunks = chunks[:3] + ['traceback truncated: %d characters total' % len(trace)]
               for i, chunk in enumerate(chunks):
                   print('::error title=B11 %s traceback %d/%d::%s' % (name, i + 1, len(chunks), chunk))
+  pinned-exiv2-b11l:
+    name: Exiv2 0.28.9 / bounded E01 B11L recognition-ladder observations
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      LC_ALL: C
+      TZ: UTC0
+      E01_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout pinned external black-box source (never production dependency)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/e01/source
+          persist-credentials: false
+      - name: Install external build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev
+      - name: Configure external black-box build with explicit policy
+        shell: python
+        run: |
+          import subprocess, sys
+          sys.path.insert(0, 'tools/reference')
+          from exiv2_baseline import OPTIONS
+          subprocess.run(['cmake', '-S', 'artifacts/e01/source', '-B', 'artifacts/e01/build', '-G', 'Ninja',
+                          *[f'-D{k}={v}' for k, v in OPTIONS.items()]], check=True)
+      - name: Build only external executable (no upstream tests or fixture imports)
+        run: cmake --build artifacts/e01/build --target exiv2 --parallel 2
+      # No ExifTool checkout here, unlike B10/B11: this batch compares its own prediction against the pinned
+      # build, and a 24-byte header stub is not something a real-world tool can adjudicate. Dropping it also
+      # drops the only File*Date-driven nondeterminism, which makes the two runs of this job directly comparable.
+      - name: Verify the B11L ladder fixture catalog and its length invariants
+        run: python tools/reference/b11l_recognition_ladder.py verify
+      - name: B11L recognition-ladder probe (read-only, outcomes recorded not gated)
+        run: python tools/reference/probe_b11l_ladder.py --upstream artifacts/e01/source --build artifacts/e01/build
+      - name: Upload B11L ladder observations (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b11l-ladder-observations
+          path: artifacts/e01/b11l-ladder/observations.json
+          if-no-files-found: error
+          retention-days: 30
+      # Same reasoning as the B11 reporter: the artifact host and the Actions log are both unreachable from
+      # the environment that recovers this repo's evidence, so a red B11L leg has to explain itself here. The
+      # recorder save()s its report -- with `failure` set to the traceback tail -- before re-raising, so a
+      # crash mid-ladder still has something to read. The annotation channel is the recovery path for the
+      # evidence itself (B11LZ chunks), so this step only re-reports the summary and the failure, not the rows.
+      - name: Report failed B11L recorder detail
+        if: failure()
+        shell: python
+        run: |
+          from pathlib import Path
+          import json
+
+          def escape(text):
+              return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+
+          report_path = Path('artifacts/e01/b11l-ladder/observations.json')
+          if not report_path.exists():
+              print('::error title=B11L ladder::no report file: the recorder died before its first save()')
+              raise SystemExit(0)
+          report = json.loads(report_path.read_text(encoding='utf-8'))
+          summary = ('status=%s rungs=%s rows=%s families=%s flip=%s' % (
+              report.get('status'), len(report.get('observations', [])), report.get('recordCount'),
+              json.dumps(report.get('familyCounts', {}), sort_keys=True),
+              json.dumps({k: v.get('flipSize') for k, v in (report.get('summary') or {}).items()},
+                         sort_keys=True)))
+          print('::error title=B11L ladder summary::%s' % escape(summary)[:1500])
+          trace = escape(report.get('failure') or 'no failure field: the step failed outside the '
+                                                  'recorder (see the step name above)')
+          chunks = [trace[i:i + 2500] for i in range(0, len(trace), 2500)]
+          if len(chunks) > 3:
+              chunks = chunks[:3] + ['traceback truncated: %d characters total' % len(trace)]
+          for i, chunk in enumerate(chunks):
+              print('::error title=B11L ladder traceback %d/%d::%s' % (i + 1, len(chunks), chunk))

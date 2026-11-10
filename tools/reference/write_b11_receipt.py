@@ -211,6 +211,11 @@ def main():
         data = (ROOT / 'tests/fixtures/b11' / name).read_bytes()
         return catalog.structure(layout, name, data)['recognizers']['matched']
 
+    # Two counts the prose needs, computed once so no sentence can disagree with the table beside
+    # it: an earlier draft of `notEstablished` said "these five stubs" while the block around it
+    # reported seven, which is exactly the drift a hand-typed number in generated prose invites.
+    disagreed = sorted(layout for layout in no_reader if model_claims(layout))
+    agreed = sorted(layout for layout in no_reader if not model_claims(layout))
     factory_refused = no_reader
 
     receipt = {
@@ -409,11 +414,9 @@ def main():
                 'says otherwise, and the prediction is corrected here rather than the observation.'),
         },
         'factoryRefusals': {
-            'layoutsRefusedByBuildButClaimedByModel': sorted(layout for layout in no_reader
-                                                              if model_claims(layout)),
+            'layoutsRefusedByBuildButClaimedByModel': disagreed,
             'allLayoutsWithNoReader': no_reader,
-            'modelAgreesThereIsNoReader': sorted(layout for layout in no_reader
-                                                 if not model_claims(layout)),
+            'modelAgreesThereIsNoReader': agreed,
             'count': len(no_reader),
             'errorFamily': UNKNOWN_TYPE,
             'thrownAt': 'src/image.cpp:825-830 (ImageFactory::open throws when the registry scan yields no instance)',
@@ -431,12 +434,20 @@ def main():
                          'This evidence cannot separate those two, so it does not try to.'),
             },
             'notEstablished': (
-                'why these five stubs are refused is not established. What is established is that the '
-                'refusal is not a format-support statement: it is what this build does with a file '
-                'that carries its header and nothing else. The cheapest follow-up that would separate '
-                'the two candidate causes is a same-format fixture long enough that every recognizer '
-                'read in the scan sees its own bytes (a padded BMP is enough to test it, since BMP '
-                'needs no more than its two headers); that is a B12 question, not a B11 one.'),
+                f'the mechanism behind the {len(no_reader)} refusals is not established, and the count '
+                f'matters for what the follow-up has to show: {len(disagreed)} of them contradict this '
+                f'repository\'s own model of the magic tests, while the remaining {len(agreed)} '
+                f'({", ".join(agreed) if len(agreed) == 1 else "see modelAgreesThereIsNoReader"}) '
+                f'{"is" if len(agreed) == 1 else "are"} the model agreeing that no reader should claim '
+                'the file -- a different finding, which must not be folded into the six. What is '
+                'established for all of them is that the '
+                'refusal is not a format-support statement: it is what this build does with a file that '
+                'carries its header and nothing else. The cheapest probe that would separate the two '
+                'candidate causes for the disagreeing rows is a same-format fixture long enough that '
+                'every recognizer read in the scan sees its own bytes (a padded BMP is enough to test '
+                'it, since BMP needs no more than its two headers), with a valid-but-short and a '
+                'magic-valid-but-broken BMP beside it so the outcome can be attributed rather than '
+                'guessed; that is a B12 question, not a B11 one.'),
             'clearedLayoutsThatDidReachAReader': sorted(e['layout'] for e in cleared
                                                            if e['layout'] not in no_reader),
         },
@@ -523,7 +534,9 @@ def main():
             'read it',
             'ExifTool reported FileType per its own rules, which consult the extension, so the '
             'secondary observation is not a validity proof for these authored containers',
-            'the mechanism behind the five factory refusals (see factoryRefusals.notEstablished)',
+            f'the mechanism behind the {len(no_reader)} refusals without a reader, of which '
+            f'{len(disagreed)} contradict this repository\'s own recognizer model (see '
+            'factoryRefusals.notEstablished)',
         ],
     }
 

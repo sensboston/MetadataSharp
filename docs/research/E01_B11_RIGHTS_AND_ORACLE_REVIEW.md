@@ -619,8 +619,12 @@ a reviewer reads first.
   file name (`tgaimage.cpp:99-103`), so a TGA-lookalike under another extension reaches nothing. **Why** the
   six are refused is deliberately not established: the two candidate causes are the `Image::good()` re-check
   in each `newXInstance` (`image.cpp:713-718`) and an earlier registry entry matching first; the second run
-  reproduced the refusal exactly, which confirms the observation but does not separate the causes. A refusal is recorded as a refusal of *these header-only stubs*, never of the format;
-  the follow-up that would separate the causes (a padded BMP) belongs to the next batch, not to this row set.
+  reproduced the refusal exactly, which confirms the observation but does not separate the causes. A refusal is recorded as a refusal of *these header-only stubs*, never of the format; the follow-up that would separate the causes (a padded BMP) belongs to a later batch, not to this row set.
+  *(Later, and it did separate them — B11L built the ladder, and neither candidate was the mechanism: the refusal
+  tracks the **file length**, with the boundary at 80 bytes for BMP and GIF alike, while the rows this document could
+  not place are reproduced by the same band for a file with no BMP or GIF magic at all. See
+  `E01_B11L_RIGHTS_AND_ORACLE_REVIEW.md`, section "What the run showed"; the text above is left as it was written,
+  because the answer arrived after the sign-off.)*
 - **Only one container stub yields readable metadata.** `owned-avi-avih.avi` printed four `Xmp.video.*` keys
   under `-pa`/`-px`; ASF, MKV, WAV and both MOVs printed nothing or threw. That is the video-metadata family
   absence in §3 made visible as behaviour, and it is why the batch enumerates inventory-only cells there.

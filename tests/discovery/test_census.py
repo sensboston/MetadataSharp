@@ -1005,6 +1005,22 @@ class CensusPolicyTests(unittest.TestCase):
         for needle in ('app/actions.cpp:823-864', 'app/exiv2.cpp:195', '% 256'):
             self.assertIn(needle, receipt['extractForm']['rule'], needle)
 
+        # Generated prose must quote the tables beside it. An earlier draft of the receipt said
+        # "these five stubs" while the same block reported seven refusals, and nothing failed:
+        # every count in that sentence is now computed, so a fixture change moves the prose or the
+        # test complains.
+        refusals = receipt['factoryRefusals']
+        self.assertEqual(len(refusals['allLayoutsWithNoReader']), refusals['count'])
+        self.assertEqual(refusals['count'],
+                         len(refusals['layoutsRefusedByBuildButClaimedByModel'])
+                         + len(refusals['modelAgreesThereIsNoReader']))
+        for needle in (f"behind the {refusals['count']} refusals",
+                       f"{len(refusals['layoutsRefusedByBuildButClaimedByModel'])} of them contradict"):
+            self.assertIn(needle, refusals['notEstablished'], needle)
+        self.assertTrue(any(f"{refusals['count']} refusals without a reader" in claim
+                            for claim in receipt['notClaimed']),
+                        'notClaimed must carry the same count as the table it points at')
+
         # Regenerating the census from the *other* payload must produce the same artifact: the
         # shape labels are description, and no row may depend on which generation was committed.
         on_disk = json.loads((ROOT / 'docs/research/EXIV2_CENSUS.json').read_text())
