@@ -8,6 +8,7 @@ missing blocks, report shape, exit status - verifiable on any machine.
 
 import contextlib
 import hashlib
+import shlex
 import io
 import json
 import subprocess
@@ -24,60 +25,46 @@ import dump_format  # noqa: E402
 import exiv2_print  # noqa: E402
 import run_parity  # noqa: E402
 
-#: Reads the same grammar the C# tool writes, and answers from the records the test supplied.
-FAKE_DUMP = '''"""A stand-in for MetadataSharp.Dump."""
+#: Reads the same grammar the C# tool writes - escaping included - and answers from the records the
+#: test supplied. The stand-in imports the harness's own writer helper instead of carrying a second
+#: copy of the rules, because the value of the fake is that whatever it prints really parses.
+FAKE_DUMP = '''"""A stand-in for MetadataSharp.Dump, honouring the dump grammar."""
 import sys
 
-DATA = {data!r}
-SKIPPED = {skipped!r}
+sys.path.insert(0, @PARITY_DIR@)
+from dump_format import record
 
-paths = [line for line in sys.stdin.read().split("\\n") if line.strip()]
-for path in paths:
-    if path in SKIPPED:
+DATA = @DATA@
+SKIPPED = @SKIPPED@
+
+for line in sys.stdin.read().splitlines():
+    path = line.strip()
+    if not path or path in SKIPPED:
         continue
-    print("FILE\\t" + path)
-    for record in DATA.get(path, []):
-        print("\\t".join(str(field) for field in record))
+    print(record("FILE", path))
+    for fields in DATA.get(path, []):
+        print(record(*[str(field) for field in fields]))
 '''
-
-
-def escape(value: str) -> str:
-    """The escaping the dump tool applies to a value, so the tests exercise one contract.
-
-    Duplicated here on purpose: the C# side is the writer, this is the reader, and a change to one
-    of them has to fail a test rather than quietly produce a report full of unreadable rows.
-    """
-    out = []
-    for char in value:
-        if char == "\\":
-            out.append("\\\\")
-        elif char == "\t":
-            out.append("\\t")
-        elif char == "\n":
-            out.append("\\n")
-        elif char == "\r":
-            out.append("\\r")
-        elif ord(char) < 0x20 or char == "\x7f":
-            out.append("\\x{:02x}".format(ord(char)))
-        else:
-            out.append(char)
-    return "".join(out)
 
 
 def py_command(script: Path) -> str:
     """A command line for a generated helper script, shaped the way the harness splits one.
 
-    ``run_parity`` splits ``--dump-command`` POSIX-style, so a Windows path would lose its
-    backslashes; forward slashes are what Python accepts on every platform.
+    ``run_parity`` lexes ``--dump-command`` POSIX-style, so every token is quoted: a Windows
+    interpreter path contains backslashes an unquoted token would lose, and forward slashes are no
+    substitute for the loader that has to find the executable.
     """
-    return f"{sys.executable} {script}".replace("\\", "/")
+    return shlex.quote(sys.executable) + " " + shlex.quote(str(script))
 
 
 def write_fake(directory: Path, blocks: dict, skip: list | None = None) -> str:
     script = directory / "fake_dump.py"
-    script.write_text(FAKE_DUMP.format(data=blocks, skipped=list(skip or [])), encoding="utf-8")
+    source = (FAKE_DUMP
+              .replace("@PARITY_DIR@", repr(str(ROOT / "tools/parity")))
+              .replace("@DATA@", repr({key: [list(row) for row in value] for key, value in blocks.items()}))
+              .replace("@SKIPPED@", repr(list(skip or []))))
+    script.write_text(source, encoding="utf-8")
     return py_command(script)
-
 
 def run_main(arguments: list[str]) -> tuple[int, str]:
     printed = io.StringIO()
@@ -104,7 +91,9 @@ class DumpFormatTests(unittest.TestCase):
 
     def test_control_characters_survive_the_round_trip(self):
         value = "a\\b\tc\nd\x00"
-        text = "FILE\tx\nTAG\tExif.Image.0x010e\tAscii\t8\t" + escape(value) + "\nSTATUS\tok\n"
+        text = (dump_format.record("FILE", "x") + "\n"
+                + dump_format.record("TAG", "Exif.Image.0x010e", "Ascii", "8", value) + "\n"
+                + dump_format.record("STATUS", "ok") + "\n")
         block = dump_format.parse_dump(text)["x"]
         self.assertEqual(block["tags"]["Exif.Image.0x010e"][2], value)
 
@@ -123,6 +112,20 @@ class DumpFormatTests(unittest.TestCase):
         for text in broken:
             with self.assertRaises(dump_format.DumpFormatError, msg=text):
                 dump_format.parse_dump(text)
+
+    def test_a_windows_path_round_trips_through_the_grammar(self):
+        # A path is a value in this grammar, and a Windows one is full of the escape character: an
+        # unescaped echo of it would be read back as a broken escape, or as a subtly wrong path.
+        windows = "C:\\Users\\runner\\Temp\\a.jpg"
+        text = dump_format.record("FILE", windows) + "\n" + dump_format.record("STATUS", "ok") + "\n"
+        self.assertEqual(list(dump_format.parse_dump(text)), [windows])
+        self.assertTrue(dump_format.escape(windows).startswith("C:\\\\Users"))
+
+    def test_a_carriage_return_from_a_shell_redirect_does_not_reach_a_value(self):
+        text = "FILE\tx\nTAG\tExif.Image.0x0112\tShort\t1\t2\r\nSTATUS\tok\r\n"
+        block = dump_format.parse_dump(text)["x"]
+        self.assertEqual(block["tags"]["Exif.Image.0x0112"], ("Short", 1, "2"))
+        self.assertEqual(block["status"], "ok")
 
     def test_an_escape_that_cannot_come_from_the_tool_is_rejected(self):
         with self.assertRaises(dump_format.DumpFormatError):
@@ -326,13 +329,6 @@ class CorpusDiscoveryTests(unittest.TestCase):
 class HarnessTests(unittest.TestCase):
     """End to end, against a stand-in dump command."""
 
-    @classmethod
-    def setUpClass(cls):
-        # The commands below go through shlex, like the CI step does; a Python installed under a path
-        # with a space would need quoting that the harness deliberately does not invent.
-        if " " in sys.executable:
-            raise unittest.SkipTest(f"{sys.executable} has a space; the shlex-split command shape needs none")
-
     def setUp(self):
         self._temporary = tempfile.TemporaryDirectory()
         self.root = Path(self._temporary.name)
@@ -408,6 +404,15 @@ class HarnessTests(unittest.TestCase):
         self.assertIn("5 fields", str(caught.exception))
         self.assertFalse((self.out / "parity-report.json").exists())
 
+    def test_a_reserved_character_in_a_value_survives_the_whole_run(self):
+        # The key a block is filed under is the path the tool echoed back, and a value may hold the
+        # tab the grammar reserves for field separation; both have to round-trip through one run.
+        path = self.sample("d.jpg", "Exif.Image.Model  Ascii  4  a b\n")
+        blocks = {str(path): [["TAG", "Exif.Image.Model", "Ascii", 4, "a\tb"], ["STATUS", "ok"]]}
+        code, printed = run_main(self.arguments(write_fake(self.root, blocks)))
+        self.assertEqual(code, 0, printed)
+        self.assertEqual(self.report()["outcomes"][compare_mod.MATCH_VALUE], 1)
+
     def test_a_file_the_tool_never_printed_is_a_structural_problem(self):
         path = self.sample("e.jpg", "Exif.Image.Make  Ascii  6  NIKON\n")
         code, printed = run_main(self.arguments(write_fake(self.root, {}, skip=[str(path)])))
@@ -416,10 +421,14 @@ class HarnessTests(unittest.TestCase):
 
     def test_an_unexpected_exception_on_our_side_is_a_failure_not_a_difference(self):
         path = self.sample("f.jpg", "Exif.Image.Make  Ascii  6  NIKON\n")
-        blocks = {str(path): [["STATUS", "error"]]}
+        blocks = {str(path): [["STATUS", "error", "IndexOutOfRangeException: at offset 41"]]
+        }
         code, printed = run_main(self.arguments(write_fake(self.root, blocks)))
         self.assertEqual(code, 1)
-        self.assertIn("our reader raised", printed)
+        # The exception type is the whole point of the line: it is what turns "something is wrong"
+        # into a place to start reading, and CI annotations are the only way to see it from here.
+        self.assertIn("IndexOutOfRangeException", printed)
+        self.assertIn("f.jpg", printed)
 
     def test_a_damaged_expectation_is_reported_once_per_file(self):
         damaged = [f"Exif.Image.Tag{index}  Ascii  6" for index in range(6)]

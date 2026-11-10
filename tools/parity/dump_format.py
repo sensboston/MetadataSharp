@@ -46,6 +46,36 @@ def unescape(value: str) -> str:
     return "".join(out)
 
 
+def escape(value: str) -> str:
+    """The writer's half of the grammar: the inverse of :func:`unescape`.
+
+    ``tools/MetadataSharp.Dump`` implements this in C# and the tests build stand-in output with this
+    function, so the two sides are checked against each other rather than against a description.
+    Only the characters that would break one-record-per-line can appear escaped; everything else is
+    written verbatim, which keeps a report readable.
+    """
+    out: list[str] = []
+    for char in value:
+        if char == "\\":
+            out.append("\\\\")
+        elif char == "\t":
+            out.append("\\t")
+        elif char == "\n":
+            out.append("\\n")
+        elif char == "\r":
+            out.append("\\r")
+        elif ord(char) < 0x20 or char == "\x7f":
+            out.append("\\x%02x" % ord(char))
+        else:
+            out.append(char)
+    return "".join(out)
+
+
+def record(*fields: str) -> str:
+    """One dump line: every field escaped, tabs between them. The shape the tool prints."""
+    return "\t".join(escape(field) for field in fields)
+
+
 def parse_dump(text: str, *, source: str = "dump") -> dict[str, dict]:
     """Return ``{path: {"status": str, "detail": str, "tags": {key: (type, count, value)}}}``.
 
@@ -55,6 +85,10 @@ def parse_dump(text: str, *, source: str = "dump") -> dict[str, dict]:
     files: dict[str, dict] = {}
     current: dict | None = None
     for lineno, line in enumerate(text.split("\n"), 1):
+        if line.endswith("\r"):
+            # The grammar says LF and the tool writes LF, but a stream that came from a shell redirect
+            # on Windows may carry the partner byte; eating it here keeps it out of the last field.
+            line = line[:-1]
         if not line:
             continue
         fields = line.split("\t")

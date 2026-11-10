@@ -72,9 +72,12 @@ jobs:
               if not log.exists():
                   continue
               lines = log.read_text(encoding='utf-8', errors='replace').splitlines()
-              picked = [line for line in lines
-                        if line.startswith(('FAIL:', 'ERROR:', 'AssertionError', 'Traceback',
-                                            'FAILED', 'Ran '))][:24]
+              # A traceback's first line names nothing; the reason is two or three lines further down.
+              wanted = set()
+              for index, line in enumerate(lines):
+                  if line.startswith(('FAIL:', 'ERROR:', 'AssertionError', 'Traceback', 'FAILED', 'Ran ')):
+                      wanted.update(range(index, min(index + 5, len(lines))))
+              picked = [lines[index] for index in sorted(wanted)][:24]
               for line in picked or lines[-12:]:
                   text = line[:2000].replace('%', '%25').replace('\r', '%0D')
                   print('::error title=Python policy failure (' + log.name + ')::' + text)

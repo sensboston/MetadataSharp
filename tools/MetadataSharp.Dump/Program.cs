@@ -56,7 +56,13 @@ internal static class Program
             Record(stdout, "FILE", Escape(path));
             try { Dump(path, stdout); }
             catch (MetadataException failure) { Record(stdout, "STATUS", "refused", failure.Code.ToString()); }
-            catch (Exception) { Record(stdout, "STATUS", "error"); }
+            // A bug in a reader is a fact worth reporting precisely, so the type and the first line of
+            // the message travel with the record; the harness counts this status as an unsound run.
+            catch (Exception failure)
+            {
+                string reason = failure.GetType().Name + ": " + failure.Message.Split('\n')[0];
+                Record(stdout, "STATUS", "error", Escape(reason.Length > 180 ? reason[..180] : reason));
+            }
         }
         stdout.Flush();
         return 0;
@@ -117,15 +123,19 @@ internal static class Program
         if (!WithinBudget(length, stdout)) return;
         using TiffMetadataDocument document = TiffMetadataDocument.Open(path);
         TiffLayout layout = document.Layout;
+        // The layout is the library's read-side accounting of every field; the bytes of a field are
+        // taken from the same file the layout describes. The document's own value accessor is the
+        // descriptive-edit target, which refuses most tags and is not what a byte dump wants.
+        byte[] data = File.ReadAllBytes(path);
         Dictionary<uint, string> groups = Groups(layout);
         foreach (TiffDirectoryInfo directory in layout.Directories)
         {
             string group = groups.ContainsKey(directory.Offset) ? groups[directory.Offset] : "Thumbnail";
             foreach (TiffFieldInfo field in directory.Fields)
             {
-                ExifValue? value = document.ReadValue(new TiffFieldKey(directory.Offset, field.TagId));
-                if (value is null) continue;
-                Tag(stdout, "Exif." + group + ".0x" + Hex(field.TagId), TypeName((TiffFieldType)field.FieldType), field.Count, Raw(value));
+                TiffFieldType type = (TiffFieldType)field.FieldType;
+                Tag(stdout, "Exif." + group + ".0x" + Hex(field.TagId), TypeName(type), field.Count,
+                    Render(Slice(data, field.ValueRange), type, field.Count, layout.ByteOrder));
             }
         }
         Done(stdout);
@@ -163,7 +173,7 @@ internal static class Program
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
             Tag(stdout, "Exif." + Group(entry.Key.Directory) + ".0x" + Hex(entry.Key.TagId),
-                TypeName(entry.Value.FieldType), entry.Value.Count, Raw(entry.Value));
+                TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
     }
 
     private static void Iptc(IptcPacket packet, StreamWriter stdout)
@@ -328,21 +338,26 @@ internal static class Program
         _ => 0,
     };
 
-    private static string Raw(ExifValue value)
+    private static string Render(ExifValue value)
     {
         var bytes = new byte[value.ByteLength];
         value.CopyRawTo(bytes);
-        if (value.FieldType is TiffFieldType.Ascii) return Escape(Encoding.Latin1.GetString(Trim(bytes)));
-        int size = Size(value.FieldType);
+        return Render(bytes, value.FieldType, value.Count, value.ByteOrder);
+    }
+
+    /// <summary>Every element the declared type and count ask for, or a marker saying they are not there.</summary>
+    private static string Render(byte[] bytes, TiffFieldType type, uint count, Endianness order)
+    {
+        if (type is TiffFieldType.Ascii) return Escape(Encoding.Latin1.GetString(Trim(bytes)));
+        int size = Size(type);
         if (size == 0) return "undefined-type";
-        if ((long)value.Count * size > bytes.Length) return "truncated-value";
-        Endianness order = value.ByteOrder;
+        if ((long)count * size > bytes.Length) return "truncated-value";
         var text = new StringBuilder();
-        for (int i = 0; i < (int)value.Count; i++)
+        for (int i = 0; i < (int)count; i++)
         {
             if (i != 0) text.Append(' ');
             int at = i * size;
-            text.Append(value.FieldType switch
+            text.Append(type switch
             {
                 TiffFieldType.Byte => bytes[at].ToString(CultureInfo.InvariantCulture),
                 TiffFieldType.SByte => unchecked((sbyte)bytes[at]).ToString(CultureInfo.InvariantCulture),
@@ -407,6 +422,17 @@ internal static class Program
             else text.Append(c);
         }
         return text.ToString();
+    }
+
+    /// <summary>The bytes a layout range points at, clipped to the file: a corrupt range is a value to
+    /// report, not a reason to stop printing the rest of the directory.</summary>
+    private static byte[] Slice(byte[] data, TiffByteRange range)
+    {
+        if (range.Offset < 0 || range.Length < 0 || range.Offset >= data.Length) return [];
+        int available = (int)Math.Min(range.Length, (long)data.Length - range.Offset);
+        var bytes = new byte[available];
+        Array.Copy(data, range.Offset, bytes, 0, available);
+        return bytes;
     }
 
     private static bool At(byte[] data, int at, params int[] expected)

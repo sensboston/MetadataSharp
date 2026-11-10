@@ -2549,12 +2549,25 @@ no denominator freeze, publication or DNG D2 write.
 - **What gates and what does not.** A broken *run* fails CI: an unreadable dump block, a block that
   never arrives, a reader that threw instead of refusing, or an expectation file whose lines look
   damaged. The parity numbers themselves gate nothing — a gap is the next unit of work, and a red
-  build would only bury the measurement of it. `tests/parity` (42 cases, standard library only)
+  build would only bury the measurement of it. `tests/parity` (45 cases, standard library only)
   checks the grammar, the reference-line shapes including the `Undefined 106` narrow-type column and
   keys whose names contain a space, the comparison rules and the orchestration against a stand-in
   dump command, and runs in the ordinary `build-and-test` job; the measurement runs in the new
   `differential-parity` job, which uploads `parity-report.{txt,json}` and pushes a compact summary
   through the chunked annotation channel, hard-failing rather than truncating it.
+- **Hostile input stays data on both sides of the boundary.** The dump tool reads a TIFF field's
+  bytes from the layout's own range, bounds-checked, and renders an out-of-range or unknown-typed
+  field as a marker in the value column: the descriptive-edit accessor is not a byte reader and
+  refuses most tags by design. An unexpected exception is reported as `error <Type>: <first line>`,
+  so the red run names the defect instead of just the file, and the harness carries that into its
+  problem line — where a CI annotation is the only way to read it from this environment.
+- **The grammar has one implementation per side.** `dump_format.escape` is the writer's rules that the
+  C# tool follows, and the tests' stand-in dump command imports it rather than echoing paths
+  verbatim; the first Windows run of the suite is what caught a fake that printed
+  `C:\Users\…` unescaped, which a strict parser correctly reads as a broken escape. `py_command`
+  therefore quotes each token instead of rewriting separators, since the loader has to find the
+  interpreter.
 - Public API unchanged. No reader semantics changed; the corpus and the grammar are new files under
-  `tools/` and `tests/parity`. Offline: parity 42 OK, reference 224 OK, discovery 112 OK, both
-  `--check` generators rc 0. First real numbers come from this PR's CI run.
+  `tools/` and `tests/parity`. Offline: parity 45 OK, reference 224 OK, discovery 112 OK, both
+  `--check` generators rc 0, and the reference parser still reads 37 781 rows across 330 pinned
+  expectation files with zero unparsable key lines.

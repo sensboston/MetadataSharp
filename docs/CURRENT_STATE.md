@@ -43,7 +43,7 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
   hostile-input parsing, refusal instead of unsafe write.
 - Suites: 197 `[Fact]` + 105 `[Theory]` (319 `[InlineData]`) in `tests/MetadataSharp.Tests`;
   `tests/reference` (224) and `tests/discovery` (112) cover the frozen E01 tooling and the owned
-  fixtures; `tests/parity` (42) covers the harness offline. CI requires ≥450 cases per TFM.
+  fixtures; `tests/parity` (45) covers the harness offline. CI requires ≥450 cases per TFM.
 - src is 5.7k lines, C# tests 5.2k. `pip install --break-system-packages pyyaml` before the python
   suites; the sandbox has **no dotnet SDK**, so compile and xunit run only in CI.
 

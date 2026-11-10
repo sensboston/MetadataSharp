@@ -131,7 +131,8 @@ def build(dump_command: list[str], candidates: list[corpus_mod.Candidate],
             continue
         tags, notes = references[candidate.uid]
         if block["status"] == "error":
-            problems.append(f"{candidate.uid}: our reader raised instead of refusing")
+            problems.append(f"{candidate.uid}: our reader raised instead of refusing"
+                            f" ({block['detail'] or 'the tool reported no exception type'})")
         files.append(compare_mod.compare_file(candidate.uid, candidate.corpus, candidate.format, block["status"],
                                               block["detail"], tags, block["tags"], notes))
     return files

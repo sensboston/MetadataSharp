@@ -208,8 +208,9 @@ Final discovery/documentation head requires own CI; receipt recorded in PR #15.
 
 ## E01 pinned baseline job
 
-CI now has **fifteen** jobs: the fourteen E02 checks remain, plus required
-`Exiv2 0.28.9 / bounded E01 observations`. It builds exact pinned upstream source
+CI then had **fifteen** jobs: the fourteen E02 checks, plus required
+`Exiv2 0.28.9 / bounded E01 observations`; `differential-parity` at the end of this file is the
+sixteenth (matrix rows are counted separately, so `gh pr checks` shows more). It builds exact pinned upstream source
 externally, never links native/GPL code into production DLLs/packages, and does not
 replace required historical 0.27.6 references. No upstream tests/fixtures imported.
 See [scope, commands and preservation findings](research/EXIV2_PINNED_BASELINE_EXECUTION.md).
@@ -233,7 +234,7 @@ CLI so the fixtures this repository generates get an oracle from the same commit
 Parity numbers do not fail a build, by design: `run_parity.py` exits 1 only when the run itself is
 unsound - an unreadable dump block, a missing block, a reader that threw instead of refusing, or a
 damaged expectation file. The offline rules of the same harness run as a normal gate step
-(`python -m unittest discover -s tests/parity`, 42 cases, standard library only). The dump tool
+(`python -m unittest discover -s tests/parity`, 45 cases, standard library only). The dump tool
 `tools/MetadataSharp.Dump` is restricted to the public API by construction, so what the harness can
 see is what a consumer can read; a tag the library cannot name is printed as a numeric key, which is
 the gap 4.2 closes.
