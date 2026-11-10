@@ -2567,6 +2567,15 @@ no denominator freeze, publication or DNG D2 write.
   `C:\Users\…` unescaped, which a strict parser correctly reads as a broken escape. `py_command`
   therefore quotes each token instead of rewriting separators, since the loader has to find the
   interpreter.
+- **The first measurement, from this PR's green CI run.** Corpus A: of 330 files, 57 read, 69
+  refused, 204 not attempted, and **no structural problem**. Those 57 files printed 1 682 rows, of
+  which 26 hit a reference key - and all 26 agreed on value - against 4 981 reference keys, so key
+  parity reads 0.5%. The other 1 656 rows are ours alone, and the pattern is one-to-one: the top
+  `missing-key` (`Exif.Image.Orientation`, 42 files) has an `extra-key` twin (`Exif.Image.0x0112`,
+  36 files). The gap is naming rather than reading, which is what 4.2 is for. Corpus B: 226 owned
+  fixtures, 114 read, 38 refused, 74 not attempted, no structural problem, 25 of 25 comparable
+  values agreeing, 4.0% of keys. Neither number gates anything, and both reports are uploaded. The
+  TIFF rewrite paid off in corpus A's tiff bucket: 11 files now print 118 keys where four raised.
 - Public API unchanged. No reader semantics changed; the corpus and the grammar are new files under
   `tools/` and `tests/parity`. Offline: parity 45 OK, reference 224 OK, discovery 112 OK, both
   `--check` generators rc 0, and the reference parser still reads 37 781 rows across 330 pinned

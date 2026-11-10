@@ -35,15 +35,16 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
 - **Differential parity harness** (`tools/parity`, `tools/MetadataSharp.Dump`, CI job
   `differential-parity`): our readers versus the `exiv2 -Pkycvt` expectations in the pinned upstream
   test tree, plus our own fixtures against the pinned tool built in the same job. Upstream files are
-  fetched at CI time and read as data — never vendored, built or executed. Their `tests/*.py` are not
-  interpreted: expectations there are macro tokens their own driver assembles, so honouring them
-  would mean translating their tests. Rates are reported; only a structurally broken run is gated.
+  fetched at CI time and read as data - never vendored, built or executed, and their `tests/*.py`
+  (macro-token expectations) are not interpreted. Rates are reported; only a broken run is gated.
+  First green run: 330 corpus + 226 owned files, no structural problem; all 26 and 25 values that
+  had a reference counterpart agreed, and key parity (0.5%, 4.0%) is the numeric-name gap 4.2 closes.
 - `MetadataCapabilities`: 35 model-driven rows (JPEG 12, PNG 8, WebP 8, TIFF 3, XMP sidecar 4).
 - Enforced by tests, not convention: MIT, net8.0+net10.0, zero runtime dependencies, bounded
   hostile-input parsing, refusal instead of unsafe write.
 - Suites: 197 `[Fact]` + 105 `[Theory]` (319 `[InlineData]`) in `tests/MetadataSharp.Tests`;
-  `tests/reference` (224) and `tests/discovery` (112) cover the frozen E01 tooling and the owned
-  fixtures; `tests/parity` (45) covers the harness offline. CI requires ≥450 cases per TFM.
+  `tests/reference` (224) and `tests/discovery` (112) cover the E01 tooling and owned fixtures,
+  `tests/parity` (45) the harness offline. CI requires ≥450 cases per TFM.
 - src is 5.7k lines, C# tests 5.2k. `pip install --break-system-packages pyyaml` before the python
   suites; the sandbox has **no dotnet SDK**, so compile and xunit run only in CI.
 
@@ -74,7 +75,6 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
   markers (including 0xC8), unbacked table references, over-budget input or segment counts.
 - No MakerNote interpretation yet; ICC and thumbnails are not modelled; no XMP toolkit
   (restricted packet profile only); Extended XMP is refused, not merged.
-- The harness reads no BMFF, video, EXV, CIFF or EPS and never decodes pixels; a file it does not
-  read is counted `not-read`, not as a disagreement, and the dump tool skips files above 64 MB.
-  A reference's decoded label is not comparable to raw bytes, so `match-key` means "same tag found",
-  not "same meaning printed" (10 rows in 7 corpus files print no raw value at all).
+- The harness reads no BMFF, video, EXV, CIFF or EPS, never decodes pixels, skips files above
+  64 MB, and counts an unread file `not-read` rather than as a disagreement. A reference's decoded
+  label is not raw bytes, so `match-key` means "same tag found", not "same meaning printed".
