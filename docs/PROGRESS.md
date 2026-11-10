@@ -2668,3 +2668,27 @@ no denominator freeze, publication or DNG D2 write.
   asks the vocabulary about all 20 writable and 26 planner-reviewed tags (offline: 0 disagreements).
   Offline gates: parity 45 OK, reference 224 OK, discovery 112 OK. The sandbox has no .NET SDK, so CI is
   the compiler and the xunit run; the emitted C# was checked field by field against the parsed data here.
+
+### A failed thumbnail drops the picture, not the read (2026-11-11, PR #65)
+
+- **What changed.** `ExifTiffReader.ReadThumbnail` no longer refuses files. A thumbnail that fails any
+  check belonging to the picture - missing offset/length pair, non-JPEG compression, a malformed pair, a
+  range outside the payload, odd alignment, a run shorter than four bytes, absent SOI/EOI, or a size over
+  `MaxThumbnailBytes` - is now reported as "no thumbnail" while the metadata read completes normally with
+  the thumbnail IFD and its entries retained in the listing. The corpus asked for this: Canon EOS 300D and
+  D30 samples carry exactly such thumbnails, and the reader used to lose the file's whole EXIF over them.
+- **What stayed.** Two thumbnail-adjacent refusals describe the payload, not the picture, and survive
+  unchanged: JPEG bytes overlapping another claimed structure (`InvalidExif`), and a retained-bytes budget
+  the whole file has outgrown (`LimitExceeded`) - including the case where a within-budget thumbnail is
+  what tips it. Every non-thumbnail check is untouched. Nested JPEG marker grammar is still not validated,
+  so nothing claims a kept thumbnail decodes.
+- **The write side.** `ExifLayoutPlanner.Create` refuses a rebuild of a source whose thumbnail IFD exists
+  with no retained picture (`UnsafeRelocation`, before any planning): a dropped thumbnail must not silently
+  become a discarded one, and dangling `0x0201`/`0x0202` entries will not be written. `RemoveAllExif`
+  carries nothing and still removes cleanly; PNG, WebP and JPEG share the planner, so the rule is uniform.
+- **Tests.** Reader: nine drop mutations assert the full read (five directories, eight entries) with a null
+  thumbnail, and two refusals (overlap laid over the MakerNote's claim; retained budget 182) keep their
+  codes. Planner: refusal both with and without the pair entries, plus a no-thumbnail-directory control.
+  JpegEditingTests gained the file-level case with a hand-built APP1. `EnforcesBudgets...` lost its
+  `thumbnail` arm - that budget is now drop policy, tested in the drop set as `over-budget`. Offline gates:
+  parity 45, reference 224, discovery 112, all OK; CI remains the compiler.

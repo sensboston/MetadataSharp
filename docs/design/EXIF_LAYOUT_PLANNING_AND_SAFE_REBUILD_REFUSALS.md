@@ -12,6 +12,10 @@ Interop directories receive their known parent links automatically. A source nul
 optional pointer is retained as null if no corresponding directory exists.
 Structural and thumbnail fields cannot be inserted, removed or modified as ordinary
 values. The future edit layer will enforce this before invoking the planner too.
+A read may hand back a thumbnail IFD without a picture — a thumbnail its validation
+policy dropped — and a source like that refuses every rebuild before any planning:
+the planner may not discard a picture it never owned, nor write dangling offset and
+length entries. Removing the whole payload relocates nothing and remains allowed.
 
 ## Deterministic Placement
 

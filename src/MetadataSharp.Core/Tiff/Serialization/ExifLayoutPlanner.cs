@@ -15,6 +15,14 @@ internal static class ExifLayoutPlanner
         limits.Validate();
         if (original is not null && original.Metadata.ByteOrder != desired.ByteOrder)
             throw new ArgumentException("An existing EXIF payload must retain its byte order.", nameof(desired));
+        // The read drops a thumbnail whose JPEG fails its own validation but keeps the thumbnail IFD, and
+        // no JPEG bytes are retained for it. A rebuild of that file would have to carry a picture the
+        // reader refused to own: refuse the edit rather than silently discard it or write dangling pair
+        // entries. Removal of the whole payload is still allowed; it is not a rebuild.
+        if (original is not null && original.Thumbnail is null &&
+            original.Directories.Contains(ExifDirectoryKind.Thumbnail))
+            throw Failure(MetadataErrorCode.UnsafeRelocation,
+                "The source thumbnail IFD cannot be carried because its JPEG stream was not retained.");
         // Check the source too: removing an unknown tag is not permission to discard it.
         if (original is not null)
             foreach (ExifEntry entry in original.Metadata.Entries)

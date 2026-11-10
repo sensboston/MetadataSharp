@@ -109,8 +109,9 @@ shared IFDs, duplicate/unsorted tags, all overlaps of external values/structures
 odd directory/external offsets, BigTIFF, unknown field widths and unsupported
 SubIFD/strip/tile families. Identical externally shared value storage is also
 rejected conservatively; this reader does not promise general TIFF acceptance.
-The full TIFF payload is at most 65,527 bytes; directory/entry/depth/value/thumbnail
-and retained-payload budgets are enforced before associated growth/copies.
+The full TIFF payload is at most 65,527 bytes; directory/entry/depth/value and
+retained-payload budgets are enforced before associated growth/copies. The thumbnail
+budget alone never refuses a file; it selects whether the picture is carried.
 
 The retained-byte budget reserves the input payload plus owned raw value and
 thumbnail copies, conservatively counting inline values too. It is not a hard RSS
@@ -123,10 +124,20 @@ raw fields remain representable per M00 compatibility decisions, despite TIFF 6.
 nonempty-directory rule; no writer-conformance claim follows from accepting them.
 Unknown tag IDs of known widths are retained, not interpreted as safe to move.
 
-Thumbnail support requires Compression=6 and a LONG,1 JPEG offset/length pair.
-The range and SOI/EOI boundaries are checked, but nested JPEG marker grammar is not
-validated or decoded. No claim that a thumbnail decodes correctly. Missing pairs,
-non-JPEG compression, extra IFD chains or strips/tiles are outside the subset.
+Thumbnail support requires Compression=6 and a LONG,1 JPEG offset/length pair; a
+thumbnail that fails any check belonging to the picture itself - a missing pair, non-
+JPEG compression, a malformed pair, bytes outside the payload, odd alignment, a short
+run, absent SOI/EOI markers, or a size over the thumbnail budget - is dropped to
+"no thumbnail" while the read completes. The picture is incidental to the metadata,
+and the pinned corpus contains well-formed files with broken thumbnails (Canon EOS
+300D and D30 samples) whose tags are worth reading. Two checks stay refusals, because
+they say something false about the payload even when only the thumbnail moved: its
+bytes overlapping another claimed structure, and the whole-file retained budget.
+Nested JPEG marker grammar is never validated or decoded, so nothing here claims a
+thumbnail - kept or dropped - decodes correctly. On write, a source whose thumbnail
+IFD holds no retained picture refuses the rebuild: a dropped thumbnail must not
+silently become a discarded one, and dangling offset/length fields will not be
+written. Removal of the whole payload carries nothing and is unaffected.
 
 Errors have stable codes and sourceBase-adjusted offsets when the location lies
 within input. Out-of-input offsets have no fabricated source position. Invalid

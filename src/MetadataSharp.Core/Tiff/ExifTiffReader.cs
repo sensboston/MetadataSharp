@@ -188,6 +188,13 @@ internal ref struct ExifTiffReader
         }
     }
 
+    /// <summary>
+    /// Reads the thumbnail if and only if it is a whole, addressable JPEG; every failure here drops the
+    /// thumbnail rather than the read, because the picture is incidental to the metadata, which is already
+    /// collected. Two refusals stay: thumbnail bytes that overlap other TIFF structures, and a retained
+    /// budget the file as a whole has run out of. Both say something false about the payload, not merely
+    /// something broken about the picture.
+    /// </summary>
     private byte[]? ReadThumbnail()
     {
         if (!roles.Contains(ExifDirectoryKind.Thumbnail))
@@ -196,21 +203,22 @@ internal ref struct ExifTiffReader
         ExifEntry? offset = FindThumbnail(0x0201);
         ExifEntry? length = FindThumbnail(0x0202);
         if (offset is null || length is null)
-            throw Error(MetadataErrorCode.UnsupportedFeature, "Only a thumbnail with a JPEG offset/length pair is supported.", 0);
+            return null; // no JPEG is addressed; the directory itself remains in the listing
         if (compression is null || compression.Value.FieldType != TiffFieldType.Short ||
             compression.Value.Count != 1 || ReadScalar(compression.Value) != 6)
-            throw Error(MetadataErrorCode.UnsupportedFeature, "Only JPEG-compressed thumbnails are supported.", 0);
+            return null; // not a JPEG representation; nothing of this file's is handed out
         if (offset.Value.FieldType != TiffFieldType.Long || offset.Value.Count != 1 ||
             length.Value.FieldType != TiffFieldType.Long || length.Value.Count != 1)
-            throw Error(MetadataErrorCode.InvalidExif, "The thumbnail offset and length must be scalar LONG values.", 0);
+            return null; // the pair does not describe one addressable byte range
         uint byteLength = ReadScalar(length.Value);
         uint byteOffset = ReadScalar(offset.Value);
         if (byteLength > limits.MaxThumbnailBytes)
-            throw Error(MetadataErrorCode.LimitExceeded, "The thumbnail budget was exceeded.", byteOffset);
-        int start = RequireRange(byteOffset, byteLength);
+            return null; // over the thumbnail budget: nothing is copied, so nothing is reserved
+        if (!CheckedRange.TryGetSpanRange(byteOffset, byteLength, data.Length, out int start, out _))
+            return null; // the picture lies outside the payload
         if ((byteOffset & 1) != 0 || byteLength < 4 || data[start] != 0xFF || data[start + 1] != 0xD8 ||
             data[start + (int)byteLength - 2] != 0xFF || data[start + (int)byteLength - 1] != 0xD9)
-            throw Error(MetadataErrorCode.InvalidExif, "The thumbnail JPEG boundaries or alignment are invalid.", byteOffset);
+            return null; // unaligned, truncated or boundary-markless: not a whole JPEG
         ClaimRange(start, (int)byteLength);
         ReserveBytes((int)byteLength, byteOffset);
         return data.Slice(start, (int)byteLength).ToArray();

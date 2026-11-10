@@ -73,8 +73,8 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
   decoding, no MCU or restart-interval validation, no promise that the pixel stream renders.
 - Refusals stay: trailing bytes after EOI, duplicate EXIF APP1, non-length-bearing or reserved
   markers (including 0xC8), unbacked table references, over-budget input or segment counts.
-- No MakerNote interpretation yet; ICC and thumbnails are not modelled; no XMP toolkit
-  (restricted packet profile only); Extended XMP is refused, not merged.
+- No MakerNote interpretation yet; ICC is not modelled; a failed thumbnail drops the picture, not
+  the read; no XMP toolkit (restricted packet profile only); Extended XMP is refused, not merged.
 - The harness reads no BMFF, video, EXV, CIFF or EPS, never decodes pixels, skips files above
   64 MB, and counts an unread file `not-read` rather than as a disagreement. A reference's decoded
   label is not raw bytes, so `match-key` means "same tag found", not "same meaning printed".
