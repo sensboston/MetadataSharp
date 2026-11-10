@@ -40,6 +40,45 @@ public sealed class JpegEditingTests
         Assert.Equal(sourceBytes, originalAgain.ToArray()); // Save never rebinds a document.
     }
 
+    // The read drops a thumbnail whose JPEG stream fails validation and keeps the rest of the file. Inside
+    // the JPEG document that means: the metadata opens, a rebuild that must carry the lost picture refuses,
+    // and the edit that discards the whole payload still works, because removal relocates nothing.
+    [Fact]
+    public void AnUnreadableThumbnailLeavesTheMetadataReadableAndTheRebuildRefused()
+    {
+        byte[] bare = JpegFixture.Build();
+        byte[] image = [.. bare[..2], .. JpegFixture.Segment(0xE1, JpegFixture.Exif(BrokenThumbnailTiff())), .. bare[2..]];
+        using var document = JpegMetadataDocument.Open(new MemoryStream(image));
+        Assert.NotNull(document.Exif);
+        Assert.True(document.Exif!.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x0112), out _));
+        var edit = new ExifEdit();
+        edit.Set(new(ExifDirectoryKind.Ifd0, 0x0112), ExifValue.FromRaw(TiffFieldType.Short, 1,
+            Endianness.LittleEndian, [8, 0]));
+        MetadataException error = Assert.Throws<MetadataException>(() => document.Save(new MemoryStream(), edit));
+        Assert.Equal(MetadataErrorCode.UnsafeRelocation, error.Code);
+        var removal = new ExifEdit();
+        removal.RemoveAllExif();
+        using var removed = new MemoryStream();
+        document.Save(removed, removal);
+        Assert.Equal(bare, removed.ToArray());
+    }
+
+    /// <summary>An Exif payload whose thumbnail IFD is intact except that its JPEG ends without EOI.</summary>
+    private static byte[] BrokenThumbnailTiff()
+    {
+        var data = new byte[72];
+        new byte[] { 0x49, 0x49, 42, 0, 8, 0, 0, 0 }.CopyTo(data, 0);
+        new byte[] { 1, 0 }.CopyTo(data, 8);                                    // one 0th-IFD entry
+        new byte[] { 0x12, 1, 3, 0, 1, 0, 0, 0, 6, 0, 0, 0 }.CopyTo(data, 10);  // Orientation = 6
+        new byte[] { 0x1A, 0, 0, 0 }.CopyTo(data, 22);                          // next: the thumbnail IFD
+        new byte[] { 3, 0 }.CopyTo(data, 26);                                   // three entries, no next
+        new byte[] { 3, 1, 3, 0, 1, 0, 0, 0, 6, 0, 0, 0 }.CopyTo(data, 28);     // Compression = 6
+        new byte[] { 1, 2, 4, 0, 1, 0, 0, 0, 68, 0, 0, 0 }.CopyTo(data, 40);    // JPEG offset 68
+        new byte[] { 2, 2, 4, 0, 1, 0, 0, 0, 4, 0, 0, 0 }.CopyTo(data, 52);     // JPEG length 4
+        new byte[] { 0xFF, 0xD8, 0xFF, 0x00 }.CopyTo(data, 68);                 // a JPEG that never ends
+        return data;
+    }
+
     [Fact]
     public void ProgressiveArithmeticAndDifferentialFramesRoundTripMetadataVerbatim()
     {

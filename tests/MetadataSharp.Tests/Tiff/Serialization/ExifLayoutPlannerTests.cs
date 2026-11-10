@@ -93,6 +93,35 @@ public sealed class ExifLayoutPlannerTests
         Assert.Equal(4U, plan.Directories[1].Entries.Single(e => e.TagId == 0x0202).ScalarOverride);
     }
 
+    // The read keeps a thumbnail IFD whose JPEG failed validation, but retains no bytes for it. A rebuild
+    // of that source cannot carry a picture it never owned: refuse, whether the offset/length pair survives
+    // in the directory or the directory holds only the compression field.
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void SourceThumbnailDirectoryWithoutRetainedBytesCannotBeRebuilt(bool pairPresent)
+    {
+        var compression = new ExifEntry(new(ExifDirectoryKind.Thumbnail, 0x0103),
+            ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, [6, 0]));
+        ExifMetadata metadata = pairPresent
+            ? Snapshot(compression, Scalar(ExifDirectoryKind.Thumbnail, 0x0201, 140),
+                Scalar(ExifDirectoryKind.Thumbnail, 0x0202, 4))
+            : Snapshot(compression);
+        var original = new TiffReadResult(metadata,
+            new[] { ExifDirectoryKind.Ifd0, ExifDirectoryKind.Thumbnail }, null);
+        MetadataException error = Assert.Throws<MetadataException>(
+            () => ExifLayoutPlanner.Create(original, metadata));
+        Assert.Equal(MetadataErrorCode.UnsafeRelocation, error.Code);
+    }
+
+    [Fact]
+    public void ASourceWithoutAnyThumbnailDirectoryIsNeverBlockedByTheCarryRule()
+    {
+        ExifMetadata metadata = Snapshot(Text(ExifDirectoryKind.Ifd0, 0x0110, 5));
+        var original = new TiffReadResult(metadata, new[] { ExifDirectoryKind.Ifd0 }, null);
+        Assert.NotNull(ExifLayoutPlanner.Create(original, metadata));
+    }
+
     [Theory]
     [InlineData(0xFFFF, TiffFieldType.Short)]
     [InlineData(0x927C, TiffFieldType.Undefined)]

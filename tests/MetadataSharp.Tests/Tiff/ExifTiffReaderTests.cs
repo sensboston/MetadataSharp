@@ -162,7 +162,6 @@ public sealed class ExifTiffReaderTests
     [InlineData("value")]
     [InlineData("retained")]
     [InlineData("input")]
-    [InlineData("thumbnail")]
     public void EnforcesBudgetsBeforeAllocationOrTraversal(string budget)
     {
         var limits = budget switch
@@ -173,35 +172,67 @@ public sealed class ExifTiffReaderTests
             "total-entries" => new MetadataLimits { MaxTotalEntries = 2 },
             "value" => new MetadataLimits { MaxValueBytes = 4 },
             "retained" => new MetadataLimits { MaxRetainedMetadataBytes = Graph().Length },
-            "input" => new MetadataLimits { MaxInputBytes = 10 },
-            _ => new MetadataLimits { MaxThumbnailBytes = 3 }
+            _ => new MetadataLimits { MaxInputBytes = 10 }
         };
         Assert.Equal(MetadataErrorCode.LimitExceeded,
             Assert.Throws<MetadataException>(() => ExifTiffReader.Read(Graph(), limits)).Code);
     }
 
+    // A thumbnail is incidental to the read: every way it can fail to be a whole, addressable JPEG drops
+    // the picture and nothing else. The entry count includes the thumbnail IFD's own fields, which stay.
     [Theory]
-    [InlineData("missing-pair", MetadataErrorCode.UnsupportedFeature)]
-    [InlineData("wrong-compression", MetadataErrorCode.UnsupportedFeature)]
-    [InlineData("wrong-offset-type", MetadataErrorCode.InvalidExif)]
-    [InlineData("bad-offset", MetadataErrorCode.InvalidExif)]
-    [InlineData("overlap", MetadataErrorCode.InvalidExif)]
-    [InlineData("bad-boundary", MetadataErrorCode.InvalidExif)]
-    [InlineData("short", MetadataErrorCode.InvalidExif)]
-    public void ValidatesThumbnailRangesAndRepresentation(string mutation, MetadataErrorCode expected)
+    [InlineData("missing-pair")]
+    [InlineData("missing-compression")]
+    [InlineData("wrong-compression")]
+    [InlineData("wrong-offset-type")]
+    [InlineData("bad-offset")]
+    [InlineData("bad-boundary")]
+    [InlineData("short")]
+    [InlineData("odd-offset")]
+    [InlineData("over-budget")]
+    public void FailingThumbnailValidationDropsTheThumbnailOnly(string mutation)
     {
         byte[] data = Graph();
+        MetadataLimits? limits = null;
         switch (mutation)
         {
             case "missing-pair": Put16(data, 124, 0x0203); break;
+            case "missing-compression": Put16(data, 100, 0x0104); break;
             case "wrong-compression": Put16(data, 108, 1); break;
             case "wrong-offset-type": Put16(data, 114, 3); break;
             case "bad-offset": Put32(data, 120, uint.MaxValue); break;
-            case "overlap": Put32(data, 120, 8); break;
             case "bad-boundary": data[140] = 0; break;
             case "short": Put32(data, 132, 1); break;
+            case "odd-offset": Put32(data, 120, 141); break;
+            case "over-budget": limits = new MetadataLimits { MaxThumbnailBytes = 3 }; break;
         }
-        Assert.Equal(expected, Assert.Throws<MetadataException>(() => ExifTiffReader.Read(data)).Code);
+        TiffReadResult result = ExifTiffReader.Read(data, limits);
+        Assert.Null(result.Thumbnail);
+        Assert.Equal(5, result.Directories.Count);
+        Assert.Equal(8, result.Metadata.Entries.Count);
+    }
+
+    [Theory]
+    [InlineData("retained", MetadataErrorCode.LimitExceeded)]
+    [InlineData("overlap", MetadataErrorCode.InvalidExif)]
+    public void AWholeThumbnailStillAnswersForThePayloadItSitsIn(string mutation, MetadataErrorCode expected)
+    {
+        byte[] data = Graph();
+        MetadataLimits? limits = null;
+        switch (mutation)
+        {
+            // A whole JPEG laid across the MakerNote's claimed bytes: overlap is a statement about the
+            // payload, so the file is refused even though only the thumbnail moved.
+            case "overlap":
+                new byte[] { 0xFF, 0xD8, 0xFF, 0xD9 }.CopyTo(data, 146);
+                Put32(data, 120, 146);
+                break;
+            // A thumbnail inside its own budget that runs the file out of retained bytes stays a refusal:
+            // the whole-file budget is not thumbnail policy. The graph costs 179 bytes once its payload is
+            // counted, so 182 lets the read finish every entry and fail only on the picture's four.
+            case "retained": limits = new MetadataLimits { MaxRetainedMetadataBytes = 182 }; break;
+        }
+        Assert.Equal(expected, Assert.Throws<MetadataException>(() => ExifTiffReader.Read(data, limits)).Code);
     }
 
     [Fact]
