@@ -32,7 +32,7 @@ public sealed class ExifTagsTests
     [InlineData(ExifDirectoryKind.Gps, 0x0002, "GPSLatitude", TiffFieldType.Rational, 3U)]
     [InlineData(ExifDirectoryKind.Gps, 0x001D, "GPSDateStamp", TiffFieldType.Ascii, 11U)]
     [InlineData(ExifDirectoryKind.Interop, 0x0001, "InteroperabilityIndex", TiffFieldType.Ascii, 0U)]
-    [InlineData(ExifDirectoryKind.Thumbnail, 0x0201, "JPEGInterchangeFormat", TiffFieldType.Long, 0U)]
+    [InlineData(ExifDirectoryKind.Thumbnail, 0x0201, "JPEGInterchangeFormat", TiffFieldType.Long, 1U)]
     public void ATagResolvesToTheShapeItsStandardGives(
         ExifDirectoryKind directory, ushort id, string name, TiffFieldType type, uint fixedCount)
     {
@@ -101,9 +101,9 @@ public sealed class ExifTagsTests
         Assert.Equal(
             new[]
             {
-                "Artist", "CameraFirmware", "CameraOwnerName", "Copyright", "ImageDescription", "ImageEditor",
-                "ImageEditingSoftware", "ImageTitle", "LensMake", "LensModel", "Make", "MetadataEditingSoftware",
-                "Model", "Photographer", "RAWDevelopingSoftware", "Software",
+                "Artist", "CameraFirmware", "CameraOwnerName", "Copyright", "ImageDescription",
+                "ImageEditingSoftware", "ImageEditor", "ImageTitle", "LensMake", "LensModel", "Make",
+                "MetadataEditingSoftware", "Model", "Photographer", "RAWDevelopingSoftware", "Software",
             },
             marked.Distinct(StringComparer.Ordinal).OrderBy(n => n, StringComparer.Ordinal).ToArray());
     }
@@ -166,9 +166,9 @@ public sealed class ExifTagsTests
                 uint fixedCount = definition.Counts.Length == 1 ? definition.Counts[0] : 0U;
                 Assert.Equal(fixedCount, definition.FixedCount);
                 Assert.Equal(
-                    definition.Values.Select(value => value.Number).Distinct().ToArray(),
-                    definition.Values.Select(value => value.Number).ToArray());
-                foreach (ExifTagValueMeaning value in definition.Values)
+                    definition.ValueMeanings.Select(value => value.Number).Distinct().ToArray(),
+                    definition.ValueMeanings.Select(value => value.Number).ToArray());
+                foreach (ExifTagValueMeaning value in definition.ValueMeanings)
                 {
                     Assert.False(string.IsNullOrWhiteSpace(value.Meaning));
                     Assert.Equal(value.Meaning.Trim(), value.Meaning);
@@ -176,7 +176,7 @@ public sealed class ExifTagsTests
                     Assert.False(value.Meaning.EndsWith('.'));  // no overload takes char with StringComparison
                 }
 
-                if (definition.Values.Length > 0)
+                if (definition.ValueMeanings.Length > 0)
                 {
                     // A number-to-label table describes a small integer field, never a rational, a ratio or
                     // a string, and it is only stated where the standard states one.
@@ -222,11 +222,11 @@ public sealed class ExifTagsTests
 
         Assert.Equal(new[] { TiffFieldType.Short }, definition.Types);
         Assert.Equal(1U, definition.FixedCount);
-        Assert.Equal(5, definition.Values.Length);
-        Assert.Equal("None", definition.Values[0].Meaning);
-        Assert.Equal((ushort)2, definition.Values[2].Number);
-        Assert.Equal("High gain up", definition.Values[2].Meaning);
-        Assert.Equal("High gain down", definition.Values[4].Meaning);
+        Assert.Equal(5, definition.ValueMeanings.Length);
+        Assert.Equal("None", definition.ValueMeanings[0].Meaning);
+        Assert.Equal((ushort)2, definition.ValueMeanings[2].Number);
+        Assert.Equal("High gain up", definition.ValueMeanings[2].Meaning);
+        Assert.Equal("High gain down", definition.ValueMeanings[4].Meaning);
     }
 
     [Fact]
@@ -238,9 +238,9 @@ public sealed class ExifTagsTests
             return;
         }
 
-        Assert.Equal(8, orientation.Values.Length);
+        Assert.Equal(8, orientation.ValueMeanings.Length);
         Assert.Equal("The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side",
-            orientation.Values[0].Meaning);
+            orientation.ValueMeanings[0].Meaning);
         if (ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Exif, 0xA001)) is not ExifTagDefinition colorSpace)
         {
             Assert.Fail("ColorSpace is missing from the vocabulary.");
@@ -248,7 +248,7 @@ public sealed class ExifTagsTests
         }
 
         // The publication's capitalisation survives, because "sRGB" is the name and "Srgb" is not.
-        Assert.Equal("sRGB", Assert.Single(colorSpace.Values).Meaning);
+        Assert.Equal("sRGB", Assert.Single(colorSpace.ValueMeanings).Meaning);
     }
 
     [Fact]
@@ -326,7 +326,7 @@ public sealed class ExifTagsTests
             Assert.Contains(definition.Types, field => field == written.Type);
             if (written.Count != 0U && definition.Counts.Length > 0)
             {
-                Assert.True(Array.IndexOf(definition.Counts, written.Count) >= 0,
+                Assert.True(definition.Counts.IndexOf(written.Count) >= 0,
                     $"{definition.Name} is written with {written.Count} values, which its standard rejects.");
             }
         }

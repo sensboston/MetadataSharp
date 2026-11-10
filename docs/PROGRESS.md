@@ -2642,6 +2642,12 @@ no denominator freeze, publication or DNG D2 write.
   `ExifTags.Definitions(directory)`. `TryGetName`, `TryGetKey` and `NamedTags` are gone rather than kept
   beside a second copy of the same rows: pre-1.0, the point of this step was to merge the two so a name and
   a shape cannot drift apart. The dumper reads `ExifTags.Find(key).Name`, so its output is unchanged.
+- **API review, same PR.** The arrays a definition carries - `Types`, `Counts`, `ValueMeanings` (renamed
+  from `Values`, which read like the tag's data) - are `System.Collections.Immutable.ImmutableArray`, each
+  defaulting to `Empty`, so no caller can corrupt the shared table through a definition it resolved. The
+  review's other point: a fact gets one home. `FixedCount` is now a computed `=> this.Counts.Length == 1 ?
+  this.Counts[0] : 0U`, never a stored second statement of `Counts`, so the row data itself carries each
+  count once.
 - **Where the numbers come from.** The extraction was rebuilt from scratch in a fresh sandbox: the two PDFs
   were re-fetched from the mirror blobs the read-policy document names and their SHA-256s re-verified
   (`dbcdf729…` for TIFF 6.0, `d1020d7f…` for DC-008-2023), then re-parsed. All 198 tags resolved - 154 from

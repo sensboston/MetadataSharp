@@ -1,6 +1,7 @@
 // The tables name field types bare, `Types = [Short]`, because 198 rows of `TiffFieldType.` would push
 // every long one onto a second line. `Byte` is the one name spelled like a type the implicit `using System`
 // exports, and CS0229 says a simple name cannot be contested between them, so that member stays qualified.
+using System.Collections.Immutable;
 using static MetadataSharp.Core.TiffFieldType;
 
 namespace MetadataSharp.Core;
@@ -21,20 +22,25 @@ public sealed record ExifTagDefinition
 
     /// <summary>
     /// The field types the tag may carry, in the order the publication lists them. Two entries mean either
-    /// is written; an empty array is only for the tags whose publication says to use whichever type matches
-    /// the samples. A type of 129, which Exif allows in place of ASCII, is not part of the raw value model
-    /// and is recorded by <see cref="ExifTagDefinition.Utf8TextAlternative" /> instead.
+    /// is written; none is only for the tags whose publication says to use whichever type matches the
+    /// samples. A type of 129, which Exif allows in place of ASCII, is not part of the raw value model and
+    /// is recorded by <see cref="ExifTagDefinition.Utf8TextAlternative" /> instead. These arrays come out
+    /// of the one table, so they are immutable: a resolved definition cannot be turned against it.
     /// </summary>
-    public required TiffFieldType[] Types { get; init; }
-
-    /// <summary>The number of values, when the publication fixes one for the tag, otherwise 0.</summary>
-    public required uint FixedCount { get; init; }
+    public ImmutableArray<TiffFieldType> Types { get; init; } = ImmutableArray<TiffFieldType>.Empty;
 
     /// <summary>
-    /// Every value count the publication allows, ascending; empty when the count varies with the image. A
-    /// tag with one allowed count repeats it here as well, so this array is the complete statement.
+    /// The number of values, when the publication fixes one for the tag, otherwise 0; this is <see
+    /// cref="Counts" /> read back, never a second statement of it.
     /// </summary>
-    public required uint[] Counts { get; init; }
+    public uint FixedCount => this.Counts.Length == 1 ? this.Counts[0] : 0U;
+
+    /// <summary>
+    /// Every value count the publication allows, ascending; empty when the count varies with the image.
+    /// This is the complete statement; a tag with one allowed count reads it back as <see
+    /// cref="FixedCount" />.
+    /// </summary>
+    public ImmutableArray<uint> Counts { get; init; } = ImmutableArray<uint>.Empty;
 
     /// <summary>True where the publication allows UTF-8 in place of ASCII for this tag.</summary>
     public bool Utf8TextAlternative { get; init; }
@@ -43,10 +49,12 @@ public sealed record ExifTagDefinition
     public string? Default { get; init; }
 
     /// <summary>
-    /// What the numeric values mean, in the publication's own words, for the tags that enumerate them. Bit
-    /// fields such as Flash are left out: their meaning is not a number-to-label table.
+    /// What the numeric values mean, in the publication's own words, for the tags that enumerate them, and
+    /// empty for the rest. Bit fields such as Flash are left out: their meaning is not a number-to-label
+    /// table.
     /// </summary>
-    public ExifTagValueMeaning[] Values { get; init; } = [];
+    public ImmutableArray<ExifTagValueMeaning> ValueMeanings { get; init; }
+        = ImmutableArray<ExifTagValueMeaning>.Empty;
 }
 
 /// <summary>One numeric value of an enumerated tag.</summary>
@@ -77,15 +85,15 @@ public static class ExifTags
     // Shapes come from Exif 3.0 Table 6 with the TIFF 6.0 tag registry, and the section describing each field.
     private static readonly ExifTagDefinition[] Ifd0 =
         [
-            new() { Id = 0x00FE, Name = "NewSubfileType", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x00FF, Name = "SubfileType", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0100, Name = "ImageWidth", Types = [Short, Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0101, Name = "ImageLength", Types = [Short, Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0102, Name = "BitsPerSample", Types = [Short], FixedCount = 3U, Counts = [3U], Default = "8 8 8" },
+            new() { Id = 0x00FE, Name = "NewSubfileType", Types = [Long], Counts = [1U] },
+            new() { Id = 0x00FF, Name = "SubfileType", Types = [Short], Counts = [1U] },
+            new() { Id = 0x0100, Name = "ImageWidth", Types = [Short, Long], Counts = [1U] },
+            new() { Id = 0x0101, Name = "ImageLength", Types = [Short, Long], Counts = [1U] },
+            new() { Id = 0x0102, Name = "BitsPerSample", Types = [Short], Counts = [3U], Default = "8 8 8" },
             new()
             {
-                Id = 0x0103, Name = "Compression", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0x0103, Name = "Compression", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(1, "uncompressed"),
                     new(6, "JPEG compression (thumbnails only)"),
@@ -93,29 +101,39 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0x0106, Name = "PhotometricInterpretation", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0x0106, Name = "PhotometricInterpretation", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(2, "RGB"),
                     new(6, "YCbCr"),
                 ],
             },
-            new() { Id = 0x0107, Name = "Threshholding", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0108, Name = "CellWidth", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0109, Name = "CellLength", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x010A, Name = "FillOrder", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x010D, Name = "DocumentName", Types = [Ascii], FixedCount = 0U, Counts = [] },
+            new() { Id = 0x0107, Name = "Threshholding", Types = [Short], Counts = [1U] },
+            new() { Id = 0x0108, Name = "CellWidth", Types = [Short], Counts = [1U] },
+            new() { Id = 0x0109, Name = "CellLength", Types = [Short], Counts = [1U] },
+            new() { Id = 0x010A, Name = "FillOrder", Types = [Short], Counts = [1U] },
+            new() { Id = 0x010D, Name = "DocumentName", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
             new()
             {
-                Id = 0x010E, Name = "ImageDescription", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true,
+                Id = 0x010E,
+                Name = "ImageDescription",
+                Types = [Ascii],
+                Counts = ImmutableArray<uint>.Empty,
+                Utf8TextAlternative = true,
             },
-            new() { Id = 0x010F, Name = "Make", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true },
-            new() { Id = 0x0110, Name = "Model", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true },
-            new() { Id = 0x0111, Name = "StripOffsets", Types = [Short, Long], FixedCount = 0U, Counts = [] },
             new()
             {
-                Id = 0x0112, Name = "Orientation", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "1",
-                Values =
+                Id = 0x010F, Name = "Make", Types = [Ascii], Counts = ImmutableArray<uint>.Empty, Utf8TextAlternative = true,
+            },
+            new()
+            {
+                Id = 0x0110, Name = "Model", Types = [Ascii], Counts = ImmutableArray<uint>.Empty, Utf8TextAlternative = true,
+            },
+            new() { Id = 0x0111, Name = "StripOffsets", Types = [Short, Long], Counts = ImmutableArray<uint>.Empty },
+            new()
+            {
+                Id = 0x0112, Name = "Orientation", Types = [Short], Counts = [1U], Default = "1",
+                ValueMeanings =
                 [
                     new(1, "The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side"),
                     new(2, "The 0th row is at the visual top of the image, and the 0th column is the visual right-hand side"),
@@ -127,88 +145,98 @@ public static class ExifTags
                     new(8, "The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom"),
                 ],
             },
-            new() { Id = 0x0115, Name = "SamplesPerPixel", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "3" },
-            new() { Id = 0x0116, Name = "RowsPerStrip", Types = [Short, Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0117, Name = "StripByteCounts", Types = [Short, Long], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0118, Name = "MinSampleValue", Types = [Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0119, Name = "MaxSampleValue", Types = [Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x011A, Name = "XResolution", Types = [Rational], FixedCount = 1U, Counts = [1U], Default = "72" },
-            new() { Id = 0x011B, Name = "YResolution", Types = [Rational], FixedCount = 1U, Counts = [1U], Default = "72" },
+            new() { Id = 0x0115, Name = "SamplesPerPixel", Types = [Short], Counts = [1U], Default = "3" },
+            new() { Id = 0x0116, Name = "RowsPerStrip", Types = [Short, Long], Counts = [1U] },
+            new() { Id = 0x0117, Name = "StripByteCounts", Types = [Short, Long], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0118, Name = "MinSampleValue", Types = [Short], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0119, Name = "MaxSampleValue", Types = [Short], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x011A, Name = "XResolution", Types = [Rational], Counts = [1U], Default = "72" },
+            new() { Id = 0x011B, Name = "YResolution", Types = [Rational], Counts = [1U], Default = "72" },
             new()
             {
-                Id = 0x011C, Name = "PlanarConfiguration", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0x011C, Name = "PlanarConfiguration", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(1, "chunky format"),
                     new(2, "planar format"),
                 ],
             },
-            new() { Id = 0x011D, Name = "PageName", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x011E, Name = "XPosition", Types = [Rational], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x011F, Name = "YPosition", Types = [Rational], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0120, Name = "FreeOffsets", Types = [Long], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0121, Name = "FreeByteCounts", Types = [Long], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0122, Name = "GrayResponseUnit", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0123, Name = "GrayResponseCurve", Types = [Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0124, Name = "T4Options", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0125, Name = "T6Options", Types = [Long], FixedCount = 1U, Counts = [1U] },
+            new() { Id = 0x011D, Name = "PageName", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x011E, Name = "XPosition", Types = [Rational], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x011F, Name = "YPosition", Types = [Rational], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0120, Name = "FreeOffsets", Types = [Long], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0121, Name = "FreeByteCounts", Types = [Long], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0122, Name = "GrayResponseUnit", Types = [Short], Counts = [1U] },
+            new() { Id = 0x0123, Name = "GrayResponseCurve", Types = [Short], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0124, Name = "T4Options", Types = [Long], Counts = [1U] },
+            new() { Id = 0x0125, Name = "T6Options", Types = [Long], Counts = [1U] },
             new()
             {
-                Id = 0x0128, Name = "ResolutionUnit", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "2",
-                Values =
+                Id = 0x0128, Name = "ResolutionUnit", Types = [Short], Counts = [1U], Default = "2",
+                ValueMeanings =
                 [
                     new(2, "inches"),
                     new(3, "centimeters"),
                 ],
             },
-            new() { Id = 0x0129, Name = "PageNumber", Types = [Short], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0x012D, Name = "TransferFunction", Types = [Short], FixedCount = 768U, Counts = [768U] },
-            new() { Id = 0x0131, Name = "Software", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true },
-            new() { Id = 0x0132, Name = "DateTime", Types = [Ascii], FixedCount = 20U, Counts = [20U] },
-            new() { Id = 0x013B, Name = "Artist", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true },
-            new() { Id = 0x013C, Name = "HostComputer", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x013D, Name = "Predictor", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x013E, Name = "WhitePoint", Types = [Rational], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0x013F, Name = "PrimaryChromaticities", Types = [Rational], FixedCount = 6U, Counts = [6U] },
-            new() { Id = 0x0140, Name = "ColorMap", Types = [Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0141, Name = "HalftoneHints", Types = [Short], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0x0142, Name = "TileWidth", Types = [Short, Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0143, Name = "TileLength", Types = [Short, Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0144, Name = "TileOffsets", Types = [Long], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0145, Name = "TileByteCounts", Types = [Short, Long], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x014C, Name = "InkSet", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x014D, Name = "InkNames", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x014E, Name = "NumberOfInks", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0150, Name = "DotRange", Types = [TiffFieldType.Byte, Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0151, Name = "TargetPrinter", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0152, Name = "ExtraSamples", Types = [Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0153, Name = "SampleFormat", Types = [Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0154, Name = "SMinSampleValue", Types = [], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0155, Name = "SMaxSampleValue", Types = [], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0156, Name = "TransferRange", Types = [Short], FixedCount = 6U, Counts = [6U] },
-            new() { Id = 0x0200, Name = "JPEGProc", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0201, Name = "JPEGInterchangeFormat", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0202, Name = "JPEGInterchangeFormatLength", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0203, Name = "JPEGRestartInterval", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0205, Name = "JPEGLosslessPredictors", Types = [Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0206, Name = "JPEGPointTransforms", Types = [Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0207, Name = "JPEGQTables", Types = [Long], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0208, Name = "JPEGDCTables", Types = [Long], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0209, Name = "JPEGACTables", Types = [Long], FixedCount = 0U, Counts = [] },
+            new() { Id = 0x0129, Name = "PageNumber", Types = [Short], Counts = [2U] },
+            new() { Id = 0x012D, Name = "TransferFunction", Types = [Short], Counts = [768U] },
             new()
             {
-                Id = 0x0211,
-                Name = "YCbCrCoefficients",
-                Types = [Rational],
-                FixedCount = 3U,
-                Counts = [3U],
-                Default = "See Annex D",
+                Id = 0x0131, Name = "Software", Types = [Ascii], Counts = ImmutableArray<uint>.Empty, Utf8TextAlternative = true,
             },
-            new() { Id = 0x0212, Name = "YCbCrSubSampling", Types = [Short], FixedCount = 2U, Counts = [2U] },
+            new() { Id = 0x0132, Name = "DateTime", Types = [Ascii], Counts = [20U] },
             new()
             {
-                Id = 0x0213, Name = "YCbCrPositioning", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "1",
-                Values =
+                Id = 0x013B, Name = "Artist", Types = [Ascii], Counts = ImmutableArray<uint>.Empty, Utf8TextAlternative = true,
+            },
+            new() { Id = 0x013C, Name = "HostComputer", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x013D, Name = "Predictor", Types = [Short], Counts = [1U] },
+            new() { Id = 0x013E, Name = "WhitePoint", Types = [Rational], Counts = [2U] },
+            new() { Id = 0x013F, Name = "PrimaryChromaticities", Types = [Rational], Counts = [6U] },
+            new() { Id = 0x0140, Name = "ColorMap", Types = [Short], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0141, Name = "HalftoneHints", Types = [Short], Counts = [2U] },
+            new() { Id = 0x0142, Name = "TileWidth", Types = [Short, Long], Counts = [1U] },
+            new() { Id = 0x0143, Name = "TileLength", Types = [Short, Long], Counts = [1U] },
+            new() { Id = 0x0144, Name = "TileOffsets", Types = [Long], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0145, Name = "TileByteCounts", Types = [Short, Long], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x014C, Name = "InkSet", Types = [Short], Counts = [1U] },
+            new() { Id = 0x014D, Name = "InkNames", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x014E, Name = "NumberOfInks", Types = [Short], Counts = [1U] },
+            new() { Id = 0x0150, Name = "DotRange", Types = [TiffFieldType.Byte, Short], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0151, Name = "TargetPrinter", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0152, Name = "ExtraSamples", Types = [Short], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0153, Name = "SampleFormat", Types = [Short], Counts = ImmutableArray<uint>.Empty },
+            new()
+            {
+                Id = 0x0154,
+                Name = "SMinSampleValue",
+                Types = ImmutableArray<TiffFieldType>.Empty,
+                Counts = ImmutableArray<uint>.Empty,
+            },
+            new()
+            {
+                Id = 0x0155,
+                Name = "SMaxSampleValue",
+                Types = ImmutableArray<TiffFieldType>.Empty,
+                Counts = ImmutableArray<uint>.Empty,
+            },
+            new() { Id = 0x0156, Name = "TransferRange", Types = [Short], Counts = [6U] },
+            new() { Id = 0x0200, Name = "JPEGProc", Types = [Short], Counts = [1U] },
+            new() { Id = 0x0201, Name = "JPEGInterchangeFormat", Types = [Long], Counts = [1U] },
+            new() { Id = 0x0202, Name = "JPEGInterchangeFormatLength", Types = [Long], Counts = [1U] },
+            new() { Id = 0x0203, Name = "JPEGRestartInterval", Types = [Short], Counts = [1U] },
+            new() { Id = 0x0205, Name = "JPEGLosslessPredictors", Types = [Short], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0206, Name = "JPEGPointTransforms", Types = [Short], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0207, Name = "JPEGQTables", Types = [Long], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0208, Name = "JPEGDCTables", Types = [Long], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0209, Name = "JPEGACTables", Types = [Long], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0211, Name = "YCbCrCoefficients", Types = [Rational], Counts = [3U], Default = "See Annex D" },
+            new() { Id = 0x0212, Name = "YCbCrSubSampling", Types = [Short], Counts = [2U] },
+            new()
+            {
+                Id = 0x0213, Name = "YCbCrPositioning", Types = [Short], Counts = [1U], Default = "1",
+                ValueMeanings =
                 [
                     new(1, "centered"),
                     new(2, "co-sited"),
@@ -219,24 +247,26 @@ public static class ExifTags
                 Id = 0x0214,
                 Name = "ReferenceBlackWhite",
                 Types = [Rational],
-                FixedCount = 6U,
                 Counts = [6U],
                 Default = "[0, 255, 0, 255, 0, 255] (when PhotometricInterpretation is RGB)",
             },
-            new() { Id = 0x8298, Name = "Copyright", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true },
-            new() { Id = 0x8769, Name = "ExifIFDPointer", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x8825, Name = "GPSInfoIFDPointer", Types = [Long], FixedCount = 1U, Counts = [1U] },
+            new()
+            {
+                Id = 0x8298, Name = "Copyright", Types = [Ascii], Counts = ImmutableArray<uint>.Empty, Utf8TextAlternative = true,
+            },
+            new() { Id = 0x8769, Name = "ExifIFDPointer", Types = [Long], Counts = [1U] },
+            new() { Id = 0x8825, Name = "GPSInfoIFDPointer", Types = [Long], Counts = [1U] },
         ];
     // Fields of the Exif directory.
     // Shapes come from Exif 3.0 Tables 8 and 9, and the section describing each tag.
     private static readonly ExifTagDefinition[] Exif =
         [
-            new() { Id = 0x829A, Name = "ExposureTime", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x829D, Name = "FNumber", Types = [Rational], FixedCount = 1U, Counts = [1U] },
+            new() { Id = 0x829A, Name = "ExposureTime", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x829D, Name = "FNumber", Types = [Rational], Counts = [1U] },
             new()
             {
-                Id = 0x8822, Name = "ExposureProgram", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0x8822, Name = "ExposureProgram", Types = [Short], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "Not defined"),
                     new(1, "Manual"),
@@ -249,13 +279,13 @@ public static class ExifTags
                     new(8, "Landscape mode (for landscape photos with the background in focus)"),
                 ],
             },
-            new() { Id = 0x8824, Name = "SpectralSensitivity", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x8827, Name = "PhotographicSensitivity", Types = [Short], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x8828, Name = "OECF", Types = [Undefined], FixedCount = 0U, Counts = [] },
+            new() { Id = 0x8824, Name = "SpectralSensitivity", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x8827, Name = "PhotographicSensitivity", Types = [Short], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x8828, Name = "OECF", Types = [Undefined], Counts = ImmutableArray<uint>.Empty },
             new()
             {
-                Id = 0x8830, Name = "SensitivityType", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0x8830, Name = "SensitivityType", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(0, "Unknown"),
                     new(1, "Standard output sensitivity (SOS)"),
@@ -267,26 +297,25 @@ public static class ExifTags
                     new(7, "Standard output sensitivity (SOS) and recommended exposure index (REI) and ISO speed"),
                 ],
             },
-            new() { Id = 0x8831, Name = "StandardOutputSensitivity", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x8832, Name = "RecommendedExposureIndex", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x8833, Name = "ISOSpeed", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x8834, Name = "ISOSpeedLatitudeyyy", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x8835, Name = "ISOSpeedLatitudezzz", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9000, Name = "ExifVersion", Types = [Undefined], FixedCount = 4U, Counts = [4U], Default = "\"0300”" },
-            new() { Id = 0x9003, Name = "DateTimeOriginal", Types = [Ascii], FixedCount = 20U, Counts = [20U] },
-            new() { Id = 0x9004, Name = "DateTimeDigitized", Types = [Ascii], FixedCount = 20U, Counts = [20U] },
-            new() { Id = 0x9010, Name = "OffsetTime", Types = [Ascii], FixedCount = 7U, Counts = [7U] },
-            new() { Id = 0x9011, Name = "OffsetTimeOriginal", Types = [Ascii], FixedCount = 7U, Counts = [7U] },
-            new() { Id = 0x9012, Name = "OffsetTimeDigitized", Types = [Ascii], FixedCount = 7U, Counts = [7U] },
+            new() { Id = 0x8831, Name = "StandardOutputSensitivity", Types = [Long], Counts = [1U] },
+            new() { Id = 0x8832, Name = "RecommendedExposureIndex", Types = [Long], Counts = [1U] },
+            new() { Id = 0x8833, Name = "ISOSpeed", Types = [Long], Counts = [1U] },
+            new() { Id = 0x8834, Name = "ISOSpeedLatitudeyyy", Types = [Long], Counts = [1U] },
+            new() { Id = 0x8835, Name = "ISOSpeedLatitudezzz", Types = [Long], Counts = [1U] },
+            new() { Id = 0x9000, Name = "ExifVersion", Types = [Undefined], Counts = [4U], Default = "\"0300”" },
+            new() { Id = 0x9003, Name = "DateTimeOriginal", Types = [Ascii], Counts = [20U] },
+            new() { Id = 0x9004, Name = "DateTimeDigitized", Types = [Ascii], Counts = [20U] },
+            new() { Id = 0x9010, Name = "OffsetTime", Types = [Ascii], Counts = [7U] },
+            new() { Id = 0x9011, Name = "OffsetTimeOriginal", Types = [Ascii], Counts = [7U] },
+            new() { Id = 0x9012, Name = "OffsetTimeDigitized", Types = [Ascii], Counts = [7U] },
             new()
             {
                 Id = 0x9101,
                 Name = "ComponentsConfiguration",
                 Types = [Undefined],
-                FixedCount = 4U,
                 Counts = [4U],
                 Default = "4 5 6 0 (if RGB uncompressed) 1 2 3 0 (other cases)",
-                Values =
+                ValueMeanings =
                 [
                     new(0, "does not exist"),
                     new(1, "Y"),
@@ -297,17 +326,17 @@ public static class ExifTags
                     new(6, "B"),
                 ],
             },
-            new() { Id = 0x9102, Name = "CompressedBitsPerPixel", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9201, Name = "ShutterSpeedValue", Types = [SRational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9202, Name = "ApertureValue", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9203, Name = "BrightnessValue", Types = [SRational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9204, Name = "ExposureBiasValue", Types = [SRational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9205, Name = "MaxApertureValue", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9206, Name = "SubjectDistance", Types = [Rational], FixedCount = 1U, Counts = [1U] },
+            new() { Id = 0x9102, Name = "CompressedBitsPerPixel", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x9201, Name = "ShutterSpeedValue", Types = [SRational], Counts = [1U] },
+            new() { Id = 0x9202, Name = "ApertureValue", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x9203, Name = "BrightnessValue", Types = [SRational], Counts = [1U] },
+            new() { Id = 0x9204, Name = "ExposureBiasValue", Types = [SRational], Counts = [1U] },
+            new() { Id = 0x9205, Name = "MaxApertureValue", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x9206, Name = "SubjectDistance", Types = [Rational], Counts = [1U] },
             new()
             {
-                Id = 0x9207, Name = "MeteringMode", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0x9207, Name = "MeteringMode", Types = [Short], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "unknown"),
                     new(1, "Average"),
@@ -321,8 +350,8 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0x9208, Name = "LightSource", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0x9208, Name = "LightSource", Types = [Short], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "unknown"),
                     new(1, "Daylight"),
@@ -348,55 +377,44 @@ public static class ExifTags
                     new(255, "other light source"),
                 ],
             },
-            new() { Id = 0x9209, Name = "Flash", Types = [Short], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x920A, Name = "FocalLength", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9214, Name = "SubjectArea", Types = [Short], FixedCount = 0U, Counts = [2U, 3U, 4U] },
-            new() { Id = 0x927C, Name = "MakerNote", Types = [Undefined], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x9286, Name = "UserComment", Types = [Undefined], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x9290, Name = "SubSecTime", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x9291, Name = "SubSecTimeOriginal", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x9292, Name = "SubSecTimeDigitized", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x9400, Name = "Temperature", Types = [SRational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9401, Name = "Humidity", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9402, Name = "Pressure", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9403, Name = "WaterDepth", Types = [SRational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9404, Name = "Acceleration", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x9405, Name = "CameraElevationAngle", Types = [SRational], FixedCount = 1U, Counts = [1U] },
+            new() { Id = 0x9209, Name = "Flash", Types = [Short], Counts = [1U] },
+            new() { Id = 0x920A, Name = "FocalLength", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x9214, Name = "SubjectArea", Types = [Short], Counts = [2U, 3U, 4U] },
+            new() { Id = 0x927C, Name = "MakerNote", Types = [Undefined], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x9286, Name = "UserComment", Types = [Undefined], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x9290, Name = "SubSecTime", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x9291, Name = "SubSecTimeOriginal", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x9292, Name = "SubSecTimeDigitized", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x9400, Name = "Temperature", Types = [SRational], Counts = [1U] },
+            new() { Id = 0x9401, Name = "Humidity", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x9402, Name = "Pressure", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x9403, Name = "WaterDepth", Types = [SRational], Counts = [1U] },
+            new() { Id = 0x9404, Name = "Acceleration", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x9405, Name = "CameraElevationAngle", Types = [SRational], Counts = [1U] },
+            new() { Id = 0xA000, Name = "FlashpixVersion", Types = [Undefined], Counts = [4U], Default = "\"0100\"" },
             new()
             {
-                Id = 0xA000, Name = "FlashpixVersion", Types = [Undefined], FixedCount = 4U, Counts = [4U], Default = "\"0100\"",
-            },
-            new()
-            {
-                Id = 0xA001, Name = "ColorSpace", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0xA001, Name = "ColorSpace", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(1, "sRGB"),
                 ],
             },
-            new() { Id = 0xA002, Name = "PixelXDimension", Types = [Short, Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0xA003, Name = "PixelYDimension", Types = [Short, Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0xA004, Name = "RelatedSoundFile", Types = [Ascii], FixedCount = 13U, Counts = [13U] },
-            new() { Id = 0xA005, Name = "InteroperabilityIFDPointer", Types = [Long], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0xA20B, Name = "FlashEnergy", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0xA20C, Name = "SpatialFrequencyResponse", Types = [Undefined], FixedCount = 0U, Counts = [] },
-            new() { Id = 0xA20E, Name = "FocalPlaneXResolution", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0xA20F, Name = "FocalPlaneYResolution", Types = [Rational], FixedCount = 1U, Counts = [1U] },
+            new() { Id = 0xA002, Name = "PixelXDimension", Types = [Short, Long], Counts = [1U] },
+            new() { Id = 0xA003, Name = "PixelYDimension", Types = [Short, Long], Counts = [1U] },
+            new() { Id = 0xA004, Name = "RelatedSoundFile", Types = [Ascii], Counts = [13U] },
+            new() { Id = 0xA005, Name = "InteroperabilityIFDPointer", Types = [Long], Counts = [1U] },
+            new() { Id = 0xA20B, Name = "FlashEnergy", Types = [Rational], Counts = [1U] },
+            new() { Id = 0xA20C, Name = "SpatialFrequencyResponse", Types = [Undefined], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0xA20E, Name = "FocalPlaneXResolution", Types = [Rational], Counts = [1U] },
+            new() { Id = 0xA20F, Name = "FocalPlaneYResolution", Types = [Rational], Counts = [1U] },
+            new() { Id = 0xA210, Name = "FocalPlaneResolutionUnit", Types = [Short], Counts = [1U], Default = "2 (inch)" },
+            new() { Id = 0xA214, Name = "SubjectLocation", Types = [Short], Counts = [2U] },
+            new() { Id = 0xA215, Name = "ExposureIndex", Types = [Rational], Counts = [1U] },
             new()
             {
-                Id = 0xA210,
-                Name = "FocalPlaneResolutionUnit",
-                Types = [Short],
-                FixedCount = 1U,
-                Counts = [1U],
-                Default = "2 (inch)",
-            },
-            new() { Id = 0xA214, Name = "SubjectLocation", Types = [Short], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0xA215, Name = "ExposureIndex", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new()
-            {
-                Id = 0xA217, Name = "SensingMethod", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0xA217, Name = "SensingMethod", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(1, "Not defined"),
                     new(2, "One-chip color area sensor"),
@@ -409,8 +427,8 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0xA300, Name = "FileSource", Types = [Undefined], FixedCount = 1U, Counts = [1U], Default = "3",
-                Values =
+                Id = 0xA300, Name = "FileSource", Types = [Undefined], Counts = [1U], Default = "3",
+                ValueMeanings =
                 [
                     new(0, "others"),
                     new(1, "scanner of transparent type"),
@@ -420,17 +438,17 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0xA301, Name = "SceneType", Types = [Undefined], FixedCount = 1U, Counts = [1U], Default = "1",
-                Values =
+                Id = 0xA301, Name = "SceneType", Types = [Undefined], Counts = [1U], Default = "1",
+                ValueMeanings =
                 [
                     new(1, "A directly photographed image"),
                 ],
             },
-            new() { Id = 0xA302, Name = "CFAPattern", Types = [Undefined], FixedCount = 0U, Counts = [] },
+            new() { Id = 0xA302, Name = "CFAPattern", Types = [Undefined], Counts = ImmutableArray<uint>.Empty },
             new()
             {
-                Id = 0xA401, Name = "CustomRendered", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0xA401, Name = "CustomRendered", Types = [Short], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "Normal process"),
                     new(1, "Custom process"),
@@ -438,8 +456,8 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0xA402, Name = "ExposureMode", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0xA402, Name = "ExposureMode", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(0, "Auto exposure"),
                     new(1, "Manual exposure"),
@@ -448,19 +466,19 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0xA403, Name = "WhiteBalance", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0xA403, Name = "WhiteBalance", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(0, "Auto white balance"),
                     new(1, "Manual white balance"),
                 ],
             },
-            new() { Id = 0xA404, Name = "DigitalZoomRatio", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0xA405, Name = "FocalLengthIn35mmFilm", Types = [Short], FixedCount = 1U, Counts = [1U] },
+            new() { Id = 0xA404, Name = "DigitalZoomRatio", Types = [Rational], Counts = [1U] },
+            new() { Id = 0xA405, Name = "FocalLengthIn35mmFilm", Types = [Short], Counts = [1U] },
             new()
             {
-                Id = 0xA406, Name = "SceneCaptureType", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0xA406, Name = "SceneCaptureType", Types = [Short], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "Standard"),
                     new(1, "Landscape"),
@@ -470,8 +488,8 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0xA407, Name = "GainControl", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0xA407, Name = "GainControl", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(0, "None"),
                     new(1, "Low gain up"),
@@ -482,8 +500,8 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0xA408, Name = "Contrast", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0xA408, Name = "Contrast", Types = [Short], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "Normal"),
                     new(1, "Soft"),
@@ -492,8 +510,8 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0xA409, Name = "Saturation", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0xA409, Name = "Saturation", Types = [Short], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "Normal"),
                     new(1, "Low saturation"),
@@ -502,19 +520,19 @@ public static class ExifTags
             },
             new()
             {
-                Id = 0xA40A, Name = "Sharpness", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0xA40A, Name = "Sharpness", Types = [Short], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "Normal"),
                     new(1, "Soft"),
                     new(2, "Hard"),
                 ],
             },
-            new() { Id = 0xA40B, Name = "DeviceSettingDescription", Types = [Undefined], FixedCount = 0U, Counts = [] },
+            new() { Id = 0xA40B, Name = "DeviceSettingDescription", Types = [Undefined], Counts = ImmutableArray<uint>.Empty },
             new()
             {
-                Id = 0xA40C, Name = "SubjectDistanceRange", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0xA40C, Name = "SubjectDistanceRange", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(0, "unknown"),
                     new(1, "Macro"),
@@ -522,36 +540,64 @@ public static class ExifTags
                     new(3, "Distant view"),
                 ],
             },
-            new() { Id = 0xA420, Name = "ImageUniqueID", Types = [Ascii], FixedCount = 33U, Counts = [33U] },
+            new() { Id = 0xA420, Name = "ImageUniqueID", Types = [Ascii], Counts = [33U] },
             new()
             {
-                Id = 0xA430, Name = "CameraOwnerName", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true,
+                Id = 0xA430,
+                Name = "CameraOwnerName",
+                Types = [Ascii],
+                Counts = ImmutableArray<uint>.Empty,
+                Utf8TextAlternative = true,
             },
-            new() { Id = 0xA431, Name = "BodySerialNumber", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0xA432, Name = "LensSpecification", Types = [Rational], FixedCount = 4U, Counts = [4U] },
-            new() { Id = 0xA433, Name = "LensMake", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true },
-            new() { Id = 0xA434, Name = "LensModel", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true },
-            new() { Id = 0xA435, Name = "LensSerialNumber", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0xA436, Name = "ImageTitle", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true },
+            new() { Id = 0xA431, Name = "BodySerialNumber", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0xA432, Name = "LensSpecification", Types = [Rational], Counts = [4U] },
             new()
             {
-                Id = 0xA437, Name = "Photographer", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true,
-            },
-            new()
-            {
-                Id = 0xA438, Name = "ImageEditor", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true,
+                Id = 0xA433, Name = "LensMake", Types = [Ascii], Counts = ImmutableArray<uint>.Empty, Utf8TextAlternative = true,
             },
             new()
             {
-                Id = 0xA439, Name = "CameraFirmware", Types = [Ascii], FixedCount = 0U, Counts = [], Utf8TextAlternative = true,
+                Id = 0xA434, Name = "LensModel", Types = [Ascii], Counts = ImmutableArray<uint>.Empty, Utf8TextAlternative = true,
+            },
+            new() { Id = 0xA435, Name = "LensSerialNumber", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new()
+            {
+                Id = 0xA436,
+                Name = "ImageTitle",
+                Types = [Ascii],
+                Counts = ImmutableArray<uint>.Empty,
+                Utf8TextAlternative = true,
+            },
+            new()
+            {
+                Id = 0xA437,
+                Name = "Photographer",
+                Types = [Ascii],
+                Counts = ImmutableArray<uint>.Empty,
+                Utf8TextAlternative = true,
+            },
+            new()
+            {
+                Id = 0xA438,
+                Name = "ImageEditor",
+                Types = [Ascii],
+                Counts = ImmutableArray<uint>.Empty,
+                Utf8TextAlternative = true,
+            },
+            new()
+            {
+                Id = 0xA439,
+                Name = "CameraFirmware",
+                Types = [Ascii],
+                Counts = ImmutableArray<uint>.Empty,
+                Utf8TextAlternative = true,
             },
             new()
             {
                 Id = 0xA43A,
                 Name = "RAWDevelopingSoftware",
                 Types = [Ascii],
-                FixedCount = 0U,
-                Counts = [],
+                Counts = ImmutableArray<uint>.Empty,
                 Utf8TextAlternative = true,
             },
             new()
@@ -559,8 +605,7 @@ public static class ExifTags
                 Id = 0xA43B,
                 Name = "ImageEditingSoftware",
                 Types = [Ascii],
-                FixedCount = 0U,
-                Counts = [],
+                Counts = ImmutableArray<uint>.Empty,
                 Utf8TextAlternative = true,
             },
             new()
@@ -568,14 +613,13 @@ public static class ExifTags
                 Id = 0xA43C,
                 Name = "MetadataEditingSoftware",
                 Types = [Ascii],
-                FixedCount = 0U,
-                Counts = [],
+                Counts = ImmutableArray<uint>.Empty,
                 Utf8TextAlternative = true,
             },
             new()
             {
-                Id = 0xA460, Name = "CompositeImage", Types = [Short], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0xA460, Name = "CompositeImage", Types = [Short], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "unknown"),
                     new(1, "non-composite image"),
@@ -583,34 +627,29 @@ public static class ExifTags
                     new(3, "Composite image captured when shooting"),
                 ],
             },
-            new() { Id = 0xA461, Name = "SourceImageNumberOfCompositeImage", Types = [Short], FixedCount = 2U, Counts = [2U] },
+            new() { Id = 0xA461, Name = "SourceImageNumberOfCompositeImage", Types = [Short], Counts = [2U] },
             new()
             {
-                Id = 0xA462, Name = "SourceExposureTimesOfCompositeImage", Types = [Undefined], FixedCount = 0U, Counts = [],
+                Id = 0xA462,
+                Name = "SourceExposureTimesOfCompositeImage",
+                Types = [Undefined],
+                Counts = ImmutableArray<uint>.Empty,
             },
-            new() { Id = 0xA500, Name = "Gamma", Types = [Rational], FixedCount = 1U, Counts = [1U] },
+            new() { Id = 0xA500, Name = "Gamma", Types = [Rational], Counts = [1U] },
         ];
     // Fields of the Gps directory.
     // Shapes come from Exif 3.0 Table 14, and the section describing each tag.
     private static readonly ExifTagDefinition[] Gps =
         [
+            new() { Id = 0x0000, Name = "GPSVersionID", Types = [TiffFieldType.Byte], Counts = [4U], Default = "2.4.0.0" },
+            new() { Id = 0x0001, Name = "GPSLatitudeRef", Types = [Ascii], Counts = [2U] },
+            new() { Id = 0x0002, Name = "GPSLatitude", Types = [Rational], Counts = [3U] },
+            new() { Id = 0x0003, Name = "GPSLongitudeRef", Types = [Ascii], Counts = [2U] },
+            new() { Id = 0x0004, Name = "GPSLongitude", Types = [Rational], Counts = [3U] },
             new()
             {
-                Id = 0x0000,
-                Name = "GPSVersionID",
-                Types = [TiffFieldType.Byte],
-                FixedCount = 4U,
-                Counts = [4U],
-                Default = "2.4.0.0",
-            },
-            new() { Id = 0x0001, Name = "GPSLatitudeRef", Types = [Ascii], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0x0002, Name = "GPSLatitude", Types = [Rational], FixedCount = 3U, Counts = [3U] },
-            new() { Id = 0x0003, Name = "GPSLongitudeRef", Types = [Ascii], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0x0004, Name = "GPSLongitude", Types = [Rational], FixedCount = 3U, Counts = [3U] },
-            new()
-            {
-                Id = 0x0005, Name = "GPSAltitudeRef", Types = [TiffFieldType.Byte], FixedCount = 1U, Counts = [1U], Default = "0",
-                Values =
+                Id = 0x0005, Name = "GPSAltitudeRef", Types = [TiffFieldType.Byte], Counts = [1U], Default = "0",
+                ValueMeanings =
                 [
                     new(0, "Positive ellipsoidal height (at or above ellipsoidal surface)"),
                     new(1, "Negative ellipsoidal height (below ellipsoidal surface)"),
@@ -618,46 +657,46 @@ public static class ExifTags
                     new(3, "Negative sea level value (below sea level reference)"),
                 ],
             },
-            new() { Id = 0x0006, Name = "GPSAltitude", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0007, Name = "GPSTimeStamp", Types = [Rational], FixedCount = 3U, Counts = [3U] },
-            new() { Id = 0x0008, Name = "GPSSatellites", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0009, Name = "GPSStatus", Types = [Ascii], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0x000A, Name = "GPSMeasureMode", Types = [Ascii], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0x000B, Name = "GPSDOP", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x000C, Name = "GPSSpeedRef", Types = [Ascii], FixedCount = 2U, Counts = [2U], Default = "'K'" },
-            new() { Id = 0x000D, Name = "GPSSpeed", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x000E, Name = "GPSTrackRef", Types = [Ascii], FixedCount = 2U, Counts = [2U], Default = "'T'" },
-            new() { Id = 0x000F, Name = "GPSTrack", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0010, Name = "GPSImgDirectionRef", Types = [Ascii], FixedCount = 2U, Counts = [2U], Default = "'T'" },
-            new() { Id = 0x0011, Name = "GPSImgDirection", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0012, Name = "GPSMapDatum", Types = [Ascii], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x0013, Name = "GPSDestLatitudeRef", Types = [Ascii], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0x0014, Name = "GPSDestLatitude", Types = [Rational], FixedCount = 3U, Counts = [3U] },
-            new() { Id = 0x0015, Name = "GPSDestLongitudeRef", Types = [Ascii], FixedCount = 2U, Counts = [2U] },
-            new() { Id = 0x0016, Name = "GPSDestLongitude", Types = [Rational], FixedCount = 3U, Counts = [3U] },
-            new() { Id = 0x0017, Name = "GPSDestBearingRef", Types = [Ascii], FixedCount = 2U, Counts = [2U], Default = "'T'" },
-            new() { Id = 0x0018, Name = "GPSDestBearing", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x0019, Name = "GPSDestDistanceRef", Types = [Ascii], FixedCount = 2U, Counts = [2U], Default = "'K'" },
-            new() { Id = 0x001A, Name = "GPSDestDistance", Types = [Rational], FixedCount = 1U, Counts = [1U] },
-            new() { Id = 0x001B, Name = "GPSProcessingMethod", Types = [Undefined], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x001C, Name = "GPSAreaInformation", Types = [Undefined], FixedCount = 0U, Counts = [] },
-            new() { Id = 0x001D, Name = "GPSDateStamp", Types = [Ascii], FixedCount = 11U, Counts = [11U] },
+            new() { Id = 0x0006, Name = "GPSAltitude", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x0007, Name = "GPSTimeStamp", Types = [Rational], Counts = [3U] },
+            new() { Id = 0x0008, Name = "GPSSatellites", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0009, Name = "GPSStatus", Types = [Ascii], Counts = [2U] },
+            new() { Id = 0x000A, Name = "GPSMeasureMode", Types = [Ascii], Counts = [2U] },
+            new() { Id = 0x000B, Name = "GPSDOP", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x000C, Name = "GPSSpeedRef", Types = [Ascii], Counts = [2U], Default = "'K'" },
+            new() { Id = 0x000D, Name = "GPSSpeed", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x000E, Name = "GPSTrackRef", Types = [Ascii], Counts = [2U], Default = "'T'" },
+            new() { Id = 0x000F, Name = "GPSTrack", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x0010, Name = "GPSImgDirectionRef", Types = [Ascii], Counts = [2U], Default = "'T'" },
+            new() { Id = 0x0011, Name = "GPSImgDirection", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x0012, Name = "GPSMapDatum", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x0013, Name = "GPSDestLatitudeRef", Types = [Ascii], Counts = [2U] },
+            new() { Id = 0x0014, Name = "GPSDestLatitude", Types = [Rational], Counts = [3U] },
+            new() { Id = 0x0015, Name = "GPSDestLongitudeRef", Types = [Ascii], Counts = [2U] },
+            new() { Id = 0x0016, Name = "GPSDestLongitude", Types = [Rational], Counts = [3U] },
+            new() { Id = 0x0017, Name = "GPSDestBearingRef", Types = [Ascii], Counts = [2U], Default = "'T'" },
+            new() { Id = 0x0018, Name = "GPSDestBearing", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x0019, Name = "GPSDestDistanceRef", Types = [Ascii], Counts = [2U], Default = "'K'" },
+            new() { Id = 0x001A, Name = "GPSDestDistance", Types = [Rational], Counts = [1U] },
+            new() { Id = 0x001B, Name = "GPSProcessingMethod", Types = [Undefined], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x001C, Name = "GPSAreaInformation", Types = [Undefined], Counts = ImmutableArray<uint>.Empty },
+            new() { Id = 0x001D, Name = "GPSDateStamp", Types = [Ascii], Counts = [11U] },
             new()
             {
-                Id = 0x001E, Name = "GPSDifferential", Types = [Short], FixedCount = 1U, Counts = [1U],
-                Values =
+                Id = 0x001E, Name = "GPSDifferential", Types = [Short], Counts = [1U],
+                ValueMeanings =
                 [
                     new(0, "Measurement without differential correction"),
                     new(1, "Differential correction applied"),
                 ],
             },
-            new() { Id = 0x001F, Name = "GPSHPositioningError", Types = [Rational], FixedCount = 1U, Counts = [1U] },
+            new() { Id = 0x001F, Name = "GPSHPositioningError", Types = [Rational], Counts = [1U] },
         ];
     // Fields of the Interop directory.
     // Shapes come from Exif 3.0 Table 16, and the section describing it.
     private static readonly ExifTagDefinition[] Interop =
         [
-            new() { Id = 0x0001, Name = "InteroperabilityIndex", Types = [Ascii], FixedCount = 0U, Counts = [] },
+            new() { Id = 0x0001, Name = "InteroperabilityIndex", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
         ];
 
     private static readonly Dictionary<ExifTagKey, ExifTagDefinition> ByKey = Build();

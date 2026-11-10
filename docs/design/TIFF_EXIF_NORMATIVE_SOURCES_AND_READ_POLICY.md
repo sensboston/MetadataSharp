@@ -80,7 +80,9 @@ Roadmap 4.2b folded that name table into `ExifTags`: one `ExifTagDefinition` per
 the field types and counts the standard allows, the default it records, and for the 27 tags whose standard
 enumerates values (124 numbered values in all), those meanings in the standard's words. The one lookup is
 `ExifTags.Find(key)`; `Definitions(directory)` returns the same records the table holds, so a name cannot
-disagree with a shape. Shapes came from the same two PDFs and a similar throwaway script, a tag's own
+disagree with a shape. The arrays a definition hands out are immutable, and the fixed count is read
+back from the allowed-counts list rather than stated twice, so the table has one home for each fact.
+Shapes came from the same two PDFs and a similar throwaway script, a tag's own
 section first and its table row second: 154 rows resolved from a section, 43 from the TIFF 6.0 appendix,
 and one, `ExtraSamples`, from the body of that publication because its own appendix row contradicts it. All
 198 carry a type rule and a count rule, and 0 rows were left unresolved. `FixedCount` holds a number only
