@@ -1,6 +1,6 @@
 # Current state — recovery checkpoint
 
-Refreshed 2026-11-11, at the EXIF tag-name vocabulary. The only recovery document; the
+Refreshed 2026-11-11, at the tag vocabulary's shapes and meanings. The only recovery document; the
 chronological record is `docs/PROGRESS.md` (one short entry per merged PR), everything else reference.
 
 ## How this project is run now (2026-11-10 directive; overrides `EXIV2_PARITY_MASTER_PLAN.md` §5)
@@ -31,8 +31,9 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
   arithmetic, differential and lossless files round-trip their metadata.
 - **PNG** and **WebP** `*MetadataDocument`: EXIF + XMP edit in static files, chunk/RIFF policy.
 - **Standalone TIFF** `TiffMetadataDocument`: layout accounting, restricted descriptive editing
-  with obsolete bytes retained; **DNG**, **PSD**, **JP2**, **EPS** are bounded read-only. Tag names come
-  from `ExifTagNames` (198 IDs, from the two texts the read policy reviewed); an unnamed ID stays numeric.
+  with obsolete bytes retained; **DNG**, **PSD**, **JP2**, **EPS** are bounded read-only. The vocabulary
+  `ExifTags` gives 198 IDs from the two reviewed texts a name, types, counts and, for 27 of them, value
+  meanings; an unnamed ID stays numeric, and values are still printed raw until 4.2c.
 - **Differential parity harness** (`tools/parity`, `tools/MetadataSharp.Dump`, CI job
   `differential-parity`): our readers versus the `exiv2 -Pkycvt` expectations in the pinned upstream
   test tree, plus our own fixtures against the pinned tool built in the same job. Upstream files are
@@ -43,7 +44,7 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
 - `MetadataCapabilities`: 35 model-driven rows (JPEG 12, PNG 8, WebP 8, TIFF 3, XMP sidecar 4).
 - Enforced by tests, not convention: MIT, net8.0+net10.0, zero runtime dependencies, bounded
   hostile-input parsing, refusal instead of unsafe write.
-- Suites: 201 `[Fact]` + 108 `[Theory]` (344 `[InlineData]`) in `tests/MetadataSharp.Tests`;
+- Suites: 207 `[Fact]` + 109 `[Theory]` (429 `[InlineData]`) in `tests/MetadataSharp.Tests`;
   `tests/reference` (224) and `tests/discovery` (112) cover the E01 tooling and owned fixtures,
   `tests/parity` (45) the harness offline. CI requires ≥450 cases per TFM.
 - src is 6.0k lines, C# tests 5.4k. `pip install --break-system-packages pyyaml` before the python
@@ -51,16 +52,15 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
 
 ## What is next, in order
 
-1. **4.2b** Finish the CIPA DC-008 (Exif 2.32/3.0) + TIFF 6.0 vocabulary: types, counts, enum meanings,
-   rationals, date/time, GPS coordinates, printing. The 16 `value-diff` rows are what that gap looks like.
+1. **4.2c** Print what the 4.2b vocabulary describes: rationals, date/time, GPS coordinates and the enum
+   meanings it records. The 16 `value-diff` rows are what that gap looks like.
 2. **4.3** One unified read entry point returning a single immutable snapshot (EXIF, IPTC,
    XMP, ICC, comment) per container. **Public API → short proposal in the PR, then approval.**
 3. **4.4** MakerNotes read-only for Canon, Nikon, Sony, then Fujifilm, Olympus, Panasonic,
    Pentax — structure from public specs and our own analysis; never copy exiv2 or ExifTool tag
-   tables or source; unknown tags surface by numeric ID; on write, MakerNote bytes stay
-   unchanged and edits that would require relocating them are refused. The reference prints
-   `Exif.MakerNote.Offset`/`ByteOrder` for 221 of the 330 corpus files, so those rows stay open
-   until here.
+   tables or source; unknown tags surface by numeric ID; on write, MakerNote bytes stay unchanged and
+   edits that would relocate them are refused. The reference prints `Exif.MakerNote.Offset`/`ByteOrder`
+   for 221 of the 330 corpus files, so those rows stay open until here.
 4. **4.5** ISO BMFF read-only (HEIC/HEIF, then AVIF via `iinf`/`iloc`, then CR3, then JXL
    container boxes); **4.6** TIFF-derived RAW read-only (CR2, NEF, ARW, then DNG breadth,
    ORF, RW2, PEF, RAF). 4.5/4.6 also move the corpus's heic/avif/jxl/raw rows out of `not-read`.
