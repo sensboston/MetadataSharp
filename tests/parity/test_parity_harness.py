@@ -396,9 +396,15 @@ class HarnessTests(unittest.TestCase):
     def test_a_truncated_dump_fails_the_run_instead_of_reporting_a_gap(self):
         self.sample("d.jpg", "Exif.Image.Make  Ascii  6  NIKON\n")
         script = self.root / "truncating_dump.py"
+        # The FILE record is written the way the grammar requires - the point of the case is the
+        # truncated TAG line, and a path that happens to contain the escape character must not be
+        # what trips the parser first, as it was on a Windows runner.
         script.write_text("import sys\n"
+                          f"sys.path.insert(0, {str(ROOT / 'tools/parity')!r})\n"
+                          "from dump_format import record\n"
                           "path = [line for line in sys.stdin.read().splitlines() if line][0]\n"
-                          "sys.stdout.write('FILE\\t' + path + '\\nTAG\\tExif.Image.Make\\n')\n", encoding="utf-8")
+                          "sys.stdout.write(record('FILE', path) + '\\nTAG\\tExif.Image.Make\\n')\n",
+                          encoding="utf-8")
         with self.assertRaises(run_parity.StructuralError) as caught:
             run_parity.main(self.arguments(py_command(script)))
         self.assertIn("5 fields", str(caught.exception))
