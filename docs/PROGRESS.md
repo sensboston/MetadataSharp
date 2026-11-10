@@ -2507,3 +2507,54 @@ no denominator freeze, publication or DNG D2 write.
   (`progressive`, `precision`, `spectral`, `post-app`, `second-scan`) moved from the refusal table
   into positive assertions. Offline: reference suite 224 OK, discovery 112 OK, both `--check`
   generators rc 0; the xunit suite runs in CI (no dotnet SDK in the working sandbox).
+
+### Differential parity harness — measuring against pinned exiv2's own expectations (2026-11-10, PR #59)
+
+- **The harness, not the census, is now the parity metric.** `tools/MetadataSharp.Dump` prints a
+  byte-level dump (`FILE`/`TAG`/`STATUS` records, tab-separated) through the public API only —
+  JPEG (EXIF + IIM + XMP), PNG, WebP, standalone TIFF and its DNG/RAW relatives via
+  `TiffMetadataDocument.Layout` plus `ReadValue`, PSD's IPTC resource, JP2 XML boxes and `.xmp`
+  sidecars. Everything else (BMFF, video, EXV, EPS, CIFF, PGF, DCP) is reported `not-attempted`
+  rather than guessed at, and no hostile input may escape as an exception: a refusal prints a
+  status code. Keys carry a numeric `0xNNNN` where the library has no name for the tag, which is
+  exactly what 4.2 will replace, so the report never needs a vendored tag table to be honest.
+- **Primary corpus: the upstream test suite at the pinned commit, fetched by CI only.**
+  `test/data/test_reference_files/*.out` are whole-stdout captures of `exiv2 -Pkycvt <file>`, so
+  every expectation arrives paired with the file it describes and uniform enough to parse. At
+  `b0859fc6` that is 352 expectations, 330 of which have an input in `test/data` (22 are named after
+  synthetic inputs — `png-test`, `addmoddel` — and are reported, not guessed), 37 781 tag rows,
+  854 non-tag lines in 51 files (802 of them the tool's own `Warning:`/`Error:` diagnostics), 12
+  files whose reference carries no tag row at all, 699 rows printed with an empty value column, and
+  89 rows repeating a key. Nothing is copied, translated or committed: the report holds file names,
+  keys, our values and a `path@commit` pointer, and no upstream code is built or executed for that
+  corpus. Second corpus: the fixtures this repository generates for its own tests, whose oracle is
+  the pinned tool run in the same job — so a disagreement there is a gap or a change in the pinned
+  output, never a stale committed file.
+- **Upstream's Python test scripts are deliberately not interpreted.** Their expectations are class
+  attributes assembled from macro tokens (`commands`/`stdout`/`retval` lists,
+  `path("$data_path/…")`, `$kerCorruptedMetadata`, 221 such files under `tests/bugfixes/github`
+  alone), so honouring them means reimplementing their driver and its substitution tables — which
+  is translating their tests. `tests/unitTests/` is skipped as C++ API coverage.
+- **Comparison rules.** Normalization is CRLF and trailing blanks, then a per-row outcome:
+  `match-value`, `match-key` (the reference printed a decoded label, or an invalid type with no
+  value at all, so only the key is comparable), `value-diff`, `missing-key`, `extra-key` (ours, never
+  a failure), and `not-read` for files we refused or did not attempt — counted apart so a deliberate
+  refusal is not scored as a wrong value. Two headline rates: keys found among the reference's keys,
+  and values agreeing among the comparable ones, broken out per file, per format and per tag family,
+  plus the recurring missing keys with a `class` field that stays `unclassified` until someone has
+  read the bytes (`--classifications` merges hand findings in). Type and count differences are
+  advisory flags, not failures. The JSON keeps the first 40 rows per file under `per_file` (the
+  bound is `--rows-per-file`) while every total is counted over all rows, so the artifact stays
+  readable without moving a number.
+- **What gates and what does not.** A broken *run* fails CI: an unreadable dump block, a block that
+  never arrives, a reader that threw instead of refusing, or an expectation file whose lines look
+  damaged. The parity numbers themselves gate nothing — a gap is the next unit of work, and a red
+  build would only bury the measurement of it. `tests/parity` (42 cases, standard library only)
+  checks the grammar, the reference-line shapes including the `Undefined 106` narrow-type column and
+  keys whose names contain a space, the comparison rules and the orchestration against a stand-in
+  dump command, and runs in the ordinary `build-and-test` job; the measurement runs in the new
+  `differential-parity` job, which uploads `parity-report.{txt,json}` and pushes a compact summary
+  through the chunked annotation channel, hard-failing rather than truncating it.
+- Public API unchanged. No reader semantics changed; the corpus and the grammar are new files under
+  `tools/` and `tests/parity`. Offline: parity 42 OK, reference 224 OK, discovery 112 OK, both
+  `--check` generators rc 0. First real numbers come from this PR's CI run.
