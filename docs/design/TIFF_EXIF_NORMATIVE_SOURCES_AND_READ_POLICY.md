@@ -52,10 +52,11 @@ preserve uninterpreted values. Future value-level restrictions need their own te
 | Exif 927C | UNDEFINED,any | Opaque MakerNote; no relocation guarantee |
 | Any other ID or unclassified UNDEFINED payload | Known TIFF type required for raw reading | Unclassified; future safe rebuild must refuse |
 
-## Tag Name Table (roadmap 4.2a)
+## Tag Vocabulary (roadmap 4.2a and 4.2b)
 
-`ExifTagNames` in `MetadataSharp.Core` pairs each tag ID with the field name the reviewed
-publications give it: Exif 3.0 Table 6 for the 0th IFD, extended by the TIFF 6.0 appendix "TIFF
+Roadmap 4.2a added `ExifTagNames` in `MetadataSharp.Core`, which paired each tag ID with the
+field name the reviewed publications gave it: Exif 3.0 Table 6 for the 0th IFD, extended by the TIFF 6.0
+appendix "TIFF
 Tags Sorted by Number" for fields a bare TIFF may carry, Tables 8 and 9 for the Exif sub-IFD,
 Table 14 for GPS Info and Table 16 for Interoperability. It was read out of the same two PDFs,
 re-fetched on 2026-11-11 and matched against the hashes above, by a throwaway script; each parsed
@@ -73,8 +74,25 @@ label. Names resolve per directory, as the tables are written: a file storing `E
 0th IFD prints `Exif.Image.0x829A`, because no reviewed table calls 0x829A a field of that
 directory. And where the text writes a Field Name as a phrase, the table stores it as an identifier:
 `ExifIFDPointer`, `GPSInfoIFDPointer` and `InteroperabilityIFDPointer` for "Exif IFD Pointer",
-"GPSInfo IFD Pointer" and "Interoperability IFD Pointer". The table is names only: no type, count,
-unit or reading of a value, and listing a tag is not a claim that a file containing it is compliant.
+"GPSInfo IFD Pointer" and "Interoperability IFD Pointer".
+
+Roadmap 4.2b folded that name table into `ExifTags`: one `ExifTagDefinition` per tag, holding its name,
+the field types and counts the standard allows, the default it records, and for the 27 tags whose standard
+enumerates values (124 numbered values in all), those meanings in the standard's words. The one lookup is
+`ExifTags.Find(key)`; `Definitions(directory)` returns the same records the table holds, so a name cannot
+disagree with a shape. Shapes came from the same two PDFs and a similar throwaway script, a tag's own
+section first and its table row second: 154 rows resolved from a section, 43 from the TIFF 6.0 appendix,
+and one, `ExtraSamples`, from the body of that publication because its own appendix row contradicts it. All
+198 carry a type rule and a count rule, and 0 rows were left unresolved. `FixedCount` holds a number only
+where the standard allows exactly one (135 tags); the 62 whose count the standard ties to the image or to
+another field carry an empty list, and `SubjectArea` carries its three allowed counts. One row contradicts
+its own table, and the section wins: Table 9 gives 0xA407 `GainControl` as RATIONAL while 4.6.6.7.41 gives
+SHORT with five named gain steps - and the files in the reference corpus carry SHORT. The same goes for
+`ExtraSamples`, whose appendix row says BYTE against the SHORT of the body it prints.
+`TiffFieldType` still has no type 129, so the 16 rows the standard writes "ASCII or UTF-8" keep `Ascii` and
+say `Utf8TextAlternative = true`; a value that disagrees with its definition stays a value the reader
+reports, because no reader, writer or limit consults a definition. Listing a tag is not a claim that a file
+containing it is compliant, and printing a decoded value is 4.2c's work, not this table's.
 
 ## Reader Contract and Deliberate Restrictions
 

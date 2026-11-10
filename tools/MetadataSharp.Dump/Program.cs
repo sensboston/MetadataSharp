@@ -261,8 +261,8 @@ internal static class Program
     /// name it: an unnamed tag is reported as a gap, never as a plausible-looking invented label.</summary>
     private static string Name(ExifTagKey key)
     {
-        if (ExifTagNames.TryGetName(key, out string? name)) return name;
-        return "0x" + Hex(key.TagId);
+        ExifTagDefinition? definition = ExifTags.Find(key);
+        return definition is null ? "0x" + Hex(key.TagId) : definition.Name;
     }
 
     private static string Group(ExifDirectoryKind directory) => directory switch

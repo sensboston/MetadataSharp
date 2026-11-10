@@ -2632,3 +2632,33 @@ no denominator freeze, publication or DNG D2 write.
   before; the dumper's TIFF path maps a directory's role once and then names through the same table
   the EXIF path uses. Offline gates: parity 45 OK, reference 224 OK, discovery 112 OK. The sandbox
   has no .NET SDK, so CI is the compiler and the xunit run.
+
+### The vocabulary gains its shapes and its value meanings — 4.2b (2026-11-11, PR #61)
+
+- **What landed.** `ExifTagNames` became `ExifTags`: one `ExifTagDefinition` record per tag, carrying the
+  name it already carried plus the field types, the allowed counts, the default and - for 27 tags - the 124
+  enumerated values in the standard's own words. `ExifTagValueMeaning(ushort Number, string Meaning)` is the
+  only other new type, and there is one lookup, `ExifTags.Find(key)`, plus one listing,
+  `ExifTags.Definitions(directory)`. `TryGetName`, `TryGetKey` and `NamedTags` are gone rather than kept
+  beside a second copy of the same rows: pre-1.0, the point of this step was to merge the two so a name and
+  a shape cannot drift apart. The dumper reads `ExifTags.Find(key).Name`, so its output is unchanged.
+- **Where the numbers come from.** The extraction was rebuilt from scratch in a fresh sandbox: the two PDFs
+  were re-fetched from the mirror blobs the read-policy document names and their SHA-256s re-verified
+  (`dbcdf729…` for TIFF 6.0, `d1020d7f…` for DC-008-2023), then re-parsed. All 198 tags resolved - 154 from
+  the section that describes the tag, 43 from TIFF 6.0's appendix, 1 (`ExtraSamples`) from the body of that
+  publication where its own appendix contradicts it - and 0 rows were left unresolved. 135 tags carry a
+  fixed count, 62 have one the standard ties to the image or to another field, `SubjectArea` lists three,
+  11 accept two field types, 16 are the rows written "ASCII or UTF-8" (they keep `Ascii` and say
+  `Utf8TextAlternative = true`, since type 129 stays out of the raw value model), and 2 carry no type at
+  all, which is what TIFF's `ANY?` means. Two publications-internal disagreements are recorded rather than
+  smoothed over: `GainControl` (Table 9 RATIONAL, section SHORT - the section wins) and `ExtraSamples`.
+- **What did not change.** The 198 (ID, name) pairs are set-identical to the table merged in #60 - checked
+  offline against `git show` of that file - so no printed key moves; `ExifTiffReader`'s refusals,
+  `ExifEdit`'s reviewed subset and `MetadataLimits` are untouched, and values are still printed raw.
+  Printing decoded values - rationals, date/time, GPS coordinates, labels - is 4.2c, on top of this table.
+- **Tests.** `ExifTagsTests` (10 facts, 4 theories, 34 `[InlineData]` rows) replaces `ExifTagNamesTests`
+  (4, 3, 25). Beyond name and shape checks it holds two consistency cases: no definition contradicts
+  itself, and one that parses `ExifEdit.CheckKey` and `ExifLayoutPlanner.ValidateShape` out of the source
+  asks the vocabulary about all 20 writable and 26 planner-reviewed tags (offline: 0 disagreements).
+  Offline gates: parity 45 OK, reference 224 OK, discovery 112 OK. The sandbox has no .NET SDK, so CI is
+  the compiler and the xunit run; the emitted C# was checked field by field against the parsed data here.
