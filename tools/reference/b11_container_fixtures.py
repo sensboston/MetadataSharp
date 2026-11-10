@@ -11,7 +11,7 @@ pinned Exiv2 0.28.9 source recognises and reads these formats through small, ful
 routines, and those routines are the only specification this batch reviewed.
 
 * CRW -- ``isCrwType`` (src/crwimage.cpp:139) requires ``II``/``MM`` at bytes 0-1 and
-  ``HEAPCCDR`` at bytes 6-13. ``CiffHeader::read`` (src/crwimage_int.cpp:156) takes the root
+  ``HEAPCCDR`` at bytes 6-13. ``CiffHeader::read`` (src/crwimage_int.cpp:155) takes the root
   offset from a ``u32`` at byte 2, demands ``14 <= offset <= size``, treats ``14 .. offset``
   as padding and parses the root directory from ``offset`` *to the end of the file*.
   ``CiffDirectory::readDirectory`` (:238) reads the offset of the entry count from the last
@@ -20,7 +20,7 @@ routines, and those routines are the only specification this batch reviewed.
   a ``CiffEntry`` otherwise. ``CiffComponent::doRead`` (:186) reads ``size``/``offset`` from
   the entry's two ``u32`` fields whenever ``dataLocation`` (the ``tag & 0xc000`` switch at
   :469) says ``valueData``, and enforces that the payload never overlaps the entry itself.
-  ``CrwMap::decode`` (:633) looks a component up by *(parent directory tag, tag & 0x3fff)*,
+  ``CrwMap::decode`` (:634) looks a component up by *(parent directory tag, tag & 0x3fff)*,
   so a mapped tag sitting in the wrong directory is not corrupt: it is silently unmapped.
 * BMP -- ``isBmpType`` (src/bmpimage.cpp:119) compares two bytes, ``BM``, and ``readMetadata``
   (:42) reads 26 bytes and branches on ``getULong(buf + 14)``: 12 is the OS/2

@@ -15,21 +15,27 @@ success says nothing about MetadataSharp. No MakerNote is interpreted beyond wha
 
 Four things are recorded here that earlier batches had no reason to look at:
 
-* `-pS` reaches `Image::printStructure` (src/image.cpp:136), which throws
+* `-pS` reaches `Image::printStructure` (src/image.cpp:136-138), which throws
   ``kerUnsupportedImageType`` for CRW, BMP, GIF, TGA and for all five video stubs -- none of
-  them overrides it -- while the unknown-brand movie lands on BmffVideo, which *does*
-  (src/bmffimage.cpp:743). The pair of MOV stubs is therefore the one place in this batch
-  where a structure print is expected to produce text, and that difference is an observation
-  about two readers, not a judgement about containers.
+  them overrides it. BmffImage *does* (src/bmffimage.cpp:743-776), so a BMFF file is the one
+  place in this batch where a structure print could produce text, and on the pinned build it
+  never gets the chance: the factory reaches no reader for either MOV stub, so all seventeen
+  ``-pS`` rows refuse and the difference between the two readers stays unobserved here. That
+  asymmetry is a fact about code, not a judgement about containers.
 * `-pC` is the ICC-profile print, not a "copy" or "comment" print; with no ICC carrier in any
   B11 fixture every `-pC` row reaches the same throw or the same empty profile, which is why
   the three minimal formats are expected to agree with each other here.
-* `-et`'s exit code in this build is **the number of bytes written**, not a status
-  (``app/actions.cpp:858`` -> ``src/exiv2.cpp`` thumbnail action -> ``ExifThumbC::copy``); a
-  reader with no thumbnail returns 0 and writes nothing, which is recorded as
-  `zero-exit-no-artifact` and never as a defect. Where a fixture does carry a CIFF `0x2008`
-  component the recorder predicts the artifact length from the fixture bytes -- that is a
-  consistency check on this recorder, not an expectation about CRW support.
+* `-et`'s status is whatever ``Extract::writeThumbnail`` returns (app/actions.cpp:823-864), and
+  on this build that is one of exactly four shapes, never a success flag: the number of bytes
+  ``ExifThumb::writeFile`` wrote, when a thumbnail exists; 0 with "Image does not contain an Exif
+  thumbnail", when Exif data exists but ``ExifThumb::extension`` is empty; -3 -- narrowed to 253
+  because ``main`` returns ``static_cast<unsigned>(code) % 256`` (app/exiv2.cpp:195) -- with "No
+  Exif data found in the file", when the reader filled nothing; and 1, when ``readMetadata`` threw
+  first. The row records its shape, so the 253 case stays on the record as a status that is *not*
+  a byte count: the review document predicted ``exitCode == artifactBytes`` for every extract row
+  and the build disagreed on exactly one. Where a fixture carries a CIFF ``0x2008`` component the
+  recorder also predicts the artifact length from the fixture bytes -- a consistency check on this
+  recorder, never an expectation about CRW support.
 * `-pa` asks for all three tables, so on a format whose reader fills nothing it prints an
   empty listing with exit 0. That is recorded as the text it printed, never as "Exif is
   unsupported".
@@ -115,12 +121,29 @@ def container_facts(data, name, layout):
     return out
 
 
+# The pinned CLI narrows Extract's -3 return to one byte: main() ends with
+# `return static_cast<unsigned int>(returnCode) % 256` (app/exiv2.cpp:195), so a
+# "no Exif data" status arrives as 253 and is recorded as such.
+NO_EXIF_STATUS = (-3) % 256
+
+
 def extract_semantics(flag, rc, artifacts, expected=None):
-    """What `-et` means in this build: the status is a byte count, not a success flag."""
+    """What `-et` means in this build: usually a byte count, and the shape says which case it is.
+
+    The four shapes are the returns `Extract::writeThumbnail` can produce
+    (app/actions.cpp:823-864); `unclassified` is not one of them, and a row that gets it is a
+    finding about the build rather than a row to reinterpret.
+    """
     if flag != '-et':
         return None
     written = sum(item['length'] for item in artifacts)
-    semantics = {'exitCodeIsByteCountInPinnedBuild': True,
+    shape = ('thumbnail-written' if written and rc == written else
+             'no-exif-data' if not written and rc == NO_EXIF_STATUS else
+             'no-thumbnail-extension' if not written and rc == 0 else
+             'reader-threw' if not written and rc == 1 else
+             'unclassified')
+    semantics = {'statusShape': shape,
+                 'statusIsByteCountWritten': bool(written) and rc == written,
                  'artifactBytes': written,
                  'exitCodeEqualsArtifactBytes': rc == written,
                  'reportedNoThumbnail': False}
@@ -172,10 +195,11 @@ def observe_row(row, exe, work):
     else:
         outcome = ('nonzero-exit-artifact-produced' if artifacts else 'refused') if semantics \
             else common.classify(rc, True, None, True, artifact_produced=bool(artifacts))
-    if semantics is not None and not semantics['exitCodeEqualsArtifactBytes']:
-        # The one shape this build must not produce: a status that is not the byte count.
-        finding = (f'-et exit code {rc} does not equal the {semantics["artifactBytes"]} '
-                    'bytes the command wrote')
+    if semantics is not None and semantics['statusShape'] == 'unclassified':
+        # A status the thumbnail path cannot produce. The shape is how every other -et row is
+        # read, so a row outside that set is worth stating instead of being reclassified.
+        finding = (f'-et returned {rc} with {semantics["artifactBytes"]} bytes written, a shape '
+                   'Extract::writeThumbnail does not produce')
     else:
         finding = None
     return {'id': row['rowId'], 'seedId': f"EX0289-{row['format']}-{row['family'].upper()}",

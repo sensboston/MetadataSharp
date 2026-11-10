@@ -207,7 +207,7 @@ Three readings of that text matter for B11, and they are the reason the batch is
   read at `pData + offset_`; bytes `14 .. offset_` are skipped as padding.
   A synthetic CRW is therefore: `II` + 4-byte offset + `"HEAPCCDR"` + padding + directory — and the
   offset field is the **only** place a fixture has to agree with itself.
-- CIFF entries are 10 bytes (`crwimage_int.cpp:184` `CiffComponent::doRead`, guarded
+- CIFF entries are 10 bytes (`crwimage_int.cpp:186` `CiffComponent::doRead`, guarded
   `enforce(size >= 10 && start <= size - 10)`): `tag_ = getUShort(pData+start)`, then
   `valueData` entries carry `size_ = getULong(+2)` and `offset_ = getULong(+6)` with overlap checks that
   throw `kerOffsetOutOfRange`, while `directoryData` entries carry `size_ = 8` and `offset_ = start + 2`.
@@ -269,7 +269,11 @@ Three readings of that text matter for B11, and they are the reason the batch is
     which throws `kerUnsupportedImageType` — CRW belongs to the same "structure print throws" family as
     MRW, RAF, RW2, GIF, TGA and BMP, not to BMFF's "prints a box tree" family. Only
     `Internal::CiffComponent::print` (`crwimage_int.cpp:415`) exists, and nothing in the CLI print path
-    calls it.
+    calls it. The observation agrees, and goes one step further: BMFF's override never runs for a B11
+    fixture either, because the factory reaches no reader for either MOV stub — **all seventeen cleared
+    fixtures refused `-pS`**, so this batch contains no structure print at all, and the "one MOV would
+    print text" expectation in an earlier draft of this document is corrected by
+    `receipt.json`'s `printStructureForms.note` rather than by re-reading the source.
 - Preview versus thumbnail. `ExifThumb::setJpegThumbnail(buf, size)` (`exif.cpp:431-437`) stores the
   **actual bytes** in the data area of `Exif.Thumbnail.JPEGInterchangeFormat` (with
   `Exif.Thumbnail.Compression = 6`, `…Length = size`), and `ExifThumbC::writeFile` (`exif.cpp:379-390`)
@@ -447,7 +451,7 @@ What that table licenses B11 to say, and nothing more:
   comment `// needs to be before bmff because some ftyp files are handled as qt and the rest should fall
   through to bmff`, and `isQTimeType` (`quicktimevideo.cpp:1616-1643`) enforces it: it needs **both** a
   known atom tag at offset 4 (one of `PICT free ftyp junk mdat moov pict pnot skip uuid wide`) **and** the
-  brand at offset 8 present in `qTimeFileType` (`:42+`), with the source note `// we only match if we
+  brand at offset 8 present in `qTimeFileType` (`:42-129`, 86 rows), with the source note `// we only match if we
   actually know the video type. This is done to avoid matching just on ftyp because bmffimage also has
   that header.` `isBmffType` (`bmffimage.cpp:794-810`) is the fall-through: bytes 4-7 == `ftyp` **or**
   `JXL `. `isMkvType` (`matroskavideo.cpp:930`) compares the four bytes `1A 45 DF A3`. So for a synthetic
@@ -480,9 +484,15 @@ What that table licenses B11 to say, and nothing more:
    recorder*, never a support assertion.
 4. **What may not.** Any statement that a format "is supported", "is not supported", "should", or "fails";
    any exit-code expectation for a documented-`-` family (the `-` means no claim, so a throw is
-   *consistent*, not *correct*); any `exitCodeEqualsArtifactBytes: false` inference of failure — by the
-   byte-count rule, `-et` with `rc == 0` and no artifact is a **consistent** outcome and must be recorded
-   as such, never as a defect.
+   *consistent*, not *correct*). What `-et` returns is now stated as four shapes rather than one rule,
+   because that is what `Extract::writeThumbnail` (`app/actions.cpp:823-864`) can return and what the
+   build produced: the byte count when a thumbnail is written, `0` with "Image does not contain an Exif
+   thumbnail" when Exif data exists and the thumbnail extension is empty, `-3` (surfacing as **253**, since
+   `main` returns `static_cast<unsigned int>(returnCode) % 256`, `app/exiv2.cpp:195`) when the reader filled
+   no Exif data at all, and `1` when `readMetadata` threw. None of the four is a defect and none may be
+   read as support: in particular a `0`-with-no-artifact row and a `253`-with-no-artifact row are the *same*
+   statement about the format ("nothing to extract"), reached by two different code paths, and the recorder
+   labels which one it saw instead of collapsing them.
 5. **Vacuity ban.** No assertion whose negation is unreachable. Concretely: `structure print either throws
    or produces output` is not an assertion and must not appear; a `-pe` (Exif-table) listing on a reader that
    writes no Exif tag is recorded as "the listing text equals the recorded text for that fixture", never as
@@ -555,9 +565,12 @@ What that table licenses B11 to say, and nothing more:
 - Fixture digests are recorded in `tests/fixtures/b11/census-manifest.json` and copied into rows; the
   manifest is compared whole by `verify()`, so `tools/reference/b11_container_fixtures.py generate` must be
   re-run and the census regenerated in the same commit whenever a fixture changes.
-- Evidence lands in `docs/research/evidence/e01-b11-census/` (`observations.json`, `ci-observations.json`,
-  `master-observations.json`, `receipt.json`, `README.md`) and is never hand-edited. The B10 receipt
-  builder is **not** reusable unchanged, as an earlier draft of this document claimed:
+- Evidence landed in `docs/research/evidence/e01-b11-census/` (`observations.json`, `receipt.json`,
+  `README.md`) with the preflight beside it in `docs/research/evidence/e01-b11-preflight/`
+  (`observations.json` for the same head as the census, `prior-run-observations.json` as the reproduction
+  sample), and nothing there is hand-edited: `tools/reference/write_b11_receipt.py` recomputes the receipt
+  from the recovered payloads and re-indents the payloads to the recorder's own shape. The B10 builder is
+  **not** reusable unchanged, as an earlier draft of this document claimed:
   `tools/reference/write_b10_receipt.py` hardcodes its evidence paths, its `batch`, its CI job's display
   name, its two annotation titles and a RAF-specific `authoredComment` check. B11 therefore gets
   `tools/reference/write_b11_receipt.py`, cloned from it with those six things replaced — the
@@ -566,6 +579,47 @@ What that table licenses B11 to say, and nothing more:
   in the B10 wording: *N independent CI runs of the same recorder agree on the observation payload
   byte-for-byte; only the build timestamp, the validated head and ExifTool file dates move*, with the
   `differingSections` list computed by the receipt generator rather than asserted here.
+
+## What the observation showed (run 42757620226, head `c34ee5e`)
+
+Numbers below are what `receipt.json` recomputes; they are repeated here because this document is the one
+a reviewer reads first.
+
+- **87 observed, 8 blocked, 0 mutated.** Every row's `inputUnchanged` is true, `scan-changed` never fired,
+  and the 8 blocked ids are exactly the `ciff-vendor-private-unobserved` cells. Two `-et` rows produced an
+  artifact, both 137 bytes, both matching the length the manifest derives from their `0x2008` component.
+- **The CIFF path works end to end and prints what it maps.** `ciff-mapped-v1 -pe` printed eleven entries —
+  `Exif.Image.Make`/`Model` (split from one `0x080a` value at the NUL), `Exif.Canon.FirmwareVersion`,
+  `Exif.Canon.OwnerName`, `Exif.Photo.SubjectDistance`, `Exif.Photo.ColorSpace`,
+  `Exif.Photo.DateTimeOriginal` (`2026:01:01 00:00:00`, which is why the job pins `TZ=UTC0`),
+  `Exif.Photo.PixelXDimension`/`PixelYDimension`, `Exif.Image.Orientation`, `Exif.Canon.FileNumber` and
+  nothing invented. `-pc` printed the `0x0805` comment verbatim. `-pe` and `-pa` render **the same data
+  differently** (`FileNumber 4660` vs `-4660`, `SubjectDistance 1000 10` vs `1000.00 m`): a print-form fact
+  about this build, recorded as one, not a value difference.
+- **`-et` disagrees with this document in exactly one row, and the disagreement is kept.**
+  `ciff-unmapped-only-v1` exits 253 with no artifact; the review draft predicted `exitCode == artifactBytes`
+  for all four extract rows. The recorder was changed in the same commit that landed the evidence so the row
+  is labelled `no-exif-data` instead of carrying a standing "the status is not the byte count" finding, and
+  the discovery test now derives the shape from the CLI's own words rather than trusting the label.
+- **Six cleared fixtures never reached a reader, and that is the batch's main finding.** `ImageFactory::open`
+  produced no instance for `owned-bmp-dib.bmp`, `owned-bmp-os2.bmp`, `owned-mov-brand.mov`,
+  `owned-mov-unknownbrand.mov`, `owned-mkv-header.mkv` and `owned-wav-fmt.wav` — `kerFileContainsUnknownImageType`
+  (`image.cpp:825-830`) — even though each of those formats' magic test matches the bytes at offset 0. The
+  seventh refusal, `owned-tga-signature-only.targa`, is the model agreeing with the build: TGA is claimed by
+  file name (`tgaimage.cpp:99-103`), so a TGA-lookalike under another extension reaches nothing. **Why** the
+  six are refused is deliberately not established: the two candidate causes are the `Image::good()` re-check
+  in each `newXInstance` (`image.cpp:713-718`) and an earlier registry entry matching first, and this run
+  cannot separate them. A refusal is recorded as a refusal of *these header-only stubs*, never of the format;
+  the follow-up that would separate the causes (a padded BMP) belongs to the next batch, not to this row set.
+- **Only one container stub yields readable metadata.** `owned-avi-avih.avi` printed four `Xmp.video.*` keys
+  under `-pa`/`-px`; ASF, MKV, WAV and both MOVs printed nothing or threw. That is the video-metadata family
+  absence in §3 made visible as behaviour, and it is why the batch enumerates inventory-only cells there.
+- **Reproduction, preflight only so far.** The 107 records in `e01-b11-preflight/observations.json` are
+  byte-identical to `prior-run-observations.json` from run 42757054570 at a different head; the sections that
+  differ are `baseline` (the binary embeds its build timestamp, and two `library=` lines also swap order),
+  `secondary` (ExifTool's `System:File*Date`), and `sourceCommit`. The census has one sample; a second head
+  re-observing the same committed rows is the B10 pattern and would turn "the recorder is deterministic" into
+  a checked statement.
 
 ## Not claimed
 

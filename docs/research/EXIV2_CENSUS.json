@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker fixtures (pinned header contract plus owned metadata carriers); each format also keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed or cleared, and no B9 write suboperation is enumerated. B10 read-only probes for MRW/RW2/SR2/RAF on owned synthetic wave-2 containers (MRW block chain with an embedded TTW TIFF, RAF big-endian offset table with a preview JPEG and a camera-settings TIFF, RW2 magic 0x0055, and a generic TIFF marker that records the absence of an SR2-specific observable); each format also keeps a blocked vendor-private cell because no proprietary layout is reviewed or cleared, and no B10 write suboperation is enumerated because the pinned registry marks all four formats read-only. B11 read-only probes on owned synthetic CIFF, BMP, GIF and TGA containers (four CIFF layouts, two BMP header variants, two GIF screen-descriptor shapes and three TGA recognition cases), plus one inventory row per container stub for MOV, MKV, AVI, WAV and ASF so the reader the pinned registry dispatches to is recorded without inventing a metadata family for a format the pinned table does not list; CRW keeps one blocked vendor-private cell because no Canon CIFF tag outside the mapping table is reviewed or cleared, and no B11 write suboperation is enumerated. Pinned-CLI evidence recorded for batch(es) B0, B1, B10, B2, B3, B4, B5, B6, B7, B8, B9: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker fixtures (pinned header contract plus owned metadata carriers); each format also keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed or cleared, and no B9 write suboperation is enumerated. B10 read-only probes for MRW/RW2/SR2/RAF on owned synthetic wave-2 containers (MRW block chain with an embedded TTW TIFF, RAF big-endian offset table with a preview JPEG and a camera-settings TIFF, RW2 magic 0x0055, and a generic TIFF marker that records the absence of an SR2-specific observable); each format also keeps a blocked vendor-private cell because no proprietary layout is reviewed or cleared, and no B10 write suboperation is enumerated because the pinned registry marks all four formats read-only. B11 read-only probes on owned synthetic CIFF, BMP, GIF and TGA containers (four CIFF layouts, two BMP header variants, two GIF screen-descriptor shapes and three TGA recognition cases), plus one inventory row per container stub for MOV, MKV, AVI, WAV and ASF so the reader the pinned registry dispatches to is recorded without inventing a metadata family for a format the pinned table does not list; CRW keeps one blocked vendor-private cell because no Canon CIFF tag outside the mapping table is reviewed or cleared, and no B11 write suboperation is enumerated. Pinned-CLI evidence recorded for batch(es) B0, B1, B10, B11, B2, B3, B4, B5, B6, B7, B8, B9: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "ARW/comments",
@@ -23902,16 +23902,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-mapped.crw",
+        "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+        "length": 334,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-crw-mapped.crw"
     },
     {
       "rowId": "EX0289-CRW-EXIF-READ-0001",
@@ -23929,16 +23935,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-mapped.crw",
+        "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+        "length": 334,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-mapped.crw"
     },
     {
       "rowId": "EX0289-CRW-IPTC-READ-0001",
@@ -23956,16 +23968,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-mapped.crw",
+        "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+        "length": 334,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-mapped.crw"
     },
     {
       "rowId": "EX0289-CRW-XMP-READ-0001",
@@ -23983,16 +24001,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-mapped.crw",
+        "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+        "length": 334,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-mapped.crw"
     },
     {
       "rowId": "EX0289-CRW-COMMENTS-READ-0001",
@@ -24010,16 +24034,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-mapped.crw",
+        "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+        "length": 334,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-mapped.crw"
     },
     {
       "rowId": "EX0289-CRW-ICC-READ-0001",
@@ -24037,16 +24067,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-mapped.crw",
+        "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+        "length": 334,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-crw-mapped.crw"
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-READ-0001",
@@ -24064,16 +24100,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-mapped.crw",
+        "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+        "length": 334,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-mapped.crw"
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0001",
@@ -24091,16 +24133,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-mapped.crw",
+        "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+        "length": 334,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+      "notes": "B11 pinned-CLI observation: outcome=zero-exit-no-artifact; exit-observed; fixture=owned-crw-mapped.crw"
     },
     {
       "rowId": "EX0289-CRW-INVENTORY-INVENTORY-0002",
@@ -24118,16 +24166,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-preview-thumb.crw",
+        "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+        "length": 326,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-crw-preview-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-EXIF-READ-0002",
@@ -24145,16 +24199,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-preview-thumb.crw",
+        "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+        "length": 326,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-preview-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-IPTC-READ-0002",
@@ -24172,16 +24232,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-preview-thumb.crw",
+        "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+        "length": 326,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-preview-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-XMP-READ-0002",
@@ -24199,16 +24265,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-preview-thumb.crw",
+        "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+        "length": 326,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-preview-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-COMMENTS-READ-0002",
@@ -24226,16 +24298,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-preview-thumb.crw",
+        "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+        "length": 326,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-preview-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-ICC-READ-0002",
@@ -24253,16 +24331,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-preview-thumb.crw",
+        "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+        "length": 326,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-crw-preview-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-READ-0002",
@@ -24280,16 +24364,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-preview-thumb.crw",
+        "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+        "length": 326,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-preview-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0002",
@@ -24307,16 +24397,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-preview-thumb.crw",
+        "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+        "length": 326,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+      "notes": "B11 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-crw-preview-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-INVENTORY-INVENTORY-0003",
@@ -24334,16 +24430,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-thumb.crw",
+        "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+        "length": 179,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-crw-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-EXIF-READ-0003",
@@ -24361,16 +24463,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-thumb.crw",
+        "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+        "length": 179,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-IPTC-READ-0003",
@@ -24388,16 +24496,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-thumb.crw",
+        "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+        "length": 179,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-XMP-READ-0003",
@@ -24415,16 +24529,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-thumb.crw",
+        "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+        "length": 179,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-COMMENTS-READ-0003",
@@ -24442,16 +24562,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-thumb.crw",
+        "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+        "length": 179,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-ICC-READ-0003",
@@ -24469,16 +24595,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-thumb.crw",
+        "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+        "length": 179,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-crw-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-READ-0003",
@@ -24496,16 +24628,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-thumb.crw",
+        "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+        "length": 179,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0003",
@@ -24523,16 +24661,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-thumb.crw",
+        "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+        "length": 179,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+      "notes": "B11 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-crw-thumb.crw"
     },
     {
       "rowId": "EX0289-CRW-INVENTORY-INVENTORY-0004",
@@ -24550,16 +24694,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-unmapped.crw",
+        "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-crw-unmapped.crw"
     },
     {
       "rowId": "EX0289-CRW-EXIF-READ-0004",
@@ -24577,16 +24727,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-unmapped.crw",
+        "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-unmapped.crw"
     },
     {
       "rowId": "EX0289-CRW-IPTC-READ-0004",
@@ -24604,16 +24760,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-unmapped.crw",
+        "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-unmapped.crw"
     },
     {
       "rowId": "EX0289-CRW-XMP-READ-0004",
@@ -24631,16 +24793,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-unmapped.crw",
+        "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-unmapped.crw"
     },
     {
       "rowId": "EX0289-CRW-COMMENTS-READ-0004",
@@ -24658,16 +24826,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-unmapped.crw",
+        "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-unmapped.crw"
     },
     {
       "rowId": "EX0289-CRW-ICC-READ-0004",
@@ -24685,16 +24859,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-unmapped.crw",
+        "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-crw-unmapped.crw"
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-READ-0004",
@@ -24712,16 +24892,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-unmapped.crw",
+        "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-crw-unmapped.crw"
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0004",
@@ -24739,16 +24925,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-crw-unmapped.crw",
+        "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+        "length": 191,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-crw-unmapped.crw"
     },
     {
       "rowId": "EX0289-CRW-INVENTORY-INVENTORY-0005",
@@ -24769,13 +24961,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 blocked-rights: Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CRW-EXIF-READ-0005",
@@ -24796,13 +24988,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+      "notes": "B11 blocked-rights: Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CRW-IPTC-READ-0005",
@@ -24823,13 +25015,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+      "notes": "B11 blocked-rights: Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CRW-XMP-READ-0005",
@@ -24850,13 +25042,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+      "notes": "B11 blocked-rights: Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CRW-COMMENTS-READ-0005",
@@ -24877,13 +25069,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+      "notes": "B11 blocked-rights: Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CRW-ICC-READ-0005",
@@ -24904,13 +25096,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+      "notes": "B11 blocked-rights: Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-READ-0005",
@@ -24931,13 +25123,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+      "notes": "B11 blocked-rights: Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0005",
@@ -24958,13 +25150,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+      "notes": "B11 blocked-rights: Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-BMP-INVENTORY-INVENTORY-0001",
@@ -24982,16 +25174,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-dib.bmp",
+        "sha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+        "length": 55,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-dib.bmp"
     },
     {
       "rowId": "EX0289-BMP-EXIF-READ-0001",
@@ -25009,16 +25207,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-dib.bmp",
+        "sha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+        "length": 55,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about BMP exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-dib.bmp"
     },
     {
       "rowId": "EX0289-BMP-IPTC-READ-0001",
@@ -25036,16 +25240,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-dib.bmp",
+        "sha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+        "length": 55,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about BMP iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-dib.bmp"
     },
     {
       "rowId": "EX0289-BMP-XMP-READ-0001",
@@ -25063,16 +25273,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-dib.bmp",
+        "sha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+        "length": 55,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about BMP xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-dib.bmp"
     },
     {
       "rowId": "EX0289-BMP-COMMENTS-READ-0001",
@@ -25090,16 +25306,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-dib.bmp",
+        "sha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+        "length": 55,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about BMP comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-dib.bmp"
     },
     {
       "rowId": "EX0289-BMP-ICC-READ-0001",
@@ -25117,16 +25339,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-dib.bmp",
+        "sha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+        "length": 55,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about BMP icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-dib.bmp"
     },
     {
       "rowId": "EX0289-BMP-THUMBNAIL-READ-0001",
@@ -25144,16 +25372,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-dib.bmp",
+        "sha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+        "length": 55,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about BMP thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-dib.bmp"
     },
     {
       "rowId": "EX0289-BMP-INVENTORY-INVENTORY-0002",
@@ -25171,16 +25405,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-os2.bmp",
+        "sha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+        "length": 27,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-os2.bmp"
     },
     {
       "rowId": "EX0289-BMP-EXIF-READ-0002",
@@ -25198,16 +25438,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-os2.bmp",
+        "sha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+        "length": 27,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about BMP exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-os2.bmp"
     },
     {
       "rowId": "EX0289-BMP-IPTC-READ-0002",
@@ -25225,16 +25471,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-os2.bmp",
+        "sha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+        "length": 27,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about BMP iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-os2.bmp"
     },
     {
       "rowId": "EX0289-BMP-XMP-READ-0002",
@@ -25252,16 +25504,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-os2.bmp",
+        "sha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+        "length": 27,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about BMP xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-os2.bmp"
     },
     {
       "rowId": "EX0289-BMP-COMMENTS-READ-0002",
@@ -25279,16 +25537,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-os2.bmp",
+        "sha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+        "length": 27,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about BMP comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-os2.bmp"
     },
     {
       "rowId": "EX0289-BMP-ICC-READ-0002",
@@ -25306,16 +25570,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-os2.bmp",
+        "sha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+        "length": 27,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about BMP icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-os2.bmp"
     },
     {
       "rowId": "EX0289-BMP-THUMBNAIL-READ-0002",
@@ -25333,16 +25603,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-bmp-os2.bmp",
+        "sha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+        "length": 27,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about BMP thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-bmp-os2.bmp"
     },
     {
       "rowId": "EX0289-GIF-INVENTORY-INVENTORY-0001",
@@ -25360,16 +25636,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-lsd.gif",
+        "sha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+        "length": 13,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-EXIF-READ-0001",
@@ -25387,16 +25669,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-lsd.gif",
+        "sha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+        "length": 13,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about GIF exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-IPTC-READ-0001",
@@ -25414,16 +25702,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-lsd.gif",
+        "sha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+        "length": 13,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about GIF iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-XMP-READ-0001",
@@ -25441,16 +25735,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-lsd.gif",
+        "sha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+        "length": 13,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about GIF xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-COMMENTS-READ-0001",
@@ -25468,16 +25768,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-lsd.gif",
+        "sha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+        "length": 13,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about GIF comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-ICC-READ-0001",
@@ -25495,16 +25801,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-lsd.gif",
+        "sha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+        "length": 13,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about GIF icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-THUMBNAIL-READ-0001",
@@ -25522,16 +25834,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-lsd.gif",
+        "sha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+        "length": 13,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about GIF thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-INVENTORY-INVENTORY-0002",
@@ -25549,16 +25867,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-no-lsd.gif",
+        "sha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+        "length": 6,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-no-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-EXIF-READ-0002",
@@ -25576,16 +25900,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-no-lsd.gif",
+        "sha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+        "length": 6,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about GIF exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-no-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-IPTC-READ-0002",
@@ -25603,16 +25933,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-no-lsd.gif",
+        "sha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+        "length": 6,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about GIF iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-no-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-XMP-READ-0002",
@@ -25630,16 +25966,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-no-lsd.gif",
+        "sha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+        "length": 6,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about GIF xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-no-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-COMMENTS-READ-0002",
@@ -25657,16 +25999,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-no-lsd.gif",
+        "sha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+        "length": 6,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about GIF comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-no-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-ICC-READ-0002",
@@ -25684,16 +26032,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-no-lsd.gif",
+        "sha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+        "length": 6,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about GIF icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-no-lsd.gif"
     },
     {
       "rowId": "EX0289-GIF-THUMBNAIL-READ-0002",
@@ -25711,16 +26065,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-gif-no-lsd.gif",
+        "sha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+        "length": 6,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about GIF thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-gif-no-lsd.gif"
     },
     {
       "rowId": "EX0289-TGA-INVENTORY-INVENTORY-0001",
@@ -25738,16 +26098,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-full.tga",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-full.tga"
     },
     {
       "rowId": "EX0289-TGA-EXIF-READ-0001",
@@ -25765,16 +26131,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-full.tga",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about TGA exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-tga-full.tga"
     },
     {
       "rowId": "EX0289-TGA-IPTC-READ-0001",
@@ -25792,16 +26164,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-full.tga",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about TGA iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-tga-full.tga"
     },
     {
       "rowId": "EX0289-TGA-XMP-READ-0001",
@@ -25819,16 +26197,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-full.tga",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about TGA xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-tga-full.tga"
     },
     {
       "rowId": "EX0289-TGA-COMMENTS-READ-0001",
@@ -25846,16 +26230,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-full.tga",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about TGA comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-tga-full.tga"
     },
     {
       "rowId": "EX0289-TGA-ICC-READ-0001",
@@ -25873,16 +26263,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-full.tga",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about TGA icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-full.tga"
     },
     {
       "rowId": "EX0289-TGA-THUMBNAIL-READ-0001",
@@ -25900,16 +26296,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-full.tga",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about TGA thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-tga-full.tga"
     },
     {
       "rowId": "EX0289-TGA-INVENTORY-INVENTORY-0002",
@@ -25927,16 +26329,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-name-only.tga",
+        "sha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+        "length": 23,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-name-only.tga"
     },
     {
       "rowId": "EX0289-TGA-EXIF-READ-0002",
@@ -25954,16 +26362,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-name-only.tga",
+        "sha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+        "length": 23,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about TGA exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-name-only.tga"
     },
     {
       "rowId": "EX0289-TGA-IPTC-READ-0002",
@@ -25981,16 +26395,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-name-only.tga",
+        "sha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+        "length": 23,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about TGA iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-name-only.tga"
     },
     {
       "rowId": "EX0289-TGA-XMP-READ-0002",
@@ -26008,16 +26428,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-name-only.tga",
+        "sha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+        "length": 23,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about TGA xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-name-only.tga"
     },
     {
       "rowId": "EX0289-TGA-COMMENTS-READ-0002",
@@ -26035,16 +26461,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-name-only.tga",
+        "sha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+        "length": 23,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about TGA comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-name-only.tga"
     },
     {
       "rowId": "EX0289-TGA-ICC-READ-0002",
@@ -26062,16 +26494,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-name-only.tga",
+        "sha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+        "length": 23,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about TGA icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-name-only.tga"
     },
     {
       "rowId": "EX0289-TGA-THUMBNAIL-READ-0002",
@@ -26089,16 +26527,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-name-only.tga",
+        "sha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+        "length": 23,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about TGA thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-name-only.tga"
     },
     {
       "rowId": "EX0289-TGA-INVENTORY-INVENTORY-0003",
@@ -26116,16 +26560,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-signature-only.targa",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-signature-only.targa"
     },
     {
       "rowId": "EX0289-TGA-EXIF-READ-0003",
@@ -26143,16 +26593,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-signature-only.targa",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about TGA exif semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-signature-only.targa"
     },
     {
       "rowId": "EX0289-TGA-IPTC-READ-0003",
@@ -26170,16 +26626,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-signature-only.targa",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about TGA iptc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-signature-only.targa"
     },
     {
       "rowId": "EX0289-TGA-XMP-READ-0003",
@@ -26197,16 +26659,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-signature-only.targa",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about TGA xmp semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-signature-only.targa"
     },
     {
       "rowId": "EX0289-TGA-COMMENTS-READ-0003",
@@ -26224,16 +26692,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-signature-only.targa",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about TGA comments semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-signature-only.targa"
     },
     {
       "rowId": "EX0289-TGA-ICC-READ-0003",
@@ -26251,16 +26725,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-signature-only.targa",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about TGA icc semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-signature-only.targa"
     },
     {
       "rowId": "EX0289-TGA-THUMBNAIL-READ-0003",
@@ -26278,16 +26758,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-tga-signature-only.targa",
+        "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "length": 44,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about TGA thumbnail semantics"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-tga-signature-only.targa"
     },
     {
       "rowId": "EX0289-MOV-INVENTORY-INVENTORY-0001",
@@ -26305,16 +26791,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mov-brand.mov",
+        "sha256": "f91fca8a132217d37bc5716cda3b1356f3d407e4a9521ee2c50ef3699ecb07e3",
+        "length": 36,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MOV container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-mov-brand.mov"
     },
     {
       "rowId": "EX0289-MOV-INVENTORY-INVENTORY-0002",
@@ -26332,16 +26824,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mov-unknownbrand.mov",
+        "sha256": "e64fe03dc7a779b3c48f8aff9878cc09244abf17b27922cc8532b3c613943e23",
+        "length": 36,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MOV container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-mov-unknownbrand.mov"
     },
     {
       "rowId": "EX0289-MKV-INVENTORY-INVENTORY-0001",
@@ -26359,16 +26857,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-mkv-header.mkv",
+        "sha256": "a258433af38d153bfafd2a621912e74a347ed2b20d113e36ede67e5b343a8134",
+        "length": 24,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "MKV container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-mkv-header.mkv"
     },
     {
       "rowId": "EX0289-AVI-INVENTORY-INVENTORY-0001",
@@ -26386,16 +26890,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-avi-avih.avi",
+        "sha256": "caa2bac8914c255c27b0a54f265820ebbe1b38a07dd1557224139b1f353f0e56",
+        "length": 88,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "AVI container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-avi-avih.avi"
     },
     {
       "rowId": "EX0289-WAV-INVENTORY-INVENTORY-0001",
@@ -26413,16 +26923,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-wav-fmt.wav",
+        "sha256": "781c2cfa6db08d8c9e8eb824541248222ca1509f59aadac3c06373c4dceb2f6d",
+        "length": 36,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "WAV container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-wav-fmt.wav"
     },
     {
       "rowId": "EX0289-ASF-INVENTORY-INVENTORY-0001",
@@ -26440,16 +26956,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-asf-header.asf",
+        "sha256": "6ccb0660294271acc79d983d06adb5d2e0158ed3d442895dbd64b727bc73f1c6",
+        "length": 100,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b11-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B11",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ASF container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+      "notes": "B11 pinned-CLI observation: outcome=refused; exit-observed; fixture=owned-asf-header.asf"
     }
   ]
 }

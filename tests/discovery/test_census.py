@@ -290,6 +290,12 @@ class CensusPolicyTests(unittest.TestCase):
         b10 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b10/census-manifest.json').read_text())}
         for fmt in ('MRW', 'RAF', 'RW2', 'SR2'):
             manifests[fmt] = b10
+        # B11 keeps one catalog for nine formats, and one entry of it (the blocked vendor-private
+        # CIFF cell) has no file at all: it can never be looked up by name here, which is the
+        # point of it, so the dict is built as-is rather than filtered.
+        b11 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b11/census-manifest.json').read_text())}
+        for fmt in ('CRW', 'BMP', 'GIF', 'TGA', 'MOV', 'MKV', 'AVI', 'WAV', 'ASF'):
+            manifests[fmt] = b11
         for row in self.report['rows']:
             if row['baselineObservation'] == 'not-applicable':
                 self.assertIsNone(row['fixture'])
@@ -586,25 +592,73 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual({'bmff'}, by_layout['qtime-unknown-brand-v1'])
         self.assertEqual({'tga'}, by_layout['tga-full-v1'])
         self.assertEqual({'none'}, by_layout['tga-signature-wrong-name-v1'])
-        # `-et` is the byte count the CLI wrote; only a fixture carrying a CIFF 0x2008
-        # component can produce an artifact, and the recorder predicts its length from the
-        # fixture bytes -- a check on the recorder, never a claim about CRW thumbnails.
-        extracts = [o for o in evidence['observations'] if o['operation'] == 'extract']
+        # `-et` is `Extract::writeThumbnail`'s return (app/actions.cpp:823-864), which is the
+        # byte count only on the path that writes a thumbnail: a fixture carrying a CIFF 0x2008
+        # component exits with the length it wrote, one with Exif data but no thumbnail exits 0,
+        # and one whose reader filled nothing exits -3, narrowed to 253 because main() ends with
+        # `return static_cast<unsigned int>(returnCode) % 256` (app/exiv2.cpp:195). The blanket
+        # rule this batch was written to confirm -- exitCode == artifactBytes for every extract
+        # row -- held on three rows out of four, so what is asserted below is the four shapes,
+        # derived from what the CLI did. It deliberately does not read the recorder's own
+        # `statusShape` label, so the evidence stays checkable whatever the recorder calls it.
+        extracts = {o['layout']: o for o in evidence['observations']
+                    if o['operation'] == 'extract'}
         self.assertEqual(4, len(extracts))
-        for item in extracts:
+        self.assertEqual(
+            {'ciff-mapped-v1': (0, 0, 'zero-exit-no-artifact', 'thumbnail'),
+             'ciff-preview-plus-thumb-v1': (137, 137, 'nonzero-exit-artifact-produced', ''),
+             'ciff-thumb-only-v1': (137, 137, 'nonzero-exit-artifact-produced', ''),
+             'ciff-unmapped-only-v1': (253, 0, 'refused', 'No Exif data')},
+            {layout: (item['exitCode'],
+                      item['facts']['extractSemantics']['artifactBytes'],
+                      item['outcome'],
+                      'thumbnail' if 'thumbnail' in item['facts']['stderr']
+                      else 'No Exif data' if 'No Exif data' in item['facts']['stderr']
+                      else '')
+             for layout, item in sorted(extracts.items())})
+        for layout, item in sorted(extracts.items()):
             semantics = item['facts']['extractSemantics']
-            self.assertTrue(semantics['exitCodeIsByteCountInPinnedBuild'], item['id'])
-            self.assertEqual(item['exitCode'], semantics['artifactBytes'], item['id'])
-        with_artifact = {item['layout'] for item in extracts
-                         if item['facts']['extractSemantics']['artifactBytes'] > 0}
-        self.assertEqual({'ciff-thumb-only-v1', 'ciff-preview-plus-thumb-v1'}, with_artifact)
-        for item in extracts:
-            semantics = item['facts']['extractSemantics']
-            if 'predictedArtifactBytes' in semantics:
-                # The prediction comes from the fixture's own 0x2008 component, so agreeing
-                # with it says the recorder read the right file; disagreeing is a finding
-                # about the recorder, and it stays in the record rather than being gated.
-                self.assertIn('predictionMatched', semantics, item['id'])
+            self.assertEqual(item['exitCode'] == semantics['artifactBytes'],
+                             semantics['exitCodeEqualsArtifactBytes'], layout)
+            # Two recorder invariants, both easy to lose silently: the no-thumbnail flag is set
+            # from the CLI's own wording, and a byte count that is not backed by a file on disk
+            # would mean the artifacts list and the semantics disagree.
+            self.assertEqual('thumbnail' in item['facts']['stderr'],
+                             semantics['reportedNoThumbnail'], layout)
+            self.assertEqual(bool(semantics['artifactBytes']), bool(item['facts']['artifacts']), layout)
+            self.assertEqual(sum(a['length'] for a in item['facts']['artifacts']),
+                             semantics['artifactBytes'], layout)
+        self.assertEqual({'ciff-thumb-only-v1', 'ciff-preview-plus-thumb-v1'},
+                         {layout for layout, item in extracts.items()
+                          if item['facts']['extractSemantics']['artifactBytes']})
+        # The two rows that wrote a thumbnail wrote exactly what the fixture says is in there,
+        # and only those two are offered a prediction: predictedArtifactBytes exists solely where
+        # a 0x2008 component exists, so it is a check on the recorder, never on CRW support. A
+        # mismatch stays a finding about the recorder rather than a gate, so the field must exist
+        # and is never asserted to be true.
+        self.assertEqual({'ciff-thumb-only-v1': 137, 'ciff-preview-plus-thumb-v1': 137},
+                         {layout: item['facts']['extractSemantics']['predictedArtifactBytes']
+                          for layout, item in extracts.items()
+                          if item['facts']['extractSemantics'].get('predictedArtifactBytes') is not None})
+        for item in extracts.values():
+            if 'predictionMatched' in item['facts']['extractSemantics']:
+                self.assertIn(item['facts']['extractSemantics']['predictionMatched'], (True, False),
+                              item['id'])
+        # Seven layouts never reach a reader at all, and each keeps the build's own wording so no
+        # row can be read downstream as "this format is unsupported". Six are the surprise this
+        # batch exists to record: the magic test in the pinned source matches their bytes, yet
+        # ImageFactory::open produced no instance (the review document predicted BMP, QuickTime,
+        # Matroska and WAV would be read). The seventh is the prediction coming true: TGA is
+        # claimed by file *name* in this build, so a footer-signed .targa reaches no reader and is
+        # recorded as dispatch 'none' rather than as a TGA failure.
+        refused = {item['layout'] for item in evidence['observations']
+                   if 'unknown image type' in item['facts']['stderr']}
+        self.assertEqual({'bmp-dib-v3', 'bmp-os2-coreheader-v1', 'mkv-ebml-header-v1',
+                          'qtime-known-brand-v1', 'qtime-unknown-brand-v1', 'riff-wav-fmt-v1',
+                          'tga-signature-wrong-name-v1'}, refused)
+        self.assertEqual({'none'}, {item['facts']['container']['dispatch'] for item in
+                                    evidence['observations']
+                                    if item['layout'] == 'tga-signature-wrong-name-v1'})
 
     def test_evidence_files_hashed_by_a_receipt_survive_checkout_conversion(self):
         """A receipt that hashes committed bytes is only meaningful under one checkout mode.

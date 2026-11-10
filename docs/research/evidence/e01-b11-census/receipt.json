@@ -1,0 +1,1187 @@
+{
+  "schema": 1,
+  "batch": "B11",
+  "provenance": "CI-only evidence. This sandbox has no pinned Exiv2 build (no cmake/ninja, no expat/zlib development headers, and the package-install, Actions log and artifact-blob hosts are unreachable), so there is no local observation run to compare against. Both payloads here were recovered from check-run annotations of the run named below; no cross-environment equality claim is made.",
+  "run": {
+    "id": 42757620226,
+    "job": "Exiv2 0.28.9 / bounded E01 B11 container and small-format observations",
+    "checkRunId": 129635560547,
+    "headCommit": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
+    "attempt": 1,
+    "event": "push",
+    "trigger": "push to arena/40805d1c-metadatasharp",
+    "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42757620226",
+    "allStepsGreen": true
+  },
+  "denominatorFrozen": false,
+  "verification": "not-assessed",
+  "baseline": {
+    "cmakeCacheSha256": "8f13f98e9fd2e35b240d5086f2570f88f2f4a57e78e52b5306688ae61817f98f",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "executableSha256": "62e9057d0a599951fee6d66f602a1a3d7f8dc7cebcf558ebef7f6ba8347a2a41",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov 10 2026\ntime=04:44:02\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
+    "version": "0.28.9"
+  },
+  "environment": {
+    "TZ": "UTC0",
+    "note": "CrwMap::decode0x180e renders 0x180e through localtime_r, so the DateTime text this batch records is only reproducible with the offset on the record",
+    "utcOffsetSeconds": 0
+  },
+  "tally": {
+    "censusRows": 95,
+    "observed": 87,
+    "blocked": 8,
+    "observedAndBlockedAreDisjoint": true,
+    "observedPlusBlockedAreEveryRow": true,
+    "blockedIds": [
+      "EX0289-CRW-COMMENTS-READ-0005",
+      "EX0289-CRW-EXIF-READ-0005",
+      "EX0289-CRW-ICC-READ-0005",
+      "EX0289-CRW-INVENTORY-INVENTORY-0005",
+      "EX0289-CRW-IPTC-READ-0005",
+      "EX0289-CRW-THUMBNAIL-EXTRACT-0005",
+      "EX0289-CRW-THUMBNAIL-READ-0005",
+      "EX0289-CRW-XMP-READ-0005"
+    ],
+    "blockedAreVendorPrivateRows": true,
+    "recordOnly": true,
+    "inputsUnchanged": true,
+    "artifactsProduced": 2,
+    "artifacts": [
+      {
+        "layout": "ciff-preview-plus-thumb-v1",
+        "file": "case-thumb.jpg",
+        "length": 137,
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260"
+      },
+      {
+        "layout": "ciff-thumb-only-v1",
+        "file": "case-thumb.jpg",
+        "length": 137,
+        "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260"
+      }
+    ],
+    "outcomeCounts": {
+      "accepted": 25,
+      "blocked-rights": 8,
+      "nonzero-exit-artifact-produced": 2,
+      "refused": 59,
+      "static-not-applicable": 0,
+      "zero-exit-no-artifact": 1
+    },
+    "scanChangedRows": 0,
+    "flags": [
+      "-et",
+      "-pC",
+      "-pS",
+      "-pa",
+      "-pc",
+      "-pe",
+      "-px"
+    ],
+    "preflightRecords": 107,
+    "preflightFixtures": 17
+  },
+  "annotationRecovery": {
+    "channel": "check-run annotations (the Actions bulk-log host and the artifact blob host are unreachable from this environment)",
+    "command": "gh api repos/sensboston/MetadataSharp/check-runs/129635560547/annotations --paginate",
+    "title": "B11Z observations.json",
+    "markerTitle": "B11Z observations.json count",
+    "encoding": "zlib + base64, 4000-byte chunks",
+    "decoding": "concatenate chunk messages in index order, base64-decode, single zlib inflate -- the order matters and getting it wrong looks exactly like GitHub truncation",
+    "expectedChunks": 5,
+    "chunks": 5,
+    "markerVerified": true,
+    "losslessRoundTrip": true,
+    "observationsFileSha256": "7fbf4499e0d0c19ce2a823ed1586c1d3afb0449279f4c9edb5b9ff50469e2260",
+    "rawPayloadSha256": "dad3292ecd1051075d1177bea13e0c3c575139f0a498b5965a567dcbe90b5d04",
+    "recoveredKeys": [
+      "baseline",
+      "batch",
+      "blocked",
+      "denominatorFrozen",
+      "environment",
+      "fixtureManifest",
+      "limitations",
+      "observations",
+      "outcomeCounts",
+      "schema",
+      "scope",
+      "secondaryObservations",
+      "sourceCommit",
+      "status",
+      "verification"
+    ],
+    "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder"
+  },
+  "preflightRecovery": {
+    "command": "gh api repos/sensboston/MetadataSharp/check-runs/129635560547/annotations --paginate",
+    "title": "B11CONT observations.json",
+    "markerTitle": "B11CONT observations.json count",
+    "chunks": 5,
+    "expectedChunks": 5,
+    "markerVerified": true,
+    "losslessRoundTrip": true,
+    "observationsFileSha256": "3716c29b689fa7c2d572a575371d8e5ecbb243aef78dd7780038187f0e9b7632",
+    "rawPayloadSha256": "00f0a8a47d908379fea4edc6ad4aa942cc0bb28b418f53dd2feeab46a2afad8d",
+    "why": "the census record keeps stdout digests, not stdout; the preflight keeps the printed text, which is what makes the CIFF mapping and the AVI XMP block below checkable without re-running the pinned build",
+    "priorChunks": 5
+  },
+  "annotationBudget": {
+    "perCheckRunLimit": 50,
+    "thisJobAnnotationsUsed": 12,
+    "finding": "B9 evidence was lost in run 42729776775 without any CI failure because the job had already spent the 50-annotation-per-check-run budget and GitHub drops the overflow silently. Both B11 recorders therefore cap themselves well below it (30 chunks for 95 census rows, 12 for 107 preflight records), and the job used a fraction of its budget on this run."
+  },
+  "catalogTieOut": {
+    "manifestEntries": 18,
+    "clearedEntries": 17,
+    "blockedEntries": 1,
+    "generatorEqualsCommittedManifest": true,
+    "manifestEqualsCensusPayload": true,
+    "manifestEqualsPreflightPayload": true,
+    "fixtureDigestsMatchEvidence": true
+  },
+  "ciffMappingPrintForm": {
+    "layout": "ciff-mapped-v1",
+    "fixture": "owned-crw-mapped.crw",
+    "authoredMappedKeys": [
+      "colorspace",
+      "comment",
+      "datetime",
+      "dimensions",
+      "distance",
+      "file-number",
+      "firmware",
+      "make-model",
+      "owner-name"
+    ],
+    "printExifKeys": [
+      "Exif.Canon.FileNumber",
+      "Exif.Canon.FirmwareVersion",
+      "Exif.Canon.OwnerName",
+      "Exif.Image.Make",
+      "Exif.Image.Model",
+      "Exif.Image.Orientation",
+      "Exif.Photo.ColorSpace",
+      "Exif.Photo.DateTimeOriginal",
+      "Exif.Photo.PixelXDimension",
+      "Exif.Photo.PixelYDimension",
+      "Exif.Photo.SubjectDistance"
+    ],
+    "printAllKeys": [
+      "Exif.Canon.FileNumber",
+      "Exif.Canon.FirmwareVersion",
+      "Exif.Canon.OwnerName",
+      "Exif.Image.Make",
+      "Exif.Image.Model",
+      "Exif.Image.Orientation",
+      "Exif.Photo.ColorSpace",
+      "Exif.Photo.DateTimeOriginal",
+      "Exif.Photo.PixelXDimension",
+      "Exif.Photo.PixelYDimension",
+      "Exif.Photo.SubjectDistance"
+    ],
+    "everyMappedKeyPrinted": true,
+    "comment": "B11CrwComment",
+    "renderingDiffersBetweenPeAndPa": [
+      "Exif.Canon.FileNumber",
+      "Exif.Image.Orientation",
+      "Exif.Photo.ColorSpace",
+      "Exif.Photo.SubjectDistance"
+    ],
+    "renderings": {
+      "Exif.Canon.FileNumber": {
+        "-pe": [
+          "Long",
+          "1",
+          "4660"
+        ],
+        "-pa": [
+          "Long",
+          "1",
+          "-4660"
+        ]
+      },
+      "Exif.Canon.FirmwareVersion": {
+        "-pe": [
+          "Ascii",
+          "12",
+          "B11FIRMWARE"
+        ],
+        "-pa": [
+          "Ascii",
+          "12",
+          "B11FIRMWARE"
+        ]
+      },
+      "Exif.Canon.OwnerName": {
+        "-pe": [
+          "Ascii",
+          "9",
+          "B11Owner"
+        ],
+        "-pa": [
+          "Ascii",
+          "9",
+          "B11Owner"
+        ]
+      },
+      "Exif.Image.Make": {
+        "-pe": [
+          "Ascii",
+          "6",
+          "CANON"
+        ],
+        "-pa": [
+          "Ascii",
+          "6",
+          "CANON"
+        ]
+      },
+      "Exif.Image.Model": {
+        "-pe": [
+          "Ascii",
+          "18",
+          "B11 SYNTHETIC CRW"
+        ],
+        "-pa": [
+          "Ascii",
+          "18",
+          "B11 SYNTHETIC CRW"
+        ]
+      },
+      "Exif.Image.Orientation": {
+        "-pe": [
+          "Short",
+          "1",
+          "1"
+        ],
+        "-pa": [
+          "Short",
+          "1",
+          "top, left"
+        ]
+      },
+      "Exif.Photo.ColorSpace": {
+        "-pe": [
+          "Short",
+          "1",
+          "1"
+        ],
+        "-pa": [
+          "Short",
+          "1",
+          "sRGB"
+        ]
+      },
+      "Exif.Photo.DateTimeOriginal": {
+        "-pe": [
+          "Ascii",
+          "20",
+          "2026:01:01 00:00:00"
+        ],
+        "-pa": [
+          "Ascii",
+          "20",
+          "2026:01:01 00:00:00"
+        ]
+      },
+      "Exif.Photo.PixelXDimension": {
+        "-pe": [
+          "Long",
+          "1",
+          "96"
+        ],
+        "-pa": [
+          "Long",
+          "1",
+          "96"
+        ]
+      },
+      "Exif.Photo.PixelYDimension": {
+        "-pe": [
+          "Long",
+          "1",
+          "64"
+        ],
+        "-pa": [
+          "Long",
+          "1",
+          "64"
+        ]
+      },
+      "Exif.Photo.SubjectDistance": {
+        "-pe": [
+          "Long",
+          "2",
+          "1000 10"
+        ],
+        "-pa": [
+          "Long",
+          "2",
+          "1000.00 m"
+        ]
+      }
+    },
+    "note": "Every CIFF component this repository authored through `crwMapping_` (src/crwimage_int.cpp:82-110) reached the printed output, including the split of 0x080a into Exif.Image.Make and Exif.Image.Model at the embedded NUL, 0x080b reaching Exif.Canon.FirmwareVersion, 0x1817 reaching Exif.Canon.FileNumber through the table entry that overrides the component's own 8-byte claim with size 4 (CrwMap::decodeBasic, src/crwimage_int.cpp:800-820), and 0x1810 reaching Exif.Photo.PixelXDimension/PixelYDimension, which the reader only honours for an unsigned long of at least 28 bytes. `Exif.Photo.DateTimeOriginal` is rendered through localtime_r, so the pinned 2026:01:01 00:00:00 is only reproducible with the time zone on the record: the job sets TZ=UTC0 and the report keeps utcOffsetSeconds.",
+    "printModeChangesTheRenderedValue": "the same datum in the same file prints differently by mode: -pe renders the raw columns (SubjectDistance \"1000 10\", FileNumber 4660, ColorSpace 1, Orientation 1) while -pa renders the same entries through the group's own tag table (SubjectDistance \"1000.00 m\", FileNumber -4660, ColorSpace sRGB, Orientation \"top, left\"). B11 records that as a print-form fact about this build; it is not a value difference, and no support claim is built on either mode."
+  },
+  "extractForm": {
+    "rows": {
+      "ciff-mapped-v1": {
+        "exitCode": 0,
+        "artifactBytes": 0,
+        "exitCodeEqualsArtifactBytes": true,
+        "reportedNoThumbnail": true,
+        "predictedArtifactBytes": null,
+        "predictionMatched": null,
+        "artifacts": [],
+        "outcome": "zero-exit-no-artifact",
+        "stderr": "<fixture>: Image does not contain an Exif thumbnail",
+        "statusShape": null
+      },
+      "ciff-preview-plus-thumb-v1": {
+        "exitCode": 137,
+        "artifactBytes": 137,
+        "exitCodeEqualsArtifactBytes": true,
+        "reportedNoThumbnail": false,
+        "predictedArtifactBytes": 137,
+        "predictionMatched": true,
+        "artifacts": [
+          137
+        ],
+        "outcome": "nonzero-exit-artifact-produced",
+        "stderr": "",
+        "statusShape": null
+      },
+      "ciff-thumb-only-v1": {
+        "exitCode": 137,
+        "artifactBytes": 137,
+        "exitCodeEqualsArtifactBytes": true,
+        "reportedNoThumbnail": false,
+        "predictedArtifactBytes": 137,
+        "predictionMatched": true,
+        "artifacts": [
+          137
+        ],
+        "outcome": "nonzero-exit-artifact-produced",
+        "stderr": "",
+        "statusShape": null
+      },
+      "ciff-unmapped-only-v1": {
+        "exitCode": 253,
+        "artifactBytes": 0,
+        "exitCodeEqualsArtifactBytes": false,
+        "reportedNoThumbnail": false,
+        "predictedArtifactBytes": null,
+        "predictionMatched": null,
+        "artifacts": [],
+        "outcome": "refused",
+        "stderr": "<fixture>: No Exif data found in the file",
+        "statusShape": null
+      }
+    },
+    "rule": "`exiv2 -et <file>` returns whatever Extract::writeThumbnail returns (app/actions.cpp:823-864), and on this build that is one of four values, not a success flag: the byte count written by ExifThumb::writeFile when a thumbnail exists (137 for both CRW layouts that carry a 0x2008 component); 0 with \"Image does not contain an Exif thumbnail\" when Exif data exists but the thumbnail extension is empty (ciff-mapped-v1); -3, which main() returns as (-3 % 256) = 253, with \"No Exif data found in the file\" when the reader produced no Exif data at all (ciff-unmapped-only-v1); and 1 when readMetadata threw before any of that (every other format).",
+    "byteCountShapeIsTheSuccessPath": [
+      "ciff-preview-plus-thumb-v1",
+      "ciff-thumb-only-v1"
+    ],
+    "exitCodeIsNotAByteCountFor": [
+      "ciff-unmapped-only-v1"
+    ],
+    "findingsInPayload": {
+      "ciff-unmapped-only-v1": "-et exit code 253 does not equal the 0 bytes the command wrote"
+    },
+    "shapeLabelsInPayload": false,
+    "finding": "ciff-unmapped-only-v1 exits 253 while writing zero bytes, so \"the status is the byte count\" holds only on the success path. The review document asserted exitCode == artifactBytes for every extract row; the observation is what corrected it, and the census row keeps the contradiction visible either way. This payload was produced before the recorder labelled shapes, so the row carries it as a finding; the recorder now classifies it as `no-exif-data` and leaves the finding channel for statuses that no shape explains.",
+    "zeroExitWithArtifactWouldBeAFinding": "no row has it: `zero-exit-artifact-produced` count is 0, and both rows that wrote a thumbnail are nonzero-exit-artifact-produced (their status is the length).",
+    "prediction": {
+      "layoutsWithPrediction": [
+        "ciff-preview-plus-thumb-v1",
+        "ciff-thumb-only-v1"
+      ],
+      "allMatched": true,
+      "note": "predictedArtifactBytes comes from the 0x2008 component length in the committed manifest, so a mismatch would mean the recorder or the fixture changed; it is never gated."
+    }
+  },
+  "printStructureForms": {
+    "everyRowAndOutcome": {
+      "asf-header-guid-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-dib-v3 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-dib-v3 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-dib-v3 -pa": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-dib-v3 -pc": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-dib-v3 -pe": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-dib-v3 -px": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-os2-coreheader-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-os2-coreheader-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-os2-coreheader-v1 -pa": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-os2-coreheader-v1 -pc": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-os2-coreheader-v1 -pe": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "bmp-os2-coreheader-v1 -px": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-mapped-v1 -et": {
+        "exitCode": 0,
+        "outcome": "zero-exit-no-artifact",
+        "stdoutLength": 0
+      },
+      "ciff-mapped-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-mapped-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-mapped-v1 -pa": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 762
+      },
+      "ciff-mapped-v1 -pc": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 14
+      },
+      "ciff-mapped-v1 -pe": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 748
+      },
+      "ciff-mapped-v1 -px": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "ciff-preview-plus-thumb-v1 -et": {
+        "exitCode": 137,
+        "outcome": "nonzero-exit-artifact-produced",
+        "stdoutLength": 0
+      },
+      "ciff-preview-plus-thumb-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-preview-plus-thumb-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-preview-plus-thumb-v1 -pa": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 330
+      },
+      "ciff-preview-plus-thumb-v1 -pc": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 1
+      },
+      "ciff-preview-plus-thumb-v1 -pe": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 315
+      },
+      "ciff-preview-plus-thumb-v1 -px": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "ciff-thumb-only-v1 -et": {
+        "exitCode": 137,
+        "outcome": "nonzero-exit-artifact-produced",
+        "stdoutLength": 0
+      },
+      "ciff-thumb-only-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-thumb-only-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-thumb-only-v1 -pa": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 203
+      },
+      "ciff-thumb-only-v1 -pc": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 1
+      },
+      "ciff-thumb-only-v1 -pe": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 188
+      },
+      "ciff-thumb-only-v1 -px": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "ciff-unmapped-only-v1 -et": {
+        "exitCode": 253,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-unmapped-only-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-unmapped-only-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "ciff-unmapped-only-v1 -pa": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "ciff-unmapped-only-v1 -pc": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 1
+      },
+      "ciff-unmapped-only-v1 -pe": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "ciff-unmapped-only-v1 -px": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "gif-lsd-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-lsd-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-lsd-v1 -pa": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-lsd-v1 -pc": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-lsd-v1 -pe": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-lsd-v1 -px": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-truncated-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-truncated-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-truncated-v1 -pa": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-truncated-v1 -pc": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-truncated-v1 -pe": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "gif-truncated-v1 -px": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "mkv-ebml-header-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "qtime-known-brand-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "qtime-unknown-brand-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "riff-avi-avih-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "riff-wav-fmt-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-full-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-full-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-full-v1 -pa": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "tga-full-v1 -pc": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 1
+      },
+      "tga-full-v1 -pe": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "tga-full-v1 -px": {
+        "exitCode": 0,
+        "outcome": "accepted",
+        "stdoutLength": 0
+      },
+      "tga-name-only-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-name-only-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-name-only-v1 -pa": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-name-only-v1 -pc": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-name-only-v1 -pe": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-name-only-v1 -px": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-signature-wrong-name-v1 -pC": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-signature-wrong-name-v1 -pS": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-signature-wrong-name-v1 -pa": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-signature-wrong-name-v1 -pc": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-signature-wrong-name-v1 -pe": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      },
+      "tga-signature-wrong-name-v1 -px": {
+        "exitCode": 1,
+        "outcome": "refused",
+        "stdoutLength": 0
+      }
+    },
+    "allPrintStructureRefused": true,
+    "distinctStderrMessages": {
+      "-et ": [
+        "ciff-preview-plus-thumb-v1",
+        "ciff-thumb-only-v1"
+      ],
+      "-et <fixture>: Image does not contain an Exif thumbnail": [
+        "ciff-mapped-v1"
+      ],
+      "-et <fixture>: No Exif data found in the file": [
+        "ciff-unmapped-only-v1"
+      ],
+      "-pC Exiv2 exception in print action for file <fixture>: <fixture>: The file contains data of an unknown image type": [
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "tga-signature-wrong-name-v1"
+      ],
+      "-pC Exiv2 exception in print action for file <fixture>: Failed to read input data": [
+        "gif-truncated-v1",
+        "tga-name-only-v1"
+      ],
+      "-pC Exiv2 exception in print action for file <fixture>: Image type <fixture> is not supported": [
+        "ciff-mapped-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-thumb-only-v1",
+        "ciff-unmapped-only-v1",
+        "tga-full-v1"
+      ],
+      "-pC Exiv2 exception in print action for file <fixture>: corrupted image metadata": [
+        "gif-lsd-v1"
+      ],
+      "-pS Exiv2 exception in print action for file <fixture>: <fixture>: The file contains data of an unknown image type": [
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "mkv-ebml-header-v1",
+        "qtime-known-brand-v1",
+        "qtime-unknown-brand-v1",
+        "riff-wav-fmt-v1",
+        "tga-signature-wrong-name-v1"
+      ],
+      "-pS Exiv2 exception in print action for file <fixture>: Failed to read input data": [
+        "gif-truncated-v1",
+        "tga-name-only-v1"
+      ],
+      "-pS Exiv2 exception in print action for file <fixture>: Image type <fixture> is not supported": [
+        "asf-header-guid-v1",
+        "ciff-mapped-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-thumb-only-v1",
+        "ciff-unmapped-only-v1",
+        "riff-avi-avih-v1",
+        "tga-full-v1"
+      ],
+      "-pS Exiv2 exception in print action for file <fixture>: corrupted image metadata": [
+        "gif-lsd-v1"
+      ],
+      "-pa ": [
+        "ciff-mapped-v1",
+        "ciff-mapped-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-thumb-only-v1",
+        "ciff-thumb-only-v1",
+        "ciff-unmapped-only-v1",
+        "ciff-unmapped-only-v1",
+        "tga-full-v1",
+        "tga-full-v1"
+      ],
+      "-pa Exiv2 exception in print action for file <fixture>: <fixture>: The file contains data of an unknown image type": [
+        "bmp-dib-v3",
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "bmp-os2-coreheader-v1",
+        "tga-signature-wrong-name-v1",
+        "tga-signature-wrong-name-v1"
+      ],
+      "-pa Exiv2 exception in print action for file <fixture>: Failed to read input data": [
+        "gif-truncated-v1",
+        "gif-truncated-v1",
+        "tga-name-only-v1",
+        "tga-name-only-v1"
+      ],
+      "-pa Exiv2 exception in print action for file <fixture>: corrupted image metadata": [
+        "gif-lsd-v1",
+        "gif-lsd-v1"
+      ],
+      "-pc ": [
+        "ciff-mapped-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-thumb-only-v1",
+        "ciff-unmapped-only-v1",
+        "tga-full-v1"
+      ],
+      "-pc Exiv2 exception in print action for file <fixture>: <fixture>: The file contains data of an unknown image type": [
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "tga-signature-wrong-name-v1"
+      ],
+      "-pc Exiv2 exception in print action for file <fixture>: Failed to read input data": [
+        "gif-truncated-v1",
+        "tga-name-only-v1"
+      ],
+      "-pc Exiv2 exception in print action for file <fixture>: corrupted image metadata": [
+        "gif-lsd-v1"
+      ],
+      "-pe ": [
+        "ciff-mapped-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-thumb-only-v1",
+        "ciff-unmapped-only-v1",
+        "tga-full-v1"
+      ],
+      "-pe Exiv2 exception in print action for file <fixture>: <fixture>: The file contains data of an unknown image type": [
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "tga-signature-wrong-name-v1"
+      ],
+      "-pe Exiv2 exception in print action for file <fixture>: Failed to read input data": [
+        "gif-truncated-v1",
+        "tga-name-only-v1"
+      ],
+      "-pe Exiv2 exception in print action for file <fixture>: corrupted image metadata": [
+        "gif-lsd-v1"
+      ],
+      "-px ": [
+        "ciff-mapped-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-thumb-only-v1",
+        "ciff-unmapped-only-v1",
+        "tga-full-v1"
+      ],
+      "-px Exiv2 exception in print action for file <fixture>: <fixture>: The file contains data of an unknown image type": [
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "tga-signature-wrong-name-v1"
+      ],
+      "-px Exiv2 exception in print action for file <fixture>: Failed to read input data": [
+        "gif-truncated-v1",
+        "tga-name-only-v1"
+      ],
+      "-px Exiv2 exception in print action for file <fixture>: corrupted image metadata": [
+        "gif-lsd-v1"
+      ]
+    },
+    "note": "no cleared B11 fixture prints a structure or an ICC profile at all: -pS throws for 17 of 17, and -pC throws for every one the reader reached. `Image::printStructure` (src/image.cpp:136-138) is the base implementation for CRW, BMP, GIF, TGA and the QuickTime, ASF, RIFF and Matroska readers -- none of those eight overrides it -- and it throws kerUnsupportedImageType naming the path, which is the \"Image type ... is not supported\" line. BmffImage::printStructure (src/bmffimage.cpp:743-776) is the only override in this family, and the two MOV stubs never reach it (see factoryRefusals). The review document predicted that one MOV would print: the build says otherwise, and the prediction is corrected here rather than the observation."
+  },
+  "factoryRefusals": {
+    "layoutsRefusedByBuildButClaimedByModel": [
+      "bmp-dib-v3",
+      "bmp-os2-coreheader-v1",
+      "mkv-ebml-header-v1",
+      "qtime-known-brand-v1",
+      "qtime-unknown-brand-v1",
+      "riff-wav-fmt-v1"
+    ],
+    "allLayoutsWithNoReader": [
+      "bmp-dib-v3",
+      "bmp-os2-coreheader-v1",
+      "mkv-ebml-header-v1",
+      "qtime-known-brand-v1",
+      "qtime-unknown-brand-v1",
+      "riff-wav-fmt-v1",
+      "tga-signature-wrong-name-v1"
+    ],
+    "modelAgreesThereIsNoReader": [
+      "tga-signature-wrong-name-v1"
+    ],
+    "count": 7,
+    "errorFamily": "The file contains data of an unknown image type",
+    "thrownAt": "src/image.cpp:825-830 (ImageFactory::open throws when the registry scan yields no instance)",
+    "modelDisagreement": {
+      "disagreementCount": 6,
+      "note": "`recognizers()` in tools/reference/b11_container_fixtures.py models the magic tests in the pinned sources (bmpimage.cpp:119-132, quicktimevideo.cpp:1616-1641, bmffimage.cpp:794-812, matroskavideo.cpp:930-945, riffvideo.cpp:771-784) and predicts a match for each of these files. The build still produced no reader, so the rejection happens after the magic test: newXInstance rejects the image it just built unless Image::good() (image.cpp:713-718) re-runs that type's recognizer through ImageFactory::checkType (image.cpp:768-772) on the moved io, and an entry earlier in the registry that matches first would also short-circuit the loop. This evidence cannot separate those two, so it does not try to."
+    },
+    "notEstablished": "why these five stubs are refused is not established. What is established is that the refusal is not a format-support statement: it is what this build does with a file that carries its header and nothing else. The cheapest follow-up that would separate the two candidate causes is a same-format fixture long enough that every recognizer read in the scan sees its own bytes (a padded BMP is enough to test it, since BMP needs no more than its two headers); that is a B12 question, not a B11 one.",
+    "clearedLayoutsThatDidReachAReader": [
+      "asf-header-guid-v1",
+      "ciff-mapped-v1",
+      "ciff-preview-plus-thumb-v1",
+      "ciff-thumb-only-v1",
+      "ciff-unmapped-only-v1",
+      "gif-lsd-v1",
+      "gif-truncated-v1",
+      "riff-avi-avih-v1",
+      "tga-full-v1",
+      "tga-name-only-v1"
+    ]
+  },
+  "readFormAccepted": {
+    "formatFlagPairsWithOutput": [
+      [
+        "CRW",
+        "-pa"
+      ],
+      [
+        "CRW",
+        "-pc"
+      ],
+      [
+        "CRW",
+        "-pe"
+      ],
+      [
+        "TGA",
+        "-pc"
+      ]
+    ],
+    "zeroExitButNoOutput": [
+      [
+        "CRW",
+        "-et"
+      ],
+      [
+        "CRW",
+        "-pa"
+      ],
+      [
+        "CRW",
+        "-pe"
+      ],
+      [
+        "CRW",
+        "-px"
+      ],
+      [
+        "TGA",
+        "-pa"
+      ],
+      [
+        "TGA",
+        "-pe"
+      ],
+      [
+        "TGA",
+        "-px"
+      ]
+    ],
+    "note": "the census rows that print anything are CRW -pe/-pa (the mapped Exif table) and CRW -pc (the CIFF 0x0805 comment), plus TGA -pc, which prints a single newline: a reader that claims amNone for a family still exits 0, and this batch records that as accepted-with-no-output rather than as support. The AVI stub does print Xmp.video.FileSize/MimeType/Container/FileType from its RIFF header walk, but only in the preflight: its census row is inventory-only because the pinned table claims no video metadata family, which is precisely why the preflight payload is committed beside this receipt instead of being folded into the rows."
+  },
+  "secondaryReference": {
+    "tool": "ExifTool 12.76",
+    "files": [
+      "owned-asf-header.asf",
+      "owned-avi-avih.avi",
+      "owned-bmp-dib.bmp",
+      "owned-bmp-os2.bmp",
+      "owned-crw-mapped.crw",
+      "owned-crw-preview-thumb.crw",
+      "owned-crw-thumb.crw",
+      "owned-crw-unmapped.crw",
+      "owned-gif-lsd.gif",
+      "owned-gif-no-lsd.gif",
+      "owned-mkv-header.mkv",
+      "owned-mov-brand.mov",
+      "owned-mov-unknownbrand.mov",
+      "owned-tga-full.tga",
+      "owned-tga-name-only.tga",
+      "owned-tga-signature-only.targa",
+      "owned-wav-fmt.wav"
+    ],
+    "pinned": "ExifTool checkout 212f02cf2 (external black-box reference, never a product dependency)",
+    "role": "secondary observation, never an oracle",
+    "arguments": [
+      "-config",
+      "",
+      "-json",
+      "-G1",
+      "-s",
+      "<fixture>"
+    ]
+  },
+  "reproduction": {
+    "claim": "observations are reproducible; the compiled reference binary is not",
+    "runs": [
+      {
+        "head": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
+        "runId": 42757620226,
+        "payload": "observations.json"
+      },
+      {
+        "head": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
+        "runId": 42757620226,
+        "payload": "e01-b11-preflight/observations.json"
+      },
+      {
+        "head": "822fb1dcc4b732dffae809147ddf199a200daf32",
+        "runId": 42757054570,
+        "payload": "e01-b11-preflight/prior-run-observations.json"
+      }
+    ],
+    "status": "B11 has two preflight samples and one census sample. The earlier preflight came from run 42757054570, whose census step failed on a recorder bug (the coverage guard compared probed fixtures against the whole manifest, including the blocked entry that deliberately has no file), so that run produced a preflight payload and no census payload. Keeping both preflight payloads is what makes the reproduction claim mean something: the two were produced from different heads and different builds.",
+    "identicalSections": [
+      "denominatorFrozen",
+      "environment",
+      "fixtureManifest",
+      "observations",
+      "recordCount",
+      "schema",
+      "scope",
+      "status",
+      "verification"
+    ],
+    "differingSections": [
+      "baseline",
+      "secondary",
+      "sourceCommit"
+    ],
+    "excludedDifferences": {
+      "baseline.executableSha256": "the build embeds its own timestamp, so the binary is not bit-reproducible",
+      "baseline.verboseVersion": "the banner differs by the time= value and by where the libgcc/libm library= lines fall; the parsed field set is the same, and the ordering of the library= lines is not something this batch claims",
+      "secondary": "ExifTool System:File*Date fields only",
+      "sourceCommit": "successive runs validate different heads"
+    },
+    "priorRun": {
+      "runId": 42757054570,
+      "checkRunId": 129633741484,
+      "head": "822fb1dcc4b732dffae809147ddf199a200daf32",
+      "observationsFileSha256": "63340bfcbd702e59fc762ba6a048291b3fdeaeb947a67766eae04274b929cbd1",
+      "rawPayloadSha256": "debb90eefa6dc12195940dd2d1fd07f694612cba88a7db25bac26f995131d79e"
+    },
+    "priorRunComparison": {
+      "identicalSections": [
+        "denominatorFrozen",
+        "environment",
+        "fixtureManifest",
+        "observations",
+        "recordCount",
+        "schema",
+        "scope",
+        "status",
+        "verification"
+      ],
+      "differingSections": [
+        "baseline",
+        "secondary",
+        "sourceCommit"
+      ],
+      "observationsByteIdentical": true,
+      "recordCountEqual": true,
+      "baselineDifference": {
+        "executableSha256Differs": true,
+        "cmakeCacheSha256Equal": true,
+        "effectiveCmakeEqual": true
+      },
+      "secondaryDriftBeyondFileDates": []
+    }
+  },
+  "checkoutPolicy": {
+    "requirement": "the digests in this receipt are taken over committed bytes, so a checkout that rewrites line endings invalidates them",
+    "windowsRunnerDefault": "core.autocrlf=true converts LF text to CRLF at checkout",
+    "pin": "docs/research/evidence/**/*.json text eol=lf and tests/fixtures/b11/* -text in .gitattributes",
+    "note": "B10 lost three pushes to the missing pin, and the B11 fixtures are binary files whose digests the census rows carry, so both patterns are pinned from the start and the discovery test compares each hashed file against its own blob in HEAD."
+  },
+  "notClaimed": [
+    "no MetadataSharp verification (verification stays not-assessed) and no test in the product suite consumes these rows",
+    "no coverage percentage and no denominator freeze",
+    "no metadata-support or vendor-format conformance claim: a refusal here is what this build does with a header-only stub, and a success is not evidence a camera wrote it",
+    "no write behavior: no B11 write row is enumerated, so the symmetric CRW encoder is neither claimed nor refuted",
+    "nothing about the vendor-private CIFF structures is established: those 8 cells stay blocked, and no B11 fixture invents a component outside the reviewed crwMapping_ rows",
+    "per-family attribution of the shared -pa output is not established (the read rows for one layout print one identical digest)",
+    "that any authored file is a valid capture of the vendor format, or that a camera would read it",
+    "ExifTool reported FileType per its own rules, which consult the extension, so the secondary observation is not a validity proof for these authored containers",
+    "the mechanism behind the five factory refusals (see factoryRefusals.notEstablished)"
+  ]
+}

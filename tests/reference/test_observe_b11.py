@@ -162,7 +162,8 @@ class ObserveB11Tests(unittest.TestCase):
                                                   operation='extract'),
                                               Path('/mock'), workdir(tmp))
         semantics = result['facts']['extractSemantics']
-        self.assertTrue(semantics['exitCodeIsByteCountInPinnedBuild'])
+        self.assertEqual('thumbnail-written', semantics['statusShape'])
+        self.assertTrue(semantics['statusIsByteCountWritten'])
         self.assertEqual(6, semantics['artifactBytes'])
         self.assertTrue(semantics['exitCodeEqualsArtifactBytes'])
         self.assertEqual(len(owned_thumb_bytes()), semantics['predictedArtifactBytes'])
@@ -189,6 +190,7 @@ class ObserveB11Tests(unittest.TestCase):
         self.assertEqual('zero-exit-no-artifact', result['outcome'])
         self.assertTrue(result['facts']['extractSemantics']['reportedNoThumbnail'])
         self.assertTrue(result['facts']['extractSemantics']['exitCodeEqualsArtifactBytes'])
+        self.assertEqual('no-thumbnail-extension', result['facts']['extractSemantics']['statusShape'])
         self.assertIsNone(result['facts']['finding'])
 
     def test_artifact_written_with_zero_exit_is_a_byte_count_finding(self):
@@ -201,7 +203,30 @@ class ObserveB11Tests(unittest.TestCase):
                                                   operation='extract'),
                                               Path('/mock'), workdir(tmp))
         self.assertEqual('zero-exit-artifact-produced', result['outcome'])
-        self.assertIn('does not equal the 6 bytes', result['facts']['finding'])
+        self.assertEqual('unclassified', result['facts']['extractSemantics']['statusShape'])
+        self.assertIn('returned 0 with 6 bytes written', result['facts']['finding'])
+
+    def test_a_status_that_is_not_a_byte_count_keeps_its_own_shape(self):
+        # `exiv2 -et` on a file whose reader filled no Exif data returns -3 from
+        # Extract::writeThumbnail, and main() narrows it to 253
+        # (`return static_cast<unsigned int>(returnCode) % 256`, app/exiv2.cpp:195). The pinned
+        # build did exactly this on ciff-unmapped-only-v1, so the recorder labels the row rather
+        # than calling it a byte count or a defect: the review document's blanket rule was wrong
+        # and the evidence is what corrected it.
+        semantics = observer.extract_semantics('-et', 253, [])
+        self.assertEqual('no-exif-data', semantics['statusShape'])
+        self.assertEqual(253, observer.NO_EXIF_STATUS)
+        self.assertFalse(semantics['exitCodeEqualsArtifactBytes'])
+        self.assertFalse(semantics['statusIsByteCountWritten'])
+        self.assertEqual(0, semantics['artifactBytes'])
+        # The other three shapes the same function can produce, and the one that is a finding.
+        self.assertEqual('reader-threw', observer.extract_semantics('-et', 1, [])['statusShape'])
+        self.assertEqual('no-thumbnail-extension', observer.extract_semantics('-et', 0, [])['statusShape'])
+        self.assertEqual('thumbnail-written',
+                         observer.extract_semantics('-et', 4, [{'length': 4}])['statusShape'])
+        self.assertEqual('unclassified',
+                         observer.extract_semantics('-et', 7, [{'length': 4}])['statusShape'])
+        self.assertIsNone(observer.extract_semantics('-pa', 0, []))
 
     def test_empty_listing_is_a_record_and_never_a_refusal(self):
         # -pa on a reader that fills nothing prints nothing and exits 0. That is a listing that
