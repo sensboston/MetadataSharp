@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker fixtures (pinned header contract plus owned metadata carriers); each format also keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed or cleared, and no B9 write suboperation is enumerated. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7, B8: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker fixtures (pinned header contract plus owned metadata carriers); each format also keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed or cleared, and no B9 write suboperation is enumerated. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7, B8, B9: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "ARW/comments",
@@ -18895,16 +18895,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-arw.arw",
+        "sha256": "bd8a3650e6dce99af355e3255a02fb233e2374d244d4c052e538d995f65cbb2e",
+        "length": 1294,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-arw.arw"
     },
     {
       "rowId": "EX0289-ARW-EXIF-READ-0001",
@@ -18922,16 +18928,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-arw.arw",
+        "sha256": "bd8a3650e6dce99af355e3255a02fb233e2374d244d4c052e538d995f65cbb2e",
+        "length": 1294,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-arw.arw"
     },
     {
       "rowId": "EX0289-ARW-IPTC-READ-0001",
@@ -18949,16 +18961,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-arw.arw",
+        "sha256": "bd8a3650e6dce99af355e3255a02fb233e2374d244d4c052e538d995f65cbb2e",
+        "length": 1294,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-arw.arw"
     },
     {
       "rowId": "EX0289-ARW-XMP-READ-0001",
@@ -18976,16 +18994,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-arw.arw",
+        "sha256": "bd8a3650e6dce99af355e3255a02fb233e2374d244d4c052e538d995f65cbb2e",
+        "length": 1294,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-arw.arw"
     },
     {
       "rowId": "EX0289-ARW-COMMENTS-READ-0001",
@@ -19003,16 +19027,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-arw.arw",
+        "sha256": "bd8a3650e6dce99af355e3255a02fb233e2374d244d4c052e538d995f65cbb2e",
+        "length": 1294,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-arw.arw"
     },
     {
       "rowId": "EX0289-ARW-ICC-READ-0001",
@@ -19030,16 +19060,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-arw.arw",
+        "sha256": "bd8a3650e6dce99af355e3255a02fb233e2374d244d4c052e538d995f65cbb2e",
+        "length": 1294,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-arw.arw"
     },
     {
       "rowId": "EX0289-ARW-THUMBNAIL-READ-0001",
@@ -19057,16 +19093,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-arw.arw",
+        "sha256": "bd8a3650e6dce99af355e3255a02fb233e2374d244d4c052e538d995f65cbb2e",
+        "length": 1294,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-arw.arw"
     },
     {
       "rowId": "EX0289-ARW-THUMBNAIL-EXTRACT-0001",
@@ -19084,16 +19126,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-arw.arw",
+        "sha256": "bd8a3650e6dce99af355e3255a02fb233e2374d244d4c052e538d995f65cbb2e",
+        "length": 1294,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-marker-arw.arw"
     },
     {
       "rowId": "EX0289-CR2-INVENTORY-INVENTORY-0001",
@@ -19111,16 +19159,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-cr2.cr2",
+        "sha256": "87a0aff909e024c92d68e572378dd5971ce9f984afe6a19627f3772d5e6ccccd",
+        "length": 1302,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-cr2.cr2"
     },
     {
       "rowId": "EX0289-CR2-EXIF-READ-0001",
@@ -19138,16 +19192,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-cr2.cr2",
+        "sha256": "87a0aff909e024c92d68e572378dd5971ce9f984afe6a19627f3772d5e6ccccd",
+        "length": 1302,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-cr2.cr2"
     },
     {
       "rowId": "EX0289-CR2-IPTC-READ-0001",
@@ -19165,16 +19225,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-cr2.cr2",
+        "sha256": "87a0aff909e024c92d68e572378dd5971ce9f984afe6a19627f3772d5e6ccccd",
+        "length": 1302,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-cr2.cr2"
     },
     {
       "rowId": "EX0289-CR2-XMP-READ-0001",
@@ -19192,16 +19258,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-cr2.cr2",
+        "sha256": "87a0aff909e024c92d68e572378dd5971ce9f984afe6a19627f3772d5e6ccccd",
+        "length": 1302,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-cr2.cr2"
     },
     {
       "rowId": "EX0289-CR2-COMMENTS-READ-0001",
@@ -19219,16 +19291,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-cr2.cr2",
+        "sha256": "87a0aff909e024c92d68e572378dd5971ce9f984afe6a19627f3772d5e6ccccd",
+        "length": 1302,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-cr2.cr2"
     },
     {
       "rowId": "EX0289-CR2-ICC-READ-0001",
@@ -19246,16 +19324,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-cr2.cr2",
+        "sha256": "87a0aff909e024c92d68e572378dd5971ce9f984afe6a19627f3772d5e6ccccd",
+        "length": 1302,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-cr2.cr2"
     },
     {
       "rowId": "EX0289-CR2-THUMBNAIL-READ-0001",
@@ -19273,16 +19357,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-cr2.cr2",
+        "sha256": "87a0aff909e024c92d68e572378dd5971ce9f984afe6a19627f3772d5e6ccccd",
+        "length": 1302,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-cr2.cr2"
     },
     {
       "rowId": "EX0289-CR2-THUMBNAIL-EXTRACT-0001",
@@ -19300,16 +19390,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-cr2.cr2",
+        "sha256": "87a0aff909e024c92d68e572378dd5971ce9f984afe6a19627f3772d5e6ccccd",
+        "length": 1302,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-marker-cr2.cr2"
     },
     {
       "rowId": "EX0289-NEF-INVENTORY-INVENTORY-0001",
@@ -19327,16 +19423,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-nef.nef",
+        "sha256": "d38f556021a6193bb07bc86181ef572b9f7062d9039fd4fb01d573d8a6b25884",
+        "length": 1306,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-nef.nef"
     },
     {
       "rowId": "EX0289-NEF-EXIF-READ-0001",
@@ -19354,16 +19456,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-nef.nef",
+        "sha256": "d38f556021a6193bb07bc86181ef572b9f7062d9039fd4fb01d573d8a6b25884",
+        "length": 1306,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-nef.nef"
     },
     {
       "rowId": "EX0289-NEF-IPTC-READ-0001",
@@ -19381,16 +19489,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-nef.nef",
+        "sha256": "d38f556021a6193bb07bc86181ef572b9f7062d9039fd4fb01d573d8a6b25884",
+        "length": 1306,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-nef.nef"
     },
     {
       "rowId": "EX0289-NEF-XMP-READ-0001",
@@ -19408,16 +19522,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-nef.nef",
+        "sha256": "d38f556021a6193bb07bc86181ef572b9f7062d9039fd4fb01d573d8a6b25884",
+        "length": 1306,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-nef.nef"
     },
     {
       "rowId": "EX0289-NEF-COMMENTS-READ-0001",
@@ -19435,16 +19555,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-nef.nef",
+        "sha256": "d38f556021a6193bb07bc86181ef572b9f7062d9039fd4fb01d573d8a6b25884",
+        "length": 1306,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-nef.nef"
     },
     {
       "rowId": "EX0289-NEF-ICC-READ-0001",
@@ -19462,16 +19588,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-nef.nef",
+        "sha256": "d38f556021a6193bb07bc86181ef572b9f7062d9039fd4fb01d573d8a6b25884",
+        "length": 1306,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-nef.nef"
     },
     {
       "rowId": "EX0289-NEF-THUMBNAIL-READ-0001",
@@ -19489,16 +19621,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-nef.nef",
+        "sha256": "d38f556021a6193bb07bc86181ef572b9f7062d9039fd4fb01d573d8a6b25884",
+        "length": 1306,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-nef.nef"
     },
     {
       "rowId": "EX0289-NEF-THUMBNAIL-EXTRACT-0001",
@@ -19516,16 +19654,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-nef.nef",
+        "sha256": "d38f556021a6193bb07bc86181ef572b9f7062d9039fd4fb01d573d8a6b25884",
+        "length": 1306,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-marker-nef.nef"
     },
     {
       "rowId": "EX0289-ORF-INVENTORY-INVENTORY-0001",
@@ -19543,16 +19687,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-orf.orf",
+        "sha256": "8a6d29fc028a4420d5bba6f4d7074b734b29ed9fd1207b499cc576bc135592e5",
+        "length": 1310,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-orf.orf"
     },
     {
       "rowId": "EX0289-ORF-EXIF-READ-0001",
@@ -19570,16 +19720,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-orf.orf",
+        "sha256": "8a6d29fc028a4420d5bba6f4d7074b734b29ed9fd1207b499cc576bc135592e5",
+        "length": 1310,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-orf.orf"
     },
     {
       "rowId": "EX0289-ORF-IPTC-READ-0001",
@@ -19597,16 +19753,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-orf.orf",
+        "sha256": "8a6d29fc028a4420d5bba6f4d7074b734b29ed9fd1207b499cc576bc135592e5",
+        "length": 1310,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-orf.orf"
     },
     {
       "rowId": "EX0289-ORF-XMP-READ-0001",
@@ -19624,16 +19786,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-orf.orf",
+        "sha256": "8a6d29fc028a4420d5bba6f4d7074b734b29ed9fd1207b499cc576bc135592e5",
+        "length": 1310,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-orf.orf"
     },
     {
       "rowId": "EX0289-ORF-COMMENTS-READ-0001",
@@ -19651,16 +19819,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-orf.orf",
+        "sha256": "8a6d29fc028a4420d5bba6f4d7074b734b29ed9fd1207b499cc576bc135592e5",
+        "length": 1310,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-orf.orf"
     },
     {
       "rowId": "EX0289-ORF-ICC-READ-0001",
@@ -19678,16 +19852,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-orf.orf",
+        "sha256": "8a6d29fc028a4420d5bba6f4d7074b734b29ed9fd1207b499cc576bc135592e5",
+        "length": 1310,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-orf.orf"
     },
     {
       "rowId": "EX0289-ORF-THUMBNAIL-READ-0001",
@@ -19705,16 +19885,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-orf.orf",
+        "sha256": "8a6d29fc028a4420d5bba6f4d7074b734b29ed9fd1207b499cc576bc135592e5",
+        "length": 1310,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-orf.orf"
     },
     {
       "rowId": "EX0289-ORF-THUMBNAIL-EXTRACT-0001",
@@ -19732,16 +19918,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-orf.orf",
+        "sha256": "8a6d29fc028a4420d5bba6f4d7074b734b29ed9fd1207b499cc576bc135592e5",
+        "length": 1310,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-marker-orf.orf"
     },
     {
       "rowId": "EX0289-PEF-INVENTORY-INVENTORY-0001",
@@ -19759,16 +19951,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-pef.pef",
+        "sha256": "6d69d90e03a3769aa638b72ecfc192eb4243c4b1b19ecba7f132acf56bb8fd48",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-pef.pef"
     },
     {
       "rowId": "EX0289-PEF-EXIF-READ-0001",
@@ -19786,16 +19984,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-pef.pef",
+        "sha256": "6d69d90e03a3769aa638b72ecfc192eb4243c4b1b19ecba7f132acf56bb8fd48",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-pef.pef"
     },
     {
       "rowId": "EX0289-PEF-IPTC-READ-0001",
@@ -19813,16 +20017,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-pef.pef",
+        "sha256": "6d69d90e03a3769aa638b72ecfc192eb4243c4b1b19ecba7f132acf56bb8fd48",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-pef.pef"
     },
     {
       "rowId": "EX0289-PEF-XMP-READ-0001",
@@ -19840,16 +20050,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-pef.pef",
+        "sha256": "6d69d90e03a3769aa638b72ecfc192eb4243c4b1b19ecba7f132acf56bb8fd48",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-pef.pef"
     },
     {
       "rowId": "EX0289-PEF-COMMENTS-READ-0001",
@@ -19867,16 +20083,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-pef.pef",
+        "sha256": "6d69d90e03a3769aa638b72ecfc192eb4243c4b1b19ecba7f132acf56bb8fd48",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-pef.pef"
     },
     {
       "rowId": "EX0289-PEF-ICC-READ-0001",
@@ -19894,16 +20116,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-pef.pef",
+        "sha256": "6d69d90e03a3769aa638b72ecfc192eb4243c4b1b19ecba7f132acf56bb8fd48",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-pef.pef"
     },
     {
       "rowId": "EX0289-PEF-THUMBNAIL-READ-0001",
@@ -19921,16 +20149,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-pef.pef",
+        "sha256": "6d69d90e03a3769aa638b72ecfc192eb4243c4b1b19ecba7f132acf56bb8fd48",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-pef.pef"
     },
     {
       "rowId": "EX0289-PEF-THUMBNAIL-EXTRACT-0001",
@@ -19948,16 +20182,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-pef.pef",
+        "sha256": "6d69d90e03a3769aa638b72ecfc192eb4243c4b1b19ecba7f132acf56bb8fd48",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-marker-pef.pef"
     },
     {
       "rowId": "EX0289-SRW-INVENTORY-INVENTORY-0001",
@@ -19975,16 +20215,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-srw.srw",
+        "sha256": "497f382bad0db9f942cc364cdca88a1ee203654075daff3fc1c119efc60beeb3",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-srw.srw"
     },
     {
       "rowId": "EX0289-SRW-EXIF-READ-0001",
@@ -20002,16 +20248,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-srw.srw",
+        "sha256": "497f382bad0db9f942cc364cdca88a1ee203654075daff3fc1c119efc60beeb3",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-srw.srw"
     },
     {
       "rowId": "EX0289-SRW-IPTC-READ-0001",
@@ -20029,16 +20281,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-srw.srw",
+        "sha256": "497f382bad0db9f942cc364cdca88a1ee203654075daff3fc1c119efc60beeb3",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-srw.srw"
     },
     {
       "rowId": "EX0289-SRW-XMP-READ-0001",
@@ -20056,16 +20314,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-srw.srw",
+        "sha256": "497f382bad0db9f942cc364cdca88a1ee203654075daff3fc1c119efc60beeb3",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-srw.srw"
     },
     {
       "rowId": "EX0289-SRW-COMMENTS-READ-0001",
@@ -20083,16 +20347,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-srw.srw",
+        "sha256": "497f382bad0db9f942cc364cdca88a1ee203654075daff3fc1c119efc60beeb3",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-srw.srw"
     },
     {
       "rowId": "EX0289-SRW-ICC-READ-0001",
@@ -20110,16 +20380,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": true,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-srw.srw",
+        "sha256": "497f382bad0db9f942cc364cdca88a1ee203654075daff3fc1c119efc60beeb3",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-srw.srw"
     },
     {
       "rowId": "EX0289-SRW-THUMBNAIL-READ-0001",
@@ -20137,16 +20413,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-srw.srw",
+        "sha256": "497f382bad0db9f942cc364cdca88a1ee203654075daff3fc1c119efc60beeb3",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 pinned-CLI observation: outcome=accepted; exit-observed; fixture=owned-marker-srw.srw"
     },
     {
       "rowId": "EX0289-SRW-THUMBNAIL-EXTRACT-0001",
@@ -20164,16 +20446,22 @@
         "preview": "unknown"
       },
       "noDocumentedClaim": false,
-      "fixture": null,
-      "oracle": {
-        "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      "fixture": {
+        "file": "owned-marker-srw.srw",
+        "sha256": "497f382bad0db9f942cc364cdca88a1ee203654075daff3fc1c119efc60beeb3",
+        "length": 1296,
+        "rights": "owned-synthetic",
+        "recipe": "authored byte-level vendor-headed TIFF/EP writer; tools/reference/b9_raw_fixtures.py"
       },
-      "baselineObservation": "not-run",
+      "oracle": {
+        "type": "pinned-cli",
+        "detail": "record-only bounded probe; no independent expectation or support assertion; see evidence/e01-b9-census"
+      },
+      "baselineObservation": "observed-cli",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 pinned-CLI observation: outcome=nonzero-exit-artifact-produced; exit-observed; fixture=owned-marker-srw.srw"
     },
     {
       "rowId": "EX0289-ARW-INVENTORY-INVENTORY-0002",
@@ -20194,13 +20482,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B9 blocked-rights: ARW private layout (Sony raw-image and lens tables in the private IFDs): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ARW-EXIF-READ-0002",
@@ -20221,13 +20509,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 blocked-rights: ARW private layout (Sony raw-image and lens tables in the private IFDs): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ARW-IPTC-READ-0002",
@@ -20248,13 +20536,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 blocked-rights: ARW private layout (Sony raw-image and lens tables in the private IFDs): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ARW-XMP-READ-0002",
@@ -20275,13 +20563,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 blocked-rights: ARW private layout (Sony raw-image and lens tables in the private IFDs): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ARW-COMMENTS-READ-0002",
@@ -20302,13 +20590,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 blocked-rights: ARW private layout (Sony raw-image and lens tables in the private IFDs): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ARW-ICC-READ-0002",
@@ -20329,13 +20617,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 blocked-rights: ARW private layout (Sony raw-image and lens tables in the private IFDs): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ARW-THUMBNAIL-READ-0002",
@@ -20356,13 +20644,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 blocked-rights: ARW private layout (Sony raw-image and lens tables in the private IFDs): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ARW-THUMBNAIL-EXTRACT-0002",
@@ -20383,13 +20671,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 blocked-rights: ARW private layout (Sony raw-image and lens tables in the private IFDs): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CR2-INVENTORY-INVENTORY-0002",
@@ -20410,13 +20698,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B9 blocked-rights: CR2 private layout (Canon IFD3 color-metadata block): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CR2-EXIF-READ-0002",
@@ -20437,13 +20725,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 blocked-rights: CR2 private layout (Canon IFD3 color-metadata block): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CR2-IPTC-READ-0002",
@@ -20464,13 +20752,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 blocked-rights: CR2 private layout (Canon IFD3 color-metadata block): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CR2-XMP-READ-0002",
@@ -20491,13 +20779,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 blocked-rights: CR2 private layout (Canon IFD3 color-metadata block): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CR2-COMMENTS-READ-0002",
@@ -20518,13 +20806,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 blocked-rights: CR2 private layout (Canon IFD3 color-metadata block): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CR2-ICC-READ-0002",
@@ -20545,13 +20833,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 blocked-rights: CR2 private layout (Canon IFD3 color-metadata block): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CR2-THUMBNAIL-READ-0002",
@@ -20572,13 +20860,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 blocked-rights: CR2 private layout (Canon IFD3 color-metadata block): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-CR2-THUMBNAIL-EXTRACT-0002",
@@ -20599,13 +20887,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 blocked-rights: CR2 private layout (Canon IFD3 color-metadata block): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-NEF-INVENTORY-INVENTORY-0002",
@@ -20626,13 +20914,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B9 blocked-rights: NEF private layout (Nikon maker note and NEF verification tags): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-NEF-EXIF-READ-0002",
@@ -20653,13 +20941,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 blocked-rights: NEF private layout (Nikon maker note and NEF verification tags): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-NEF-IPTC-READ-0002",
@@ -20680,13 +20968,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 blocked-rights: NEF private layout (Nikon maker note and NEF verification tags): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-NEF-XMP-READ-0002",
@@ -20707,13 +20995,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 blocked-rights: NEF private layout (Nikon maker note and NEF verification tags): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-NEF-COMMENTS-READ-0002",
@@ -20734,13 +21022,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 blocked-rights: NEF private layout (Nikon maker note and NEF verification tags): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-NEF-ICC-READ-0002",
@@ -20761,13 +21049,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 blocked-rights: NEF private layout (Nikon maker note and NEF verification tags): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-NEF-THUMBNAIL-READ-0002",
@@ -20788,13 +21076,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 blocked-rights: NEF private layout (Nikon maker note and NEF verification tags): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-NEF-THUMBNAIL-EXTRACT-0002",
@@ -20815,13 +21103,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 blocked-rights: NEF private layout (Nikon maker note and NEF verification tags): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ORF-INVENTORY-INVENTORY-0002",
@@ -20842,13 +21130,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B9 blocked-rights: ORF private layout (Olympus private IFD, whose offsets are relative to the directory): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ORF-EXIF-READ-0002",
@@ -20869,13 +21157,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 blocked-rights: ORF private layout (Olympus private IFD, whose offsets are relative to the directory): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ORF-IPTC-READ-0002",
@@ -20896,13 +21184,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 blocked-rights: ORF private layout (Olympus private IFD, whose offsets are relative to the directory): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ORF-XMP-READ-0002",
@@ -20923,13 +21211,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 blocked-rights: ORF private layout (Olympus private IFD, whose offsets are relative to the directory): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ORF-COMMENTS-READ-0002",
@@ -20950,13 +21238,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 blocked-rights: ORF private layout (Olympus private IFD, whose offsets are relative to the directory): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ORF-ICC-READ-0002",
@@ -20977,13 +21265,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 blocked-rights: ORF private layout (Olympus private IFD, whose offsets are relative to the directory): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ORF-THUMBNAIL-READ-0002",
@@ -21004,13 +21292,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 blocked-rights: ORF private layout (Olympus private IFD, whose offsets are relative to the directory): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-ORF-THUMBNAIL-EXTRACT-0002",
@@ -21031,13 +21319,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 blocked-rights: ORF private layout (Olympus private IFD, whose offsets are relative to the directory): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-PEF-INVENTORY-INVENTORY-0002",
@@ -21058,13 +21346,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B9 blocked-rights: PEF private layout (Pentax maker note and PENTAX/AE sections): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-PEF-EXIF-READ-0002",
@@ -21085,13 +21373,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 blocked-rights: PEF private layout (Pentax maker note and PENTAX/AE sections): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-PEF-IPTC-READ-0002",
@@ -21112,13 +21400,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 blocked-rights: PEF private layout (Pentax maker note and PENTAX/AE sections): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-PEF-XMP-READ-0002",
@@ -21139,13 +21427,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 blocked-rights: PEF private layout (Pentax maker note and PENTAX/AE sections): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-PEF-COMMENTS-READ-0002",
@@ -21166,13 +21454,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 blocked-rights: PEF private layout (Pentax maker note and PENTAX/AE sections): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-PEF-ICC-READ-0002",
@@ -21193,13 +21481,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 blocked-rights: PEF private layout (Pentax maker note and PENTAX/AE sections): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-PEF-THUMBNAIL-READ-0002",
@@ -21220,13 +21508,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 blocked-rights: PEF private layout (Pentax maker note and PENTAX/AE sections): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-PEF-THUMBNAIL-EXTRACT-0002",
@@ -21247,13 +21535,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 blocked-rights: PEF private layout (Pentax maker note and PENTAX/AE sections): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SRW-INVENTORY-INVENTORY-0002",
@@ -21274,13 +21562,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+      "notes": "B9 blocked-rights: SRW private layout (Samsung OP body-data offsets): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SRW-EXIF-READ-0002",
@@ -21301,13 +21589,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+      "notes": "B9 blocked-rights: SRW private layout (Samsung OP body-data offsets): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SRW-IPTC-READ-0002",
@@ -21328,13 +21616,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+      "notes": "B9 blocked-rights: SRW private layout (Samsung OP body-data offsets): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SRW-XMP-READ-0002",
@@ -21355,13 +21643,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+      "notes": "B9 blocked-rights: SRW private layout (Samsung OP body-data offsets): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SRW-COMMENTS-READ-0002",
@@ -21382,13 +21670,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+      "notes": "B9 blocked-rights: SRW private layout (Samsung OP body-data offsets): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SRW-ICC-READ-0002",
@@ -21409,13 +21697,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+      "notes": "B9 blocked-rights: SRW private layout (Samsung OP body-data offsets): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SRW-THUMBNAIL-READ-0002",
@@ -21436,13 +21724,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+      "notes": "B9 blocked-rights: SRW private layout (Samsung OP body-data offsets): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     },
     {
       "rowId": "EX0289-SRW-THUMBNAIL-EXTRACT-0002",
@@ -21463,13 +21751,13 @@
       "fixture": null,
       "oracle": {
         "type": "specification",
-        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+        "detail": "pending rights and independent fixture/oracle review"
       },
-      "baselineObservation": "not-run",
+      "baselineObservation": "blocked",
       "verification": "not-assessed",
       "batch": "B9",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
-      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+      "notes": "B9 blocked-rights: SRW private layout (Samsung OP body-data offsets): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private IFD would invent evidence rather than observe it, so no fixture is cleared and the cell stays visible as blocked. See docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md."
     }
   ]
 }

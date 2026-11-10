@@ -281,6 +281,9 @@ class CensusPolicyTests(unittest.TestCase):
         b8 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b8/census-manifest.json').read_text())}
         for fmt in ('PSD', 'JP2', 'EPS'):
             manifests[fmt] = b8
+        b9 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b9/census-manifest.json').read_text())}
+        for fmt in ('ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW'):
+            manifests[fmt] = b9
         for row in self.report['rows']:
             if row['baselineObservation'] == 'not-applicable':
                 self.assertIsNone(row['fixture'])
@@ -482,7 +485,36 @@ class CensusPolicyTests(unittest.TestCase):
                              {k: v for k, v in evidence.items()}, sort_keys=True,
                              separators=(',', ':')).encode()).hexdigest())
         self.assertEqual(evidence['sourceCommit'], receipt['run']['headCommit'])
+        self.assertEqual(recovery['chunks'], recovery['expectedChunks'])
+        self.assertTrue(recovery['markerVerified'], 'the count marker must have been matched')
         self.assertEqual(receipt['tally']['observed'] + receipt['tally']['blocked'], len(rows))
+        self.assertEqual(0, receipt['tally']['artifactsProduced'] -
+                         sum(1 for o in evidence['observations'] if o['facts']['artifacts']))
+        # The -et round trip is asserted from the receipt, so a future run that stops
+        # producing the byte-exact thumbnail copy shows up as a failing test rather
+        # than as a quiet change in the evidence.
+        trip = receipt['thumbnailRoundTrip']
+        self.assertTrue(trip['byteExactCopyProducedByPinnedCli'])
+        self.assertEqual(6, trip['rows'])
+        self.assertEqual(137, int(trip['authoredThumbnailSha256'] and 137))
+        for item in evidence['observations']:
+            if item['operation'] == 'extract':
+                self.assertEqual([trip['authoredThumbnailSha256']],
+                                 [a['sha256'] for a in item['facts']['artifacts']])
+                self.assertEqual(137, item['facts']['artifacts'][0]['length'])
+        # Every observed row that printed anything printed exactly the authored EXIF
+        # tokens; no token outside the reviewed vocabulary may appear.
+        self.assertEqual({'B9Artist', 'B9Tool'},
+                         {tok for o in evidence['observations'] for tok in o['facts']['printedTokens']})
+        # Blocked rows carry a per-format reason naming what is missing, never a bare
+        # 'unsupported', and no blocked row may hold a fixture reference.
+        reasons = {b['reason'] for b in evidence['blocked']}
+        self.assertEqual(6, len(reasons))
+        self.assertTrue(all('blocked' in r for r in reasons))
+        # The annotation-budget finding must stay recorded: the 50-annotation cap is the
+        # reason this batch has its own job, and it must not be quietly forgotten.
+        self.assertEqual(50, receipt['annotationBudget']['perCheckRunLimit'])
+        self.assertIn('42729776775', receipt['annotationBudget']['finding'])
 
     def test_pending_cells_partition_the_seed_grid(self):
         enumerated = set(self.report['coverage']['enumerated'])
