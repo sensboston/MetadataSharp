@@ -47,3 +47,25 @@ docs/research/evidence/e01-b9-census/receipt.json text eol=lf
 # that: the rule is present, and every evidence file a receipt hashes still matches its own blob
 # byte-for-byte after checkout.
 docs/research/evidence/**/*.json text eol=lf
+# The B11 fixtures are byte-authored containers: a CIFF directory tree, two BMP header
+# variants, two GIF screen shapes, three TGA recognition cases and five container stubs.
+# They are hashed as committed bytes by the census and by the CI recorders, so any newline
+# translation (or a stripped trailing NUL) silently changes the evidence they pin.
+tests/fixtures/b11/census-manifest.json text eol=lf
+tests/fixtures/b11/owned-asf-header.asf -text
+tests/fixtures/b11/owned-avi-avih.avi -text
+tests/fixtures/b11/owned-bmp-dib.bmp -text
+tests/fixtures/b11/owned-bmp-os2.bmp -text
+tests/fixtures/b11/owned-crw-mapped.crw -text
+tests/fixtures/b11/owned-crw-preview-thumb.crw -text
+tests/fixtures/b11/owned-crw-thumb.crw -text
+tests/fixtures/b11/owned-crw-unmapped.crw -text
+tests/fixtures/b11/owned-gif-lsd.gif -text
+tests/fixtures/b11/owned-gif-no-lsd.gif -text
+tests/fixtures/b11/owned-mkv-header.mkv -text
+tests/fixtures/b11/owned-mov-brand.mov -text
+tests/fixtures/b11/owned-mov-unknownbrand.mov -text
+tests/fixtures/b11/owned-tga-full.tga -text
+tests/fixtures/b11/owned-tga-name-only.tga -text
+tests/fixtures/b11/owned-tga-signature-only.targa -text
+tests/fixtures/b11/owned-wav-fmt.wav -text

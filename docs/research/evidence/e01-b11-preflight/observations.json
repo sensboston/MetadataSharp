@@ -1,0 +1,3896 @@
+{
+  "baseline": {
+    "cmakeCacheSha256": "8f13f98e9fd2e35b240d5086f2570f88f2f4a57e78e52b5306688ae61817f98f",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "executableSha256": "a32b542b4833500364057144c3e6e1555b48e6cb882b4c6bbff6a9a13cc70c3c",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov 10 2026\ntime=05:26:52\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
+    "version": "0.28.9"
+  },
+  "denominatorFrozen": false,
+  "environment": {
+    "TZ": "UTC0",
+    "note": "CrwMap::decode0x180e renders 0x180e through localtime_r, so the DateTime text this batch records is only reproducible with the offset on the record",
+    "utcOffsetSeconds": 0
+  },
+  "fixtureManifest": [
+    {
+      "asf": {
+        "headerGuid": "3026b2758e66cf11a6d900aa0062ce6c",
+        "objectSize": 100,
+        "subobjects": 0
+      },
+      "carriers": "xmp-only",
+      "decodable": false,
+      "dispatch": "asf",
+      "file": "owned-asf-header.asf",
+      "format": "ASF",
+      "layout": "asf-header-guid-v1",
+      "length": 100,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "6ccb0660294271acc79d983d06adb5d2e0158ed3d442895dbd64b727bc73f1c6",
+      "vendorIdentity": "the 16-byte ASF Header Object GUID; AsfVideo::mimeType is video/asf, and nothing about this container is RIFF"
+    },
+    {
+      "bmp": {
+        "bitsPerPixel": 24,
+        "dataOffset": 54,
+        "headerSize": 40,
+        "height": 48,
+        "width": 64
+      },
+      "carriers": "none",
+      "decodable": false,
+      "dispatch": "bmp",
+      "file": "owned-bmp-dib.bmp",
+      "format": "BMP",
+      "layout": "bmp-dib-v3",
+      "length": 55,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+      "vendorIdentity": "BM plus a DIB header; BmpImage::mimeType is image/x-ms-bmp and the reader has no Exif, IPTC, XMP, comment, ICC or thumbnail path"
+    },
+    {
+      "bmp": {
+        "bitsPerPixel": 24,
+        "dataOffset": 26,
+        "headerSize": 12,
+        "height": 32,
+        "width": 48
+      },
+      "carriers": "none",
+      "decodable": false,
+      "dispatch": "bmp",
+      "file": "owned-bmp-os2.bmp",
+      "format": "BMP",
+      "layout": "bmp-os2-coreheader-v1",
+      "length": 27,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+      "vendorIdentity": "BM plus a DIB header; BmpImage::mimeType is image/x-ms-bmp and the reader has no Exif, IPTC, XMP, comment, ICC or thumbnail path"
+    },
+    {
+      "byteOrder": "littleEndian",
+      "carriers": "ciff-components",
+      "ciff": {
+        "padding": 12,
+        "regionLength": 308,
+        "rootOffset": 26
+      },
+      "decodable": false,
+      "dispatch": "crw",
+      "file": "owned-crw-mapped.crw",
+      "format": "CRW",
+      "layout": "ciff-mapped-v1",
+      "length": 334,
+      "mappedKeys": [
+        "colorspace",
+        "comment",
+        "datetime",
+        "dimensions",
+        "distance",
+        "file-number",
+        "firmware",
+        "make-model",
+        "owner-name"
+      ],
+      "metadata": "ciff-components",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+      "vendorIdentity": "II/MM byte-order mark, HEAPCCDR at 6, root directory at the u32 in bytes 2-5; CrwImage::mimeType is image/x-canon-crw and dimensions come from Exif.Photo.PixelXDimension, not from pixels"
+    },
+    {
+      "byteOrder": "littleEndian",
+      "carriers": "ciff-components",
+      "ciff": {
+        "padding": 12,
+        "regionLength": 300,
+        "rootOffset": 26
+      },
+      "decodable": false,
+      "dispatch": "crw",
+      "file": "owned-crw-preview-thumb.crw",
+      "format": "CRW",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "length": 326,
+      "mappedKeys": [
+        "preview-offset",
+        "thumbnail"
+      ],
+      "metadata": "ciff-components",
+      "previewLength": 137,
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+      "thumbnailLength": 137,
+      "thumbnailSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "vendorIdentity": "II/MM byte-order mark, HEAPCCDR at 6, root directory at the u32 in bytes 2-5; CrwImage::mimeType is image/x-canon-crw and dimensions come from Exif.Photo.PixelXDimension, not from pixels"
+    },
+    {
+      "byteOrder": "littleEndian",
+      "carriers": "ciff-components",
+      "ciff": {
+        "padding": 12,
+        "regionLength": 153,
+        "rootOffset": 26
+      },
+      "decodable": false,
+      "dispatch": "crw",
+      "file": "owned-crw-thumb.crw",
+      "format": "CRW",
+      "layout": "ciff-thumb-only-v1",
+      "length": 179,
+      "mappedKeys": [
+        "thumbnail"
+      ],
+      "metadata": "ciff-components",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+      "thumbnailLength": 137,
+      "thumbnailSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+      "vendorIdentity": "II/MM byte-order mark, HEAPCCDR at 6, root directory at the u32 in bytes 2-5; CrwImage::mimeType is image/x-canon-crw and dimensions come from Exif.Photo.PixelXDimension, not from pixels"
+    },
+    {
+      "byteOrder": "littleEndian",
+      "carriers": "ciff-components",
+      "ciff": {
+        "padding": 12,
+        "regionLength": 165,
+        "rootOffset": 26
+      },
+      "decodable": false,
+      "dispatch": "crw",
+      "file": "owned-crw-unmapped.crw",
+      "format": "CRW",
+      "layout": "ciff-unmapped-only-v1",
+      "length": 191,
+      "mappedKeys": [],
+      "metadata": "ciff-components",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+      "vendorIdentity": "II/MM byte-order mark, HEAPCCDR at 6, root directory at the u32 in bytes 2-5; CrwImage::mimeType is image/x-canon-crw and dimensions come from Exif.Photo.PixelXDimension, not from pixels"
+    },
+    {
+      "carriers": "none",
+      "decodable": false,
+      "dispatch": "gif",
+      "file": "owned-gif-lsd.gif",
+      "format": "GIF",
+      "gif": {
+        "height": 48,
+        "lsdBytes": 4,
+        "signature": "GIF89a",
+        "width": 64
+      },
+      "layout": "gif-lsd-v1",
+      "length": 13,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+      "vendorIdentity": "GIF87a/GIF89a plus the logical screen descriptor; GifImage::mimeType is image/gif"
+    },
+    {
+      "carriers": "none",
+      "decodable": false,
+      "dispatch": "gif",
+      "file": "owned-gif-no-lsd.gif",
+      "format": "GIF",
+      "gif": {
+        "height": null,
+        "lsdBytes": 0,
+        "signature": "GIF87a",
+        "width": null
+      },
+      "layout": "gif-truncated-v1",
+      "length": 6,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+      "vendorIdentity": "GIF87a/GIF89a plus the logical screen descriptor; GifImage::mimeType is image/gif"
+    },
+    {
+      "carriers": "xmp-only",
+      "decodable": false,
+      "dispatch": "mkv",
+      "file": "owned-mkv-header.mkv",
+      "format": "MKV",
+      "layout": "mkv-ebml-header-v1",
+      "length": 24,
+      "matroska": {
+        "headerId": "1f4d9b74",
+        "magic": "1a45dfa3"
+      },
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "a258433af38d153bfafd2a621912e74a347ed2b20d113e36ede67e5b343a8134",
+      "vendorIdentity": "EBML magic 1A 45 DF A3; MatroskaVideo::mimeType is video/matroska"
+    },
+    {
+      "carriers": "xmp-only",
+      "decodable": false,
+      "dispatch": "qtime",
+      "file": "owned-mov-brand.mov",
+      "format": "MOV",
+      "layout": "qtime-known-brand-v1",
+      "length": 36,
+      "metadata": "none",
+      "mov": {
+        "atom": "ftyp",
+        "bmffAlsoAccepts": true,
+        "brand": "qt  ",
+        "brandKnownToQuickTime": true
+      },
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "f91fca8a132217d37bc5716cda3b1356f3d407e4a9521ee2c50ef3699ecb07e3",
+      "vendorIdentity": "8-byte atom header plus a brand; isQTimeType needs a known atom tag *and* a brand in qTimeFileType, and isBmffType is the fall-through, so the brand decides the reader"
+    },
+    {
+      "carriers": "xmp-only",
+      "decodable": false,
+      "dispatch": "bmff",
+      "file": "owned-mov-unknownbrand.mov",
+      "format": "MOV",
+      "layout": "qtime-unknown-brand-v1",
+      "length": 36,
+      "metadata": "none",
+      "mov": {
+        "atom": "ftyp",
+        "bmffAlsoAccepts": true,
+        "brand": "b10u",
+        "brandKnownToQuickTime": false
+      },
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "e64fe03dc7a779b3c48f8aff9878cc09244abf17b27922cc8532b3c613943e23",
+      "vendorIdentity": "8-byte atom header plus a brand; isQTimeType needs a known atom tag *and* a brand in qTimeFileType, and isBmffType is the fall-through, so the brand decides the reader"
+    },
+    {
+      "carriers": "xmp-only",
+      "decodable": false,
+      "dispatch": "riff",
+      "file": "owned-avi-avih.avi",
+      "format": "AVI",
+      "layout": "riff-avi-avih-v1",
+      "length": 88,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "riff": {
+        "fourcc": "AVI "
+      },
+      "rights": "owned-synthetic",
+      "sha256": "caa2bac8914c255c27b0a54f265820ebbe1b38a07dd1557224139b1f353f0e56",
+      "vendorIdentity": "the RIFF fourcc only -- isRiffType checks nothing else -- with an AVI LIST/hdrl/avih body; RiffVideo::mimeType is video/riff"
+    },
+    {
+      "carriers": "xmp-only",
+      "decodable": false,
+      "dispatch": "riff",
+      "file": "owned-wav-fmt.wav",
+      "format": "WAV",
+      "layout": "riff-wav-fmt-v1",
+      "length": 36,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "riff": {
+        "fourcc": "WAVE"
+      },
+      "rights": "owned-synthetic",
+      "sha256": "781c2cfa6db08d8c9e8eb824541248222ca1509f59aadac3c06373c4dceb2f6d",
+      "vendorIdentity": "RIFF fourcc with a WAVE/fmt body: the same video/riff reader handles it, which is what the pinned bullet means by \"riff based\""
+    },
+    {
+      "carriers": "none",
+      "decodable": false,
+      "dispatch": "tga",
+      "file": "owned-tga-full.tga",
+      "format": "TGA",
+      "layout": "tga-full-v1",
+      "length": 44,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+      "tga": {
+        "footerRouteReachableByFactory": false,
+        "footerSigned": true,
+        "height": 60,
+        "recognisedByName": true,
+        "width": 80
+      },
+      "vendorIdentity": "18-byte header with width/height at +12/+14 and an optional 26-byte TRUEVISION-XFILE footer; TgaImage::mimeType is image/targa and isTgaType consults the file name before any byte"
+    },
+    {
+      "carriers": "none",
+      "decodable": false,
+      "dispatch": "tga",
+      "file": "owned-tga-name-only.tga",
+      "format": "TGA",
+      "layout": "tga-name-only-v1",
+      "length": 23,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+      "tga": {
+        "footerRouteReachableByFactory": false,
+        "footerSigned": false,
+        "height": 18260,
+        "recognisedByName": true,
+        "width": 8313
+      },
+      "vendorIdentity": "18-byte header with width/height at +12/+14 and an optional 26-byte TRUEVISION-XFILE footer; TgaImage::mimeType is image/targa and isTgaType consults the file name before any byte"
+    },
+    {
+      "carriers": "none",
+      "decodable": false,
+      "dispatch": "none",
+      "file": "owned-tga-signature-only.targa",
+      "format": "TGA",
+      "layout": "tga-signature-wrong-name-v1",
+      "length": 44,
+      "metadata": "none",
+      "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+      "tga": {
+        "footerRouteReachableByFactory": false,
+        "footerSigned": true,
+        "height": 60,
+        "recognisedByName": false,
+        "width": 80
+      },
+      "vendorIdentity": "18-byte header with width/height at +12/+14 and an optional 26-byte TRUEVISION-XFILE footer; TgaImage::mimeType is image/targa and isTgaType consults the file name before any byte"
+    },
+    {
+      "blocked": true,
+      "carriers": "none",
+      "decodable": false,
+      "dispatch": "crw",
+      "file": null,
+      "format": "CRW",
+      "layout": "ciff-vendor-private-unobserved",
+      "metadata": "none",
+      "recipe": "Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md.",
+      "rights": "not-admitted"
+    }
+  ],
+  "observations": [
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pS/case.asf"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pS/case.asf:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pS/case.asf is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pa/case.asf"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pa/case.asf:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pC/case.asf"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pC/case.asf:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pC/case.asf is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/px/case.asf"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/px/case.asf:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/et/case.asf"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/et/case.asf:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "asf": {
+          "headerGuid": "3026b2758e66cf11a6d900aa0062ce6c",
+          "objectSize": 100,
+          "subobjects": 0
+        },
+        "dispatch": "asf",
+        "fileLength": 100,
+        "fileSha256": "6ccb0660294271acc79d983d06adb5d2e0158ed3d442895dbd64b727bc73f1c6",
+        "matched": [
+          "asf"
+        ]
+      },
+      "expectedDispatch": "asf",
+      "fixture": "owned-asf-header.asf",
+      "fixtureSha256": "6ccb0660294271acc79d983d06adb5d2e0158ed3d442895dbd64b727bc73f1c6",
+      "flags": 5,
+      "format": "ASF",
+      "layout": "asf-header-guid-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pS/case.asf:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pS/case.asf is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pa/case.asf:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pC/case.asf:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/pC/case.asf is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/px/case.asf:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-asf-header/et/case.asf:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pS/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pS/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pS/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pe/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pe/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pe/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pc/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pc/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pc/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pC/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pC/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pC/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/px/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/px/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/px/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pa/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pa/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pa/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/et/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/et/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/et/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "bmp": {
+          "bitsPerPixel": 24,
+          "dataOffset": 54,
+          "headerSize": 40,
+          "height": 48,
+          "width": 64
+        },
+        "dispatch": "bmp",
+        "fileLength": 55,
+        "fileSha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+        "matched": [
+          "bmp"
+        ]
+      },
+      "expectedDispatch": "bmp",
+      "fixture": "owned-bmp-dib.bmp",
+      "fixtureSha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+      "flags": 7,
+      "format": "BMP",
+      "layout": "bmp-dib-v3",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pS/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pS/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pe/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pe/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pc/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pc/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pC/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pC/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/px/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/px/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pa/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/pa/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/et/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-dib/et/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pS/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pS/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pS/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pe/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pe/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pe/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pc/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pc/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pc/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pC/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pC/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pC/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/px/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/px/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/px/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pa/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pa/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pa/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/et/case.bmp"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/et/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/et/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "bmp": {
+          "bitsPerPixel": 24,
+          "dataOffset": 26,
+          "headerSize": 12,
+          "height": 32,
+          "width": 48
+        },
+        "dispatch": "bmp",
+        "fileLength": 27,
+        "fileSha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+        "matched": [
+          "bmp"
+        ]
+      },
+      "expectedDispatch": "bmp",
+      "fixture": "owned-bmp-os2.bmp",
+      "fixtureSha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+      "flags": 7,
+      "format": "BMP",
+      "layout": "bmp-os2-coreheader-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pS/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pS/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pe/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pe/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pc/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pc/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pC/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pC/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/px/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/px/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pa/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/pa/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/et/case.bmp:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-bmp-os2/et/case.bmp: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pS/case.crw"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pS/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pS/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pe/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "Exif.Photo.PixelXDimension                   Long        1  96\nExif.Photo.PixelYDimension                   Long        1  64\nExif.Image.Orientation                       Short       1  1\nExif.Photo.DateTimeOriginal                  Ascii      20  2026:01:01 00:00:00\nExif.Image.Make                              Ascii       6  CANON\nExif.Image.Model                             Ascii      18  B11 SYNTHETIC CRW\nExif.Canon.OwnerName                         Ascii       9  B11Owner\nExif.Canon.FirmwareVersion                   Ascii      12  B11FIRMWARE\nExif.Photo.SubjectDistance                   Long        2  1000 10\nExif.Photo.ColorSpace                        Short       1  1\nExif.Canon.FileNumber                        Long        1  4660\n",
+          "stdoutSha256": "f2982753b04b189497b3f10eb46a3ab94ca2e2dfa8b316909eb24af87b18ca72"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pc/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "B11CrwComment\n",
+          "stdoutSha256": "c357f3026b789f709041e634c6b5cc3c13ef719f3bd2462e24e999a320c762cd"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pC/case.crw"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pC/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pC/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/px/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pa/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "Exif.Photo.PixelXDimension                   Long        1  96\nExif.Photo.PixelYDimension                   Long        1  64\nExif.Image.Orientation                       Short       1  top, left\nExif.Photo.DateTimeOriginal                  Ascii      20  2026:01:01 00:00:00\nExif.Image.Make                              Ascii       6  CANON\nExif.Image.Model                             Ascii      18  B11 SYNTHETIC CRW\nExif.Canon.OwnerName                         Ascii       9  B11Owner\nExif.Canon.FirmwareVersion                   Ascii      12  B11FIRMWARE\nExif.Photo.SubjectDistance                   Long        2  1000.00 m\nExif.Photo.ColorSpace                        Short       1  sRGB\nExif.Canon.FileNumber                        Long        1  -4660\n",
+          "stdoutSha256": "b598c3221a405ceba4d064908d00677fb984a52ec2aa0bbc33f17e10a7ced18a"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/et/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/et/case.crw: Image does not contain an Exif thumbnail\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "byteOrder": "littleEndian",
+        "ciff": {
+          "padding": 12,
+          "regionLength": 308,
+          "rootOffset": 26
+        },
+        "dispatch": "crw",
+        "fileLength": 334,
+        "fileSha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+        "mappedKeys": [
+          "colorspace",
+          "comment",
+          "datetime",
+          "dimensions",
+          "distance",
+          "file-number",
+          "firmware",
+          "make-model",
+          "owner-name"
+        ],
+        "matched": [
+          "crw"
+        ]
+      },
+      "expectedDispatch": "crw",
+      "fixture": "owned-crw-mapped.crw",
+      "fixtureSha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+      "flags": 7,
+      "format": "CRW",
+      "layout": "ciff-mapped-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pS/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pS/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [
+            "B11 SYNTHETIC CRW",
+            "B11FIRMWARE",
+            "B11Owner",
+            "CANON"
+          ],
+          "stderr": "",
+          "stdout": "Exif.Photo.PixelXDimension                   Long        1  96\nExif.Photo.PixelYDimension                   Long        1  64\nExif.Image.Orientation                       Short       1  1\nExif.Photo.DateTimeOriginal                  Ascii      20  2026:01:01 00:00:00\nExif.Image.Make                              Ascii       6  CANON\nExif.Image.Model                             Ascii      18  B11 SYNTHETIC CRW\nExif.Canon.OwnerName                         Ascii       9  B11Owner\nExif.Canon.FirmwareVersion                   Ascii      12  B11FIRMWARE\nExif.Photo.SubjectDistance                   Long        2  1000 10\nExif.Photo.ColorSpace                        Short       1  1\nExif.Canon.FileNumber                        Long        1  4660\n",
+          "stdoutLength": 748
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [
+            "B11CrwComment"
+          ],
+          "stderr": "",
+          "stdout": "B11CrwComment\n",
+          "stdoutLength": 14
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pC/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/pC/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [
+            "B11 SYNTHETIC CRW",
+            "B11FIRMWARE",
+            "B11Owner",
+            "CANON"
+          ],
+          "stderr": "",
+          "stdout": "Exif.Photo.PixelXDimension                   Long        1  96\nExif.Photo.PixelYDimension                   Long        1  64\nExif.Image.Orientation                       Short       1  top, left\nExif.Photo.DateTimeOriginal                  Ascii      20  2026:01:01 00:00:00\nExif.Image.Make                              Ascii       6  CANON\nExif.Image.Model                             Ascii      18  B11 SYNTHETIC CRW\nExif.Canon.OwnerName                         Ascii       9  B11Owner\nExif.Canon.FirmwareVersion                   Ascii      12  B11FIRMWARE\nExif.Photo.SubjectDistance                   Long        2  1000.00 m\nExif.Photo.ColorSpace                        Short       1  sRGB\nExif.Canon.FileNumber                        Long        1  -4660\n",
+          "stdoutLength": 762
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 0,
+          "exitCodeEqualsArtifactBytes": true,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-mapped/et/case.crw: Image does not contain an Exif thumbnail\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pS/case.crw"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pS/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pS/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pe/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "Exif.Thumbnail.Compression                   Short       1  6\nExif.Thumbnail.JPEGInterchangeFormat         Long        1  0\nExif.Thumbnail.JPEGInterchangeFormatLength   Long        1  137\nExif.Image2.JPEGInterchangeFormat            Long        1  26\nExif.Image2.JPEGInterchangeFormatLength      Long        1  137\n",
+          "stdoutSha256": "e7194ae82dff0aad35d2d3cf7ad75e5231d0e10c1321ad8a95b1a0168f5e47a8"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pc/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "\n",
+          "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pC/case.crw"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pC/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pC/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/px/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pa/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "Exif.Thumbnail.Compression                   Short       1  JPEG (old-style)\nExif.Thumbnail.JPEGInterchangeFormat         Long        1  0\nExif.Thumbnail.JPEGInterchangeFormatLength   Long        1  137\nExif.Image2.JPEGInterchangeFormat            Long        1  26\nExif.Image2.JPEGInterchangeFormatLength      Long        1  137\n",
+          "stdoutSha256": "319cf9bffefe8f71b75dbc1389299bb8f3c425376c07425e0aa50ad14e36b3d1"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/et/case.crw"
+          ],
+          "exitCode": 137,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "byteOrder": "littleEndian",
+        "ciff": {
+          "padding": 12,
+          "regionLength": 300,
+          "rootOffset": 26
+        },
+        "dispatch": "crw",
+        "fileLength": 326,
+        "fileSha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+        "mappedKeys": [
+          "preview-offset",
+          "thumbnail"
+        ],
+        "matched": [
+          "crw"
+        ],
+        "previewLength": 137,
+        "thumbnailLength": 137
+      },
+      "expectedDispatch": "crw",
+      "fixture": "owned-crw-preview-thumb.crw",
+      "fixtureSha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+      "flags": 7,
+      "format": "CRW",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pS/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pS/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "Exif.Thumbnail.Compression                   Short       1  6\nExif.Thumbnail.JPEGInterchangeFormat         Long        1  0\nExif.Thumbnail.JPEGInterchangeFormatLength   Long        1  137\nExif.Image2.JPEGInterchangeFormat            Long        1  26\nExif.Image2.JPEGInterchangeFormatLength      Long        1  137\n",
+          "stdoutLength": 315
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "\n",
+          "stdoutLength": 1
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pC/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-preview-thumb/pC/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "Exif.Thumbnail.Compression                   Short       1  JPEG (old-style)\nExif.Thumbnail.JPEGInterchangeFormat         Long        1  0\nExif.Thumbnail.JPEGInterchangeFormatLength   Long        1  137\nExif.Image2.JPEGInterchangeFormat            Long        1  26\nExif.Image2.JPEGInterchangeFormatLength      Long        1  137\n",
+          "stdoutLength": 330
+        },
+        {
+          "artifactBytes": 137,
+          "artifacts": [
+            {
+              "file": "case-thumb.jpg",
+              "length": 137,
+              "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260"
+            }
+          ],
+          "exitCode": 137,
+          "exitCodeEqualsArtifactBytes": true,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "predictedArtifactBytes": 137,
+          "predictionMatched": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pS/case.crw"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pS/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pS/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pe/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "Exif.Thumbnail.Compression                   Short       1  6\nExif.Thumbnail.JPEGInterchangeFormat         Long        1  0\nExif.Thumbnail.JPEGInterchangeFormatLength   Long        1  137\n",
+          "stdoutSha256": "2a208057e12ad2457ceb17298c903fb16749257ec3c292e870514a432c857a83"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pc/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "\n",
+          "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pC/case.crw"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pC/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pC/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/px/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pa/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "Exif.Thumbnail.Compression                   Short       1  JPEG (old-style)\nExif.Thumbnail.JPEGInterchangeFormat         Long        1  0\nExif.Thumbnail.JPEGInterchangeFormatLength   Long        1  137\n",
+          "stdoutSha256": "1b7e31edc06c965898723c4d2d09712cc273255e2c0331e8f805d2ea677ded10"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/et/case.crw"
+          ],
+          "exitCode": 137,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "byteOrder": "littleEndian",
+        "ciff": {
+          "padding": 12,
+          "regionLength": 153,
+          "rootOffset": 26
+        },
+        "dispatch": "crw",
+        "fileLength": 179,
+        "fileSha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+        "mappedKeys": [
+          "thumbnail"
+        ],
+        "matched": [
+          "crw"
+        ],
+        "thumbnailLength": 137
+      },
+      "expectedDispatch": "crw",
+      "fixture": "owned-crw-thumb.crw",
+      "fixtureSha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+      "flags": 7,
+      "format": "CRW",
+      "layout": "ciff-thumb-only-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pS/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pS/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "Exif.Thumbnail.Compression                   Short       1  6\nExif.Thumbnail.JPEGInterchangeFormat         Long        1  0\nExif.Thumbnail.JPEGInterchangeFormatLength   Long        1  137\n",
+          "stdoutLength": 188
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "\n",
+          "stdoutLength": 1
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pC/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-thumb/pC/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "Exif.Thumbnail.Compression                   Short       1  JPEG (old-style)\nExif.Thumbnail.JPEGInterchangeFormat         Long        1  0\nExif.Thumbnail.JPEGInterchangeFormatLength   Long        1  137\n",
+          "stdoutLength": 203
+        },
+        {
+          "artifactBytes": 137,
+          "artifacts": [
+            {
+              "file": "case-thumb.jpg",
+              "length": 137,
+              "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260"
+            }
+          ],
+          "exitCode": 137,
+          "exitCodeEqualsArtifactBytes": true,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "predictedArtifactBytes": 137,
+          "predictionMatched": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pS/case.crw"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pS/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pS/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pe/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pc/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "\n",
+          "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pC/case.crw"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pC/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pC/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/px/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pa/case.crw"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/et/case.crw"
+          ],
+          "exitCode": 253,
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/et/case.crw: No Exif data found in the file\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "byteOrder": "littleEndian",
+        "ciff": {
+          "padding": 12,
+          "regionLength": 165,
+          "rootOffset": 26
+        },
+        "dispatch": "crw",
+        "fileLength": 191,
+        "fileSha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+        "mappedKeys": [],
+        "matched": [
+          "crw"
+        ]
+      },
+      "expectedDispatch": "crw",
+      "fixture": "owned-crw-unmapped.crw",
+      "fixtureSha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+      "flags": 7,
+      "format": "CRW",
+      "layout": "ciff-unmapped-only-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pS/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pS/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "\n",
+          "stdoutLength": 1
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pC/case.crw:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/pC/case.crw is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 253,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-crw-unmapped/et/case.crw: No Exif data found in the file\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pS/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pS/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pe/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pe/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pc/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pc/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pC/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pC/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/px/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/px/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pa/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pa/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/et/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/et/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "gif",
+        "fileLength": 13,
+        "fileSha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+        "gif": {
+          "height": 48,
+          "lsdBytes": 4,
+          "signature": "GIF89a",
+          "width": 64
+        },
+        "matched": [
+          "gif"
+        ]
+      },
+      "expectedDispatch": "gif",
+      "fixture": "owned-gif-lsd.gif",
+      "fixtureSha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+      "flags": 7,
+      "format": "GIF",
+      "layout": "gif-lsd-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pS/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pe/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pc/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pC/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/px/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/pa/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-lsd/et/case.gif:\ncorrupted image metadata\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pS/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pS/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pe/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pe/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pc/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pc/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pC/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pC/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/px/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/px/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pa/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pa/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/et/case.gif"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/et/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "gif",
+        "fileLength": 6,
+        "fileSha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+        "gif": {
+          "height": null,
+          "lsdBytes": 0,
+          "signature": "GIF87a",
+          "width": null
+        },
+        "matched": [
+          "gif"
+        ]
+      },
+      "expectedDispatch": "gif",
+      "fixture": "owned-gif-no-lsd.gif",
+      "fixtureSha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+      "flags": 7,
+      "format": "GIF",
+      "layout": "gif-truncated-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pS/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pe/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pc/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pC/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/px/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/pa/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-gif-no-lsd/et/case.gif:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pS/case.mkv"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pS/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pS/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pa/case.mkv"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pa/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pa/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pC/case.mkv"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pC/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pC/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/px/case.mkv"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/px/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/px/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/et/case.mkv"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/et/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/et/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "mkv",
+        "fileLength": 24,
+        "fileSha256": "a258433af38d153bfafd2a621912e74a347ed2b20d113e36ede67e5b343a8134",
+        "matched": [
+          "mkv"
+        ],
+        "matroska": {
+          "headerId": "1f4d9b74",
+          "magic": "1a45dfa3"
+        }
+      },
+      "expectedDispatch": "mkv",
+      "fixture": "owned-mkv-header.mkv",
+      "fixtureSha256": "a258433af38d153bfafd2a621912e74a347ed2b20d113e36ede67e5b343a8134",
+      "flags": 5,
+      "format": "MKV",
+      "layout": "mkv-ebml-header-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pS/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pS/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pa/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pa/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pC/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/pC/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/px/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/px/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/et/case.mkv:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mkv-header/et/case.mkv: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pS/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pS/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pS/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pa/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pa/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pa/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pC/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pC/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pC/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/px/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/px/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/px/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/et/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/et/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/et/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "qtime",
+        "fileLength": 36,
+        "fileSha256": "f91fca8a132217d37bc5716cda3b1356f3d407e4a9521ee2c50ef3699ecb07e3",
+        "matched": [
+          "qtime",
+          "bmff"
+        ],
+        "mov": {
+          "atom": "ftyp",
+          "bmffAlsoAccepts": true,
+          "brand": "qt  ",
+          "brandKnownToQuickTime": true
+        }
+      },
+      "expectedDispatch": "qtime",
+      "fixture": "owned-mov-brand.mov",
+      "fixtureSha256": "f91fca8a132217d37bc5716cda3b1356f3d407e4a9521ee2c50ef3699ecb07e3",
+      "flags": 5,
+      "format": "MOV",
+      "layout": "qtime-known-brand-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pS/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pS/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pa/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pa/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pC/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/pC/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/px/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/px/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/et/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-brand/et/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pS/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pS/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pS/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pa/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pa/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pa/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pC/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pC/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pC/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/px/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/px/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/px/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/et/case.mov"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/et/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/et/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "bmff",
+        "fileLength": 36,
+        "fileSha256": "e64fe03dc7a779b3c48f8aff9878cc09244abf17b27922cc8532b3c613943e23",
+        "matched": [
+          "bmff"
+        ],
+        "mov": {
+          "atom": "ftyp",
+          "bmffAlsoAccepts": true,
+          "brand": "b10u",
+          "brandKnownToQuickTime": false
+        }
+      },
+      "expectedDispatch": "bmff",
+      "fixture": "owned-mov-unknownbrand.mov",
+      "fixtureSha256": "e64fe03dc7a779b3c48f8aff9878cc09244abf17b27922cc8532b3c613943e23",
+      "flags": 5,
+      "format": "MOV",
+      "layout": "qtime-unknown-brand-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pS/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pS/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pa/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pa/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pC/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/pC/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/px/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/px/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/et/case.mov:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-mov-unknownbrand/et/case.mov: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pS/case.avi"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pS/case.avi:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pS/case.avi is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pa/case.avi"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "Xmp.video.FileSize                           XmpText     2  88\nXmp.video.MimeType                           XmpText    10  video/riff\nXmp.video.Container                          XmpText     4  RIFF\nXmp.video.FileType                           XmpText     4  AVI \n",
+          "stdoutSha256": "052a7194e6ac1803d42bc664476b6e1a23b86983c6fb2b6168a7385fa39d0d56"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pC/case.avi"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pC/case.avi:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pC/case.avi is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/px/case.avi"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "Xmp.video.FileSize                           XmpText     2  88\nXmp.video.MimeType                           XmpText    10  video/riff\nXmp.video.Container                          XmpText     4  RIFF\nXmp.video.FileType                           XmpText     4  AVI \n",
+          "stdoutSha256": "052a7194e6ac1803d42bc664476b6e1a23b86983c6fb2b6168a7385fa39d0d56"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/et/case.avi"
+          ],
+          "exitCode": 253,
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/et/case.avi: No Exif data found in the file\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "riff",
+        "fileLength": 88,
+        "fileSha256": "caa2bac8914c255c27b0a54f265820ebbe1b38a07dd1557224139b1f353f0e56",
+        "matched": [
+          "riff"
+        ],
+        "riff": {
+          "fourcc": "AVI "
+        }
+      },
+      "expectedDispatch": "riff",
+      "fixture": "owned-avi-avih.avi",
+      "fixtureSha256": "caa2bac8914c255c27b0a54f265820ebbe1b38a07dd1557224139b1f353f0e56",
+      "flags": 5,
+      "format": "AVI",
+      "layout": "riff-avi-avih-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pS/case.avi:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pS/case.avi is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "Xmp.video.FileSize                           XmpText     2  88\nXmp.video.MimeType                           XmpText    10  video/riff\nXmp.video.Container                          XmpText     4  RIFF\nXmp.video.FileType                           XmpText     4  AVI \n",
+          "stdoutLength": 264
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pC/case.avi:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/pC/case.avi is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "Xmp.video.FileSize                           XmpText     2  88\nXmp.video.MimeType                           XmpText    10  video/riff\nXmp.video.Container                          XmpText     4  RIFF\nXmp.video.FileType                           XmpText     4  AVI \n",
+          "stdoutLength": 264
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 253,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-avi-avih/et/case.avi: No Exif data found in the file\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pS/case.wav"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pS/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pS/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pa/case.wav"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pa/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pa/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pC/case.wav"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pC/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pC/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/px/case.wav"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/px/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/px/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/et/case.wav"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/et/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/et/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "riff",
+        "fileLength": 36,
+        "fileSha256": "781c2cfa6db08d8c9e8eb824541248222ca1509f59aadac3c06373c4dceb2f6d",
+        "matched": [
+          "riff"
+        ],
+        "riff": {
+          "fourcc": "WAVE"
+        }
+      },
+      "expectedDispatch": "riff",
+      "fixture": "owned-wav-fmt.wav",
+      "fixtureSha256": "781c2cfa6db08d8c9e8eb824541248222ca1509f59aadac3c06373c4dceb2f6d",
+      "flags": 5,
+      "format": "WAV",
+      "layout": "riff-wav-fmt-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pS/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pS/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pa/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pa/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pC/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/pC/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/px/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/px/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/et/case.wav:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-wav-fmt/et/case.wav: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pS/case.tga"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pS/case.tga:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pS/case.tga is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pe/case.tga"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pc/case.tga"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "\n",
+          "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pC/case.tga"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pC/case.tga:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pC/case.tga is not supported\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/px/case.tga"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pa/case.tga"
+          ],
+          "exitCode": 0,
+          "stderr": "",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/et/case.tga"
+          ],
+          "exitCode": 253,
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/et/case.tga: No Exif data found in the file\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "tga",
+        "fileLength": 44,
+        "fileSha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "matched": [
+          "tga"
+        ],
+        "tga": {
+          "footerRouteReachableByFactory": false,
+          "footerSigned": true,
+          "height": 60,
+          "recognisedByName": true,
+          "width": 80
+        }
+      },
+      "expectedDispatch": "tga",
+      "fixture": "owned-tga-full.tga",
+      "fixtureSha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+      "flags": 7,
+      "format": "TGA",
+      "layout": "tga-full-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pS/case.tga:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pS/case.tga is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "\n",
+          "stdoutLength": 1
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pC/case.tga:\nImage type /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/pC/case.tga is not supported\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 0,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 253,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-full/et/case.tga: No Exif data found in the file\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pS/case.tga"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pS/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pe/case.tga"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pe/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pc/case.tga"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pc/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pC/case.tga"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pC/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/px/case.tga"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/px/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pa/case.tga"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pa/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/et/case.tga"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/et/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "tga",
+        "fileLength": 23,
+        "fileSha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+        "matched": [
+          "tga"
+        ],
+        "tga": {
+          "footerRouteReachableByFactory": false,
+          "footerSigned": false,
+          "height": 18260,
+          "recognisedByName": true,
+          "width": 8313
+        }
+      },
+      "expectedDispatch": "tga",
+      "fixture": "owned-tga-name-only.tga",
+      "fixtureSha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+      "flags": 7,
+      "format": "TGA",
+      "layout": "tga-name-only-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pS/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pe/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pc/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pC/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/px/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/pa/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-name-only/et/case.tga:\nFailed to read input data\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pS",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pS/case.targa"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pS/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pS/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pe",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pe/case.targa"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pe/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pe/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pc",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pc/case.targa"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pc/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pc/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pC",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pC/case.targa"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pC/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pC/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-px",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/px/case.targa"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/px/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/px/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-pa",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pa/case.targa"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pa/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pa/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2",
+            "-et",
+            "/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/et/case.targa"
+          ],
+          "exitCode": 1,
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/et/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/et/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "container": {
+        "dispatch": "none",
+        "fileLength": 44,
+        "fileSha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+        "matched": [],
+        "tga": {
+          "footerRouteReachableByFactory": false,
+          "footerSigned": true,
+          "height": 60,
+          "recognisedByName": false,
+          "width": 80
+        }
+      },
+      "expectedDispatch": "none",
+      "fixture": "owned-tga-signature-only.targa",
+      "fixtureSha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+      "flags": 7,
+      "format": "TGA",
+      "layout": "tga-signature-wrong-name-v1",
+      "operations": [
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pS",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pS/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pS/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pe",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pe/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pe/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pc",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pc/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pc/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pC",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pC/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pC/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-px",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/px/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/px/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifacts": [],
+          "exitCode": 1,
+          "flag": "-pa",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in print action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pa/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/pa/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        },
+        {
+          "artifactBytes": 0,
+          "artifacts": [],
+          "exitCode": 1,
+          "exitCodeEqualsArtifactBytes": false,
+          "flag": "-et",
+          "inputUnchanged": true,
+          "printedTokens": [],
+          "stderr": "Exiv2 exception in extract action for file /home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/et/case.targa:\n/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/b11-container-preflight/work/owned-tga-signature-only/et/case.targa: The file contains data of an unknown image type\n",
+          "stdout": "",
+          "stdoutLength": 0
+        }
+      ]
+    }
+  ],
+  "recordCount": 107,
+  "schema": 1,
+  "scope": "B11 container preflight only; no census rows",
+  "secondary": [
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 100,
+      "fixtureSha256": "6ccb0660294271acc79d983d06adb5d2e0158ed3d442895dbd64b727bc73f1c6",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifTool:ExifToolVersion": 12.76,
+          "ExifTool:Warning": "Invalid ASF object size",
+          "File:FileType": "ASF",
+          "File:FileTypeExtension": "asf",
+          "File:MIMEType": "video/x-ms-asf",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-asf-header.asf",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-asf-header.asf",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "100 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "81d9cbc07565f276871a868f9b68664ff4166dd350ad41a89cabd6cc4e38cd9e",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 55,
+      "fixtureSha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "Composite:ImageSize": "64x48",
+          "Composite:Megapixels": 0.003,
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:BMPVersion": "Windows V3",
+          "File:BitDepth": 24,
+          "File:Compression": "None",
+          "File:FileType": "BMP",
+          "File:FileTypeExtension": "bmp",
+          "File:ImageHeight": 48,
+          "File:ImageLength": 0,
+          "File:ImageWidth": 64,
+          "File:MIMEType": "image/bmp",
+          "File:NumColors": "Use BitDepth",
+          "File:NumImportantColors": "All",
+          "File:PixelsPerMeterX": 0,
+          "File:PixelsPerMeterY": 0,
+          "File:Planes": 1,
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-bmp-dib.bmp",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-bmp-dib.bmp",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "55 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "b93b35215261a76b2caf1a7fddcf5c34435303b7fb4cf5adb71e105731ba1737",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 27,
+      "fixtureSha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "Composite:ImageSize": "48x32",
+          "Composite:Megapixels": 0.002,
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:BMPVersion": "OS/2 V1",
+          "File:BitDepth": 24,
+          "File:FileType": "BMP",
+          "File:FileTypeExtension": "bmp",
+          "File:ImageHeight": 32,
+          "File:ImageWidth": 48,
+          "File:MIMEType": "image/bmp",
+          "File:Planes": 1,
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-bmp-os2.bmp",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-bmp-os2.bmp",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "27 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "64779aa9ee7d315abd01f0c9059d8f8ce57d3cb6bcbc1280ed917552951982a2",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 334,
+      "fixtureSha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "CanonRaw:CanonFirmwareVersion": "B11FIRMWARE",
+          "CanonRaw:ColorBW": 0,
+          "CanonRaw:ColorBitDepth": 0,
+          "CanonRaw:ColorSpace": "sRGB",
+          "CanonRaw:ComponentBitDepth": 0,
+          "CanonRaw:DateTimeOriginal": "2026:01:01 00:00:00",
+          "CanonRaw:FileNumber": "4660 5-7005",
+          "CanonRaw:ImageHeight": 64,
+          "CanonRaw:ImageWidth": 96,
+          "CanonRaw:Make": "CANON",
+          "CanonRaw:Model": "B11 SYNTHETIC CRW",
+          "CanonRaw:OwnerName": "B11Owner",
+          "CanonRaw:PixelAspectRatio": 0,
+          "CanonRaw:Rotation": 0,
+          "CanonRaw:TargetDistanceSetting": "1.40129846432482e-42 1.40129846432482e-44 mm",
+          "CanonRaw:TimeZoneCode": 0,
+          "CanonRaw:TimeZoneInfo": 0,
+          "CanonRaw:UserComment": "B11CrwComment",
+          "Composite:ImageSize": "96x64",
+          "Composite:Megapixels": 0.006,
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "CRW",
+          "File:FileTypeExtension": "crw",
+          "File:MIMEType": "image/x-canon-crw",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-crw-mapped.crw",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-crw-mapped.crw",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "334 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "b25b971c3d79ef959ceecb7c8bd997f30aaa224aa611fe15255273c9f983dd13",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 326,
+      "fixtureSha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "CanonRaw:JpgFromRaw": "(Binary data 137 bytes, use -b option to extract)",
+          "CanonRaw:ThumbnailImage": "(Binary data 137 bytes, use -b option to extract)",
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "CRW",
+          "File:FileTypeExtension": "crw",
+          "File:MIMEType": "image/x-canon-crw",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-crw-preview-thumb.crw",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-crw-preview-thumb.crw",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "326 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "ffaf7e6dc00d1997decec89c0e6e76a7773fc2202ed72109334f5e1e0476388e",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 179,
+      "fixtureSha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "CanonRaw:ThumbnailImage": "(Binary data 137 bytes, use -b option to extract)",
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "CRW",
+          "File:FileTypeExtension": "crw",
+          "File:MIMEType": "image/x-canon-crw",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-crw-thumb.crw",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-crw-thumb.crw",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "179 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "03f832357b4259a1e3853c92f5a7f8a4eff03d56f485ad50177cbd0f30e26d43",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 191,
+      "fixtureSha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "CanonRaw:ColorBW": 0,
+          "CanonRaw:ColorBitDepth": 0,
+          "CanonRaw:ComponentBitDepth": 0,
+          "CanonRaw:ImageHeight": 64,
+          "CanonRaw:ImageWidth": 96,
+          "CanonRaw:Make": "CANON",
+          "CanonRaw:Model": "B11 SYNTHETIC CRW",
+          "CanonRaw:PixelAspectRatio": 0,
+          "CanonRaw:RawData": "(Binary data 8 bytes, use -b option to extract)",
+          "CanonRaw:Rotation": 0,
+          "Composite:ImageSize": "96x64",
+          "Composite:Megapixels": 0.006,
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "CRW",
+          "File:FileTypeExtension": "crw",
+          "File:MIMEType": "image/x-canon-crw",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-crw-unmapped.crw",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-crw-unmapped.crw",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "191 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "265d11959b0feefa1228b9deecb0461ff841cf0f83330ac2ea5370f10a7763ae",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 1,
+      "fixtureLength": 13,
+      "fixtureSha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "Composite:ImageSize": "64x48",
+          "Composite:Megapixels": 0.003,
+          "ExifTool:Error": "File format error",
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "GIF",
+          "File:FileTypeExtension": "gif",
+          "File:MIMEType": "image/gif",
+          "GIF:BackgroundColor": 0,
+          "GIF:BitsPerPixel": 1,
+          "GIF:ColorResolutionDepth": 1,
+          "GIF:GIFVersion": "89a",
+          "GIF:HasColorMap": "No",
+          "GIF:ImageHeight": 48,
+          "GIF:ImageWidth": 64,
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-gif-lsd.gif",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-gif-lsd.gif",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "13 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "3922642c749d16b8683beb9fad0c852b8989391e506765ae55359f96eb8f7828",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 6,
+      "fixtureSha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "TXT",
+          "File:FileTypeExtension": "txt",
+          "File:LineCount": 1,
+          "File:MIMEEncoding": "us-ascii",
+          "File:MIMEType": "text/plain",
+          "File:Newlines": "(none)",
+          "File:WordCount": 1,
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-gif-no-lsd.gif",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-gif-no-lsd.gif",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "6 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "6d8e6f85d07f9469aacb4580f9990de689eb26e89ef37e53d47e7e0caed6405d",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 24,
+      "fixtureSha256": "a258433af38d153bfafd2a621912e74a347ed2b20d113e36ede67e5b343a8134",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifTool:ExifToolVersion": 12.76,
+          "ExifTool:Warning": "Truncated Matroska header",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-mkv-header.mkv",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-mkv-header.mkv",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "24 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "eaa4555fabe8c399ce3ccc4d747879186cc1d27ea66d4030181ecd50fbb1f4dd",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 36,
+      "fixtureSha256": "f91fca8a132217d37bc5716cda3b1356f3d407e4a9521ee2c50ef3699ecb07e3",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "MOV",
+          "File:FileTypeExtension": "mov",
+          "File:MIMEType": "video/quicktime",
+          "QuickTime:MajorBrand": "Apple QuickTime (.MOV/QT)",
+          "QuickTime:MinorVersion": "0.0.0",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-mov-brand.mov",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-mov-brand.mov",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "36 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "08e97055f1fb16dd8aa23bcff4aea6990c97495f69415d611f00e39428665e72",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 36,
+      "fixtureSha256": "e64fe03dc7a779b3c48f8aff9878cc09244abf17b27922cc8532b3c613943e23",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "MP4",
+          "File:FileTypeExtension": "mp4",
+          "File:MIMEType": "video/mp4",
+          "QuickTime:MajorBrand": "Unknown (b10u)",
+          "QuickTime:MinorVersion": "0.0.0",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-mov-unknownbrand.mov",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-mov-unknownbrand.mov",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "36 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "35e13195dd4331245069d39a96d90f5c6472440cb026045755d84d5c9c4f792e",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 88,
+      "fixtureSha256": "caa2bac8914c255c27b0a54f265820ebbe1b38a07dd1557224139b1f353f0e56",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "AVI",
+          "File:FileTypeExtension": "avi",
+          "File:MIMEType": "video/x-msvideo",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-avi-avih.avi",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-avi-avih.avi",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "88 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "bd566e5c85e8e80bc470a1cd988739a8f77340bbc2ddea923d2c5cff62a9e40b",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 36,
+      "fixtureSha256": "781c2cfa6db08d8c9e8eb824541248222ca1509f59aadac3c06373c4dceb2f6d",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "Composite:Duration": "0.00 s",
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "WAV",
+          "File:FileTypeExtension": "wav",
+          "File:MIMEType": "audio/x-wav",
+          "RIFF:AvgBytesPerSec": 8000,
+          "RIFF:BitsPerSample": 8,
+          "RIFF:Encoding": "Microsoft PCM",
+          "RIFF:NumChannels": 1,
+          "RIFF:SampleRate": 8000,
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-wav-fmt.wav",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-wav-fmt.wav",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "36 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "cc066fcc5e8b1204d203df6aca62534dc64642f62ac2833a9a03248ebe033cbc",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 44,
+      "fixtureSha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "CUR",
+          "File:FileTypeExtension": "cur",
+          "File:ImageCount": 0,
+          "File:MIMEType": "image/x-cursor",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-tga-full.tga",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-tga-full.tga",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "44 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "d40dd0aec2c3ec86cb92307dc6d179efb20237445a257431f35167ad3b5ae3d8",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 23,
+      "fixtureSha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "TXT",
+          "File:FileTypeExtension": "txt",
+          "File:LineCount": 1,
+          "File:MIMEEncoding": "us-ascii",
+          "File:MIMEType": "text/plain",
+          "File:Newlines": "(none)",
+          "File:WordCount": 4,
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-tga-name-only.tga",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-tga-name-only.tga",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "23 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "c9962347e9331bdbe80f5184f8b96fe39344132c113c79d8ad9d56581f9cccff",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 44,
+      "fixtureSha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:FileType": "CUR",
+          "File:FileTypeExtension": "cur",
+          "File:ImageCount": 0,
+          "File:MIMEType": "image/x-cursor",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11/owned-tga-signature-only.targa",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b11",
+          "System:FileAccessDate": "2026:11:10 05:27:05+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 05:26:08+00:00",
+          "System:FileModifyDate": "2026:11:10 05:26:08+00:00",
+          "System:FileName": "owned-tga-signature-only.targa",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "44 bytes"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "cce2c4a796b7043f3f3089c52467c04ee2909ac1e13a7990210cb9d2c494675f",
+      "tool": "ExifTool",
+      "version": "12.76"
+    }
+  ],
+  "sourceCommit": "6bb7d8cb94c42d4d88435171c83d42821f8f0a91",
+  "status": "passed",
+  "verification": "not-assessed"
+}

@@ -1,6 +1,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -8,6 +9,9 @@ spec = importlib.util.spec_from_file_location('census', ROOT / 'tools/reference/
 census = importlib.util.module_from_spec(spec); spec.loader.exec_module(census)
 
 ROW_ID = __import__('re').compile(r'^EX0289-[A-Z][A-Z0-9]*-[A-Z]+-[A-Z]+-\d{4}$')
+
+
+SIX_FAMILIES = ('EXIF', 'IPTC', 'XMP', 'COMMENTS', 'ICC', 'THUMBNAIL')
 
 
 def load_evidence(batch='b0'):
@@ -287,6 +291,12 @@ class CensusPolicyTests(unittest.TestCase):
         b10 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b10/census-manifest.json').read_text())}
         for fmt in ('MRW', 'RAF', 'RW2', 'SR2'):
             manifests[fmt] = b10
+        # B11 keeps one catalog for nine formats, and one entry of it (the blocked vendor-private
+        # CIFF cell) has no file at all: it can never be looked up by name here, which is the
+        # point of it, so the dict is built as-is rather than filtered.
+        b11 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b11/census-manifest.json').read_text())}
+        for fmt in ('CRW', 'BMP', 'GIF', 'TGA', 'MOV', 'MKV', 'AVI', 'WAV', 'ASF'):
+            manifests[fmt] = b11
         for row in self.report['rows']:
             if row['baselineObservation'] == 'not-applicable':
                 self.assertIsNone(row['fixture'])
@@ -408,7 +418,9 @@ class CensusPolicyTests(unittest.TestCase):
     def test_scope_is_observed_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
         self.assertEqual({'exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail', 'inventory'}, families)
-        self.assertEqual(42, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
+        # B11 adds 12 inventory rows on the seed-grid layouts (five CIFF, two BMP, two GIF,
+        # three TGA) and one per container stub, so the inventory track grows 42 -> 60.
+        self.assertEqual(60, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
         self.assertEqual(135, sum(1 for r in self.report['rows'] if r['batch'] == 'B0'))
         self.assertEqual(58, sum(1 for r in self.report['rows'] if r['batch'] == 'B1'))
         self.assertEqual(67, sum(1 for r in self.report['rows'] if r['batch'] == 'B2'))
@@ -420,7 +432,8 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(53, sum(1 for r in self.report['rows'] if r['batch'] == 'B8'))
         self.assertEqual(96, sum(1 for r in self.report['rows'] if r['batch'] == 'B9'))
         self.assertEqual(64, sum(1 for r in self.report['rows'] if r['batch'] == 'B10'))
-        self.assertEqual(728, len(self.report['rows']))
+        self.assertEqual(95, sum(1 for r in self.report['rows'] if r['batch'] == 'B11'))
+        self.assertEqual(823, len(self.report['rows']))
 
     def test_b10_rows_partition_observed_and_blocked(self):
         rows = [r for r in self.report['rows'] if r['batch'] == 'B10']
@@ -504,6 +517,149 @@ class CensusPolicyTests(unittest.TestCase):
         reasons = {b['reason'] for b in evidence['blocked']}
         self.assertEqual(4, len(reasons))
         self.assertTrue(all('blocked' in r for r in reasons))
+
+    def test_b11_rows_are_the_seed_grid_plus_inventory_only_containers(self):
+        rows = [r for r in self.report['rows'] if r['batch'] == 'B11']
+        self.assertEqual(95, len(rows))
+        self.assertEqual({'CRW', 'BMP', 'GIF', 'TGA', 'MOV', 'MKV', 'AVI', 'WAV', 'ASF'},
+                         {r['format'] for r in rows})
+        per_format = {fmt: len([r for r in rows if r['format'] == fmt])
+                      for fmt in ('CRW', 'BMP', 'GIF', 'TGA', 'MOV')}
+        # CRW keeps five layouts of eight rows (four fixtures plus the blocked vendor-private
+        # cell); BMP and GIF two of seven each; TGA three of seven; MOV two inventory rows, one
+        # per brand. Seven rather than eight because a '-' for the thumbnail family means no
+        # extract row is invented for a reader that has no thumbnail to extract.
+        self.assertEqual({'CRW': 40, 'BMP': 14, 'GIF': 14, 'TGA': 21, 'MOV': 2}, per_format)
+        # The trap this batch was reviewed for: a container stub must never grow a metadata
+        # family cell, because there is no claim to observe and none to negate.
+        for fmt in ('MKV', 'AVI', 'WAV', 'ASF'):
+            self.assertEqual(1, len([r for r in rows if r['format'] == fmt]), fmt)
+            self.assertEqual({'inventory'}, {r['family'] for r in rows if r['format'] == fmt})
+        for row in rows:
+            self.assertIn(row['operation'], ('inventory', 'read', 'extract'))
+            self.assertEqual('not-assessed', row['verification'])
+        blocked = [r for r in rows if r['layout'] == 'ciff-vendor-private-unobserved']
+        self.assertEqual(8, len(blocked))
+        self.assertEqual({'CRW'}, {r['format'] for r in blocked})
+        # Only CRW has a documented Read/Write claim in the pinned table, so only CRW carries
+        # a claim-bearing exif, comments or thumbnail row.
+        claimed = {(r['format'], r['family']) for r in rows
+                   if r['operation'] == 'read' and not r['noDocumentedClaim']}
+        self.assertEqual({('CRW', 'exif'), ('CRW', 'comments'), ('CRW', 'thumbnail')}, claimed)
+        evidence = load_evidence('b11')
+        if evidence is None:
+            # Pre-observation state: enumerated, nothing claimed, and no row may point at a
+            # fixture the CI has not read.
+            self.assertEqual({'not-run'}, {r['baselineObservation'] for r in rows})
+            self.assertTrue(all(r['fixture'] is None for r in rows),
+                            'B11 evidence arrives with its own receipt commit')
+            return
+        self.assertEqual('passed', evidence['status'])
+        self.assertEqual('B11', evidence['batch'])
+        self.assertFalse(evidence['denominatorFrozen'])
+        self.assertEqual('not-assessed', evidence['verification'])
+        observed = {o['id'] for o in evidence['observations']}
+        blocked_ids = {o['id'] for o in evidence['blocked']}
+        self.assertEqual(87, len(observed))
+        self.assertEqual(8, len(blocked_ids))
+        self.assertFalse(observed & blocked_ids)
+        self.assertEqual({r['rowId'] for r in rows}, observed | blocked_ids)
+        self.assertEqual(blocked_ids, {r['rowId'] for r in rows
+                                       if 'vendor-private' in r['layout']})
+        self.assertTrue(all(o['facts']['inputUnchanged'] for o in evidence['observations']))
+        self.assertTrue(all(o['recordOnly'] for o in evidence['observations']))
+        self.assertEqual(0, evidence['outcomeCounts'].get('scan-changed', 0))
+        fmt_of = {r['rowId']: r['format'] for r in rows}
+        layout_of = {r['rowId']: r['layout'] for r in rows}
+        # Which reader the pinned registry reaches is the whole point of the container half:
+        # the brand decides QuickTime versus BMFF, WAV shares the RIFF reader with AVI, and a
+        # footer-signed .targa under a non-TGA name reaches no reader at all.
+        dispatch, by_layout = {}, {}
+        for item in evidence['observations']:
+            dispatch.setdefault(fmt_of[item['id']], set()).add(
+                item['facts']['container']['dispatch'])
+            by_layout.setdefault(layout_of[item['id']], set()).add(
+                item['facts']['container']['dispatch'])
+        self.assertEqual({'crw'}, dispatch['CRW'])
+        self.assertEqual({'bmp'}, dispatch['BMP'])
+        self.assertEqual({'gif'}, dispatch['GIF'])
+        self.assertEqual({'tga', 'none'}, dispatch['TGA'])
+        self.assertEqual({'qtime', 'bmff'}, dispatch['MOV'])
+        self.assertEqual({'mkv'}, dispatch['MKV'])
+        self.assertEqual({'riff'}, dispatch['AVI'])
+        self.assertEqual({'riff'}, dispatch['WAV'])
+        self.assertEqual({'asf'}, dispatch['ASF'])
+        self.assertEqual({'qtime'}, by_layout['qtime-known-brand-v1'])
+        self.assertEqual({'bmff'}, by_layout['qtime-unknown-brand-v1'])
+        self.assertEqual({'tga'}, by_layout['tga-full-v1'])
+        self.assertEqual({'none'}, by_layout['tga-signature-wrong-name-v1'])
+        # `-et` is `Extract::writeThumbnail`'s return (app/actions.cpp:823-864), which is the
+        # byte count only on the path that writes a thumbnail: a fixture carrying a CIFF 0x2008
+        # component exits with the length it wrote, one with Exif data but no thumbnail exits 0,
+        # and one whose reader filled nothing exits -3, narrowed to 253 because main() ends with
+        # `return static_cast<unsigned int>(returnCode) % 256` (app/exiv2.cpp:195). The blanket
+        # rule this batch was written to confirm -- exitCode == artifactBytes for every extract
+        # row -- held on three rows out of four, so what is asserted below is the four shapes,
+        # derived from what the CLI did. It deliberately does not read the recorder's own
+        # `statusShape` label, so the evidence stays checkable whatever the recorder calls it.
+        extracts = {o['layout']: o for o in evidence['observations']
+                    if o['operation'] == 'extract'}
+        self.assertEqual(4, len(extracts))
+        self.assertEqual(
+            {'ciff-mapped-v1': (0, 0, 'zero-exit-no-artifact', 'thumbnail'),
+             'ciff-preview-plus-thumb-v1': (137, 137, 'nonzero-exit-artifact-produced', ''),
+             'ciff-thumb-only-v1': (137, 137, 'nonzero-exit-artifact-produced', ''),
+             'ciff-unmapped-only-v1': (253, 0, 'refused', 'No Exif data')},
+            {layout: (item['exitCode'],
+                      item['facts']['extractSemantics']['artifactBytes'],
+                      item['outcome'],
+                      'thumbnail' if 'thumbnail' in item['facts']['stderr']
+                      else 'No Exif data' if 'No Exif data' in item['facts']['stderr']
+                      else '')
+             for layout, item in sorted(extracts.items())})
+        for layout, item in sorted(extracts.items()):
+            semantics = item['facts']['extractSemantics']
+            self.assertEqual(item['exitCode'] == semantics['artifactBytes'],
+                             semantics['exitCodeEqualsArtifactBytes'], layout)
+            # Two recorder invariants, both easy to lose silently: the no-thumbnail flag is set
+            # from the CLI's own wording, and a byte count that is not backed by a file on disk
+            # would mean the artifacts list and the semantics disagree.
+            self.assertEqual('thumbnail' in item['facts']['stderr'],
+                             semantics['reportedNoThumbnail'], layout)
+            self.assertEqual(bool(semantics['artifactBytes']), bool(item['facts']['artifacts']), layout)
+            self.assertEqual(sum(a['length'] for a in item['facts']['artifacts']),
+                             semantics['artifactBytes'], layout)
+        self.assertEqual({'ciff-thumb-only-v1', 'ciff-preview-plus-thumb-v1'},
+                         {layout for layout, item in extracts.items()
+                          if item['facts']['extractSemantics']['artifactBytes']})
+        # The two rows that wrote a thumbnail wrote exactly what the fixture says is in there,
+        # and only those two are offered a prediction: predictedArtifactBytes exists solely where
+        # a 0x2008 component exists, so it is a check on the recorder, never on CRW support. A
+        # mismatch stays a finding about the recorder rather than a gate, so the field must exist
+        # and is never asserted to be true.
+        self.assertEqual({'ciff-thumb-only-v1': 137, 'ciff-preview-plus-thumb-v1': 137},
+                         {layout: item['facts']['extractSemantics']['predictedArtifactBytes']
+                          for layout, item in extracts.items()
+                          if item['facts']['extractSemantics'].get('predictedArtifactBytes') is not None})
+        for item in extracts.values():
+            if 'predictionMatched' in item['facts']['extractSemantics']:
+                self.assertIn(item['facts']['extractSemantics']['predictionMatched'], (True, False),
+                              item['id'])
+        # Seven layouts never reach a reader at all, and each keeps the build's own wording so no
+        # row can be read downstream as "this format is unsupported". Six are the surprise this
+        # batch exists to record: the magic test in the pinned source matches their bytes, yet
+        # ImageFactory::open produced no instance (the review document predicted BMP, QuickTime,
+        # Matroska and WAV would be read). The seventh is the prediction coming true: TGA is
+        # claimed by file *name* in this build, so a footer-signed .targa reaches no reader and is
+        # recorded as dispatch 'none' rather than as a TGA failure.
+        refused = {item['layout'] for item in evidence['observations']
+                   if 'unknown image type' in item['facts']['stderr']}
+        self.assertEqual({'bmp-dib-v3', 'bmp-os2-coreheader-v1', 'mkv-ebml-header-v1',
+                          'qtime-known-brand-v1', 'qtime-unknown-brand-v1', 'riff-wav-fmt-v1',
+                          'tga-signature-wrong-name-v1'}, refused)
+        self.assertEqual({'none'}, {item['facts']['container']['dispatch'] for item in
+                                    evidence['observations']
+                                    if item['layout'] == 'tga-signature-wrong-name-v1'})
 
     def test_evidence_files_hashed_by_a_receipt_survive_checkout_conversion(self):
         """A receipt that hashes committed bytes is only meaningful under one checkout mode.
@@ -700,6 +856,131 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual({'observations.json', 'ci-observations.json', 'master-observations.json'},
                          {run['payload'] for run in reproduction['runs']})
 
+    def test_b11_receipt_and_cross_run_samples_are_self_consistent(self):
+        """B11's census must rest on a payload that ties out to its own receipt, and the second
+        run's payload may differ only in the fields this batch renamed."""
+        import hashlib
+        evidence_dir = ROOT / 'docs/research/evidence/e01-b11-census'
+        receipt_path = evidence_dir / 'receipt.json'
+        if not receipt_path.exists():
+            self.skipTest('B11 receipt not committed')
+        canonical = lambda doc: json.dumps(doc, sort_keys=True, separators=(',', ':')).encode()
+        receipt = json.loads(receipt_path.read_text())
+        census_raw = (evidence_dir / 'observations.json').read_bytes()
+        evidence = json.loads(census_raw)
+        prior_path = evidence_dir / 'prior-run-observations.json'
+        self.assertTrue(prior_path.exists(), 'B11 cross-run sample must be committed beside the census')
+        prior_raw = prior_path.read_bytes()
+        prior = json.loads(prior_raw)
+
+        recovery = receipt['annotationRecovery']
+        self.assertEqual(recovery['observationsFileSha256'], hashlib.sha256(census_raw).hexdigest())
+        self.assertEqual(recovery['rawPayloadSha256'], hashlib.sha256(canonical(evidence)).hexdigest())
+        self.assertEqual(recovery['chunks'], recovery['expectedChunks'])
+        self.assertEqual(recovery['chunks'], recovery['priorChunks'],
+                         'the two runs must have paid the same recovery cost')
+        self.assertTrue(recovery['markerVerified'], 'the count marker must have been matched')
+        self.assertEqual(evidence['sourceCommit'], receipt['run']['headCommit'])
+        self.assertEqual('passed', evidence['status'])
+
+        # The four payloads are two same-head pairs, so each cross-run comparison is between a
+        # build and a build, never between an observation and a different question.
+        cross = receipt['censusCrossRun']
+        self.assertEqual(cross['priorRun']['head'], prior['sourceCommit'])
+        self.assertEqual(receipt['run']['secondSampleRun'], cross['priorRun']['runId'],
+                         'the run object must name the same second run the comparison uses')
+        self.assertNotEqual(receipt['run']['id'], receipt['run']['secondSampleRun'])
+        self.assertEqual(cross['priorRun']['observationsFileSha256'], hashlib.sha256(prior_raw).hexdigest())
+        self.assertEqual(cross['priorRun']['rawPayloadSha256'], hashlib.sha256(canonical(prior)).hexdigest())
+        self.assertEqual(['baseline', 'observations', 'secondaryObservations', 'sourceCommit'],
+                         cross['differingSections'])
+        for section in ('outcomeCounts', 'fixtureManifest', 'blocked', 'environment', 'status',
+                        'verification', 'denominatorFrozen', 'limitations'):
+            self.assertIn(section, cross['identicalSections'], section)
+        self.assertEqual([], cross['rowsDifferingBeyondShapeLabel'])
+        self.assertEqual(['ciff-mapped-v1 -et', 'ciff-preview-plus-thumb-v1 -et',
+                          'ciff-thumb-only-v1 -et', 'ciff-unmapped-only-v1 -et'],
+                         cross['rowsDifferingOnlyByShapeLabel'])
+        self.assertTrue(cross['observationCountEqual'] and cross['outcomeCountsEqual'])
+        self.assertTrue(cross['blockedIdsEqual'] and cross['fixtureManifestEqual'])
+        stated = re.match(r'(\d+) of (\d+) observations differ', cross['reading'])
+        self.assertEqual([len(cross['rowsDifferingOnlyByShapeLabel']), len(evidence['observations'])],
+                         [int(stated.group(1)), int(stated.group(2))],
+                         'the prose tally must be the data tally, not a remembered number')
+        pre_dir = ROOT / 'docs/research/evidence/e01-b11-preflight'
+        pre = json.loads((pre_dir / 'observations.json').read_text())
+        pre_prior = json.loads((pre_dir / 'prior-run-observations.json').read_text())
+        self.assertEqual(evidence['sourceCommit'], pre['sourceCommit'])
+        self.assertEqual(prior['sourceCommit'], pre_prior['sourceCommit'])
+        self.assertTrue(receipt['preflightRecovery']['markerVerified'])
+        comparison = receipt['reproduction']['priorRunComparison']
+        self.assertTrue(comparison['observationsByteIdentical'])
+        self.assertEqual([], comparison['secondaryDriftBeyondFileDates'])
+        self.assertEqual(['baseline', 'secondary', 'sourceCommit'], comparison['differingSections'])
+        self.assertEqual({'e01-b11-census/observations.json',
+                          'e01-b11-census/prior-run-observations.json',
+                          'e01-b11-preflight/observations.json',
+                          'e01-b11-preflight/prior-run-observations.json'},
+                         {run['payload'] for run in receipt['reproduction']['runs']})
+        self.assertEqual(sorted({evidence['sourceCommit'], prior['sourceCommit']}),
+                         sorted({run['head'] for run in receipt['reproduction']['runs']}))
+
+        # The two payload generations differ in exactly one thing: how the -et rows describe
+        # themselves. Asserting the difference is what stops a swapped pair from passing.
+        old_et = {o['layout']: o['facts']['extractSemantics']
+                  for o in prior['observations'] if o['flag'] == '-et'}
+        new_et = {o['layout']: o['facts']['extractSemantics']
+                  for o in evidence['observations'] if o['flag'] == '-et'}
+        self.assertEqual(set(old_et), set(new_et))
+        self.assertTrue(all('exitCodeIsByteCountInPinnedBuild' in sem for sem in old_et.values()))
+        self.assertTrue(all('statusShape' not in sem for sem in old_et.values()))
+        self.assertTrue(all(sem['statusShape'] and 'statusIsByteCountWritten' in sem
+                            for sem in new_et.values()))
+        self.assertEqual({'ciff-unmapped-only-v1'},
+                         {o['layout'] for o in prior['observations'] if o['facts']['finding']})
+        self.assertEqual({}, receipt['extractForm']['findingsInPayload'])
+        self.assertTrue(receipt['extractForm']['shapeLabelsInPayload'],
+                        'the committed payload must be the labeled generation')
+
+        # Each label must follow from the CLI's own wording, read here without the recorder's
+        # classification logic, and from the numbers the row keeps.
+        for layout, sem in sorted(new_et.items()):
+            row = next(o for o in evidence['observations'] if o['layout'] == layout and o['flag'] == '-et')
+            stderr = row['facts']['stderr']
+            derived = ('thumbnail-written' if sem['artifactBytes'] else
+                       'no-thumbnail-extension' if 'does not contain an Exif thumbnail' in stderr else
+                       'no-exif-data' if 'No Exif data found in the file' in stderr else
+                       'reader-threw' if 'Exiv2 exception in extract action' in stderr else
+                       'unclassified')
+            self.assertEqual(derived, sem['statusShape'], layout)
+            expected_rc = {'thumbnail-written': sem['artifactBytes'], 'no-thumbnail-extension': 0,
+                           'no-exif-data': 253, 'reader-threw': 1}[sem['statusShape']]
+            self.assertEqual(expected_rc, row['exitCode'], layout)
+            self.assertEqual(sem['statusShape'] == 'thumbnail-written',
+                             sem['statusIsByteCountWritten'], layout)
+            self.assertEqual(row['exitCode'] == sem['artifactBytes'], sem['exitCodeEqualsArtifactBytes'],
+                             layout)
+        self.assertEqual(['ciff-preview-plus-thumb-v1', 'ciff-thumb-only-v1'],
+                         receipt['extractForm']['byteCountShapeIsTheSuccessPath'])
+        self.assertEqual(['ciff-unmapped-only-v1'], receipt['extractForm']['exitCodeIsNotAByteCountFor'])
+        for needle in ('app/actions.cpp:823-864', 'app/exiv2.cpp:195', '% 256'):
+            self.assertIn(needle, receipt['extractForm']['rule'], needle)
+
+        # Regenerating the census from the *other* payload must produce the same artifact: the
+        # shape labels are description, and no row may depend on which generation was committed.
+        on_disk = json.loads((ROOT / 'docs/research/EXIV2_CENSUS.json').read_text())
+        saved = census.EVIDENCE_BY_BATCH['B11']
+        census.EVIDENCE_BY_BATCH['B11'] = prior_path
+        try:
+            import contextlib, io
+            with contextlib.redirect_stdout(io.StringIO()):
+                from_prior = census.build(self.seeds)
+        finally:
+            census.EVIDENCE_BY_BATCH['B11'] = saved
+        self.assertEqual([r for r in on_disk['rows'] if r['batch'] == 'B11'],
+                         [r for r in from_prior['rows'] if r['batch'] == 'B11'])
+        self.assertEqual(on_disk['rows'], from_prior['rows'])
+
     def test_b9_rows_partition_observed_and_blocked(self):
         rows = [r for r in self.report['rows'] if r['batch'] == 'B9']
         self.assertEqual(96, len(rows))
@@ -870,10 +1151,12 @@ class CensusPolicyTests(unittest.TestCase):
         enumerated_seeds = {s['seedId'] for s in self.seeds['seeds']
                              if f"{s['format']}/{s['family']}" in enumerated}
         self.assertEqual(all_seeds, enumerated_seeds | pending)
-        # B9 enumerates ARW/CR2/NEF/ORF/PEF/SRW x six families, so 36 seed cells move
-        # from pending to enumerated; nothing is dropped from the grid.
-        self.assertEqual(162, len(enumerated_seeds))
-        self.assertEqual(24, len(pending))
+        # B11 enumerates CRW/BMP/GIF/TGA x six families, so the last 24 pending seed cells
+        # move to enumerated and the list empties. Closing it is bookkeeping about enumeration:
+        # no row says a cell was verified, and no seed left the grid.
+        self.assertEqual(186, len(enumerated_seeds))
+        self.assertEqual(set(), pending)
+        self.assertEqual(186, len(self.seeds['seeds']))
 
     def test_no_claim_rows_are_only_the_undocumented_cells(self):
         no_claim = {r['rowId'] for r in self.report['rows'] if r['noDocumentedClaim']}
@@ -907,6 +1190,18 @@ class CensusPolicyTests(unittest.TestCase):
                            for fmt in ('ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW') for num in (1, 2)} |
                           {f'EX0289-{fmt}-ICC-READ-{num:04d}'
                            for fmt in ('ORF', 'SRW') for num in (1, 2)} |
+                         # B11 undocumented cells. BMP, GIF and TGA are '-' for all six
+                         # families -- the pinned bullet says the format is recognised, a MIME
+                         # type assigned and the dimensions read, and nothing more -- and CRW is
+                         # '-' for iptc, xmp and icc. One row per layout, in sorted layout
+                         # order: five CIFF, two BMP, two GIF, three TGA.
+                          {f'EX0289-CRW-{family}-READ-{num:04d}'
+                           for family in ('IPTC', 'XMP', 'ICC') for num in range(1, 6)} |
+                          {f'EX0289-{fmt}-{family}-READ-{num:04d}'
+                           for fmt in ('BMP', 'GIF') for family in SIX_FAMILIES
+                           for num in (1, 2)} |
+                          {f'EX0289-TGA-{family}-READ-{num:04d}'
+                           for family in SIX_FAMILIES for num in (1, 2, 3)} |
                          # B10 undocumented cells. The pinned registry claims no comment
                          # mode for any wave-2 format and no ICC cell for any of them, so
                          # both layouts (marker and blocked vendor-private) are unclaimed.
@@ -916,7 +1211,8 @@ class CensusPolicyTests(unittest.TestCase):
         for row in self.report['rows']:
             if row['noDocumentedClaim']:
                 self.assertEqual('read', row['operation'])
-                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10'))
+                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9',
+                                             'B10', 'B11'))
 
     def test_rows_never_use_metadataSharp_as_oracle(self):
         for row in self.report['rows']:

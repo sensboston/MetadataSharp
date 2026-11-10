@@ -98,15 +98,27 @@ non-target byte-preservation failures (COM change; XMP reencoding where present)
 Neither observed differences nor disabled optional web/curl are accepted exclusions.
 186 seeds/348 candidates and all unknown/rights/layout rows stay visible; no score.
 
-Batches B0–B10 have since been enumerated and their bounded pinned-CLI observations
-recorded: the census now holds 728 rows (162 seed cells enumerated, 24 pending), every
+Batches B0–B11 have since been enumerated and their bounded pinned-CLI observations
+recorded: the census now holds 823 rows (all 186 seed cells enumerated, none pending; 221
+format/family cells over 36 formats, 33 formats on the inventory-only track), every
 row still carries `verification: not-assessed`, `denominatorFrozen` is false, and no
 coverage percentage is published anywhere in this programme. B10 is the second TIFF-derived
 RAW wave (MRW, RW2, SR2, RAF plus an inventory row per layout): 64 rows, 32 observed against
 owned synthetic containers and 32 left visible as `blocked-rights` for vendor-private
 structures no reviewed document describes. Its observations stay shape-level — the pinned
 build's refusals, print forms and empty prints are recorded, and RAF's partiality in this
-baseline is recorded as partial rather than promoted to a claim. See
+baseline is recorded as partial rather than promoted to a claim.
+B11 closes the last 24 pending seed cells with the small formats (CRW, BMP, GIF, TGA)
+and adds one inventory-only row per container stub (MOV, MKV, AVI, WAV, ASF): 95 rows,
+87 observed and 8 `blocked-rights` for the Canon vendor-private CIFF region. The
+containers carry no metadata-family cells because the pinned table claims no family for
+them, so the denominator grew only where there was something to observe. B11 is also the
+first batch whose evidence contradicts its own review document in the record rather than
+in a footnote: `exiv2 -et` returns whatever `Extract::writeThumbnail` returns, which is a
+byte count only on the path that writes a thumbnail (137, 0, 253 and 1 across four CRW
+layouts), and six cleared fixtures were refused by `ImageFactory::open` before any reader
+ran — kept as a refusal of those header-only stubs, with the two candidate causes left
+unresolved because a second CI run reproduced them without separating them. See
 [census and denominator proposal](../design/EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md)
 §5 and `docs/research/EXIV2_CENSUS.json`; per-batch evidence is under
 `docs/research/evidence/`. That growth is enumeration plus observation only — it is not
