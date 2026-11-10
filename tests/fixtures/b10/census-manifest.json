@@ -1,0 +1,87 @@
+[
+  {
+    "file": "owned-mrw-ttw.mrw",
+    "format": "MRW",
+    "layout": "raw-mrw-ttw-embedded-tiff",
+    "length": 1282,
+    "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py",
+    "dispatch": "mrw",
+    "compression": 1,
+    "carrierTags": [
+      "icc",
+      "iptc",
+      "xmp",
+      "comment"
+    ],
+    "thumbnailPresent": true,
+    "embeddedBlobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+    "vendorIdentity": "\\0MRM header plus a \\0TTW block holding a whole TIFF; MrwImage::mimeType is the constant image/x-minolta-mrw",
+    "decodable": false,
+    "metadata": "authored-exif-xmp-iptc-icc-thumbnail-comments"
+  },
+  {
+    "file": "owned-raf-fujifilm.raf",
+    "format": "RAF",
+    "layout": "raw-raf-fujifilm-be-offsets",
+    "length": 1322,
+    "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py",
+    "dispatch": "raf",
+    "compression": 1,
+    "carrierTags": [
+      "icc"
+    ],
+    "thumbnailPresent": false,
+    "embeddedBlobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+    "vendorIdentity": "FUJIFILM magic with big-endian block pairs at 84/88, 92/96 and 100/104; RafImage::mimeType is image/x-fuji-raf",
+    "decodable": false,
+    "metadata": "authored-exif-xmp-iptc-icc-thumbnail-comments"
+  },
+  {
+    "file": "owned-rw2-root24.rw2",
+    "format": "RW2",
+    "layout": "raw-rw2-ii-55-root-24",
+    "length": 1220,
+    "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py",
+    "dispatch": "rw2",
+    "compression": 1,
+    "carrierTags": [
+      "icc",
+      "iptc",
+      "xmp",
+      "comment"
+    ],
+    "thumbnailPresent": true,
+    "embeddedBlobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+    "vendorIdentity": "magic 0x0055, 24-byte header, root IFD at 24 (TiffHeaderBase(0x0055, 24, littleEndian, 0x18)); Rw2Image::mimeType is image/x-panasonic-rw2",
+    "decodable": false,
+    "metadata": "authored-exif-xmp-iptc-icc-thumbnail-comments"
+  },
+  {
+    "file": "owned-marker-sr2.sr2",
+    "format": "SR2",
+    "layout": "raw-tiff-ep-ii-sr2",
+    "length": 1208,
+    "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py",
+    "dispatch": "tiff",
+    "compression": 1,
+    "carrierTags": [
+      "icc",
+      "iptc",
+      "xmp",
+      "comment"
+    ],
+    "thumbnailPresent": true,
+    "embeddedBlobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+    "vendorIdentity": "generic TIFF dispatch only; no compression value in this build maps to an SR2 MIME type, so mimeType stays image/tiff",
+    "decodable": false,
+    "metadata": "authored-exif-xmp-iptc-icc-thumbnail-comments"
+  }
+]

@@ -18,6 +18,13 @@ docs/research/evidence/e01-b8-census/ci-observations.json text eol=lf
 # The B8 census manifest is hashed as committed bytes by the discovery tests.
 tests/fixtures/b8/census-manifest.json text eol=lf
 # The B9 census fixtures are byte-authored and hashed as committed bytes in CI.
+# The B10 wave-2 fixtures are byte-authored containers (MRW block chain, RAF offset
+# table, RW2 header, generic TIFF marker) and are hashed as committed bytes in CI.
+tests/fixtures/b10/census-manifest.json text eol=lf
+tests/fixtures/b10/owned-marker-sr2.sr2 -text
+tests/fixtures/b10/owned-mrw-ttw.mrw -text
+tests/fixtures/b10/owned-raf-fujifilm.raf -text
+tests/fixtures/b10/owned-rw2-root24.rw2 -text
 tests/fixtures/b9/census-manifest.json text eol=lf
 tests/fixtures/b9/owned-marker-arw.arw -text
 tests/fixtures/b9/owned-marker-cr2.cr2 -text
