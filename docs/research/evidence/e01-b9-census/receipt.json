@@ -1,0 +1,164 @@
+{
+  "annotationBudget": {
+    "finding": "B9 evidence was lost in run 42729776775 (head 39ee8c9) without any CI failure: the B0-B8 steps in the shared job emit exactly 50 annotations, so the new batch was dropped at the cap. The uploaded artifact did contain the report, but its blob host is unreachable here, which is why the annotation channel is the recovery path and why a silent drop had to be made structurally impossible. The batch now runs in its own job and the recorder emits a trailing count marker that recovery must match before the payload is trusted.",
+    "perCheckRunLimit": 50,
+    "thisRunAnnotationsUsed": 10
+  },
+  "annotationRecovery": {
+    "channel": "check-run annotations (the Actions bulk-log host and the artifact blob host are unreachable from this environment)",
+    "chunks": 4,
+    "ciChunks": 4,
+    "ciObservationsSha256": "908364df6fcce89c24b3ca33114adf3f4d2abc4dd0397f5ed34a956139507b24",
+    "ciRawPayloadSha256": "93076bb4f6b32343f2de2ad020203657e5ab98665dc0f53616ce8fe1caa4abf0",
+    "ciRunId": 42734184874,
+    "encoding": "zlib + base64, 4000-byte chunks",
+    "expectedChunks": 4,
+    "markerTitle": "B9Z observations.json count",
+    "markerVerified": true,
+    "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder",
+    "observationsFileSha256": "00d1a539d6c95a9a8a71063b5cfd69c4b11ee52e542326720a3fb2f94b99eda2",
+    "rawPayloadSha256": "5b627e3b27bc76a92a28b6019b3d7b74faa2cf7981bdedb929b5638ea767b82e",
+    "recoveredKeys": [
+      "baseline",
+      "batch",
+      "blocked",
+      "denominatorFrozen",
+      "fixtureManifest",
+      "limitations",
+      "observations",
+      "outcomeCounts",
+      "schema",
+      "scope",
+      "secondaryObservations",
+      "sourceCommit",
+      "status",
+      "verification"
+    ],
+    "title": "B9Z observations.json"
+  },
+  "baseline": {
+    "cmakeCacheSha256": "8f13f98e9fd2e35b240d5086f2570f88f2f4a57e78e52b5306688ae61817f98f",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "executableSha256": "4ea3b840c5c71de2ea87f1fb134a7d68406e8a75412899bffd6958b4c4f5d984",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov 10 2026\ntime=00:44:16\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
+    "version": "0.28.9"
+  },
+  "batch": "B9",
+  "denominatorFrozen": false,
+  "iccPrintForm": {
+    "authoredProfileLength": 192,
+    "note": "the ORF path printed 202 bytes for the same 192-byte authored profile, i.e. a different print form rather than a different profile; recorded, not diagnosed",
+    "stdoutLengthByFormat": {
+      "ARW": 192,
+      "CR2": 192,
+      "NEF": 192,
+      "ORF": 202,
+      "PEF": 192,
+      "SRW": 192
+    }
+  },
+  "notClaimed": [
+    "no MetadataSharp verification (verification stays not-assessed)",
+    "no coverage percentage and no denominator freeze",
+    "no metadata-support or vendor-format conformance claim",
+    "no write behavior: no B9 write row is enumerated, and arw/rw2/sr2/raf being amRead in the pinned registry is a reference-build fact, not an accepted exclusion",
+    "per-family attribution of the shared -pa output is not established",
+    "nothing about the vendor private IFDs is established: those 48 cells stay blocked",
+    "ExifTool reported FileType per its own rules, which consult the extension, so the secondary observation is not a validity proof for these authored markers"
+  ],
+  "provenance": "CI-only evidence. This sandbox has no pinned Exiv2 build (no cmake/ninja, no expat/zlib development headers, and the package-install, Actions log and artifact-blob hosts are unreachable), so there is no local observation run to compare against. The committed report is the recovered CI run; no cross-environment equality claim is made.",
+  "reproduction": {
+    "claim": "observations are reproducible; the compiled reference binary is not",
+    "excludedDifferences": {
+      "baseline.executableSha256": "the build embeds its own timestamp, so the binary is not bit-reproducible",
+      "baseline.verboseVersion": "the only banner difference is the time= line",
+      "secondaryObservations": "ExifTool System:FileAccessDate/System:FileModifyDate/System:FileInodeChangeDate",
+      "sourceCommit": "the two runs validated different heads"
+    },
+    "heads": [
+      "2e0ec0a4d839a6865f01c93935535b2c07d5e0a1",
+      "fe0c50088008edeff067f6f6bc69c4118b328eb1"
+    ],
+    "identicalSections": [
+      "observations",
+      "blocked",
+      "fixtureManifest",
+      "outcomeCounts"
+    ],
+    "identicalSectionsExactBytes": true,
+    "runs": [
+      42730383559,
+      42734184874
+    ],
+    "stillIdentical": [
+      "baseline.cmakeCacheSha256",
+      "baseline.effectiveCmake",
+      "baseline.licenseSha256",
+      "baseline.sourceCommit",
+      "baseline.version",
+      "every observation exit code, stdout digest, token list, artifact list and container fact"
+    ],
+    "whyThisSecondSample": "B9 has no local observation run, so reproducibility is measured between two independent CI runs of the same recorder on different heads instead."
+  },
+  "run": {
+    "attempt": 1,
+    "headCommit": "2e0ec0a4d839a6865f01c93935535b2c07d5e0a1",
+    "id": 42730383559,
+    "job": "Exiv2 0.28.9 / bounded E01 B9 RAW observations",
+    "pullRequest": 50,
+    "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42730383559"
+  },
+  "schema": 1,
+  "tally": {
+    "artifactsProduced": 6,
+    "blocked": 48,
+    "censusRows": 96,
+    "inputsUnchanged": true,
+    "observed": 48,
+    "outcomeCounts": {
+      "accepted": 42,
+      "blocked-rights": 48,
+      "nonzero-exit-artifact-produced": 6,
+      "static-not-applicable": 0
+    }
+  },
+  "thumbnailRoundTrip": {
+    "authoredThumbnailSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+    "byteExactCopyProducedByPinnedCli": true,
+    "note": "every -et row exited 137 and wrote exactly one file whose bytes equal the authored 137-byte owned JPEG: a byte-exact copy-out for these containers, not a preview decode and not a support claim",
+    "rows": 6
+  }
+}

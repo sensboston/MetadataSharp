@@ -17,3 +17,14 @@ docs/research/evidence/e01-b8-census/observations.json text eol=lf
 docs/research/evidence/e01-b8-census/ci-observations.json text eol=lf
 # The B8 census manifest is hashed as committed bytes by the discovery tests.
 tests/fixtures/b8/census-manifest.json text eol=lf
+# The B9 census fixtures are byte-authored and hashed as committed bytes in CI.
+tests/fixtures/b9/census-manifest.json text eol=lf
+tests/fixtures/b9/owned-marker-arw.arw -text
+tests/fixtures/b9/owned-marker-cr2.cr2 -text
+tests/fixtures/b9/owned-marker-nef.nef -text
+tests/fixtures/b9/owned-marker-orf.orf -text
+tests/fixtures/b9/owned-marker-pef.pef -text
+tests/fixtures/b9/owned-marker-srw.srw -text
+# The B9 census receipt will hash exact observation bytes across OS checkout modes.
+docs/research/evidence/e01-b9-census/observations.json text eol=lf
+docs/research/evidence/e01-b9-census/ci-observations.json text eol=lf

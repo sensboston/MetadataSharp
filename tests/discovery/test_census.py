@@ -281,6 +281,9 @@ class CensusPolicyTests(unittest.TestCase):
         b8 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b8/census-manifest.json').read_text())}
         for fmt in ('PSD', 'JP2', 'EPS'):
             manifests[fmt] = b8
+        b9 = {e['file']: e for e in json.loads((ROOT / 'tests/fixtures/b9/census-manifest.json').read_text())}
+        for fmt in ('ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW'):
+            manifests[fmt] = b9
         for row in self.report['rows']:
             if row['baselineObservation'] == 'not-applicable':
                 self.assertIsNone(row['fixture'])
@@ -402,7 +405,7 @@ class CensusPolicyTests(unittest.TestCase):
     def test_scope_is_observed_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
         self.assertEqual({'exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail', 'inventory'}, families)
-        self.assertEqual(22, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
+        self.assertEqual(34, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
         self.assertEqual(135, sum(1 for r in self.report['rows'] if r['batch'] == 'B0'))
         self.assertEqual(58, sum(1 for r in self.report['rows'] if r['batch'] == 'B1'))
         self.assertEqual(67, sum(1 for r in self.report['rows'] if r['batch'] == 'B2'))
@@ -412,7 +415,135 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(88, sum(1 for r in self.report['rows'] if r['batch'] == 'B6'))
         self.assertEqual(48, sum(1 for r in self.report['rows'] if r['batch'] == 'B7'))
         self.assertEqual(53, sum(1 for r in self.report['rows'] if r['batch'] == 'B8'))
-        self.assertEqual(568, len(self.report['rows']))
+        self.assertEqual(96, sum(1 for r in self.report['rows'] if r['batch'] == 'B9'))
+        self.assertEqual(664, len(self.report['rows']))
+
+    def test_b9_rows_partition_observed_and_blocked(self):
+        rows = [r for r in self.report['rows'] if r['batch'] == 'B9']
+        self.assertEqual(96, len(rows))
+        self.assertEqual({'ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW'}, {r['format'] for r in rows})
+        # Each format has exactly two layouts: the authored marker and the blocked
+        # vendor-private cell. Neither may substitute for the other.
+        for fmt in ('ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW'):
+            layouts = {r['layout'] for r in rows if r['format'] == fmt}
+            self.assertEqual({f'raw-{fmt.lower()}-vendor-private-unobserved'},
+                             {layout for layout in layouts if 'vendor-private' in layout}, fmt)
+            self.assertEqual(1, len([layout for layout in layouts if 'vendor-private' not in layout]), fmt)
+            self.assertEqual(16, len([r for r in rows if r['format'] == fmt]), fmt)
+        for row in rows:
+            self.assertEqual('not-assessed', row['verification'])
+            self.assertIn(row['operation'], ('inventory', 'read', 'extract'))
+        evidence = load_evidence('b9')
+        if evidence is None:
+            self.assertEqual({'not-run'}, {r['baselineObservation'] for r in rows})
+            self.assertTrue(all(r['fixture'] is None for r in rows),
+                            'B9 evidence arrives with its own receipt commit')
+            return
+        self.assertEqual('passed', evidence['status'])
+        self.assertEqual('B9', evidence['batch'])
+        self.assertFalse(evidence['denominatorFrozen'])
+        self.assertEqual('not-assessed', evidence['verification'])
+        observed = {o['id'] for o in evidence['observations']}
+        blocked = {o['id'] for o in evidence['blocked']}
+        self.assertEqual(48, len(observed))
+        self.assertEqual(48, len(blocked))
+        self.assertFalse(observed & blocked)
+        self.assertEqual({r['rowId'] for r in rows}, observed | blocked)
+        vendor = {r['rowId'] for r in rows if 'vendor-private' in r['layout']}
+        self.assertEqual(vendor, blocked)
+        self.assertEqual(blocked, {r['rowId'] for r in rows if r['baselineObservation'] == 'blocked'})
+        self.assertEqual(observed, {r['rowId'] for r in rows
+                                    if r['baselineObservation'] == 'observed-cli'})
+        self.assertTrue(all(o['facts']['inputUnchanged'] for o in evidence['observations']))
+        self.assertTrue(all(o['recordOnly'] and o['expectOk'] is None for o in evidence['observations']))
+        self.assertEqual(0, evidence['outcomeCounts'].get('scan-changed', 0))
+        # The four metadata-family reads on one marker fixture all ask for `-pa`, so they
+        # print identical bytes: no row may be read as an independent per-family claim.
+        for layout in sorted({o['layout'] for o in evidence['observations']}):
+            pa = [o for o in evidence['observations'] if o['flag'] == '-pa' and o['layout'] == layout]
+            self.assertEqual(4, len(pa), layout)
+            self.assertEqual(1, len({o['facts']['stdoutSha256'] for o in pa}), layout)
+            self.assertEqual(1, len({tuple(o['facts']['printedTokens']) for o in pa}), layout)
+        # A refusal must never be recorded as an absence of vendor metadata: the marker
+        # fixtures carry the carriers, so an empty -pa print is about the CLI, not the file.
+        self.assertTrue(all(o['fixture'].startswith('owned-marker-') for o in evidence['observations']))
+        self.assertEqual(0, sum(1 for o in evidence['observations'] if o['facts']['artifacts']
+                                and o['operation'] != 'extract'))
+        # Receipt integrity: the committed report is exactly the recovered payload.
+        import hashlib
+        receipt_dir = ROOT / 'docs/research/evidence/e01-b9-census'
+        receipt_path = receipt_dir / 'receipt.json'
+        if not receipt_path.exists():
+            self.skipTest('B9 receipt not committed')
+        receipt = json.loads(receipt_path.read_text())
+        recovery = receipt['annotationRecovery']
+        evidence_path = receipt_dir / 'observations.json'
+        self.assertEqual(recovery['observationsFileSha256'],
+                         hashlib.sha256(evidence_path.read_bytes()).hexdigest())
+        self.assertEqual(recovery['rawPayloadSha256'],
+                         hashlib.sha256(json.dumps(
+                             {k: v for k, v in evidence.items()}, sort_keys=True,
+                             separators=(',', ':')).encode()).hexdigest())
+        self.assertEqual(evidence['sourceCommit'], receipt['run']['headCommit'])
+        self.assertEqual(recovery['chunks'], recovery['expectedChunks'])
+        self.assertTrue(recovery['markerVerified'], 'the count marker must have been matched')
+        self.assertEqual(receipt['tally']['observed'] + receipt['tally']['blocked'], len(rows))
+        self.assertEqual(0, receipt['tally']['artifactsProduced'] -
+                         sum(1 for o in evidence['observations'] if o['facts']['artifacts']))
+        # The -et round trip is asserted from the receipt, so a future run that stops
+        # producing the byte-exact thumbnail copy shows up as a failing test rather
+        # than as a quiet change in the evidence.
+        trip = receipt['thumbnailRoundTrip']
+        self.assertTrue(trip['byteExactCopyProducedByPinnedCli'])
+        self.assertEqual(6, trip['rows'])
+        self.assertEqual(137, int(trip['authoredThumbnailSha256'] and 137))
+        for item in evidence['observations']:
+            if item['operation'] == 'extract':
+                self.assertEqual([trip['authoredThumbnailSha256']],
+                                 [a['sha256'] for a in item['facts']['artifacts']])
+                self.assertEqual(137, item['facts']['artifacts'][0]['length'])
+        # Every observed row that printed anything printed exactly the authored EXIF
+        # tokens; no token outside the reviewed vocabulary may appear.
+        self.assertEqual({'B9Artist', 'B9Tool'},
+                         {tok for o in evidence['observations'] for tok in o['facts']['printedTokens']})
+        # Blocked rows carry a per-format reason naming what is missing, never a bare
+        # 'unsupported', and no blocked row may hold a fixture reference.
+        reasons = {b['reason'] for b in evidence['blocked']}
+        self.assertEqual(6, len(reasons))
+        self.assertTrue(all('blocked' in r for r in reasons))
+        # The annotation-budget finding must stay recorded: the 50-annotation cap is the
+        # reason this batch has its own job, and it must not be quietly forgotten.
+        self.assertEqual(50, receipt['annotationBudget']['perCheckRunLimit'])
+        self.assertIn('42729776775', receipt['annotationBudget']['finding'])
+        # Cross-run reproduction. There is no local B9 run, so the second sample is
+        # another CI run of the same recorder on a later head: the observation payload
+        # must match byte-for-byte, while the reference binary legitimately differs
+        # because the build embeds its own timestamp.
+        ci_path = receipt_dir / 'ci-observations.json'
+        ci = json.loads(ci_path.read_text())
+        self.assertEqual(recovery['ciObservationsSha256'],
+                         hashlib.sha256(ci_path.read_bytes()).hexdigest())
+        self.assertEqual(4, recovery['ciChunks'])
+        for section in ('observations', 'blocked', 'fixtureManifest', 'outcomeCounts'):
+            self.assertEqual(evidence[section], ci[section], f'{section} drifted across runs')
+        self.assertNotEqual(evidence['sourceCommit'], ci['sourceCommit'])
+        self.assertNotEqual(evidence['baseline']['executableSha256'], ci['baseline']['executableSha256'])
+        for key in ('cmakeCacheSha256', 'licenseSha256', 'sourceCommit', 'version'):
+            self.assertEqual(evidence['baseline'][key], ci['baseline'][key])
+        self.assertEqual(2, len(set(evidence['baseline']['verboseVersion'].splitlines())
+                                ^ set(ci['baseline']['verboseVersion'].splitlines())))
+        # ExifTool prints file timestamps, so its raw stdout digest cannot match across
+        # runs by construction: compare the stable facts, not the envelope.
+        def stable(item):
+            return {'exitCode': item['exitCode'], 'interpretation': item['interpretation'],
+                    'fixtureSha256': item['fixtureSha256'], 'fixtureLength': item['fixtureLength'],
+                    'json': [{k: v for k, v in entry.items()
+                              if not k.startswith('System:') and k != 'SourceFile'}
+                             for entry in item['json']]}
+        self.assertEqual({name: stable(item) for name, item in evidence['secondaryObservations'].items()},
+                         {name: stable(item) for name, item in ci['secondaryObservations'].items()})
+        self.assertNotEqual(evidence['secondaryObservations']['owned-marker-arw.arw']['stdoutSha256'],
+                            ci['secondaryObservations']['owned-marker-arw.arw']['stdoutSha256'])
 
     def test_pending_cells_partition_the_seed_grid(self):
         enumerated = set(self.report['coverage']['enumerated'])
@@ -421,8 +552,10 @@ class CensusPolicyTests(unittest.TestCase):
         enumerated_seeds = {s['seedId'] for s in self.seeds['seeds']
                              if f"{s['format']}/{s['family']}" in enumerated}
         self.assertEqual(all_seeds, enumerated_seeds | pending)
-        self.assertEqual(102, len(enumerated_seeds))
-        self.assertEqual(84, len(pending))
+        # B9 enumerates ARW/CR2/NEF/ORF/PEF/SRW x six families, so 36 seed cells move
+        # from pending to enumerated; nothing is dropped from the grid.
+        self.assertEqual(138, len(enumerated_seeds))
+        self.assertEqual(48, len(pending))
 
     def test_no_claim_rows_are_only_the_undocumented_cells(self):
         no_claim = {r['rowId'] for r in self.report['rows'] if r['noDocumentedClaim']}
@@ -447,11 +580,19 @@ class CensusPolicyTests(unittest.TestCase):
                           'EX0289-EPS-THUMBNAIL-READ-0001', 'EX0289-PGF-THUMBNAIL-READ-0001',
                           'EX0289-DCP-COMMENTS-READ-0001', 'EX0289-DCP-ICC-READ-0001',
                           'EX0289-DCP-IPTC-READ-0001', 'EX0289-DCP-THUMBNAIL-READ-0001',
-                          'EX0289-DCP-XMP-READ-0001'}, no_claim)
+                          'EX0289-DCP-XMP-READ-0001'} |
+                         # B9 undocumented cells: comments has no comment mode for any of
+                          # these formats in the pinned registry, and ICC carries no
+                          # documented claim for ORF/SRW. Two layouts each (marker plus the
+                          # blocked vendor-private cell).
+                          {f'EX0289-{fmt}-COMMENTS-READ-{num:04d}'
+                           for fmt in ('ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW') for num in (1, 2)} |
+                          {f'EX0289-{fmt}-ICC-READ-{num:04d}'
+                           for fmt in ('ORF', 'SRW') for num in (1, 2)}, no_claim)
         for row in self.report['rows']:
             if row['noDocumentedClaim']:
                 self.assertEqual('read', row['operation'])
-                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8'))
+                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9'))
 
     def test_rows_never_use_metadataSharp_as_oracle(self):
         for row in self.report['rows']:

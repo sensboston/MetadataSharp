@@ -39,6 +39,7 @@ EVIDENCE_BY_BATCH = {
     'B6': ROOT / 'docs/research/evidence/e01-b6-census/observations.json',
     'B7': ROOT / 'docs/research/evidence/e01-b7-census/observations.json',
     'B8': ROOT / 'docs/research/evidence/e01-b8-census/observations.json',
+    'B9': ROOT / 'docs/research/evidence/e01-b9-census/observations.json',
 }
 FIXTURE_MANIFESTS = {
     'JPEG': ROOT / 'tests/fixtures/jpeg/manifest.json',
@@ -50,6 +51,9 @@ FIXTURE_MANIFESTS = {
     **{fmt: ROOT / 'tests/fixtures/b7/manifest.json' for fmt in ('AVIF', 'HEIF', 'HEIC', 'JXL')},
     # B8 keeps one manifest for its three formats; each entry pins its own format.
     **{fmt: ROOT / 'tests/fixtures/b8/census-manifest.json' for fmt in ('PSD', 'JP2', 'EPS')},
+    # B9 keeps one manifest for its six TIFF-derived RAW probes, same convention.
+    **{fmt: ROOT / 'tests/fixtures/b9/census-manifest.json'
+       for fmt in ('ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW')},
 }
 
 # Axis collapses that are statically impossible, reviewed with the B0 pilot and B1.
@@ -122,8 +126,28 @@ B8_FORMAT_LAYOUTS = [('PSD', ('flat-rgb-v1-metadata', 'flat-rgb-v1-no-resources'
 for _family in FAMILIES + ['inventory']:
     LAYOUTS[_family].extend(layout for _, layouts in B8_FORMAT_LAYOUTS for layout in layouts)
 
+# B9 probe layouts. Each format has one cleared synthetic layout carrying the header
+# contract the pinned build dispatches on (src/tiffimage_int.cpp, src/cr2header_int.cpp
+# and src/orfimage_int.cpp at the baseline pin) plus the shared owned metadata payloads,
+# and one *vendor-private* layout kept visible as blocked: a marker file cannot stand in
+# for the proprietary IFD, so enumerating it as observed would be invented evidence and
+# enumerating it as refused would be a false absence (rights/oracle review:
+# docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md). No ARW/CR2/NEF/ORF/PEF/SRW write
+# suboperation is enumerated: no owned writable fixture is cleared, and the pinned
+# registry marks arw (and B10's rw2/sr2/raf) read-only in src/image.cpp, which is a
+# reference-implementation fact recorded here, not an accepted exclusion.
+B9_MARKER_LAYOUTS = [('ARW', ('raw-tiff-ep-ii-arw',)), ('CR2', ('raw-cr2-ii',)),
+                     ('NEF', ('raw-tiff-ep-ii-nef',)), ('ORF', ('raw-orf-ii',)),
+                     ('PEF', ('raw-tiff-ep-ii-pef',)), ('SRW', ('raw-tiff-ep-ii-srw',))]
+B9_VENDOR_LAYOUTS = [(fmt, (f'raw-{fmt.lower()}-vendor-private-unobserved',))
+                     for fmt, _ in B9_MARKER_LAYOUTS]
+B9_FORMAT_LAYOUTS = B9_MARKER_LAYOUTS + B9_VENDOR_LAYOUTS
+for _family in FAMILIES + ['inventory']:
+    LAYOUTS[_family].extend(layout for _, layouts in B9_FORMAT_LAYOUTS for layout in layouts)
+
 # (batch, format) cells that may legitimately end up blocked rather than observed.
-BLOCKED_CELLS = frozenset({('B7', 'CR3'), ('B8', 'PGF'), ('B8', 'EXV'), ('B8', 'DCP')})
+BLOCKED_CELLS = (frozenset({('B7', 'CR3'), ('B8', 'PGF'), ('B8', 'EXV'), ('B8', 'DCP')})
+                 | frozenset({('B9', fmt) for fmt, _ in B9_VENDOR_LAYOUTS}))
 
 DUPLICATES = ['none', 'first-wins', 'multiple-independent']
 SIDECARS = ['none', 'xmp-present']  # B5 adds the presence-probe value (xmp-applied stays E15)
@@ -471,6 +495,37 @@ def build_rows(seeds):
                     emit(fmt, family, 'extract', value_type='opaque', text_encoding='not-applicable',
                          layout=layout, duplicates='none', batch='B8',
                          notes='thumbnail extract attempted; no authored thumbnail exists, so absence is recorded')
+
+    # B9: TIFF-derived RAW wave 1. The marker layouts are observable through the
+    # pinned CLI; the vendor-private layouts are enumerated but blocked, so the
+    # missing vendor layout work stays in the denominator view instead of vanishing.
+    for fmt, layouts in B9_FORMAT_LAYOUTS:
+        claim = {s['family']: s for s in seeds['seeds'] if s['format'] == fmt}
+        assert set(claim) == set(FAMILIES), f'{fmt} seeds missing a family'
+        for layout in sorted(layouts):
+            blocked = layout in {item for f, items in B9_VENDOR_LAYOUTS for item in items}
+            base = (f'{fmt} vendor-private layout is not authored: the pinned build has no '
+                    f'cleared fixture for the proprietary IFD, so the cell is blocked, not refused'
+                    if blocked else
+                    f'{fmt} marker fixture: header contract plus owned metadata carriers; '
+                    f'no vendor private IFD, no MakerNote, no decodable raw data')
+            emit(fmt, 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
+                 layout=layout, duplicates='none', batch='B9',
+                 notes=base + '; recognition and dimensions are not metadata support')
+            for family in FAMILIES:
+                no_claim = claim[family]['documentedClaim'] in ('-', '')
+                value_type = ('any-documented' if family == 'exif'
+                              else 'text-bytes' if family in ('xmp', 'comments') else 'opaque')
+                encoding = 'utf-8' if family == 'xmp' else 'not-applicable'
+                emit(fmt, family, 'read', value_type=value_type, text_encoding=encoding, layout=layout,
+                     duplicates='none', batch='B9', no_claim=no_claim,
+                     notes=base + f'; {family} read probe records what this build printed, '
+                                  f'asserting nothing about vendor {family} semantics')
+                if family == 'thumbnail' and not no_claim:
+                    emit(fmt, family, 'extract', value_type='opaque', text_encoding='not-applicable',
+                         layout=layout, duplicates='none', batch='B9',
+                         notes=base + '; thumbnail extract attempted against the authored IFD1 '
+                                      'JPEG payload only, never a camera preview')
     return rows
 
 
@@ -520,7 +575,7 @@ def apply_observations(rows):
         item = observed.get(row['rowId'])
         assert item is not None, f'observation missing for applicable row {row["rowId"]}'
         fixture = manifests[row['format']][item['fixture']]
-        if batch in ('B7', 'B8'):
+        if batch in ('B7', 'B8', 'B9'):
             assert fixture['format'] == row['format'], f'fixture format mismatch for {row["rowId"]}'
         assert fixture['sha256'] == item['fixtureSha256'], \
             f'fixture/evidence hash mismatch for {row["rowId"]}'
@@ -530,7 +585,7 @@ def apply_observations(rows):
         evidence_dir = EVIDENCE_BY_BATCH[batch].parent.name
         if item['recordOnly'] or item['expectOk'] is None:
             detail = ('record-only bounded probe; no independent expectation or support assertion'
-                      if batch in ('B7', 'B8') else
+                      if batch in ('B7', 'B8', 'B9') else
                       'spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior)')
             row['oracle'] = {'type': 'pinned-cli', 'detail': detail + '; see evidence/' + evidence_dir}
         else:
@@ -562,14 +617,17 @@ def build(seeds):
                   | {f'{fmt}/{family}' for fmt in ('AVIF', 'HEIF', 'HEIC', 'CR3', 'JXL') for family in FAMILIES}
                   | {f'{fmt}/inventory' for fmt in ('AVIF', 'HEIF', 'HEIC', 'CR3', 'JXL')}
                   | {f'{fmt}/{family}' for fmt, _ in B8_FORMAT_LAYOUTS for family in FAMILIES}
-                  | {f'{fmt}/inventory' for fmt, _ in B8_FORMAT_LAYOUTS})
+                  | {f'{fmt}/inventory' for fmt, _ in B8_FORMAT_LAYOUTS}
+                  | {f'{fmt}/{family}' for fmt, _ in B9_FORMAT_LAYOUTS for family in FAMILIES}
+                  | {f'{fmt}/inventory' for fmt, _ in B9_FORMAT_LAYOUTS})
     pending = sorted(s['seedId'] for s in seeds['seeds']
                      if f"{s['format']}/{s['family']}" not in {e for e in enumerated if 'inventory' not in e})
     assert len({r['rowId'] for r in rows}) == len(rows)
     enumerations = dict(
         reviewStatus='reviewed',
         reviewedAt='2026-11-09',
-        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts; B8 adds owned PSD/JP2/EPS probe layouts and the pending-format unobserved layouts',
+        reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts; B8 adds owned PSD/JP2/EPS probe layouts and the pending-format unobserved layouts; '
+        'B9 adds owned TIFF-derived RAW marker layouts and the vendor-private unobserved layouts',
         family=[*FAMILIES, 'inventory'],
         operation=OPERATIONS,
         extractFamilies=EXTRACT_FAMILIES,
@@ -608,6 +666,10 @@ def build(seeds):
                'PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle '
                'review is pending, and no B8 write suboperation is enumerated without an owned '
                'writable fixture. '
+               'B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker '
+               'fixtures (pinned header contract plus owned metadata carriers); each format also '
+               'keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed '
+               'or cleared, and no B9 write suboperation is enumerated. '
                + ((f'Pinned-CLI evidence recorded for batch(es) {", ".join(applied_batches)}: '
                     'rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; '
                     'no denominator computed. ') if applied_batches else
@@ -615,7 +677,9 @@ def build(seeds):
                + 'Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.'),
         coverage={
             'enumerated': sorted(enumerated - {'JPEG/inventory'}),
-            'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF', 'XMP', 'DNG', 'AVIF', 'HEIF', 'HEIC', 'CR3', 'JXL'],
+            'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF', 'XMP', 'DNG', 'AVIF', 'HEIF', 'HEIC',
+                               'CR3', 'JXL', 'PSD', 'JP2', 'EPS', 'ARW', 'CR2', 'NEF', 'ORF', 'PEF',
+                               'SRW'],
             'pendingSeedIds': pending,
         },
         enumerations=enumerations,

@@ -2264,3 +2264,78 @@ no denominator freeze, publication or DNG D2 write.
   blocks (no problems). No .NET change, so no local build/test was attempted (no SDK in
   this sandbox); Actions remains the .NET evidence. No denominator freeze, no coverage
   percentage, no publication and no DNG D2 write is implied by this housekeeping.
+
+### E01 B9 — TIFF-derived RAW wave 1 enumerated, authored and observed (PR #50)
+
+- Scope, per programme §5: ARW/CR2/NEF/ORF/PEF/SRW plus inventory. Delivered as
+  review → fixtures → recorder → enumeration → CI wiring, and **no row was observed by
+  the first commit**; the flip came from the CI report in the third.
+- `docs/research/E01_B9_RIGHTS_AND_ORACLE_REVIEW.md` records what was reviewed and, as
+  the important half, what was not: no vendor RAW layout specification was obtained, so
+  the layout basis is a transcription of the pinned reference implementation's own header
+  readers (`TiffHeaderBase::read` accepting tag 42 plus 444 JPEG-XR and 17234 DCP and
+  taking the root IFD offset from bytes 4-7; `ImageFactory::open` returning the first
+  registry match and never consulting the extension, which is why arw/nef/pef/srw
+  dispatch to the generic TIFF reader; `TiffImage::mimeType` mapping Compression
+  32767/34713/32770/65535 to the vendor MIME types; `Cr2Header::read` requiring
+  `CR\2\0` in a 16-byte header; `OrfHeader::read` requiring 0x4f52, 0x5352 also
+  accepted) plus the registry's per-format access modes (comment mode `amNone` for all
+  six; `arw`/`rw2`/`sr2`/`raf` `amRead`). Those are reference-build facts, not accepted
+  exclusions and not authorization for any write path.
+- Fixtures: `tools/reference/b9_raw_fixtures.py` authors six files with the standard
+  library only (CR2 header `49 49 2a 00 10 00 00 00 43 52 02 00 00 00 00 00`, ORF
+  `49 49 52 4f 08 00 00 00`, the four marker formats as plain TIFF with their vendor
+  Compression value), each carrying the shared owned carriers and the `B9Artist`,
+  `B9Tool` and `B9Comment` tokens. `B9Keyword` is deliberately absent because the owned
+  IIM records are reused verbatim — inventing an IPTC token would be a fabricated
+  oracle. The module also re-derives the framing from the bytes (directory walk, carrier
+  digests, pool accounting, three mirrored header readers), so the offline check proves
+  the fixture says what it claims while CI proves what the pinned CLI does with it.
+- Actual pinned results (run 42730383559, exe digest `4ea3b840c5c71de2…`): 48
+  observations, 48 blocked. 42 `accepted`, 6 `nonzero-exit-artifact-produced`,
+  **zero refusals**, zero `scan-changed`, every input byte-identical afterwards. `-pa`
+  printed 4214–4234 bytes containing both authored EXIF tokens, and the four
+  metadata-family read rows per fixture share one `stdoutSha256`, so no row is an
+  independent per-family claim (asserted, not narrated). `-pc` printed a single newline:
+  no comment surfaced, consistent with `amNone`. `-pC` printed exactly the 192-byte
+  authored profile on five formats and 202 bytes on ORF — a different print form for the
+  same payload, recorded rather than diagnosed. `-et` exited 137 and wrote exactly one
+  artifact per fixture whose bytes are a **byte-exact copy** of the owned 137-byte
+  thumbnail JPEG; `receipt.thumbnailRoundTrip` pins that digest and the discovery suite
+  asserts it, so a future run that stops copying byte-exactly fails a test instead of
+  quietly changing the evidence.
+- Census now 664 rows; B9 = 48 `observed-cli` + 48 `blocked`; enumerated seed cells 138,
+  pending 48; `denominatorFrozen: false`; `verification: not-assessed` on every row;
+  no coverage percentage anywhere.
+- **Operational finding worth keeping.** A check run keeps at most **50 annotations**,
+  and the shared Exiv2 job's B0–B8 steps emit exactly 50. So the first B9 run
+  (42729776775, head `39ee8c9`) went **green while losing its evidence**: the chunks
+  were dropped at the cap, and the uploaded artifact was no help because the Actions
+  artifact blob host is unreachable from this sandbox (`EOF` on download, same class of
+  block as the log host). Fixes, both structural: B9 moved into its own
+  `pinned-exiv2-b9` job (fresh 50-annotation budget, no .NET SDK needed, comment in the
+  workflow says later batches extend *that* job), and the recorder now emits a trailing
+  `title=B9Z observations.json count::N` marker that recovery must match against the
+  chunk set — a lost *first* chunk is invisible to a per-chunk `i/n` check alone.
+  `observe_b9.chunks()` also rejects a vacuous report, so an empty batch can no longer
+  look successful by annotating nothing; the 96-row census guard runs first.
+  Recovery was then replayed from the API in a separate call and produced the identical
+  `rawPayloadSha256` (`5b627e3b27bc76a9…`), so the channel is deterministic.
+- Cross-run reproduction (the same treatment B8 got): the recorder re-ran in CI on head
+  `fe0c500` (run 42734184874) and that report is committed as `ci-observations.json`.
+  `observations`, `blocked`, `fixtureManifest` and `outcomeCounts` match byte-for-byte
+  across the two runs, including every exit code, stdout digest, token list, artifact
+  list and container fact. What differs is `sourceCommit`, the ExifTool
+  `System:File*Date` fields (and that report's raw stdout digest, which covers them),
+  and `baseline.executableSha256` plus the single `time=` line of the version banner,
+  because the reference build embeds its own timestamp; the pinned source commit, CMake
+  option set, cache digest, license digest and feature set still match. So the recorded
+  conclusion is narrow: **observations are reproducible, the compiled binary is not**,
+  and the receipt pins the digest of the exact build that produced the primary evidence.
+  The discovery suite asserts all of it, including that the secondary envelope digest
+  genuinely differs, so the normalization cannot be read as a stronger claim.
+- Local validation: `build_census.py --check` and `build_capability_seeds.py --check`
+  exit 0, `b9_raw_fixtures.py verify` (6 fixtures), discovery 107/107, reference
+  104/104, `git diff --check` clean, Markdown link/fence sweep clean over 90 files.
+  No .NET change, so Actions remains the only .NET evidence (test count unchanged at
+  564). No publication, no denominator freeze, no DNG D2 write, no new public contract.

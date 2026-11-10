@@ -1,17 +1,22 @@
 # Current development state and recovery checkpoint
 
-**E01 B8 census batch is MERGED** via PR #48 (master `8825377`; master run
-42724819709 green 15/15): 53 rows — 31 `observed-cli` from the pinned CI Exiv2 0.28.9
-job plus 22 explicit `blocked` rows for PGF/EXV/DCP, whose fixture and oracle review is
-still pending. Census total is **568 rows**, 102 seed cells enumerated, 84 pending,
-`denominatorFrozen: false`. Evidence: `docs/research/evidence/e01-b8-census/`
-(CI-only, plus a second CI run kept as a cross-run reproduction sample; there is no
-local run and none is claimed). E08's bounded read-only PSD/JP2/EPS inspection merged
-earlier via PR #47. Still open from B8: every write suboperation, PSD ICC/thumbnail
-resources, and the JP2/EPS metadata-present fixtures. CR3 remains blocked; no
-denominator freeze, MetadataSharp verification, publication or DNG D2 write is
-authorized. Next unit in §5 numeric order: **B9** (RAW wave 1). See the B8 checkpoint
-and "B8 census closed" sections below.
+**E01 B9 (TIFF-derived RAW wave 1) is recorded** on `arena/0e8b5844-metadatasharp`
+(PR #50): 96 rows — 48 `observed-cli` from the pinned Exiv2 0.28.9 CLI on six owned
+synthetic marker fixtures and 48 `blocked` vendor-private cells. Census total is
+**664 rows**, 138 seed cells enumerated, 48 pending, `denominatorFrozen: false`.
+Evidence: `docs/research/evidence/e01-b9-census/` (CI-only, plus a second CI run kept
+as a cross-run reproduction sample: the observation payload matched byte-for-byte between
+runs while `baseline.executableSha256` differs because the reference build embeds its own
+timestamp — observations reproducible, the binary not; there is no local run and none is
+claimed). B8 is merged via PR #48 (53 rows: 31 observed, 22 blocked; evidence
+in `docs/research/evidence/e01-b8-census/`, which also keeps a second CI run as a
+cross-run reproduction sample). Operationally important: a check run keeps at most 50
+annotations and B0–B8 already emit exactly 50, so B9's evidence was silently dropped in
+its first run — the batch now has its own `pinned-exiv2-b9` job and a count marker. Next
+in §5 numeric order: **B10** (RAW wave 2). Still open from B8: every write
+suboperation, PSD ICC/thumbnail resources, the JP2/EPS metadata-present fixtures. CR3
+remains blocked; no denominator freeze, MetadataSharp verification, publication or DNG
+D2 write is authorized. See the B8 and B9 sections below.
 
 
 B7 bounded census merged via PR #43; receipt in
@@ -57,10 +62,12 @@ authorized**.
   CR3 and the three pending B8 formats are enumerated but
   remain blocked, not observed or excluded. B6 fixture and oracle limitations are recorded in
   its evidence README; no exclusion or DNG write support is implied.
-- Next in §5 numeric order: **B9** (RAW wave 1), with the B7 rights/metadata gaps and B8's
-  own gaps retained → … → B14, then the final freeze PR
+- Next in §5 numeric order: **B10** (RAW wave 2: MRW/RW2/SR2/RAF), with the B7 and B8
+  gaps and B9's vendor-private cells retained → … → B14, then the final freeze PR
   (developer-authorized). B8's open gaps stay visible: JP2/PSD metadata-present variants,
   PSD ICC/thumbnail resources, every B8 write suboperation and PGF/EXV/DCP fixtures.
+  B9 keeps 48 blocked vendor-private cells visible (no proprietary IFD reviewed or
+  cleared) and enumerates no write row.
   Not started: E06 typed vocabulary
   breadth; E07 container gap closure + MetadataSharp-side verification (until then
   verification stays not-assessed); E08–E12 new format families; E13–E15
@@ -80,6 +87,19 @@ NOT authorized. Exclusions: none signed. Denoms: frozen only after B14. E01 gate
 open. Retained absolutes: own fixtures only; pinned-CLI black-box observation;
 committed evidence; green-CI merges; ≥450 TRX six OS/TFM combos; net8.0+net10.0;
 no TIFF DNG weakening.
+
+**B9 census closed (PR #50, this branch).** Six marker fixtures
+(`tests/fixtures/b9/`, authored stdlib-only by `tools/reference/b9_raw_fixtures.py`)
+were accepted by the pinned CLI: `-pa` printed 4214–4234 bytes containing both authored
+tokens on every format, `-pS` printed structure, `-pc` printed a single newline (no
+comment surfaced, matching the registry's `amNone` comment mode), `-pC` printed exactly
+the 192-byte authored profile — except ORF, which printed 202 bytes for the same
+payload (different print form, recorded rather than diagnosed) — and `-et` exited 137
+while writing one artifact whose bytes are a **byte-exact copy** of the owned 137-byte
+thumbnail. No row was refused, no input changed, and the four metadata-family reads on a
+fixture share one stdout digest, so no per-family attribution is claimed. The fixtures are authored
+markers, so none of the above is vendor-format support: see what
+`docs/research/evidence/e01-b9-census/README.md` records as *not* shown.
 
 **Branch hygiene.** Completed on 2026-11-10: all **10** remote `arena/*` branches were
 deleted after proving each one fully merged — `gh api .../compare/master...<branch>`
