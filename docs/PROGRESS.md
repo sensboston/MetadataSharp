@@ -2393,3 +2393,85 @@ no denominator freeze, publication or DNG D2 write.
   classified in B10 and later batches.
 - No vendor layout spec was reviewed, including the two URLs the RAF reader itself cites; those
   cells stay blocked and the fixture never calls its offset-92 filler a CFA structure.
+
+### E01 B10 — merged: wave-2 RAW census (PR #51 `e7b0ec8`, housekeeping PR #52 `953af0a`)
+
+- The in-progress section above was closed on 2026-11-10: 64 rows, 32 `observed-cli` +
+  32 `blocked-rights` across MRW/RW2/SR2/RAF, census **664 → 728**. Evidence in
+  `docs/research/evidence/e01-b10-census/` (primary CI run, a second CI run as
+  `ci-observations.json`, and the post-merge master sample as `master-observations.json`),
+  with `receipt.json` recording the cross-run comparison.
+- Carried forward unchanged: SR2 stays a plain generic-TIFF marker with no invented
+  structure, no vendor layout spec was reviewed, and the `-et` "exit code is a size"
+  correction is asserted rather than narrated.
+
+### E01 B11 — merged: legacy CIFF, small formats and container stubs (PR #53 `2eadc55`, PR #54 `ee643e3`)
+
+- 95 rows, 87 `observed-cli` + 8 `blocked-rights` (Canon CIFF semantics beyond the 17
+  `canonId` rows), census **728 → 823**: CRW 40, TGA 21, BMP 14, GIF 14 and 7 video
+  containers enumerated inventory-only. Owned fixtures, pinned-CLI black-box observation,
+  `verification: not-assessed` everywhere, no percentage, no frozen denominator.
+- Its own receipt plus three CI samples now live in `docs/research/evidence/e01-b11-census/`
+  and `docs/research/evidence/e01-b11-preflight/`; `tools/reference/write_b11_receipt.py`
+  builds the receipt from the payloads, so the prose counts cannot drift from the tables
+  they summarise (PR #54 also made that derivation an assertion).
+- B11 deliberately left one finding unexplained — six header-only stubs whose magic matches
+  at offset 0 were still handed to no reader — and named two candidate causes "without
+  separating them". That gap is what the next section closes.
+
+### E01 B11L — merged: a byte-length ladder, and why the batch is not called B12 (PR #55, master `8736191`)
+
+- B11L is a **diagnostic** batch: no census row, no seed cell, no support claim. It asks one
+  question — at how many bytes does the pinned build stop being able to *find* a reader whose
+  magic is at offset 0 — by re-emitting the same valid header prefix at total sizes 8…128
+  (15 rungs × 3 ladders + 2 controls = 47 authored fixtures) and probing every rung with
+  `-pS` and `-pe`.
+- Measured (run 42846898701, head `a16fc04`): the flip is at **80 bytes for BMP and GIF
+  alike**, monotonic, refusing at 79; the `<?xml `-planted control ladder has **zero** rows
+  disagreeing with its plain twin, so length and not content owns the flip; the `.targa`
+  ladder reaches no reader at any size including 128. One recorded 12-byte band
+  (`corrupted image metadata`) explains B11's unexplained 13-byte GIF row, which was never a
+  GIF finding. Two predictions missed — the eps band is not "below 26" (24 already behaves
+  like the ≥ 25 band), and which entry owns each sub-25 band is **not established**.
+- **Naming, settled before merge.** The batch was committed as B12, but §5 allocates B12 to
+  the MakerNotes applicability overlay (B13/B14 allocated too, and the freeze is defined as
+  "after B14"), so a diagnostic batch was squatting on a planned number. The *batch* moved —
+  to **B11L**, B11's own promised follow-up — and the plan, the published census and B10's
+  "batch B12 owns" note stayed exactly as they were. The recovered payloads likewise keep
+  the labels their runs emitted (`scope: "B12 …"`, the `B12Z` annotation channel, the
+  `b12-ladder/work` scratch paths, the old review-doc path): rewriting a recovery to fix a
+  name would make it no longer a recovery, and `tests/reference/test_b11l_ladder_fixtures.py`
+  pins the census sentence in both directions instead.
+- Reproduction across three runs (`a16fc04` → `5f58153` → `151abf4`, the last one post-rename):
+  `summary`, `fixtureManifest`, `familyCounts`, `recordCount`, `environment` and all 94 rows
+  identical, `observations` identical once the three renamed strings are mapped back, and only
+  `baseline.executableSha256` / build timestamp / library-list order moving while
+  `cmakeCacheSha256` and `effectiveCmake` stay put. The third payload is described in
+  `docs/research/evidence/e01-b11l-ladder/README.md` and **not committed** — nothing in the
+  tree would compare against it.
+- Offline: reference suite **224 OK**, discovery **112 OK**, both `--check` generators rc 0,
+  `b11l_recognition_ladder.py verify` green at 47 entries, `EXIV2_CENSUS.json` byte-identical
+  at 823 rows. CI: `pinned-exiv2-b11l`, 19/19 green on both the push and the PR run.
+- Process note worth keeping: the rename's first pass was a `B12` sweep over the batch's
+  files, and it rewrote string literals that *quote other files* — a test needle into the
+  census text and the historical job/annotation labels in the evidence README. Both were
+  restored by hand from the source of truth. Renaming prose and renaming identifiers are
+  different operations; only the second should be automated.
+
+### Housekeeping — merged session branches pruned, checkpoint refreshed (2026-11-10)
+
+- Deleted `arena/0e8b5844-metadatasharp`, `arena/308dfd7b-metadatasharp`,
+  `arena/40805d1c-metadatasharp`, `arena/6c11e813-metadatasharp` and
+  `arena/d51b730e-metadatasharp`. Each was verified before deletion: its PR is merged
+  (#50, #49, #53, #51/#52, #54) and its head adds **no file absent from master**. No open
+  PRs remain. `arena/ad88fb2c-metadatasharp` is kept on purpose — it is this session's
+  tracked branch, its head `fda92be` is an ancestor of master, and its content diff against
+  master is zero; it can be deleted the moment this PR lands, and no remote branch should be
+  removed while a session still needs a push target.
+- `docs/CURRENT_STATE.md`'s opening checkpoint was rewritten: it still announced "B10 in
+  progress" and a 664-row census four merges after both stopped being true. The dense
+  per-batch snapshot below it is left as written — it is what those receipts asserted — but
+  now carries an explicit staleness marker naming the 159-row delta, rather than being
+  silently corrected into matching.
+- This PR is docs only: no census payload byte, no fixture, no recorder, no CI job changes,
+  and nothing here claims coverage.
