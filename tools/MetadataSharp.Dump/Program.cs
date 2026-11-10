@@ -127,15 +127,16 @@ internal static class Program
         // taken from the same file the layout describes. The document's own value accessor is the
         // descriptive-edit target, which refuses most tags and is not what a byte dump wants.
         byte[] data = File.ReadAllBytes(path);
-        Dictionary<uint, string> groups = Groups(layout);
+        Dictionary<uint, ExifDirectoryKind> groups = Groups(layout);
         foreach (TiffDirectoryInfo directory in layout.Directories)
         {
-            string group = groups.ContainsKey(directory.Offset) ? groups[directory.Offset] : "Thumbnail";
+            if (!groups.TryGetValue(directory.Offset, out ExifDirectoryKind role))
+                role = ExifDirectoryKind.Thumbnail;
             foreach (TiffFieldInfo field in directory.Fields)
             {
                 TiffFieldType type = (TiffFieldType)field.FieldType;
-                Tag(stdout, "Exif." + group + ".0x" + Hex(field.TagId), TypeName(type), field.Count,
-                    Render(Slice(data, field.ValueRange), type, field.Count, layout.ByteOrder));
+                Tag(stdout, "Exif." + Group(role) + "." + Name(new ExifTagKey(role, field.TagId)), TypeName(type),
+                    field.Count, Render(Slice(data, field.ValueRange), type, field.Count, layout.ByteOrder));
             }
         }
         Done(stdout);
@@ -172,7 +173,7 @@ internal static class Program
     {
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
-            Tag(stdout, "Exif." + Group(entry.Key.Directory) + ".0x" + Hex(entry.Key.TagId),
+            Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
                 TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
     }
 
@@ -225,9 +226,12 @@ internal static class Program
         return string.Join(", ", parts);
     }
 
-    private static Dictionary<uint, string> Groups(TiffLayout layout)
+    /// <summary>Which EXIF directory a layout offset is, because the layout reports offsets and the
+    /// tag vocabulary is keyed by directory. The links in the tree decide, exactly as they do for the
+    /// group label the reference output uses.</summary>
+    private static Dictionary<uint, ExifDirectoryKind> Groups(TiffLayout layout)
     {
-        var groups = new Dictionary<uint, string>();
+        var groups = new Dictionary<uint, ExifDirectoryKind>();
         uint? exif = null, gps = null, interop = null, next = null;
         foreach (TiffDirectoryInfo directory in layout.Directories)
         {
@@ -245,12 +249,20 @@ internal static class Program
         foreach (TiffDirectoryInfo directory in layout.Directories)
         {
             uint offset = directory.Offset;
-            groups[offset] = offset == exif ? "Photo" :
-                offset == gps ? "GPSInfo" :
-                offset == interop ? "Iop" :
-                offset == layout.FirstIfdOffset ? "Image" : "Thumbnail";
+            groups[offset] = offset == exif ? ExifDirectoryKind.Exif :
+                offset == gps ? ExifDirectoryKind.Gps :
+                offset == interop ? ExifDirectoryKind.Interop :
+                offset == layout.FirstIfdOffset ? ExifDirectoryKind.Ifd0 : ExifDirectoryKind.Thumbnail;
         }
         return groups;
+    }
+
+    /// <summary>The field name the standards give a tag, or its numeric ID when this release does not
+    /// name it: an unnamed tag is reported as a gap, never as a plausible-looking invented label.</summary>
+    private static string Name(ExifTagKey key)
+    {
+        if (ExifTagNames.TryGetName(key, out string? name)) return name;
+        return "0x" + Hex(key.TagId);
     }
 
     private static string Group(ExifDirectoryKind directory) => directory switch

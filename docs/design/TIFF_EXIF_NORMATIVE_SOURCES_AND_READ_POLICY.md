@@ -10,8 +10,8 @@ The mirror is a transport source, not a standards authority or proof of authenti
 
 | Document | Mirror blob | SHA-256 | Reviewed sections |
 | --- | --- | --- | --- |
-| Aldus TIFF Revision 6.0, Final, June 3 1992 | [b487a9b](https://api.github.com/repos/visualcommons/gamut/git/blobs/b487a9b8dbb647b4d3407c72721394cb60112185) | `dbcdf729182937ecff415dfd06806894bf03bfd741291aa3ad7ba45335673def` | Section 2, printed pp.13–16: header, relative offsets, alignment, entries, count, inline values, sort order and twelve field types |
-| CIPA DC-008-Translation-2023, Exif 3.0, revised May 2023 | [83ed267](https://api.github.com/repos/visualcommons/gamut/git/blobs/83ed267755af54358149e8d99c93a89e4c26c72c) | `d1020d7f04b05d635ee1a308330b2494586da24fd8e0bb6cd96214dbf60244e8` | Sections 4.5.8, 4.6.2, 4.6.3.1–3, Tables 6/7/9 and GPS 4.6.7: thumbnail representation, IFD structure/links and tag shapes |
+| Aldus TIFF Revision 6.0, Final, June 3 1992 | [b487a9b](https://api.github.com/repos/visualcommons/gamut/git/blobs/b487a9b8dbb647b4d3407c72721394cb60112185) | `dbcdf729182937ecff415dfd06806894bf03bfd741291aa3ad7ba45335673def` | Section 2, printed pp.13–16: header, relative offsets, alignment, entries, count, inline values, sort order and twelve field types; Appendix A, printed p.117 onward, for field names |
+| CIPA DC-008-Translation-2023, Exif 3.0, revised May 2023 | [83ed267](https://api.github.com/repos/visualcommons/gamut/git/blobs/83ed267755af54358149e8d99c93a89e4c26c72c) | `d1020d7f04b05d635ee1a308330b2494586da24fd8e0bb6cd96214dbf60244e8` | Sections 4.5.8, 4.6.2, 4.6.3.1–3, Tables 6/7/9 and GPS 4.6.7: thumbnail representation, IFD structure/links and tag shapes; Tables 8, 14 and 16 for field names |
 
 Canonical publisher references: TIFF 6.0 at
 <https://download.osgeo.org/libtiff/doc/TIFF6.pdf> and CIPA standards at
@@ -30,8 +30,9 @@ GPS semantics. General Exif 3.0 support and final-2.32 compliance are not claime
 ## Small Independently Recorded Schema
 
 This table summarizes numeric facts from the reviewed standard. It is not copied
-from a GPL dictionary. No tag dictionary implementation or edit validation is added
-in M04. These are candidate write shapes for M05/M06; all ordinary raw reads still
+from a GPL dictionary. No type, count or interpretation dictionary and no edit
+validation is added in M04; the only vocabulary the library carries is the name
+table recorded below. These are candidate write shapes for M05/M06; all ordinary raw reads still
 preserve uninterpreted values. Future value-level restrictions need their own tests.
 
 | Directory / tag IDs | Shape in the supported subset | Relocation class |
@@ -50,6 +51,30 @@ preserve uninterpreted values. Future value-level restrictions need their own te
 | Thumbnail 0201,0202 | LONG,1 | Structural JPEG offset and length |
 | Exif 927C | UNDEFINED,any | Opaque MakerNote; no relocation guarantee |
 | Any other ID or unclassified UNDEFINED payload | Known TIFF type required for raw reading | Unclassified; future safe rebuild must refuse |
+
+## Tag Name Table (roadmap 4.2a)
+
+`ExifTagNames` in `MetadataSharp.Core` pairs each tag ID with the field name the reviewed
+publications give it: Exif 3.0 Table 6 for the 0th IFD, extended by the TIFF 6.0 appendix "TIFF
+Tags Sorted by Number" for fields a bare TIFF may carry, Tables 8 and 9 for the Exif sub-IFD,
+Table 14 for GPS Info and Table 16 for Interoperability. It was read out of the same two PDFs,
+re-fetched on 2026-11-11 and matched against the hashes above, by a throwaway script; each parsed
+region was then swept for rows the script had dropped, and the seven it had eaten (`SubjectArea`,
+plus TIFF's `ColorMap`, `InkNames`, `DotRange`, `ExtraSamples`, `SMinSampleValue`,
+`SMaxSampleValue`, whose count or type columns are expressions) were added from the page text. The
+198 rows are the tables' rows: no dictionary, tag list or source of any third-party tool was opened,
+and the one disagreement between the two texts (TIFF's appendix misprints 0x0202 as
+`JPEGInterchangeFormatLngth`) is settled by the spelling both the TIFF body and Exif use.
+
+Three consequences are deliberate. A name defined only outside these tables - a MakerNote's own
+subtags, `PrintImageMatching`, `Rating`, `IPTCNAA`, the DNG tags, the DCF-defined Interoperability
+fields - is absent, so such a tag keeps its numeric ID wherever it is printed instead of borrowing a
+label. Names resolve per directory, as the tables are written: a file storing `ExposureTime` in its
+0th IFD prints `Exif.Image.0x829A`, because no reviewed table calls 0x829A a field of that
+directory. And where the text writes a Field Name as a phrase, the table stores it as an identifier:
+`ExifIFDPointer`, `GPSInfoIFDPointer` and `InteroperabilityIFDPointer` for "Exif IFD Pointer",
+"GPSInfo IFD Pointer" and "Interoperability IFD Pointer". The table is names only: no type, count,
+unit or reading of a value, and listing a tag is not a claim that a file containing it is compliant.
 
 ## Reader Contract and Deliberate Restrictions
 

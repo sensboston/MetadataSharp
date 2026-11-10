@@ -2580,3 +2580,55 @@ no denominator freeze, publication or DNG D2 write.
   `tools/` and `tests/parity`. Offline: parity 45 OK, reference 224 OK, discovery 112 OK, both
   `--check` generators rc 0, and the reference parser still reads 37 781 rows across 330 pinned
   expectation files with zero unparsable key lines.
+
+### EXIF tag names — the vocabulary a reader needs before it can print anything (2026-11-11, PR #60)
+
+- **What landed.** `ExifTagNames` in `MetadataSharp.Core` names the tags of the four directories this
+  library reads: 198 IDs, 76 for the 0th IFD (the Exif subset plus the TIFF 6.0 registry, which is
+  what a standalone TIFF leans on), 89 for the Exif sub-IFD, 32 for GPS Info and 1 for Interoperability.
+  Three methods — `NamedTags(directory)`, `TryGetName(key, out name)` and
+  `TryGetKey(directory, name, out key)` — and nothing else: the thumbnail directory shares the 0th
+  table, every name is an identifier, and an ID outside the table is unnamed rather than guessed at.
+  Types, counts, enum meanings, rational and date/time handling and human-readable printing stay for
+  4.2b; this step is names, because they are what every later feature and the dumper keys hang on.
+- **How the table was built.** The two PDFs already hashed into
+  `docs/design/TIFF_EXIF_NORMATIVE_SOURCES_AND_READ_POLICY.md` were re-fetched and re-verified, their
+  vocabulary tables parsed by a throwaway script, each parsed region swept for rows that script had
+  silently dropped, and every row checked for duplicate IDs, duplicate names and a dec/hex pair that
+  disagreed. Seven rows were lost to that drop-out and added back from the page text by hand:
+  `SubjectArea`, whose count column reads "2 or 3 or 4", and TIFF's `ColorMap`, `InkNames`,
+  `DotRange`, `ExtraSamples`, `SMinSampleValue` and `SMaxSampleValue`, whose count or type columns
+  are expressions. No third-party tag dictionary was opened, and the one disagreement between the two
+  sources — TIFF's appendix misprints 0x0202 as `JPEGInterchangeFormatLngth` — is recorded in the
+  policy note rather than fixed silently.
+- **What the naming did to the parity report, from this PR's green CI run.** Corpus A key parity went
+  from 0.5 % (26 of 4 981 reference keys) to **30.2 %** (1 502 of 4 981) over the same 57 read files,
+  with no structural problem and the same denominator, so the two numbers are directly comparable. The
+  side effect of lining up 58× more keys is that value comparison stopped being anecdotal: 1 502
+  comparable values instead of 26, **1 486 of them agreeing (98.9 %)**. The 16 `value-diff` rows are not
+  new breakage — they are rows that were never comparable before, and they are the pretty-printing gap:
+  exiv2 decodes an `Orientation` or a rational, we print the field. That is 4.2b's job, now measured
+  rather than guessed. Corpus B: 4.0 % → **87.5 %** of keys, with 544 of 544 values agreeing. The proof
+  that nothing else moved is the row count: those 57 files printed 1 682 rows before and print 1 682
+  now (1 502 on a reference key, 180 still extra), because only key strings changed.
+- **What the remaining corpus A gap is made of.** Restricting to the rows this vocabulary exists to
+  cover - `Exif.<group>.<name>` lines in the 125 expectations whose input has an extension our readers
+  claim at all - 3 572 of 3 902 (91.5 %) carry a name our table also uses, and every GPS and thumbnail
+  row is nameable. The residual there is 49 keys over 330 rows, and it is chosen, not missing: the
+  reference calls the two IFD links and the ISO field `Exif.Image.ExifTag` (90 rows),
+  `Exif.Photo.InteroperabilityTag` (37) and `Exif.Photo.ISOSpeedRatings` (49), where the reviewed text
+  says `ExifIFDPointer`, `InteroperabilityIFDPointer` and `PhotographicSensitivity` - §4.6.6.7.5 records
+  the renaming itself: "this tag was referred to as 'ISOSpeedRatings' in versions of this standard up to
+  Version 2.21". `Exif.Iop.InteroperabilityVersion` (36) and `RelatedImageWidth`/`RelatedImageLength`
+  (10 each) are defined by DCF, which is not in the ledger, so they stay numeric on our side. The CI
+  report shows the same pairs as twins rather than as losses: `Exif.Image.ExifTag` missing in 40 files
+  against `Exif.Image.ExifIFDPointer` extra in 36, `Exif.Iop.InteroperabilityVersion` missing in 21
+  against `Exif.Iop.0x0002` extra in 21, `Exif.Photo.ISOSpeedRatings` missing in 25 against
+  `Exif.Photo.PhotographicSensitivity` extra in 23. What is left of corpus A's missing keys is not
+  naming at all: `Exif.MakerNote.Offset` and `.ByteOrder` (27 files each) wait on 4.4, and IPTC and
+  XMP breadth on their own steps.
+- **Public API:** one new static class with three methods, listed in the PR description. No reader,
+  writer or capability semantics changed, and `ExifTiffReader` still refuses exactly what it refused
+  before; the dumper's TIFF path maps a directory's role once and then names through the same table
+  the EXIF path uses. Offline gates: parity 45 OK, reference 224 OK, discovery 112 OK. The sandbox
+  has no .NET SDK, so CI is the compiler and the xunit run.
