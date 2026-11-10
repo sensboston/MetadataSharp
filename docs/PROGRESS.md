@@ -2601,20 +2601,30 @@ no denominator freeze, publication or DNG D2 write.
   are expressions. No third-party tag dictionary was opened, and the one disagreement between the two
   sources — TIFF's appendix misprints 0x0202 as `JPEGInterchangeFormatLngth` — is recorded in the
   policy note rather than fixed silently.
-- **What the naming costs the parity report.** Measured offline over the 352 pinned expectations,
-  restricted to the 125 whose input has an extension our readers claim at all: of the 3 902
-  `Exif.<group>.<name>` rows the reference prints for them, 3 572 (91.5%) carry a name this table also
-  uses, where #59's green run measured 0.5% and 4.0% on numeric keys. Every GPS and thumbnail row is
-  nameable; the residual is 49 keys over 330 rows (188 Image, 86 Photo, 56 Iop) and they are
-  deliberate divergences, not gaps. `Exif.Image.ExifTag` (90), `Exif.Photo.ISOSpeedRatings` (49) and
-  `Exif.Photo.InteroperabilityTag` (37) point at the tags this table calls `ExifIFDPointer`,
-  `PhotographicSensitivity` — §4.6.6.7.5 records the older name: "this tag was referred to as
-  'ISOSpeedRatings' in versions of this standard up to Version 2.21" — and `InteroperabilityIFDPointer`;
-  `Exif.Iop.InteroperabilityVersion` (36) and `RelatedImageWidth`/`RelatedImageLength` (10 each) come
-  from DCF, which is not in the ledger yet; a dozen-odd are the Exif sub-IFD's fields stored in a
-  0th IFD, which the tables do not name there; the rest are vendor and Adobe-registered fields, DNG
-  included. No name was copied to close those rows, and no classification sidecar was added to excuse
-  them — the CI report will simply show `match-key` wherever the two texts agree on a name.
+- **What the naming did to the parity report, from this PR's green CI run.** Corpus A key parity went
+  from 0.5 % (26 of 4 981 reference keys) to **30.2 %** (1 502 of 4 981) over the same 57 read files,
+  with no structural problem and the same denominator, so the two numbers are directly comparable. The
+  side effect of lining up 58× more keys is that value comparison stopped being anecdotal: 1 502
+  comparable values instead of 26, **1 486 of them agreeing (98.9 %)**. The 16 `value-diff` rows are not
+  new breakage — they are rows that were never comparable before, and they are the pretty-printing gap:
+  exiv2 decodes an `Orientation` or a rational, we print the field. That is 4.2b's job, now measured
+  rather than guessed. Corpus B: 4.0 % → **87.5 %** of keys, with 544 of 544 values agreeing.
+- **What the remaining corpus A gap is made of.** Restricting to the rows this vocabulary exists to
+  cover - `Exif.<group>.<name>` lines in the 125 expectations whose input has an extension our readers
+  claim at all - 3 572 of 3 902 (91.5 %) carry a name our table also uses, and every GPS and thumbnail
+  row is nameable. The residual there is 49 keys over 330 rows, and it is chosen, not missing: the
+  reference calls the two IFD links and the ISO field `Exif.Image.ExifTag` (90 rows),
+  `Exif.Photo.InteroperabilityTag` (37) and `Exif.Photo.ISOSpeedRatings` (49), where the reviewed text
+  says `ExifIFDPointer`, `InteroperabilityIFDPointer` and `PhotographicSensitivity` - §4.6.6.7.5 records
+  the renaming itself: "this tag was referred to as 'ISOSpeedRatings' in versions of this standard up to
+  Version 2.21". `Exif.Iop.InteroperabilityVersion` (36) and `RelatedImageWidth`/`RelatedImageLength`
+  (10 each) are defined by DCF, which is not in the ledger, so they stay numeric on our side. The CI
+  report shows the same pairs as twins rather than as losses: `Exif.Image.ExifTag` missing in 40 files
+  against `Exif.Image.ExifIFDPointer` extra in 36, `Exif.Iop.InteroperabilityVersion` missing in 21
+  against `Exif.Iop.0x0002` extra in 21, `Exif.Photo.ISOSpeedRatings` missing in 25 against
+  `Exif.Photo.PhotographicSensitivity` extra in 23. What is left of corpus A's missing keys is not
+  naming at all: `Exif.MakerNote.Offset` and `.ByteOrder` (27 files each) wait on 4.4, and IPTC and
+  XMP breadth on their own steps.
 - **Public API:** one new static class with three methods, listed in the PR description. No reader,
   writer or capability semantics changed, and `ExifTiffReader` still refuses exactly what it refused
   before; the dumper's TIFF path maps a directory's role once and then names through the same table

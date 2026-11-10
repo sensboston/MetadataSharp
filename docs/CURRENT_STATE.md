@@ -31,15 +31,15 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
   arithmetic, differential and lossless files round-trip their metadata.
 - **PNG** and **WebP** `*MetadataDocument`: EXIF + XMP edit in static files, chunk/RIFF policy.
 - **Standalone TIFF** `TiffMetadataDocument`: layout accounting, restricted descriptive editing
-  with obsolete bytes retained; **DNG**, **PSD**, **JP2**, **EPS** are bounded read-only.
-  `ExifTagNames` names EXIF/GPS/Interop tags from those same two published texts; unnamed IDs stay numeric.
+  with obsolete bytes retained; **DNG**, **PSD**, **JP2**, **EPS** are bounded read-only. Tag names come
+  from `ExifTagNames` (198 IDs, from the two texts the read policy reviewed); an unnamed ID stays numeric.
 - **Differential parity harness** (`tools/parity`, `tools/MetadataSharp.Dump`, CI job
   `differential-parity`): our readers versus the `exiv2 -Pkycvt` expectations in the pinned upstream
   test tree, plus our own fixtures against the pinned tool built in the same job. Upstream files are
   fetched at CI time and read as data - never vendored, built or executed, and their `tests/*.py`
   (macro-token expectations) are not interpreted. Rates are reported; only a broken run is gated.
-  First green run: 330 corpus + 226 owned files, no structural problem; the 26 and 25 values with a
-  reference counterpart all agreed, at 0.5% and 4.0% key parity on then-numeric names.
+  Latest green run: no structural problem in either corpus. Naming tags moved key parity from 0.5% to
+  **30.2%** (1 502 of 4 981 keys; 1 486 of 1 502 values agree) and from 4.0% to **87.5%** on our own.
 - `MetadataCapabilities`: 35 model-driven rows (JPEG 12, PNG 8, WebP 8, TIFF 3, XMP sidecar 4).
 - Enforced by tests, not convention: MIT, net8.0+net10.0, zero runtime dependencies, bounded
   hostile-input parsing, refusal instead of unsafe write.
@@ -51,8 +51,8 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
 
 ## What is next, in order
 
-1. **4.2b** Finish the CIPA DC-008 (Exif 2.32/3.0) + TIFF 6.0 vocabulary: types, counts, enum
-   meanings, rationals, date/time, GPS coordinates, human-readable printing. Names are in place.
+1. **4.2b** Finish the CIPA DC-008 (Exif 2.32/3.0) + TIFF 6.0 vocabulary: types, counts, enum meanings,
+   rationals, date/time, GPS coordinates, printing. The 16 `value-diff` rows are what that gap looks like.
 2. **4.3** One unified read entry point returning a single immutable snapshot (EXIF, IPTC,
    XMP, ICC, comment) per container. **Public API → short proposal in the PR, then approval.**
 3. **4.4** MakerNotes read-only for Canon, Nikon, Sony, then Fujifilm, Olympus, Panasonic,
