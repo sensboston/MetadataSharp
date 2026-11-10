@@ -1,0 +1,165 @@
+using System.Buffers.Binary;
+using System.Text;
+using MetadataSharp.Core;
+using MetadataSharp.Core.Tiff;
+using Xunit;
+
+namespace MetadataSharp.Tests.Tiff;
+
+public sealed class VendorMakerNoteTests
+{
+    private const int MakerNoteStart = 66;
+
+    private static void U16(byte[] b, int at, int v, bool big)
+    {
+        if (big) BinaryPrimitives.WriteUInt16BigEndian(b.AsSpan(at), (ushort)v);
+        else BinaryPrimitives.WriteUInt16LittleEndian(b.AsSpan(at), (ushort)v);
+    }
+
+    private static void U32(byte[] b, int at, long v, bool big)
+    {
+        if (big) BinaryPrimitives.WriteUInt32BigEndian(b.AsSpan(at), (uint)v);
+        else BinaryPrimitives.WriteUInt32LittleEndian(b.AsSpan(at), (uint)v);
+    }
+
+    private static void Entry(byte[] b, int at, int tag, int type, long count, long value, bool big)
+    {
+        U16(b, at, tag, big); U16(b, at + 2, type, big); U32(b, at + 4, count, big); U32(b, at + 8, value, big);
+    }
+
+    /// <summary>A TIFF whose IFD0 Make is <paramref name="make"/> (exactly 9 characters + NUL), with
+    /// <paramref name="note"/> as the Exif IFD's MakerNote at offset 66.</summary>
+    private static byte[] Wrap(bool big, string make, byte[] note)
+    {
+        var b = new byte[MakerNoteStart + note.Length + (note.Length & 1)];
+        b[0] = b[1] = (byte)(big ? 'M' : 'I');
+        U16(b, 2, 42, big); U32(b, 4, 8, big);
+        U16(b, 8, 2, big);
+        Entry(b, 10, 0x010F, 2, 10, 38, big);
+        Entry(b, 22, 0x8769, 4, 1, 48, big);
+        Encoding.ASCII.GetBytes(make.PadRight(9)[..9]).CopyTo(b, 38);
+        U16(b, 48, 1, big);
+        Entry(b, 50, 0x927C, 7, note.Length, MakerNoteStart, big);
+        note.CopyTo(b, MakerNoteStart);
+        return b;
+    }
+
+    /// <summary>
+    /// A MakerNote of <paramref name="header"/>, then a one-entry IFD in <paramref name="big"/> order
+    /// holding tag <paramref name="tag"/> as ASCII[8] "VALUE07" at offset <paramref name="stored"/>
+    /// (stored value), the string sitting right after the IFD.
+    /// </summary>
+    private static byte[] Note(byte[] header, bool big, ushort tag, Func<int, long> stored, bool nextPointer = true)
+    {
+        int ifd = header.Length;
+        int ifdLength = 2 + 12 + (nextPointer ? 4 : 0);
+        int text = ifd + ifdLength + ((ifd + ifdLength) & 1);
+        var note = new byte[text + 8];
+        header.CopyTo(note, 0);
+        U16(note, ifd, 1, big);
+        Entry(note, ifd + 2, tag, 2, 8, stored(text), big);
+        Encoding.ASCII.GetBytes("VALUE07\0").CopyTo(note, text);
+        return note;
+    }
+
+    private static MakerNoteEntry Single(byte[] tiff, MakerNoteFormat format, Endianness order)
+    {
+        MakerNote? note = ExifTiffReader.Read(tiff).Metadata.MakerNote;
+        Assert.NotNull(note);
+        Assert.Equal(format, note.Format);
+        Assert.Equal(order, note.ByteOrder);
+        MakerNoteEntry entry = Assert.Single(note.Entries);
+        byte[] raw = new byte[entry.Value.ByteLength];
+        entry.Value.CopyRawTo(raw);
+        Assert.Equal("VALUE07\0", Encoding.ASCII.GetString(raw));
+        return entry;
+    }
+
+    private static byte[] Header(string signature, params byte[] tail) =>
+        [.. Encoding.ASCII.GetBytes(signature), .. tail];
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FujifilmIsLittleEndianWithOffsetsFromTheMakerNote(bool outerBig)
+    {
+        byte[] note = Note(Header("FUJIFILM", 12, 0, 0, 0), false, 0x1000, text => text);
+        MakerNoteEntry entry = Single(Wrap(outerBig, "FUJIFILM", note), MakerNoteFormat.Fujifilm, Endianness.LittleEndian);
+        Assert.Equal("Quality", entry.Name);
+    }
+
+    [Fact]
+    public void FujifilmRejectsAnIfdOffsetOutsideTheMakerNote()
+    {
+        byte[] note = Note(Header("FUJIFILM", 12, 0, 0, 0), false, 0x1000, text => text);
+        note[8] = 0xFF;
+        Assert.Null(ExifTiffReader.Read(Wrap(false, "FUJIFILM", note)).Metadata.MakerNote);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PentaxAocUsesTheTiffByteOrderAndTiffOffsets(bool big)
+    {
+        // The two bytes after the signature say "MM" either way: they are not trusted.
+        byte[] note = Note(Header("AOC\0MM"), big, 0x0005, text => MakerNoteStart + text);
+        MakerNoteEntry entry = Single(Wrap(big, "PENTAX Co", note), MakerNoteFormat.Pentax,
+            big ? Endianness.BigEndian : Endianness.LittleEndian);
+        Assert.Equal("ModelID", entry.Name);
+    }
+
+    [Theory]
+    [InlineData("II", false)]
+    [InlineData("MM", true)]
+    public void PentaxDngUsesItsMarkAndOffsetsFromTheMakerNote(string mark, bool innerBig)
+    {
+        byte[] note = Note(Header("PENTAX \0" + mark), innerBig, 0x0005, text => text);
+        Single(Wrap(!innerBig, "PENTAX Co", note), MakerNoteFormat.PentaxDng,
+            innerBig ? Endianness.BigEndian : Endianness.LittleEndian);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SonyWithAndWithoutItsSignature(bool big)
+    {
+        Endianness order = big ? Endianness.BigEndian : Endianness.LittleEndian;
+        MakerNoteEntry one = Single(Wrap(big, "SONY     ", Note(Header("SONY DSC \0\0\0"), big, 0x0102, t => MakerNoteStart + t)),
+            MakerNoteFormat.Sony1, order);
+        Assert.Equal("Quality", one.Name);
+        Single(Wrap(big, "SONY     ", Note([], big, 0x0102, t => MakerNoteStart + t)), MakerNoteFormat.Sony2, order);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PanasonicHasNoNextIfdPointer(bool big)
+    {
+        byte[] note = Note(Header("Panasonic\0\0\0"), big, 0x0001, t => MakerNoteStart + t, nextPointer: false);
+        MakerNoteEntry entry = Single(Wrap(big, "Panasonic", note), MakerNoteFormat.Panasonic,
+            big ? Endianness.BigEndian : Endianness.LittleEndian);
+        Assert.Equal("Quality", entry.Name);
+    }
+
+    [Theory]
+    [InlineData("FUJIFILM", "FUJIFILX")]
+    [InlineData("Panasonic", "Panasonix")]
+    [InlineData("PENTAX Co", "AOX")]
+    public void AMissingSignatureLeavesTheMakerNoteOpaque(string make, string signature)
+    {
+        byte[] note = Note(Header(signature.PadRight(12, '\0')), false, 0x0001, t => MakerNoteStart + t);
+        Assert.Null(ExifTiffReader.Read(Wrap(false, make, note)).Metadata.MakerNote);
+    }
+
+    [Fact]
+    public void VendorNameTablesAreSortedAndUnique()
+    {
+        foreach (var table in new[] { Core.MakerNotes.VendorMakerNoteNames.FujifilmNames, Core.MakerNotes.VendorMakerNoteNames.PentaxNames,
+                     Core.MakerNotes.VendorMakerNoteNames.SonyNames, Core.MakerNotes.VendorMakerNoteNames.PanasonicNames })
+        {
+            var ids = table.Select(t => t.Id).ToArray();
+            Assert.Equal(ids.OrderBy(i => i), ids);
+            Assert.Equal(ids.Length, ids.Distinct().Count());
+        }
+    }
+}

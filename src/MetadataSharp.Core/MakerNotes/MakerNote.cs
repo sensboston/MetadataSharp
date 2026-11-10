@@ -16,7 +16,25 @@ public enum MakerNoteFormat
 
     /// <summary>Nikon, most cameras: a "Nikon" signature and a version, then an embedded TIFF header (with its own
     /// byte order) that the IFD and its value offsets are relative to.</summary>
-    Nikon3
+    Nikon3,
+
+    /// <summary>Fujifilm: a signature and the IFD offset; little-endian, offsets relative to the MakerNote.</summary>
+    Fujifilm,
+
+    /// <summary>Pentax: an "AOC" signature and a byte order, then an IFD; offsets relative to the TIFF header.</summary>
+    Pentax,
+
+    /// <summary>Pentax, DNG style: a "PENTAX" signature and a byte order, then an IFD; offsets relative to the MakerNote.</summary>
+    PentaxDng,
+
+    /// <summary>Sony: a "SONY DSC" signature, then an IFD; offsets relative to the TIFF header.</summary>
+    Sony1,
+
+    /// <summary>Sony: a bare IFD; offsets relative to the TIFF header.</summary>
+    Sony2,
+
+    /// <summary>Panasonic: a signature, then an IFD with no next-IFD pointer; offsets relative to the TIFF header.</summary>
+    Panasonic
 }
 
 /// <summary>One named field inside an array-valued MakerNote tag.</summary>
