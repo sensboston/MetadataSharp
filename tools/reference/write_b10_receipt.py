@@ -266,12 +266,22 @@ def main():
         receipt['reproduction']['runs'].append(
             {'head': other['sourceCommit'], 'runId': getattr(args, f'{label}_run'),
              'payload': f'{label}-observations.json'})
-        receipt['reproduction']['identicalSections'] = identical
-        receipt['reproduction']['differingSections'] = differing
-        receipt['reproduction']['stillIdentical'] = [k for k in identical
-                                                      if k in ('observations', 'blocked', 'fixtureManifest',
-                                                               'outcomeCounts')]
-        receipt['reproduction']['baselineDifference'] = {
+        # `identicalSections` describes the cross-run (ci) sample, which is the one the
+        # reproduction claim is about; the post-merge master sample gets its own block so a
+        # third run cannot silently overwrite the second one's record.
+        block = {'identicalSections': identical, 'differingSections': differing,
+                 'head': other['sourceCommit'], 'runId': getattr(args, f'{label}_run')}
+        block['stillIdentical'] = [k for k in identical
+                                   if k in ('observations', 'blocked', 'fixtureManifest',
+                                            'outcomeCounts')]
+        block['observationsSha256'] = sha256(data)
+        block['rawPayloadSha256'] = receipt['annotationRecovery'][f'{label}RawPayloadSha256']
+        if label == 'ci':
+            receipt['reproduction']['identicalSections'] = identical
+            receipt['reproduction']['differingSections'] = differing
+        else:
+            receipt['reproduction'][f'{label}Comparison'] = block
+        block['baselineDifference'] = {
             'executableSha256Differs': report['baseline']['executableSha256']
             != other['baseline']['executableSha256'],
             'cmakeCacheSha256Equal': report['baseline']['cmakeCacheSha256']
@@ -287,10 +297,16 @@ def main():
             for key in set(jmine) | set(jtheirs):
                 if jmine.get(key) != jtheirs.get(key) and not key.startswith('System:File'):
                     drift.add(f'{name}:{key}')
-        receipt['reproduction']['secondaryDriftBeyondFileDates'] = sorted(drift)
-        receipt['reproduction']['status'] = ('two independent CI runs of the same recorder agree on the '
-                                              'observation payload byte-for-byte; only the build timestamp, '
-                                              'the validated head and ExifTool file dates move')
+        block['secondaryDriftBeyondFileDates'] = sorted(drift)
+        if label == 'ci':
+            # Top-level copy for continuity with B9's schema: the cross-run comparison is the
+            # one the reproduction claim is stated against.
+            for key in ('stillIdentical', 'baselineDifference', 'secondaryDriftBeyondFileDates'):
+                receipt['reproduction'][key] = block[key]
+        receipt['reproduction']['status'] = (
+            f'{len(receipt["reproduction"]["runs"])} independent CI runs of the same recorder agree on '
+            'the observation payload byte-for-byte; only the build timestamp, the validated head and '
+            'ExifTool file dates move')
 
     (EVIDENCE / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
     print('receipt.json written:', (EVIDENCE / 'receipt.json').stat().st_size, 'bytes')

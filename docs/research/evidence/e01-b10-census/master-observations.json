@@ -1,0 +1,3007 @@
+{
+  "baseline": {
+    "cmakeCacheSha256": "8f13f98e9fd2e35b240d5086f2570f88f2f4a57e78e52b5306688ae61817f98f",
+    "effectiveCmake": {
+      "BUILD_SHARED_LIBS": "OFF",
+      "CMAKE_BUILD_TYPE": "Release",
+      "CMAKE_CXX_COMPILER": "/usr/bin/c++",
+      "EXIV2_BUILD_DOC": "OFF",
+      "EXIV2_BUILD_EXIV2_COMMAND": "ON",
+      "EXIV2_BUILD_FUZZ_TESTS": "OFF",
+      "EXIV2_BUILD_SAMPLES": "OFF",
+      "EXIV2_BUILD_UNIT_TESTS": "OFF",
+      "EXIV2_ENABLE_BMFF": "ON",
+      "EXIV2_ENABLE_BROTLI": "ON",
+      "EXIV2_ENABLE_CURL": "OFF",
+      "EXIV2_ENABLE_DYNAMIC_RUNTIME": "ON",
+      "EXIV2_ENABLE_EXTERNAL_XMP": "OFF",
+      "EXIV2_ENABLE_EXTERNAL_XMP-ADVANCED": "1",
+      "EXIV2_ENABLE_FILESYSTEM_ACCESS": "ON",
+      "EXIV2_ENABLE_INIH": "ON",
+      "EXIV2_ENABLE_LENSDATA": "ON",
+      "EXIV2_ENABLE_NLS": "OFF",
+      "EXIV2_ENABLE_PNG": "ON",
+      "EXIV2_ENABLE_VIDEO": "ON",
+      "EXIV2_ENABLE_WEBREADY": "OFF",
+      "EXIV2_ENABLE_XMP": "ON",
+      "EXIV2_TEAM_EXTRA_WARNINGS": "OFF",
+      "EXIV2_TEAM_EXTRA_WARNINGS-ADVANCED": "1",
+      "EXIV2_TEAM_OSS_FUZZ": "OFF",
+      "EXIV2_TEAM_PACKAGING": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS": "OFF",
+      "EXIV2_TEAM_USE_SANITIZERS-ADVANCED": "1",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS": "OFF",
+      "EXIV2_TEAM_WARNINGS_AS_ERRORS-ADVANCED": "1"
+    },
+    "executableSha256": "d7030db3cea6f9382be227e91b3a1a0b9e22540c14a08a7748de6283399b5f63",
+    "licenseSha256": "a7ba75cb966aca374711e2af49e5f3aea6a4443a803440f5d93e73a5a1222f66",
+    "sourceCommit": "b0859fc61fea5dedfc898aece6b15893ddf4314e",
+    "verboseVersion": "exiv2 0.28.9\nexiv2=0.28.9\nplatform=linux\ncompiler=G++\nbits=64\ndll=0\ndebug=0\ncplusplus=201703\nversion=13.3.0\ndate=Nov 10 2026\ntime=03:10:55\nprocesspath=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin\npackage_name=exiv2\ncurl=0\nexecutable=/home/runner/work/MetadataSharp/MetadataSharp/artifacts/e01/build/bin/exiv2\nlibrary=/usr/lib/locale/locale-archive\nlibrary=/usr/lib/x86_64-linux-gnu/libc.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libm.so.6\nlibrary=/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33\nlibrary=/usr/lib/x86_64-linux-gnu/libinih.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libgcc_s.so.1\nlibrary=/usr/lib/x86_64-linux-gnu/libINIReader.so.55\nlibrary=/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.1.0\nlibrary=/usr/lib/x86_64-linux-gnu/libz.so.1.3\nlibrary=/usr/lib/x86_64-linux-gnu/libexpat.so.1.9.1\nlibrary=/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2\nhave_inttypes=1\nhave_libintl=1\nhave_lensdata=1\nhave_iconv=1\nhave_memory=1\nhave_stdbool=1\nhave_stdint=1\nhave_stdlib=1\nhave_strlib=0\nhave_strerror_r=1\nhave_strings_h=0\nhave_mmap=1\nhave_munmap=1\nhave_sys_stat=1\nhave_unistd_h=0\nhave_sys_mman=1\nhave_libz=1\nhave_brotli=1\nhave_xmptoolkit=1\nadobe_xmpsdk=0\nhave_bool=0\nhave_strings=1\nhave_sys_types=1\nhave_unistd=1\nenable_bmff=1\nenable_webready=0\nenable_nls=0\nenable_video=1\nuse_curl=0\nconfig_path=/home/runner/.exiv2\nuid=1001\neuid=1001\ngid=1001\nxmlns=DICOM:http://ns.adobe.com/DICOM/\nxmlns=GPano:http://ns.google.com/photos/1.0/panorama/\nxmlns=Iptc4xmpCore:http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/\nxmlns=Iptc4xmpExt:http://iptc.org/std/Iptc4xmpExt/2008-02-29/\nxmlns=MP:http://ns.microsoft.com/photo/1.2/\nxmlns=MPRI:http://ns.microsoft.com/photo/1.2/t/RegionInfo#\nxmlns=MPReg:http://ns.microsoft.com/photo/1.2/t/Region#\nxmlns=MicrosoftPhoto:http://ns.microsoft.com/photo/1.0/\nxmlns=acdsee:http://ns.acdsee.com/iptc/1.0/\nxmlns=album:http://ns.adobe.com/album/1.0/\nxmlns=asf:http://ns.adobe.com/asf/1.0/\nxmlns=audio:http://www.audio/\nxmlns=aux:http://ns.adobe.com/exif/1.0/aux/\nxmlns=bmsp:http://ns.adobe.com/StockPhoto/1.0/\nxmlns=creatorAtom:http://ns.adobe.com/creatorAtom/1.0/\nxmlns=crs:http://ns.adobe.com/camera-raw-settings/1.0/\nxmlns=crss:http://ns.adobe.com/camera-raw-saved-settings/1.0/\nxmlns=dc:http://purl.org/dc/elements/1.1/\nxmlns=dcterms:http://purl.org/dc/terms/\nxmlns=digiKam:http://www.digikam.org/ns/1.0/\nxmlns=dwc:http://rs.tdwg.org/dwc/index.htm\nxmlns=exif:http://ns.adobe.com/exif/1.0/\nxmlns=exifEX:http://cipa.jp/exif/1.0/\nxmlns=expressionmedia:http://ns.microsoft.com/expressionmedia/1.0/\nxmlns=iX:http://ns.adobe.com/iX/1.0/\nxmlns=jp2k:http://ns.adobe.com/jp2k/1.0/\nxmlns=jpeg:http://ns.adobe.com/jpeg/1.0/\nxmlns=kipi:http://www.digikam.org/ns/kipi/1.0/\nxmlns=lr:http://ns.adobe.com/lightroom/1.0/\nxmlns=mediapro:http://ns.iview-multimedia.com/mediapro/1.0/\nxmlns=mwg-kw:http://www.metadataworkinggroup.com/schemas/keywords/\nxmlns=mwg-rs:http://www.metadataworkinggroup.com/schemas/regions/\nxmlns=pdf:http://ns.adobe.com/pdf/1.3/\nxmlns=pdfaExtension:http://www.aiim.org/pdfa/ns/extension/\nxmlns=pdfaField:http://www.aiim.org/pdfa/ns/field#\nxmlns=pdfaProperty:http://www.aiim.org/pdfa/ns/property#\nxmlns=pdfaSchema:http://www.aiim.org/pdfa/ns/schema#\nxmlns=pdfaType:http://www.aiim.org/pdfa/ns/type#\nxmlns=pdfaid:http://www.aiim.org/pdfa/ns/id/\nxmlns=pdfx:http://ns.adobe.com/pdfx/1.3/\nxmlns=pdfxid:http://www.npes.org/pdfx/ns/id/\nxmlns=photoshop:http://ns.adobe.com/photoshop/1.0/\nxmlns=plus:http://ns.useplus.org/ldf/xmp/1.0/\nxmlns=png:http://ns.adobe.com/png/1.0/\nxmlns=rdf:http://www.w3.org/1999/02/22-rdf-syntax-ns#\nxmlns=stArea:http://ns.adobe.com/xmp/sType/Area#\nxmlns=stDim:http://ns.adobe.com/xap/1.0/sType/Dimensions#\nxmlns=stEvt:http://ns.adobe.com/xap/1.0/sType/ResourceEvent#\nxmlns=stFnt:http://ns.adobe.com/xap/1.0/sType/Font#\nxmlns=stJob:http://ns.adobe.com/xap/1.0/sType/Job#\nxmlns=stMfs:http://ns.adobe.com/xap/1.0/sType/ManifestItem#\nxmlns=stRef:http://ns.adobe.com/xap/1.0/sType/ResourceRef#\nxmlns=stVer:http://ns.adobe.com/xap/1.0/sType/Version#\nxmlns=tiff:http://ns.adobe.com/tiff/1.0/\nxmlns=video:http://www.video/\nxmlns=wav:http://ns.adobe.com/xmp/wav/1.0/\nxmlns=xml:http://www.w3.org/XML/1998/namespace\nxmlns=xmp:http://ns.adobe.com/xap/1.0/\nxmlns=xmpBJ:http://ns.adobe.com/xap/1.0/bj/\nxmlns=xmpDM:http://ns.adobe.com/xmp/1.0/DynamicMedia/\nxmlns=xmpG:http://ns.adobe.com/xap/1.0/g/\nxmlns=xmpGImg:http://ns.adobe.com/xap/1.0/g/img/\nxmlns=xmpMM:http://ns.adobe.com/xap/1.0/mm/\nxmlns=xmpNote:http://ns.adobe.com/xmp/note/\nxmlns=xmpRights:http://ns.adobe.com/xap/1.0/rights/\nxmlns=xmpT:http://ns.adobe.com/xap/1.0/t/\nxmlns=xmpTPg:http://ns.adobe.com/xap/1.0/t/pg/\nxmlns=xmpidq:http://ns.adobe.com/xmp/Identifier/qual/1.0/\n",
+    "version": "0.28.9"
+  },
+  "batch": "B10",
+  "blocked": [
+    {
+      "id": "EX0289-MRW-INVENTORY-INVENTORY-0002",
+      "reason": "MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-MRW-EXIF-READ-0002",
+      "reason": "MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-MRW-IPTC-READ-0002",
+      "reason": "MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-MRW-XMP-READ-0002",
+      "reason": "MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-MRW-COMMENTS-READ-0002",
+      "reason": "MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-MRW-ICC-READ-0002",
+      "reason": "MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-MRW-THUMBNAIL-READ-0002",
+      "reason": "MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-MRW-THUMBNAIL-EXTRACT-0002",
+      "reason": "MRW private layout (the \\0DAT raw picture block and the camera-private data it holds): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RAF-INVENTORY-INVENTORY-0002",
+      "reason": "RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RAF-EXIF-READ-0002",
+      "reason": "RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RAF-IPTC-READ-0002",
+      "reason": "RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RAF-XMP-READ-0002",
+      "reason": "RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RAF-COMMENTS-READ-0002",
+      "reason": "RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RAF-ICC-READ-0002",
+      "reason": "RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RAF-THUMBNAIL-READ-0002",
+      "reason": "RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RAF-THUMBNAIL-EXTRACT-0002",
+      "reason": "RAF private layout (the offset-92 structure the reader itself labels \"proprietary\" (its comment cites third-party documentation that was not reviewed)): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RW2-INVENTORY-INVENTORY-0002",
+      "reason": "RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RW2-EXIF-READ-0002",
+      "reason": "RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RW2-IPTC-READ-0002",
+      "reason": "RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RW2-XMP-READ-0002",
+      "reason": "RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RW2-COMMENTS-READ-0002",
+      "reason": "RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RW2-ICC-READ-0002",
+      "reason": "RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RW2-THUMBNAIL-READ-0002",
+      "reason": "RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-RW2-THUMBNAIL-EXTRACT-0002",
+      "reason": "RW2 private layout (the raw image data and the Panasonic-private tag semantics behind the Tag::pana mapping): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-SR2-INVENTORY-INVENTORY-0002",
+      "reason": "SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-SR2-EXIF-READ-0002",
+      "reason": "SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-SR2-IPTC-READ-0002",
+      "reason": "SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-SR2-XMP-READ-0002",
+      "reason": "SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-SR2-COMMENTS-READ-0002",
+      "reason": "SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-SR2-ICC-READ-0002",
+      "reason": "SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-SR2-THUMBNAIL-READ-0002",
+      "reason": "SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "id": "EX0289-SR2-THUMBNAIL-EXTRACT-0002",
+      "reason": "SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    }
+  ],
+  "denominatorFrozen": false,
+  "fixtureManifest": [
+    {
+      "carrierTags": [
+        "icc",
+        "iptc",
+        "xmp",
+        "comment"
+      ],
+      "compression": 1,
+      "decodable": false,
+      "dispatch": "mrw",
+      "embeddedBlobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+      "file": "owned-mrw-ttw.mrw",
+      "format": "MRW",
+      "layout": "raw-mrw-ttw-embedded-tiff",
+      "length": 1282,
+      "metadata": "authored-exif-xmp-iptc-icc-thumbnail-comments",
+      "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "thumbnailPresent": true,
+      "vendorIdentity": "\\0MRM header plus a \\0TTW block holding a whole TIFF; MrwImage::mimeType is the constant image/x-minolta-mrw"
+    },
+    {
+      "carrierTags": [
+        "icc"
+      ],
+      "compression": 1,
+      "decodable": false,
+      "dispatch": "raf",
+      "embeddedBlobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+      "file": "owned-raf-fujifilm.raf",
+      "format": "RAF",
+      "layout": "raw-raf-fujifilm-be-offsets",
+      "length": 1322,
+      "metadata": "authored-exif-xmp-iptc-icc-thumbnail-comments",
+      "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "thumbnailPresent": false,
+      "vendorIdentity": "FUJIFILM magic with big-endian block pairs at 84/88, 92/96 and 100/104; RafImage::mimeType is image/x-fuji-raf"
+    },
+    {
+      "carrierTags": [
+        "icc",
+        "iptc",
+        "xmp",
+        "comment"
+      ],
+      "compression": 1,
+      "decodable": false,
+      "dispatch": "rw2",
+      "embeddedBlobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "file": "owned-rw2-root24.rw2",
+      "format": "RW2",
+      "layout": "raw-rw2-ii-55-root-24",
+      "length": 1220,
+      "metadata": "authored-exif-xmp-iptc-icc-thumbnail-comments",
+      "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "thumbnailPresent": true,
+      "vendorIdentity": "magic 0x0055, 24-byte header, root IFD at 24 (TiffHeaderBase(0x0055, 24, littleEndian, 0x18)); Rw2Image::mimeType is image/x-panasonic-rw2"
+    },
+    {
+      "carrierTags": [
+        "icc",
+        "iptc",
+        "xmp",
+        "comment"
+      ],
+      "compression": 1,
+      "decodable": false,
+      "dispatch": "tiff",
+      "embeddedBlobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "file": "owned-marker-sr2.sr2",
+      "format": "SR2",
+      "layout": "raw-tiff-ep-ii-sr2",
+      "length": 1208,
+      "metadata": "authored-exif-xmp-iptc-icc-thumbnail-comments",
+      "recipe": "authored byte-level wave-2 container writer (MRW block chain, RAF big-endian offset table, RW2 0x0055 header, generic TIFF marker); tools/reference/b10_raw_fixtures.py",
+      "rights": "owned-synthetic",
+      "sha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "thumbnailPresent": true,
+      "vendorIdentity": "generic TIFF dispatch only; no compression value in this build maps to an SR2 MIME type, so mimeType stays image/tiff"
+    }
+  ],
+  "limitations": "fixtures are authored containers, not camera captures: they carry no vendor private raw data, no MakerNote and no real preview, so a refusal is not evidence that a vendor layout is unsupported and a success is not evidence of RAW support; the MRW and RAF embedded blocks are parsed by the generic TiffParser, so tag naming follows the TIFF mapping and not any vendor tag list; the pinned build has no SR2 reader and no SR2 entry in TiffImage::mimeType, so SR2 rows record absence rather than presence; the RW2 preview branch is exercised only through the single authored preview, so the \"more than one preview\" warning path is not attempted in this batch; no B10 write suboperation is enumerated because the pinned registry marks mrw/rw2/sr2/raf amRead; ExifTool 12.76 is a secondary reference, not an oracle.",
+  "observations": [
+    {
+      "duplicates": "none",
+      "exitCode": 1,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": true,
+            "raf": false,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "mrw",
+          "embedded": {
+            "blobLength": 1202,
+            "blobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "MINOLTA",
+            "model": "B10 SYNTHETIC MRW",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1282,
+          "fileSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+          "lastAccountedByte": 1282,
+          "mrw": {
+            "blockBound": 1274,
+            "blockTags": [
+              "\u0000PRD",
+              "\u0000WBG",
+              "\u0000RIF",
+              "\u0000TTW"
+            ],
+            "coversFile": true,
+            "ttwAt": 80,
+            "ttwLength": 1202
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Exiv2 exception in print action for file <fixture>:\nImage type <fixture> is not supported\n",
+        "stdoutLength": 0,
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "family": "inventory",
+      "fixture": "owned-mrw-ttw.mrw",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "flag": "-pS",
+      "id": "EX0289-MRW-INVENTORY-INVENTORY-0001",
+      "inputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "layout": "raw-mrw-ttw-embedded-tiff",
+      "operation": "inventory",
+      "outcome": "refused",
+      "outputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "recordOnly": true,
+      "seedId": "EX0289-MRW-INVENTORY",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": true,
+            "raf": false,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "mrw",
+          "embedded": {
+            "blobLength": 1202,
+            "blobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "MINOLTA",
+            "model": "B10 SYNTHETIC MRW",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1282,
+          "fileSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+          "lastAccountedByte": 1282,
+          "mrw": {
+            "blockBound": 1274,
+            "blockTags": [
+              "\u0000PRD",
+              "\u0000WBG",
+              "\u0000RIF",
+              "\u0000TTW"
+            ],
+            "coversFile": true,
+            "ttwAt": 80,
+            "ttwLength": 1202
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 3785,
+        "stdoutSha256": "5e2864c925e2ee35205cdef7aaaffc8c0103c86d58ce3ebb165fe02bd9fe0b1a"
+      },
+      "family": "exif",
+      "fixture": "owned-mrw-ttw.mrw",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "flag": "-pa",
+      "id": "EX0289-MRW-EXIF-READ-0001",
+      "inputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "layout": "raw-mrw-ttw-embedded-tiff",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "recordOnly": true,
+      "seedId": "EX0289-MRW-EXIF",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": true,
+            "raf": false,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "mrw",
+          "embedded": {
+            "blobLength": 1202,
+            "blobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "MINOLTA",
+            "model": "B10 SYNTHETIC MRW",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1282,
+          "fileSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+          "lastAccountedByte": 1282,
+          "mrw": {
+            "blockBound": 1274,
+            "blockTags": [
+              "\u0000PRD",
+              "\u0000WBG",
+              "\u0000RIF",
+              "\u0000TTW"
+            ],
+            "coversFile": true,
+            "ttwAt": 80,
+            "ttwLength": 1202
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 3785,
+        "stdoutSha256": "5e2864c925e2ee35205cdef7aaaffc8c0103c86d58ce3ebb165fe02bd9fe0b1a"
+      },
+      "family": "iptc",
+      "fixture": "owned-mrw-ttw.mrw",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "flag": "-pa",
+      "id": "EX0289-MRW-IPTC-READ-0001",
+      "inputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "layout": "raw-mrw-ttw-embedded-tiff",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "recordOnly": true,
+      "seedId": "EX0289-MRW-IPTC",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": true,
+            "raf": false,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "mrw",
+          "embedded": {
+            "blobLength": 1202,
+            "blobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "MINOLTA",
+            "model": "B10 SYNTHETIC MRW",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1282,
+          "fileSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+          "lastAccountedByte": 1282,
+          "mrw": {
+            "blockBound": 1274,
+            "blockTags": [
+              "\u0000PRD",
+              "\u0000WBG",
+              "\u0000RIF",
+              "\u0000TTW"
+            ],
+            "coversFile": true,
+            "ttwAt": 80,
+            "ttwLength": 1202
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 3785,
+        "stdoutSha256": "5e2864c925e2ee35205cdef7aaaffc8c0103c86d58ce3ebb165fe02bd9fe0b1a"
+      },
+      "family": "xmp",
+      "fixture": "owned-mrw-ttw.mrw",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "flag": "-pa",
+      "id": "EX0289-MRW-XMP-READ-0001",
+      "inputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "layout": "raw-mrw-ttw-embedded-tiff",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "recordOnly": true,
+      "seedId": "EX0289-MRW-XMP",
+      "textEncoding": "utf-8"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": true,
+            "raf": false,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "mrw",
+          "embedded": {
+            "blobLength": 1202,
+            "blobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "MINOLTA",
+            "model": "B10 SYNTHETIC MRW",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1282,
+          "fileSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+          "lastAccountedByte": 1282,
+          "mrw": {
+            "blockBound": 1274,
+            "blockTags": [
+              "\u0000PRD",
+              "\u0000WBG",
+              "\u0000RIF",
+              "\u0000TTW"
+            ],
+            "coversFile": true,
+            "ttwAt": 80,
+            "ttwLength": 1202
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "",
+        "stdoutLength": 1,
+        "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      "family": "comments",
+      "fixture": "owned-mrw-ttw.mrw",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "flag": "-pc",
+      "id": "EX0289-MRW-COMMENTS-READ-0001",
+      "inputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "layout": "raw-mrw-ttw-embedded-tiff",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "recordOnly": true,
+      "seedId": "EX0289-MRW-COMMENTS",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 1,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": true,
+            "raf": false,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "mrw",
+          "embedded": {
+            "blobLength": 1202,
+            "blobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "MINOLTA",
+            "model": "B10 SYNTHETIC MRW",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1282,
+          "fileSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+          "lastAccountedByte": 1282,
+          "mrw": {
+            "blockBound": 1274,
+            "blockTags": [
+              "\u0000PRD",
+              "\u0000WBG",
+              "\u0000RIF",
+              "\u0000TTW"
+            ],
+            "coversFile": true,
+            "ttwAt": 80,
+            "ttwLength": 1202
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Exiv2 exception in print action for file <fixture>:\nImage type <fixture> is not supported\n",
+        "stdoutLength": 0,
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "family": "icc",
+      "fixture": "owned-mrw-ttw.mrw",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "flag": "-pC",
+      "id": "EX0289-MRW-ICC-READ-0001",
+      "inputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "layout": "raw-mrw-ttw-embedded-tiff",
+      "operation": "read",
+      "outcome": "refused",
+      "outputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "recordOnly": true,
+      "seedId": "EX0289-MRW-ICC",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": true,
+            "raf": false,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "mrw",
+          "embedded": {
+            "blobLength": 1202,
+            "blobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "MINOLTA",
+            "model": "B10 SYNTHETIC MRW",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1282,
+          "fileSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+          "lastAccountedByte": 1282,
+          "mrw": {
+            "blockBound": 1274,
+            "blockTags": [
+              "\u0000PRD",
+              "\u0000WBG",
+              "\u0000RIF",
+              "\u0000TTW"
+            ],
+            "coversFile": true,
+            "ttwAt": 80,
+            "ttwLength": 1202
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 3785,
+        "stdoutSha256": "5e2864c925e2ee35205cdef7aaaffc8c0103c86d58ce3ebb165fe02bd9fe0b1a"
+      },
+      "family": "thumbnail",
+      "fixture": "owned-mrw-ttw.mrw",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "flag": "-pa",
+      "id": "EX0289-MRW-THUMBNAIL-READ-0001",
+      "inputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "layout": "raw-mrw-ttw-embedded-tiff",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "recordOnly": true,
+      "seedId": "EX0289-MRW-THUMBNAIL",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 137,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [
+          {
+            "file": "case-thumb.jpg",
+            "length": 137,
+            "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260"
+          }
+        ],
+        "container": {
+          "acceptedBy": {
+            "mrw": true,
+            "raf": false,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "mrw",
+          "embedded": {
+            "blobLength": 1202,
+            "blobSha256": "5dd788df761441b9a8fdc24bcfe48078de371ccd7129ce0971971b3567ec2bce",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "MINOLTA",
+            "model": "B10 SYNTHETIC MRW",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1282,
+          "fileSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+          "lastAccountedByte": 1282,
+          "mrw": {
+            "blockBound": 1274,
+            "blockTags": [
+              "\u0000PRD",
+              "\u0000WBG",
+              "\u0000RIF",
+              "\u0000TTW"
+            ],
+            "coversFile": true,
+            "ttwAt": 80,
+            "ttwLength": 1202
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": {
+          "artifactBytes": 137,
+          "exitCodeEqualsArtifactBytes": true,
+          "exitCodeIsByteCountInPinnedBuild": true,
+          "reportedNoThumbnail": false
+        },
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "",
+        "stdoutLength": 0,
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "family": "thumbnail",
+      "fixture": "owned-mrw-ttw.mrw",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "flag": "-et",
+      "id": "EX0289-MRW-THUMBNAIL-EXTRACT-0001",
+      "inputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "layout": "raw-mrw-ttw-embedded-tiff",
+      "operation": "extract",
+      "outcome": "nonzero-exit-artifact-produced",
+      "outputSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "recordOnly": true,
+      "seedId": "EX0289-MRW-THUMBNAIL",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": true,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "raf",
+          "embedded": {
+            "blobLength": 452,
+            "blobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+            "carriers": [
+              "icc"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 7,
+            "directoryOrder": [
+              "IFD0"
+            ],
+            "magicTag": 42,
+            "make": "FUJIFILM",
+            "model": "B10 SYNTHETIC RAF",
+            "rootOffset": 8,
+            "thumbnailPresent": false
+          },
+          "fileLength": 1322,
+          "fileSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+          "lastAccountedByte": 1322,
+          "raf": {
+            "cfaLength": 64,
+            "cfaOffset": 1258,
+            "jpegLength": 698,
+            "jpegOffset": 108,
+            "preview": {
+              "app1Length": 534,
+              "commentSha256": "8ff0d8de657b358dbb06811d62e03c3cc7ba44b33fc5b5f14603a7b29e61c49b",
+              "exifTiffLength": 534,
+              "jpegSha256": "faf53929d3529137dc0765a834e333215e66dcec3654722845fb4aae10b4f965"
+            },
+            "printedText": {
+              "camera": "B10 SYNTHETIC RAF CAMERA\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+              "data1": "    ",
+              "data2": "B10DATA2",
+              "magic": "FUJIFILM0232    ",
+              "version": "0100"
+            },
+            "tiffLength": 452,
+            "tiffOffset": 806,
+            "unknownSha256": "f75902b3405d5797617e5eeb9e00c6f972b547e9dd6adfba72e711b21a0f47a3"
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "",
+        "stdoutLength": 846,
+        "stdoutSha256": "6c3fa7a8d849051ea1f4dbe10a99d593a344746e92041ee02abf851fb375d2e4"
+      },
+      "family": "inventory",
+      "fixture": "owned-raf-fujifilm.raf",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "flag": "-pS",
+      "id": "EX0289-RAF-INVENTORY-INVENTORY-0001",
+      "inputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "layout": "raw-raf-fujifilm-be-offsets",
+      "operation": "inventory",
+      "outcome": "accepted",
+      "outputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "recordOnly": true,
+      "seedId": "EX0289-RAF-INVENTORY",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": true,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "raf",
+          "embedded": {
+            "blobLength": 452,
+            "blobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+            "carriers": [
+              "icc"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 7,
+            "directoryOrder": [
+              "IFD0"
+            ],
+            "magicTag": 42,
+            "make": "FUJIFILM",
+            "model": "B10 SYNTHETIC RAF",
+            "rootOffset": 8,
+            "thumbnailPresent": false
+          },
+          "fileLength": 1322,
+          "fileSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+          "lastAccountedByte": 1322,
+          "raf": {
+            "cfaLength": 64,
+            "cfaOffset": 1258,
+            "jpegLength": 698,
+            "jpegOffset": 108,
+            "preview": {
+              "app1Length": 534,
+              "commentSha256": "8ff0d8de657b358dbb06811d62e03c3cc7ba44b33fc5b5f14603a7b29e61c49b",
+              "exifTiffLength": 534,
+              "jpegSha256": "faf53929d3529137dc0765a834e333215e66dcec3654722845fb4aae10b4f965"
+            },
+            "printedText": {
+              "camera": "B10 SYNTHETIC RAF CAMERA\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+              "data1": "    ",
+              "data2": "B10DATA2",
+              "magic": "FUJIFILM0232    ",
+              "version": "0100"
+            },
+            "tiffLength": 452,
+            "tiffOffset": 806,
+            "unknownSha256": "f75902b3405d5797617e5eeb9e00c6f972b547e9dd6adfba72e711b21a0f47a3"
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "Warning: Ignoring IPTC information encoded in the Exif data.\nWarning: Ignoring XMP information encoded in the Exif data.\n",
+        "stdoutLength": 1941,
+        "stdoutSha256": "b51cfc05672cd0ab270de7ffc4f1e3030d9817649484b7d0ec9bfeec64b527e2"
+      },
+      "family": "exif",
+      "fixture": "owned-raf-fujifilm.raf",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "flag": "-pa",
+      "id": "EX0289-RAF-EXIF-READ-0001",
+      "inputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "layout": "raw-raf-fujifilm-be-offsets",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "recordOnly": true,
+      "seedId": "EX0289-RAF-EXIF",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": true,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "raf",
+          "embedded": {
+            "blobLength": 452,
+            "blobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+            "carriers": [
+              "icc"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 7,
+            "directoryOrder": [
+              "IFD0"
+            ],
+            "magicTag": 42,
+            "make": "FUJIFILM",
+            "model": "B10 SYNTHETIC RAF",
+            "rootOffset": 8,
+            "thumbnailPresent": false
+          },
+          "fileLength": 1322,
+          "fileSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+          "lastAccountedByte": 1322,
+          "raf": {
+            "cfaLength": 64,
+            "cfaOffset": 1258,
+            "jpegLength": 698,
+            "jpegOffset": 108,
+            "preview": {
+              "app1Length": 534,
+              "commentSha256": "8ff0d8de657b358dbb06811d62e03c3cc7ba44b33fc5b5f14603a7b29e61c49b",
+              "exifTiffLength": 534,
+              "jpegSha256": "faf53929d3529137dc0765a834e333215e66dcec3654722845fb4aae10b4f965"
+            },
+            "printedText": {
+              "camera": "B10 SYNTHETIC RAF CAMERA\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+              "data1": "    ",
+              "data2": "B10DATA2",
+              "magic": "FUJIFILM0232    ",
+              "version": "0100"
+            },
+            "tiffLength": 452,
+            "tiffOffset": 806,
+            "unknownSha256": "f75902b3405d5797617e5eeb9e00c6f972b547e9dd6adfba72e711b21a0f47a3"
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "Warning: Ignoring IPTC information encoded in the Exif data.\nWarning: Ignoring XMP information encoded in the Exif data.\n",
+        "stdoutLength": 1941,
+        "stdoutSha256": "b51cfc05672cd0ab270de7ffc4f1e3030d9817649484b7d0ec9bfeec64b527e2"
+      },
+      "family": "iptc",
+      "fixture": "owned-raf-fujifilm.raf",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "flag": "-pa",
+      "id": "EX0289-RAF-IPTC-READ-0001",
+      "inputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "layout": "raw-raf-fujifilm-be-offsets",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "recordOnly": true,
+      "seedId": "EX0289-RAF-IPTC",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": true,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "raf",
+          "embedded": {
+            "blobLength": 452,
+            "blobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+            "carriers": [
+              "icc"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 7,
+            "directoryOrder": [
+              "IFD0"
+            ],
+            "magicTag": 42,
+            "make": "FUJIFILM",
+            "model": "B10 SYNTHETIC RAF",
+            "rootOffset": 8,
+            "thumbnailPresent": false
+          },
+          "fileLength": 1322,
+          "fileSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+          "lastAccountedByte": 1322,
+          "raf": {
+            "cfaLength": 64,
+            "cfaOffset": 1258,
+            "jpegLength": 698,
+            "jpegOffset": 108,
+            "preview": {
+              "app1Length": 534,
+              "commentSha256": "8ff0d8de657b358dbb06811d62e03c3cc7ba44b33fc5b5f14603a7b29e61c49b",
+              "exifTiffLength": 534,
+              "jpegSha256": "faf53929d3529137dc0765a834e333215e66dcec3654722845fb4aae10b4f965"
+            },
+            "printedText": {
+              "camera": "B10 SYNTHETIC RAF CAMERA\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+              "data1": "    ",
+              "data2": "B10DATA2",
+              "magic": "FUJIFILM0232    ",
+              "version": "0100"
+            },
+            "tiffLength": 452,
+            "tiffOffset": 806,
+            "unknownSha256": "f75902b3405d5797617e5eeb9e00c6f972b547e9dd6adfba72e711b21a0f47a3"
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "Warning: Ignoring IPTC information encoded in the Exif data.\nWarning: Ignoring XMP information encoded in the Exif data.\n",
+        "stdoutLength": 1941,
+        "stdoutSha256": "b51cfc05672cd0ab270de7ffc4f1e3030d9817649484b7d0ec9bfeec64b527e2"
+      },
+      "family": "xmp",
+      "fixture": "owned-raf-fujifilm.raf",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "flag": "-pa",
+      "id": "EX0289-RAF-XMP-READ-0001",
+      "inputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "layout": "raw-raf-fujifilm-be-offsets",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "recordOnly": true,
+      "seedId": "EX0289-RAF-XMP",
+      "textEncoding": "utf-8"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": true,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "raf",
+          "embedded": {
+            "blobLength": 452,
+            "blobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+            "carriers": [
+              "icc"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 7,
+            "directoryOrder": [
+              "IFD0"
+            ],
+            "magicTag": 42,
+            "make": "FUJIFILM",
+            "model": "B10 SYNTHETIC RAF",
+            "rootOffset": 8,
+            "thumbnailPresent": false
+          },
+          "fileLength": 1322,
+          "fileSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+          "lastAccountedByte": 1322,
+          "raf": {
+            "cfaLength": 64,
+            "cfaOffset": 1258,
+            "jpegLength": 698,
+            "jpegOffset": 108,
+            "preview": {
+              "app1Length": 534,
+              "commentSha256": "8ff0d8de657b358dbb06811d62e03c3cc7ba44b33fc5b5f14603a7b29e61c49b",
+              "exifTiffLength": 534,
+              "jpegSha256": "faf53929d3529137dc0765a834e333215e66dcec3654722845fb4aae10b4f965"
+            },
+            "printedText": {
+              "camera": "B10 SYNTHETIC RAF CAMERA\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+              "data1": "    ",
+              "data2": "B10DATA2",
+              "magic": "FUJIFILM0232    ",
+              "version": "0100"
+            },
+            "tiffLength": 452,
+            "tiffOffset": 806,
+            "unknownSha256": "f75902b3405d5797617e5eeb9e00c6f972b547e9dd6adfba72e711b21a0f47a3"
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Warning: Ignoring IPTC information encoded in the Exif data.\nWarning: Ignoring XMP information encoded in the Exif data.\n",
+        "stdoutLength": 14,
+        "stdoutSha256": "c9081bd87878786801e4884a369f291c4563a5c827d7383cff58f2666e0709d9"
+      },
+      "family": "comments",
+      "fixture": "owned-raf-fujifilm.raf",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "flag": "-pc",
+      "id": "EX0289-RAF-COMMENTS-READ-0001",
+      "inputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "layout": "raw-raf-fujifilm-be-offsets",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "recordOnly": true,
+      "seedId": "EX0289-RAF-COMMENTS",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": true,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "raf",
+          "embedded": {
+            "blobLength": 452,
+            "blobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+            "carriers": [
+              "icc"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 7,
+            "directoryOrder": [
+              "IFD0"
+            ],
+            "magicTag": 42,
+            "make": "FUJIFILM",
+            "model": "B10 SYNTHETIC RAF",
+            "rootOffset": 8,
+            "thumbnailPresent": false
+          },
+          "fileLength": 1322,
+          "fileSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+          "lastAccountedByte": 1322,
+          "raf": {
+            "cfaLength": 64,
+            "cfaOffset": 1258,
+            "jpegLength": 698,
+            "jpegOffset": 108,
+            "preview": {
+              "app1Length": 534,
+              "commentSha256": "8ff0d8de657b358dbb06811d62e03c3cc7ba44b33fc5b5f14603a7b29e61c49b",
+              "exifTiffLength": 534,
+              "jpegSha256": "faf53929d3529137dc0765a834e333215e66dcec3654722845fb4aae10b4f965"
+            },
+            "printedText": {
+              "camera": "B10 SYNTHETIC RAF CAMERA\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+              "data1": "    ",
+              "data2": "B10DATA2",
+              "magic": "FUJIFILM0232    ",
+              "version": "0100"
+            },
+            "tiffLength": 452,
+            "tiffOffset": 806,
+            "unknownSha256": "f75902b3405d5797617e5eeb9e00c6f972b547e9dd6adfba72e711b21a0f47a3"
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "",
+        "stdoutLength": 0,
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "family": "icc",
+      "fixture": "owned-raf-fujifilm.raf",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "flag": "-pC",
+      "id": "EX0289-RAF-ICC-READ-0001",
+      "inputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "layout": "raw-raf-fujifilm-be-offsets",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "recordOnly": true,
+      "seedId": "EX0289-RAF-ICC",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": true,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "raf",
+          "embedded": {
+            "blobLength": 452,
+            "blobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+            "carriers": [
+              "icc"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 7,
+            "directoryOrder": [
+              "IFD0"
+            ],
+            "magicTag": 42,
+            "make": "FUJIFILM",
+            "model": "B10 SYNTHETIC RAF",
+            "rootOffset": 8,
+            "thumbnailPresent": false
+          },
+          "fileLength": 1322,
+          "fileSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+          "lastAccountedByte": 1322,
+          "raf": {
+            "cfaLength": 64,
+            "cfaOffset": 1258,
+            "jpegLength": 698,
+            "jpegOffset": 108,
+            "preview": {
+              "app1Length": 534,
+              "commentSha256": "8ff0d8de657b358dbb06811d62e03c3cc7ba44b33fc5b5f14603a7b29e61c49b",
+              "exifTiffLength": 534,
+              "jpegSha256": "faf53929d3529137dc0765a834e333215e66dcec3654722845fb4aae10b4f965"
+            },
+            "printedText": {
+              "camera": "B10 SYNTHETIC RAF CAMERA\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+              "data1": "    ",
+              "data2": "B10DATA2",
+              "magic": "FUJIFILM0232    ",
+              "version": "0100"
+            },
+            "tiffLength": 452,
+            "tiffOffset": 806,
+            "unknownSha256": "f75902b3405d5797617e5eeb9e00c6f972b547e9dd6adfba72e711b21a0f47a3"
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "Warning: Ignoring IPTC information encoded in the Exif data.\nWarning: Ignoring XMP information encoded in the Exif data.\n",
+        "stdoutLength": 1941,
+        "stdoutSha256": "b51cfc05672cd0ab270de7ffc4f1e3030d9817649484b7d0ec9bfeec64b527e2"
+      },
+      "family": "thumbnail",
+      "fixture": "owned-raf-fujifilm.raf",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "flag": "-pa",
+      "id": "EX0289-RAF-THUMBNAIL-READ-0001",
+      "inputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "layout": "raw-raf-fujifilm-be-offsets",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "recordOnly": true,
+      "seedId": "EX0289-RAF-THUMBNAIL",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": true,
+            "rw2": false,
+            "tiff": false
+          },
+          "byteOrder": "invalidByteOrder",
+          "dispatch": "raf",
+          "embedded": {
+            "blobLength": 452,
+            "blobSha256": "f545359fddfe23418042b9f8b2c4d6b56e2041a93bd035ba470e4ed83b1e9449",
+            "carriers": [
+              "icc"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 7,
+            "directoryOrder": [
+              "IFD0"
+            ],
+            "magicTag": 42,
+            "make": "FUJIFILM",
+            "model": "B10 SYNTHETIC RAF",
+            "rootOffset": 8,
+            "thumbnailPresent": false
+          },
+          "fileLength": 1322,
+          "fileSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+          "lastAccountedByte": 1322,
+          "raf": {
+            "cfaLength": 64,
+            "cfaOffset": 1258,
+            "jpegLength": 698,
+            "jpegOffset": 108,
+            "preview": {
+              "app1Length": 534,
+              "commentSha256": "8ff0d8de657b358dbb06811d62e03c3cc7ba44b33fc5b5f14603a7b29e61c49b",
+              "exifTiffLength": 534,
+              "jpegSha256": "faf53929d3529137dc0765a834e333215e66dcec3654722845fb4aae10b4f965"
+            },
+            "printedText": {
+              "camera": "B10 SYNTHETIC RAF CAMERA\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+              "data1": "    ",
+              "data2": "B10DATA2",
+              "magic": "FUJIFILM0232    ",
+              "version": "0100"
+            },
+            "tiffLength": 452,
+            "tiffOffset": 806,
+            "unknownSha256": "f75902b3405d5797617e5eeb9e00c6f972b547e9dd6adfba72e711b21a0f47a3"
+          },
+          "trailingPadBytes": 0
+        },
+        "extractSemantics": {
+          "artifactBytes": 0,
+          "exitCodeEqualsArtifactBytes": true,
+          "exitCodeIsByteCountInPinnedBuild": true,
+          "reportedNoThumbnail": true
+        },
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Warning: Ignoring IPTC information encoded in the Exif data.\nWarning: Ignoring XMP information encoded in the Exif data.\n<fixture>: Image does not contain an Exif thumbnail\n",
+        "stdoutLength": 0,
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "family": "thumbnail",
+      "fixture": "owned-raf-fujifilm.raf",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "flag": "-et",
+      "id": "EX0289-RAF-THUMBNAIL-EXTRACT-0001",
+      "inputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "layout": "raw-raf-fujifilm-be-offsets",
+      "operation": "extract",
+      "outcome": "zero-exit-no-artifact",
+      "outputSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "recordOnly": true,
+      "seedId": "EX0289-RAF-THUMBNAIL",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": true,
+            "tiff": false
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "rw2",
+          "embedded": {
+            "blobLength": 1220,
+            "blobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 85,
+            "make": "PANASONIC",
+            "model": "B10 SYNTHETIC RW2",
+            "rootOffset": 24,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1220,
+          "fileSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+          "lastAccountedByte": 1219,
+          "rw2": {
+            "headerBytes": 24,
+            "identityField": "B10-RW2-IDENTITY",
+            "magic": "0x0055",
+            "rootOffset": 24
+          },
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 2326,
+        "stdoutSha256": "6012a60d5cd03cf337f4f6d50bfef9e402fba65fdce1be2c34d11a3510b3867b"
+      },
+      "family": "inventory",
+      "fixture": "owned-rw2-root24.rw2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "flag": "-pS",
+      "id": "EX0289-RW2-INVENTORY-INVENTORY-0001",
+      "inputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "layout": "raw-rw2-ii-55-root-24",
+      "operation": "inventory",
+      "outcome": "accepted",
+      "outputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "recordOnly": true,
+      "seedId": "EX0289-RW2-INVENTORY",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": true,
+            "tiff": false
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "rw2",
+          "embedded": {
+            "blobLength": 1220,
+            "blobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 85,
+            "make": "PANASONIC",
+            "model": "B10 SYNTHETIC RW2",
+            "rootOffset": 24,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1220,
+          "fileSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+          "lastAccountedByte": 1219,
+          "rw2": {
+            "headerBytes": 24,
+            "identityField": "B10-RW2-IDENTITY",
+            "magic": "0x0055",
+            "rootOffset": 24
+          },
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Warning: Directory PanasonicRaw has an unexpected next pointer; ignored.\n",
+        "stdoutLength": 563,
+        "stdoutSha256": "bcd20f44bde9c0914ce1a6f6f334d3c3abc46b0fbcc9c09e1fd19bfb1dc52bfc"
+      },
+      "family": "exif",
+      "fixture": "owned-rw2-root24.rw2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "flag": "-pa",
+      "id": "EX0289-RW2-EXIF-READ-0001",
+      "inputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "layout": "raw-rw2-ii-55-root-24",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "recordOnly": true,
+      "seedId": "EX0289-RW2-EXIF",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": true,
+            "tiff": false
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "rw2",
+          "embedded": {
+            "blobLength": 1220,
+            "blobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 85,
+            "make": "PANASONIC",
+            "model": "B10 SYNTHETIC RW2",
+            "rootOffset": 24,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1220,
+          "fileSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+          "lastAccountedByte": 1219,
+          "rw2": {
+            "headerBytes": 24,
+            "identityField": "B10-RW2-IDENTITY",
+            "magic": "0x0055",
+            "rootOffset": 24
+          },
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Warning: Directory PanasonicRaw has an unexpected next pointer; ignored.\n",
+        "stdoutLength": 563,
+        "stdoutSha256": "bcd20f44bde9c0914ce1a6f6f334d3c3abc46b0fbcc9c09e1fd19bfb1dc52bfc"
+      },
+      "family": "iptc",
+      "fixture": "owned-rw2-root24.rw2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "flag": "-pa",
+      "id": "EX0289-RW2-IPTC-READ-0001",
+      "inputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "layout": "raw-rw2-ii-55-root-24",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "recordOnly": true,
+      "seedId": "EX0289-RW2-IPTC",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": true,
+            "tiff": false
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "rw2",
+          "embedded": {
+            "blobLength": 1220,
+            "blobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 85,
+            "make": "PANASONIC",
+            "model": "B10 SYNTHETIC RW2",
+            "rootOffset": 24,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1220,
+          "fileSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+          "lastAccountedByte": 1219,
+          "rw2": {
+            "headerBytes": 24,
+            "identityField": "B10-RW2-IDENTITY",
+            "magic": "0x0055",
+            "rootOffset": 24
+          },
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Warning: Directory PanasonicRaw has an unexpected next pointer; ignored.\n",
+        "stdoutLength": 563,
+        "stdoutSha256": "bcd20f44bde9c0914ce1a6f6f334d3c3abc46b0fbcc9c09e1fd19bfb1dc52bfc"
+      },
+      "family": "xmp",
+      "fixture": "owned-rw2-root24.rw2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "flag": "-pa",
+      "id": "EX0289-RW2-XMP-READ-0001",
+      "inputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "layout": "raw-rw2-ii-55-root-24",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "recordOnly": true,
+      "seedId": "EX0289-RW2-XMP",
+      "textEncoding": "utf-8"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": true,
+            "tiff": false
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "rw2",
+          "embedded": {
+            "blobLength": 1220,
+            "blobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 85,
+            "make": "PANASONIC",
+            "model": "B10 SYNTHETIC RW2",
+            "rootOffset": 24,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1220,
+          "fileSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+          "lastAccountedByte": 1219,
+          "rw2": {
+            "headerBytes": 24,
+            "identityField": "B10-RW2-IDENTITY",
+            "magic": "0x0055",
+            "rootOffset": 24
+          },
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Warning: Directory PanasonicRaw has an unexpected next pointer; ignored.\n",
+        "stdoutLength": 1,
+        "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      "family": "comments",
+      "fixture": "owned-rw2-root24.rw2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "flag": "-pc",
+      "id": "EX0289-RW2-COMMENTS-READ-0001",
+      "inputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "layout": "raw-rw2-ii-55-root-24",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "recordOnly": true,
+      "seedId": "EX0289-RW2-COMMENTS",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": true,
+            "tiff": false
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "rw2",
+          "embedded": {
+            "blobLength": 1220,
+            "blobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 85,
+            "make": "PANASONIC",
+            "model": "B10 SYNTHETIC RW2",
+            "rootOffset": 24,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1220,
+          "fileSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+          "lastAccountedByte": 1219,
+          "rw2": {
+            "headerBytes": 24,
+            "identityField": "B10-RW2-IDENTITY",
+            "magic": "0x0055",
+            "rootOffset": 24
+          },
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "",
+        "stdoutLength": 202,
+        "stdoutSha256": "d66162ced0da157419684afd91f0a3be0f921289cd9a41e146f8a169b3c16d8c"
+      },
+      "family": "icc",
+      "fixture": "owned-rw2-root24.rw2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "flag": "-pC",
+      "id": "EX0289-RW2-ICC-READ-0001",
+      "inputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "layout": "raw-rw2-ii-55-root-24",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "recordOnly": true,
+      "seedId": "EX0289-RW2-ICC",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": true,
+            "tiff": false
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "rw2",
+          "embedded": {
+            "blobLength": 1220,
+            "blobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 85,
+            "make": "PANASONIC",
+            "model": "B10 SYNTHETIC RW2",
+            "rootOffset": 24,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1220,
+          "fileSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+          "lastAccountedByte": 1219,
+          "rw2": {
+            "headerBytes": 24,
+            "identityField": "B10-RW2-IDENTITY",
+            "magic": "0x0055",
+            "rootOffset": 24
+          },
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Warning: Directory PanasonicRaw has an unexpected next pointer; ignored.\n",
+        "stdoutLength": 563,
+        "stdoutSha256": "bcd20f44bde9c0914ce1a6f6f334d3c3abc46b0fbcc9c09e1fd19bfb1dc52bfc"
+      },
+      "family": "thumbnail",
+      "fixture": "owned-rw2-root24.rw2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "flag": "-pa",
+      "id": "EX0289-RW2-THUMBNAIL-READ-0001",
+      "inputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "layout": "raw-rw2-ii-55-root-24",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "recordOnly": true,
+      "seedId": "EX0289-RW2-THUMBNAIL",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": true,
+            "tiff": false
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "rw2",
+          "embedded": {
+            "blobLength": 1220,
+            "blobSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 85,
+            "make": "PANASONIC",
+            "model": "B10 SYNTHETIC RW2",
+            "rootOffset": 24,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1220,
+          "fileSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+          "lastAccountedByte": 1219,
+          "rw2": {
+            "headerBytes": 24,
+            "identityField": "B10-RW2-IDENTITY",
+            "magic": "0x0055",
+            "rootOffset": 24
+          },
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": {
+          "artifactBytes": 0,
+          "exitCodeEqualsArtifactBytes": true,
+          "exitCodeIsByteCountInPinnedBuild": true,
+          "reportedNoThumbnail": true
+        },
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "Warning: Directory PanasonicRaw has an unexpected next pointer; ignored.\n<fixture>: Image does not contain an Exif thumbnail\n",
+        "stdoutLength": 0,
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "family": "thumbnail",
+      "fixture": "owned-rw2-root24.rw2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "flag": "-et",
+      "id": "EX0289-RW2-THUMBNAIL-EXTRACT-0001",
+      "inputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "layout": "raw-rw2-ii-55-root-24",
+      "operation": "extract",
+      "outcome": "zero-exit-no-artifact",
+      "outputSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "recordOnly": true,
+      "seedId": "EX0289-RW2-THUMBNAIL",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": false,
+            "tiff": true
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "tiff",
+          "embedded": {
+            "blobLength": 1208,
+            "blobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "SONY",
+            "model": "B10 SYNTHETIC SR2 MARKER",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1208,
+          "fileSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+          "lastAccountedByte": 1207,
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 2318,
+        "stdoutSha256": "9b5ff991bc3301e8f35a4ab3df78d70a4e19190f4cbfc3c2b7370a0cc590bd74"
+      },
+      "family": "inventory",
+      "fixture": "owned-marker-sr2.sr2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "flag": "-pS",
+      "id": "EX0289-SR2-INVENTORY-INVENTORY-0001",
+      "inputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "layout": "raw-tiff-ep-ii-sr2",
+      "operation": "inventory",
+      "outcome": "accepted",
+      "outputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "recordOnly": true,
+      "seedId": "EX0289-SR2-INVENTORY",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": false,
+            "tiff": true
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "tiff",
+          "embedded": {
+            "blobLength": 1208,
+            "blobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "SONY",
+            "model": "B10 SYNTHETIC SR2 MARKER",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1208,
+          "fileSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+          "lastAccountedByte": 1207,
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 3789,
+        "stdoutSha256": "01b665836a20ac512fc44b40179e12e0120b32d53e4eed424a23ac7a31e9d8b8"
+      },
+      "family": "exif",
+      "fixture": "owned-marker-sr2.sr2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "flag": "-pa",
+      "id": "EX0289-SR2-EXIF-READ-0001",
+      "inputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "layout": "raw-tiff-ep-ii-sr2",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "recordOnly": true,
+      "seedId": "EX0289-SR2-EXIF",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": false,
+            "tiff": true
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "tiff",
+          "embedded": {
+            "blobLength": 1208,
+            "blobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "SONY",
+            "model": "B10 SYNTHETIC SR2 MARKER",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1208,
+          "fileSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+          "lastAccountedByte": 1207,
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 3789,
+        "stdoutSha256": "01b665836a20ac512fc44b40179e12e0120b32d53e4eed424a23ac7a31e9d8b8"
+      },
+      "family": "iptc",
+      "fixture": "owned-marker-sr2.sr2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "flag": "-pa",
+      "id": "EX0289-SR2-IPTC-READ-0001",
+      "inputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "layout": "raw-tiff-ep-ii-sr2",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "recordOnly": true,
+      "seedId": "EX0289-SR2-IPTC",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": false,
+            "tiff": true
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "tiff",
+          "embedded": {
+            "blobLength": 1208,
+            "blobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "SONY",
+            "model": "B10 SYNTHETIC SR2 MARKER",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1208,
+          "fileSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+          "lastAccountedByte": 1207,
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 3789,
+        "stdoutSha256": "01b665836a20ac512fc44b40179e12e0120b32d53e4eed424a23ac7a31e9d8b8"
+      },
+      "family": "xmp",
+      "fixture": "owned-marker-sr2.sr2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "flag": "-pa",
+      "id": "EX0289-SR2-XMP-READ-0001",
+      "inputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "layout": "raw-tiff-ep-ii-sr2",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "recordOnly": true,
+      "seedId": "EX0289-SR2-XMP",
+      "textEncoding": "utf-8"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": false,
+            "tiff": true
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "tiff",
+          "embedded": {
+            "blobLength": 1208,
+            "blobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "SONY",
+            "model": "B10 SYNTHETIC SR2 MARKER",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1208,
+          "fileSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+          "lastAccountedByte": 1207,
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "",
+        "stdoutLength": 1,
+        "stdoutSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+      },
+      "family": "comments",
+      "fixture": "owned-marker-sr2.sr2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "flag": "-pc",
+      "id": "EX0289-SR2-COMMENTS-READ-0001",
+      "inputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "layout": "raw-tiff-ep-ii-sr2",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "recordOnly": true,
+      "seedId": "EX0289-SR2-COMMENTS",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": false,
+            "tiff": true
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "tiff",
+          "embedded": {
+            "blobLength": 1208,
+            "blobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "SONY",
+            "model": "B10 SYNTHETIC SR2 MARKER",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1208,
+          "fileSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+          "lastAccountedByte": 1207,
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "",
+        "stdoutLength": 192,
+        "stdoutSha256": "bc139aa383785cdf0ee2e53ca9c2617a2ad2a9f428467580b915c022b9d3e170"
+      },
+      "family": "icc",
+      "fixture": "owned-marker-sr2.sr2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "flag": "-pC",
+      "id": "EX0289-SR2-ICC-READ-0001",
+      "inputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "layout": "raw-tiff-ep-ii-sr2",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "recordOnly": true,
+      "seedId": "EX0289-SR2-ICC",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 0,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": false,
+            "tiff": true
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "tiff",
+          "embedded": {
+            "blobLength": 1208,
+            "blobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "SONY",
+            "model": "B10 SYNTHETIC SR2 MARKER",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1208,
+          "fileSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+          "lastAccountedByte": 1207,
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": null,
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [
+          "B10Artist",
+          "B10Tool"
+        ],
+        "stderr": "",
+        "stdoutLength": 3789,
+        "stdoutSha256": "01b665836a20ac512fc44b40179e12e0120b32d53e4eed424a23ac7a31e9d8b8"
+      },
+      "family": "thumbnail",
+      "fixture": "owned-marker-sr2.sr2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "flag": "-pa",
+      "id": "EX0289-SR2-THUMBNAIL-READ-0001",
+      "inputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "layout": "raw-tiff-ep-ii-sr2",
+      "operation": "read",
+      "outcome": "accepted",
+      "outputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "recordOnly": true,
+      "seedId": "EX0289-SR2-THUMBNAIL",
+      "textEncoding": "not-applicable"
+    },
+    {
+      "duplicates": "none",
+      "exitCode": 137,
+      "expectOk": null,
+      "facts": {
+        "artifacts": [
+          {
+            "file": "case-thumb.jpg",
+            "length": 137,
+            "sha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260"
+          }
+        ],
+        "container": {
+          "acceptedBy": {
+            "mrw": false,
+            "raf": false,
+            "rw2": false,
+            "tiff": true
+          },
+          "byteOrder": "littleEndian",
+          "dispatch": "tiff",
+          "embedded": {
+            "blobLength": 1208,
+            "blobSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+            "carriers": [
+              "icc",
+              "iptc",
+              "xmp",
+              "comment"
+            ],
+            "compression": 1,
+            "dataPoolSpans": 12,
+            "directoryOrder": [
+              "IFD0",
+              "IFD1",
+              "ExifIFD"
+            ],
+            "magicTag": 42,
+            "make": "SONY",
+            "model": "B10 SYNTHETIC SR2 MARKER",
+            "rootOffset": 8,
+            "thumbnailPresent": true
+          },
+          "fileLength": 1208,
+          "fileSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+          "lastAccountedByte": 1207,
+          "trailingPadBytes": 1
+        },
+        "extractSemantics": {
+          "artifactBytes": 137,
+          "exitCodeEqualsArtifactBytes": true,
+          "exitCodeIsByteCountInPinnedBuild": true,
+          "reportedNoThumbnail": false
+        },
+        "finding": null,
+        "inputUnchanged": true,
+        "printedTokens": [],
+        "stderr": "",
+        "stdoutLength": 0,
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "family": "thumbnail",
+      "fixture": "owned-marker-sr2.sr2",
+      "fixtureRights": "owned-synthetic",
+      "fixtureSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "flag": "-et",
+      "id": "EX0289-SR2-THUMBNAIL-EXTRACT-0001",
+      "inputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "layout": "raw-tiff-ep-ii-sr2",
+      "operation": "extract",
+      "outcome": "nonzero-exit-artifact-produced",
+      "outputSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "recordOnly": true,
+      "seedId": "EX0289-SR2-THUMBNAIL",
+      "textEncoding": "not-applicable"
+    }
+  ],
+  "outcomeCounts": {
+    "accepted": 26,
+    "blocked-rights": 32,
+    "nonzero-exit-artifact-produced": 2,
+    "refused": 2,
+    "static-not-applicable": 0,
+    "zero-exit-no-artifact": 2
+  },
+  "schema": 1,
+  "scope": "read-only pinned CLI probes of owned synthetic wave-2 RAW containers (MRW block chain with an embedded TTW TIFF, RAF big-endian offset table with a preview JPEG and a camera-settings TIFF, RW2 magic 0x0055 with root IFD 24, and a generic TIFF marker recording the absence of an SR2-specific observable) and blocked vendor-private cells; no product verification, no support claim, no vendor layout conformance claim",
+  "secondaryObservations": {
+    "owned-marker-sr2.sr2": {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 1208,
+      "fixtureSha256": "e3b17de4fb14d05de0f0104139cd94b18ffd56b057865bc3eedb43851fd3337c",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "Composite:ImageSize": "8x8",
+          "Composite:Megapixels": 6.4e-05,
+          "ExifIFD:DateTimeOriginal": "2026:11:10 00:00:00",
+          "ExifIFD:ExifVersion": "48 50 51 49",
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:CurrentIPTCDigest": "ba66d063ef4129228c525803b9fb8086",
+          "File:ExifByteOrder": "Little-endian (Intel, II)",
+          "File:FileType": "SR2",
+          "File:FileTypeExtension": "sr2",
+          "File:MIMEType": "image/x-sony-sr2",
+          "ICC-header:CMMFlags": "Not Embedded, Independent",
+          "ICC-header:ColorSpaceData": "RGB ",
+          "ICC-header:ConnectionSpaceIlluminant": "0 0 0.9642",
+          "ICC-header:DeviceAttributes": "Reflective, Glossy, Positive, Color",
+          "ICC-header:DeviceManufacturer": "",
+          "ICC-header:DeviceModel": "",
+          "ICC-header:PrimaryPlatform": "Unknown (SOBR)",
+          "ICC-header:ProfileCMMType": "Unknown (SOBS)",
+          "ICC-header:ProfileClass": "Display Device Profile",
+          "ICC-header:ProfileConnectionSpace": "XYZ ",
+          "ICC-header:ProfileCreator": "",
+          "ICC-header:ProfileDateTime": "2026:11:08 00:00:00",
+          "ICC-header:ProfileFileSignature": "acsp",
+          "ICC-header:ProfileID": "0000d32d4d6574616461746153686172",
+          "ICC-header:ProfileVersion": "4.3.0",
+          "ICC-header:RenderingIntent": "Perceptual",
+          "ICC_Profile:ProfileDescription": "(Binary data 48 bytes, use -b option to extract)",
+          "IFD0:Artist": "B10Artist",
+          "IFD0:Compression": "Uncompressed",
+          "IFD0:Copyright": "(c) 2026 MetadataSharp owned synthetic",
+          "IFD0:ImageHeight": 8,
+          "IFD0:ImageWidth": 8,
+          "IFD0:Make": "SONY",
+          "IFD0:Model": "B10 SYNTHETIC SR2 MARKER",
+          "IFD0:Orientation": "Horizontal (normal)",
+          "IFD0:PhotometricInterpretation": "RGB",
+          "IFD0:Software": "B10Tool",
+          "IFD0:StripByteCounts": 3,
+          "IFD0:StripOffsets": 1066,
+          "IFD0:XPComment": "MetadataSharp B10 comment \u00e9 \u2713",
+          "IFD1:Compression": "JPEG (old-style)",
+          "IFD1:PhotometricInterpretation": "RGB",
+          "IFD1:ThumbnailImage": "(Binary data 137 bytes, use -b option to extract)",
+          "IFD1:ThumbnailLength": 137,
+          "IFD1:ThumbnailOffset": 1070,
+          "IPTC:Keywords": [
+            "MetadataSharpAlpha",
+            "MetadataSharpBeta"
+          ],
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b10/owned-marker-sr2.sr2",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b10",
+          "System:FileAccessDate": "2026:11:10 03:11:08+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 03:10:08+00:00",
+          "System:FileModifyDate": "2026:11:10 03:10:08+00:00",
+          "System:FileName": "owned-marker-sr2.sr2",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "1208 bytes",
+          "XMP-x:XMPToolkit": "MetadataSharp",
+          "XMP-xmp:CreatorTool": "MetadataSharp"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "28317dd4bf526cecc5df3a01faaf0eda33e36786bbf113fe779377fa681b5c47",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    "owned-mrw-ttw.mrw": {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 1282,
+      "fixtureSha256": "30e326dae498f77ef2ffe133c230cea9d685bb661b4ab5ede2e4088853946d78",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "Composite:ImageSize": "17481x17440",
+          "Composite:Megapixels": 304.9,
+          "ExifIFD:DateTimeOriginal": "2026:11:10 00:00:00",
+          "ExifIFD:ExifVersion": "48 50 51 49",
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:ExifByteOrder": "Little-endian (Intel, II)",
+          "File:FileType": "MRW",
+          "File:FileTypeExtension": "mrw",
+          "File:MIMEType": "image/x-minolta-mrw",
+          "ICC-header:CMMFlags": "Not Embedded, Independent",
+          "ICC-header:ColorSpaceData": "RGB ",
+          "ICC-header:ConnectionSpaceIlluminant": "0 0 0.9642",
+          "ICC-header:DeviceAttributes": "Reflective, Glossy, Positive, Color",
+          "ICC-header:DeviceManufacturer": "",
+          "ICC-header:DeviceModel": "",
+          "ICC-header:PrimaryPlatform": "Unknown (SOBR)",
+          "ICC-header:ProfileCMMType": "Unknown (SOBS)",
+          "ICC-header:ProfileClass": "Display Device Profile",
+          "ICC-header:ProfileConnectionSpace": "XYZ ",
+          "ICC-header:ProfileCreator": "",
+          "ICC-header:ProfileDateTime": "2026:11:08 00:00:00",
+          "ICC-header:ProfileFileSignature": "acsp",
+          "ICC-header:ProfileID": "0000d32d4d6574616461746153686172",
+          "ICC-header:ProfileVersion": "4.3.0",
+          "ICC-header:RenderingIntent": "Perceptual",
+          "ICC_Profile:ProfileDescription": "(Binary data 48 bytes, use -b option to extract)",
+          "IFD0:Artist": "B10Artist",
+          "IFD0:Compression": "Uncompressed",
+          "IFD0:Copyright": "(c) 2026 MetadataSharp owned synthetic",
+          "IFD0:ImageHeight": 8,
+          "IFD0:ImageWidth": 8,
+          "IFD0:Make": "MINOLTA",
+          "IFD0:Model": "B10 SYNTHETIC MRW",
+          "IFD0:Orientation": "Horizontal (normal)",
+          "IFD0:PhotometricInterpretation": "RGB",
+          "IFD0:Software": "B10Tool",
+          "IFD0:StripByteCounts": 3,
+          "IFD0:StripOffsets": 1060,
+          "IFD0:XPComment": "MetadataSharp B10 comment \u00e9 \u2713",
+          "IFD1:Compression": "JPEG (old-style)",
+          "IFD1:PhotometricInterpretation": "RGB",
+          "IFD1:ThumbnailImage": "(Binary data 137 bytes, use -b option to extract)",
+          "IFD1:ThumbnailLength": 137,
+          "IFD1:ThumbnailOffset": 1064,
+          "IPTC:Keywords": [
+            "MetadataSharpAlpha",
+            "MetadataSharpBeta"
+          ],
+          "MinoltaRaw:BayerPattern": "Unknown (83)",
+          "MinoltaRaw:BitDepth": 69,
+          "MinoltaRaw:ColorMode": "Natural color",
+          "MinoltaRaw:Contrast": 48,
+          "MinoltaRaw:FirmwareID": "B10 OWNE",
+          "MinoltaRaw:ISOSetting": "Auto",
+          "MinoltaRaw:ImageHeight": 17440,
+          "MinoltaRaw:ImageWidth": 17481,
+          "MinoltaRaw:ProgramMode": "Unknown (70)",
+          "MinoltaRaw:RawDepth": 77,
+          "MinoltaRaw:Saturation": 49,
+          "MinoltaRaw:SensorHeight": 17440,
+          "MinoltaRaw:SensorWidth": 20562,
+          "MinoltaRaw:Sharpness": 32,
+          "MinoltaRaw:StorageMethod": "Unknown (78)",
+          "MinoltaRaw:WBMode": "Cloudy",
+          "MinoltaRaw:WBScale": "66 49 48 32",
+          "MinoltaRaw:WB_RGGBLevels": "22338 0",
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b10/owned-mrw-ttw.mrw",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b10",
+          "System:FileAccessDate": "2026:11:10 03:11:08+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 03:10:08+00:00",
+          "System:FileModifyDate": "2026:11:10 03:10:08+00:00",
+          "System:FileName": "owned-mrw-ttw.mrw",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "1282 bytes",
+          "XMP-x:XMPToolkit": "MetadataSharp",
+          "XMP-xmp:CreatorTool": "MetadataSharp"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "8e738871200813bb4f3cbb2eccd0518994083421173baaeca06fd3e0da2b9b24",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    "owned-raf-fujifilm.raf": {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 1322,
+      "fixtureSha256": "204acadfe6cb7040434391fabbb20d6631e91ed94c579c9cf91d36f28799e7e0",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "Composite:ImageSize": "8x8",
+          "Composite:Megapixels": 6.4e-05,
+          "ExifTool:ExifToolVersion": 12.76,
+          "ExifTool:Warning": "Error reading M-RAW header",
+          "File:BitsPerSample": 8,
+          "File:ColorComponents": 1,
+          "File:Comment": "B10RafComment",
+          "File:EncodingProcess": "Baseline DCT, Huffman coding",
+          "File:ExifByteOrder": "Little-endian (Intel, II)",
+          "File:FileType": "RAF (M-RAW)",
+          "File:FileTypeExtension": "raf",
+          "File:ImageHeight": 8,
+          "File:ImageWidth": 8,
+          "File:MIMEType": "image/x-fujifilm-raf",
+          "File:PreviewImage": "(Binary data 698 bytes, use -b option to extract)",
+          "File:RAFVersion": "0100",
+          "IFD0:Artist": "B10Artist",
+          "IFD0:Make": "FUJIFILM",
+          "IFD0:Model": "B10 SYNTHETIC RAF",
+          "IFD0:Software": "B10Tool",
+          "IPTC:Keywords": [
+            "MetadataSharpAlpha",
+            "MetadataSharpBeta"
+          ],
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b10/owned-raf-fujifilm.raf",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b10",
+          "System:FileAccessDate": "2026:11:10 03:11:08+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 03:10:08+00:00",
+          "System:FileModifyDate": "2026:11:10 03:10:08+00:00",
+          "System:FileName": "owned-raf-fujifilm.raf",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "1322 bytes",
+          "XMP-x:XMPToolkit": "MetadataSharp",
+          "XMP-xmp:CreatorTool": "MetadataSharp"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "f13bdd2fab31bdfc62c57990ec12b97b1332132e71d8204a2a370ee61c251125",
+      "tool": "ExifTool",
+      "version": "12.76"
+    },
+    "owned-rw2-root24.rw2": {
+      "arguments": [
+        "-config",
+        "",
+        "-json",
+        "-G1",
+        "-s",
+        "<fixture>"
+      ],
+      "exitCode": 0,
+      "fixtureLength": 1220,
+      "fixtureSha256": "7b3c1301ea32280a6ae6a417286b8e6fcfa9b89ab7657fbd128677c7c4b7a08c",
+      "interpretation": "secondary-observation-not-conformance",
+      "json": [
+        {
+          "ExifIFD:DateTimeOriginal": "2026:11:10 00:00:00",
+          "ExifIFD:ExifVersion": "48 50 51 49",
+          "ExifTool:ExifToolVersion": 12.76,
+          "File:CurrentIPTCDigest": "ba66d063ef4129228c525803b9fb8086",
+          "File:ExifByteOrder": "Little-endian (Intel, II)",
+          "File:FileType": "RAW",
+          "File:FileTypeExtension": "raw",
+          "File:MIMEType": "image/x-raw",
+          "IFD0:Artist": "B10Artist",
+          "IFD0:Copyright": "(c) 2026 MetadataSharp owned synthetic",
+          "IFD0:Make": "PANASONIC",
+          "IFD0:Model": "B10 SYNTHETIC RW2",
+          "IFD0:Orientation": "Horizontal (normal)",
+          "IFD0:StripByteCounts": 3,
+          "IFD0:StripOffsets": 1078,
+          "IPTC:Keywords": [
+            "MetadataSharpAlpha",
+            "MetadataSharpBeta"
+          ],
+          "SourceFile": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b10/owned-rw2-root24.rw2",
+          "System:Directory": "/home/runner/work/MetadataSharp/MetadataSharp/tests/fixtures/b10",
+          "System:FileAccessDate": "2026:11:10 03:11:08+00:00",
+          "System:FileInodeChangeDate": "2026:11:10 03:10:08+00:00",
+          "System:FileModifyDate": "2026:11:10 03:10:08+00:00",
+          "System:FileName": "owned-rw2-root24.rw2",
+          "System:FilePermissions": "-rw-r--r--",
+          "System:FileSize": "1220 bytes",
+          "XMP-x:XMPToolkit": "MetadataSharp",
+          "XMP-xmp:CreatorTool": "MetadataSharp"
+        }
+      ],
+      "jsonParseError": null,
+      "sourceCommit": "212f02cf22b9484674752181cad3b73089ce9694",
+      "stderr": "",
+      "stdoutSha256": "8f30cdb9de0fa5ca93a4f689ba9f077a990e092b523bcce006ee1b5c5b721e7d",
+      "tool": "ExifTool",
+      "version": "12.76"
+    }
+  },
+  "sourceCommit": "e7b0ec8a6a69e019b4f4ee201e48a70e43ca4766",
+  "status": "passed",
+  "verification": "not-assessed"
+}

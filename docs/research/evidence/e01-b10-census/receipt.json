@@ -99,7 +99,11 @@
     "ciChunks": 4,
     "ciObservationsSha256": "4163b8cd8e24dccec44e1f4fe607228d6ababe0c779d55be2cf793bd13bf7e18",
     "ciRawPayloadSha256": "757153fde529f933552810f257c6203f287b045dafd61f79965af9578abf486d",
-    "ciRunId": 42744015517
+    "ciRunId": 42744015517,
+    "masterChunks": 4,
+    "masterObservationsSha256": "1374295e010976a4a436d98b465285f88bf6e892af93a55749ffabb84079d92c",
+    "masterRawPayloadSha256": "03c893c3edc629545038e4e903bf2bc562fd12d1e77aed2f1f809d24dfbe66c7",
+    "masterRunId": 42747632654
   },
   "preflightRecovery": {
     "title": "B10RAW observations.json",
@@ -320,9 +324,14 @@
         "head": "4322b70790226471252b18124b675bfa76018b64",
         "runId": 42744015517,
         "payload": "ci-observations.json"
+      },
+      {
+        "head": "e7b0ec8a6a69e019b4f4ee201e48a70e43ca4766",
+        "runId": 42747632654,
+        "payload": "master-observations.json"
       }
     ],
-    "status": "two independent CI runs of the same recorder agree on the observation payload byte-for-byte; only the build timestamp, the validated head and ExifTool file dates move",
+    "status": "3 independent CI runs of the same recorder agree on the observation payload byte-for-byte; only the build timestamp, the validated head and ExifTool file dates move",
     "excludedDifferences": {
       "baseline.executableSha256": "the build embeds its own timestamp, so the binary is not bit-reproducible",
       "baseline.verboseVersion": "the banner differs by the time= value and by where the library= line sits; the parsed field set is the same",
@@ -358,7 +367,43 @@
       "cmakeCacheSha256Equal": true,
       "effectiveCmakeEqual": true
     },
-    "secondaryDriftBeyondFileDates": []
+    "secondaryDriftBeyondFileDates": [],
+    "masterComparison": {
+      "identicalSections": [
+        "batch",
+        "blocked",
+        "denominatorFrozen",
+        "fixtureManifest",
+        "limitations",
+        "observations",
+        "outcomeCounts",
+        "schema",
+        "scope",
+        "status",
+        "verification"
+      ],
+      "differingSections": [
+        "baseline",
+        "secondaryObservations",
+        "sourceCommit"
+      ],
+      "head": "e7b0ec8a6a69e019b4f4ee201e48a70e43ca4766",
+      "runId": 42747632654,
+      "stillIdentical": [
+        "blocked",
+        "fixtureManifest",
+        "observations",
+        "outcomeCounts"
+      ],
+      "observationsSha256": "1374295e010976a4a436d98b465285f88bf6e892af93a55749ffabb84079d92c",
+      "rawPayloadSha256": "03c893c3edc629545038e4e903bf2bc562fd12d1e77aed2f1f809d24dfbe66c7",
+      "baselineDifference": {
+        "executableSha256Differs": true,
+        "cmakeCacheSha256Equal": true,
+        "effectiveCmakeEqual": true
+      },
+      "secondaryDriftBeyondFileDates": []
+    }
   },
   "notClaimed": [
     "no MetadataSharp verification (verification stays not-assessed)",
