@@ -41,6 +41,7 @@ EVIDENCE_BY_BATCH = {
     'B8': ROOT / 'docs/research/evidence/e01-b8-census/observations.json',
     'B9': ROOT / 'docs/research/evidence/e01-b9-census/observations.json',
     'B10': ROOT / 'docs/research/evidence/e01-b10-census/observations.json',
+    'B11': ROOT / 'docs/research/evidence/e01-b11-census/observations.json',
 }
 FIXTURE_MANIFESTS = {
     'JPEG': ROOT / 'tests/fixtures/jpeg/manifest.json',
@@ -58,6 +59,10 @@ FIXTURE_MANIFESTS = {
     # B10 keeps one manifest for its four wave-2 containers (MRW, RAF, RW2, SR2).
     **{fmt: ROOT / 'tests/fixtures/b10/census-manifest.json'
        for fmt in ('MRW', 'RAF', 'RW2', 'SR2')},
+    # B11 keeps one manifest for the four small formats and the five container stubs:
+    # every row of the batch is pinned to a file in this single catalog.
+    **{fmt: ROOT / 'tests/fixtures/b11/census-manifest.json'
+       for fmt in ('CRW', 'BMP', 'GIF', 'TGA', 'MOV', 'MKV', 'AVI', 'WAV', 'ASF')},
 }
 
 # Axis collapses that are statically impossible, reviewed with the B0 pilot and B1.
@@ -170,10 +175,39 @@ B10_FORMAT_LAYOUTS = B10_MARKER_LAYOUTS + B10_VENDOR_LAYOUTS
 for _family in FAMILIES + ['inventory']:
     LAYOUTS[_family].extend(layout for _, layouts in B10_FORMAT_LAYOUTS for layout in layouts)
 
+# B11 probe layouts: the four formats the pinned documentation does have rows for, and
+# the five container stubs it does not. The seed-grid formats keep the B8-B10 shape (one
+# inventory row plus the six families per layout, and a thumbnail extract only where the
+# seed carries a claim), and CRW keeps one blocked vendor-private layout: Canon's maker-note
+# space beyond the 17 canonId rows of crwMapping_ is not reviewed or cleared
+# (docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md). BMP, GIF and TGA get no blocked
+# layout because their readers have no vendor-private surface to block, and the video
+# formats get none because they get no family cells at all.
+#
+# The video half goes through B11_VIDEO_LAYOUTS and an inventory-only loop, deliberately
+# NOT through the family comprehension: six fabricated exif/iptc/xmp/comments/icc/thumbnail
+# cells per video format would grow the denominator out of thin air, which is what this
+# census has been defending against since B0. MP4 is absent by decision, not by omission --
+# which reader gets an .mp4 is a property of the brand at offset 8, so the brand pair is
+# enumerated under MOV and the extension never becomes a format.
+B11_SEED_LAYOUTS = [('CRW', ('ciff-mapped-v1', 'ciff-thumb-only-v1', 'ciff-preview-plus-thumb-v1',
+                             'ciff-unmapped-only-v1', 'ciff-vendor-private-unobserved')),
+                    ('BMP', ('bmp-dib-v3', 'bmp-os2-coreheader-v1')),
+                    ('GIF', ('gif-lsd-v1', 'gif-truncated-v1')),
+                    ('TGA', ('tga-full-v1', 'tga-name-only-v1', 'tga-signature-wrong-name-v1'))]
+B11_BLOCKED_LAYOUTS = ('ciff-vendor-private-unobserved',)
+B11_VIDEO_LAYOUTS = [('MOV', ('qtime-known-brand-v1', 'qtime-unknown-brand-v1')),
+                     ('MKV', ('mkv-ebml-header-v1',)), ('AVI', ('riff-avi-avih-v1',)),
+                     ('WAV', ('riff-wav-fmt-v1',)), ('ASF', ('asf-header-guid-v1',))]
+B11_FORMAT_LAYOUTS = B11_SEED_LAYOUTS + B11_VIDEO_LAYOUTS
+for _family in FAMILIES + ['inventory']:
+    LAYOUTS[_family].extend(layout for _, layouts in B11_FORMAT_LAYOUTS for layout in layouts)
+
 # (batch, format) cells that may legitimately end up blocked rather than observed.
 BLOCKED_CELLS = (frozenset({('B7', 'CR3'), ('B8', 'PGF'), ('B8', 'EXV'), ('B8', 'DCP')})
                  | frozenset({('B9', fmt) for fmt, _ in B9_VENDOR_LAYOUTS})
-                 | frozenset({('B10', fmt) for fmt, _ in B10_VENDOR_LAYOUTS}))
+                 | frozenset({('B10', fmt) for fmt, _ in B10_VENDOR_LAYOUTS})
+                 | frozenset({('B11', 'CRW')}))
 
 DUPLICATES = ['none', 'first-wins', 'multiple-independent']
 SIDECARS = ['none', 'xmp-present']  # B5 adds the presence-probe value (xmp-applied stays E15)
@@ -587,6 +621,55 @@ def build_rows(seeds):
                          layout=layout, duplicates='none', batch='B10',
                          notes=base + '; thumbnail extract attempted against the authored '
                                       'payload only, never a camera preview')
+    # B11: the four minimal image formats the pinned table rows for, and five container
+    # stubs it does not. CRW's carriers are CIFF components reached through crwMapping_[],
+    # so an unmapped component is a silent drop rather than an error, and the dimensions
+    # come from Exif.Photo.PixelXDimension rather than pixels; BMP/GIF/TGA have no metadata
+    # path at all, which is why their six family cells are all noDocumentedClaim and their
+    # recognition/MIME/dimension surface is described only in the inventory row. No B11
+    # write suboperation is enumerated: the CRW encoder exists and is symmetric, but this
+    # batch does not invoke it, so its behaviour is neither claimed nor refuted.
+    for fmt, layouts in B11_SEED_LAYOUTS:
+        claim = {s['family']: s for s in seeds['seeds'] if s['format'] == fmt}
+        assert set(claim) == set(FAMILIES), f'{fmt} seeds missing a family'
+        for layout in sorted(layouts):
+            blocked = layout in B11_BLOCKED_LAYOUTS
+            base = (f'{fmt} vendor-private layout is not authored: no Canon CIFF tag outside '
+                    f'the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell '
+                    f'is blocked, not refused'
+                    if blocked else
+                    f'{fmt} owned synthetic container: the pinned recogniser contract plus the '
+                    f'metadata components this batch reads, no pixel data')
+            emit(fmt, 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
+                 layout=layout, duplicates='none', batch='B11',
+                 notes=base + '; recognition, MIME type and dimensions are recorded here and are '
+                              'not metadata support')
+            for family in FAMILIES:
+                no_claim = claim[family]['documentedClaim'] in ('-', '')
+                value_type = ('any-documented' if family == 'exif'
+                              else 'text-bytes' if family in ('xmp', 'comments') else 'opaque')
+                encoding = 'utf-8' if family == 'xmp' else 'not-applicable'
+                emit(fmt, family, 'read', value_type=value_type, text_encoding=encoding, layout=layout,
+                     duplicates='none', batch='B11', no_claim=no_claim,
+                     notes=base + f'; {family} read probe records what this build printed, '
+                                  f'asserting nothing about {fmt} {family} semantics')
+                if family == 'thumbnail' and not no_claim:
+                    emit(fmt, family, 'extract', value_type='opaque', text_encoding='not-applicable',
+                         layout=layout, duplicates='none', batch='B11',
+                         notes=base + '; thumbnail extract attempted against the authored CIFF '
+                                      '0x2008 component only, never a camera preview')
+    # Video inventory rows only: the pinned registry advertises Exif amRead while every
+    # reader declares mdNone and writes XMP, and printStructure throws because none of the
+    # six video classes overrides it. There is no table row to negate, so these rows carry
+    # noDocumentedClaim false and a note that says why.
+    for fmt, layouts in B11_VIDEO_LAYOUTS:
+        for layout in sorted(layouts):
+            emit(fmt, 'inventory', 'inventory', value_type='opaque', text_encoding='not-applicable',
+                 layout=layout, duplicates='none', batch='B11',
+                 notes=f'{fmt} container stub for the pinned registry only: the reader reached is '
+                       f'recorded, its supported metadata is mdNone and its registry Exif field is '
+                       f'amRead, and the pinned format table has no row for it; no metadata family '
+                       f'is enumerated because none is claimed')
     return rows
 
 
@@ -636,7 +719,7 @@ def apply_observations(rows):
         item = observed.get(row['rowId'])
         assert item is not None, f'observation missing for applicable row {row["rowId"]}'
         fixture = manifests[row['format']][item['fixture']]
-        if batch in ('B7', 'B8', 'B9', 'B10'):
+        if batch in ('B7', 'B8', 'B9', 'B10', 'B11'):
             assert fixture['format'] == row['format'], f'fixture format mismatch for {row["rowId"]}'
         assert fixture['sha256'] == item['fixtureSha256'], \
             f'fixture/evidence hash mismatch for {row["rowId"]}'
@@ -646,7 +729,7 @@ def apply_observations(rows):
         evidence_dir = EVIDENCE_BY_BATCH[batch].parent.name
         if item['recordOnly'] or item['expectOk'] is None:
             detail = ('record-only bounded probe; no independent expectation or support assertion'
-                      if batch in ('B7', 'B8', 'B9', 'B10') else
+                      if batch in ('B7', 'B8', 'B9', 'B10', 'B11') else
                       'spec silent on this scenario; pinned Exiv2 0.28.9 observation recorded (no pre-asserted behavior)')
             row['oracle'] = {'type': 'pinned-cli', 'detail': detail + '; see evidence/' + evidence_dir}
         else:
@@ -682,7 +765,9 @@ def build(seeds):
                   | {f'{fmt}/{family}' for fmt, _ in B9_FORMAT_LAYOUTS for family in FAMILIES}
                   | {f'{fmt}/inventory' for fmt, _ in B9_FORMAT_LAYOUTS}
                   | {f'{fmt}/{family}' for fmt, _ in B10_FORMAT_LAYOUTS for family in FAMILIES}
-                  | {f'{fmt}/inventory' for fmt, _ in B10_FORMAT_LAYOUTS})
+                  | {f'{fmt}/inventory' for fmt, _ in B10_FORMAT_LAYOUTS}
+                  | {f'{fmt}/{family}' for fmt, _ in B11_SEED_LAYOUTS for family in FAMILIES}
+                  | {f'{fmt}/inventory' for fmt, _ in B11_FORMAT_LAYOUTS})
     pending = sorted(s['seedId'] for s in seeds['seeds']
                      if f"{s['format']}/{s['family']}" not in {e for e in enumerated if 'inventory' not in e})
     assert len({r['rowId'] for r in rows}) == len(rows)
@@ -692,7 +777,9 @@ def build(seeds):
         reviewedBy='developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts; B8 adds owned PSD/JP2/EPS probe layouts and the pending-format unobserved layouts; '
         'B9 adds owned TIFF-derived RAW marker layouts and the vendor-private unobserved '
         'layouts; B10 adds owned wave-2 container layouts (MRW, RAF, RW2, SR2) and their '
-        'vendor-private unobserved layouts',
+        'vendor-private unobserved layouts; B11 adds owned CIFF, BMP, GIF and TGA layouts, '
+        'the CRW vendor-private unobserved layout, and inventory-only container layouts for '
+        'MOV, MKV, AVI, WAV and ASF',
         family=[*FAMILIES, 'inventory'],
         operation=OPERATIONS,
         extractFamilies=EXTRACT_FAMILIES,
@@ -742,6 +829,14 @@ def build(seeds):
                'keeps a blocked vendor-private cell because no proprietary layout is reviewed or '
                'cleared, and no B10 write suboperation is enumerated because the pinned registry '
                'marks all four formats read-only. '
+               'B11 read-only probes on owned synthetic CIFF, BMP, GIF and TGA containers '
+               '(four CIFF layouts, two BMP header variants, two GIF screen-descriptor shapes '
+               'and three TGA recognition cases), plus one inventory row per container stub for '
+               'MOV, MKV, AVI, WAV and ASF so the reader the pinned registry dispatches to is '
+               'recorded without inventing a metadata family for a format the pinned table does '
+               'not list; CRW keeps one blocked vendor-private cell because no Canon CIFF tag '
+               'outside the mapping table is reviewed or cleared, and no B11 write suboperation '
+               'is enumerated. '
                + ((f'Pinned-CLI evidence recorded for batch(es) {", ".join(applied_batches)}: '
                     'rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; '
                     'no denominator computed. ') if applied_batches else
@@ -751,7 +846,8 @@ def build(seeds):
             'enumerated': sorted(enumerated - {'JPEG/inventory'}),
             'inventoryTrack': ['JPEG', 'PNG', 'WEBP', 'TIFF', 'XMP', 'DNG', 'AVIF', 'HEIF', 'HEIC',
                                'CR3', 'JXL', 'PSD', 'JP2', 'EPS', 'ARW', 'CR2', 'NEF', 'ORF', 'PEF',
-                               'SRW', 'MRW', 'RAF', 'RW2', 'SR2'],
+                               'SRW', 'MRW', 'RAF', 'RW2', 'SR2', 'CRW', 'BMP', 'GIF', 'TGA',
+                               'MOV', 'MKV', 'AVI', 'WAV', 'ASF'],
             'pendingSeedIds': pending,
         },
         enumerations=enumerations,

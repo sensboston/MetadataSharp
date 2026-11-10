@@ -10,6 +10,9 @@ census = importlib.util.module_from_spec(spec); spec.loader.exec_module(census)
 ROW_ID = __import__('re').compile(r'^EX0289-[A-Z][A-Z0-9]*-[A-Z]+-[A-Z]+-\d{4}$')
 
 
+SIX_FAMILIES = ('EXIF', 'IPTC', 'XMP', 'COMMENTS', 'ICC', 'THUMBNAIL')
+
+
 def load_evidence(batch='b0'):
     path = ROOT / f'docs/research/evidence/e01-{batch}-census/observations.json'
     return json.loads(path.read_text()) if path.exists() else None
@@ -408,7 +411,9 @@ class CensusPolicyTests(unittest.TestCase):
     def test_scope_is_observed_batches_plus_inventory(self):
         families = {r['family'] for r in self.report['rows']}
         self.assertEqual({'exif', 'comments', 'icc', 'xmp', 'iptc', 'thumbnail', 'inventory'}, families)
-        self.assertEqual(42, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
+        # B11 adds 12 inventory rows on the seed-grid layouts (five CIFF, two BMP, two GIF,
+        # three TGA) and one per container stub, so the inventory track grows 42 -> 60.
+        self.assertEqual(60, sum(1 for r in self.report['rows'] if r['family'] == 'inventory'))
         self.assertEqual(135, sum(1 for r in self.report['rows'] if r['batch'] == 'B0'))
         self.assertEqual(58, sum(1 for r in self.report['rows'] if r['batch'] == 'B1'))
         self.assertEqual(67, sum(1 for r in self.report['rows'] if r['batch'] == 'B2'))
@@ -420,7 +425,8 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(53, sum(1 for r in self.report['rows'] if r['batch'] == 'B8'))
         self.assertEqual(96, sum(1 for r in self.report['rows'] if r['batch'] == 'B9'))
         self.assertEqual(64, sum(1 for r in self.report['rows'] if r['batch'] == 'B10'))
-        self.assertEqual(728, len(self.report['rows']))
+        self.assertEqual(95, sum(1 for r in self.report['rows'] if r['batch'] == 'B11'))
+        self.assertEqual(823, len(self.report['rows']))
 
     def test_b10_rows_partition_observed_and_blocked(self):
         rows = [r for r in self.report['rows'] if r['batch'] == 'B10']
@@ -504,6 +510,101 @@ class CensusPolicyTests(unittest.TestCase):
         reasons = {b['reason'] for b in evidence['blocked']}
         self.assertEqual(4, len(reasons))
         self.assertTrue(all('blocked' in r for r in reasons))
+
+    def test_b11_rows_are_the_seed_grid_plus_inventory_only_containers(self):
+        rows = [r for r in self.report['rows'] if r['batch'] == 'B11']
+        self.assertEqual(95, len(rows))
+        self.assertEqual({'CRW', 'BMP', 'GIF', 'TGA', 'MOV', 'MKV', 'AVI', 'WAV', 'ASF'},
+                         {r['format'] for r in rows})
+        per_format = {fmt: len([r for r in rows if r['format'] == fmt])
+                      for fmt in ('CRW', 'BMP', 'GIF', 'TGA', 'MOV')}
+        # CRW keeps five layouts of eight rows (four fixtures plus the blocked vendor-private
+        # cell); BMP and GIF two of seven each; TGA three of seven; MOV two inventory rows, one
+        # per brand. Seven rather than eight because a '-' for the thumbnail family means no
+        # extract row is invented for a reader that has no thumbnail to extract.
+        self.assertEqual({'CRW': 40, 'BMP': 14, 'GIF': 14, 'TGA': 21, 'MOV': 2}, per_format)
+        # The trap this batch was reviewed for: a container stub must never grow a metadata
+        # family cell, because there is no claim to observe and none to negate.
+        for fmt in ('MKV', 'AVI', 'WAV', 'ASF'):
+            self.assertEqual(1, len([r for r in rows if r['format'] == fmt]), fmt)
+            self.assertEqual({'inventory'}, {r['family'] for r in rows if r['format'] == fmt})
+        for row in rows:
+            self.assertIn(row['operation'], ('inventory', 'read', 'extract'))
+            self.assertEqual('not-assessed', row['verification'])
+        blocked = [r for r in rows if r['layout'] == 'ciff-vendor-private-unobserved']
+        self.assertEqual(8, len(blocked))
+        self.assertEqual({'CRW'}, {r['format'] for r in blocked})
+        # Only CRW has a documented Read/Write claim in the pinned table, so only CRW carries
+        # a claim-bearing exif, comments or thumbnail row.
+        claimed = {(r['format'], r['family']) for r in rows
+                   if r['operation'] == 'read' and not r['noDocumentedClaim']}
+        self.assertEqual({('CRW', 'exif'), ('CRW', 'comments'), ('CRW', 'thumbnail')}, claimed)
+        evidence = load_evidence('b11')
+        if evidence is None:
+            # Pre-observation state: enumerated, nothing claimed, and no row may point at a
+            # fixture the CI has not read.
+            self.assertEqual({'not-run'}, {r['baselineObservation'] for r in rows})
+            self.assertTrue(all(r['fixture'] is None for r in rows),
+                            'B11 evidence arrives with its own receipt commit')
+            return
+        self.assertEqual('passed', evidence['status'])
+        self.assertEqual('B11', evidence['batch'])
+        self.assertFalse(evidence['denominatorFrozen'])
+        self.assertEqual('not-assessed', evidence['verification'])
+        observed = {o['id'] for o in evidence['observations']}
+        blocked_ids = {o['id'] for o in evidence['blocked']}
+        self.assertEqual(87, len(observed))
+        self.assertEqual(8, len(blocked_ids))
+        self.assertFalse(observed & blocked_ids)
+        self.assertEqual({r['rowId'] for r in rows}, observed | blocked_ids)
+        self.assertEqual(blocked_ids, {r['rowId'] for r in rows
+                                       if 'vendor-private' in r['layout']})
+        self.assertTrue(all(o['facts']['inputUnchanged'] for o in evidence['observations']))
+        self.assertTrue(all(o['recordOnly'] for o in evidence['observations']))
+        self.assertEqual(0, evidence['outcomeCounts'].get('scan-changed', 0))
+        fmt_of = {r['rowId']: r['format'] for r in rows}
+        layout_of = {r['rowId']: r['layout'] for r in rows}
+        # Which reader the pinned registry reaches is the whole point of the container half:
+        # the brand decides QuickTime versus BMFF, WAV shares the RIFF reader with AVI, and a
+        # footer-signed .targa under a non-TGA name reaches no reader at all.
+        dispatch, by_layout = {}, {}
+        for item in evidence['observations']:
+            dispatch.setdefault(fmt_of[item['id']], set()).add(
+                item['facts']['container']['dispatch'])
+            by_layout.setdefault(layout_of[item['id']], set()).add(
+                item['facts']['container']['dispatch'])
+        self.assertEqual({'crw'}, dispatch['CRW'])
+        self.assertEqual({'bmp'}, dispatch['BMP'])
+        self.assertEqual({'gif'}, dispatch['GIF'])
+        self.assertEqual({'tga', 'none'}, dispatch['TGA'])
+        self.assertEqual({'qtime', 'bmff'}, dispatch['MOV'])
+        self.assertEqual({'mkv'}, dispatch['MKV'])
+        self.assertEqual({'riff'}, dispatch['AVI'])
+        self.assertEqual({'riff'}, dispatch['WAV'])
+        self.assertEqual({'asf'}, dispatch['ASF'])
+        self.assertEqual({'qtime'}, by_layout['qtime-known-brand-v1'])
+        self.assertEqual({'bmff'}, by_layout['qtime-unknown-brand-v1'])
+        self.assertEqual({'tga'}, by_layout['tga-full-v1'])
+        self.assertEqual({'none'}, by_layout['tga-signature-wrong-name-v1'])
+        # `-et` is the byte count the CLI wrote; only a fixture carrying a CIFF 0x2008
+        # component can produce an artifact, and the recorder predicts its length from the
+        # fixture bytes -- a check on the recorder, never a claim about CRW thumbnails.
+        extracts = [o for o in evidence['observations'] if o['operation'] == 'extract']
+        self.assertEqual(4, len(extracts))
+        for item in extracts:
+            semantics = item['facts']['extractSemantics']
+            self.assertTrue(semantics['exitCodeIsByteCountInPinnedBuild'], item['id'])
+            self.assertEqual(item['exitCode'], semantics['artifactBytes'], item['id'])
+        with_artifact = {item['layout'] for item in extracts
+                         if item['facts']['extractSemantics']['artifactBytes'] > 0}
+        self.assertEqual({'ciff-thumb-only-v1', 'ciff-preview-plus-thumb-v1'}, with_artifact)
+        for item in extracts:
+            semantics = item['facts']['extractSemantics']
+            if 'predictedArtifactBytes' in semantics:
+                # The prediction comes from the fixture's own 0x2008 component, so agreeing
+                # with it says the recorder read the right file; disagreeing is a finding
+                # about the recorder, and it stays in the record rather than being gated.
+                self.assertIn('predictionMatched', semantics, item['id'])
 
     def test_evidence_files_hashed_by_a_receipt_survive_checkout_conversion(self):
         """A receipt that hashes committed bytes is only meaningful under one checkout mode.
@@ -870,10 +971,12 @@ class CensusPolicyTests(unittest.TestCase):
         enumerated_seeds = {s['seedId'] for s in self.seeds['seeds']
                              if f"{s['format']}/{s['family']}" in enumerated}
         self.assertEqual(all_seeds, enumerated_seeds | pending)
-        # B9 enumerates ARW/CR2/NEF/ORF/PEF/SRW x six families, so 36 seed cells move
-        # from pending to enumerated; nothing is dropped from the grid.
-        self.assertEqual(162, len(enumerated_seeds))
-        self.assertEqual(24, len(pending))
+        # B11 enumerates CRW/BMP/GIF/TGA x six families, so the last 24 pending seed cells
+        # move to enumerated and the list empties. Closing it is bookkeeping about enumeration:
+        # no row says a cell was verified, and no seed left the grid.
+        self.assertEqual(186, len(enumerated_seeds))
+        self.assertEqual(set(), pending)
+        self.assertEqual(186, len(self.seeds['seeds']))
 
     def test_no_claim_rows_are_only_the_undocumented_cells(self):
         no_claim = {r['rowId'] for r in self.report['rows'] if r['noDocumentedClaim']}
@@ -907,6 +1010,18 @@ class CensusPolicyTests(unittest.TestCase):
                            for fmt in ('ARW', 'CR2', 'NEF', 'ORF', 'PEF', 'SRW') for num in (1, 2)} |
                           {f'EX0289-{fmt}-ICC-READ-{num:04d}'
                            for fmt in ('ORF', 'SRW') for num in (1, 2)} |
+                         # B11 undocumented cells. BMP, GIF and TGA are '-' for all six
+                         # families -- the pinned bullet says the format is recognised, a MIME
+                         # type assigned and the dimensions read, and nothing more -- and CRW is
+                         # '-' for iptc, xmp and icc. One row per layout, in sorted layout
+                         # order: five CIFF, two BMP, two GIF, three TGA.
+                          {f'EX0289-CRW-{family}-READ-{num:04d}'
+                           for family in ('IPTC', 'XMP', 'ICC') for num in range(1, 6)} |
+                          {f'EX0289-{fmt}-{family}-READ-{num:04d}'
+                           for fmt in ('BMP', 'GIF') for family in SIX_FAMILIES
+                           for num in (1, 2)} |
+                          {f'EX0289-TGA-{family}-READ-{num:04d}'
+                           for family in SIX_FAMILIES for num in (1, 2, 3)} |
                          # B10 undocumented cells. The pinned registry claims no comment
                          # mode for any wave-2 format and no ICC cell for any of them, so
                          # both layouts (marker and blocked vendor-private) are unclaimed.
@@ -916,7 +1031,8 @@ class CensusPolicyTests(unittest.TestCase):
         for row in self.report['rows']:
             if row['noDocumentedClaim']:
                 self.assertEqual('read', row['operation'])
-                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10'))
+                self.assertIn(row['batch'], ('B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9',
+                                             'B10', 'B11'))
 
     def test_rows_never_use_metadataSharp_as_oracle(self):
         for row in self.report['rows']:

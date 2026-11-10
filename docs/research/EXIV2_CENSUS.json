@@ -6,7 +6,7 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker fixtures (pinned header contract plus owned metadata carriers); each format also keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed or cleared, and no B9 write suboperation is enumerated. B10 read-only probes for MRW/RW2/SR2/RAF on owned synthetic wave-2 containers (MRW block chain with an embedded TTW TIFF, RAF big-endian offset table with a preview JPEG and a camera-settings TIFF, RW2 magic 0x0055, and a generic TIFF marker that records the absence of an SR2-specific observable); each format also keeps a blocked vendor-private cell because no proprietary layout is reviewed or cleared, and no B10 write suboperation is enumerated because the pinned registry marks all four formats read-only. Pinned-CLI evidence recorded for batch(es) B0, B1, B10, B2, B3, B4, B5, B6, B7, B8, B9: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker fixtures (pinned header contract plus owned metadata carriers); each format also keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed or cleared, and no B9 write suboperation is enumerated. B10 read-only probes for MRW/RW2/SR2/RAF on owned synthetic wave-2 containers (MRW block chain with an embedded TTW TIFF, RAF big-endian offset table with a preview JPEG and a camera-settings TIFF, RW2 magic 0x0055, and a generic TIFF marker that records the absence of an SR2-specific observable); each format also keeps a blocked vendor-private cell because no proprietary layout is reviewed or cleared, and no B10 write suboperation is enumerated because the pinned registry marks all four formats read-only. B11 read-only probes on owned synthetic CIFF, BMP, GIF and TGA containers (four CIFF layouts, two BMP header variants, two GIF screen-descriptor shapes and three TGA recognition cases), plus one inventory row per container stub for MOV, MKV, AVI, WAV and ASF so the reader the pinned registry dispatches to is recorded without inventing a metadata family for a format the pinned table does not list; CRW keeps one blocked vendor-private cell because no Canon CIFF tag outside the mapping table is reviewed or cleared, and no B11 write suboperation is enumerated. Pinned-CLI evidence recorded for batch(es) B0, B1, B10, B2, B3, B4, B5, B6, B7, B8, B9: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
       "ARW/comments",
@@ -16,6 +16,8 @@
       "ARW/iptc",
       "ARW/thumbnail",
       "ARW/xmp",
+      "ASF/inventory",
+      "AVI/inventory",
       "AVIF/comments",
       "AVIF/exif",
       "AVIF/icc",
@@ -23,6 +25,13 @@
       "AVIF/iptc",
       "AVIF/thumbnail",
       "AVIF/xmp",
+      "BMP/comments",
+      "BMP/exif",
+      "BMP/icc",
+      "BMP/inventory",
+      "BMP/iptc",
+      "BMP/thumbnail",
+      "BMP/xmp",
       "CR2/comments",
       "CR2/exif",
       "CR2/icc",
@@ -37,6 +46,13 @@
       "CR3/iptc",
       "CR3/thumbnail",
       "CR3/xmp",
+      "CRW/comments",
+      "CRW/exif",
+      "CRW/icc",
+      "CRW/inventory",
+      "CRW/iptc",
+      "CRW/thumbnail",
+      "CRW/xmp",
       "DCP/comments",
       "DCP/exif",
       "DCP/icc",
@@ -65,6 +81,13 @@
       "EXV/iptc",
       "EXV/thumbnail",
       "EXV/xmp",
+      "GIF/comments",
+      "GIF/exif",
+      "GIF/icc",
+      "GIF/inventory",
+      "GIF/iptc",
+      "GIF/thumbnail",
+      "GIF/xmp",
       "HEIC/comments",
       "HEIC/exif",
       "HEIC/icc",
@@ -99,6 +122,8 @@
       "JXL/iptc",
       "JXL/thumbnail",
       "JXL/xmp",
+      "MKV/inventory",
+      "MOV/inventory",
       "MRW/comments",
       "MRW/exif",
       "MRW/icc",
@@ -176,6 +201,13 @@
       "SRW/iptc",
       "SRW/thumbnail",
       "SRW/xmp",
+      "TGA/comments",
+      "TGA/exif",
+      "TGA/icc",
+      "TGA/inventory",
+      "TGA/iptc",
+      "TGA/thumbnail",
+      "TGA/xmp",
       "TIFF/comments",
       "TIFF/exif",
       "TIFF/icc",
@@ -183,6 +215,7 @@
       "TIFF/iptc",
       "TIFF/thumbnail",
       "TIFF/xmp",
+      "WAV/inventory",
       "WEBP/comments",
       "WEBP/exif",
       "WEBP/icc",
@@ -222,39 +255,23 @@
       "MRW",
       "RAF",
       "RW2",
-      "SR2"
+      "SR2",
+      "CRW",
+      "BMP",
+      "GIF",
+      "TGA",
+      "MOV",
+      "MKV",
+      "AVI",
+      "WAV",
+      "ASF"
     ],
-    "pendingSeedIds": [
-      "EX0289-BMP-COMMENTS",
-      "EX0289-BMP-EXIF",
-      "EX0289-BMP-ICC",
-      "EX0289-BMP-IPTC",
-      "EX0289-BMP-THUMBNAIL",
-      "EX0289-BMP-XMP",
-      "EX0289-CRW-COMMENTS",
-      "EX0289-CRW-EXIF",
-      "EX0289-CRW-ICC",
-      "EX0289-CRW-IPTC",
-      "EX0289-CRW-THUMBNAIL",
-      "EX0289-CRW-XMP",
-      "EX0289-GIF-COMMENTS",
-      "EX0289-GIF-EXIF",
-      "EX0289-GIF-ICC",
-      "EX0289-GIF-IPTC",
-      "EX0289-GIF-THUMBNAIL",
-      "EX0289-GIF-XMP",
-      "EX0289-TGA-COMMENTS",
-      "EX0289-TGA-EXIF",
-      "EX0289-TGA-ICC",
-      "EX0289-TGA-IPTC",
-      "EX0289-TGA-THUMBNAIL",
-      "EX0289-TGA-XMP"
-    ]
+    "pendingSeedIds": []
   },
   "enumerations": {
     "reviewStatus": "reviewed",
     "reviewedAt": "2026-11-09",
-    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts; B8 adds owned PSD/JP2/EPS probe layouts and the pending-format unobserved layouts; B9 adds owned TIFF-derived RAW marker layouts and the vendor-private unobserved layouts; B10 adds owned wave-2 container layouts (MRW, RAF, RW2, SR2) and their vendor-private unobserved layouts",
+    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts; B8 adds owned PSD/JP2/EPS probe layouts and the pending-format unobserved layouts; B9 adds owned TIFF-derived RAW marker layouts and the vendor-private unobserved layouts; B10 adds owned wave-2 container layouts (MRW, RAF, RW2, SR2) and their vendor-private unobserved layouts; B11 adds owned CIFF, BMP, GIF and TGA layouts, the CRW vendor-private unobserved layout, and inventory-only container layouts for MOV, MKV, AVI, WAV and ASF",
     "family": [
       "exif",
       "iptc",
@@ -333,7 +350,25 @@
         "raw-mrw-vendor-private-unobserved",
         "raw-raf-vendor-private-unobserved",
         "raw-rw2-vendor-private-unobserved",
-        "raw-sr2-vendor-private-unobserved"
+        "raw-sr2-vendor-private-unobserved",
+        "ciff-mapped-v1",
+        "ciff-thumb-only-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-unmapped-only-v1",
+        "ciff-vendor-private-unobserved",
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "gif-lsd-v1",
+        "gif-truncated-v1",
+        "tga-full-v1",
+        "tga-name-only-v1",
+        "tga-signature-wrong-name-v1",
+        "qtime-known-brand-v1",
+        "qtime-unknown-brand-v1",
+        "mkv-ebml-header-v1",
+        "riff-avi-avih-v1",
+        "riff-wav-fmt-v1",
+        "asf-header-guid-v1"
       ],
       "comments": [
         "com-single",
@@ -378,7 +413,25 @@
         "raw-mrw-vendor-private-unobserved",
         "raw-raf-vendor-private-unobserved",
         "raw-rw2-vendor-private-unobserved",
-        "raw-sr2-vendor-private-unobserved"
+        "raw-sr2-vendor-private-unobserved",
+        "ciff-mapped-v1",
+        "ciff-thumb-only-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-unmapped-only-v1",
+        "ciff-vendor-private-unobserved",
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "gif-lsd-v1",
+        "gif-truncated-v1",
+        "tga-full-v1",
+        "tga-name-only-v1",
+        "tga-signature-wrong-name-v1",
+        "qtime-known-brand-v1",
+        "qtime-unknown-brand-v1",
+        "mkv-ebml-header-v1",
+        "riff-avi-avih-v1",
+        "riff-wav-fmt-v1",
+        "asf-header-guid-v1"
       ],
       "icc": [
         "app2-icc-single",
@@ -423,7 +476,25 @@
         "raw-mrw-vendor-private-unobserved",
         "raw-raf-vendor-private-unobserved",
         "raw-rw2-vendor-private-unobserved",
-        "raw-sr2-vendor-private-unobserved"
+        "raw-sr2-vendor-private-unobserved",
+        "ciff-mapped-v1",
+        "ciff-thumb-only-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-unmapped-only-v1",
+        "ciff-vendor-private-unobserved",
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "gif-lsd-v1",
+        "gif-truncated-v1",
+        "tga-full-v1",
+        "tga-name-only-v1",
+        "tga-signature-wrong-name-v1",
+        "qtime-known-brand-v1",
+        "qtime-unknown-brand-v1",
+        "mkv-ebml-header-v1",
+        "riff-avi-avih-v1",
+        "riff-wav-fmt-v1",
+        "asf-header-guid-v1"
       ],
       "xmp": [
         "app1-xmp-standard",
@@ -470,7 +541,25 @@
         "raw-mrw-vendor-private-unobserved",
         "raw-raf-vendor-private-unobserved",
         "raw-rw2-vendor-private-unobserved",
-        "raw-sr2-vendor-private-unobserved"
+        "raw-sr2-vendor-private-unobserved",
+        "ciff-mapped-v1",
+        "ciff-thumb-only-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-unmapped-only-v1",
+        "ciff-vendor-private-unobserved",
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "gif-lsd-v1",
+        "gif-truncated-v1",
+        "tga-full-v1",
+        "tga-name-only-v1",
+        "tga-signature-wrong-name-v1",
+        "qtime-known-brand-v1",
+        "qtime-unknown-brand-v1",
+        "mkv-ebml-header-v1",
+        "riff-avi-avih-v1",
+        "riff-wav-fmt-v1",
+        "asf-header-guid-v1"
       ],
       "iptc": [
         "app13-8bim-iptc",
@@ -516,7 +605,25 @@
         "raw-mrw-vendor-private-unobserved",
         "raw-raf-vendor-private-unobserved",
         "raw-rw2-vendor-private-unobserved",
-        "raw-sr2-vendor-private-unobserved"
+        "raw-sr2-vendor-private-unobserved",
+        "ciff-mapped-v1",
+        "ciff-thumb-only-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-unmapped-only-v1",
+        "ciff-vendor-private-unobserved",
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "gif-lsd-v1",
+        "gif-truncated-v1",
+        "tga-full-v1",
+        "tga-name-only-v1",
+        "tga-signature-wrong-name-v1",
+        "qtime-known-brand-v1",
+        "qtime-unknown-brand-v1",
+        "mkv-ebml-header-v1",
+        "riff-avi-avih-v1",
+        "riff-wav-fmt-v1",
+        "asf-header-guid-v1"
       ],
       "thumbnail": [
         "exif-ifd1-jpeg",
@@ -558,7 +665,25 @@
         "raw-mrw-vendor-private-unobserved",
         "raw-raf-vendor-private-unobserved",
         "raw-rw2-vendor-private-unobserved",
-        "raw-sr2-vendor-private-unobserved"
+        "raw-sr2-vendor-private-unobserved",
+        "ciff-mapped-v1",
+        "ciff-thumb-only-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-unmapped-only-v1",
+        "ciff-vendor-private-unobserved",
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "gif-lsd-v1",
+        "gif-truncated-v1",
+        "tga-full-v1",
+        "tga-name-only-v1",
+        "tga-signature-wrong-name-v1",
+        "qtime-known-brand-v1",
+        "qtime-unknown-brand-v1",
+        "mkv-ebml-header-v1",
+        "riff-avi-avih-v1",
+        "riff-wav-fmt-v1",
+        "asf-header-guid-v1"
       ],
       "inventory": [
         "container",
@@ -598,7 +723,25 @@
         "raw-mrw-vendor-private-unobserved",
         "raw-raf-vendor-private-unobserved",
         "raw-rw2-vendor-private-unobserved",
-        "raw-sr2-vendor-private-unobserved"
+        "raw-sr2-vendor-private-unobserved",
+        "ciff-mapped-v1",
+        "ciff-thumb-only-v1",
+        "ciff-preview-plus-thumb-v1",
+        "ciff-unmapped-only-v1",
+        "ciff-vendor-private-unobserved",
+        "bmp-dib-v3",
+        "bmp-os2-coreheader-v1",
+        "gif-lsd-v1",
+        "gif-truncated-v1",
+        "tga-full-v1",
+        "tga-name-only-v1",
+        "tga-signature-wrong-name-v1",
+        "qtime-known-brand-v1",
+        "qtime-unknown-brand-v1",
+        "mkv-ebml-header-v1",
+        "riff-avi-avih-v1",
+        "riff-wav-fmt-v1",
+        "asf-header-guid-v1"
       ]
     },
     "duplicates": [
@@ -23742,6 +23885,2571 @@
       "batch": "B10",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B10 blocked-rights: SR2 private layout (the CT/SATD/FMT directory structures, which nothing in this build reads, and the Sony maker-note tables batch B12 owns): proprietary, with no independent normative specification reviewed here and no rights-cleared sample. Authoring a plausible-looking private block would invent evidence rather than observe it, so no fixture is cleared for it and the cell stays visible as blocked. See docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md."
+    },
+    {
+      "rowId": "EX0289-CRW-INVENTORY-INVENTORY-0001",
+      "format": "CRW",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-mapped-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-CRW-EXIF-READ-0001",
+      "format": "CRW",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-mapped-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-IPTC-READ-0001",
+      "format": "CRW",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-mapped-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-XMP-READ-0001",
+      "format": "CRW",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "ciff-mapped-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-COMMENTS-READ-0001",
+      "format": "CRW",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-mapped-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-ICC-READ-0001",
+      "format": "CRW",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-mapped-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-READ-0001",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-mapped-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0001",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-mapped-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-CRW-INVENTORY-INVENTORY-0002",
+      "format": "CRW",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-CRW-EXIF-READ-0002",
+      "format": "CRW",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-IPTC-READ-0002",
+      "format": "CRW",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-XMP-READ-0002",
+      "format": "CRW",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-COMMENTS-READ-0002",
+      "format": "CRW",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-ICC-READ-0002",
+      "format": "CRW",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-READ-0002",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0002",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-preview-plus-thumb-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-CRW-INVENTORY-INVENTORY-0003",
+      "format": "CRW",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-thumb-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-CRW-EXIF-READ-0003",
+      "format": "CRW",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-thumb-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-IPTC-READ-0003",
+      "format": "CRW",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-thumb-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-XMP-READ-0003",
+      "format": "CRW",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "ciff-thumb-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-COMMENTS-READ-0003",
+      "format": "CRW",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-thumb-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-ICC-READ-0003",
+      "format": "CRW",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-thumb-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-READ-0003",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-thumb-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0003",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-thumb-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-CRW-INVENTORY-INVENTORY-0004",
+      "format": "CRW",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-unmapped-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-CRW-EXIF-READ-0004",
+      "format": "CRW",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-unmapped-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-IPTC-READ-0004",
+      "format": "CRW",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-unmapped-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-XMP-READ-0004",
+      "format": "CRW",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "ciff-unmapped-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-COMMENTS-READ-0004",
+      "format": "CRW",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-unmapped-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-ICC-READ-0004",
+      "format": "CRW",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-unmapped-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-READ-0004",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-unmapped-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0004",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-unmapped-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-CRW-INVENTORY-INVENTORY-0005",
+      "format": "CRW",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-CRW-EXIF-READ-0005",
+      "format": "CRW",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about CRW exif semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-IPTC-READ-0005",
+      "format": "CRW",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about CRW iptc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-XMP-READ-0005",
+      "format": "CRW",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "ciff-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about CRW xmp semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-COMMENTS-READ-0005",
+      "format": "CRW",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about CRW comments semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-ICC-READ-0005",
+      "format": "CRW",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about CRW icc semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-READ-0005",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about CRW thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-CRW-THUMBNAIL-EXTRACT-0005",
+      "format": "CRW",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "ciff-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CRW vendor-private layout is not authored: no Canon CIFF tag outside the 17 canonId rows of crwMapping_ is reviewed or cleared, so the cell is blocked, not refused; thumbnail extract attempted against the authored CIFF 0x2008 component only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-BMP-INVENTORY-INVENTORY-0001",
+      "format": "BMP",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-dib-v3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-BMP-EXIF-READ-0001",
+      "format": "BMP",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-dib-v3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about BMP exif semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-IPTC-READ-0001",
+      "format": "BMP",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-dib-v3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about BMP iptc semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-XMP-READ-0001",
+      "format": "BMP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "bmp-dib-v3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about BMP xmp semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-COMMENTS-READ-0001",
+      "format": "BMP",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-dib-v3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about BMP comments semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-ICC-READ-0001",
+      "format": "BMP",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-dib-v3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about BMP icc semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-THUMBNAIL-READ-0001",
+      "format": "BMP",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-dib-v3",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about BMP thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-INVENTORY-INVENTORY-0002",
+      "format": "BMP",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-os2-coreheader-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-BMP-EXIF-READ-0002",
+      "format": "BMP",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-os2-coreheader-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about BMP exif semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-IPTC-READ-0002",
+      "format": "BMP",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-os2-coreheader-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about BMP iptc semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-XMP-READ-0002",
+      "format": "BMP",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "bmp-os2-coreheader-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about BMP xmp semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-COMMENTS-READ-0002",
+      "format": "BMP",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-os2-coreheader-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about BMP comments semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-ICC-READ-0002",
+      "format": "BMP",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-os2-coreheader-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about BMP icc semantics"
+    },
+    {
+      "rowId": "EX0289-BMP-THUMBNAIL-READ-0002",
+      "format": "BMP",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "bmp-os2-coreheader-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "BMP owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about BMP thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-INVENTORY-INVENTORY-0001",
+      "format": "GIF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "gif-lsd-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-GIF-EXIF-READ-0001",
+      "format": "GIF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "gif-lsd-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about GIF exif semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-IPTC-READ-0001",
+      "format": "GIF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "gif-lsd-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about GIF iptc semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-XMP-READ-0001",
+      "format": "GIF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "gif-lsd-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about GIF xmp semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-COMMENTS-READ-0001",
+      "format": "GIF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "gif-lsd-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about GIF comments semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-ICC-READ-0001",
+      "format": "GIF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "gif-lsd-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about GIF icc semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-THUMBNAIL-READ-0001",
+      "format": "GIF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "gif-lsd-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about GIF thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-INVENTORY-INVENTORY-0002",
+      "format": "GIF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "gif-truncated-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-GIF-EXIF-READ-0002",
+      "format": "GIF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "gif-truncated-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about GIF exif semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-IPTC-READ-0002",
+      "format": "GIF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "gif-truncated-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about GIF iptc semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-XMP-READ-0002",
+      "format": "GIF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "gif-truncated-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about GIF xmp semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-COMMENTS-READ-0002",
+      "format": "GIF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "gif-truncated-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about GIF comments semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-ICC-READ-0002",
+      "format": "GIF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "gif-truncated-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about GIF icc semantics"
+    },
+    {
+      "rowId": "EX0289-GIF-THUMBNAIL-READ-0002",
+      "format": "GIF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "gif-truncated-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "GIF owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about GIF thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-INVENTORY-INVENTORY-0001",
+      "format": "TGA",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-full-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-TGA-EXIF-READ-0001",
+      "format": "TGA",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tga-full-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about TGA exif semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-IPTC-READ-0001",
+      "format": "TGA",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-full-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about TGA iptc semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-XMP-READ-0001",
+      "format": "TGA",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tga-full-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about TGA xmp semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-COMMENTS-READ-0001",
+      "format": "TGA",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "tga-full-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about TGA comments semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-ICC-READ-0001",
+      "format": "TGA",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-full-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about TGA icc semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-THUMBNAIL-READ-0001",
+      "format": "TGA",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-full-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about TGA thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-INVENTORY-INVENTORY-0002",
+      "format": "TGA",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-name-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-TGA-EXIF-READ-0002",
+      "format": "TGA",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tga-name-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about TGA exif semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-IPTC-READ-0002",
+      "format": "TGA",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-name-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about TGA iptc semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-XMP-READ-0002",
+      "format": "TGA",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tga-name-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about TGA xmp semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-COMMENTS-READ-0002",
+      "format": "TGA",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "tga-name-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about TGA comments semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-ICC-READ-0002",
+      "format": "TGA",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-name-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about TGA icc semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-THUMBNAIL-READ-0002",
+      "format": "TGA",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-name-only-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about TGA thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-INVENTORY-INVENTORY-0003",
+      "format": "TGA",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-signature-wrong-name-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; recognition, MIME type and dimensions are recorded here and are not metadata support"
+    },
+    {
+      "rowId": "EX0289-TGA-EXIF-READ-0003",
+      "format": "TGA",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "tga-signature-wrong-name-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; exif read probe records what this build printed, asserting nothing about TGA exif semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-IPTC-READ-0003",
+      "format": "TGA",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-signature-wrong-name-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; iptc read probe records what this build printed, asserting nothing about TGA iptc semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-XMP-READ-0003",
+      "format": "TGA",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "tga-signature-wrong-name-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; xmp read probe records what this build printed, asserting nothing about TGA xmp semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-COMMENTS-READ-0003",
+      "format": "TGA",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "tga-signature-wrong-name-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; comments read probe records what this build printed, asserting nothing about TGA comments semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-ICC-READ-0003",
+      "format": "TGA",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-signature-wrong-name-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; icc read probe records what this build printed, asserting nothing about TGA icc semantics"
+    },
+    {
+      "rowId": "EX0289-TGA-THUMBNAIL-READ-0003",
+      "format": "TGA",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "tga-signature-wrong-name-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "TGA owned synthetic container: the pinned recogniser contract plus the metadata components this batch reads, no pixel data; thumbnail read probe records what this build printed, asserting nothing about TGA thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-MOV-INVENTORY-INVENTORY-0001",
+      "format": "MOV",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "qtime-known-brand-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "MOV container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+    },
+    {
+      "rowId": "EX0289-MOV-INVENTORY-INVENTORY-0002",
+      "format": "MOV",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "qtime-unknown-brand-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "MOV container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+    },
+    {
+      "rowId": "EX0289-MKV-INVENTORY-INVENTORY-0001",
+      "format": "MKV",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "mkv-ebml-header-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "MKV container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+    },
+    {
+      "rowId": "EX0289-AVI-INVENTORY-INVENTORY-0001",
+      "format": "AVI",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "riff-avi-avih-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "AVI container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+    },
+    {
+      "rowId": "EX0289-WAV-INVENTORY-INVENTORY-0001",
+      "format": "WAV",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "riff-wav-fmt-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "WAV container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
+    },
+    {
+      "rowId": "EX0289-ASF-INVENTORY-INVENTORY-0001",
+      "format": "ASF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "asf-header-guid-v1",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B11",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ASF container stub for the pinned registry only: the reader reached is recorded, its supported metadata is mdNone and its registry Exif field is amRead, and the pinned format table has no row for it; no metadata family is enumerated because none is claimed"
     }
   ]
 }

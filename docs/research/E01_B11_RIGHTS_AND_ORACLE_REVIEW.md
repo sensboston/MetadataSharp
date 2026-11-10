@@ -213,8 +213,16 @@ Three readings of that text matter for B11, and they are the reason the batch is
   throw `kerOffsetOutOfRange`, while `directoryData` entries carry `size_ = 8` and `offset_ = start + 2`.
   Which of the two a tag is comes from `CiffComponent::dataLocation(tag)` (`crwimage_int.cpp:469`), which
   switches on `tag & 0xc000`: `0x0000` → `valueData`, `0x4000` → `directoryData`, anything else →
-  `kerCorruptedMetadata`. So a fixture's directory tags **must** have bit `0x4000` set (`0x300a` etc.) and
-  its value tags must not, or the reader throws before any metadata is produced.
+  `kerCorruptedMetadata`. **Directory-ness and data location are two different bits**: `0x300a`, `0x2807`,
+  `0x3004`, `0x3002` and `0x300b` are directories because of their `0x3800` type bits (`CiffComponent::typeId`,
+  `crwimage_int.cpp:450` — the switch `readDirectory` uses at `:255` to decide `CiffDirectory` versus
+  `CiffEntry`), and they are `valueData` because their `0xc000` bits are zero. That is why a real CRW stores
+  each child region in the parent's payload pool and points at it from the entry, exactly as
+  `CiffDirectory::doWrite` does (`:340-379`), and it is the shape the B11 fixtures use. A tag that *does*
+  carry `0x4000` gets `size_ = 8` and `offset_ = start + 2` — an inline eight-byte region — and
+  `readDirectory` over eight bytes can only ever accept `count == 0`, so an inline directory is necessarily
+  empty in this build. Both facts were settled by reading `typeId`, `dataLocation` and `doWrite` together;
+  neither was guessable from the entry layout alone.
 - Tree shape is fixed by `CrwMap::crwSubDir_` (`crwimage_int.cpp:128-132`): root → `0x300a` →
   {`0x2804`, `0x2807`, `0x3002`, `0x3003`, `0x300b`}, plus `0x3004` under `0x2807`; the comment in the
   source says the list is "arranged bottom-up so that … the (unique) path to root can be determined in a
@@ -246,6 +254,7 @@ Three readings of that text matter for B11, and they are the reason the batch is
   | `0x180e @ 0x300a` | `Exif.Photo.0x9003` = `DateTimeOriginal` | `decode0x180e` |
   | `0x1807 @ 0x3002` | `Exif.Photo.SubjectDistance` (0x9206, `print0x9206`) | `decodeBasic`; note the destination is **`SubjectDistance`**, not `OwnerName` as older CRW notes elsewhere claim |
   | `0x080b @ 0x3004` / `0x0810 @ 0x2807` / `0x0815 @ 0x2804` | `Exif.Canon.FirmwareVersion` / `Exif.Canon.OwnerName` / `Exif.Canon.ImageType` | `decodeBasic` into `canonId` |
+  | `0x1817 @ 0x300a` (`size_ = 4` in the table) | `Exif.Canon.FileNumber` | the one row whose `size_` column is non-zero, and `decodeBasic` lets it override the entry's own size (`src/crwimage_int.cpp:808`); the fixture therefore claims 8 bytes and the reader takes 4, which is the size column being observable |
   | `0x10b4 @ 0x300b` | `Exif.Photo.ColorSpace` (0xa001) | moved out of `canonId` (0x00b4 there is also `ColorSpace`); the source comment reads `// Mapped to Exif.Photo.ColorSpace instead` |
   | `0x2008 @ 0x0000` | `Exif.Thumbnail.*` (`ifd1Id`) | `decode0x2008` → `ExifThumb exifThumb(image.exifData()); exifThumb.setJpegThumbnail(ciffComponent.pData(), ciffComponent.size())` |
   | `0x2007 @ 0x0000` | `Exif.Image2.JPEGInterchangeFormat{,Length}` (`ifd2Id`) | not a mapping row: `CrwParser::decode` (`crwimage.cpp:102-115`) injects them after decoding, `// a hack to get absolute offset of preview image inside CRW structure` |
@@ -358,7 +367,10 @@ registry (`image.cpp:103`) is `amNone` × 4, no `printStructure` override.
 
 This is why B11 ships **three** TGA fixtures, differing only in name and trailing bytes:
 `owned-tga-full.tga` (footer signature + 18-byte header: recognized by name, dimensions read),
-`owned-tga-name-only.tga` (no footer, garbage body: recognized, dimensionless), and
+`owned-tga-name-only.tga` (23 bytes of text, no footer: recognized by name, and because `readMetadata`
+has no short-read guard on the 18-byte header it reads the *dimensions out of the text* — so this fixture
+reports plausible-looking numbers for a file with no image at all, which is the sharpest statement of
+"recognition" and "metadata" being different claims), and
 `owned-tga-signature-only.targa` (the *same* footer-signed bytes under a non-`.tga` name: recognized or not
 according to whether the `curPos` guard is reachable). The triple is the census-visible statement of the
 difference between "the image format is recognized" as documented and recognition as implemented, and the
@@ -455,10 +467,12 @@ What that table licenses B11 to say, and nothing more:
    `-pS`, `-pa`, `-pc`, `-pC`, `-et`, `-pe`, `-px` (seven); the video stubs get
    `-pS`, `-pa`, `-pC`, `-px`, `-et` (five), because `-pc` for a type with comment `amNone` and `-pe` for a
    reader that writes no Exif tag are both already answered by `-pa`, and the budget is better spent on the
-   brand-dispatch pair. Total ≈ 11 × 7 + 6 × 5 = **107 records**, which is why `observe_b11.py` raises the
-   annotation chunk cap from B10's 10 to 30 — GitHub's limit is 50 annotations per check run and the
-   failure-annotation step needs headroom. The payload must fit in one stream: a truncated chunk stream looks
-   like GitHub truncation and is not diagnosable after the fact.
+   brand-dispatch pair. The preflight therefore records 11 × 7 + 6 × 5 = **107** flag-runs over the 17
+   fixtures, and the census recorder **95 rows**, of which 87 are observed and 8 blocked. Chunk budgets are
+   split across the two recorders rather than shared: `observe_b11.chunks` caps at 30 (B10 used 10 for half
+   the rows) and `probe_b11_raw` caps at 12, because GitHub's limit is 50 annotations per *check run* and
+   the job runs both — 30 + 12 leaves the failure-annotation step its headroom. The payload must fit in one
+   stream: a truncated chunk stream looks like GitHub truncation and is not diagnosable after the fact.
 3. **What may be predicted.** Only facts computable from bytes the repository wrote: the digest identities
    (`owned-*` header regions), the `sha256` of the comment string carried in `0x0805`, the exact artifact
    length for `-et` when a `0x2008` component exists, and the "these N fixtures share one value" relations
@@ -516,9 +530,15 @@ What that table licenses B11 to say, and nothing more:
   five video formats get no blocked row either, for the same structural reason: with no family cells
   enumerated there is no blocked family to carry.
 - Row arithmetic, stated so a reviewer can check the generator against it. A (format, layout) pair emits
-  the B10 eight-row block — `inventory`, six `read` rows, one `thumbnail extract` row — for CRW, BMP, GIF
-  and TGA: 4 + 2 + 2 + 3 = 11 layouts, so **88 rows**. Each video layout emits **one** inventory row: 6
-  layouts, so **6 rows**. B11 total **94 rows**, taking the census from 728 to 822. `coverage.enumerated`
+  `inventory`, six `read` rows and — only where the seed carries a thumbnail claim — one `thumbnail extract`
+  row. The extract row is conditional for a structural reason, not a choice: a format whose documented cell
+  is `-` for `thumbnail` has no thumbnail to extract, so BMP, GIF and TGA emit **7** rows per layout while
+  CRW emits **8**. CRW has five layouts (four fixtures plus the blocked vendor-private cell), so
+  5 × 8 + (2 + 2 + 3) × 7 = 40 + 49 = **89 rows** for the seed grid. Each video layout emits **one**
+  inventory row: 6 layouts, so **6 rows**. B11 total **95 rows**, taking the census from 728 to **823**
+  (the earlier draft of this document said 88 and 94 by counting eight rows for every layout and four
+  layouts for CRW; the generator's numbers are the ones above, and this paragraph is the amendment it
+  calls for). `coverage.enumerated`
   grows by 7 (CRW) + 7 (BMP) + 7 (GIF) + 7 (TGA) + 1 × 5 (video inventory cells) = **33** cells, from 188
   to 221; `coverage.pendingSeedIds` becomes **empty**; `coverage.inventoryTrack` gains every format that
   gains an inventory row, i.e. `CRW BMP GIF TGA MOV MKV AVI WAV ASF`. If the generator's own bookkeeping
@@ -536,8 +556,13 @@ What that table licenses B11 to say, and nothing more:
   manifest is compared whole by `verify()`, so `tools/reference/b11_container_fixtures.py generate` must be
   re-run and the census regenerated in the same commit whenever a fixture changes.
 - Evidence lands in `docs/research/evidence/e01-b11-census/` (`observations.json`, `ci-observations.json`,
-  `master-observations.json`, `receipt.json`, `README.md`) built by `tools/reference/write_b10_receipt.py`
-  — reused unchanged with `--ci-run`/`--master-run` — and never hand-edited. Reproduction is claimed only
+  `master-observations.json`, `receipt.json`, `README.md`) and is never hand-edited. The B10 receipt
+  builder is **not** reusable unchanged, as an earlier draft of this document claimed:
+  `tools/reference/write_b10_receipt.py` hardcodes its evidence paths, its `batch`, its CI job's display
+  name, its two annotation titles and a RAF-specific `authoredComment` check. B11 therefore gets
+  `tools/reference/write_b11_receipt.py`, cloned from it with those six things replaced — the
+  `--ci-run`/`--master-run` reproduction interface and the "recompute, never retype" discipline carry
+  over unchanged, and B11's equivalent of the authored-comment check is the `0x0805` payload digest. Reproduction is claimed only
   in the B10 wording: *N independent CI runs of the same recorder agree on the observation payload
   byte-for-byte; only the build timestamp, the validated head and ExifTool file dates move*, with the
   `differingSections` list computed by the receipt generator rather than asserted here.
