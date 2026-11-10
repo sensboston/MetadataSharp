@@ -308,6 +308,28 @@ jobs:
           path: artifacts/e01/b8/observations.json
           if-no-files-found: error
           retention-days: 30
+      - name: Verify the B9 census fixture catalog and byte structure
+        run: python tools/reference/b9_raw_fixtures.py verify
+      - name: B9 RAW-marker preflight (read-only, vendor IFDs never invented)
+        run: python tools/reference/probe_b9_raw.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
+      - name: Upload B9 RAW preflight (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b9-raw-preflight
+          path: artifacts/e01/b9-raw-preflight/observations.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: B9 census observation batch (pinned CLI and secondary reference, outcomes recorded not gated)
+        run: python tools/reference/observe_b9.py --upstream artifacts/e01/source --build artifacts/e01/build --exiftool-checkout artifacts/e01/exiftool
+      - name: Upload B9 census observations (no executables/source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e01-b9-census-observations
+          path: artifacts/e01/b9/observations.json
+          if-no-files-found: error
+          retention-days: 30
       - name: Upload authored observations and reproducibility metadata (no executables/source)
         if: always()
         uses: actions/upload-artifact@v4

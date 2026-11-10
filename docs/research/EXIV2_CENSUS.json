@@ -6,9 +6,16 @@
   "documentationBlob": "149f53b809c182bb4145567e28c466965f7f6505",
   "generatedBy": "tools/reference/build_census.py",
   "denominatorFrozen": false,
-  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7, B8: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
+  "scope": "B0 pilot enumeration for JPEG x {exif, comments, icc} and the JPEG inventory track; B1 enumeration for JPEG x {xmp, iptc, thumbnail}; B2 enumeration for PNG x {inventory, comments, exif (noDocumentedClaim), icc, iptc, thumbnail, xmp}. B3 enumeration for WebP x {inventory, comments (noDocumentedClaim), exif, icc, iptc (noDocumentedClaim), thumbnail, xmp}. B4 enumeration for TIFF x {inventory, comments (noDocumentedClaim), exif, icc, iptc, thumbnail, xmp}. B5 enumeration for XMP x {inventory, exif (noDocumentedClaim), comments (noDocumentedClaim), icc (noDocumentedClaim), iptc (noDocumentedClaim), thumbnail (noDocumentedClaim), xmp} and the B5 sidecar-presence read probes for JPEG/PNG/WEBP/TIFF. B6 enumeration for DNG inventory and six metadata families, four D1-derived layouts. B7 read-only BMFF/JXL probes; CR3 rights-blocked, JXL container and codestream separate. B8 read-only PSD (flat and EXIF/XMP/IPTC resource), boxed JP2 and ASCII EPS probes; PGF/EXV/DCP cells stay visible as blocked rows because their fixture and oracle review is pending, and no B8 write suboperation is enumerated without an owned writable fixture. B9 read-only probes for ARW/CR2/NEF/ORF/PEF/SRW on owned synthetic marker fixtures (pinned header contract plus owned metadata carriers); each format also keeps a blocked vendor-private cell because no proprietary IFD layout is reviewed or cleared, and no B9 write suboperation is enumerated. Pinned-CLI evidence recorded for batch(es) B0, B1, B2, B3, B4, B5, B6, B7, B8: rows recorded as observed-cli/not-applicable/blocked as appropriate; no coverage percentage; no denominator computed. Other documented cells stay visible in EXIV2_OPERATION_SEEDS.json until their batch.",
   "coverage": {
     "enumerated": [
+      "ARW/comments",
+      "ARW/exif",
+      "ARW/icc",
+      "ARW/inventory",
+      "ARW/iptc",
+      "ARW/thumbnail",
+      "ARW/xmp",
       "AVIF/comments",
       "AVIF/exif",
       "AVIF/icc",
@@ -16,6 +23,13 @@
       "AVIF/iptc",
       "AVIF/thumbnail",
       "AVIF/xmp",
+      "CR2/comments",
+      "CR2/exif",
+      "CR2/icc",
+      "CR2/inventory",
+      "CR2/iptc",
+      "CR2/thumbnail",
+      "CR2/xmp",
       "CR3/comments",
       "CR3/exif",
       "CR3/icc",
@@ -85,6 +99,27 @@
       "JXL/iptc",
       "JXL/thumbnail",
       "JXL/xmp",
+      "NEF/comments",
+      "NEF/exif",
+      "NEF/icc",
+      "NEF/inventory",
+      "NEF/iptc",
+      "NEF/thumbnail",
+      "NEF/xmp",
+      "ORF/comments",
+      "ORF/exif",
+      "ORF/icc",
+      "ORF/inventory",
+      "ORF/iptc",
+      "ORF/thumbnail",
+      "ORF/xmp",
+      "PEF/comments",
+      "PEF/exif",
+      "PEF/icc",
+      "PEF/inventory",
+      "PEF/iptc",
+      "PEF/thumbnail",
+      "PEF/xmp",
       "PGF/comments",
       "PGF/exif",
       "PGF/icc",
@@ -106,6 +141,13 @@
       "PSD/iptc",
       "PSD/thumbnail",
       "PSD/xmp",
+      "SRW/comments",
+      "SRW/exif",
+      "SRW/icc",
+      "SRW/inventory",
+      "SRW/iptc",
+      "SRW/thumbnail",
+      "SRW/xmp",
       "TIFF/comments",
       "TIFF/exif",
       "TIFF/icc",
@@ -139,27 +181,24 @@
       "HEIF",
       "HEIC",
       "CR3",
-      "JXL"
+      "JXL",
+      "PSD",
+      "JP2",
+      "EPS",
+      "ARW",
+      "CR2",
+      "NEF",
+      "ORF",
+      "PEF",
+      "SRW"
     ],
     "pendingSeedIds": [
-      "EX0289-ARW-COMMENTS",
-      "EX0289-ARW-EXIF",
-      "EX0289-ARW-ICC",
-      "EX0289-ARW-IPTC",
-      "EX0289-ARW-THUMBNAIL",
-      "EX0289-ARW-XMP",
       "EX0289-BMP-COMMENTS",
       "EX0289-BMP-EXIF",
       "EX0289-BMP-ICC",
       "EX0289-BMP-IPTC",
       "EX0289-BMP-THUMBNAIL",
       "EX0289-BMP-XMP",
-      "EX0289-CR2-COMMENTS",
-      "EX0289-CR2-EXIF",
-      "EX0289-CR2-ICC",
-      "EX0289-CR2-IPTC",
-      "EX0289-CR2-THUMBNAIL",
-      "EX0289-CR2-XMP",
       "EX0289-CRW-COMMENTS",
       "EX0289-CRW-EXIF",
       "EX0289-CRW-ICC",
@@ -178,24 +217,6 @@
       "EX0289-MRW-IPTC",
       "EX0289-MRW-THUMBNAIL",
       "EX0289-MRW-XMP",
-      "EX0289-NEF-COMMENTS",
-      "EX0289-NEF-EXIF",
-      "EX0289-NEF-ICC",
-      "EX0289-NEF-IPTC",
-      "EX0289-NEF-THUMBNAIL",
-      "EX0289-NEF-XMP",
-      "EX0289-ORF-COMMENTS",
-      "EX0289-ORF-EXIF",
-      "EX0289-ORF-ICC",
-      "EX0289-ORF-IPTC",
-      "EX0289-ORF-THUMBNAIL",
-      "EX0289-ORF-XMP",
-      "EX0289-PEF-COMMENTS",
-      "EX0289-PEF-EXIF",
-      "EX0289-PEF-ICC",
-      "EX0289-PEF-IPTC",
-      "EX0289-PEF-THUMBNAIL",
-      "EX0289-PEF-XMP",
       "EX0289-RAF-COMMENTS",
       "EX0289-RAF-EXIF",
       "EX0289-RAF-ICC",
@@ -214,12 +235,6 @@
       "EX0289-SR2-IPTC",
       "EX0289-SR2-THUMBNAIL",
       "EX0289-SR2-XMP",
-      "EX0289-SRW-COMMENTS",
-      "EX0289-SRW-EXIF",
-      "EX0289-SRW-ICC",
-      "EX0289-SRW-IPTC",
-      "EX0289-SRW-THUMBNAIL",
-      "EX0289-SRW-XMP",
       "EX0289-TGA-COMMENTS",
       "EX0289-TGA-EXIF",
       "EX0289-TGA-ICC",
@@ -231,7 +246,7 @@
   "enumerations": {
     "reviewStatus": "reviewed",
     "reviewedAt": "2026-11-09",
-    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts; B8 adds owned PSD/JP2/EPS probe layouts and the pending-format unobserved layouts",
+    "reviewedBy": "developer design review, recorded in EXIV2_E01_CENSUS_AND_DENOMINATOR_PROPOSAL.md; B5 adds xmp-packet carriers; B6 adds DNG raw/preview and byte-order layouts; B7 adds BMFF and JXL probe layouts; B8 adds owned PSD/JP2/EPS probe layouts and the pending-format unobserved layouts; B9 adds owned TIFF-derived RAW marker layouts and the vendor-private unobserved layouts",
     "family": [
       "exif",
       "iptc",
@@ -290,7 +305,19 @@
         "eps-dsc-bounding-box",
         "pgf-unobserved",
         "exv-unobserved",
-        "dcp-unobserved"
+        "dcp-unobserved",
+        "raw-tiff-ep-ii-arw",
+        "raw-cr2-ii",
+        "raw-tiff-ep-ii-nef",
+        "raw-orf-ii",
+        "raw-tiff-ep-ii-pef",
+        "raw-tiff-ep-ii-srw",
+        "raw-arw-vendor-private-unobserved",
+        "raw-cr2-vendor-private-unobserved",
+        "raw-nef-vendor-private-unobserved",
+        "raw-orf-vendor-private-unobserved",
+        "raw-pef-vendor-private-unobserved",
+        "raw-srw-vendor-private-unobserved"
       ],
       "comments": [
         "com-single",
@@ -315,7 +342,19 @@
         "eps-dsc-bounding-box",
         "pgf-unobserved",
         "exv-unobserved",
-        "dcp-unobserved"
+        "dcp-unobserved",
+        "raw-tiff-ep-ii-arw",
+        "raw-cr2-ii",
+        "raw-tiff-ep-ii-nef",
+        "raw-orf-ii",
+        "raw-tiff-ep-ii-pef",
+        "raw-tiff-ep-ii-srw",
+        "raw-arw-vendor-private-unobserved",
+        "raw-cr2-vendor-private-unobserved",
+        "raw-nef-vendor-private-unobserved",
+        "raw-orf-vendor-private-unobserved",
+        "raw-pef-vendor-private-unobserved",
+        "raw-srw-vendor-private-unobserved"
       ],
       "icc": [
         "app2-icc-single",
@@ -340,7 +379,19 @@
         "eps-dsc-bounding-box",
         "pgf-unobserved",
         "exv-unobserved",
-        "dcp-unobserved"
+        "dcp-unobserved",
+        "raw-tiff-ep-ii-arw",
+        "raw-cr2-ii",
+        "raw-tiff-ep-ii-nef",
+        "raw-orf-ii",
+        "raw-tiff-ep-ii-pef",
+        "raw-tiff-ep-ii-srw",
+        "raw-arw-vendor-private-unobserved",
+        "raw-cr2-vendor-private-unobserved",
+        "raw-nef-vendor-private-unobserved",
+        "raw-orf-vendor-private-unobserved",
+        "raw-pef-vendor-private-unobserved",
+        "raw-srw-vendor-private-unobserved"
       ],
       "xmp": [
         "app1-xmp-standard",
@@ -367,7 +418,19 @@
         "eps-dsc-bounding-box",
         "pgf-unobserved",
         "exv-unobserved",
-        "dcp-unobserved"
+        "dcp-unobserved",
+        "raw-tiff-ep-ii-arw",
+        "raw-cr2-ii",
+        "raw-tiff-ep-ii-nef",
+        "raw-orf-ii",
+        "raw-tiff-ep-ii-pef",
+        "raw-tiff-ep-ii-srw",
+        "raw-arw-vendor-private-unobserved",
+        "raw-cr2-vendor-private-unobserved",
+        "raw-nef-vendor-private-unobserved",
+        "raw-orf-vendor-private-unobserved",
+        "raw-pef-vendor-private-unobserved",
+        "raw-srw-vendor-private-unobserved"
       ],
       "iptc": [
         "app13-8bim-iptc",
@@ -393,7 +456,19 @@
         "eps-dsc-bounding-box",
         "pgf-unobserved",
         "exv-unobserved",
-        "dcp-unobserved"
+        "dcp-unobserved",
+        "raw-tiff-ep-ii-arw",
+        "raw-cr2-ii",
+        "raw-tiff-ep-ii-nef",
+        "raw-orf-ii",
+        "raw-tiff-ep-ii-pef",
+        "raw-tiff-ep-ii-srw",
+        "raw-arw-vendor-private-unobserved",
+        "raw-cr2-vendor-private-unobserved",
+        "raw-nef-vendor-private-unobserved",
+        "raw-orf-vendor-private-unobserved",
+        "raw-pef-vendor-private-unobserved",
+        "raw-srw-vendor-private-unobserved"
       ],
       "thumbnail": [
         "exif-ifd1-jpeg",
@@ -415,7 +490,19 @@
         "eps-dsc-bounding-box",
         "pgf-unobserved",
         "exv-unobserved",
-        "dcp-unobserved"
+        "dcp-unobserved",
+        "raw-tiff-ep-ii-arw",
+        "raw-cr2-ii",
+        "raw-tiff-ep-ii-nef",
+        "raw-orf-ii",
+        "raw-tiff-ep-ii-pef",
+        "raw-tiff-ep-ii-srw",
+        "raw-arw-vendor-private-unobserved",
+        "raw-cr2-vendor-private-unobserved",
+        "raw-nef-vendor-private-unobserved",
+        "raw-orf-vendor-private-unobserved",
+        "raw-pef-vendor-private-unobserved",
+        "raw-srw-vendor-private-unobserved"
       ],
       "inventory": [
         "container",
@@ -435,7 +522,19 @@
         "eps-dsc-bounding-box",
         "pgf-unobserved",
         "exv-unobserved",
-        "dcp-unobserved"
+        "dcp-unobserved",
+        "raw-tiff-ep-ii-arw",
+        "raw-cr2-ii",
+        "raw-tiff-ep-ii-nef",
+        "raw-orf-ii",
+        "raw-tiff-ep-ii-pef",
+        "raw-tiff-ep-ii-srw",
+        "raw-arw-vendor-private-unobserved",
+        "raw-cr2-vendor-private-unobserved",
+        "raw-nef-vendor-private-unobserved",
+        "raw-orf-vendor-private-unobserved",
+        "raw-pef-vendor-private-unobserved",
+        "raw-srw-vendor-private-unobserved"
       ]
     },
     "duplicates": [
@@ -18779,6 +18878,2598 @@
       "batch": "B8",
       "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
       "notes": "B8 blocked-rights: DCP is a camera profile, not an ordinary TIFF image; no standalone profile layout, required-tag set or independent oracle has been reviewed and no fixture cleared."
+    },
+    {
+      "rowId": "EX0289-ARW-INVENTORY-INVENTORY-0001",
+      "format": "ARW",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-arw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-ARW-EXIF-READ-0001",
+      "format": "ARW",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-arw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-IPTC-READ-0001",
+      "format": "ARW",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-arw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-XMP-READ-0001",
+      "format": "ARW",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-tiff-ep-ii-arw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-COMMENTS-READ-0001",
+      "format": "ARW",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-arw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-ICC-READ-0001",
+      "format": "ARW",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-arw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-THUMBNAIL-READ-0001",
+      "format": "ARW",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-arw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-THUMBNAIL-EXTRACT-0001",
+      "format": "ARW",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-arw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-CR2-INVENTORY-INVENTORY-0001",
+      "format": "CR2",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-CR2-EXIF-READ-0001",
+      "format": "CR2",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-IPTC-READ-0001",
+      "format": "CR2",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-XMP-READ-0001",
+      "format": "CR2",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-cr2-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-COMMENTS-READ-0001",
+      "format": "CR2",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-ICC-READ-0001",
+      "format": "CR2",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-THUMBNAIL-READ-0001",
+      "format": "CR2",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-THUMBNAIL-EXTRACT-0001",
+      "format": "CR2",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-NEF-INVENTORY-INVENTORY-0001",
+      "format": "NEF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-nef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-NEF-EXIF-READ-0001",
+      "format": "NEF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-nef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-IPTC-READ-0001",
+      "format": "NEF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-nef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-XMP-READ-0001",
+      "format": "NEF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-tiff-ep-ii-nef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-COMMENTS-READ-0001",
+      "format": "NEF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-nef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-ICC-READ-0001",
+      "format": "NEF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-nef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-THUMBNAIL-READ-0001",
+      "format": "NEF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-nef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-THUMBNAIL-EXTRACT-0001",
+      "format": "NEF",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-nef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-ORF-INVENTORY-INVENTORY-0001",
+      "format": "ORF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-ORF-EXIF-READ-0001",
+      "format": "ORF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-IPTC-READ-0001",
+      "format": "ORF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-XMP-READ-0001",
+      "format": "ORF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-orf-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-COMMENTS-READ-0001",
+      "format": "ORF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-ICC-READ-0001",
+      "format": "ORF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-THUMBNAIL-READ-0001",
+      "format": "ORF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-THUMBNAIL-EXTRACT-0001",
+      "format": "ORF",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-ii",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-PEF-INVENTORY-INVENTORY-0001",
+      "format": "PEF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-pef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-PEF-EXIF-READ-0001",
+      "format": "PEF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-pef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-IPTC-READ-0001",
+      "format": "PEF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-pef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-XMP-READ-0001",
+      "format": "PEF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-tiff-ep-ii-pef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-COMMENTS-READ-0001",
+      "format": "PEF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-pef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-ICC-READ-0001",
+      "format": "PEF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-pef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-THUMBNAIL-READ-0001",
+      "format": "PEF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-pef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-THUMBNAIL-EXTRACT-0001",
+      "format": "PEF",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-pef",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-SRW-INVENTORY-INVENTORY-0001",
+      "format": "SRW",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-srw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-SRW-EXIF-READ-0001",
+      "format": "SRW",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-srw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-IPTC-READ-0001",
+      "format": "SRW",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-srw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-XMP-READ-0001",
+      "format": "SRW",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-tiff-ep-ii-srw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-COMMENTS-READ-0001",
+      "format": "SRW",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-srw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-ICC-READ-0001",
+      "format": "SRW",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-srw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-THUMBNAIL-READ-0001",
+      "format": "SRW",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-srw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-THUMBNAIL-EXTRACT-0001",
+      "format": "SRW",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-tiff-ep-ii-srw",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW marker fixture: header contract plus owned metadata carriers; no vendor private IFD, no MakerNote, no decodable raw data; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-ARW-INVENTORY-INVENTORY-0002",
+      "format": "ARW",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-arw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-ARW-EXIF-READ-0002",
+      "format": "ARW",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-arw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-IPTC-READ-0002",
+      "format": "ARW",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-arw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-XMP-READ-0002",
+      "format": "ARW",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-arw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-COMMENTS-READ-0002",
+      "format": "ARW",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-arw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-ICC-READ-0002",
+      "format": "ARW",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-arw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-THUMBNAIL-READ-0002",
+      "format": "ARW",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-arw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-ARW-THUMBNAIL-EXTRACT-0002",
+      "format": "ARW",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-arw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ARW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-CR2-INVENTORY-INVENTORY-0002",
+      "format": "CR2",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-CR2-EXIF-READ-0002",
+      "format": "CR2",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-IPTC-READ-0002",
+      "format": "CR2",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-XMP-READ-0002",
+      "format": "CR2",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-cr2-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-COMMENTS-READ-0002",
+      "format": "CR2",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-ICC-READ-0002",
+      "format": "CR2",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-THUMBNAIL-READ-0002",
+      "format": "CR2",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-CR2-THUMBNAIL-EXTRACT-0002",
+      "format": "CR2",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-cr2-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "CR2 vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-NEF-INVENTORY-INVENTORY-0002",
+      "format": "NEF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-nef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-NEF-EXIF-READ-0002",
+      "format": "NEF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-nef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-IPTC-READ-0002",
+      "format": "NEF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-nef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-XMP-READ-0002",
+      "format": "NEF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-nef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-COMMENTS-READ-0002",
+      "format": "NEF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-nef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-ICC-READ-0002",
+      "format": "NEF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-nef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-THUMBNAIL-READ-0002",
+      "format": "NEF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-nef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-NEF-THUMBNAIL-EXTRACT-0002",
+      "format": "NEF",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-nef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "NEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-ORF-INVENTORY-INVENTORY-0002",
+      "format": "ORF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-ORF-EXIF-READ-0002",
+      "format": "ORF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-IPTC-READ-0002",
+      "format": "ORF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-XMP-READ-0002",
+      "format": "ORF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-orf-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-COMMENTS-READ-0002",
+      "format": "ORF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-ICC-READ-0002",
+      "format": "ORF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-THUMBNAIL-READ-0002",
+      "format": "ORF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-ORF-THUMBNAIL-EXTRACT-0002",
+      "format": "ORF",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-orf-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "ORF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-PEF-INVENTORY-INVENTORY-0002",
+      "format": "PEF",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-pef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-PEF-EXIF-READ-0002",
+      "format": "PEF",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-pef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-IPTC-READ-0002",
+      "format": "PEF",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-pef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-XMP-READ-0002",
+      "format": "PEF",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-pef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-COMMENTS-READ-0002",
+      "format": "PEF",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-pef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-ICC-READ-0002",
+      "format": "PEF",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-pef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-THUMBNAIL-READ-0002",
+      "format": "PEF",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-pef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-PEF-THUMBNAIL-EXTRACT-0002",
+      "format": "PEF",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-pef-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "PEF vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
+    },
+    {
+      "rowId": "EX0289-SRW-INVENTORY-INVENTORY-0002",
+      "format": "SRW",
+      "family": "inventory",
+      "operation": "inventory",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-srw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; recognition and dimensions are not metadata support"
+    },
+    {
+      "rowId": "EX0289-SRW-EXIF-READ-0002",
+      "format": "SRW",
+      "family": "exif",
+      "operation": "read",
+      "valueType": "any-documented",
+      "textEncoding": "not-applicable",
+      "layout": "raw-srw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; exif read probe records what this build printed, asserting nothing about vendor exif semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-IPTC-READ-0002",
+      "format": "SRW",
+      "family": "iptc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-srw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; iptc read probe records what this build printed, asserting nothing about vendor iptc semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-XMP-READ-0002",
+      "format": "SRW",
+      "family": "xmp",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "utf-8",
+      "layout": "raw-srw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; xmp read probe records what this build printed, asserting nothing about vendor xmp semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-COMMENTS-READ-0002",
+      "format": "SRW",
+      "family": "comments",
+      "operation": "read",
+      "valueType": "text-bytes",
+      "textEncoding": "not-applicable",
+      "layout": "raw-srw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; comments read probe records what this build printed, asserting nothing about vendor comments semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-ICC-READ-0002",
+      "format": "SRW",
+      "family": "icc",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-srw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": true,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; icc read probe records what this build printed, asserting nothing about vendor icc semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-THUMBNAIL-READ-0002",
+      "format": "SRW",
+      "family": "thumbnail",
+      "operation": "read",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-srw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail read probe records what this build printed, asserting nothing about vendor thumbnail semantics"
+    },
+    {
+      "rowId": "EX0289-SRW-THUMBNAIL-EXTRACT-0002",
+      "format": "SRW",
+      "family": "thumbnail",
+      "operation": "extract",
+      "valueType": "opaque",
+      "textEncoding": "not-applicable",
+      "layout": "raw-srw-vendor-private-unobserved",
+      "duplicates": "none",
+      "sidecar": "none",
+      "presence": {
+        "icc": "unknown",
+        "comment": "unknown",
+        "preview": "unknown"
+      },
+      "noDocumentedClaim": false,
+      "fixture": null,
+      "oracle": {
+        "type": "specification",
+        "detail": "container/spec + documentation blob; pinned-CLI observation pending"
+      },
+      "baselineObservation": "not-run",
+      "verification": "not-assessed",
+      "batch": "B9",
+      "limits": "finite by D0/E02 limit policy; per-batch caps recorded when observed",
+      "notes": "SRW vendor-private layout is not authored: the pinned build has no cleared fixture for the proprietary IFD, so the cell is blocked, not refused; thumbnail extract attempted against the authored IFD1 JPEG payload only, never a camera preview"
     }
   ]
 }
