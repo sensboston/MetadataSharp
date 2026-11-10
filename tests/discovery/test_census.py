@@ -505,19 +505,25 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(4, len(reasons))
         self.assertTrue(all('blocked' in r for r in reasons))
 
-    def test_files_whose_bytes_a_receipt_hashes_are_eol_pinned(self):
+    def test_evidence_files_hashed_by_a_receipt_survive_checkout_conversion(self):
         """A receipt that hashes committed bytes is only meaningful under one checkout mode.
 
-        Windows runners check text out with ``core.autocrlf=true``, which rewrites an unpinned
-        LF file to CRLF; every digest in the receipt then stops matching, and no Linux run can
-        see it. B10 learned this the slow way: ``net8.0/windows-latest`` and
-        ``net10.0/windows-latest`` went red on the discovery suite (run 42744015517) while every
-        Linux and macOS job stayed green. So the rule is asserted here instead of remembered:
-        any evidence file whose bytes appear as a digest in a receipt must carry
-        ``text eol=lf`` in ``.gitattributes``.
+        Windows runners check text out with ``core.autocrlf=true``, which rewrites an unpinned LF
+        file to CRLF; every digest in the receipt then stops matching, and no Linux or macOS job
+        can see it. B10 lost three pushes to that (``net8.0``/``net10.0 / windows-latest``, runs
+        42744015517 and 42746390202). The first version of this test asked ``git check-attr`` for
+        the attributes and turned out to be itself platform-fragile -- the Windows output did not
+        parse into anything, so every file looked unpinned -- which is why it now compares the
+        checked-out bytes with the blob git stores: the consequence, not the configuration that is
+        supposed to prevent it. A file that differs from ``HEAD`` here is either missing a
+        ``text eol=lf`` rule or was edited without regenerating the receipt that hashes it.
         """
         import hashlib
         import subprocess
+        git = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--git-dir'],
+                             capture_output=True, text=True)
+        if git.returncode != 0:
+            self.skipTest('git metadata unavailable; no checkout conversion can occur')
         evidence = ROOT / 'docs/research/evidence'
         hashed = []
         for directory in sorted(evidence.iterdir()):
@@ -531,23 +537,24 @@ class CensusPolicyTests(unittest.TestCase):
                 if hashlib.sha256(path.read_bytes()).hexdigest() in text:
                     hashed.append(path.relative_to(ROOT).as_posix())
         self.assertTrue(hashed, 'expected receipts to hash their evidence files')
-        probe = subprocess.run(['git', '-C', str(ROOT), 'check-attr', '--stdin', 'text', 'eol'],
-                               input='\n'.join(hashed), capture_output=True, text=True)
-        if 'not a git repository' in probe.stderr:
-            # Line endings are only rewritten by a checkout, and there is no checkout outside a
-            # repository: an unpacked tree cannot exhibit the failure this guard looks for.
-            self.skipTest('git metadata unavailable; no checkout conversion can occur')
-        self.assertEqual(0, probe.returncode, probe.stderr)
-        attrs = {}
-        for line in probe.stdout.splitlines():
-            name, _, rest = line.partition(': ')
-            key, _, value = rest.partition(': ')
-            attrs.setdefault(name, {})[key] = value.strip()
-        unpinned = sorted(name for name in hashed
-                          if attrs.get(name, {}).get('text') != 'set'
-                          or attrs.get(name, {}).get('eol') != 'lf')
-        self.assertEqual([], unpinned,
-                         'CRLF checkout on Windows would invalidate these receipt digests')
+        # Two halves, because they fail in different places. On any host that would rewrite the
+        # bytes, the comparison below catches it for real; the attribute statement is checked
+        # everywhere so a batch that forgets the rule fails on the first Linux run too.
+        attributes = (ROOT / '.gitattributes').read_text()
+        self.assertIn('docs/research/evidence/**/*.json text eol=lf', attributes,
+                      'evidence digests need a line-ending pin for CRLF-checkout hosts')
+        rewritten = []
+        for rel in hashed:
+            blob = subprocess.run(['git', '-C', str(ROOT), 'show', f'HEAD:{rel}'],
+                                  capture_output=True)
+            if blob.returncode != 0:
+                # Untracked on purpose in a working copy: nothing to compare against yet.
+                continue
+            if (ROOT / rel).read_bytes() != blob.stdout:
+                rewritten.append(rel)
+        self.assertEqual([], rewritten,
+                         'checked-out bytes differ from the blobs the receipts hashed: pin these '
+                         'files with `text eol=lf` in .gitattributes (or regenerate the receipt)')
 
     def test_b10_receipt_and_print_forms_are_self_consistent(self):
         """The committed evidence must be exactly the recovered payload, and the findings this

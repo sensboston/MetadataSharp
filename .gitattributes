@@ -43,6 +43,7 @@ docs/research/evidence/e01-b9-census/receipt.json text eol=lf
 # matching. B10 hit exactly that -- net8.0/net10.0 windows-latest failed on the discovery suite
 # (run 42744015517) while every Linux job stayed green, because only a CRLF checkout can show
 # it. The per-batch lines above were the fix one batch at a time; this pins the whole evidence
-# tree so the next batch cannot forget, and tests/discovery/test_census.py asserts the pin holds
-# for any file a receipt hashes.
+# tree so the next batch cannot forget, and tests/discovery/test_census.py checks both halves of
+# that: the rule is present, and every evidence file a receipt hashes still matches its own blob
+# byte-for-byte after checkout.
 docs/research/evidence/**/*.json text eol=lf
