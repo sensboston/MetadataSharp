@@ -20,7 +20,12 @@ payload to fix a name would make it no longer a recovery. Three kinds of string 
 `scope` field above, `prediction.basis` — `docs/research/E01_B12_RIGHTS_AND_ORACLE_REVIEW.md`, the review this
 run was gated by, whose file is now named `E01_B11L_…` — and the scratch paths echoed in the recorded stdout and
 stderr, `artifacts/e01/b12-ladder/work/…`, which is the directory that run actually used. The current recorder
-prints `B11LZ`, reports `scope: "B11L recognition ladder only…"`, and works in `artifacts/e01/b11l-ladder/`.
+prints `B11LZ`, reports `scope: "B11L recognition ladder only…"`, and works in `artifacts/e01/b11l-ladder/`; the
+third run of this ladder (run `42853355199`, head `151abf4`, after the rename) confirmed all three strings
+changed and nothing else: its `summary`, `fixtureManifest`, `familyCounts`, `recordCount`, `environment` and all
+94 rows are equal to the ones recorded here, and its `observations` section is equal too once those three label
+strings are mapped back. That run's payload is recoverable but is not committed here — nothing would compare
+against it, and these two files are the pair the tests check.
 Both names describe the same 47 rungs: every derived field in these files is recomputed from the committed
 fixtures by `tests/reference/test_probe_b11l_ladder.py`, so nothing here has to be taken on trust.
 
