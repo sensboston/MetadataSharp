@@ -917,13 +917,52 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertTrue(comparison['observationsByteIdentical'])
         self.assertEqual([], comparison['secondaryDriftBeyondFileDates'])
         self.assertEqual(['baseline', 'secondary', 'sourceCommit'], comparison['differingSections'])
+        master_census_path = evidence_dir / 'master-observations.json'
+        master_pre_path = pre_dir / 'master-observations.json'
+        self.assertTrue(master_census_path.exists(),
+                        'the post-merge master sample must be committed once it has been recovered')
+        self.assertTrue(master_pre_path.exists(),
+                        'the master sample is only a same-head pair if both halves landed')
+        master = json.loads(master_census_path.read_text())
         self.assertEqual({'e01-b11-census/observations.json',
                           'e01-b11-census/prior-run-observations.json',
+                          'e01-b11-census/master-observations.json',
                           'e01-b11-preflight/observations.json',
-                          'e01-b11-preflight/prior-run-observations.json'},
+                          'e01-b11-preflight/prior-run-observations.json',
+                          'e01-b11-preflight/master-observations.json'},
                          {run['payload'] for run in receipt['reproduction']['runs']})
-        self.assertEqual(sorted({evidence['sourceCommit'], prior['sourceCommit']}),
+        self.assertEqual(sorted({evidence['sourceCommit'], prior['sourceCommit'],
+                                master['sourceCommit']}),
                          sorted({run['head'] for run in receipt['reproduction']['runs']}))
+
+        # The post-merge pair is the one that needs no subtraction to mean anything: same
+        # recorder generation, same fixtures, a tree that already contains the batch.
+        sample = receipt['masterSample']
+        self.assertEqual(receipt['run']['thirdSampleRun'], sample['census']['runId'])
+        for kind, path, doc in (('census', master_census_path, master),
+                                ('preflight', master_pre_path, json.loads(master_pre_path.read_text()))):
+            block = sample[kind]
+            self.assertEqual(block['observationsFileSha256'],
+                             hashlib.sha256(path.read_bytes()).hexdigest(), kind)
+            self.assertEqual(block['rawPayloadSha256'],
+                             hashlib.sha256(canonical(doc)).hexdigest(), kind)
+            self.assertTrue(block['fileIsRecorderShaped'],
+                            f'{kind}: master sample must be committed in the recorder\'s own shape')
+            self.assertTrue(block['observationsByteIdentical'], kind)
+            self.assertIn('observations', block['identicalSections'], kind)
+            self.assertEqual([], block['secondaryDriftBeyondFileDates'], kind)
+            self.assertTrue(block['baselineDifference']['executableSha256Differs'], kind)
+            self.assertTrue(block['baselineDifference']['cmakeCacheSha256Equal'], kind)
+            self.assertEqual({'baseline', 'secondaryObservations', 'sourceCommit'}
+                             if kind == 'census' else {'baseline', 'secondary', 'sourceCommit'},
+                             set(block['differingSections']), kind)
+            self.assertEqual('passed', doc['status'], kind)
+            self.assertEqual(master['sourceCommit'], doc['sourceCommit'], kind)
+        self.assertTrue(sample['census']['canonicalHeadIsAncestorOfMaster'],
+                        'the master sample must descend from the head the census rests on')
+        self.assertEqual([len(sample['census']['identicalSections']), len(sample['preflight']['identicalSections'])],
+                         [int(n) for n in re.findall(r'(\d+) of \d+ \w+ sections', sample['reading'])],
+                         'the reading must quote the computed section counts, not remembered ones')
 
         # The two payload generations differ in exactly one thing: how the -et rows describe
         # themselves. Asserting the difference is what stops a swapped pair from passing.
@@ -970,16 +1009,20 @@ class CensusPolicyTests(unittest.TestCase):
         # shape labels are description, and no row may depend on which generation was committed.
         on_disk = json.loads((ROOT / 'docs/research/EXIV2_CENSUS.json').read_text())
         saved = census.EVIDENCE_BY_BATCH['B11']
-        census.EVIDENCE_BY_BATCH['B11'] = prior_path
+        import contextlib
+        import io
         try:
-            import contextlib, io
-            with contextlib.redirect_stdout(io.StringIO()):
-                from_prior = census.build(self.seeds)
+            for label, path in (('prior run', prior_path), ('master sample', master_census_path)):
+                census.EVIDENCE_BY_BATCH['B11'] = path
+                with contextlib.redirect_stdout(io.StringIO()):
+                    rebuilt = census.build(self.seeds)
+                self.assertEqual([r for r in on_disk['rows'] if r['batch'] == 'B11'],
+                                 [r for r in rebuilt['rows'] if r['batch'] == 'B11'],
+                                 f'{label} payload would change the B11 rows')
+                self.assertEqual(on_disk['rows'], rebuilt['rows'],
+                                 f'{label} payload would change a row outside B11')
         finally:
             census.EVIDENCE_BY_BATCH['B11'] = saved
-        self.assertEqual([r for r in on_disk['rows'] if r['batch'] == 'B11'],
-                         [r for r in from_prior['rows'] if r['batch'] == 'B11'])
-        self.assertEqual(on_disk['rows'], from_prior['rows'])
 
     def test_b9_rows_partition_observed_and_blocked(self):
         rows = [r for r in self.report['rows'] if r['batch'] == 'B9']

@@ -8,7 +8,7 @@ Every row keeps `verification: not-assessed`, the denominator stays unfrozen, an
 percentage is computed anywhere in this batch. The gate for this batch is
 `docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md`.
 
-Files here — four payloads, two same-head pairs, because a payload with nothing to compare against
+Files here — six payloads, three same-head pairs, because a payload with nothing to compare against
 proves only that it exists:
 
 - `observations.json` — the CI report the census rows are generated from: run 42762097543, job *Exiv2
@@ -27,12 +27,23 @@ proves only that it exists:
   the two is what shows the relabel changed no observation: `censusCrossRun.rowsDifferingBeyondShapeLabel`
   is empty, computed by the builder, and the census file itself is byte-identical against either payload,
   which is the stronger statement — the label is description, not data.
-- `receipt.json` — provenance, the tally, both recovery records, the CIFF print form, the four `-et`
-  shapes, the fixtures the factory never handed to a reader, and both cross-run comparisons.
+- `master-observations.json` — the same recorder's census payload from the post-merge push on `master`
+  (run 42767021269, head `2eadc552f`, check-run 129665791782). This is the sample that needs no
+  arithmetic to mean something: `observations`, `blocked`, `fixtureManifest` and `outcomeCounts` are all
+  identical to `observations.json`, and only `baseline`, `secondaryObservations` and `sourceCommit` move.
+  `masterSample.census.canonicalHeadIsAncestorOfMaster` is true, so the two payloads are the same
+  fixtures built from the same source pin on either side of the merge, and the discovery test rebuilds
+  the census against this payload too.
+- `receipt.json` — provenance, the tally, all recovery records, the CIFF print form, the four `-et`
+  shapes, the fixtures the factory never handed to a reader, and the cross-run comparisons for both the
+  pre-merge pair and the post-merge sample.
 - `../e01-b11-preflight/observations.json` — the preflight for the same head as the census report. It is
   the only place the stdout *text* lives (the census rows carry digests), so this is where
   `ciff-mapped-v1 -pe`'s eleven printed entries and the AVI stub's four `Xmp.video.*` keys can be checked
   without re-running anything.
+- `../e01-b11-preflight/master-observations.json` — the preflight from the post-merge master push, the
+  other half of the pair above it; identical `observations` and `recordCount`, differing only in
+  `baseline`, `secondary` and `sourceCommit`.
 - `../e01-b11-preflight/prior-run-observations.json` — run 42757620226's preflight (head `c34ee5e5d`),
   the other half of that pair. Its 107 records are byte-identical to the committed payload's; the sections
   that differ are `baseline` (the build embeds its own timestamp, and two `library=` lines in the version

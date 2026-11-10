@@ -12,6 +12,7 @@
     "trigger": "push to arena/40805d1c-metadatasharp",
     "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42762097543",
     "secondSampleRun": 42757620226,
+    "thirdSampleRun": 42767021269,
     "allStepsGreen": true
   },
   "denominatorFrozen": false,
@@ -147,7 +148,10 @@
       "verification"
     ],
     "normalization": "none required: stderr paths are already normalized to <fixture> by the recorder",
-    "priorChunks": 5
+    "priorChunks": 5,
+    "masterRunId": 42767021269,
+    "masterChunks": 5,
+    "masterObservationsFileSha256": "20fc1e6db9cff8fad40dcc3216560e49d5aa34ebf9fb6bfff37cc23a36c5e6ed"
   },
   "preflightRecovery": {
     "command": "gh api repos/sensboston/MetadataSharp/check-runs/129649950248/annotations --paginate",
@@ -160,7 +164,10 @@
     "observationsFileSha256": "8d1e4cd652ea17d0d431506c7f70cc9ddb3963fcfe069c7933d07ee9a39578cc",
     "rawPayloadSha256": "69494c3615be4e39f7956a764caea9f1f9c2fa0e5feb98177d8929cdfe01d983",
     "why": "the census record keeps stdout digests, not stdout; the preflight keeps the printed text, which is what makes the CIFF mapping and the AVI XMP block below checkable without re-running the pinned build",
-    "priorChunks": 5
+    "priorChunks": 5,
+    "masterRunId": 42767021269,
+    "masterChunks": 5,
+    "masterObservationsFileSha256": "c7fd058b68be4118ecc702cee2b2c317e46336f24c5c30b7448821e5ed8aa433"
   },
   "annotationBudget": {
     "perCheckRunLimit": 50,
@@ -1093,7 +1100,7 @@
     ]
   },
   "reproduction": {
-    "claim": "observations are reproducible; the compiled reference binary is not",
+    "claim": "observations are reproducible; the compiled reference binary is not -- demonstrated at three heads, one of them post-merge",
     "runs": [
       {
         "head": "6bb7d8cb94c42d4d88435171c83d42821f8f0a91",
@@ -1114,9 +1121,19 @@
         "head": "c34ee5e5d25426ac1fbd2c53fceb2127d00ed217",
         "runId": 42757620226,
         "payload": "e01-b11-preflight/prior-run-observations.json"
+      },
+      {
+        "head": "2eadc552fd412525f11b68c56ada50899ae22c75",
+        "runId": 42767021269,
+        "payload": "e01-b11-census/master-observations.json"
+      },
+      {
+        "head": "2eadc552fd412525f11b68c56ada50899ae22c75",
+        "runId": 42767021269,
+        "payload": "e01-b11-preflight/master-observations.json"
       }
     ],
-    "status": "Two samples per recorder, each one half of a same-head pair. The census rests on run 42762097543 at head 6bb7d8c, the head this receipt lands in, and the second sample comes from run 42757620226 at head c34ee5e: a different head, a different build, and a payload recorded before the recorder labelled the `-et` shapes. That is the comparison worth having, because it isolates the label. The preflight from run 42757054570 is deliberately not kept: that run failed its census step on a recorder bug (the coverage guard compared probed fixtures against the whole manifest, including the blocked entry that deliberately has no file), and its preflight payload matched the sample kept in its place on every record, differing only in the three sections that differ between any two runs. A third copy would have added bytes without adding a check.",
+    "status": "Every sample is half of a same-head pair, so no comparison in this receipt mixes a census from one build with a preflight from another. The census rests on run 42762097543 at head 6bb7d8c, the head this receipt lands in, and the second sample comes from run 42757620226 at head c34ee5e: a different head, a different build, and a payload recorded before the recorder labelled the `-et` shapes. That is the comparison worth having, because it isolates the label. The preflight from run 42757054570 is deliberately not kept: that run failed its census step on a recorder bug (the coverage guard compared probed fixtures against the whole manifest, including the blocked entry that deliberately has no file), and its preflight payload matched the sample kept in its place on every record, differing only in the three sections that differ between any two runs. A third copy would have added bytes without adding a check. The post-merge push on master (run 42767021269, head 2eadc55) supplies the pair the pre-merge comparison cannot: its head descends from the canonical one, and because no relabelling sits between it and the committed payload, `observations` agrees outright rather than row-for-row after three field names are subtracted. That is the B9/B10 housekeeping pattern, and it is the strongest form the reproduction claim takes in this programme so far.",
     "identicalSections": [
       "denominatorFrozen",
       "environment",
@@ -1236,5 +1253,87 @@
       "statusShape"
     ],
     "reading": "4 of 87 observations differ between the two runs, all of them `-et` rows, and only in the three fields this batch renamed. Exit codes, artifact digests, stderr, outcomes, the fixture manifest and every non-extract row are byte-identical across a new head and a new build, so the label is a change of description, not of observation."
+  },
+  "masterSample": {
+    "what": "the post-merge push on master, re-observed from the tree that already contains this batch. It is the only sample here whose `observations` section is identical to the committed one rather than merely row-for-row comparable: the pair inside this receipt straddles the recorder's relabelling of `-et`, so its census comparison had to subtract three field names to say anything, and this one does not.",
+    "census": {
+      "runId": 42767021269,
+      "checkRunId": 129665791782,
+      "head": "2eadc552fd412525f11b68c56ada50899ae22c75",
+      "observationsFileSha256": "20fc1e6db9cff8fad40dcc3216560e49d5aa34ebf9fb6bfff37cc23a36c5e6ed",
+      "rawPayloadSha256": "c819fbc3da7f3d563dfc9fe17cfe6d09215f5928b3a12157d97182445a91fb8b",
+      "status": "passed",
+      "chunks": 5,
+      "identicalSections": [
+        "batch",
+        "blocked",
+        "denominatorFrozen",
+        "environment",
+        "fixtureManifest",
+        "limitations",
+        "observations",
+        "outcomeCounts",
+        "schema",
+        "scope",
+        "status",
+        "verification"
+      ],
+      "differingSections": [
+        "baseline",
+        "secondaryObservations",
+        "sourceCommit"
+      ],
+      "observationsByteIdentical": true,
+      "fileIsRecorderShaped": true,
+      "baselineDifference": {
+        "executableSha256Differs": true,
+        "cmakeCacheSha256Equal": true,
+        "effectiveCmakeEqual": true
+      },
+      "secondaryDriftBeyondFileDates": [],
+      "observationCount": 87,
+      "outcomeCountsEqual": true,
+      "blockedIdsEqual": true,
+      "fixtureManifestEqual": true,
+      "canonicalHeadIsAncestorOfMaster": true
+    },
+    "preflight": {
+      "runId": 42767021269,
+      "checkRunId": 129665791782,
+      "head": "2eadc552fd412525f11b68c56ada50899ae22c75",
+      "observationsFileSha256": "c7fd058b68be4118ecc702cee2b2c317e46336f24c5c30b7448821e5ed8aa433",
+      "rawPayloadSha256": "e8d1d2cb83ca35a90656dc57e56c4aaa7e2771e6bae38466b68dfcd8bd3c1cbd",
+      "status": "passed",
+      "chunks": 5,
+      "identicalSections": [
+        "denominatorFrozen",
+        "environment",
+        "fixtureManifest",
+        "observations",
+        "recordCount",
+        "schema",
+        "scope",
+        "status",
+        "verification"
+      ],
+      "differingSections": [
+        "baseline",
+        "secondary",
+        "sourceCommit"
+      ],
+      "observationsByteIdentical": true,
+      "fileIsRecorderShaped": true,
+      "baselineDifference": {
+        "executableSha256Differs": true,
+        "cmakeCacheSha256Equal": true,
+        "effectiveCmakeEqual": true
+      },
+      "secondaryDriftBeyondFileDates": [],
+      "recordCount": 107,
+      "recordCountEqual": true,
+      "fixtureCountEqual": true,
+      "fixtureManifestEqual": true
+    },
+    "reading": "12 of 15 census sections and 9 of 12 preflight sections are identical to the committed payloads, `observations` among them; what moves is `baseline` (a build timestamp and a binary digest), `sourceCommit`, and ExifTool's file dates -- exactly the three the reproduction claim names. The canonical head is an ancestor of the master head, so the two payloads describe the same fixtures built from the same source pin, one recorded before the merge and one after."
   }
 }

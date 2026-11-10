@@ -565,25 +565,30 @@ What that table licenses B11 to say, and nothing more:
 - Fixture digests are recorded in `tests/fixtures/b11/census-manifest.json` and copied into rows; the
   manifest is compared whole by `verify()`, so `tools/reference/b11_container_fixtures.py generate` must be
   re-run and the census regenerated in the same commit whenever a fixture changes.
-- Evidence landed in `docs/research/evidence/e01-b11-census/` (`observations.json`, `receipt.json`,
-  `README.md`) with the preflight beside it in `docs/research/evidence/e01-b11-preflight/`
-  (`observations.json` for the same head as the census, `prior-run-observations.json` as the reproduction
-  sample), and nothing there is hand-edited: `tools/reference/write_b11_receipt.py` recomputes the receipt
-  from the recovered payloads and re-indents the payloads to the recorder's own shape. The B10 builder is
-  **not** reusable unchanged, as an earlier draft of this document claimed:
+- Evidence landed in `docs/research/evidence/e01-b11-census/` (`observations.json`,
+  `prior-run-observations.json`, `master-observations.json`, `receipt.json`, `README.md`) together with
+  the matching three payloads in `docs/research/evidence/e01-b11-preflight/`. Every `observations.json`
+  shares its head with the census payload beside it — three same-head pairs, at `6bb7d8c` (the head the
+  census rests on), `c34ee5e` (the pre-relabel generation, kept as the cross-run sample) and `2eadc552f`
+  (the post-merge push on `master`, recovered from run 42767021269). Nothing there is hand-edited:
+  `tools/reference/write_b11_receipt.py` recomputes the receipt from the recovered payloads and re-indents
+  the payloads to the recorder's own shape.
+- The B10 builder is **not** reusable unchanged, as an earlier draft of this document claimed:
   `tools/reference/write_b10_receipt.py` hardcodes its evidence paths, its `batch`, its CI job's display
-  name, its two annotation titles and a RAF-specific `authoredComment` check. B11 therefore gets
-  `tools/reference/write_b11_receipt.py`, cloned from it with those six things replaced — the
-  The "recompute, never retype" discipline carries over and B11's equivalent of the authored-comment
-  check is the `0x0805` payload digest, but the sample interface does not: B10 takes `--ci`/`--master`
-  payload paths with `--ci-run`/`--master-run` ids because its second sample arrived *after* the merge,
-  while B11 keeps both run ids as `RUN`/`PRIOR` constants in the builder and exposes only
-  `--prior-census`/`--prior-preflight` paths, because both samples were in hand when the receipt was
-  written. A receipt that hardcodes a run id it cannot re-derive is fine only while it also re-checks
-  the head that payload carries, which it does (`git cat-file` on both). Reproduction is claimed only
-  in the B10 wording: *N independent CI runs of the same recorder agree on the observation payload
-  byte-for-byte; only the build timestamp, the validated head and ExifTool file dates move*, with the
-  `differingSections` list computed by the receipt generator rather than asserted here.
+  name, its two annotation titles and a RAF-specific `authoredComment` check. B11 gets its own builder,
+  cloned from it with those six things replaced — the "recompute, never retype" discipline carries over,
+  and B11's equivalent of the authored-comment check is the `0x0805` payload digest. The sample interface
+  does not carry over: B10 takes `--ci`/`--master` paths *and* `--ci-run`/`--master-run` ids because its
+  later samples arrived after the merge, while B11 takes paths only
+  (`--prior-census`, `--prior-preflight`, `--master-census`, `--master-preflight`, each defaulting to the
+  committed filename) and keeps run ids as `RUN`/`PRIOR`/`MASTER` constants. Two consequences, both
+  deliberate: a sample that has not landed yet degrades the receipt's prose instead of raising, and a
+  hardcoded run id is only safe because the builder still re-checks each payload's own `sourceCommit`
+  against `git cat-file` — which is also why a shallow clone has to be deepened before this file can run
+  at all, and the assertion says so. Reproduction is claimed only in the B10 wording — *N independent CI
+  runs of the same recorder agree on the observation payload byte-for-byte; only the build timestamp, the
+  validated head and ExifTool file dates move* — with the identical/differing section lists computed by
+  the generator rather than asserted here.
 
 ## What the observation showed (run 42762097543, head `6bb7d8c`)
 
@@ -619,7 +624,7 @@ a reviewer reads first.
 - **Only one container stub yields readable metadata.** `owned-avi-avih.avi` printed four `Xmp.video.*` keys
   under `-pa`/`-px`; ASF, MKV, WAV and both MOVs printed nothing or threw. That is the video-metadata family
   absence in §3 made visible as behaviour, and it is why the batch enumerates inventory-only cells there.
-- **Two samples per recorder, and the census delta is exactly the label.** The 107 preflight records are
+- **Three samples per recorder, and the pre-merge delta is exactly the label.** The 107 preflight records are
   byte-identical between runs — `observations` appears in `reproduction` › `priorRunComparison` ›
   `identicalSections` — and the census payload agrees on 83 of 87 observations. The four that differ are the
   four `-et` rows, and only in the three fields this batch renamed (`exitCodeIsByteCountInPinnedBuild` out,
@@ -629,7 +634,13 @@ a reviewer reads first.
   a checked statement instead of a hope. Sections that differ between any two runs are `baseline` (the binary
   embeds its build timestamp, and two `library=` lines also swap order), `secondaryObservations`/`secondary`
   (ExifTool's `System:File*Date`) and `sourceCommit` — the receipt computes those lists, it does not assert
-  them. The preflight from run 42757054570 (head `822fb1d`) is deliberately *not* committed: its census step
+  them. The post-merge master pair (run 42767021269 at `2eadc552f`, recovered from check-run
+  129665791782) is the third sample and the strongest: `masterSample.census.identicalSections` includes
+  `observations`, so the census payload agrees *without* subtracting the relabelled fields, and
+  `canonicalHeadIsAncestorOfMaster` is true — the two payloads describe the same fixtures from a tree
+  that already contains this batch. `build_census.py` produces the identical artifact from that payload
+  too, which the discovery test checks by rebuilding the census against each committed sample in turn.
+  The preflight from run 42757054570 (head `822fb1d`) is deliberately *not* committed: its census step
   failed on a recorder bug, and its preflight matched the kept sample on every record, so a third copy would
   have added bytes without adding a check.
 

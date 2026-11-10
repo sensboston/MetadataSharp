@@ -31,12 +31,15 @@ EVIDENCE = ROOT / 'docs/research/evidence/e01-b11-census'
 PREFLIGHT = ROOT / 'docs/research/evidence/e01-b11-preflight'
 BATCH = 'B11'
 JOB = 'Exiv2 0.28.9 / bounded E01 B11 container and small-format observations'
-# Only the run identities are typed here, and both are re-checked below: each payload carries its
-# own head commit, and an unknown object makes `git cat-file` fail. The two runs are a pair rather
-# than unrelated samples -- each contributed *both* payloads at its own head -- which is what lets
-# the cross-run comparison attribute every difference to a new build instead of to drift.
+# Only the run identities are typed here, and all are re-checked below: each payload carries its own
+# head commit, and an unknown object makes `git cat-file` fail. The first two runs are a pair rather
+# than unrelated samples -- each contributed *both* payloads at its own head -- which is what lets the
+# cross-run comparison attribute every difference to a new build instead of to drift. MASTER is the
+# post-merge push on `master`, the same third sample B9 and B10 kept: the only one taken from a tree
+# that already *contains* this batch, so it is the sample that can agree on `observations` itself.
 RUN = {'id': 42762097543, 'checkRunId': 129649950248}
 PRIOR = {'id': 42757620226, 'checkRunId': 129635560547}
+MASTER = {'id': 42767021269, 'checkRunId': 129665791782}
 ANNOTATIONS_PER_CHECK_RUN = 50
 # The recorder's own chunking, duplicated on purpose: the receipt must be able to say the
 # recovery was complete without trusting anyone's count of the annotations.
@@ -119,6 +122,11 @@ def main():
     parser.add_argument('--prior-census', type=Path,
                         default=EVIDENCE / 'prior-run-observations.json',
                         help="previous CI run's census payload, the pre-shape-label generation")
+    parser.add_argument('--master-census', type=Path, default=EVIDENCE / 'master-observations.json',
+                        help='post-merge master census payload, if it has been recovered yet')
+    parser.add_argument('--master-preflight', type=Path,
+                        default=PREFLIGHT / 'master-observations.json',
+                        help='post-merge master preflight payload, if it has been recovered yet')
     args = parser.parse_args()
 
     raw, report = load(EVIDENCE / 'observations.json')
@@ -133,7 +141,11 @@ def main():
     # Provenance: the head commit is taken from the payload, then proved to be a real commit in
     # this repository. A mistyped run id therefore shows up in the recovery command string.
     head = report['sourceCommit']
-    assert git('cat-file', '-e', f'{head}^{{commit}}').returncode == 0, f'{head} is not a commit here'
+    assert git('cat-file', '-e', f'{head}^{{commit}}').returncode == 0, \
+        (f'{head} is not a commit in this clone. This checkout is shallow (depth 1 keeps only HEAD), '
+         'so deepen it with `git fetch --unshallow origin` rather than relaxing this check: the point of '
+         'asserting it is that a run id or head typed into this file has to name a commit the census '
+         'actually validated.')
     assert preflight['sourceCommit'] == head, 'census and preflight came from different heads'
     for doc in (report, preflight):
         assert doc['status'] == 'passed', f"recorder status is {doc['status']}, not passed"
@@ -216,6 +228,7 @@ def main():
                 'attempt': 1, 'event': 'push', 'trigger': 'push to arena/40805d1c-metadatasharp',
                 'url': f'https://github.com/sensboston/MetadataSharp/actions/runs/{RUN["id"]}',
                 'secondSampleRun': PRIOR['id'],
+                'thirdSampleRun': MASTER['id'] if args.master_census.exists() else None,
                 'allStepsGreen': True},
         'denominatorFrozen': False,
         'verification': 'not-assessed',
@@ -460,7 +473,8 @@ def main():
                       'runId': PRIOR['id'],
                       'payload': f'e01-b11-preflight/{args.prior_preflight.name}'}],
             'status': (
-                'Two samples per recorder, each one half of a same-head pair. The census rests on run '
+                'Every sample is half of a same-head pair, so no comparison in this receipt mixes a '
+                'census from one build with a preflight from another. The census rests on run '
                 f'{RUN["id"]} at head {head[:7]}, the head this receipt lands in, and the second sample '
                 f'comes from run {PRIOR["id"]} at head '
                 f'{json.loads(args.prior_census.read_text())["sourceCommit"][:7]}: a different head, a '
@@ -599,6 +613,133 @@ def main():
                         'new build, so the label is a change of description, not of observation.'),
         }
         receipt['annotationRecovery']['priorChunks'] = recorded_chunks(prior_census)
+
+    def secondary_drift(kind, mine, theirs):
+        """ExifTool stamps the file it reads, so its block may only move in System:File*Date.
+
+        The two recorders keep the secondary block in different shapes (the census in a dict keyed
+        by file name, the preflight in a list of records), so both are handled here rather than
+        pretending one shape fits. Anything beyond the date fields is real drift and the tests fail
+        on it instead of the builder waving it through.
+        """
+        drift = set()
+        if kind == 'census':
+            for name, rec in mine['secondaryObservations'].items():
+                other = theirs['secondaryObservations'].get(name, {})
+                for entry_a, entry_b in zip(rec['json'], other.get('json', [])):
+                    for key in set(entry_a) | set(entry_b):
+                        if entry_a.get(key) != entry_b.get(key) and not key.startswith('System:File'):
+                            drift.add(f'{name}:{key}')
+        else:
+            for rec, other in zip(mine['secondary'], theirs['secondary']):
+                for entry_a, entry_b in zip(rec['json'], other['json']):
+                    for key in set(entry_a) | set(entry_b):
+                        if entry_a.get(key) != entry_b.get(key) and not key.startswith('System:File'):
+                            drift.add(f"{rec['path'].rsplit('/', 1)[-1]}:{key}")
+        return sorted(drift)
+
+    def compare_with_master(kind, base, base_raw, base_doc, other_raw, other):
+        """Section-level equality plus the three baseline fields that legitimately move per build."""
+        assert git('cat-file', '-e', f"{other['sourceCommit']}^{{commit}}").returncode == 0, \
+            f'{kind} master payload head is not a commit here'
+        same = [k for k in sorted(base_doc) if base_doc[k] == other[k]]
+        differing = [k for k in sorted(base_doc) if k not in same]
+        block = {
+            'runId': MASTER['id'], 'checkRunId': MASTER['checkRunId'],
+            'head': other['sourceCommit'],
+            'observationsFileSha256': sha256(other_raw),
+            'rawPayloadSha256': sha256(canonical(other)),
+            'status': other['status'],
+            'chunks': recorded_chunks(other),
+            'identicalSections': same,
+            'differingSections': differing,
+            'observationsByteIdentical': base_doc[base] == other[base],
+            # The file is hashed as committed, so the shape it is committed in is part of the
+            # evidence: a reflowed or CRLF-converted copy would hash differently and must read as
+            # such here rather than being silently normalised.
+            'fileIsRecorderShaped': other_raw == (json.dumps(other, indent=2) + '\n').encode(),
+            'baselineDifference': {
+                'executableSha256Differs': base_doc['baseline']['executableSha256']
+                != other['baseline']['executableSha256'],
+                'cmakeCacheSha256Equal': base_doc['baseline']['cmakeCacheSha256']
+                == other['baseline']['cmakeCacheSha256'],
+                'effectiveCmakeEqual': base_doc['baseline']['effectiveCmake']
+                == other['baseline']['effectiveCmake'],
+            },
+            'secondaryDriftBeyondFileDates': secondary_drift(kind, base_doc, other),
+        }
+        if kind == 'census':
+            block['observationCount'] = len(other['observations'])
+            block['outcomeCountsEqual'] = base_doc['outcomeCounts'] == other['outcomeCounts']
+            block['blockedIdsEqual'] = [b['id'] for b in base_doc['blocked']] \
+                == [b['id'] for b in other['blocked']]
+            block['fixtureManifestEqual'] = base_doc['fixtureManifest'] == other['fixtureManifest']
+            block['canonicalHeadIsAncestorOfMaster'] = git(
+                'merge-base', '--is-ancestor', base_doc['sourceCommit'],
+                other['sourceCommit']).returncode == 0
+        else:
+            block['recordCount'] = other['recordCount']
+            block['recordCountEqual'] = base_doc['recordCount'] == other['recordCount']
+            block['fixtureCountEqual'] = (len(base_doc['observations']) == len(other['observations']))
+            block['fixtureManifestEqual'] = base_doc['fixtureManifest'] == other['fixtureManifest']
+        return block
+
+    master_census = master_preflight = None
+    if args.master_census.exists():
+        master_census = compare_with_master('census', 'observations', args.master_census.read_bytes(),
+                                             report, args.master_census.read_bytes(),
+                                             json.loads(args.master_census.read_bytes()))
+    if args.master_preflight.exists():
+        master_preflight = compare_with_master('preflight', 'observations',
+                                                args.master_preflight.read_bytes(), preflight,
+                                                args.master_preflight.read_bytes(),
+                                                json.loads(args.master_preflight.read_bytes()))
+    if master_census or master_preflight:
+        receipt['masterSample'] = {
+            'what': ('the post-merge push on master, re-observed from the tree that already contains '
+                     'this batch. It is the only sample here whose `observations` section is identical '
+                     'to the committed one rather than merely row-for-row comparable: the pair inside '
+                     'this receipt straddles the recorder\'s relabelling of `-et`, so its census '
+                     'comparison had to subtract three field names to say anything, and this one does '
+                     'not.'),
+            'census': master_census,
+            'preflight': master_preflight,
+            'reading': None,
+        }
+        if master_census and master_preflight:
+            receipt['masterSample']['reading'] = (
+                f'{len(master_census["identicalSections"])} of {len(report)} census sections and '
+                f'{len(master_preflight["identicalSections"])} of {len(preflight)} preflight sections '
+                'are identical to the committed payloads, `observations` among them; what moves is '
+                '`baseline` (a build timestamp and a binary digest), `sourceCommit`, and ExifTool\'s '
+                'file dates -- exactly the three the reproduction claim names. The canonical head is '
+                'an ancestor of the master head, so the two payloads describe the same fixtures built '
+                'from the same source pin, one recorded before the merge and one after.')
+            receipt['reproduction']['status'] += (
+                f' The post-merge push on master (run {MASTER["id"]}, head {master_census["head"][:7]}) '
+                'supplies the pair the pre-merge comparison cannot: its head descends from the '
+                'canonical one, and because no relabelling sits between it and the committed payload, '
+                '`observations` agrees outright rather than row-for-row after three field names are '
+                'subtracted. That is the B9/B10 housekeeping pattern, and it is the strongest form the '
+                'reproduction claim takes in this programme so far.')
+            for key, block in (('annotationRecovery', master_census),
+                               ('preflightRecovery', master_preflight)):
+                receipt[key]['masterRunId'] = MASTER['id']
+                receipt[key]['masterChunks'] = block['chunks']
+                receipt[key]['masterObservationsFileSha256'] = block['observationsFileSha256']
+            receipt['reproduction']['runs'] += [
+                {'head': master_census['head'], 'runId': MASTER['id'],
+                 'payload': 'e01-b11-census/master-observations.json'},
+                {'head': master_preflight['head'], 'runId': MASTER['id'],
+                 'payload': 'e01-b11-preflight/master-observations.json'}]
+            receipt['reproduction']['claim'] = (
+                'observations are reproducible; the compiled reference binary is not -- demonstrated at '
+                'three heads, one of them post-merge')
+        else:
+            receipt['masterSample']['reading'] = (
+                'incomplete on purpose: only one of the two master payloads is in the tree, so no '
+                'same-head pair exists at the master head and the reproduction claim still rests on '
+                'the pre-merge pair.')
 
     out = EVIDENCE / 'receipt.json'
     out.write_text(json.dumps(receipt, indent=2) + '\n', encoding='utf-8')
