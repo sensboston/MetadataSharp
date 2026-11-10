@@ -1,26 +1,47 @@
 # Current development state and recovery checkpoint
 
-**E01 B10 (TIFF-derived RAW wave 2) is in progress** on `arena/6c11e813-metadatasharp`:
-the rights/oracle gate `docs/research/E01_B10_RIGHTS_AND_ORACLE_REVIEW.md` is written and
-grounds MRW/RW2/RAF on transcribed pinned readers (SR2 deliberately gets no invented
-structure); no fixture, probe or census row exists for B10 yet, so nothing in the census
-below reflects B10. **E01 B9 (TIFF-derived RAW wave 1) is merged** via PR #50 as master
-`4d4804b7`: 96 rows — 48 `observed-cli` from the pinned Exiv2 0.28.9 CLI on six owned
-synthetic marker fixtures and 48 `blocked` vendor-private cells. Census total is
-**664 rows**, 138 seed cells enumerated, 48 pending, `denominatorFrozen: false`.
-Evidence: `docs/research/evidence/e01-b9-census/` — CI-only, with two extra samples (a
-second CI run, plus the post-merge master run 42735514666 at `4d4804b7`): the observation
-payload matched byte-for-byte across all three runs while `baseline.executableSha256`
-differs because the reference build embeds its own timestamp — observations reproducible,
-the binary not; there is no local run and none is claimed. B8 is merged via PR #48 (53 rows: 31 observed, 22 blocked; evidence
-in `docs/research/evidence/e01-b8-census/`, which also keeps a second CI run as a
-cross-run reproduction sample). Operationally important: a check run keeps at most 50
-annotations and B0–B8 already emit exactly 50, so B9's evidence was silently dropped in
-its first run — the batch now has its own `pinned-exiv2-b9` job and a count marker. Next
-in §5 numeric order: **B10** (RAW wave 2). Still open from B8: every write
-suboperation, PSD ICC/thumbnail resources, the JP2/EPS metadata-present fixtures. CR3
-remains blocked; no denominator freeze, MetadataSharp verification, publication or DNG
-D2 write is authorized. See the B8 and B9 sections below.
+**Checkpoint — refreshed 2026-11-10 (E01 B11L merged).** These opening lines are the
+recovery checkpoint: they are appended at merge time and refreshed when they go stale, and
+this is the first refresh since B9 — everything they said about B10 being in progress and
+about a 664-row census was superseded four merges ago and is corrected below. The
+chronological record stays in PROGRESS.md.
+
+**E01 census batching: B0–B11 merged, B11L merged last.** Master `8736191` (PR #55, run
+42857231525, 19/19 green) carries **B10** (PR #51 `e7b0ec8`, plus housekeeping PR #52
+`953af0a`: 64 rows = 32 observed-cli + 32 blocked, MRW/RW2/SR2/RAF, census 664 → 728),
+**B11** (PR #53 `2eadc55` + PR #54 `ee643e3` master-reproduction sample: 95 rows = 87
+observed-cli + 8 blocked Canon CIFF cells, census 728 → 823) and **B11L** — the
+recognition-ladder *diagnostic* batch, committed as `B12` and renamed to B11L before merge,
+because §5 allocates B12 to the MakerNotes overlay (see
+`docs/research/E01_B11L_RIGHTS_AND_ORACLE_REVIEW.md`, "Label collision: resolved by moving
+this batch, not the plan"). B11L adds **no** census row, no seed cell and no support claim:
+`docs/research/EXIV2_CENSUS.json` is 823 rows, `verification: not-assessed` on every one of
+them, `denominatorFrozen: false`, no percentage anywhere. Its one measured result is
+narrow and reproducible — for BMP and GIF the pinned build's refusal of a *short* file
+turns at **80 bytes** and is content-independent, which retires B11's unexplained
+13-byte-GIF row as a length observation and rules out both causes B11 had named.
+
+**Next in §5 numeric order: B12** — MakerNotes applicability overlay over RAW/JPEG/TIFF
+rows — then **B13** (workflow/transfer applicability, E15 inputs) and **B14** (vocabulary,
+E06); the freeze PR comes after B14 and attaches its delta report to PROGRESS.md. That is
+three cross-cutting batches and one freeze: nothing else is allocated in §5. Gaps retained
+in place of closing them: B7/B8's open cells (JP2/EPS metadata-present variants, PSD
+ICC/thumbnail resources, every B8 write suboperation, PGF/EXV/DCP fixtures), B9's 48 and
+B10's 32 vendor-private `blocked-rights` cells, CR3 blocked, and — new, from B11L — which
+registry entry owns each sub-25-byte band is **not established** (a per-byte ladder, not an
+edit to the prediction table). Not started: E06 typed vocabulary breadth; E07 container
+gap closure plus MetadataSharp-side verification (until then `verification` stays
+`not-assessed`); E08–E12 new format families; E13–E15 editing/preview/workflow breadth;
+E16 evidence-backed improvements; E17 reconciliation (two denominators, two-way reference
+facts); E18 release audit (publication approval separate). D2/public write-up NOT
+authorized.
+
+**GitHub housekeeping.** The five merged session branches from the B9/B10/B11 line
+(`arena/0e8b5844`, `308dfd7b`, `40805d1c`, `6c11e813`, `d51b730e`) were pruned on
+2026-11-10 after verifying each one's PR was merged and that its head added no file absent
+from master. `arena/ad88fb2c-metadatasharp` was **kept** deliberately: it is this session's
+tracked branch and its head `fda92be` is an ancestor of master, so it is empty-diff and
+harmless; delete it only knowing the session loses its push target. No PR is open.
 
 
 B7 bounded census merged via PR #43; receipt in
@@ -46,8 +67,15 @@ authorized**.
 - Merged/approved: E00; E01 bounded pinned-CLI foundation (PR #16); E02 dual
   targeting (42446034373); E03 contracts + implementation; E04/D0 exact DNG proposal
   approved (no implementation); E05/D1 narrow read-only DNG (PR #21); E01-CEN census
-  design approved 2026-11-08.
-- Census (`docs/research/EXIV2_CENSUS.json`, `--check` green): B0–B5 merged;
+  design approved 2026-11-08. Later merges not yet reflected in the two bullets below:
+  E01 census B9 (PR #50), B10 (PR #51/#52), B11 (PR #53/#54) and the diagnostic B11L
+  (PR #55); E06–E18 unstarted, and E08's bounded read contract stays a design input.
+- Census (`docs/research/EXIV2_CENSUS.json`, `--check` green) — **current totals: 823
+  rows** (B0–B8 as recorded below, B9 96, B10 64, B11 95; **B11L contributes no row**).
+  The per-batch counts in the rest of this bullet are the B9-era snapshot (568 rows through
+  B8, 664 after B9), kept because they are the numbers those receipts asserted; they are
+  stale in exactly one way — every "total" in them is 159 rows short of 823.
+  B0–B5 merged;
   B6 merged via PR #39 (`e6325be`, run 42698556762, 15/15 green). B7 bounded evidence merged via PR #43 (`514ed0b`). B8 enumerated
   on the current branch (PR #48): census has 568 rows (B0–B7 515, B8 53). B0–B7 hold 465
   observed-cli, 42 static not-applicable and eight CR3 blocked-on-rights rows. B8 adds 31
