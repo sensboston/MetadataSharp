@@ -2475,3 +2475,35 @@ no denominator freeze, publication or DNG D2 write.
   silently corrected into matching.
 - This PR is docs only: no census payload byte, no fixture, no recorder, no CI job changes,
   and nothing here claims coverage.
+
+### Shipping pivot and 4.1 — JPEG accepts every frame type (2026-11-10, PR #58)
+
+- **Process change first.** E01 census batching is frozen where it stands: no B12/B13/B14, no
+  freeze PR, no receipts or relabeling PRs, and `docs/research/EXIV2_CENSUS.json` (823 rows,
+  every one `not-assessed`) is reclassified as a historical reference inventory rather than a
+  gate. Approval is now required only for new or changed public API; one feature per PR, merged
+  on green CI across three OSes. PR #57 (B12+B13, head `45f9097`) is closed unmerged by
+  decision — its commits stay on the closed PR. `docs/CURRENT_STATE.md` was cut from 541 lines
+  to 80 and is the single recovery file; parity will be measured by a differential harness
+  against pinned exiv2 0.28.9 instead of by census rows.
+- **4.1 (this unit).** `JpegScanner` now accepts every frame type — SOF0–SOF3, SOF5–SOF7,
+  SOF9–SOF11 and SOF13–SOF15 — multiple frames, any number of scans, DHT or DAC redefinitions
+  between scans, DNL-completed zero-height frames and 16-bit quantizer tables. Scan fields are
+  checked against the process the frame declares (lossless names a predictor in Ss and carries no
+  quantizer; arithmetic takes tables from DAC, so no DHT is required), and the marker that ends a
+  scan is fed back into the segment loop instead of ending the scan. Structural bounds stay
+  enforced: reserved 0xC8 and non-length-bearing markers, trailing bytes after EOI, unbacked
+  table references, segment/byte budgets, restart sequencing, fill-before-stuffed-zero.
+  `Emit` already copied every byte outside the EXIF APP1 verbatim, so no writer change was
+  needed — progressive, arithmetic, differential and lossless files now round-trip EXIF, IPTC and
+  XMP with their entropy-coded data untouched (asserted byte-for-byte).
+- Public API unchanged: the changes are internal (`JpegScanner`, `JpegScanResult`, one capability
+  note reworded from "baseline-JPEG subset" to "any JPEG frame type or scan count").
+- Tests: seven new methods — frame-type theories over all twelve accepted SOF codes, precision
+  and DHT selector breadth, multi-scan segment/scan counts, arithmetic-without-DHT, DNL,
+  post-scan APP/COM/DHT acceptance, sync-vs-async parity on the progressive shape, the truncation
+  and random-mutation sweep over baseline/progressive/arithmetic fixtures, and a
+  preservation-through-edit test. The five mutation cases that were legal under the new policy
+  (`progressive`, `precision`, `spectral`, `post-app`, `second-scan`) moved from the refusal table
+  into positive assertions. Offline: reference suite 224 OK, discovery 112 OK, both `--check`
+  generators rc 0; the xunit suite runs in CI (no dotnet SDK in the working sandbox).
