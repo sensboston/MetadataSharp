@@ -97,3 +97,11 @@ exactly like GitHub truncation — that false lead cost this project a batch's w
 investigation twice, so it is written down here rather than rediscovered. The job used 11
 annotations of the 50-per-check-run cap; the cap drops overflow silently, which is why B10 has
 its own job (`pinned-exiv2-b10`) instead of steps appended to `pinned-exiv2-baseline`.
+
+One more platform trap belongs in this record: the digests here are taken over *committed* bytes,
+and Windows runners check text out with `core.autocrlf=true`, which rewrote these LF files to
+CRLF and broke the discovery suite on `net8.0`/`net10.0` only (run 42744015517). `.gitattributes`
+now pins `docs/research/evidence/**/*.json text eol=lf` for the whole evidence tree — earlier
+batches pinned one file at a time — and `test_files_whose_bytes_a_receipt_hashes_are_eol_pinned`
+asserts the pin instead of relying on memory. The failure is reproducible without a Windows box:
+`git -c core.autocrlf=true checkout-index -a -f --prefix=/tmp/wc/` and hash the result.

@@ -505,6 +505,46 @@ class CensusPolicyTests(unittest.TestCase):
         self.assertEqual(4, len(reasons))
         self.assertTrue(all('blocked' in r for r in reasons))
 
+    def test_files_whose_bytes_a_receipt_hashes_are_eol_pinned(self):
+        """A receipt that hashes committed bytes is only meaningful under one checkout mode.
+
+        Windows runners check text out with ``core.autocrlf=true``, which rewrites an unpinned
+        LF file to CRLF; every digest in the receipt then stops matching, and no Linux run can
+        see it. B10 learned this the slow way: ``net8.0/windows-latest`` and
+        ``net10.0/windows-latest`` went red on the discovery suite (run 42744015517) while every
+        Linux and macOS job stayed green. So the rule is asserted here instead of remembered:
+        any evidence file whose bytes appear as a digest in a receipt must carry
+        ``text eol=lf`` in ``.gitattributes``.
+        """
+        import hashlib
+        import subprocess
+        evidence = ROOT / 'docs/research/evidence'
+        hashed = []
+        for directory in sorted(evidence.iterdir()):
+            receipt = directory / 'receipt.json'
+            if not receipt.exists():
+                continue
+            text = receipt.read_text()
+            for path in sorted(directory.glob('*.json')):
+                if path.name == 'receipt.json':
+                    continue
+                if hashlib.sha256(path.read_bytes()).hexdigest() in text:
+                    hashed.append(path.relative_to(ROOT).as_posix())
+        self.assertTrue(hashed, 'expected receipts to hash their evidence files')
+        probe = subprocess.run(['git', '-C', str(ROOT), 'check-attr', '--stdin', 'text', 'eol'],
+                               input='\n'.join(hashed), capture_output=True, text=True)
+        self.assertEqual(0, probe.returncode, probe.stderr)
+        attrs = {}
+        for line in probe.stdout.splitlines():
+            name, _, rest = line.partition(': ')
+            key, _, value = rest.partition(': ')
+            attrs.setdefault(name, {})[key] = value.strip()
+        unpinned = sorted(name for name in hashed
+                          if attrs.get(name, {}).get('text') != 'set'
+                          or attrs.get(name, {}).get('eol') != 'lf')
+        self.assertEqual([], unpinned,
+                         'CRLF checkout on Windows would invalidate these receipt digests')
+
     def test_b10_receipt_and_print_forms_are_self_consistent(self):
         """The committed evidence must be exactly the recovered payload, and the findings this
         batch exists to record must stay stated rather than paraphrased away."""

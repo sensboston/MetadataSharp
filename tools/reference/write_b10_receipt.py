@@ -193,6 +193,19 @@ def main():
                      'dispatches to the generic TIFF reader because the pinned registry has no SR2 '
                      'entry, so its rows record generic behaviour rather than an SR2 identity.'),
         },
+        'checkoutPolicy': {
+            'requirement': ('the digests in this receipt are taken over committed bytes, so a checkout '
+                            'that rewrites line endings invalidates them'),
+            'windowsRunnerDefault': 'core.autocrlf=true converts LF text to CRLF at checkout',
+            'pin': 'docs/research/evidence/**/*.json text eol=lf in .gitattributes',
+            'finding': ('net8.0/net10.0 windows-latest failed the discovery suite at 4322b70 (run '
+                        '42744015517) while every Linux and macOS job passed: the B10 evidence files '
+                        'had been written without an eol pin, so the Windows checkout hashed CRLF bytes '
+                        'against an LF-recorded digest. Reproduced locally with '
+                        '`git -c core.autocrlf=true checkout-index`, fixed by the pin, and guarded by '
+                        'test_files_whose_bytes_a_receipt_hashes_are_eol_pinned so no later batch can '
+                        'forget it.'),
+        },
         'secondaryReference': {
             'tool': 'ExifTool 12.76 (pinned 212f02cf2)',
             'files': sorted(report['secondaryObservations']),
