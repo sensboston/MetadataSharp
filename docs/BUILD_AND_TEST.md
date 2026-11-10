@@ -208,8 +208,9 @@ Final discovery/documentation head requires own CI; receipt recorded in PR #15.
 
 ## E01 pinned baseline job
 
-CI now has **fifteen** jobs: the fourteen E02 checks remain, plus required
-`Exiv2 0.28.9 / bounded E01 observations`. It builds exact pinned upstream source
+CI then had **fifteen** jobs: the fourteen E02 checks, plus required
+`Exiv2 0.28.9 / bounded E01 observations`; `differential-parity` at the end of this file is the
+sixteenth (matrix rows are counted separately, so `gh pr checks` shows more). It builds exact pinned upstream source
 externally, never links native/GPL code into production DLLs/packages, and does not
 replace required historical 0.27.6 references. No upstream tests/fixtures imported.
 See [scope, commands and preservation findings](research/EXIV2_PINNED_BASELINE_EXECUTION.md).
@@ -217,3 +218,23 @@ Successful observation protocol includes visible D001/D002 reference differences
 it is NOT a blanket successful safe-write/parity assertion. Full source-bound small
 JSON can be recovered with `python tools/reference/collect_baseline.py RUN_ID DEST`.
 Python discovery now runs 26 cases, historical policy 12; .NET floor remains 450/TFM.
+
+## Differential parity job
+
+`differential-parity` (Ubuntu, added with the harness) measures our readers against exiv2 0.28.9's
+own expectations: the workflow checks out `b0859fc61fea5dedfc898aece6b15893ddf4314e` into
+`artifacts/parity/exiv2` and reads its `test/data` samples plus the `-Pkycvt` reference text beside
+them, then runs `tools/parity/run_parity.py`, which reports key and value parity per file, per format
+and per tag family. That corpus is CI-time input only - nothing upstream is vendored, translated,
+committed or executed in the first phase, and `tools/parity` never interprets upstream's `tests/*.py`
+(their expectations are macro tokens their own driver assembles). The second phase builds the pinned
+CLI so the fixtures this repository generates get an oracle from the same commit;
+`artifacts/parity/*/parity-report.{txt,json}` is uploaded as `differential-parity`.
+
+Parity numbers do not fail a build, by design: `run_parity.py` exits 1 only when the run itself is
+unsound - an unreadable dump block, a missing block, a reader that threw instead of refusing, or a
+damaged expectation file. The offline rules of the same harness run as a normal gate step
+(`python -m unittest discover -s tests/parity`, 45 cases, standard library only). The dump tool
+`tools/MetadataSharp.Dump` is restricted to the public API by construction, so what the harness can
+see is what a consumer can read; a tag the library cannot name is printed as a numeric key, which is
+the gap 4.2 closes.

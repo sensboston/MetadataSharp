@@ -44,6 +44,12 @@ jobs:
       - name: Test offline reference-harness policy
         shell: bash
         run: python -m unittest discover -s tests/reference -v 2>&1 | tee reference.log
+      # The differential parity harness is checked the same offline way: its rules are string
+      # transformations over a grammar both sides of the comparison agree on, so they are testable
+      # without a corpus, a build, or the external tool being present.
+      - name: Test offline parity-harness policy
+        shell: bash
+        run: python -m unittest discover -s tests/parity -v 2>&1 | tee parity.log
       - name: Verify discovery seed policy
         shell: bash
         run: |
@@ -62,13 +68,16 @@ jobs:
         run: |
           from pathlib import Path
           found = False
-          for log in (Path('reference.log'), Path('discovery.log')):
+          for log in (Path('reference.log'), Path('parity.log'), Path('discovery.log')):
               if not log.exists():
                   continue
               lines = log.read_text(encoding='utf-8', errors='replace').splitlines()
-              picked = [line for line in lines
-                        if line.startswith(('FAIL:', 'ERROR:', 'AssertionError', 'Traceback',
-                                            'FAILED', 'Ran '))][:24]
+              # A traceback's first line names nothing; the reason is two or three lines further down.
+              wanted = set()
+              for index, line in enumerate(lines):
+                  if line.startswith(('FAIL:', 'ERROR:', 'AssertionError', 'Traceback', 'FAILED', 'Ran ')):
+                      wanted.update(range(index, min(index + 5, len(lines))))
+              picked = [lines[index] for index in sorted(wanted)][:24]
               for line in picked or lines[-12:]:
                   text = line[:2000].replace('%', '%25').replace('\r', '%0D')
                   print('::error title=Python policy failure (' + log.name + ')::' + text)
@@ -743,3 +752,96 @@ jobs:
               chunks = chunks[:3] + ['traceback truncated: %d characters total' % len(trace)]
           for i, chunk in enumerate(chunks):
               print('::error title=B11L ladder traceback %d/%d::%s' % (i + 1, len(chunks), chunk))
+
+  # Differential parity: our readers against the expectations the reference tool itself produced at
+  # the pinned commit. Two corpora, one grammar. The upstream test tree is fetched at CI time and
+  # read as data - its ``test/data/test_reference_files/*.out`` files are whole-stdout captures of
+  # ``exiv2 -Pkycvt <file>``, so the input and its expected print arrive paired and nothing has to be
+  # reconstructed. Upstream's *scripts* are deliberately not interpreted: their expectations are class
+  # attributes assembled from macro tokens (``commands``/``stdout``/``retval`` with ``$kerCorruptedMetadata``
+  # and ``path("$data_path/...")`` substitutions), so honouring them means reimplementing their driver
+  # and substitution tables, which is translating their tests - forbidden here. No upstream file is
+  # copied, translated, or committed; none of upstream code is built for the first phase, and the
+  # report carries only file names, tag keys, our own values and a path@commit pointer.
+  #
+  # The second corpus is this repository's own generated fixtures, whose oracle is the pinned tool run
+  # in the same job: a disagreement there is either a library gap or a change in the pinned output,
+  # never a stale committed expectation.
+  #
+  # Parity numbers never gate a merge. A gap is the unit of work for the next feature PR, and a red
+  # build would only bury the measurement of it. A broken *run* does fail: an unreadable dump block, a
+  # missing block, a reader that threw instead of refusing, or an expectation file that looks damaged.
+  differential-parity:
+    name: Exiv2 0.28.9 / differential parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      LC_ALL: C
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      DUMP: dotnet run --project tools/MetadataSharp.Dump -c Release -f net10.0 --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 8 and 10 SDKs
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Build the dump tool (restricted to the public API by construction)
+        run: dotnet build tools/MetadataSharp.Dump/MetadataSharp.Dump.csproj --configuration Release -f net10.0
+      - name: Checkout pinned upstream corpus (CI-time fetch; never vendored, never executed)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/parity/exiv2
+          persist-credentials: false
+      - name: Parity against upstream expectations (no external code configured, built or run)
+        shell: bash
+        run: |
+          python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
+            --dump-command "$DUMP" --out artifacts/parity/upstream --title 'PARITY upstream' --annotate
+      - name: Install external build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev
+      - name: Configure external black-box build with explicit policy
+        shell: python
+        run: |
+          import subprocess, sys
+          sys.path.insert(0, 'tools/reference')
+          from exiv2_baseline import OPTIONS
+          subprocess.run(['cmake', '-S', 'artifacts/parity/exiv2', '-B', 'artifacts/parity/build', '-G', 'Ninja',
+                          *[f'-D{k}={v}' for k, v in OPTIONS.items()]], check=True)
+      - name: Build only external executable (no upstream tests or fixture imports)
+        run: cmake --build artifacts/parity/build --target exiv2 --parallel 2
+      - name: Generate this repository's own fixtures
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/generated
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 -- generate artifacts/parity/generated
+          for name in jpeg png tiff webp xmp; do
+            python tools/reference/${name}_owned_fixtures.py generate artifacts/parity/generated
+          done
+          python tools/reference/dng_fixtures.py generate artifacts/parity/generated
+      - name: Parity against owned fixtures (oracle is the pinned tool, run in this same job)
+        shell: bash
+        run: |
+          python tools/parity/run_parity.py \
+            --fixtures artifacts/parity/generated --fixtures tests/fixtures/b7 --fixtures tests/fixtures/b8 \
+            --fixtures tests/fixtures/b9 --fixtures tests/fixtures/b10 --fixtures tests/fixtures/b11 \
+            --fixtures tests/fixtures/b11l \
+            --exiv2-command "artifacts/parity/build/bin/exiv2 -Pkycvt" \
+            --dump-command "$DUMP" --out artifacts/parity/owned --title 'PARITY owned' --annotate
+      - name: Upload parity reports (measurements only - no corpus bytes, no external source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: differential-parity
+          path: |
+            artifacts/parity/upstream/parity-report.txt
+            artifacts/parity/upstream/parity-report.json
+            artifacts/parity/owned/parity-report.txt
+            artifacts/parity/owned/parity-report.json
+          retention-days: 30
