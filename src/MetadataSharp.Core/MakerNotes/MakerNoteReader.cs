@@ -19,6 +19,48 @@ internal static class MakerNoteReader
         ReadOnlySpan<byte> note = tiff.Slice(start, length);
         if (make.StartsWith("Canon"u8))
             return CanonMakerNoteReader.TryRead(tiff, start, length, order, limits, retainedBudget);
+        int end = start + length;
+        if (make.StartsWith("FUJIFILM"u8))
+        {
+            // "FUJIFILM", then a little-endian offset of the IFD; all offsets count from the MakerNote.
+            if (!note.StartsWith("FUJIFILM"u8) || length < 12)
+                return null;
+            uint ifd = BinaryPrimitives.ReadUInt32LittleEndian(note[8..]);
+            if (ifd < 12 || ifd >= (uint)length)
+                return null;
+            return Directory(MakerNoteFormat.Fujifilm, tiff, start + (int)ifd, end, start, Endianness.LittleEndian, 0,
+                limits, retainedBudget, VendorMakerNoteNames.Fujifilm, null);
+        }
+        if (make.StartsWith("PENTAX"u8) || make.StartsWith("RICOH"u8))
+        {
+            // "PENTAX \0" + byte order: the IFD at 10, offsets from the MakerNote.
+            if (note.StartsWith("PENTAX \0"u8) && length >= 10 + 18 && OrderMark(note.Slice(8, 2)) is Endianness dng)
+                return Directory(MakerNoteFormat.PentaxDng, tiff, start + 10, end, start, dng, 0,
+                    limits, retainedBudget, VendorMakerNoteNames.Pentax, null);
+            // "AOC\0" + two bytes, then the IFD at 6 in the TIFF's byte order (the two bytes are not a
+            // reliable byte-order mark); offsets from the TIFF header.
+            if (note.StartsWith("AOC\0"u8) && length >= 6 + 18)
+                return Directory(MakerNoteFormat.Pentax, tiff, start + 6, end, 0, order, 0,
+                    limits, retainedBudget, VendorMakerNoteNames.Pentax, null);
+            return null;
+        }
+        if (make.StartsWith("SONY"u8))
+        {
+            // "SONY DSC \0\0\0" then an IFD, or a bare IFD; offsets from the TIFF header either way.
+            if (note.StartsWith("SONY DSC \0\0\0"u8))
+                return Directory(MakerNoteFormat.Sony1, tiff, start + 12, end, 0, order, 0,
+                    limits, retainedBudget, VendorMakerNoteNames.Sony, null);
+            return Directory(MakerNoteFormat.Sony2, tiff, start, end, 0, order, 0,
+                limits, retainedBudget, VendorMakerNoteNames.Sony, null);
+        }
+        if (make.StartsWith("Panasonic"u8))
+        {
+            // "Panasonic\0\0\0" then an IFD without a next-IFD pointer; offsets from the TIFF header.
+            if (!note.StartsWith("Panasonic\0\0\0"u8))
+                return null;
+            return Directory(MakerNoteFormat.Panasonic, tiff, start + 12, end, 0, order, 0,
+                limits, retainedBudget, VendorMakerNoteNames.Panasonic, null);
+        }
         if (make.StartsWith("NIKON"u8) || make.StartsWith("Nikon"u8))
         {
             if (note.StartsWith(NikonSignature) && note.Length >= 18 && note[6] == 0x02)
@@ -103,6 +145,10 @@ internal static class MakerNoteReader
         }
         return new MakerNote(format, order, entries);
     }
+
+    private static Endianness? OrderMark(ReadOnlySpan<byte> mark) =>
+        mark[0] == 0x49 && mark[1] == 0x49 ? Endianness.LittleEndian :
+        mark[0] == 0x4D && mark[1] == 0x4D ? Endianness.BigEndian : null;
 
     private static ushort U16(ReadOnlySpan<byte> s, int p, bool little) => little
         ? BinaryPrimitives.ReadUInt16LittleEndian(s.Slice(p, 2))
