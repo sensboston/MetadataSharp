@@ -109,13 +109,14 @@ public sealed class VendorMakerNoteTests
     }
 
     [Theory]
-    [InlineData("II", false)]
-    [InlineData("MM", true)]
-    public void PentaxDngUsesItsMarkAndOffsetsFromTheMakerNote(string mark, bool innerBig)
+    [InlineData(false)]
+    [InlineData(true)]
+    public void PentaxDngUsesTheTiffByteOrderAndOffsetsFromTheMakerNote(bool big)
     {
-        byte[] note = Note(Header("PENTAX \0" + mark), innerBig, 0x0005, text => text);
-        Single(Wrap(!innerBig, "PENTAX Co", note), MakerNoteFormat.PentaxDng,
-            innerBig ? Endianness.BigEndian : Endianness.LittleEndian);
+        // The two bytes after the signature say "MM" either way: they are not trusted.
+        byte[] note = Note(Header("PENTAX \0MM"), big, 0x0005, text => text);
+        Single(Wrap(big, "PENTAX Co", note), MakerNoteFormat.PentaxDng,
+            big ? Endianness.BigEndian : Endianness.LittleEndian);
     }
 
     [Theory]

@@ -22,7 +22,8 @@ public enum MetadataErrorCode
     InvalidDng,
     InvalidPsd,
     InvalidJp2,
-    InvalidEps
+    InvalidEps,
+    InvalidExv
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>

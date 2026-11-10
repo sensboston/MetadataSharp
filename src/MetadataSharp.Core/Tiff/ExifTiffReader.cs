@@ -20,6 +20,8 @@ internal ref struct ExifTiffReader
     private long retainedBytes;
     private int makerNoteStart;
     private int makerNoteLength;
+    private int dngPrivateStart;
+    private int dngPrivateLength;
 
     private ExifTiffReader(ReadOnlySpan<byte> data, MetadataLimits limits, long sourceBase)
     {
@@ -37,6 +39,8 @@ internal ref struct ExifTiffReader
         retainedBytes = data.Length;
         makerNoteStart = 0;
         makerNoteLength = 0;
+        dngPrivateStart = 0;
+        dngPrivateLength = 0;
     }
 
     internal static TiffReadResult Read(ReadOnlySpan<byte> tiff, MetadataLimits? limits = null,
@@ -82,10 +86,13 @@ internal ref struct ExifTiffReader
 
     private MakerNote? ReadMakerNote()
     {
-        if (makerNoteLength == 0)
-            return null;
-        return MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Make(), limits,
-            limits.MaxRetainedMetadataBytes - retainedBytes);
+        long budget = limits.MaxRetainedMetadataBytes - retainedBytes;
+        if (makerNoteLength != 0)
+            return MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Make(), limits, budget);
+        // Pentax DNGs carry their MakerNote in DNGPrivateData instead of the Exif MakerNote tag.
+        if (dngPrivateLength != 0 && data.Slice(dngPrivateStart, dngPrivateLength).StartsWith("PENTAX \0"u8))
+            return MakerNotes.MakerNoteReader.TryRead(data, dngPrivateStart, dngPrivateLength, order, Make(), limits, budget);
+        return null;
     }
 
     /// <summary>The raw bytes of the 0th IFD ASCII Make tag, or empty.</summary>
@@ -177,6 +184,11 @@ internal ref struct ExifTiffReader
                     throw Error(MetadataErrorCode.InvalidExif, "MakerNote must use the Undefined field type.", p);
                 makerNoteStart = valueStart;
                 makerNoteLength = byteLength;
+            }
+            if (tag == 0xC634 && kind == ExifDirectoryKind.Ifd0 && type is TiffFieldType.Byte or TiffFieldType.Undefined)
+            {
+                dngPrivateStart = valueStart;
+                dngPrivateLength = byteLength;
             }
         }
         uint next = U32(start + 2 + count * 12);

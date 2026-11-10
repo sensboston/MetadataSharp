@@ -33,9 +33,10 @@ internal static class MakerNoteReader
         }
         if (make.StartsWith("PENTAX"u8) || make.StartsWith("RICOH"u8))
         {
-            // "PENTAX \0" + byte order: the IFD at 10, offsets from the MakerNote.
-            if (note.StartsWith("PENTAX \0"u8) && length >= 10 + 18 && OrderMark(note.Slice(8, 2)) is Endianness dng)
-                return Directory(MakerNoteFormat.PentaxDng, tiff, start + 10, end, start, dng, 0,
+            // "PENTAX \0" + two bytes: the IFD at 10 in the TIFF's byte order (as with "AOC", the two
+            // bytes are not a reliable byte-order mark), offsets from the MakerNote.
+            if (note.StartsWith("PENTAX \0"u8) && length >= 10 + 18)
+                return Directory(MakerNoteFormat.PentaxDng, tiff, start + 10, end, start, order, 0,
                     limits, retainedBudget, VendorMakerNoteNames.Pentax, null);
             // "AOC\0" + two bytes, then the IFD at 6 in the TIFF's byte order (the two bytes are not a
             // reliable byte-order mark); offsets from the TIFF header.
@@ -145,10 +146,6 @@ internal static class MakerNoteReader
         }
         return new MakerNote(format, order, entries);
     }
-
-    private static Endianness? OrderMark(ReadOnlySpan<byte> mark) =>
-        mark[0] == 0x49 && mark[1] == 0x49 ? Endianness.LittleEndian :
-        mark[0] == 0x4D && mark[1] == 0x4D ? Endianness.BigEndian : null;
 
     private static ushort U16(ReadOnlySpan<byte> s, int p, bool little) => little
         ? BinaryPrimitives.ReadUInt16LittleEndian(s.Slice(p, 2))

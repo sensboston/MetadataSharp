@@ -4,6 +4,7 @@ using System.Text;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
 using MetadataSharp.Formats.Jpeg;
 using MetadataSharp.Formats.Png;
@@ -83,6 +84,7 @@ internal static class Program
         if (At(head, 0, 0x52, 0x49, 0x46, 0x46) && At(head, 8, 0x57, 0x45, 0x42, 0x50)) { WebP(path, stdout, length); return; }
         if (At(head, 0, 0x49, 0x49, 0x2A, 0x00) || At(head, 0, 0x4D, 0x4D, 0x00, 0x2A)) { Tiff(path, stdout, length); return; }
         if (At(head, 0, 0x38, 0x42, 0x50, 0x53)) { Psd(path, stdout, length); return; }
+        if (At(head, 0, 0xFF, 0x01, 0x45, 0x78, 0x69, 0x76, 0x32)) { Exv(path, stdout, length); return; }
         if (At(head, 4, 0x6A, 0x50, 0x20, 0x20)) { Jp2(path, stdout, length); return; }
         if (At(head, 0, 0x3C, 0x3F) || At(head, 0, 0xEF, 0xBB, 0xBF)) { Sidecar(path, stdout, length); return; }
         if (At(head, 4, 0x66, 0x74, 0x79, 0x70)) { Record(stdout, "STATUS", "not-attempted", "iso-bmff"); return; }
@@ -139,6 +141,16 @@ internal static class Program
                     field.Count, Render(Slice(data, field.ValueRange), type, field.Count, layout.ByteOrder));
             }
         }
+        Done(stdout);
+    }
+
+    private static void Exv(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        ExvMetadata metadata = ExvMetadata.Read(File.ReadAllBytes(path));
+        Exif(metadata.Exif, stdout);
+        if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
+        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
         Done(stdout);
     }
 
