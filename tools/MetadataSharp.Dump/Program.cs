@@ -184,7 +184,11 @@ internal static class Program
                 // group named after the array.
                 if (entry.Fields.Count != 0)
                 {
-                    string fieldGroup = group + ArrayGroup(entry.TagId);
+                    // AFInfo is printed whole and its fields share the MakerNote's own group.
+                    bool keepParent = entry.TagId == 0x0026;
+                    if (keepParent)
+                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
+                    string fieldGroup = keepParent ? group : group + ArrayGroup(entry.TagId);
                     foreach (MakerNoteField field in entry.Fields)
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
                             TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value));
