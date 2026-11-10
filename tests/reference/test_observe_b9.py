@@ -162,6 +162,10 @@ class ObserveB9Tests(unittest.TestCase):
                               for r in b9_rows() if r['layout'] not in catalog.FIXTURES]}
         parts = observer.chunks(report)
         self.assertLessEqual(len(parts), 10)
+        self.assertGreaterEqual(len(parts), 1)
+        # An empty report must fail loudly instead of annotating nothing.
+        with self.assertRaises(ValueError):
+            observer.chunks({'observations': [], 'blocked': []})
         self.assertTrue(all(len(p) <= 4000 for p in parts))
         # The guard must actually guard: an incompressible oversized report is an error,
         # not a silently truncated annotation stream.

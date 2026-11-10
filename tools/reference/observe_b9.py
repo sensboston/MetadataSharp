@@ -127,9 +127,15 @@ def chunks(report, size=4000, limit=10):
     would need more annotations than the limit is a hard error instead of silent
     truncation: the evidence must be recoverable whole or the batch is not recorded.
     """
+    if not report.get('observations') and not report.get('blocked'):
+        # A vacuous batch must not look successful just because it annotated nothing.
+        raise ValueError('B9 report carries neither observations nor blocked cells')
     payload = json.dumps(report, separators=(',', ':'), sort_keys=True)
     encoded = base64.b64encode(zlib.compress(payload.encode(), 9)).decode()
     parts = [encoded[i:i + size] for i in range(0, len(encoded), size)]
+    if not parts:
+        # An empty report would annotate nothing and look like a successful batch.
+        raise ValueError('B9 report is empty; there would be nothing to recover')
     if len(parts) > limit:
         raise ValueError(f'B9 report needs {len(parts)} annotations; the recovery limit is {limit}')
     return parts
@@ -211,6 +217,10 @@ def main():
         parts = chunks(report)
         for i, part in enumerate(parts):
             print(f'::notice title=B9Z observations.json {i}/{len(parts)}::{part}', flush=True)
+        # Recovery marker, emitted last: a check run keeps only 50 annotations, so the
+        # recovery side must confirm it saw exactly `len(parts)` chunks (and this line)
+        # before treating the evidence as whole. A silent drop becomes a mismatch.
+        print(f'::notice title=B9Z observations.json count::{len(parts)}', flush=True)
     except Exception:
         import traceback
         report['status'] = 'failed'
