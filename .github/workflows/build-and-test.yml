@@ -2,7 +2,7 @@ name: Build and test
 
 on:
   push:
-    branches: [master, 'arena/**']
+    branches: ['**']
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -16,6 +16,9 @@ concurrency:
 
 jobs:
   build-and-test:
+    # Branches of this repository are built by their push run, which GitHub also shows on the PR;
+    # pull_request runs only for forks, so each commit is built once.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: ${{ matrix.tfm }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -127,6 +130,9 @@ jobs:
           retention-days: 7
 
   external-reference:
+    # Branches of this repository are built by their push run, which GitHub also shows on the PR;
+    # pull_request runs only for forks, so each commit is built once.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: References / ${{ matrix.tfm }}
     runs-on: ubuntu-24.04
     strategy:
@@ -148,10 +154,11 @@ jobs:
             10.0.x
       - name: Install external CLI tools
         run: |
-          # Runner mirrors occasionally fail DNS; retry instead of failing the job.
+          # Runner mirrors occasionally fail DNS; fail fast and retry instead of hanging for minutes.
+          APT_OPTS='-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20'
           for attempt in 1 2 3; do
-            sudo apt-get -o Acquire::Retries=5 update &&
-              sudo apt-get -o Acquire::Retries=5 install -y exiv2 libimage-exiftool-perl webp && break
+            sudo apt-get $APT_OPTS update &&
+              sudo apt-get $APT_OPTS install -y exiv2 libimage-exiftool-perl webp && break
             [ "$attempt" = 3 ] && exit 1
             sleep 30
           done
@@ -175,13 +182,17 @@ jobs:
           retention-days: 7
 
   performance-package-audit:
+    # Branches of this repository are built by their push run, which GitHub also shows on the PR;
+    # pull_request runs only for forks, so each commit is built once.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: Audit / ${{ matrix.os }} / ${{ matrix.tfm }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Package contents and the dependency audit do not depend on the OS; one runner is enough.
+        os: [ubuntu-latest]
         tfm: [net8.0, net10.0]
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
@@ -211,6 +222,9 @@ jobs:
           retention-days: 30
 
   differential-parity:
+    # Branches of this repository are built by their push run, which GitHub also shows on the PR;
+    # pull_request runs only for forks, so each commit is built once.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: Exiv2 0.28.9 / differential parity
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -241,16 +255,31 @@ jobs:
         run: |
           python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
             --dump-command "$DUMP" --out artifacts/parity/upstream --title 'PARITY upstream' --annotate
-      - name: Install external build dependencies
+      - name: Restore the pinned exiv2 binary
+        id: exiv2-cache
+        uses: actions/cache@v4
+        with:
+          path: artifacts/parity/build/bin/exiv2
+          key: exiv2-b0859fc6-${{ runner.os }}-${{ hashFiles('tools/parity/exiv2_build_options.py') }}
+      - name: Check the cached binary's shared libraries
+        id: exiv2-libs
+        if: steps.exiv2-cache.outputs.cache-hit == 'true'
+        shell: bash
         run: |
-          # Runner mirrors occasionally fail DNS; retry instead of failing the job.
+          if ldd artifacts/parity/build/bin/exiv2 | grep -q 'not found'; then echo "ok=false" >> "$GITHUB_OUTPUT"; else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+      - name: Install external build dependencies
+        if: steps.exiv2-libs.outputs.ok != 'true'
+        run: |
+          # Runner mirrors occasionally fail DNS; fail fast and retry instead of hanging for minutes.
+          APT_OPTS='-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20'
           for attempt in 1 2 3; do
-            sudo apt-get -o Acquire::Retries=5 update &&
-              sudo apt-get -o Acquire::Retries=5 install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev && break
+            sudo apt-get $APT_OPTS update &&
+              sudo apt-get $APT_OPTS install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev && break
             [ "$attempt" = 3 ] && exit 1
             sleep 30
           done
       - name: Configure external black-box build with explicit policy
+        if: steps.exiv2-cache.outputs.cache-hit != 'true'
         shell: python
         run: |
           import subprocess, sys
@@ -259,6 +288,7 @@ jobs:
           subprocess.run(['cmake', '-S', 'artifacts/parity/exiv2', '-B', 'artifacts/parity/build', '-G', 'Ninja',
                           *[f'-D{k}={v}' for k, v in OPTIONS.items()]], check=True)
       - name: Build only external executable (no upstream tests or fixture imports)
+        if: steps.exiv2-cache.outputs.cache-hit != 'true'
         run: cmake --build artifacts/parity/build --target exiv2 --parallel 2
       - name: Generate this repository's own fixtures
         shell: bash
