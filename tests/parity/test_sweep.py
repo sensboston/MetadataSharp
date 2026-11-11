@@ -1,7 +1,7 @@
 """Offline rules of the soundness sweep: how a dump is read and what is counted. No external tool runs here."""
 import sys
 import unittest
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "parity"))
 
@@ -36,6 +36,11 @@ class SweepTests(unittest.TestCase):
         text = run_sweep.text_report({"comments": part})
         self.assertIn("comments: 4 files", text)
         self.assertIn("ERROR worse.jpg: IndexOutOfRangeException", text)
+
+    def test_a_file_is_looked_up_under_the_forward_slash_path_the_dump_tool_was_given(self):
+        # A native Windows path would come back from the tool with its backslashes escaped.
+        self.assertEqual("C:/corpus/one.jpg", run_sweep.key(PureWindowsPath(r"C:\corpus\one.jpg")))
+        self.assertEqual(["/c/one.jpg", "/c/two.png", "/c/bad.png", "/c/worse.jpg"], [run_sweep.key(path) for path in PATHS])
 
     def test_a_file_the_dump_did_not_answer_for_is_a_structural_failure(self):
         with self.assertRaises(run_sweep.SweepError):

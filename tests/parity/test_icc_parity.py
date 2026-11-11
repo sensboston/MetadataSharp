@@ -4,7 +4,7 @@ import base64
 import hashlib
 import sys
 import unittest
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "parity"))
 
@@ -173,10 +173,10 @@ class ComparisonTests(unittest.TestCase):
         root = Path("/c")
         paths = {name: (None if name == "gone.jpg" else root / name) for name in expected}
         dumped = {
-            str(root / "one.jpg"): {"profile": (A, 560), "status": "ok", "detail": ""},
-            str(root / "two.png"): {"profile": None, "status": "ok", "detail": ""},
-            str(root / "none.avif"): {"profile": None, "status": "ok", "detail": ""},
-            str(root / "bad.jpg"): {"profile": None, "status": "refused", "detail": "InvalidIccProfile"},
+            run_icc.key(root / "one.jpg"): {"profile": (A, 560), "status": "ok", "detail": ""},
+            run_icc.key(root / "two.png"): {"profile": None, "status": "ok", "detail": ""},
+            run_icc.key(root / "none.avif"): {"profile": None, "status": "ok", "detail": ""},
+            run_icc.key(root / "bad.jpg"): {"profile": None, "status": "refused", "detail": "InvalidIccProfile"},
         }
         report = run_icc.compare(expected, origin, dumped, paths)
         self.assertEqual("Icc", report["kind"])
@@ -189,6 +189,14 @@ class ComparisonTests(unittest.TestCase):
         self.assertIn("bad.jpg [refused] refused", text)
         self.assertIn("InvalidIccProfile", text)
         self.assertIn("two.png [ok] missing", text)
+
+    def test_a_file_is_looked_up_under_the_forward_slash_path_the_dump_tool_was_given(self):
+        # A native Windows path would come back from the tool with its backslashes escaped.
+        self.assertEqual("C:/corpus/one.jpg", run_icc.key(PureWindowsPath(r"C:\corpus\one.jpg")))
+        self.assertEqual("/c/one.jpg", run_icc.key(PurePosixPath("/c/one.jpg")))
+        dumped = run_icc.parse_dump(f"FILE\t/c/one.jpg\nICC\t560\t{A}\nSTATUS\tok\n")
+        report = run_icc.compare({"one.jpg": (A, None)}, {}, dumped, {"one.jpg": Path("/c") / "one.jpg"})
+        self.assertEqual({"files": 1, "profiles": 1, "match": 1}, report["totals"])
 
     def test_a_file_the_dump_did_not_answer_for_is_a_structural_failure(self):
         with self.assertRaises(run_icc.IccParityError):

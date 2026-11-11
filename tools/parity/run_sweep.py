@@ -34,8 +34,18 @@ class SweepError(Exception):
     """The run cannot be trusted; nothing should be concluded from its numbers."""
 
 
+def key(path: Path) -> str:
+    """The name a file travels under, to the dump tool and back: its path with forward slashes.
+
+    The dump tool echoes the path it was given and escapes a backslash, so the path of a Windows
+    file written the native way would come back as another string. Forward slashes are read by
+    Python and by .NET on every system and come back as they went.
+    """
+    return path.as_posix()
+
+
 def parse_dump(text: str, record: str) -> dict[str, dict[str, Any]]:
-    """``FILE`` / ``record`` / ``STATUS`` blocks by path: how many records, the status and its detail."""
+    """``FILE`` / ``record`` / ``STATUS`` blocks by the path the tool echoes: how many records, the status and its detail."""
     blocks: dict[str, dict[str, Any]] = {}
     current: dict[str, Any] | None = None
     for number, line in enumerate(text.splitlines(), 1):
@@ -66,7 +76,7 @@ def tally(blocks: dict[str, dict[str, Any]], paths: list[Path]) -> dict[str, Any
     with_records = records = 0
     errors: list[dict[str, str]] = []
     for path in paths:
-        block = blocks.get(str(path))
+        block = blocks.get(key(path))
         if block is None:
             raise SweepError(f"the dump has no block for {path.name}")
         statuses[block["status"]] += 1
@@ -91,7 +101,7 @@ def text_report(report: dict[str, Any]) -> str:
 
 
 def run_dump(dump_command: list[str], option: str, record: str, paths: list[Path]) -> dict[str, dict[str, Any]]:
-    listing = "".join(f"{path}\n" for path in paths)
+    listing = "".join(f"{key(path)}\n" for path in paths)
     try:
         finished = subprocess.run(dump_command + [option, "--files-from", "-"], input=listing, capture_output=True,
                                  text=True, encoding="utf-8", errors="replace", timeout=1800, check=False)

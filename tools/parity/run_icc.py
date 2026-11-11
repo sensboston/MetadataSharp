@@ -223,8 +223,18 @@ def merge(sources: dict[str, dict[str, Expectation]]) -> tuple[dict[str, Expecta
     return expected, origin
 
 
+def key(path: Path) -> str:
+    """The name a file travels under, to the dump tool and back: its path with forward slashes.
+
+    The dump tool echoes the path it was given and escapes a backslash, so the path of a Windows
+    file written the native way would come back as another string. Forward slashes are read by
+    Python and by .NET on every system and come back as they went.
+    """
+    return path.as_posix()
+
+
 def parse_dump(text: str) -> dict[str, dict[str, Any]]:
-    """``FILE`` / ``ICC`` / ``STATUS`` records of ``MetadataSharp.Dump --icc``, by path."""
+    """``FILE`` / ``ICC`` / ``STATUS`` records of ``MetadataSharp.Dump --icc``, by the path the tool echoes."""
     blocks: dict[str, dict[str, Any]] = {}
     current: dict[str, Any] | None = None
     for number, line in enumerate(text.splitlines(), 1):
@@ -267,7 +277,7 @@ def compare(expected: dict[str, Expectation], origin: dict[str, list[str]], dump
     files: list[dict[str, Any]] = []
     for name in sorted(expected):
         path = paths.get(name)
-        block = dumped.get(str(path)) if path is not None else None
+        block = dumped.get(key(path)) if path is not None else None
         if path is None:
             status, found = "no-input", None
         elif block is None:
@@ -315,7 +325,7 @@ def summary(report: dict[str, Any]) -> dict[str, Any]:
 
 
 def run_dump(dump_command: list[str], paths: list[Path]) -> dict[str, dict[str, Any]]:
-    listing = "".join(f"{path}\n" for path in paths)
+    listing = "".join(f"{key(path)}\n" for path in paths)
     try:
         finished = subprocess.run(dump_command + ["--icc", "--files-from", "-"], input=listing, capture_output=True,
                                  text=True, encoding="utf-8", errors="replace", timeout=1800, check=False)
