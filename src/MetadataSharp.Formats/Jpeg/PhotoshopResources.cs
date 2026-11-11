@@ -5,7 +5,11 @@ using MetadataSharp.Core.Iptc;
 
 namespace MetadataSharp.Formats.Jpeg;
 
-/// <summary>The approved 8BIM framing subset; no public arbitrary-resource editor.</summary>
+/// <summary>
+/// Photoshop image resource framing; no public arbitrary-resource editor. A resource is framed by
+/// 8BIM or by one of the three other signatures Adobe applications write (AgHg, DCSR, PHUT), and a
+/// rewrite keeps the framing of every resource as it found it.
+/// </summary>
 internal sealed class PhotoshopResources
 {
     internal sealed record Resource(ushort Id, ReadOnlyMemory<byte> Block, ReadOnlyMemory<byte> NameHeader, ReadOnlyMemory<byte> Data);
@@ -24,8 +28,8 @@ internal sealed class PhotoshopResources
             if (resources.Count >= limits.MaxResources) throw IptcPacket.Limit();
             int start = at;
             if (payload.Length - at < 7) throw Invalid();
-            if (!payload.AsSpan(at, 4).SequenceEqual("8BIM"u8))
-                throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Only 8BIM Photoshop resource framing is supported.");
+            if (!IsSignature(payload.AsSpan(at, 4)))
+                throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Unknown Photoshop resource signature.");
             ushort id = BinaryPrimitives.ReadUInt16BigEndian(payload.AsSpan(at + 4));
             int nameSize = 1 + payload[at + 6]; nameSize += nameSize & 1;
             at += 6;
@@ -40,7 +44,31 @@ internal sealed class PhotoshopResources
         return new(resources, limits);
     }
     private static MetadataException Invalid() => new(MetadataErrorCode.InvalidPhotoshopResources, "Malformed or truncated Photoshop resource framing.");
+    private static bool IsSignature(ReadOnlySpan<byte> signature) =>
+        signature.SequenceEqual("8BIM"u8) || signature.SequenceEqual("AgHg"u8) || signature.SequenceEqual("DCSR"u8) || signature.SequenceEqual("PHUT"u8);
     internal Resource? Iptc => resources.FirstOrDefault(r => r.Id == 0x0404);
+    /// <summary>
+    /// The IPTC resource for reading only. Repeats of resource 0x0404 that hold the same bytes are one
+    /// stream; repeats that differ stay ambiguous. The digest is not consulted: it matters to a writer.
+    /// </summary>
+    internal Resource? IptcForReading()
+    {
+        Resource? first = null;
+        foreach (Resource resource in resources)
+        {
+            if (resource.Id != 0x0404) continue;
+            if (first is null) first = resource;
+            else if (!resource.Data.Span.SequenceEqual(first.Data.Span))
+                throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "IPTC resources with different contents.");
+        }
+        return first;
+    }
+    /// <summary>The error an edit of these resources fails with, or null when they can be edited.</summary>
+    internal MetadataException? EditRefusal()
+    {
+        try { ValidateTargets(); return null; }
+        catch (MetadataException failure) { return failure; }
+    }
     internal void ValidateTargets()
     {
         if (resources.Count(r => r.Id == 0x0404) > 1 || resources.Count(r => r.Id == 0x0425) > 1)

@@ -25,7 +25,7 @@ using MetadataSharp.Formats.WebP;
 // ExifTags.Interpret makes of the value, and it is empty where that is null. A record without the
 // field says no interpretation is offered for the tag at all, which is the case for MakerNote, IPTC
 // and XMP records.
-// A file whose reader refused or was not attempted simply carries no TAG records. A JPEG, TIFF or PSD
+// A file whose reader refused or was not attempted simply carries no TAG records. A JPEG, PNG, TIFF or PSD
 // that was read, with one kind of its metadata refused, is ok with the detail exif-refused:<code>,
 // iptc-refused:<code> or xmp-refused:<code>, several of them separated by commas.
 internal static class Program
@@ -124,9 +124,21 @@ internal static class Program
     {
         if (!WithinBudget(length, stdout)) return;
         using PngMetadataDocument document = PngMetadataDocument.Open(path);
-        Exif(document.ReadExif(), stdout);
-        if (document.ReadXmp() is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
+        // As for a JPEG: each kind is read on its own, and a refusal travels in the detail of the status.
+        var refused = new List<string>();
+        ExifMetadata? exif = null;
+        try { exif = document.ReadExif(); }
+        catch (MetadataException failure) { refused.Add("exif-refused:" + failure.Code); }
+        Exif(exif, stdout);
+        IptcPacket? iptc = null;
+        try { iptc = document.ReadIptc(); }
+        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
+        if (iptc is not null) Iptc(iptc, stdout);
+        XmpPacket? xmp = null;
+        try { xmp = document.ReadXmp(); }
+        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
+        if (xmp is not null) Xmp(xmp, stdout);
+        Done(stdout, refused);
     }
 
     private static void WebP(string path, StreamWriter stdout, long length)
@@ -335,12 +347,58 @@ internal static class Program
         {
             byte[] bytes = new byte[dataset.Value.ByteLength];
             dataset.Value.CopyRawTo(bytes);
-            bytes = Trim(bytes);
-            string text = (packet.CharacterSet == IptcCharacterSet.Utf8 ? Encoding.UTF8 : Encoding.Latin1).GetString(bytes);
             string field = IptcDatasetNames.TryGetName(dataset.Key, out string? name)
                 ? name : "0x" + dataset.Key.Dataset.ToString("x2", CultureInfo.InvariantCulture);
-            Tag(stdout, RecordName(dataset.Key.Record) + "." + field, "String", (uint)bytes.Length, Escape(text));
+            string key = RecordName(dataset.Key.Record) + "." + field;
+            // A value in the form the specification gives its dataset is printed as that form reads;
+            // one in any other form, a time without seconds for one, is printed as the text it is.
+            switch (IptcDatasetNames.FormatOf(dataset.Key))
+            {
+                case IptcValueFormat.UInt16 when bytes.Length == 2:
+                    Tag(stdout, key, "Short", 1, ((bytes[0] << 8) | bytes[1]).ToString(CultureInfo.InvariantCulture));
+                    continue;
+                case IptcValueFormat.Date when bytes.Length == 8 && Digits(bytes, 0, 8):
+                    Tag(stdout, key, "Date", 8, Ascii(bytes, 0, 4) + "-" + Ascii(bytes, 4, 2) + "-" + Ascii(bytes, 6, 2));
+                    continue;
+                case IptcValueFormat.Time when IptcTime(bytes) is string time:
+                    Tag(stdout, key, "Time", 11, time);
+                    continue;
+                case IptcValueFormat.Binary:
+                    Tag(stdout, key, "Undefined", (uint)bytes.Length, string.Join(' ', bytes.Select(b => b.ToString(CultureInfo.InvariantCulture))));
+                    continue;
+            }
+            bytes = Trim(bytes);
+            // Without a declared character set the bytes are UTF-8 if they read as UTF-8, and Latin-1 if not.
+            string text = packet.CharacterSet == IptcCharacterSet.Utf8 ? Encoding.UTF8.GetString(bytes) : Utf8OrLatin1(bytes);
+            Tag(stdout, key, "String", (uint)bytes.Length, Escape(text));
         }
+    }
+
+    private static bool Digits(byte[] bytes, int at, int count)
+    {
+        for (int i = at; i < at + count; i++) if (bytes[i] < '0' || bytes[i] > '9') return false;
+        return true;
+    }
+
+    private static string Ascii(byte[] bytes, int at, int count) => Encoding.ASCII.GetString(bytes, at, count);
+
+    /// <summary>
+    /// HHMMSS, with or without the offset from UTC as a sign and HHMM, written with colons. A time
+    /// without an offset is printed with a zero offset, as the reference prints it.
+    /// </summary>
+    private static string? IptcTime(byte[] bytes)
+    {
+        if (bytes.Length is not (6 or 11) || !Digits(bytes, 0, 6)) return null;
+        string time = Ascii(bytes, 0, 2) + ":" + Ascii(bytes, 2, 2) + ":" + Ascii(bytes, 4, 2);
+        if (bytes.Length == 6) return time + "+00:00";
+        if ((bytes[6] != '+' && bytes[6] != '-') || !Digits(bytes, 7, 4)) return null;
+        return time + (char)bytes[6] + Ascii(bytes, 7, 2) + ":" + Ascii(bytes, 9, 2);
+    }
+
+    private static string Utf8OrLatin1(byte[] bytes)
+    {
+        try { return new UTF8Encoding(false, true).GetString(bytes); }
+        catch (DecoderFallbackException) { return Encoding.Latin1.GetString(bytes); }
     }
 
     private static void Xmp(XmpPacket packet, StreamWriter stdout)

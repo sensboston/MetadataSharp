@@ -32,7 +32,7 @@ public static class TiffIptc
             ReadOnlySpan<byte> stream = naa.Value.RawBytes;
             // Writers store the stream as LONGs, which rounds its length up to four bytes with zeros.
             if (naa.Value.FieldType == TiffFieldType.Long) stream = stream[..UnpaddedLength(stream)];
-            return IptcPacket.Parse(stream, options);
+            return IptcPacket.Inspect(stream, options);
         }
         if (metadata.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, ImageResourcesTag), out ExifEntry? block) && block.Value.ByteLength != 0)
         {
@@ -42,8 +42,8 @@ public static class TiffIptc
             signature.CopyTo(payload);
             block.Value.RawBytes.CopyTo(payload.AsSpan(signature.Length));
             PhotoshopResources resources = PhotoshopResources.Parse(payload, iptcLimits);
-            if (resources.Iptc is PhotoshopResources.Resource resource)
-                return IptcPacket.Parse(resource.Data.Span, options);
+            if (resources.IptcForReading() is PhotoshopResources.Resource resource)
+                return IptcPacket.Inspect(resource.Data.Span, options);
         }
         return null;
     }

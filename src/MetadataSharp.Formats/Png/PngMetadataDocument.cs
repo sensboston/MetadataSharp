@@ -1,13 +1,19 @@
 using System.Security.Cryptography;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Tiff.Serialization;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Internal;
+using MetadataSharp.Formats.Jpeg;
 
 namespace MetadataSharp.Formats.Png;
 
-/// <summary>A validated static PNG source with independently addressed EXIF and XMP operations.</summary>
+/// <summary>
+/// A validated static PNG source with independently addressed EXIF and XMP operations. EXIF is the
+/// eXIf chunk and XMP the XML:com.adobe.xmp iTXt chunk; both can be edited. EXIF and IPTC held in
+/// "Raw profile type" text chunks are read and not edited.
+/// </summary>
 /// <remarks>Borrowed streams remain open. No concurrent source/document/edit use is supported.</remarks>
 public sealed class PngMetadataDocument : IDisposable, IAsyncDisposable
 {
@@ -68,12 +74,79 @@ public sealed class PngMetadataDocument : IDisposable, IAsyncDisposable
         byte[] bytes = await Payload(chunk, asynchronous, token).ConfigureAwait(false);
         var result = ExifTiffReader.Read(bytes, options.Limits, chunk.Payload); token.ThrowIfCancellationRequested(); return result;
     }
+    private static MetadataException ProfileIsReadOnly(string kind) =>
+        new(MetadataErrorCode.UnsupportedFeature, kind + " held in a raw profile text chunk can be read and not edited.");
+    private PngChunk? Profile(string name)
+    {
+        PngChunk[] chunks = scan.Chunks.Where(c => c.Profile == name).Take(2).ToArray();
+        if (chunks.Length > 1) throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Duplicate raw profile PNG text chunks.");
+        return chunks.FirstOrDefault();
+    }
+    private async Task<byte[]> ProfileBytes(PngChunk chunk, bool asynchronous, CancellationToken token)
+    {
+        byte[] payload = await Payload(chunk, asynchronous, token).ConfigureAwait(false);
+        int at = Array.IndexOf(payload, (byte)0) + 1;
+        if (at <= 0) throw PngScanner.Invalid("Malformed raw profile text chunk.");
+        byte[] text;
+        if (chunk.Type == "zTXt")
+        {
+            if (at >= payload.Length || payload[at] != 0) throw PngScanner.Invalid("Invalid zTXt compression method.");
+            text = BoundedZlib.Expand(payload[(at + 1)..], options.Limits.MaxRetainedMetadataBytes, token);
+        }
+        else text = payload[at..];
+        Budget((long)payload.Length + text.Length);
+        byte[] profile = PngRawProfile.Decode(text); token.ThrowIfCancellationRequested(); return profile;
+    }
+    private async Task<ExifMetadata?> ProfileExif(bool asynchronous, CancellationToken token)
+    {
+        if (Profile("exif") is not PngChunk chunk) return null;
+        byte[] block = await ProfileBytes(chunk, asynchronous, token).ConfigureAwait(false);
+        int skip = block.AsSpan().StartsWith("Exif\0\0"u8) ? 6 : 0;
+        // The read-only rules, whatever the block holds: its offsets count from the decoded profile,
+        // which is not a range of the file, and no chunk of this file would be rewritten from it.
+        return ExifTiffReader.ReadRelaxed(block.AsSpan(skip), options.Limits);
+    }
+    private static IptcPacket? ProfileIptc(byte[] profile, IptcLimits limits)
+    {
+        ReadOnlySpan<byte> stream = profile;
+        // The profile is the IIM stream itself, or the Photoshop resources that hold it, which a
+        // writer stores with or without the signature an APP13 segment begins with.
+        if (profile.Length != 0 && profile[0] != 0x1C)
+        {
+            ReadOnlySpan<byte> signature = "Photoshop 3.0\0"u8;
+            byte[] payload = stream.StartsWith(signature) ? profile : [.. signature, .. profile];
+            if (PhotoshopResources.Parse(payload, limits).IptcForReading() is not PhotoshopResources.Resource resource) return null;
+            stream = resource.Data.Span;
+        }
+        return IptcPacket.Inspect(stream, new() { Limits = limits }, ProfileIsReadOnly("IPTC"));
+    }
+    /// <summary>
+    /// Reads the IPTC stream of the "Raw profile type iptc" text chunk, or returns null when the file
+    /// has none. PNG defines no chunk for IPTC, so the packet is for reading only:
+    /// <see cref="IptcPacket.IsEditable"/> is false and this document has no IPTC save.
+    /// </summary>
+    public IptcPacket? ReadIptc(IptcReadOptions? options = null) => ReadIptcCore(options, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="ReadIptc"/>
+    public Task<IptcPacket?> ReadIptcAsync(IptcReadOptions? options = null, CancellationToken cancellationToken = default) => ReadIptcCore(options, true, cancellationToken);
+    private async Task<IptcPacket?> ReadIptcCore(IptcReadOptions? settings, bool asynchronous, CancellationToken token)
+    {
+        IptcLimits limits = IptcPacket.Settings(settings);
+        await Verify(asynchronous, token).ConfigureAwait(false);
+        if (Profile("iptc") is not PngChunk chunk) return null;
+        byte[] profile = await ProfileBytes(chunk, asynchronous, token).ConfigureAwait(false);
+        return ProfileIptc(profile, limits);
+    }
+    /// <summary>
+    /// Reads the EXIF block of the eXIf chunk. A file without that chunk is searched for a
+    /// "Raw profile type exif" text chunk, whose block comes back with
+    /// <see cref="ExifMetadata.IsEditable"/> false; <see cref="SaveExif"/> refuses a change to it.
+    /// </summary>
     public ExifMetadata? ReadExif() => ReadExifCore(false, default).GetAwaiter().GetResult();
     public Task<ExifMetadata?> ReadExifAsync(CancellationToken cancellationToken = default) => ReadExifCore(true, cancellationToken);
     private async Task<ExifMetadata?> ReadExifCore(bool asynchronous, CancellationToken token)
     {
         await Verify(asynchronous, token).ConfigureAwait(false); PngChunk? chunk = Unique(false);
-        if (chunk is null) return null;
+        if (chunk is null) return await ProfileExif(asynchronous, token).ConfigureAwait(false);
         try { return (await Exif(chunk, asynchronous, token).ConfigureAwait(false)).Metadata; }
         catch (MetadataException failure) when (ExifTiffReader.IsRelaxable(failure))
         {
@@ -131,6 +204,8 @@ public sealed class PngMetadataDocument : IDisposable, IAsyncDisposable
         bool empty = isXmp ? !xs!.Value.RemoveAll && xs.Value.Changes.Count == 0 : es!.IsEmpty;
         if (empty) return new(true, null, null);
         PngChunk? chunk = Unique(isXmp);
+        // Writing an eXIf chunk beside a raw profile would leave the file with two EXIF blocks.
+        if (!isXmp && chunk is null && Profile("exif") is not null) throw ProfileIsReadOnly("EXIF");
         bool remove = isXmp ? xs!.Value.RemoveAll : es!.RemoveAll;
         if (remove && chunk is null) return new(true, null, null);
         byte[]? bytes = null;

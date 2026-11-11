@@ -69,8 +69,8 @@ public sealed class ExvMetadata
             else if (marker == 0xED && iptc is null && payload.StartsWith("Photoshop 3.0\0"u8))
             {
                 PhotoshopResources resources = PhotoshopResources.Parse(payload.ToArray(), new IptcLimits());
-                if (resources.Iptc is PhotoshopResources.Resource resource)
-                    iptc = IptcPacket.Parse(resource.Data.Span);
+                if (resources.IptcForReading() is PhotoshopResources.Resource resource)
+                    iptc = IptcPacket.Inspect(resource.Data.Span);
             }
             position += 2 + length;
         }

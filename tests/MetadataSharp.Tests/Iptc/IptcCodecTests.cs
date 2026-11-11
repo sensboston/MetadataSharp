@@ -123,6 +123,66 @@ public sealed class IptcCodecTests
         Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => IptcPacket.Parse([.. version, .. version])).Code);
     }
     [Fact]
+    public void ReadOnlyRulesAcceptPaddingAndControlsRepeatedWithTheSameValue()
+    {
+        byte[] keyword = Dataset(2, 25, 65);
+        Assert.True(IptcPacket.Parse(keyword).IsEditable);
+        Assert.True(IptcPacket.Inspect(keyword).IsEditable);
+        IptcPacket padded = IptcPacket.Inspect([.. keyword, 0, 0, 0]);
+        Assert.False(padded.IsEditable); Assert.Single(padded.Datasets); Assert.Equal(9, padded.ByteLength);
+        byte[] charset = Dataset(1, 90, 0x1b, 0x25, 0x47), version = Dataset(2, 0, 0, 4);
+        IptcPacket repeated = IptcPacket.Inspect([.. charset, .. charset, .. version, .. version, .. keyword]);
+        Assert.False(repeated.IsEditable); Assert.Equal(IptcCharacterSet.Utf8, repeated.CharacterSet); Assert.Equal(5, repeated.Datasets.Count);
+        // A repeat that says something else is as ambiguous as before.
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => IptcPacket.Inspect([.. charset, .. Dataset(1, 90, 0x1b, 0x25, 0x48)])).Code);
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => IptcPacket.Inspect([.. version, .. Dataset(2, 0, 0, 2)])).Code);
+        // Zeros with no dataset before them, a nonzero byte after the last dataset, a truncated dataset.
+        Assert.Equal(MetadataErrorCode.InvalidIptc, Assert.Throws<MetadataException>(() => IptcPacket.Inspect([0, 0])).Code);
+        Assert.Equal(MetadataErrorCode.InvalidIptc, Assert.Throws<MetadataException>(() => IptcPacket.Inspect([.. keyword, 0, 7])).Code);
+        Assert.Equal(MetadataErrorCode.InvalidIptc, Assert.Throws<MetadataException>(() => IptcPacket.Inspect([.. keyword, 0x1c, 2])).Code);
+    }
+    [Fact]
+    public void APacketReadForReadingOnlyRefusesAChangeWithTheErrorThatMadeItSo()
+    {
+        var edit = new IptcEdit(); edit.ReplaceRaw(Keywords, [IptcValue.FromRaw([66])]);
+        var remove = new IptcEdit(); remove.RemoveAllIptc();
+        IptcPacket padded = IptcPacket.Inspect([.. Dataset(2, 25, 65), 0]);
+        Assert.Equal(MetadataErrorCode.InvalidIptc, Assert.Throws<MetadataException>(() => padded.Apply(edit)).Code);
+        Assert.Same(padded, padded.Apply(new IptcEdit()));
+        Assert.Null(padded.Apply(remove));
+        // A container that can read the stream and not write it back says so through the packet.
+        IptcPacket contained = IptcPacket.Inspect(Dataset(2, 25, 65), null, new MetadataException(MetadataErrorCode.UnsupportedFeature, "read only"));
+        Assert.False(contained.IsEditable);
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => contained.Apply(edit)).Code);
+    }
+    [Fact]
+    public void ResourcesFramedWithAnotherAdobeSignatureKeepTheirFramingOnRewrite()
+    {
+        byte[] iptc = Block(0x0404, Raw(IptcPacket.CreateEmpty())); "AgHg"u8.CopyTo(iptc);
+        byte[] other = Block(0x1234, [1, 2]); "PHUT"u8.CopyTo(other);
+        PhotoshopResources parsed = PhotoshopResources.Parse(Photoshop(other, iptc), new());
+        Assert.Equal(2, parsed.Resources.Count);
+        byte[] stream = Dataset(2, 25, 65);
+        PhotoshopResources again = PhotoshopResources.Parse(parsed.Rewrite(stream)!, new());
+        Assert.Equal(other, again.Resources[0].Block.ToArray());
+        Assert.Equal("AgHg"u8.ToArray(), again.Resources[1].Block[..4].ToArray());
+        Assert.Equal(stream, again.Iptc!.Data.ToArray());
+    }
+    [Fact]
+    public void ForReadingRepeatedResourcesWithTheSameBytesAreOneStreamAndTheDigestIsNotConsulted()
+    {
+        byte[] block = Block(0x0404, Dataset(2, 25, 65)), digest = Block(0x0425, new byte[16]);
+        Assert.Null(PhotoshopResources.Parse(Photoshop(block), new()).EditRefusal());
+        PhotoshopResources twice = PhotoshopResources.Parse(Photoshop(block, digest, block, digest), new());
+        Assert.Equal(Dataset(2, 25, 65), twice.IptcForReading()!.Data.ToArray());
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, twice.EditRefusal()!.Code);
+        PhotoshopResources orphan = PhotoshopResources.Parse(Photoshop(digest), new());
+        Assert.Null(orphan.IptcForReading());
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, orphan.EditRefusal()!.Code);
+        PhotoshopResources differing = PhotoshopResources.Parse(Photoshop(block, Block(0x0404, [])), new());
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => differing.IptcForReading()).Code);
+    }
+    [Fact]
     public void LastWinsMissingRemovalAndWholeRemovalAreExplicit()
     {
         IptcPacket packet = IptcPacket.CreateEmpty(); var edit = new IptcEdit();

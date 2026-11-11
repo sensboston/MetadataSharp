@@ -58,10 +58,45 @@ public sealed class JpegIptcTests
         byte[] block = IptcCodecTests.Block(0x0404, IptcCodecTests.Raw(IptcPacket.CreateEmpty()));
         byte[] prefix = multipleSegments ? [.. Photos(block), .. Photos(block)] : Photos(block, block);
         byte[] image = JpegFixture.Build(prefix); using var doc = JpegMetadataDocument.Open(new MemoryStream(image));
-        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => doc.ReadIptc()).Code);
+        // The same stream twice is one stream to a reader; which copy an edit should change is still ambiguous.
+        IptcPacket read = doc.ReadIptc()!; Assert.False(read.IsEditable); Assert.Equal(2, read.Datasets.Count);
         Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => Save(image, Caption("x"))).Code);
         var remove = new IptcEdit(); remove.RemoveAllIptc(); Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => Save(image, remove)).Code);
         Assert.Equal(image, Save(image, new())); using var output = new MemoryStream(); doc.Save(output, new()); Assert.Equal(image, output.ToArray());
+    }
+    [Fact]
+    public void FormsThatCanBeReadAndNotEditedAreReadOnly()
+    {
+        // Two streams that differ: nothing says which one is the file's.
+        byte[] one = IptcCodecTests.Block(0x0404, IptcCodecTests.Dataset(2, 25, 65)), two = IptcCodecTests.Block(0x0404, IptcCodecTests.Dataset(2, 25, 66));
+        using (var doc = JpegMetadataDocument.Open(new MemoryStream(JpegFixture.Build(Photos(one, two)))))
+            Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => doc.ReadIptc()).Code);
+        // A digest without a stream: there is nothing to read, and an edit is still refused.
+        byte[] orphan = JpegFixture.Build(Photos(IptcCodecTests.Block(0x0425, new byte[16])));
+        using (var doc = JpegMetadataDocument.Open(new MemoryStream(orphan))) Assert.Null(doc.ReadIptc());
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => Save(orphan, Caption("x"))).Code);
+        // A digest twice beside one stream.
+        byte[] digest = IptcCodecTests.Block(0x0425, new byte[16]);
+        byte[] digests = JpegFixture.Build(Photos(one, digest, digest));
+        using (var doc = JpegMetadataDocument.Open(new MemoryStream(digests)))
+        { IptcPacket packet = doc.ReadIptc()!; Assert.False(packet.IsEditable); Assert.Single(packet.Datasets); }
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => Save(digests, Caption("x"))).Code);
+        // A zero byte after the last dataset.
+        byte[] padded = JpegFixture.Build(Photos(IptcCodecTests.Block(0x0404, [.. IptcCodecTests.Dataset(2, 120, 104, 105), 0])));
+        using (var doc = JpegMetadataDocument.Open(new MemoryStream(padded)))
+        { IptcPacket packet = doc.ReadIptc()!; Assert.False(packet.IsEditable); Assert.Equal("hi", GetCaption(packet)); }
+        Assert.Equal(MetadataErrorCode.InvalidIptc, Assert.Throws<MetadataException>(() => Save(padded, Caption("x"))).Code);
+        Assert.Equal(padded, Save(padded, new()));
+    }
+    [Fact]
+    public void AResourceFramedWithAnotherAdobeSignatureIsReadAndEdited()
+    {
+        byte[] block = IptcCodecTests.Block(0x0404, IptcCodecTests.Raw(IptcPacket.CreateEmpty())); "DCSR"u8.CopyTo(block);
+        byte[] image = JpegFixture.Build(Photos(block));
+        using (var doc = JpegMetadataDocument.Open(new MemoryStream(image))) Assert.True(doc.ReadIptc()!.IsEditable);
+        byte[] changed = Save(image, Caption("new"));
+        using (var doc = JpegMetadataDocument.Open(new MemoryStream(changed))) Assert.Equal("new", GetCaption(doc.ReadIptc()!));
+        Assert.Equal("DCSR"u8.ToArray(), Resources(changed).Resources[0].Block[..4].ToArray());
     }
     [Fact]
     public void MalformedIimCanBeRemovedButMalformedResourceBoundariesCannot()
@@ -201,6 +236,7 @@ public sealed class JpegIptcTests
         using var doc = JpegMetadataDocument.Open(new MemoryStream(image));
         IptcPacket? read = doc.ReadIptc();
         Assert.NotNull(read);
+        Assert.False(read.IsEditable);
         Assert.Equal("split", GetCaption(read));
         Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => Save(image, Caption("x"))).Code);
     }

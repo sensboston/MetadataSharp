@@ -7,6 +7,12 @@ namespace MetadataSharp.Formats.Jpeg;
 
 public sealed partial class JpegMetadataDocument
 {
+    /// <summary>
+    /// Reads the IPTC stream of the Photoshop APP13 resources, or returns null when there is none.
+    /// A stream that can be read and not edited comes back with <see cref="IptcPacket.IsEditable"/>
+    /// false: resources spread over several segments, a repeated stream or digest, a digest without a
+    /// stream, padding after the last dataset. <see cref="SaveIptc"/> refuses a change to such a file.
+    /// </summary>
     public IptcPacket? ReadIptc(IptcReadOptions? options = null) => ReadIptcCore(options, false, default).GetAwaiter().GetResult();
     public Task<IptcPacket?> ReadIptcAsync(IptcReadOptions? options = null, CancellationToken cancellationToken = default) => ReadIptcCore(options, true, cancellationToken);
     private async Task VerifyIptcSource(bool asynchronous, CancellationToken token)
@@ -17,10 +23,12 @@ public sealed partial class JpegMetadataDocument
         if (!CryptographicOperations.FixedTimeEquals(digest, hash))
             throw new MetadataException(MetadataErrorCode.SourceChanged, "The source content has changed since opening.");
     }
+    private static MetadataException SeveralSegments() =>
+        new(MetadataErrorCode.AmbiguousMetadata, "Multiple Photoshop APP13 segments are unsupported for IPTC operations.");
     private JpegSegment? UniquePhotoshop()
     {
         JpegSegment[] matches = scan.Segments.Where(s => s.IsPhotoshop).Take(2).ToArray();
-        if (matches.Length > 1) throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Multiple Photoshop APP13 segments are unsupported for IPTC operations.");
+        if (matches.Length > 1) throw SeveralSegments();
         return matches.FirstOrDefault();
     }
     private void CheckIptcBudget(int photoshopBytes, IptcLimits settings)
@@ -28,12 +36,13 @@ public sealed partial class JpegMetadataDocument
         long retained = (scan.Exif?.PayloadLength - 6 ?? 0) + scan.Segments.Where(s => s.IsStandardXmp).Sum(s => (long)s.PayloadLength - 29);
         if (photoshopBytes > settings.MaxPacketBytes || retained + photoshopBytes > limits.MaxRetainedMetadataBytes) throw IptcPacket.Limit();
     }
-    private async Task<PhotoshopResources> LoadPhotoshop(JpegSegment segment, IptcLimits settings, bool asynchronous, CancellationToken token)
+    private async Task<PhotoshopResources> LoadPhotoshop(JpegSegment segment, IptcLimits settings, bool forEdit, bool asynchronous, CancellationToken token)
     {
         CheckIptcBudget(segment.PayloadLength, settings);
         byte[] payload = new byte[segment.PayloadLength]; source.Position = segment.PayloadOffset;
         await ReadExact(source, payload, asynchronous, token).ConfigureAwait(false);
-        PhotoshopResources resources = PhotoshopResources.Parse(payload, settings); resources.ValidateTargets();
+        PhotoshopResources resources = PhotoshopResources.Parse(payload, settings);
+        if (forEdit) resources.ValidateTargets();
         token.ThrowIfCancellationRequested(); return resources;
     }
     /// <summary>
@@ -55,7 +64,7 @@ public sealed partial class JpegMetadataDocument
             await ReadExact(source, payload, asynchronous, token).ConfigureAwait(false);
             payload.AsSpan(Signature).CopyTo(joined.AsSpan(at)); at += payload.Length - Signature;
         }
-        PhotoshopResources resources = PhotoshopResources.Parse(joined, settings); resources.ValidateTargets();
+        PhotoshopResources resources = PhotoshopResources.Parse(joined, settings);
         token.ThrowIfCancellationRequested(); return resources;
     }
     private async Task<IptcPacket?> ReadIptcCore(IptcReadOptions? options, bool asynchronous, CancellationToken token)
@@ -65,10 +74,12 @@ public sealed partial class JpegMetadataDocument
         JpegSegment[] photoshop = scan.Segments.Where(s => s.IsPhotoshop).ToArray();
         if (photoshop.Length == 0) return null;
         PhotoshopResources resources = photoshop.Length == 1
-            ? await LoadPhotoshop(photoshop[0], settings, asynchronous, token).ConfigureAwait(false)
+            ? await LoadPhotoshop(photoshop[0], settings, false, asynchronous, token).ConfigureAwait(false)
             : await LoadJoinedPhotoshop(photoshop, settings, asynchronous, token).ConfigureAwait(false);
-        if (resources.Iptc is not PhotoshopResources.Resource iptc) return null;
-        IptcPacket packet = IptcPacket.Parse(iptc.Data.Span, new() { Limits = settings });
+        if (resources.IptcForReading() is not PhotoshopResources.Resource iptc) return null;
+        // What an edit of this file fails with, so the packet can say it is for reading only.
+        MetadataException? refusal = photoshop.Length > 1 ? SeveralSegments() : resources.EditRefusal();
+        IptcPacket packet = IptcPacket.Inspect(iptc.Data.Span, new() { Limits = settings }, refusal);
         token.ThrowIfCancellationRequested(); return packet;
     }
     private sealed record IptcPrepared(bool CopyOnly, JpegSegment? Segment, byte[]? Payload);
@@ -79,7 +90,7 @@ public sealed partial class JpegMetadataDocument
         await VerifyIptcSource(asynchronous, token).ConfigureAwait(false);
         if (captured.IsEmpty) return new(true, null, null);
         JpegSegment? segment = UniquePhotoshop(); IptcLimits settings = new();
-        PhotoshopResources resources = segment is null ? PhotoshopResources.Empty : await LoadPhotoshop(segment, settings, asynchronous, token).ConfigureAwait(false);
+        PhotoshopResources resources = segment is null ? PhotoshopResources.Empty : await LoadPhotoshop(segment, settings, true, asynchronous, token).ConfigureAwait(false);
         if (snapshot.RemoveAll)
         {
             if (resources.Iptc is null) return new(true, null, null);

@@ -2,6 +2,21 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace MetadataSharp.Core.Iptc;
 
+/// <summary>The form IPTC IIM 4.2 gives the value of a dataset.</summary>
+public enum IptcValueFormat
+{
+    /// <summary>Graphic characters, or a form this table does not describe.</summary>
+    Text,
+    /// <summary>A binary number of two octets, most significant first.</summary>
+    UInt16,
+    /// <summary>A date written as eight digits, CCYYMMDD.</summary>
+    Date,
+    /// <summary>A time written as HHMMSS followed by the offset from UTC, ±HHMM.</summary>
+    Time,
+    /// <summary>Binary data that is not text.</summary>
+    Binary,
+}
+
 /// <summary>
 /// The names of the datasets that IPTC IIM 4.2 defines in record 1 (Envelope) and record 2
 /// (Application), each written as a single PascalCase word. A name is a label for display: it says
@@ -35,6 +50,19 @@ public static class IptcDatasetNames
         (2, 152, "AudioResolution"), (2, 153, "AudioDuration"), (2, 154, "AudioOutcue"),
         (2, 200, "PreviewFormat"), (2, 201, "PreviewVersion"), (2, 202, "Preview"),
     ];
+
+    /// <summary>
+    /// The form the specification gives the value of a record 1 or record 2 dataset. It describes the
+    /// definition, not the bytes: a value may be present in another form, and a reader has to check.
+    /// </summary>
+    public static IptcValueFormat FormatOf(IptcDatasetKey key) => (key.Record, key.Dataset) switch
+    {
+        (1, 0) or (1, 20) or (1, 22) or (1, 120) or (1, 122) or (2, 0) or (2, 200) or (2, 201) => IptcValueFormat.UInt16,
+        (1, 70) or (2, 30) or (2, 37) or (2, 47) or (2, 55) or (2, 62) => IptcValueFormat.Date,
+        (1, 80) or (2, 35) or (2, 38) or (2, 60) or (2, 63) => IptcValueFormat.Time,
+        (2, 125) or (2, 202) => IptcValueFormat.Binary,
+        _ => IptcValueFormat.Text,
+    };
 
     /// <summary>
     /// Looks up the name of a record 1 or record 2 dataset. Returns false, with a null name, for a

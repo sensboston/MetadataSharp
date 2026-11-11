@@ -24,6 +24,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - XMP: `XmpPacket.Entries` lists every property of any packet (structures, arrays of structures,
   qualifiers) as read-only path rows; editing stays on the bounded profile. NUL padding is ignored.
 - TIFF-based files: IPTC read (`TiffIptc.Read`, tag 0x83BB or the resource in 0x8649).
+- IPTC read-only forms (`IptcPacket.IsEditable` false): padding, repeated equal controls or resources,
+  a digest without a stream. PNG: EXIF and IPTC in "Raw profile type" text chunks, eXIf after IDAT.
 - Parity harness: `tools/MetadataSharp.Dump` vs the pinned exiv2 0.28.9 corpus (CI job
   `differential-parity`). Run 42962213342, values agreeing of reference keys: EXIF 29,768 of
   34,821; XMP 1,895 of 2,641; IPTC 68 of 319 (no IPTC API for PNG or sidecars; typed values raw).
