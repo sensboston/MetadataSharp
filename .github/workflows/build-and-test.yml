@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'
 
 permissions:
   contents: read
@@ -135,9 +137,11 @@ jobs:
           retention-days: 7
 
   external-reference:
-    # Branches of this repository are built by their push run, which GitHub also shows on the PR;
-    # pull_request runs only for forks, so each commit is built once.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    # Depends on Ubuntu's package mirror (exiv2 0.27.6, exiftool, webp from apt), which has failed for
+    # hours at a time on the runners. Runs nightly and on demand; parity against the pinned 0.28.9
+    # binary is the per-commit gate.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    continue-on-error: true
     name: References / ${{ matrix.tfm }}
     runs-on: ubuntu-24.04
     strategy:
