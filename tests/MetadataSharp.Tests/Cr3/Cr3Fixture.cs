@@ -23,10 +23,10 @@ internal sealed class Cr3Fixture
     internal sealed class Layout
     {
         internal string Brand { get; set; } = "crx ";
-        internal byte[]? Ifd0 { get; set; } = Tiff(true, Text(0x010F, "Canon"), Text(0x0110, "Canon EOS R6"), Shorts(0x0112, 6), Text(0x0132, "2021:01:02 03:04:05"));
-        internal byte[]? Exif { get; set; } = Tiff(true, Rational(0x829A, 1, 250), Shorts(0x8827, 100), Raw(0x9000, 7, "0231"u8.ToArray()), Text(0x9003, "2021:01:02 03:04:05"));
-        internal byte[]? MakerNote { get; set; } = Tiff(true, Shorts(0x0001, 20, 0, 3, 0, 2, 0, 0, 4, 0, 1), Text(0x0006, "IMG:EOS R6 CR3"), Text(0x0007, "Firmware Version 1.0.0"), Longs(0x0010, 0x80000453));
-        internal byte[]? Gps { get; set; } = Tiff(true, Raw(0x0000, 1, [2, 3, 0, 0]), Text(0x0001, "N"), Rational(0x0006, 123, 10));
+        internal byte[]? Ifd0 { get; set; } = TiffBlock(true, Text(0x010F, "Canon"), Text(0x0110, "Canon EOS R6"), Shorts(0x0112, 6), Text(0x0132, "2021:01:02 03:04:05"));
+        internal byte[]? Exif { get; set; } = TiffBlock(true, Rational(0x829A, 1, 250), Shorts(0x8827, 100), Raw(0x9000, 7, "0231"u8.ToArray()), Text(0x9003, "2021:01:02 03:04:05"));
+        internal byte[]? MakerNote { get; set; } = TiffBlock(true, Shorts(0x0001, 20, 0, 3, 0, 2, 0, 0, 4, 0, 1), Text(0x0006, "IMG:EOS R6 CR3"), Text(0x0007, "Firmware Version 1.0.0"), Longs(0x0010, 0x80000453));
+        internal byte[]? Gps { get; set; } = TiffBlock(true, Raw(0x0000, 1, [2, 3, 0, 0]), Text(0x0001, "N"), Rational(0x0006, 123, 10));
         internal byte[]? Xmp { get; set; } = Packet("cr3");
         /// <summary>The JPEG of the THMB box, 160 by 120, and of the PRVW box, 1620 by 1080.</summary>
         internal byte[]? Thumbnail { get; set; } = Picture(160, 120, 40);
@@ -169,10 +169,10 @@ internal sealed class Cr3Fixture
     });
 
     /// <summary>A complete TIFF: the header, one directory at offset 8 and the values that do not fit an entry after it.</summary>
-    internal static byte[] Tiff(bool little, params Entry[] entries) => Tiff(little, 0, entries);
+    internal static byte[] TiffBlock(bool little, params Entry[] entries) => TiffBlock(little, 0, entries);
 
     /// <summary>The same, with the link to a following directory set to <paramref name="next"/>.</summary>
-    internal static byte[] Tiff(bool little, uint next, Entry[] entries)
+    internal static byte[] TiffBlock(bool little, uint next, Entry[] entries)
     {
         var header = new byte[8];
         header[0] = header[1] = little ? (byte)0x49 : (byte)0x4D;

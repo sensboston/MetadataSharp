@@ -44,7 +44,7 @@ public sealed class Cr3ExifTests
     private static byte[] File(params byte[][] boxes) =>
         Join(FileType(), Box("moov", Uuid(CanonBox, boxes), Box("mvhd", new byte[100])), Box("mdat", new byte[16]));
 
-    private static byte[] Ifd0(bool little = true) => Tiff(little, Text(0x010F, "Canon"), Shorts(0x0112, 6));
+    private static byte[] Ifd0(bool little = true) => TiffBlock(little, Text(0x010F, "Canon"), Shorts(0x0112, 6));
 
     [Fact]
     public void TheFourBoxesAreReadAsOneBlock()
@@ -100,9 +100,9 @@ public sealed class Cr3ExifTests
     {
         byte[] file = File(
             Box("CMT1", Ifd0(false)),
-            Box("CMT2", Tiff(false, Shorts(0x8827, 100))),
-            Box("CMT3", Tiff(false, Text(0x0006, "IMG:EOS R6 CR3"), Longs(0x0010, 0x80000453))),
-            Box("CMT4", Tiff(false, Text(0x0001, "N"))));
+            Box("CMT2", TiffBlock(false, Shorts(0x8827, 100))),
+            Box("CMT3", TiffBlock(false, Text(0x0006, "IMG:EOS R6 CR3"), Longs(0x0010, 0x80000453))),
+            Box("CMT4", TiffBlock(false, Text(0x0001, "N"))));
 
         ExifMetadata exif = Exif(file);
 
@@ -121,7 +121,7 @@ public sealed class Cr3ExifTests
     [InlineData("CMT4", ExifDirectoryKind.Gps)]
     public void ABoxAloneIsReadAsItsDirectory(string box, ExifDirectoryKind kind)
     {
-        ExifMetadata exif = Exif(File(Box("free", new byte[4]), Box(box, Tiff(true, Shorts(0x0001, 7), Longs(0x0002, 9)))));
+        ExifMetadata exif = Exif(File(Box("free", new byte[4]), Box(box, TiffBlock(true, Shorts(0x0001, 7), Longs(0x0002, 9)))));
 
         Assert.Equal(new[] { Key(kind, 0x0001), Key(kind, 0x0002) }, exif.Entries.Select(entry => entry.Key));
         Assert.Null(exif.MakerNote);
@@ -130,7 +130,7 @@ public sealed class Cr3ExifTests
     [Fact]
     public void TheMakerNoteBoxAloneIsABlockWithoutEntries()
     {
-        ExifMetadata exif = Exif(File(Box("CMT3", Tiff(false, Text(0x0006, "IMG:EOS R6 CR3")))));
+        ExifMetadata exif = Exif(File(Box("CMT3", TiffBlock(false, Text(0x0006, "IMG:EOS R6 CR3")))));
 
         Assert.Empty(exif.Entries);
         Assert.Equal(Endianness.BigEndian, exif.ByteOrder);
@@ -149,10 +149,10 @@ public sealed class Cr3ExifTests
     [Fact]
     public void TheMakerNoteIsCanonWhateverTheMakeTagSays()
     {
-        byte[] note = Tiff(true, Text(0x0006, "IMG:EOS R6 CR3"));
+        byte[] note = TiffBlock(true, Text(0x0006, "IMG:EOS R6 CR3"));
 
-        MakerNote? unnamed = Exif(File(Box("CMT1", Tiff(true, Shorts(0x0112, 1))), Box("CMT3", note))).MakerNote;
-        MakerNote? renamed = Exif(File(Box("CMT1", Tiff(true, Text(0x010F, "NIKON CORPORATION"))), Box("CMT3", note))).MakerNote;
+        MakerNote? unnamed = Exif(File(Box("CMT1", TiffBlock(true, Shorts(0x0112, 1))), Box("CMT3", note))).MakerNote;
+        MakerNote? renamed = Exif(File(Box("CMT1", TiffBlock(true, Text(0x010F, "NIKON CORPORATION"))), Box("CMT3", note))).MakerNote;
 
         Assert.NotNull(unnamed);
         Assert.NotNull(renamed);
@@ -163,7 +163,7 @@ public sealed class Cr3ExifTests
     [Fact]
     public void TheMakerNoteMayHaveAByteOrderOfItsOwn()
     {
-        ExifMetadata exif = Exif(File(Box("CMT1", Ifd0()), Box("CMT3", Tiff(false, Longs(0x0010, 0x80000453)))));
+        ExifMetadata exif = Exif(File(Box("CMT1", Ifd0()), Box("CMT3", TiffBlock(false, Longs(0x0010, 0x80000453)))));
 
         Assert.Equal(Endianness.LittleEndian, exif.ByteOrder);
         Assert.NotNull(exif.MakerNote);
@@ -187,8 +187,8 @@ public sealed class Cr3ExifTests
     [Fact]
     public void AnExifBoxMayLeadToAnInteroperabilityDirectory()
     {
-        int at = Tiff(true, Longs(0xA005, 0)).Length;
-        byte[] tiff = Join(Tiff(true, Longs(0xA005, (uint)at)), Ifd(true, at, 0, Text(0x0001, "R98")));
+        int at = TiffBlock(true, Longs(0xA005, 0)).Length;
+        byte[] tiff = Join(TiffBlock(true, Longs(0xA005, (uint)at)), Ifd(true, at, 0, Text(0x0001, "R98")));
 
         ExifMetadata exif = Exif(File(Box("CMT2", tiff)));
 
@@ -198,10 +198,10 @@ public sealed class Cr3ExifTests
     [Fact]
     public void APrimaryBoxMayCarryDirectoriesOfItsOwnWhenNoOtherBoxDeclaresThem()
     {
-        int at = Tiff(true, Longs(0x8769, 0)).Length;
-        byte[] primary = Join(Tiff(true, Longs(0x8769, (uint)at)), Ifd(true, at, 0, Shorts(0x8827, 200)));
+        int at = TiffBlock(true, Longs(0x8769, 0)).Length;
+        byte[] primary = Join(TiffBlock(true, Longs(0x8769, (uint)at)), Ifd(true, at, 0, Shorts(0x8827, 200)));
 
-        ExifMetadata exif = Exif(File(Box("CMT1", primary), Box("CMT4", Tiff(true, Text(0x0001, "S")))));
+        ExifMetadata exif = Exif(File(Box("CMT1", primary), Box("CMT4", TiffBlock(true, Text(0x0001, "S")))));
 
         Assert.Equal(new[] { Key(Primary, 0x8769), Key(Photo, 0x8827), Key(Position, 0x0001) }, exif.Entries.Select(entry => entry.Key));
     }
@@ -209,32 +209,32 @@ public sealed class Cr3ExifTests
     [Fact]
     public void ADirectoryTwoBoxesDeclareIsRefused()
     {
-        int at = Tiff(true, Longs(0x8769, 0)).Length;
-        byte[] withExif = Join(Tiff(true, Longs(0x8769, (uint)at)), Ifd(true, at, 0, Shorts(0x8827, 200)));
-        byte[] withGps = Join(Tiff(true, Longs(0x8825, (uint)at)), Ifd(true, at, 0, Text(0x0001, "S")));
+        int at = TiffBlock(true, Longs(0x8769, 0)).Length;
+        byte[] withExif = Join(TiffBlock(true, Longs(0x8769, (uint)at)), Ifd(true, at, 0, Shorts(0x8827, 200)));
+        byte[] withGps = Join(TiffBlock(true, Longs(0x8825, (uint)at)), Ifd(true, at, 0, Text(0x0001, "S")));
 
-        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Refusal(File(Box("CMT1", withExif), Box("CMT2", Tiff(true, Shorts(0x8827, 100))))));
-        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Refusal(File(Box("CMT1", withGps), Box("CMT4", Tiff(true, Text(0x0001, "N"))))));
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Refusal(File(Box("CMT1", withExif), Box("CMT2", TiffBlock(true, Shorts(0x8827, 100))))));
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Refusal(File(Box("CMT1", withGps), Box("CMT4", TiffBlock(true, Text(0x0001, "N"))))));
     }
 
     [Fact]
     public void BoxesOfDifferentByteOrdersAreRefused()
     {
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(File(Box("CMT1", Ifd0(true)), Box("CMT2", Tiff(false, Shorts(0x8827, 100))))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(File(Box("CMT2", Tiff(false, Shorts(0x8827, 100))), Box("CMT4", Tiff(true, Text(0x0001, "N"))))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(File(Box("CMT1", Ifd0(true)), Box("CMT2", TiffBlock(false, Shorts(0x8827, 100))))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(File(Box("CMT2", TiffBlock(false, Shorts(0x8827, 100))), Box("CMT4", TiffBlock(true, Text(0x0001, "N"))))));
     }
 
     public static TheoryData<string, string, byte[], MetadataErrorCode> Malformed()
     {
-        byte[] good = Tiff(true, Text(0x0006, "IMG:EOS R6 CR3"), Longs(0x0010, 5));
+        byte[] good = TiffBlock(true, Text(0x0006, "IMG:EOS R6 CR3"), Longs(0x0010, 5));
         byte[] Patched(int at, params byte[] bytes)
         {
             byte[] copy = (byte[])good.Clone();
             bytes.CopyTo(copy, at);
             return copy;
         }
-        int at = Tiff(true, Longs(0x8769, 0)).Length;
-        byte[] pointer = Join(Tiff(true, Longs(0x8769, (uint)at)), Ifd(true, at, 0, Shorts(0x8827, 200)));
+        int second = TiffBlock(true, Longs(0x8769, 0)).Length;
+        byte[] pointer = Join(TiffBlock(true, Longs(0x8769, (uint)second)), Ifd(true, second, 0, Shorts(0x8827, 200)));
         var data = new TheoryData<string, string, byte[], MetadataErrorCode>();
         foreach (string box in new[] { "CMT1", "CMT2", "CMT3", "CMT4" })
         {
@@ -248,16 +248,16 @@ public sealed class Cr3ExifTests
         foreach (string box in new[] { "CMT1", "CMT2", "CMT4" })
         {
             data.Add(box, "value beyond the box", Patched(18, (byte)(good.Length - 14)), MetadataErrorCode.InvalidExif);
-            data.Add(box, "tags out of order", Tiff(true, Longs(0x0010, 5), Shorts(0x0006, 1)), MetadataErrorCode.InvalidExif);
-            data.Add(box, "a tag twice", Tiff(true, Shorts(0x0006, 1), Shorts(0x0006, 2)), MetadataErrorCode.AmbiguousMetadata);
+            data.Add(box, "tags out of order", TiffBlock(true, Longs(0x0010, 5), Shorts(0x0006, 1)), MetadataErrorCode.InvalidExif);
+            data.Add(box, "a tag twice", TiffBlock(true, Shorts(0x0006, 1), Shorts(0x0006, 2)), MetadataErrorCode.AmbiguousMetadata);
             data.Add(box, "BigTIFF", Patched(2, 43), MetadataErrorCode.UnsupportedFeature);
         }
         // A pointer belongs to the directory that owns it, and only the primary one is followed by another.
         data.Add("CMT2", "an Exif pointer in the Exif directory", pointer, MetadataErrorCode.InvalidExif);
         data.Add("CMT4", "an Exif pointer in the GPS directory", pointer, MetadataErrorCode.InvalidExif);
-        data.Add("CMT1", "an interoperability pointer in the primary directory", Tiff(true, Longs(0xA005, 8)), MetadataErrorCode.InvalidExif);
-        data.Add("CMT2", "a second directory after the Exif directory", Tiff(true, 8, [Shorts(0x8827, 100)]), MetadataErrorCode.UnsupportedFeature);
-        data.Add("CMT1", "a pointer to the directory itself", Tiff(true, Longs(0x8769, 8)), MetadataErrorCode.InvalidExif);
+        data.Add("CMT1", "an interoperability pointer in the primary directory", TiffBlock(true, Longs(0xA005, 8)), MetadataErrorCode.InvalidExif);
+        data.Add("CMT2", "a second directory after the Exif directory", TiffBlock(true, 8, [Shorts(0x8827, 100)]), MetadataErrorCode.UnsupportedFeature);
+        data.Add("CMT1", "a pointer to the directory itself", TiffBlock(true, Longs(0x8769, 8)), MetadataErrorCode.InvalidExif);
         return data;
     }
 
@@ -275,7 +275,7 @@ public sealed class Cr3ExifTests
     [Fact]
     public void ARefusalOfADirectorySaysWhereInTheFile()
     {
-        byte[] tiff = Tiff(true, Longs(0x0010, 5), Shorts(0x0006, 1));
+        byte[] tiff = TiffBlock(true, Longs(0x0010, 5), Shorts(0x0006, 1));
         byte[] file = File(Box("CMT1", Ifd0()), Box("CMT2", tiff));
         int box = 24 + 8 + 8 + 16 + 8 + Ifd0().Length + 8;
 

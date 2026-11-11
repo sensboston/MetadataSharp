@@ -72,7 +72,7 @@ public sealed class Cr3LayoutTests
     [Fact]
     public void OnlyTheDocumentedPlacesAreRead()
     {
-        byte[] tiff = Tiff(true, Shorts(0x0112, 1));
+        byte[] tiff = TiffBlock(true, Shorts(0x0112, 1));
         // The Canon box at the top level, the XMP box inside the movie box, a CMT box beside the Canon box.
         byte[] file = Join(FileType(), Canon(Box("CMT1", tiff)), Box("moov", Uuid(XmpBox, Packet("inside")), Box("CMT2", tiff)), Data);
 
@@ -92,7 +92,7 @@ public sealed class Cr3LayoutTests
 
     public static TheoryData<string, byte[]> Malformed()
     {
-        byte[] tiff = Tiff(true, Shorts(0x0112, 1));
+        byte[] tiff = TiffBlock(true, Shorts(0x0112, 1));
         byte[] usual = Create().Bytes;
         byte[] shortHeader = Join(FileType(), new byte[] { 0, 0, 0, 4, (byte)'f', (byte)'r', (byte)'e', (byte)'e' });
         byte[] wideTruncated = Join(FileType(), new byte[] { 0, 0, 0, 1, (byte)'m', (byte)'d', (byte)'a', (byte)'t', 0, 0, 0, 0 });
