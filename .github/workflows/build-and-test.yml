@@ -278,6 +278,11 @@ jobs:
         run: |
           python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
             --dump-command "$DUMP" --out artifacts/parity/upstream --title 'PARITY upstream' --annotate
+      - name: Preview parity against upstream expectations (kind "Preview"; exiv2 -pp output read as text)
+        shell: bash
+        run: |
+          python tools/parity/run_previews.py --tree artifacts/parity/exiv2 \
+            --dump-command "$DUMP" --out artifacts/parity/preview --annotate
       # The oracle is the official 0.28.9 release binary from github.com: no apt, no compiler, no
       # 1-minute build. The Ubuntu package mirrors have failed DNS for hours at a time on the runners.
       - name: Download the pinned exiv2 release binary
@@ -316,6 +321,8 @@ jobs:
           path: |
             artifacts/parity/upstream/parity-report.txt
             artifacts/parity/upstream/parity-report.json
+            artifacts/parity/preview/preview-report.txt
+            artifacts/parity/preview/preview-report.json
             artifacts/parity/owned/parity-report.txt
             artifacts/parity/owned/parity-report.json
           retention-days: 30
