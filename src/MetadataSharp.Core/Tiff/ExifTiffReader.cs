@@ -3,12 +3,22 @@ using MetadataSharp.Core.Binary;
 
 namespace MetadataSharp.Core.Tiff;
 
-/// <summary>Reads the approved classic TIFF/EXIF subset without recursion or image decoding.</summary>
+/// <summary>
+/// Reads the approved classic TIFF/EXIF subset without recursion or image decoding. Two entry points
+/// share one walk: <see cref="Read"/> takes the TIFF payload of an APP1-sized EXIF block, and
+/// <see cref="ReadFile"/> takes a whole TIFF-based file, whose image directories are left alone.
+/// </summary>
 internal ref struct ExifTiffReader
 {
+    private const ushort ClassicMagic = 42;
+    private const ushort BigTiffMagic = 43;
+    private const ushort OrfMagic = 0x4F52; // "RO" after "II", "OR" after "MM"
+    private const ushort Rw2Magic = 0x0055;
+
     private readonly ReadOnlySpan<byte> data;
     private readonly MetadataLimits limits;
     private readonly long sourceBase;
+    private readonly bool wholeFile;
     private readonly Endianness order;
     private readonly List<ExifEntry> entries;
     private readonly List<ExifDirectoryKind> directories;
@@ -23,11 +33,12 @@ internal ref struct ExifTiffReader
     private int dngPrivateStart;
     private int dngPrivateLength;
 
-    private ExifTiffReader(ReadOnlySpan<byte> data, MetadataLimits limits, long sourceBase)
+    private ExifTiffReader(ReadOnlySpan<byte> data, MetadataLimits limits, long sourceBase, bool wholeFile)
     {
         this.data = data;
         this.limits = limits;
         this.sourceBase = sourceBase;
+        this.wholeFile = wholeFile;
         order = data[0] == 0x49 ? Endianness.LittleEndian : Endianness.BigEndian;
         entries = [];
         directories = [];
@@ -36,7 +47,8 @@ internal ref struct ExifTiffReader
         offsets = [];
         roles = [];
         totalEntries = 0;
-        retainedBytes = data.Length;
+        // An APP1 payload is retained as a whole. A file is not: only what is read out of it counts.
+        retainedBytes = wholeFile ? 0 : data.Length;
         makerNoteStart = 0;
         makerNoteLength = 0;
         dngPrivateStart = 0;
@@ -56,18 +68,57 @@ internal ref struct ExifTiffReader
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF payload exceeds the retained metadata budget.", sourceBase);
         if (tiff.Length < 8)
             throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF header is truncated.", sourceBase);
-        if (!((tiff[0] == 0x49 && tiff[1] == 0x49) || (tiff[0] == 0x4D && tiff[1] == 0x4D)))
+        if (!HasByteOrderMark(tiff))
             throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF byte order mark is invalid.", sourceBase);
-        var reader = new ExifTiffReader(tiff, limits, sourceBase);
+        var reader = new ExifTiffReader(tiff, limits, sourceBase, wholeFile: false);
         return reader.Parse();
     }
+
+    /// <summary>
+    /// Reads the EXIF directories of a whole TIFF-based file. The differences from <see cref="Read"/>:
+    /// there is no APP1 size cap, and the retained budget counts the directories and values read rather
+    /// than the file; the header may carry the ORF or RW2 identifier; SubIFD, strip and tile tags are
+    /// ordinary entries that are never followed; and directories chained after the second one are image
+    /// directories that are neither read nor refused. Every other rule is the same.
+    /// </summary>
+    internal static TiffReadResult ReadFile(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
+    {
+        limits ??= new();
+        limits.Validate();
+        if (file.Length > limits.MaxInputBytes)
+            throw new MetadataException(MetadataErrorCode.LimitExceeded, "The TIFF file exceeds the input budget.", 0);
+        if (file.Length < 8)
+            throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF header is truncated.", 0);
+        if (!HasByteOrderMark(file))
+            throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF byte order mark is invalid.", 0);
+        var reader = new ExifTiffReader(file, limits, 0, wholeFile: true);
+        return reader.Parse();
+    }
+
+    /// <summary>
+    /// Whether the bytes begin with the header of a TIFF-based file: a byte order mark followed by the
+    /// TIFF, BigTIFF, ORF or RW2 identifier. BigTIFF is recognised here and refused by the read.
+    /// </summary>
+    internal static bool HasFileHeader(ReadOnlySpan<byte> file)
+    {
+        if (file.Length < 8 || !HasByteOrderMark(file))
+            return false;
+        ushort magic = file[0] == 0x49
+            ? BinaryPrimitives.ReadUInt16LittleEndian(file.Slice(2, 2))
+            : BinaryPrimitives.ReadUInt16BigEndian(file.Slice(2, 2));
+        return magic is ClassicMagic or BigTiffMagic or OrfMagic or Rw2Magic;
+    }
+
+    private static bool HasByteOrderMark(ReadOnlySpan<byte> tiff) =>
+        (tiff[0] == 0x49 && tiff[1] == 0x49) || (tiff[0] == 0x4D && tiff[1] == 0x4D);
 
     private TiffReadResult Parse()
     {
         ushort magic = U16(2);
-        if (magic == 43)
+        if (magic == BigTiffMagic)
             throw Error(MetadataErrorCode.UnsupportedFeature, "BigTIFF is not supported.", 2);
-        if (magic != 42)
+        bool vendorMagic = wholeFile && magic is OrfMagic or Rw2Magic;
+        if (magic != ClassicMagic && !vendorMagic)
             throw Error(MetadataErrorCode.InvalidExif, "The TIFF identifier is invalid.", 2);
         uint first = U32(4);
         if (first == 0)
@@ -132,6 +183,8 @@ internal ref struct ExifTiffReader
         int length = 2 + count * 12 + 4; // Count is a validated ushort, so this cannot overflow.
         RequireRange(offset, length);
         ClaimRange(start, length);
+        if (wholeFile)
+            ReserveBytes(length, offset);
         directories.Add(kind);
         var ids = new HashSet<ushort>();
         ushort previous = 0;
@@ -177,7 +230,9 @@ internal ref struct ExifTiffReader
                     throw Error(MetadataErrorCode.InvalidExif, "The IFD pointer has an invalid directory, type or count.", p);
                 Schedule(U32(p + 8), target, depth + 1);
             }
-            if (tag is 0x014A or 0x0111 or 0x0117 or 0x0144 or 0x0145)
+            // In a whole file these describe image data and further image directories: the entry is kept
+            // like any other, and nothing it points at is read.
+            if (!wholeFile && tag is 0x014A or 0x0111 or 0x0117 or 0x0144 or 0x0145)
                 throw Error(MetadataErrorCode.UnsupportedFeature, "SubIFDs, strips and tiles are outside the EXIF subset.", p);
             if (tag == 0x927C && kind == ExifDirectoryKind.Exif)
             {
@@ -195,6 +250,10 @@ internal ref struct ExifTiffReader
         uint next = U32(start + 2 + count * 12);
         if (next != 0)
         {
+            // A whole file may chain further image directories after the second one (CR2 and PEF do).
+            // Like SubIFDs they hold images, not EXIF: the link is neither followed nor refused.
+            if (wholeFile && kind == ExifDirectoryKind.Thumbnail)
+                return;
             if (kind != ExifDirectoryKind.Ifd0)
                 throw Error(MetadataErrorCode.UnsupportedFeature, "Only the primary IFD may link to a thumbnail IFD.", start + length - 4);
             Schedule(next, ExifDirectoryKind.Thumbnail, depth + 1);

@@ -84,6 +84,8 @@ internal static class Program
         if (At(head, 0, 0x89, 0x50, 0x4E, 0x47)) { Png(path, stdout, length); return; }
         if (At(head, 0, 0x52, 0x49, 0x46, 0x46) && At(head, 8, 0x57, 0x45, 0x42, 0x50)) { WebP(path, stdout, length); return; }
         if (At(head, 0, 0x49, 0x49, 0x2A, 0x00) || At(head, 0, 0x4D, 0x4D, 0x00, 0x2A)) { Tiff(path, stdout, length); return; }
+        // ORF ("IIRO", "MMOR") and RW2 ("IIU\0") are TIFF structures under their own identifier.
+        if (At(head, 0, 0x49, 0x49, 0x52, 0x4F) || At(head, 0, 0x4D, 0x4D, 0x4F, 0x52) || At(head, 0, 0x49, 0x49, 0x55, 0x00)) { Tiff(path, stdout, length); return; }
         if (At(head, 0, 0x38, 0x42, 0x50, 0x53)) { Psd(path, stdout, length); return; }
         if (At(head, 0, 0xFF, 0x01, 0x45, 0x78, 0x69, 0x76, 0x32)) { Exv(path, stdout, length); return; }
         if (At(head, 4, 0x6A, 0x50, 0x20, 0x20)) { Jp2(path, stdout, length); return; }
@@ -124,24 +126,7 @@ internal static class Program
     private static void Tiff(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
-        using TiffMetadataDocument document = TiffMetadataDocument.Open(path);
-        TiffLayout layout = document.Layout;
-        // The layout is the library's read-side accounting of every field; the bytes of a field are
-        // taken from the same file the layout describes. The document's own value accessor is the
-        // descriptive-edit target, which refuses most tags and is not what a byte dump wants.
-        byte[] data = File.ReadAllBytes(path);
-        Dictionary<uint, ExifDirectoryKind> groups = Groups(layout);
-        foreach (TiffDirectoryInfo directory in layout.Directories)
-        {
-            if (!groups.TryGetValue(directory.Offset, out ExifDirectoryKind role))
-                role = ExifDirectoryKind.Thumbnail;
-            foreach (TiffFieldInfo field in directory.Fields)
-            {
-                TiffFieldType type = (TiffFieldType)field.FieldType;
-                Tag(stdout, "Exif." + Group(role) + "." + Name(new ExifTagKey(role, field.TagId)), TypeName(type),
-                    field.Count, Render(Slice(data, field.ValueRange), type, field.Count, layout.ByteOrder));
-            }
-        }
+        Exif(TiffExif.Read(File.ReadAllBytes(path)), stdout);
         Done(stdout);
     }
 
