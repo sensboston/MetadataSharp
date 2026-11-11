@@ -15,7 +15,9 @@ namespace MetadataSharp.Formats.Tiff;
 public static class TiffExif
 {
     /// <summary>
-    /// Reads the EXIF metadata of a complete TIFF-based file held in memory.
+    /// Reads the EXIF metadata of a complete TIFF-based file held in memory. Without
+    /// <paramref name="limits"/> the budgets are those of a default <see cref="TiffReadOptions"/>,
+    /// which allow larger values than the defaults of <see cref="MetadataLimits"/>.
     /// </summary>
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.InvalidTiff"/> when the data does not begin with a TIFF, ORF or RW2
@@ -24,7 +26,7 @@ public static class TiffExif
     /// </exception>
     public static ExifMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null)
     {
-        limits ??= new();
+        limits ??= TiffReadOptions.FileLimits;
         limits.Validate();
         if (data.Length > limits.MaxInputBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The TIFF file exceeds the input budget.", 0);

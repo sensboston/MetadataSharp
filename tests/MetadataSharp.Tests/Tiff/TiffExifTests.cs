@@ -378,14 +378,18 @@ public sealed class TiffExifTests
     }
 
     [Fact]
-    public void TheValueBudgetIsNotRaisedForAWholeFile()
+    public void AWholeFileHasWiderDefaultBudgetsThanAnExifBlock()
     {
-        // One BYTE value of 65,528 bytes: a byte over the default value budget.
+        // One BYTE value of 65,528 bytes: a byte over the value budget of MetadataLimits, which is
+        // the size of a JPEG APP1 payload. A TIFF holds ICC profiles and Photoshop blocks far larger.
         byte[] file = new Layout(LargeLength, false).Header().Directory(8, 0, (0xC000, 1, 65_528, 1024)).Bytes;
 
-        Assert.Equal(MetadataErrorCode.LimitExceeded, Code(() => TiffExif.Read(file)));
-        var raised = new MetadataLimits { MaxValueBytes = 65_528 };
-        Assert.Equal(65_528, Assert.Single(TiffExif.Read(file, raised).Entries).Value.ByteLength);
+        Assert.Equal(65_528, Assert.Single(TiffExif.Read(file).Entries).Value.ByteLength);
+        Assert.Equal(new MetadataLimits { MaxValueBytes = 16_777_216, MaxRetainedMetadataBytes = 67_108_864 }, new TiffReadOptions().Limits);
+        // Budgets the caller names are the budgets: those of MetadataLimits refuse the value.
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Code(() => TiffExif.Read(file, new MetadataLimits())));
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Code(() => TiffExif.Read(file, new MetadataLimits { MaxValueBytes = 65_528, MaxRetainedMetadataBytes = 65_527 })));
+        Assert.Equal(65_528, Assert.Single(TiffExif.Read(file, new MetadataLimits { MaxValueBytes = 65_528 }).Entries).Value.ByteLength);
     }
 
     [Fact]
