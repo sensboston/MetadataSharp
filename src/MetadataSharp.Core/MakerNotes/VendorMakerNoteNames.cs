@@ -97,7 +97,7 @@ internal static class VendorMakerNoteNames
         (0x2039, "JPEGHEIFSwitch"), (0xB000, "FileFormat"), (0xB001, "SonyModelID"),
         (0xB020, "CreativeStyle"), (0xB021, "ColorTemperature"), (0xB022, "ColorCompensationFilter"),
         (0xB023, "SceneMode"), (0xB024, "ZoneMatching"), (0xB025, "DynamicRangeOptimizer"),
-        (0xB026, "ImageStabilization"), (0xB027, "LensID"), (0xB029, "ColorMode"),
+        (0xB026, "ImageStabilization"), (0xB027, "LensID"), (0xB028, "MinoltaMakerNote"), (0xB029, "ColorMode"),
         (0xB02A, "LensSpec"), (0xB02B, "FullImageSize"), (0xB02C, "PreviewImageSize"),
         (0xB040, "Macro"), (0xB041, "ExposureMode"), (0xB042, "FocusMode"),
         (0xB043, "AFMode"), (0xB044, "AFIlluminator"), (0xB047, "JPEGQuality"),

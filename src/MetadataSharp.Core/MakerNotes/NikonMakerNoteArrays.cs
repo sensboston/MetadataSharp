@@ -2,8 +2,8 @@ namespace MetadataSharp.Core.MakerNotes;
 
 /// <summary>
 /// Nikon3 array tags whose bytes are separate fields at fixed byte offsets. Several tags start with
-/// a four-character version that selects the layout. Encrypted layouts (ShotInfo, LensData from
-/// version 0201, ColorBalance) are not split. Unlisted bytes are not reported.
+/// a four-character version that selects the layout. Encrypted layouts (ShotInfo and ColorBalance
+/// from version 02xx, LensData from version 0201) need the note's key. Unlisted bytes are not reported.
 /// </summary>
 internal static class NikonMakerNoteArrays
 {
@@ -46,6 +46,7 @@ internal static class NikonMakerNoteArrays
         0x0098 when Version(raw, "0800") || Version(raw, "0801") || Version(raw, "0802") => (LensData0800, 4),
         // Version 02xx ShotInfo, except the D80, D40 and D300 layouts.
         0x0091 when Major02(raw) && !Version(raw, "0208") && !Version(raw, "0209") && !Version(raw, "0210") => (ShotInfo02, 4),
+        0x0097 when Version(raw, "0212") => (ColorBalance0212, 284),
         // Version 02xx ColorBalance, except the layouts of 0205, 0209, 0212 and 0214.
         0x0097 when Major02(raw) && !Version(raw, "0205") && !Version(raw, "0209") && !Version(raw, "0212") &&
             !Version(raw, "0214") => (ColorBalance02, 284),
@@ -77,6 +78,9 @@ internal static class NikonMakerNoteArrays
         0x0024 => WorldTime,
         0x0025 => ISOInfo,
         0x0088 => AFInfo,
+        // ShotInfo and ColorBalance of the first generation are stored in the clear.
+        0x0091 when raw.Length >= 4 && raw[0] == (byte)'0' && raw[1] == (byte)'1' => ShotInfo01,
+        0x0097 when Version(raw, "0103") => ColorBalance0103,
         0x0098 when Version(raw, "0100") => LensData0100,
         0x0098 when Version(raw, "0101") => LensData0101,
         0x00A8 when Version(raw, "0100") || Version(raw, "0101") => FlashInfo0100,
@@ -151,6 +155,17 @@ internal static class NikonMakerNoteArrays
         new(117, "VibrationReduction"), new(130, "VibrationReduction1"), new(343, "ShutterCount2", U, 2),
         new(430, "VibrationReduction2"), new(598, "ISO"), new(630, "ShutterCount", TiffFieldType.Long),
     ], BigEndian: true);
+
+    private static readonly Layout ShotInfo01 = new(
+    [
+        new(0, "Version", U, 4), new(106, "ShutterCount1", TiffFieldType.Long), new(110, "DeletedImageCount", TiffFieldType.Long),
+        new(117, "VibrationReduction"), new(130, "VibrationReduction1"), new(343, "ShutterCount2", U, 2),
+        new(430, "VibrationReduction2"),
+    ], BigEndian: true);
+
+    private static readonly Layout ColorBalance0103 = new([new(0, "Version", U, 4), new(20, "WB_RGBGLevels", S, 4)]);
+
+    private static readonly Layout ColorBalance0212 = new([new(0, "Version", U, 4), new(294, "WB_GRBGLevels", S, 4)]);
 
     private static readonly Layout ColorBalance02 = new([new(0, "Version", U, 4), new(290, "WB_RGGBLevels", S, 4)]);
 

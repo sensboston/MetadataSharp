@@ -367,6 +367,52 @@ public sealed class NikonMakerNoteArrayTests
     }
 
     [Fact]
+    public void TheFirstGenerationShotInfoIsStoredInTheClearAndIsBigEndian()
+    {
+        byte[] raw = Versioned("0103", 465);
+        BinaryPrimitives.WriteUInt32BigEndian(raw.AsSpan(106), 123456);
+        raw[117] = 2;
+        IReadOnlyList<MakerNoteField> fields = Split(0x0091, Bytes(Endianness.LittleEndian, raw));
+        Assert.Equal(new[] { "Version", "ShutterCount1", "DeletedImageCount", "VibrationReduction", "VibrationReduction1",
+            "ShutterCount2", "VibrationReduction2" }, fields.Select(f => f.Name));
+        MakerNoteField count = fields[1];
+        Assert.Equal(TiffFieldType.Long, count.Value.FieldType);
+        Assert.Equal(Endianness.BigEndian, count.Value.ByteOrder);
+        byte[] four = new byte[4];
+        count.Value.CopyRawTo(four);
+        Assert.Equal(123456u, BinaryPrimitives.ReadUInt32BigEndian(four));
+        Assert.Equal((ushort)430, fields[^1].Index);
+
+        // The 02xx generation is encrypted: without the note's key it is not split.
+        Assert.Empty(Split(0x0091, Bytes(Endianness.LittleEndian, Versioned("0210", 465))));
+        // A short array lists only what it holds.
+        Assert.Equal(4, Split(0x0091, Bytes(Endianness.BigEndian, Versioned("0100", 120))).Count);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ColorBalance0103HoldsItsLevelsInTheNotesByteOrder(bool big)
+    {
+        byte[] raw = Versioned("0103", 140);
+        Endianness order = big ? Endianness.BigEndian : Endianness.LittleEndian;
+        if (big) BinaryPrimitives.WriteUInt16BigEndian(raw.AsSpan(20), 516);
+        else BinaryPrimitives.WriteUInt16LittleEndian(raw.AsSpan(20), 516);
+        IReadOnlyList<MakerNoteField> fields = Split(0x0097, Bytes(order, raw));
+        Assert.Equal(new[] { "Version", "WB_RGBGLevels" }, fields.Select(f => f.Name));
+        MakerNoteField levels = fields[1];
+        Assert.Equal((ushort)20, levels.Index);
+        Assert.Equal(TiffFieldType.Short, levels.Value.FieldType);
+        Assert.Equal(4u, levels.Value.Count);
+        Assert.Equal(order, levels.Value.ByteOrder);
+        byte[] eight = new byte[8];
+        levels.Value.CopyRawTo(eight);
+        Assert.Equal(516, big ? BinaryPrimitives.ReadUInt16BigEndian(eight) : BinaryPrimitives.ReadUInt16LittleEndian(eight));
+
+        Assert.Empty(Split(0x0097, Bytes(order, Versioned("0102", 140))));
+    }
+
+    [Fact]
     public void ISOInfoIsBigEndianWhateverTheMakerNoteOrder()
     {
         byte[] raw = [100, 0, 0, 0, 0x01, 0x02, 0, 0, 0, 0, 0x03, 0x04, 0, 0];
@@ -417,6 +463,25 @@ public sealed class NikonMakerNoteCipherTests
         Assert.Equal(0x18, one[0]);
         Assert.Empty(Core.MakerNotes.NikonMakerNoteArrays.DecomposeEncrypted(0x0098,
             ExifValue.FromRaw(TiffFieldType.Undefined, 20, Endianness.LittleEndian, [.. "0999"u8, .. new byte[16]]), 777, 1));
+    }
+
+    [Fact]
+    public void ColorBalance0212HasItsOwnLevelsOffset()
+    {
+        byte[] plain = new byte[320];
+        "0212"u8.CopyTo(plain);
+        BinaryPrimitives.WriteUInt16BigEndian(plain.AsSpan(294), 398);
+        byte[] stored = Core.MakerNotes.NikonMakerNoteCipher.Decrypt(plain, 284, 24715, 6028018);
+        Assert.Equal(plain[..284], stored[..284]);
+        var value = ExifValue.FromRaw(TiffFieldType.Undefined, 320, Endianness.BigEndian, stored);
+        IReadOnlyList<MakerNoteField> fields = Core.MakerNotes.NikonMakerNoteArrays.DecomposeEncrypted(0x0097, value, 24715, 6028018);
+        Assert.Equal(new[] { "Version", "WB_GRBGLevels" }, fields.Select(f => f.Name));
+        Assert.Equal((ushort)294, fields[1].Index);
+        byte[] raw = new byte[8];
+        fields[1].Value.CopyRawTo(raw);
+        Assert.Equal(398, BinaryPrimitives.ReadUInt16BigEndian(raw));
+        // Without the key it is not split at all.
+        Assert.Empty(Core.MakerNotes.NikonMakerNoteArrays.Decompose(0x0097, value));
     }
 
     [Fact]

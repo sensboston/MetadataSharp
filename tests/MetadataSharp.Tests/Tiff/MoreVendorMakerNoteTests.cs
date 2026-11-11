@@ -76,22 +76,31 @@ public sealed class MoreVendorMakerNoteTests
     /// <summary>
     /// A TIFF in <paramref name="big"/> order: IFD0 with Make and the Exif IFD pointer, and an Exif IFD
     /// whose only entry is the MakerNote. <paramref name="note"/> is given the MakerNote's own offset.
+    /// With a <paramref name="model"/> (five characters or more), IFD0 carries it as well.
     /// </summary>
-    private static byte[] Tiff(bool big, string make, Func<int, byte[]> note)
+    private static byte[] Tiff(bool big, string make, Func<int, byte[]> note, string? model = null)
     {
         byte[] makeBytes = Encoding.ASCII.GetBytes(make + "\0");
-        int makeAt = 8 + 2 + 24 + 4;
-        int exifAt = makeAt + makeBytes.Length + (makeBytes.Length & 1);
+        byte[] modelBytes = model is null ? [] : Encoding.ASCII.GetBytes(model + "\0");
+        int entries = model is null ? 2 : 3;
+        int makeAt = 8 + 2 + (12 * entries) + 4;
+        int modelAt = makeAt + makeBytes.Length + (makeBytes.Length & 1);
+        int exifAt = modelAt + modelBytes.Length + (modelBytes.Length & 1);
         int noteAt = exifAt + 2 + 12 + 4;
         byte[] body = note(noteAt);
         var tiff = new List<byte>(big ? "MM\0*"u8.ToArray() : "II*\0"u8.ToArray());
         tiff.AddRange(U32(8, big));
-        tiff.AddRange(U16(2, big));
+        tiff.AddRange(U16(entries, big));
         tiff.AddRange(Entry(0x010F, 2, makeBytes.Length, U32(makeAt, big), big));
+        if (model is not null)
+            tiff.AddRange(Entry(0x0110, 2, modelBytes.Length, U32(modelAt, big), big));
         tiff.AddRange(Entry(0x8769, 4, 1, U32(exifAt, big), big));
         tiff.AddRange(new byte[4]);
         tiff.AddRange(makeBytes);
         if ((makeBytes.Length & 1) != 0)
+            tiff.Add(0);
+        tiff.AddRange(modelBytes);
+        if ((modelBytes.Length & 1) != 0)
             tiff.Add(0);
         tiff.AddRange(U16(1, big));
         tiff.AddRange(Entry(0x927C, 7, body.Length, U32(noteAt, big), big));
@@ -253,6 +262,69 @@ public sealed class MoreVendorMakerNoteTests
         ExifValue ragged = ExifValue.FromRaw(TiffFieldType.Undefined, 7, Endianness.BigEndian, Elements(10, 4).AsSpan(0, 7));
         Assert.Empty(MinoltaMakerNoteArrays.Decompose(0x0001, ragged));
         Assert.Empty(MinoltaMakerNoteArrays.Decompose(0x0002, ten));
+    }
+
+    /// <summary>
+    /// A bare Sony directory whose only tag is the pointer 0xB028, followed by the Minolta directory it
+    /// points to: Version, a settings array of 100 SHORTs and WhiteBalance. Offsets count from the TIFF header.
+    /// </summary>
+    private static byte[] SonyWithAMinoltaDirectory(bool big, int at, long? pointer = null)
+    {
+        const int sonyLength = 2 + 12 + 4;
+        byte[] sony = Ifd(big, at, new Field(0xB028, 4, 1, U32(pointer ?? at + sonyLength, big)));
+        Assert.Equal(sonyLength, sony.Length);
+        byte[] minolta = Ifd(big, at + sonyLength,
+            Undefined(0x0000, "MLT0"u8.ToArray()), Undefined(0x0114, Elements(100, 2)), Short(0x0115, 7, big));
+        return [.. sony, .. minolta];
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void TheSonyA100CarriesAMinoltaDirectoryBehindAPointer(bool big)
+    {
+        MakerNote? note = Read(Tiff(big, "SONY", at => SonyWithAMinoltaDirectory(big, at), model: "DSLR-A100"));
+        Assert.NotNull(note);
+        Assert.Equal(MakerNoteFormat.Sony2, note.Format);
+        MakerNoteEntry pointer = Assert.Single(note.Entries);
+        Assert.Equal("MinoltaMakerNote", pointer.Name);
+        Assert.Equal(TiffFieldType.Long, pointer.Value.FieldType);   // the pointer itself is kept as stored
+        // The directory's entries are the pointer's fields, indexed by their tag numbers.
+        Assert.Equal(new[] { "Version", "CameraSettingsA100", "WhiteBalance" }, pointer.Fields.Select(f => f.Name));
+        Assert.Equal(new ushort[] { 0x0000, 0x0114, 0x0115 }, pointer.Fields.Select(f => f.Index));
+        Assert.Empty(pointer.Fields[0].Fields);
+
+        // The settings array is split one level further: big-endian SHORTs whatever the note's order.
+        MakerNoteField settings = pointer.Fields[1];
+        Assert.Equal(200, settings.Value.ByteLength);
+        Assert.Equal(77, settings.Fields.Count);
+        Assert.Equal("ExposureMode", settings.Fields[0].Name);
+        Assert.Equal("BatteryLevel", settings.Fields[^1].Name);
+        Assert.Equal((ushort)96, settings.Fields[^1].Index);
+        Assert.All(settings.Fields, element => Assert.Equal(1000 + element.Index, Number(element.Value)));
+        Assert.Equal(TiffFieldType.SShort, settings.Fields.Single(f => f.Name == "WhiteBalanceFineTune").Value.FieldType);
+        Assert.Equal(TiffFieldType.Short, settings.Fields.Single(f => f.Name == "Quality").Value.FieldType);
+    }
+
+    [Fact]
+    public void AnotherSonyModelKeepsTheMinoltaSettingsWhole()
+    {
+        MakerNote? note = Read(Tiff(false, "SONY", at => SonyWithAMinoltaDirectory(false, at), model: "DSLR-A200"));
+        Assert.NotNull(note);
+        MakerNoteEntry pointer = Assert.Single(note.Entries);
+        Assert.Equal(3, pointer.Fields.Count);
+        Assert.Empty(pointer.Fields[1].Fields);
+    }
+
+    [Theory]
+    [InlineData(0L)]         // Not a directory offset at all.
+    [InlineData(4L)]         // Inside the TIFF header.
+    [InlineData(100000L)]    // Beyond the file.
+    public void ASonyPointerThatLeadsNowhereStaysAPlainNumber(long pointer)
+    {
+        MakerNote? note = Read(Tiff(false, "SONY", at => SonyWithAMinoltaDirectory(false, at, pointer), model: "DSLR-A100"));
+        Assert.NotNull(note);
+        Assert.Empty(Assert.Single(note.Entries).Fields);
     }
 
     [Fact]

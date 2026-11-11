@@ -19,6 +19,13 @@ internal static class MinoltaMakerNoteArrays
         _ => []
     };
 
+    /// <summary>
+    /// The camera settings (0x0114) of the Minolta directory inside a Sony DSLR-A100 MakerNote. The tag
+    /// number is the 5D's; the elements are the A100's own.
+    /// </summary>
+    internal static IReadOnlyList<MakerNoteField> DecomposeSonyA100(ushort tag, ExifValue value) =>
+        tag == 0x0114 ? Split(value, SettingsA100, TiffFieldType.Short, TiffFieldType.SShort) : [];
+
     private static IReadOnlyList<MakerNoteField> Split(ExifValue value, Element[] elements, TiffFieldType unsigned,
         TiffFieldType signed)
     {
@@ -80,5 +87,36 @@ internal static class MinoltaMakerNoteArrays
         new(101, "Rotation2"), new(110, "Color Temperature"), new(113, "PictureFinish"),
         new(145, "ExposureManualBias"), new(158, "AFMode"), new(174, "ImageNumber"), new(176, "NoiseReduction"),
         new(189, "ImageStabilization"),
+    ];
+
+    /// <summary>The camera settings of the Sony DSLR-A100: SHORTs.</summary>
+    private static readonly Element[] SettingsA100 =
+    [
+        new(0, "ExposureMode"), new(1, "ExposureCompensationSetting"), new(5, "HighSpeedSync"),
+        new(6, "ManualExposureTime"), new(7, "ManualFNumber"), new(8, "ExposureTime"), new(9, "FNumber"),
+        new(10, "DriveMode2"), new(11, "WhiteBalance"), new(12, "FocusMode"), new(13, "LocalAFAreaPoint"),
+        new(14, "AFAreaMode"), new(15, "FlashMode"), new(16, "FlashExposureCompSetting"),
+        new(18, "MeteringMode"), new(19, "ISOSetting"), new(20, "ZoneMatchingMode"),
+        new(21, "DynamicRangeOptimizerMode"), new(22, "ColorMode"), new(23, "ColorSpace"),
+        new(24, "Sharpness"), new(25, "Contrast"), new(26, "Saturation"), new(28, "FlashMetering"),
+        new(29, "PrioritySetupShutterRelease"), new(30, "DriveMode"), new(31, "SelfTimerTime"),
+        new(32, "ContinuousBracketing"), new(33, "SingleFrameBracketing"), new(34, "WhiteBalanceBracketing"),
+        new(35, "WhiteBalanceSetting"), new(36, "PresetWhiteBalance"), new(37, "ColorTemperatureSetting"),
+        new(38, "CustomWBSetting"), new(39, "DynamicRangeOptimizerSettings"), new(50, "FreeMemoryCardImages"),
+        new(52, "CustomWBRedLevel"), new(53, "CustomWBGreenLevel"), new(54, "CustomWBBlueLevel"),
+        new(55, "CustomWBError"), new(56, "WhiteBalanceFineTune", Signed: true), new(57, "ColorTemperature"),
+        new(58, "ColorCompensationFilter", Signed: true), new(59, "SonyImageSize"), new(60, "Quality"),
+        new(61, "InstantPlaybackTime"), new(62, "InstantPlaybackSetup"), new(63, "NoiseReduction"),
+        new(64, "EyeStartAF"), new(65, "RedEyeReduction"), new(66, "FlashDefault"),
+        new(67, "AutoBracketOrder"), new(68, "FocusHoldButton"), new(69, "AELButton"),
+        new(70, "ControlDialSet"), new(71, "ExposureCompensationMode"), new(72, "AFAssist"),
+        new(73, "CardShutterLock"), new(74, "LensShutterLock"), new(75, "AFAreaIllumination"),
+        new(76, "MonitorDisplayOff"), new(77, "RecordDisplay"), new(78, "PlayDisplay"),
+        new(80, "ExposureIndicator"), new(81, "AELExposureIndicator"),
+        new(82, "ExposureBracketingIndicatorLast"), new(83, "MeteringOffScaleIndicator"),
+        new(84, "FlashExposureIndicator"), new(85, "FlashExposureIndicatorNext"),
+        new(86, "FlashExposureIndicatorLast"), new(87, "ImageStabilization"), new(88, "FocusModeSwitch"),
+        new(89, "FlashType"), new(90, "Rotation"), new(94, "ColorTemperature2"),
+        new(95, "ColorCompensationFilter2", Signed: true), new(96, "BatteryLevel"),
     ];
 }

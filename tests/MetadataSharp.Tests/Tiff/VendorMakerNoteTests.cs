@@ -226,6 +226,7 @@ public sealed class SonyMakerNoteArrayTests
 
     [Theory]
     [InlineData("ILCE-7M3", 4)]
+    [InlineData("", 4)]            // A file without a Model is read like the models that are not excluded.
     [InlineData("SLT-A77", 0)]
     [InlineData("ILCA-77M2", 0)]
     public void FocusPositionDependsOnTheModel(string model, int expected)
@@ -233,6 +234,33 @@ public sealed class SonyMakerNoteArrayTests
         IReadOnlyList<MakerNoteField> fields = Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x9402, Undefined(Encipher(new byte[48])),
             Encoding.ASCII.GetBytes(model));
         Assert.Equal(expected, fields.Count);
+    }
+
+    [Fact]
+    public void TheCameraSettingsOf280BytesAreBigEndianShortsInTheClear()
+    {
+        byte[] raw = new byte[280];
+        for (int i = 0; i < 140; i++)
+            BinaryPrimitives.WriteUInt16BigEndian(raw.AsSpan(i * 2), (ushort)(1000 + i));
+        var value = ExifValue.FromRaw(TiffFieldType.Undefined, 280, Endianness.LittleEndian, raw);
+        IReadOnlyList<MakerNoteField> fields = Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x0114, value, "DSLR-A200"u8);
+        Assert.Equal(29, fields.Count);
+        Assert.Equal("DriveMode", fields[0].Name);
+        Assert.Equal("ExposureLevelIncrements", fields[^1].Name);
+        byte[] two = new byte[2];
+        foreach (MakerNoteField field in fields)
+        {
+            // The index is the byte offset; the element number is half of it.
+            Assert.Equal(Endianness.BigEndian, field.Value.ByteOrder);
+            field.Value.CopyRawTo(two);
+            Assert.Equal(1000 + (field.Index / 2), BinaryPrimitives.ReadUInt16BigEndian(two));
+        }
+        Assert.Equal(TiffFieldType.SShort, fields.Single(f => f.Name == "WhiteBalanceFineTune").Value.FieldType);
+        Assert.Equal((ushort)172, fields.Single(f => f.Name == "Quality").Index);
+
+        // The settings of the other camera generations have other lengths and other layouts.
+        var other = ExifValue.FromRaw(TiffFieldType.Undefined, 364, Endianness.LittleEndian, new byte[364]);
+        Assert.Empty(Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x0114, other, "DSLR-A850"u8));
     }
 
     [Fact]

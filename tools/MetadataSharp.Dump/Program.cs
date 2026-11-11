@@ -263,14 +263,18 @@ internal static class Program
                     bool olympusIfd = makerNote.Format is MakerNoteFormat.Olympus2 or MakerNoteFormat.OMSystem;
                     // So is the Nikon preview pointer, whose fields are the directory it points to.
                     bool nikonPreview = makerNote.Format == MakerNoteFormat.Nikon3 && entry.TagId == 0x0011;
-                    bool keepParent = olympusIfd || nikonPreview || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
+                    // And the Sony pointer to the Minolta directory of the DSLR-A100.
+                    bool sony = makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2;
+                    bool sonyMinolta = sony && entry.TagId == 0xB028;
+                    bool keepParent = olympusIfd || nikonPreview || sonyMinolta || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
                         Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
                         : nikonPreview ? "NikonPreview"
+                        : sonyMinolta ? "SonyMinolta"
                         : keepParent ? group
                         : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
-                        : makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 ? SonyArrayGroup(entry.TagId)
+                        : sony ? SonyArrayGroup(makerNote.Format, entry.TagId)
                         : makerNote.Format == MakerNoteFormat.Minolta ? MinoltaArrayGroup(entry.TagId)
                         : makerNote.Format == MakerNoteFormat.Samsung2 ? "SamsungPictureWizard"
                         : group + ArrayGroup(entry.TagId);
@@ -284,6 +288,16 @@ internal static class Program
                             entry.Value.CopyRawTo(array);
                             Tag(stdout, "Exif.NikonVr." + field.Name, "Byte", 3,
                                 string.Join(' ', array[4..7].Select(b => b.ToString(CultureInfo.InvariantCulture))));
+                            continue;
+                        }
+                        // An entry of a sub-directory that is itself a split array: its elements only,
+                        // under the group the reference gives the A100's settings.
+                        if (field.Fields.Count != 0)
+                        {
+                            string elementGroup = (makerNote.Format == MakerNoteFormat.Sony1 ? "Sony1" : "Sony2") + "MltCsA100";
+                            foreach (MakerNoteField element in field.Fields)
+                                Tag(stdout, "Exif." + elementGroup + "." + element.Name,
+                                    TypeName(element.Value.FieldType), element.Value.Count, Render(element.Value));
                             continue;
                         }
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
@@ -310,8 +324,9 @@ internal static class Program
         _ => "Minolta0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
     };
 
-    private static string SonyArrayGroup(ushort tag) => tag switch
+    private static string SonyArrayGroup(MakerNoteFormat format, ushort tag) => tag switch
     {
+        0x0114 => format == MakerNoteFormat.Sony1 ? "Sony1Cs" : "Sony2Cs",
         0x2010 => "Sony2010e", 0x3000 => "SonySInfo1", 0x9400 => "SonyMisc3c", 0x9402 => "Sony2Fp",
         0x9403 => "SonyMisc1", 0x9404 => "SonyMisc2b",
         _ => "Sony0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
@@ -332,7 +347,8 @@ internal static class Program
         {
             0x001F => "Vr", 0x0023 => "Pc", 0x0024 => "Wt", 0x0025 => "Ii", 0x0088 => "Af",
             0x0098 => version switch { "0100" => "Ld1", "0204" => "Ld3", "0800" or "0801" or "0802" => "Ld4", _ => "Ld2" },
-            0x0091 => "Si02xx", 0x0097 => "Cb2b",
+            0x0091 => version.StartsWith("01", StringComparison.Ordinal) ? "Si01xx" : "Si02xx",
+            0x0097 => version switch { "0103" => "Cb3", "0212" => "Cb4", _ => "Cb2b" },
             0x00A8 => version switch { "0100" or "0101" => "Fl1", "0102" => "Fl2", "0106" => "Fl6", "0107" or "0108" => "Fl7", _ => "Fl3" },
             0x00B0 => "Me", 0x00B7 => version == "0100" ? "Af2" : "Af22", 0x00B8 => "Fi", 0x00B9 => "AFT",
             _ => "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)

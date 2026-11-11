@@ -66,20 +66,28 @@ public enum MakerNoteFormat
     Sigma
 }
 
-/// <summary>One named field inside an array-valued MakerNote tag.</summary>
+/// <summary>One named field inside an array-valued MakerNote tag, or one entry of a sub-directory.</summary>
 public sealed class MakerNoteField
 {
-    internal MakerNoteField(ushort index, string name, ExifValue value)
+    internal MakerNoteField(ushort index, string name, ExifValue value, IReadOnlyList<MakerNoteField>? fields = null)
     {
         Index = index;
         Name = name;
         Value = value;
+        Fields = fields ?? [];
     }
 
-    /// <summary>The position of the field's first element in the parent array.</summary>
+    /// <summary>The position of the field's first element in the parent array; for an entry of a
+    /// sub-directory, its tag number.</summary>
     public ushort Index { get; }
     public string Name { get; }
     public ExifValue Value { get; }
+
+    /// <summary>
+    /// The named elements of this field when it is an entry of a sub-directory and is itself an array
+    /// whose layout this release knows; empty otherwise.
+    /// </summary>
+    public IReadOnlyList<MakerNoteField> Fields { get; }
 }
 
 /// <summary>One tag of a decoded MakerNote directory.</summary>
