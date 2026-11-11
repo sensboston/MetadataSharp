@@ -13,7 +13,8 @@ namespace MetadataSharp.Formats.Bmff;
 /// </summary>
 public sealed class BmffMetadata
 {
-    private BmffMetadata(string majorBrand, ExifMetadata? exif, XmpPacket? xmp)
+    // Internal rather than private: the box walk that produces the parts is a separate type.
+    internal BmffMetadata(string majorBrand, ExifMetadata? exif, XmpPacket? xmp)
     {
         MajorBrand = majorBrand;
         Exif = exif;
