@@ -33,5 +33,7 @@ dotnet build tools/MetadataSharp.Dump -c Release -f net10.0
 dotnet run --project tools/MetadataSharp.Dump -c Release -f net10.0 --no-build -- FILE...
 ```
 
-Each file prints `FILE`, `TAG <key> <type> <count> <value>` and `STATUS ok|refused|not-attempted|error`
-records (tab-separated). `tools/parity/run_parity.py` compares such dumps with exiv2 references.
+Each file prints `FILE`, `TAG <key> <type> <count> <value> [<interpreted>]` and
+`STATUS ok|refused|not-attempted|error` records (tab-separated). The sixth field is `ExifTags.Interpret`
+for standard EXIF tags. `tools/parity/run_parity.py` compares such dumps with exiv2 references and
+reports the interpreted column apart from the raw one.

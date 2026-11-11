@@ -11,6 +11,11 @@ may itself contain runs of spaces - is set off by two. Two shapes carry no raw v
 line printed with the filename column, where the column after the count holds a decoded label, and a
 line for an entry whose type identifier is invalid, where the type itself is printed as a hex number
 and nothing follows the count.
+
+The value is in fact two columns, which is what the ``v`` and the ``t`` of ``-Pkycvt`` ask for: the
+raw value, two spaces, and the interpreted ("translated") value - ``72/1  72``, ``2  inch``,
+``1/250  1/250 s``. The raw comparison has always treated the pair as one string and keeps doing so;
+:func:`split_columns` separates them for the comparison of interpreted values, which is made apart.
 """
 
 from __future__ import annotations
@@ -31,6 +36,30 @@ TAG_LINE = re.compile(
 )
 #: A line that starts with a key, which is what distinguishes a tag line from prose that mentions one.
 KEY_PREFIX = re.compile(r"^" + KEY + r"(?: {2,}|$)")
+
+
+#: What separates the raw column from the interpreted one, and what a value may also contain.
+COLUMN_GAP = re.compile(r" {2,}")
+
+
+def split_columns(value: str) -> tuple[str, str] | None:
+    """``(raw, interpreted)`` of a printed value, or ``None`` when the two cannot be told apart.
+
+    One gap is the ordinary case. No gap means a column is empty - a count of zero, a blank string -
+    and which one is not knowable from the line. Several gaps mean the value itself contains runs of
+    spaces; that is still unambiguous when the text is simply printed twice, which is what the tool
+    does for a string it does not translate, and it is given up on otherwise rather than guessed.
+    """
+    gaps = [(match.start(), match.end()) for match in COLUMN_GAP.finditer(value)]
+    if not gaps:
+        return None
+    if len(gaps) == 1:
+        start, end = gaps[0]
+        return value[:start], value[end:]
+    for start, end in gaps:
+        if value[:start].strip() == value[end:].strip():
+            return value[:start], value[end:]
+    return None
 
 
 def is_key(token: str) -> bool:
@@ -60,6 +89,10 @@ def split_tag_line(line: str) -> tuple[str, str, int, str, bool] | None:
 def parse_reference(text: str) -> tuple[dict[str, dict], list[str]]:
     """Split a reference file into ``{key: {"type", "count", "value", "labelled"}}`` and its notes.
 
+    Each entry also carries ``raw`` and ``interpreted``, the two columns of ``value`` where they can
+    be separated and ``None`` where they cannot or where the row has no raw value at all. ``value``
+    itself is left exactly as printed, because that is what the raw comparison reads.
+
     Notes are kept rather than dropped: they are how exiv2 reported a refusal or a warning, and the
     report has to distinguish "exiv2 refused the file" from "we disagree about a value". A key the
     reference prints twice - a second frame, a second IFD - keeps its first row and counts the rest
@@ -80,7 +113,9 @@ def parse_reference(text: str) -> tuple[dict[str, dict], list[str]]:
         if key in tags:
             tags[key]["repeats"] += 1
             continue
-        tags[key] = {"type": type_name, "count": count, "value": value, "labelled": labelled, "repeats": 0}
+        columns = None if labelled else split_columns(value)
+        tags[key] = {"type": type_name, "count": count, "value": value, "labelled": labelled, "repeats": 0,
+                     "raw": columns[0] if columns else None, "interpreted": columns[1] if columns else None}
     return tags, notes
 
 

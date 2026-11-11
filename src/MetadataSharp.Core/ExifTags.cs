@@ -78,7 +78,7 @@ public readonly record struct ExifTagValueMeaning(ushort Number, string Meaning)
 /// vocabulary, so an unnamed tag keeps its numeric ID; a MakerNote subtag is never renamed by a name that
 /// belongs to a different directory.
 /// </remarks>
-public static class ExifTags
+public static partial class ExifTags
 {
 
     // Fields of the Ifd0 and Thumbnail directories.

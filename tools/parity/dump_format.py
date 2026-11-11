@@ -3,8 +3,13 @@
 The grammar is one record per line, tab-separated fields, LF endings:
 
     FILE\t<path>
-    TAG\t<key>\t<type>\t<count>\t<value>
+    TAG\t<key>\t<type>\t<count>\t<value>[\t<interpreted>]
     STATUS\tok|refused|not-attempted|error\t<detail>
+
+The sixth ``TAG`` field is optional. A record that carries it offers an interpreted (human-readable)
+value for the tag, empty when the library has none; a record without it offers no interpretation at
+all. The field never takes part in the comparison of raw values: it is kept beside the
+``(type, count, value)`` tuple, not in it.
 
 This module is the harness's contract with the C# tool: it is deliberately strict, because a
 silently truncated or mis-split block would otherwise be reported as a parity gap in the library
@@ -80,7 +85,8 @@ def parse_dump(text: str, *, source: str = "dump") -> dict[str, dict]:
     """Return ``{path: {"status": str, "detail": str, "tags": {key: (type, count, value)}}}``.
 
     Every ``FILE`` record must be followed by exactly one ``STATUS`` record and ``TAG`` records in
-    between; anything else raises :class:`DumpFormatError`.
+    between; anything else raises :class:`DumpFormatError`. A block also has ``interpreted``, which
+    maps a key to its sixth field for exactly the records that carried one.
     """
     files: dict[str, dict] = {}
     current: dict | None = None
@@ -98,14 +104,15 @@ def parse_dump(text: str, *, source: str = "dump") -> dict[str, dict]:
                 raise DumpFormatError(f"{source}:{lineno}: FILE record without a path")
             if current is not None:
                 raise DumpFormatError(f"{source}:{lineno}: FILE record before the previous one was closed")
-            current = {"status": None, "detail": "", "tags": {}, "order": [], "duplicates": 0}
+            current = {"status": None, "detail": "", "tags": {}, "order": [], "duplicates": 0, "interpreted": {}}
             files[unescape(fields[1])] = current
             continue
         if current is None:
             raise DumpFormatError(f"{source}:{lineno}: {kind} record outside any FILE block")
         if kind == "TAG":
-            if len(fields) != 5:
-                raise DumpFormatError(f"{source}:{lineno}: TAG record must have 5 fields, got {len(fields)}")
+            if len(fields) not in (5, 6):
+                raise DumpFormatError(f"{source}:{lineno}: TAG record must have 5 fields, or 6 with an "
+                                      f"interpreted value, got {len(fields)}")
             key = unescape(fields[1])
             try:
                 count = int(fields[3])
@@ -119,6 +126,8 @@ def parse_dump(text: str, *, source: str = "dump") -> dict[str, dict]:
                 continue
             current["tags"][key] = (unescape(fields[2]), count, unescape(fields[4]))
             current["order"].append(key)
+            if len(fields) == 6:
+                current["interpreted"][key] = unescape(fields[5])
             continue
         if kind == "STATUS":
             if current["status"] is not None:

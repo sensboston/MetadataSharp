@@ -19,8 +19,12 @@ using MetadataSharp.Formats.WebP;
 //
 // Grammar - one record per line, tab-separated fields, LF endings, UTF-8 without BOM:
 //   FILE    <path, escaped like a value>
-//   TAG     <key>  <type>  <count>  <value>
+//   TAG     <key>  <type>  <count>  <value>  [<interpreted>]
 //   STATUS  ok | refused | not-attempted | error  <detail>
+// The sixth TAG field is optional and is written for the standard EXIF directories only: it is what
+// ExifTags.Interpret makes of the value, and it is empty where that is null. A record without the
+// field says no interpretation is offered for the tag at all, which is the case for MakerNote, IPTC
+// and XMP records.
 // A file whose reader refused or was not attempted simply carries no TAG records. A TIFF or PSD
 // that was read, with its IPTC stream or XMP packet refused, is ok with the detail
 // iptc-refused:<code>, xmp-refused:<code>, or both separated by a comma.
@@ -215,7 +219,8 @@ internal static class Program
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
             Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
-                TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
+                TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value),
+                ExifTags.Interpret(entry.Key, entry.Value));
         if (metadata.MakerNote is MakerNote makerNote)
         {
             string group = makerNote.Format switch { MakerNoteFormat.Canon => "Canon", _ => makerNote.Format.ToString() };
@@ -551,6 +556,10 @@ internal static class Program
 
     private static void Tag(StreamWriter stdout, string key, string type, uint count, string value) =>
         Record(stdout, "TAG", key, type, count.ToString(CultureInfo.InvariantCulture), value);
+
+    /// <summary>A TAG record with the interpreted value as its sixth field, empty when there is none.</summary>
+    private static void Tag(StreamWriter stdout, string key, string type, uint count, string value, string? interpreted) =>
+        Record(stdout, "TAG", key, type, count.ToString(CultureInfo.InvariantCulture), value, Escape(interpreted ?? string.Empty));
 
     private static void Done(StreamWriter stdout) => Record(stdout, "STATUS", "ok");
 
