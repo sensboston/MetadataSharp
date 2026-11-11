@@ -201,6 +201,9 @@ def text_report(report: dict[str, Any], problems: list[str]) -> str:
         *gap_table(report["gaps"]["extra_keys"], 8),
         "",
     ]
+    if report["files"]["partial"]:
+        lines.append("files read with one kind of metadata refused:")
+        lines.extend(f"  {name}: {count}" for name, count in sorted(report["files"]["partial"].items(), key=lambda pair: -pair[1]))
     if report["files"]["refusals"]:
         lines.append("our refusals, by status and code:")
         lines.extend(f"  {name}: {count}" for name, count in sorted(report["files"]["refusals"].items(), key=lambda pair: -pair[1]))
@@ -248,6 +251,8 @@ def summary(report: dict[str, Any], problems: list[str]) -> dict[str, Any]:
         "advisory": report["advisory"],
         "by_format": report["by_format"],
         "by_kind": by_kind(report["by_family"]),
+        # Per format for the two small kinds; EXIF per format is by_format less these.
+        "by_kind_format": {name: formats for name, formats in report["by_kind_format"].items() if name != "Exif"},
         "missing_top": report["gaps"]["missing_keys"][:30],
         "unread_top": report["gaps"]["unread_keys"][:12],
         "extra_top": report["gaps"]["extra_keys"][:12],

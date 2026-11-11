@@ -393,6 +393,27 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual(report["outcomes"][compare_mod.NOT_READ], 1)
         self.assertEqual(report["parity"]["expected_keys"], 0)
 
+    def test_a_file_read_with_one_kind_refused_is_counted_and_reported_apart(self):
+        self.sample("d.tif", "Exif.Image.Make  Ascii  6  NIKON\nIptc.Application2.Caption  String  5  hello\n"
+                    "Xmp.dc.format  XmpText  10  image/tiff\n")
+        blocks = {str(self.data / "d.tif"): [["TAG", "Exif.Image.Make", "Ascii", 6, "NIKON"],
+                                              ["TAG", "Xmp.dc.format", "XmpText", 10, "image/tiff"],
+                                              ["STATUS", "ok", "iptc-refused:InvalidIptc"]]}
+        code, _ = run_main(self.arguments(write_fake(self.root, blocks)))
+        self.assertEqual(code, 0)
+        report = self.report()
+        self.assertEqual(report["files"]["partial"], {"iptc-refused:InvalidIptc": 1})
+        self.assertEqual(report["files"]["refusals"], {})
+        self.assertEqual(report["files"]["attempted"], 1)
+        self.assertEqual(report["outcomes"], {compare_mod.MATCH_VALUE: 2, compare_mod.MISSING_KEY: 1})
+        self.assertEqual(report["by_kind_format"], {
+            "Exif": {"tiff": {compare_mod.MATCH_VALUE: 1}},
+            "Iptc": {"tiff": {compare_mod.MISSING_KEY: 1}},
+            "Xmp": {"tiff": {compare_mod.MATCH_VALUE: 1}},
+        })
+        summary = run_parity.summary(report, [])
+        self.assertEqual(sorted(summary["by_kind_format"]), ["Iptc", "Xmp"])
+
     def test_a_truncated_dump_fails_the_run_instead_of_reporting_a_gap(self):
         self.sample("d.jpg", "Exif.Image.Make  Ascii  6  NIKON\n")
         script = self.root / "truncating_dump.py"

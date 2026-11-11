@@ -21,8 +21,9 @@ using MetadataSharp.Formats.WebP;
 //   FILE    <path, escaped like a value>
 //   TAG     <key>  <type>  <count>  <value>
 //   STATUS  ok | refused | not-attempted | error  <detail>
-// A file whose reader refused or was not attempted simply carries no TAG records. A TIFF whose EXIF
-// was read and whose IPTC stream was refused is ok, with the detail iptc-refused:<code>.
+// A file whose reader refused or was not attempted simply carries no TAG records. A TIFF or PSD
+// that was read, with its IPTC stream or XMP packet refused, is ok with the detail
+// iptc-refused:<code>, xmp-refused:<code>, or both separated by a comma.
 internal static class Program
 {
     private const long MaxWholeFileBytes = 64L * 1024 * 1024;
@@ -128,18 +129,30 @@ internal static class Program
     {
         if (!WithinBudget(length, stdout)) return;
         byte[] file = File.ReadAllBytes(path);
-        Exif(TiffExif.Read(file), stdout);
-        // An IPTC stream the reader refuses does not take the EXIF of the file with it: the rows
-        // already written stand, and the refusal travels in the detail of the status.
-        IptcPacket? iptc;
+        ExifMetadata exif = TiffExif.Read(file);
+        Exif(exif, stdout);
+        // IPTC or XMP that its reader refuses does not take the EXIF of the file with it: the rows
+        // already written stand, and each refusal travels in the detail of the status.
+        var refused = new List<string>();
+        IptcPacket? iptc = null;
         try { iptc = TiffIptc.Read(file); }
-        catch (MetadataException failure)
-        {
-            Record(stdout, "STATUS", "ok", "iptc-refused:" + failure.Code);
-            return;
-        }
+        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
         if (iptc is not null) Iptc(iptc, stdout);
-        Done(stdout);
+        XmpPacket? xmp = null;
+        try { xmp = XmlPacket(exif); }
+        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
+        if (xmp is not null) Xmp(xmp, stdout);
+        Done(stdout, refused);
+    }
+
+    /// <summary>The XMP packet a TIFF-based file stores as the value of tag 700 in its primary directory.</summary>
+    private static XmpPacket? XmlPacket(ExifMetadata exif)
+    {
+        if (!exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x02BC), out ExifEntry? entry) || entry.Value.ByteLength == 0)
+            return null;
+        byte[] packet = new byte[entry.Value.ByteLength];
+        entry.Value.CopyRawTo(packet);
+        return XmpPacket.Parse(packet);
     }
 
     private static void Exv(string path, StreamWriter stdout, long length)
@@ -166,7 +179,16 @@ internal static class Program
         if (!WithinBudget(length, stdout)) return;
         PsdMetadata metadata = PsdMetadata.Read(File.ReadAllBytes(path));
         if (metadata.GetResource(0x0404) is byte[] resource && resource.Length != 0) Iptc(IptcPacket.Parse(resource), stdout);
-        Done(stdout);
+        // As for a TIFF: a packet the XMP reader refuses leaves the rows already written in place.
+        var refused = new List<string>();
+        XmpPacket? xmp = null;
+        try
+        {
+            if (metadata.GetResource(0x0424) is byte[] packet && packet.Length != 0) xmp = XmpPacket.Parse(packet);
+        }
+        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
+        if (xmp is not null) Xmp(xmp, stdout);
+        Done(stdout, refused);
     }
 
     private static void Jp2(string path, StreamWriter stdout, long length)
@@ -531,6 +553,13 @@ internal static class Program
         Record(stdout, "TAG", key, type, count.ToString(CultureInfo.InvariantCulture), value);
 
     private static void Done(StreamWriter stdout) => Record(stdout, "STATUS", "ok");
+
+    /// <summary>Ends a file that was read, naming the kinds of metadata whose reader refused them.</summary>
+    private static void Done(StreamWriter stdout, List<string> refused)
+    {
+        if (refused.Count == 0) Done(stdout);
+        else Record(stdout, "STATUS", "ok", string.Join(",", refused));
+    }
 
     private static void Record(StreamWriter stdout, params string[] fields)
     {
