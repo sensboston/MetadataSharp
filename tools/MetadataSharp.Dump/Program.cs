@@ -270,7 +270,9 @@ internal static class Program
     {
         if (!WithinBudget(length, stdout)) return;
         Cr3Metadata metadata = Cr3Metadata.Read(File.ReadAllBytes(path));
-        Exif(metadata.Exif, stdout);
+        // The note is a box of its own here, not the value of a tag: the reference prints no rows
+        // for where it starts and how it is ordered.
+        Exif(metadata.Exif, stdout, noteRows: false);
         if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
         Done(stdout);
     }
@@ -315,7 +317,7 @@ internal static class Program
         Done(stdout);
     }
 
-    private static void Exif(ExifMetadata? metadata, StreamWriter stdout)
+    private static void Exif(ExifMetadata? metadata, StreamWriter stdout, bool noteRows = true)
     {
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
@@ -327,8 +329,11 @@ internal static class Program
             string group = makerNote.Format switch { MakerNoteFormat.Canon => "Canon", _ => makerNote.Format.ToString() };
             // The reference reports where a note it recognises starts and which byte order it is read in
             // as two rows of a group of their own.
-            Tag(stdout, "Exif.MakerNote.Offset", "Long", 1, makerNote.Offset.ToString(CultureInfo.InvariantCulture));
-            Tag(stdout, "Exif.MakerNote.ByteOrder", "Ascii", 3, makerNote.ByteOrder == Endianness.BigEndian ? "MM" : "II");
+            if (noteRows)
+            {
+                Tag(stdout, "Exif.MakerNote.Offset", "Long", 1, makerNote.Offset.ToString(CultureInfo.InvariantCulture));
+                Tag(stdout, "Exif.MakerNote.ByteOrder", "Ascii", 3, makerNote.ByteOrder == Endianness.BigEndian ? "MM" : "II");
+            }
             foreach (MakerNoteEntry entry in makerNote.Entries)
             {
                 // The reference tool prints an array tag it splits as its fields only, under a
