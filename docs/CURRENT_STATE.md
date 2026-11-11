@@ -51,12 +51,17 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   `SaveExif/SaveXmp/SaveIptc`. A value that fits is written in place; what grows is appended and
   one pointer changed; no byte moves, old bytes stay. Image data and the MakerNote are never written
   to; an append is refused when image data runs to the end of the file. The output is read back and
-  refused unless only the named tags differ. Parity job (run 43079331617): `exiv2 -pa` reads the 48
+  refused unless only the named tags differ. Parity job (run 43082543288): `exiv2 -pa` reads the 84
   edited fixtures and the 27 files written from the corpus's TIFFs; the corpus has no whole RAW file.
+  Capability rows for TIFF, DNG, ARW, CR2, NEF, ORF, PEF (authored layouts) and RW2 (in place only).
+- Whole TIFF-based files: default `TiffReadOptions` (and `TiffExif.Read` without limits) allow a
+  value of 16 MiB and 64 MiB retained. The `MetadataLimits` defaults (65,527 bytes, 1 MiB) are the
+  sizes of an EXIF block in a JPEG segment and refused `ReaganLargeTiff.tiff` (ICC profile, tag
+  0x8773, 1,613,600 bytes); with the new defaults no corpus TIFF is refused for a budget.
 
 ## Next (in order)
 
-1. Write side: capability rows for the TIFF-based writer, then BMFF; MakerNote-safe rules per vendor.
+1. Write side: BMFF (HEIC/HEIF/AVIF); MakerNote-safe rules per vendor.
 2. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.
 3. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
