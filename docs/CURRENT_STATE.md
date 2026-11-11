@@ -22,7 +22,7 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   34,821; XMP 1,895 of 2,641; IPTC 68 of 319 (no IPTC API for PNG or sidecars; typed values raw).
 - Interpreted values: `ExifTags.Interpret` for standard EXIF tags (the standard's wording, rationals
   with units, GPS, Flash, versions, UserComment), the dump's sixth column, measured apart from raw
-  values. Run 42967101642: 8,371 of 11,382 EXIF texts equal the reference's; 2,782 differ in wording.
+  values. Run 42967101642: 8,371 of 11,382 EXIF texts equal the reference's; most others differ in wording.
 
 ## Next (in order)
 
