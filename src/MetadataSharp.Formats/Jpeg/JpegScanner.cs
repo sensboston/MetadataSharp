@@ -66,7 +66,9 @@ internal static class JpegScanner
                 else
                 {
                     start = input.Position;
-                    if (await input.Byte().ConfigureAwait(false) != 0xFF) throw Error(MetadataErrorCode.InvalidJpeg, "Expected a JPEG marker.", start);
+                    // Stray bytes between segments are skipped up to the next marker prefix; edits copy them verbatim.
+                    while (await input.Byte().ConfigureAwait(false) != 0xFF)
+                        start = input.Position;
                     byte code;
                     do { code = await input.Byte().ConfigureAwait(false); } while (code == 0xFF);
                     marker = code;
@@ -203,8 +205,6 @@ internal static class JpegScanner
         {
             if (start > end || end > 63 || approximating > 3)
                 throw Error(MetadataErrorCode.InvalidJpeg, "Invalid spectral or approximation parameters.", at);
-            if (components > 1 && (start != 0 || end != 63))
-                throw Error(MetadataErrorCode.InvalidJpeg, "An interleaved scan must cover every coefficient.", at);
         }
         for (int i = 0; i < components; i++)
         {
