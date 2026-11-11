@@ -108,7 +108,13 @@ internal sealed class BmffWritePlanner
         this.limits = limits;
     }
 
+    /// <summary>Plans the output in which one metadata item has new bytes.</summary>
+    /// <param name="source">The whole source file.</param>
+    /// <param name="map">The boxes and items of the source.</param>
+    /// <param name="kind">The kind of the item: Exif or XMP.</param>
     /// <param name="target">The item to replace, or null to add one of the kind.</param>
+    /// <param name="payload">The bytes of the item in the output; at least one.</param>
+    /// <param name="limits">The budgets the output must stay within.</param>
     internal static BmffWritePlan Create(byte[] source, BmffFileMap map, BmffItemKind kind, BmffItem? target,
         byte[] payload, MetadataLimits limits)
     {

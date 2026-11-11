@@ -27,6 +27,13 @@ internal static class BmffWriteVerifier
 {
     private const uint Description = 0x63647363; // 'cdsc'
 
+    /// <summary>Throws unless the output is the source with the planned edit and nothing else.</summary>
+    /// <param name="source">The whole source file.</param>
+    /// <param name="before">The boxes and items of the source.</param>
+    /// <param name="readBefore">What the reader of the library returns for the source.</param>
+    /// <param name="output">The planned output, applied in memory.</param>
+    /// <param name="plan">The plan the output was made from.</param>
+    /// <param name="limits">The budgets the output is read with.</param>
     /// <param name="tiffPlan">The plan of the EXIF block of an item that was edited, or null.</param>
     /// <param name="desired">The EXIF of an item that was added, or null.</param>
     internal static void Verify(byte[] source, BmffFileMap before, BmffMetadata readBefore, byte[] output,
