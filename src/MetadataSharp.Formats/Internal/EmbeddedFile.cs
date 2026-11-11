@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using MetadataSharp.Core;
+using MetadataSharp.Formats.Png;
 using MetadataSharp.Formats.Tiff;
 
 namespace MetadataSharp.Formats.Internal;
@@ -98,5 +99,62 @@ internal static class EmbeddedFile
             return true;
         }
         return false;
+    }
+
+    /// <summary>The PNG chunks that end a walk for what must come before them: the image data and the end.</summary>
+    internal const uint PngImageData = 0x49444154, PngEnd = 0x49454E44;
+
+    /// <summary>
+    /// Step to the next PNG chunk from <paramref name="at"/>, which is left behind its checksum.
+    /// False where fewer than the twelve bytes of an empty chunk remain or the length leaves the file.
+    /// </summary>
+    /// <param name="data">The file.</param>
+    /// <param name="at">Where the step starts; after a true result, the end of the chunk.</param>
+    /// <param name="type">The four letters of the chunk, as a big-endian number.</param>
+    /// <param name="payload">The first byte of the data.</param>
+    /// <param name="length">The number of bytes of data.</param>
+    internal static bool Chunk(ReadOnlySpan<byte> data, ref int at, out uint type, out int payload, out int length)
+    {
+        type = 0;
+        payload = 0;
+        length = 0;
+        if (at < 8 || data.Length - at < 12) return false;
+        uint size = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at, 4));
+        if (size > (uint)(data.Length - at - 12)) return false;
+        type = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at + 4, 4));
+        payload = at + 8;
+        length = (int)size;
+        at = payload + length + 4;
+        return true;
+    }
+
+    /// <summary>Whether the checksum after a PNG chunk is the one of its type and data.</summary>
+    internal static bool ChecksumHolds(ReadOnlySpan<byte> data, int payload, int length) =>
+        ~Crc.Update(uint.MaxValue, data.Slice(payload - 4, length + 4)) ==
+        BinaryPrimitives.ReadUInt32BigEndian(data.Slice(payload + length, 4));
+
+    /// <summary>
+    /// Step to the next chunk of a RIFF file from <paramref name="at"/>, which is left behind the
+    /// chunk and its padding byte. False where no chunk header remains or the length leaves the file.
+    /// </summary>
+    /// <param name="data">The file.</param>
+    /// <param name="at">Where the step starts; after a true result, the end of the chunk.</param>
+    /// <param name="type">The four characters of the chunk, as a big-endian number.</param>
+    /// <param name="payload">The first byte of the data.</param>
+    /// <param name="length">The number of bytes of data.</param>
+    internal static bool RiffChunk(ReadOnlySpan<byte> data, ref int at, out uint type, out int payload, out int length)
+    {
+        type = 0;
+        payload = 0;
+        length = 0;
+        if (at < 12 || data.Length - at < 8) return false;
+        uint size = BinaryPrimitives.ReadUInt32LittleEndian(data.Slice(at + 4, 4));
+        if (size > (uint)(data.Length - at - 8)) return false;
+        type = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at, 4));
+        payload = at + 8;
+        length = (int)size;
+        long next = (long)payload + length + (length & 1);
+        at = next > data.Length ? data.Length : (int)next;
+        return true;
     }
 }
