@@ -171,7 +171,10 @@ jobs:
             sudo apt-get $APT_OPTS update &&
               sudo apt-get $APT_OPTS install -y exiv2 libimage-exiftool-perl webp && break
             [ "$attempt" = 3 ] && exit 1
-            sleep 30
+            # The runner's Azure mirror has failed DNS for hours at a time; fall back to the main archive.
+            echo 'http://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+            sudo sed -i 's|mirror+file:/etc/apt/apt-mirrors.txt|http://archive.ubuntu.com/ubuntu/|' /etc/apt/sources.list.d/ubuntu.sources || true
+            sleep 10
           done
           mkdir -p artifacts/reference
           dpkg-query -W exiv2 libimage-exiftool-perl webp > artifacts/reference/packages.txt
@@ -291,7 +294,10 @@ jobs:
             sudo apt-get $APT_OPTS update &&
               sudo apt-get $APT_OPTS install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev && break
             [ "$attempt" = 3 ] && exit 1
-            sleep 30
+            # The runner's Azure mirror has failed DNS for hours at a time; fall back to the main archive.
+            echo 'http://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+            sudo sed -i 's|mirror+file:/etc/apt/apt-mirrors.txt|http://archive.ubuntu.com/ubuntu/|' /etc/apt/sources.list.d/ubuntu.sources || true
+            sleep 10
           done
       - name: Configure external black-box build with explicit policy
         if: steps.exiv2-cache.outputs.cache-hit != 'true'
