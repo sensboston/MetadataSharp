@@ -17,6 +17,11 @@ internal sealed class BmffFixture
     internal const int MakeAt = 80, MakeLength = 12, DateAt = 92, DateLength = 20, NoteAt = 112, NoteLength = 16;
     /// <summary>The length of the EXIF block, and the offset of its Exif directory.</summary>
     internal const int TiffLength = 128, ExifDirectoryAt = 50;
+    /// <summary>
+    /// The MakerNote of the layout whose EXIF item is longer than a JPEG APP1 segment can hold
+    /// (65,527 bytes of TIFF): the note alone is more than that.
+    /// </summary>
+    internal const int LargeNoteLength = 70_000;
 
     /// <summary>One item of a file to build.</summary>
     internal sealed record Item(uint Id, string Type, byte[] Data)
@@ -81,10 +86,10 @@ internal sealed class BmffFixture
     internal int Tiff => Positions[ExifId][0].Start + Plan.ExifPrefix;
 
     internal static readonly string[] Names =
-        ["heic", "heic-last", "avif", "avif-idat", "heif-wide", "heic-extents", "heic-bare", "heic-bare-last"];
+        ["heic", "heic-last", "avif", "avif-idat", "heif-wide", "heic-extents", "heic-large", "heic-bare", "heic-bare-last"];
 
     /// <summary>The layouts that have an EXIF and an XMP item.</summary>
-    internal static readonly string[] WithMetadata = ["heic", "heic-last", "avif", "avif-idat", "heif-wide", "heic-extents"];
+    internal static readonly string[] WithMetadata = ["heic", "heic-last", "avif", "avif-idat", "heif-wide", "heic-extents", "heic-large"];
 
     /// <summary>The layouts that have an image and nothing else.</summary>
     internal static readonly string[] Bare = ["heic-bare", "heic-bare-last"];
@@ -96,6 +101,7 @@ internal sealed class BmffFixture
     {
         var layout = new Layout();
         bool metadata = true, idat = false;
+        int note = NoteLength;
         string image = "hvc1";
         switch (name)
         {
@@ -137,6 +143,11 @@ internal sealed class BmffFixture
                 break;
             case "heic-extents":
                 break;
+            case "heic-large":
+                // The usual shape, with an EXIF item no JPEG segment could hold.
+                layout.ToolReads = true;
+                note = LargeNoteLength;
+                break;
             case "heic-bare":
                 layout.ToolReads = true;
                 metadata = false;
@@ -153,7 +164,7 @@ internal sealed class BmffFixture
         layout.Items.Add(new Item(ImageId, image, Pattern(384, 7)));
         if (metadata)
         {
-            layout.Items.Add(new Item(ExifId, "Exif", ExifItem(big, layout.ExifPrefix))
+            layout.Items.Add(new Item(ExifId, "Exif", ExifItem(big, layout.ExifPrefix, note))
             {
                 InIdat = idat, Hidden = true, Cut = name == "heic-extents" ? 40 : 0
             });
@@ -289,11 +300,12 @@ internal sealed class BmffFixture
     /// <summary>
     /// The EXIF item: the offset of the TIFF header, then the TIFF. IFD0 at 8 (Make at 80,
     /// Orientation, ExifIFD) and an Exif IFD at 50 (DateTimeOriginal at 92, a MakerNote of sixteen
-    /// bytes at 112); 128 bytes in all, with no byte between its parts.
+    /// bytes at 112); 128 bytes in all, with no byte between its parts. A longer MakerNote makes
+    /// the block longer and changes nothing else.
     /// </summary>
-    internal static byte[] ExifItem(bool big, int prefix = 4)
+    internal static byte[] ExifItem(bool big, int prefix = 4, int note = NoteLength)
     {
-        byte[] tiff = new byte[TiffLength];
+        byte[] tiff = new byte[TiffLength - NoteLength + note];
         void Put16(int at, int value)
         {
             if (big) BinaryPrimitives.WriteUInt16BigEndian(tiff.AsSpan(at), (ushort)value);
@@ -321,10 +333,10 @@ internal sealed class BmffFixture
         Field(34, 0x8769, 4, 1, ExifDirectoryAt);
         Put16(ExifDirectoryAt, 2);
         Field(ExifDirectoryAt + 2, 0x9003, 2, DateLength, DateAt);
-        Field(ExifDirectoryAt + 14, 0x927C, 7, NoteLength, NoteAt);
+        Field(ExifDirectoryAt + 14, 0x927C, 7, note, NoteAt);
         Ascii("TestCompany\0").CopyTo(tiff, MakeAt);
         Ascii("2020:01:02 03:04:05\0").CopyTo(tiff, DateAt);
-        for (int i = 0; i < NoteLength; i++) tiff[NoteAt + i] = (byte)(0xA0 + i);
+        for (int i = 0; i < note; i++) tiff[NoteAt + i] = (byte)(0xA0 + i);
         return prefix == 4
             ? Concat(U32(0), tiff)
             : Concat(U32(6), Ascii("Exif"), new byte[] { 0, 0 }, tiff);

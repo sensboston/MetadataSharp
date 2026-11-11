@@ -151,6 +151,41 @@ public sealed class ExifLayoutPlannerTests
             Snapshot(Scalar(ExifDirectoryKind.Ifd0, 0x8769, 20))));
     }
 
+    [Fact]
+    public void TheCeilingIsTheContainersAndTheBudgetsBoundALayoutWithoutOne()
+    {
+        // A text a JPEG segment cannot hold. The default ceiling is that segment; a container that
+        // has none of its own passes none, and the plan is written and read back whole.
+        ExifEntry text = new(new(ExifDirectoryKind.Ifd0, 0x010E),
+            ExifValue.FromRaw(TiffFieldType.Ascii, 70_000, Endianness.LittleEndian, new byte[70_000]));
+        ExifMetadata metadata = Snapshot(text);
+        var limits = new MetadataLimits { MaxValueBytes = 70_000 };
+        Assert.Equal(MetadataErrorCode.ExifTooLarge,
+            Assert.Throws<MetadataException>(() => ExifLayoutPlanner.Create(null, metadata, limits)).Code);
+
+        ExifWritePlan plan = ExifLayoutPlanner.Create(null, metadata, limits, ExifTiffReader.NoCeiling);
+        Assert.Equal(8 + 18 + 70_000, plan.Length);
+        Assert.Equal(ExifTiffReader.NoCeiling, plan.Ceiling);
+        byte[] block = new byte[plan.Length];
+        ExifTiffSerializer.Write(plan, block);
+        ExifMetadata read = ExifTiffReader.Inspect(block, limits, 0, ExifTiffReader.NoCeiling);
+        Assert.True(read.TryGetEntry(text.Key, out ExifEntry? same));
+        Assert.Equal(70_000, same.Value.ByteLength);
+
+        // The same plan under the ceiling of a segment is not one the serializer writes.
+        var capped = new ExifWritePlan(plan.ByteOrder, plan.Length, plan.Directories, plan.ThumbnailOffset, plan.Thumbnail);
+        Assert.Equal(ExifTiffReader.SegmentCeiling, capped.Ceiling);
+        Assert.Equal(MetadataErrorCode.InvalidExif,
+            Assert.Throws<MetadataException>(() => ExifTiffSerializer.Write(capped, new byte[capped.Length])).Code);
+
+        // Without a ceiling the budgets are the bound: the value budget, then the retained one.
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(
+            () => ExifLayoutPlanner.Create(null, metadata, new MetadataLimits(), ExifTiffReader.NoCeiling)).Code);
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(
+            () => ExifLayoutPlanner.Create(null, metadata, new MetadataLimits { MaxValueBytes = 70_000, MaxRetainedMetadataBytes = 100_000 }, ExifTiffReader.NoCeiling)).Code);
+        Assert.Throws<ArgumentOutOfRangeException>(() => ExifLayoutPlanner.Create(null, metadata, limits, 13));
+    }
+
     [Theory]
     [InlineData(65501, true)]
     [InlineData(65502, false)]

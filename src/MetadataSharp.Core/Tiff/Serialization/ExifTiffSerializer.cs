@@ -45,7 +45,7 @@ internal static class ExifTiffSerializer
     private static void Validate(ExifWritePlan plan)
     {
         if (plan.ByteOrder is not Endianness.LittleEndian and not Endianness.BigEndian ||
-            plan.Length is < 14 or > 65_527 || plan.Directories.Count is < 1 or > 5)
+            plan.Length < 14 || plan.Length > plan.Ceiling || plan.Directories.Count is < 1 or > 5)
             throw Invalid("The EXIF plan header or size is invalid.");
         var offsets = new Dictionary<ExifDirectoryKind, int>();
         long cursor = 8;

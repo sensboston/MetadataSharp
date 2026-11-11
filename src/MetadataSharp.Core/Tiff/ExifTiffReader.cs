@@ -62,8 +62,18 @@ internal ref struct ExifTiffReader
         dngPrivateLength = 0;
     }
 
+    /// <summary>
+    /// The longest EXIF block a JPEG APP1 segment holds: 65,535 bytes less the two of the segment
+    /// length and the six of the identifier. It is a rule of that container, and of the containers
+    /// whose writers rebuild a block under the same profile; it is not a rule of TIFF.
+    /// </summary>
+    internal const int SegmentCeiling = 65_527;
+
+    /// <summary>For a block in a container that sets no size of its own: only the budgets bound it.</summary>
+    internal const int NoCeiling = int.MaxValue;
+
     internal static TiffReadResult Read(ReadOnlySpan<byte> tiff, MetadataLimits? limits = null,
-        long sourceBase = 0) => ReadBlock(tiff, limits, sourceBase, readOnly: false);
+        long sourceBase = 0) => ReadBlock(tiff, limits, sourceBase, readOnly: false, SegmentCeiling);
 
     /// <summary>
     /// Reads an EXIF block under the read-only rules alone. They differ from <see cref="Read"/> in three
@@ -76,7 +86,7 @@ internal ref struct ExifTiffReader
     /// reports <see cref="ExifMetadata.IsEditable"/> as false.
     /// </summary>
     internal static ExifMetadata ReadRelaxed(ReadOnlySpan<byte> tiff, MetadataLimits? limits = null,
-        long sourceBase = 0) => ReadBlock(tiff, limits, sourceBase, readOnly: true).Metadata;
+        long sourceBase = 0) => ReadBlock(tiff, limits, sourceBase, readOnly: true, SegmentCeiling).Metadata;
 
     /// <summary>
     /// Whether a refusal of the strict walk is worth a second walk under the read-only rules. Budgets,
@@ -88,23 +98,27 @@ internal ref struct ExifTiffReader
     /// <summary>
     /// Reads an EXIF block for reading only: the strict walk, and where it refuses the block, the
     /// read-only rules of <see cref="ReadRelaxed"/>. A block both walks refuse fails with the second
-    /// walk's error.
+    /// walk's error. A block longer than <paramref name="ceiling"/> is refused as too large for its
+    /// container; <see cref="NoCeiling"/> leaves its length to the budgets.
     /// </summary>
     internal static ExifMetadata Inspect(ReadOnlySpan<byte> tiff, MetadataLimits? limits = null,
-        long sourceBase = 0)
+        long sourceBase = 0, int ceiling = SegmentCeiling)
     {
-        try { return Read(tiff, limits, sourceBase).Metadata; }
-        catch (MetadataException failure) when (IsRelaxable(failure)) { return ReadRelaxed(tiff, limits, sourceBase); }
+        try { return ReadBlock(tiff, limits, sourceBase, readOnly: false, ceiling).Metadata; }
+        catch (MetadataException failure) when (IsRelaxable(failure))
+        {
+            return ReadBlock(tiff, limits, sourceBase, readOnly: true, ceiling).Metadata;
+        }
     }
 
     private static TiffReadResult ReadBlock(ReadOnlySpan<byte> tiff, MetadataLimits? limits, long sourceBase,
-        bool readOnly)
+        bool readOnly, int ceiling)
     {
         limits ??= new();
         limits.Validate();
         if (sourceBase < 0 || sourceBase > long.MaxValue - tiff.Length)
             throw new ArgumentOutOfRangeException(nameof(sourceBase));
-        if (tiff.Length > 65_527)
+        if (tiff.Length > ceiling)
             throw new MetadataException(MetadataErrorCode.ExifTooLarge, "The EXIF TIFF payload exceeds the APP1 limit.", sourceBase);
         if (tiff.Length > limits.MaxInputBytes || tiff.Length > limits.MaxRetainedMetadataBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF payload exceeds the retained metadata budget.", sourceBase);

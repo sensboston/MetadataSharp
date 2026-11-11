@@ -7,10 +7,16 @@ internal static class ExifLayoutPlanner
         [ExifDirectoryKind.Ifd0, ExifDirectoryKind.Exif, ExifDirectoryKind.Gps,
          ExifDirectoryKind.Interop, ExifDirectoryKind.Thumbnail];
 
+    /// <summary>
+    /// Lays the block out. A layout longer than <paramref name="ceiling"/> is refused as too large
+    /// for its container: by default the block has to fit a JPEG APP1 segment, and
+    /// <see cref="ExifTiffReader.NoCeiling"/> leaves its length to the budgets.
+    /// </summary>
     internal static ExifWritePlan Create(TiffReadResult? original, ExifMetadata desired,
-        MetadataLimits? limits = null)
+        MetadataLimits? limits = null, int ceiling = ExifTiffReader.SegmentCeiling)
     {
         ArgumentNullException.ThrowIfNull(desired);
+        if (ceiling < 14) throw new ArgumentOutOfRangeException(nameof(ceiling));
         limits ??= new();
         limits.Validate();
         if (original is not null && original.Metadata.ByteOrder != desired.ByteOrder)
@@ -67,7 +73,7 @@ internal static class ExifLayoutPlanner
                 throw Failure(MetadataErrorCode.LimitExceeded, "The planned entry count exceeds its budget.");
             total += group.Count;
             offsets.Add(role, cursor);
-            cursor = Advance(cursor, 2L + 12L * group.Count + 4);
+            cursor = Advance(cursor, 2L + 12L * group.Count + 4, ceiling);
         }
 
         long retained = original?.Thumbnail?.Length ?? 0;
@@ -107,7 +113,7 @@ internal static class ExifLayoutPlanner
                     {
                         cursor = (cursor + 1) & ~1;
                         at = cursor;
-                        cursor = Advance(cursor, value.ByteLength);
+                        cursor = Advance(cursor, value.ByteLength, ceiling);
                     }
                     values.Add(new(tag, value.FieldType, value.Count, value, at, null));
                 }
@@ -124,7 +130,7 @@ internal static class ExifLayoutPlanner
                 throw Failure(MetadataErrorCode.LimitExceeded, "The planned thumbnail exceeds its budget.");
             cursor = (cursor + 1) & ~1;
             thumbnailOffset = cursor;
-            cursor = Advance(cursor, thumbnail.Length);
+            cursor = Advance(cursor, thumbnail.Length, ceiling);
             retained += thumbnail.Length;
             for (int i = 0; i < planned.Count; i++)
             {
@@ -141,14 +147,16 @@ internal static class ExifLayoutPlanner
         if (retained + cursor > limits.MaxRetainedMetadataBytes)
             throw Failure(MetadataErrorCode.LimitExceeded, "The source, desired values and staged output exceed the metadata budget.");
         return new ExifWritePlan(desired.ByteOrder, cursor, planned.AsReadOnly(),
-            thumbnailOffset, thumbnail is null ? ReadOnlySpan<byte>.Empty : thumbnail.AsSpan());
+            thumbnailOffset, thumbnail is null ? ReadOnlySpan<byte>.Empty : thumbnail.AsSpan(), ceiling);
     }
 
-    private static int Advance(int start, long bytes)
+    private static int Advance(int start, long bytes, int ceiling)
     {
         long end = start + bytes;
-        if (end > 65_527)
-            throw Failure(MetadataErrorCode.ExifTooLarge, "The EXIF layout does not fit a single JPEG APP1 segment.");
+        if (end > ceiling)
+            throw Failure(MetadataErrorCode.ExifTooLarge, ceiling == ExifTiffReader.SegmentCeiling
+                ? "The EXIF layout does not fit a single JPEG APP1 segment."
+                : "The EXIF layout is longer than its container allows.");
         return (int)end; // Align only when another block follows, not after the final payload.
     }
 
