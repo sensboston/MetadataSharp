@@ -154,4 +154,46 @@ public sealed class MakerNote
 
     public bool TryGetEntry(ushort tagId, [NotNullWhen(true)] out MakerNoteEntry? entry) =>
         lookup.TryGetValue(tagId, out entry);
+
+    /// <summary>
+    /// The human-readable form of the value of one of this note's tags, or null when this release has
+    /// none for it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// An enumerated tag answers with a short label (<c>Adobe RGB</c>, <c>Lossless</c>), a counted one
+    /// with its unit (<c>5400 K</c>, <c>6000 x 4000</c>). A number an interpreted tag has no label for
+    /// answers as stored, in parentheses: <c>(9)</c> says that this release does not name the number,
+    /// not that the vendor gives it no meaning.
+    /// </para>
+    /// <para>
+    /// The vocabulary is small on purpose: Canon, Nikon (the <see cref="MakerNoteFormat.Nikon3" />
+    /// layout) and Sony, and of those the tags and numbers this project has checked against real
+    /// files. Null means there is nothing to add to the raw value: another vendor, a tag outside the
+    /// vocabulary, or a value that does not have the type and count the interpretation needs. The raw
+    /// value stays the truth; nothing is ever thrown for its content.
+    /// </para>
+    /// </remarks>
+    /// <param name="entry">A tag of this note's own directory.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry" /> is null.</exception>
+    public string? Interpret(MakerNoteEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        return MakerNotes.MakerNoteLabels.Interpret(Format, entry);
+    }
+
+    /// <summary>
+    /// The human-readable form of one field of an array-valued tag, or of one entry of the
+    /// sub-directory a pointer tag leads to; null when this release has none for it. The rules are those
+    /// of <see cref="Interpret(MakerNoteEntry)" />.
+    /// </summary>
+    /// <param name="entry">The tag the field belongs to.</param>
+    /// <param name="field">One of the tag's <see cref="MakerNoteEntry.Fields" />.</param>
+    /// <exception cref="ArgumentNullException">An argument is null.</exception>
+    public string? Interpret(MakerNoteEntry entry, MakerNoteField field)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(field);
+        return MakerNotes.MakerNoteLabels.Interpret(Format, entry, field);
+    }
 }

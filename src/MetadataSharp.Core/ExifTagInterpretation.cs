@@ -838,7 +838,7 @@ public static partial class ExifTags
         return value.Count == 1 && TryRational(value, 0, out numerator, out denominator);
     }
 
-    private static bool TryRational(ExifValue value, int index, out long numerator, out long denominator)
+    internal static bool TryRational(ExifValue value, int index, out long numerator, out long denominator)
     {
         numerator = 0;
         denominator = 0;
@@ -866,7 +866,7 @@ public static partial class ExifTags
         return false;
     }
 
-    private static bool TryInteger(ExifValue value, int index, out long number)
+    internal static bool TryInteger(ExifValue value, int index, out long number)
     {
         number = 0;
         if (index < 0 || (uint)index >= value.Count)

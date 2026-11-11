@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Text;
 
 namespace MetadataSharp.Core.Iptc;
 
@@ -63,6 +65,64 @@ public static class IptcDatasetNames
         (2, 125) or (2, 202) => IptcValueFormat.Binary,
         _ => IptcValueFormat.Text,
     };
+
+    /// <summary>
+    /// The typed form of one value of a record 1 or record 2 dataset, or null when the value has none.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A two-octet binary number answers as a decimal number (<c>4</c> for RecordVersion), a date as
+    /// <c>CCYY-MM-DD</c>, and a time as <c>HH:MM:SS±HH:MM</c>; a time written without its offset from
+    /// UTC answers with a zero offset. The digits are copied as they stand: a month 13 is not refused.
+    /// </para>
+    /// <para>
+    /// Null means there is nothing to add to the bytes: the dataset is text or binary data, or the
+    /// value is not in the form the specification gives the dataset. Text is read with
+    /// <see cref="IptcPacket.GetText" />, which knows the packet's character set, and the character
+    /// set a packet declares is <see cref="IptcPacket.CharacterSet" />. Nothing is ever thrown for the
+    /// content of a value.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="value" /> is null.</exception>
+    public static string? Interpret(IptcDatasetKey key, IptcValue value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        ReadOnlySpan<byte> bytes = value.Span;
+        switch (FormatOf(key))
+        {
+            case IptcValueFormat.UInt16:
+                return bytes.Length == 2
+                    ? ((bytes[0] << 8) | bytes[1]).ToString(CultureInfo.InvariantCulture)
+                    : null;
+            case IptcValueFormat.Date:
+                if (bytes.Length != 8 || !Digits(bytes))
+                    return null;
+                return Ascii(bytes.Slice(0, 4)) + "-" + Ascii(bytes.Slice(4, 2)) + "-" + Ascii(bytes.Slice(6, 2));
+            case IptcValueFormat.Time:
+                if (bytes.Length is not (6 or 11) || !Digits(bytes.Slice(0, 6)))
+                    return null;
+                string time = Ascii(bytes.Slice(0, 2)) + ":" + Ascii(bytes.Slice(2, 2)) + ":" + Ascii(bytes.Slice(4, 2));
+                if (bytes.Length == 6)
+                    return time + "+00:00";
+                if ((bytes[6] != (byte)'+' && bytes[6] != (byte)'-') || !Digits(bytes.Slice(7, 4)))
+                    return null;
+                return time + (char)bytes[6] + Ascii(bytes.Slice(7, 2)) + ":" + Ascii(bytes.Slice(9, 2));
+            default:
+                return null;
+        }
+    }
+
+    private static bool Digits(ReadOnlySpan<byte> bytes)
+    {
+        foreach (byte b in bytes)
+        {
+            if (b < (byte)'0' || b > (byte)'9')
+                return false;
+        }
+        return true;
+    }
+
+    private static string Ascii(ReadOnlySpan<byte> bytes) => Encoding.ASCII.GetString(bytes);
 
     /// <summary>
     /// Looks up the name of a record 1 or record 2 dataset. Returns false, with a null name, for a
