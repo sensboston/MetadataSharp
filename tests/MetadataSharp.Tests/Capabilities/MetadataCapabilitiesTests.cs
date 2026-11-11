@@ -76,6 +76,14 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Arw, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; bounded restricted XMP profile."),
         (MetadataContainer.Arw, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Arw, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Avif, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; an item built from other items or stored in another file, or a block over 65,527 bytes, is refused."),
+        (MetadataContainer.Avif, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset; a file without an Exif item gains one that describes the primary item. New data is appended in a media data box of its own and no item data moves; refused when the file cannot be appended to."),
+        (MetadataContainer.Avif, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset; written in place when the item keeps its length, appended in a new media data box otherwise. The MakerNote keeps its offset in the item; no other item moves."),
+        (MetadataContainer.Avif, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-tag removal within the approved subset, the directory rewritten in place; removal of the whole Exif item is refused."),
+        (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "The application/rdf+xml item of the top-level meta box; bounded restricted XMP profile; raw bytes retained for unmodeled constructs."),
+        (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "A file without an XMP item gains one (mime, application/rdf+xml) that describes the primary item, appended in a media data box of its own; bounded restricted XMP profile."),
+        (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "The packet of the XMP item: in place when it keeps its length, appended in a new media data box otherwise; bounded restricted XMP profile; a packet outside it is refused."),
+        (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
         (MetadataContainer.Cr2, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Cr2, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); new data is appended, image data and the MakerNote keep their offsets; refused when the file cannot be appended to. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Cr2, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); written in place when the value fits, appended otherwise; image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -88,6 +96,22 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; bounded restricted XMP profile."),
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; an item built from other items or stored in another file, or a block over 65,527 bytes, is refused."),
+        (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset; a file without an Exif item gains one that describes the primary item. New data is appended in a media data box of its own and no item data moves; refused when the file cannot be appended to."),
+        (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset; written in place when the item keeps its length, appended in a new media data box otherwise. The MakerNote keeps its offset in the item; no other item moves."),
+        (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-tag removal within the approved subset, the directory rewritten in place; removal of the whole Exif item is refused."),
+        (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "The application/rdf+xml item of the top-level meta box; bounded restricted XMP profile; raw bytes retained for unmodeled constructs."),
+        (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "A file without an XMP item gains one (mime, application/rdf+xml) that describes the primary item, appended in a media data box of its own; bounded restricted XMP profile."),
+        (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "The packet of the XMP item: in place when it keeps its length, appended in a new media data box otherwise; bounded restricted XMP profile; a packet outside it is refused."),
+        (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
+        (MetadataContainer.Heif, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; an item built from other items or stored in another file, or a block over 65,527 bytes, is refused."),
+        (MetadataContainer.Heif, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset; a file without an Exif item gains one that describes the primary item. New data is appended in a media data box of its own and no item data moves; refused when the file cannot be appended to."),
+        (MetadataContainer.Heif, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset; written in place when the item keeps its length, appended in a new media data box otherwise. The MakerNote keeps its offset in the item; no other item moves."),
+        (MetadataContainer.Heif, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-tag removal within the approved subset, the directory rewritten in place; removal of the whole Exif item is refused."),
+        (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "The application/rdf+xml item of the top-level meta box; bounded restricted XMP profile; raw bytes retained for unmodeled constructs."),
+        (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "A file without an XMP item gains one (mime, application/rdf+xml) that describes the primary item, appended in a media data box of its own; bounded restricted XMP profile."),
+        (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "The packet of the XMP item: in place when it keeps its length, appended in a new media data box otherwise; bounded restricted XMP profile; a packet outside it is refused."),
+        (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); new data is appended, image data and the MakerNote keep their offsets; refused when the file cannot be appended to. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); written in place when the value fits, appended otherwise; image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -200,7 +224,9 @@ public sealed class MetadataCapabilitiesTests
     [InlineData(MetadataContainer.Sr2, MetadataFamily.Exif, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Srw, MetadataFamily.Exif, MetadataOperation.Read)]
     [InlineData(MetadataContainer.XmpSidecar, MetadataFamily.Exif, MetadataOperation.Read)]
-    [InlineData(MetadataContainer.Avif, MetadataFamily.Exif, MetadataOperation.Read)]
+    [InlineData(MetadataContainer.Avif, MetadataFamily.IptcIim, MetadataOperation.Read)]
+    [InlineData(MetadataContainer.Heic, MetadataFamily.Preview, MetadataOperation.Extract)]
+    [InlineData(MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Read)]
     public void TryGet_AbsentRow_FailsClosed(MetadataContainer container, MetadataFamily family, MetadataOperation operation)
     {
@@ -238,6 +264,26 @@ public sealed class MetadataCapabilitiesTests
         Assert.Equal(3, MetadataCapabilities.All.Count(row => row.Container == MetadataContainer.Rw2));
         Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Replace));
         Assert.Equal(CapabilityStatus.NotSupported, MetadataCapabilities.GetStatus(MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Insert));
+    }
+
+    [Fact]
+    public void TheBmffWriterHasTheSameRowsForEveryBrandItsLayoutTestsCover()
+    {
+        // BmffWriteTests runs on a layout of each of these brands. No row says an item is removed.
+        foreach (MetadataContainer container in new[] { MetadataContainer.Avif, MetadataContainer.Heic, MetadataContainer.Heif })
+        {
+            Assert.Equal(8, MetadataCapabilities.All.Count(row => row.Container == container));
+            Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(container, MetadataFamily.Exif, MetadataOperation.Read));
+            Assert.Equal(CapabilityStatus.Supported, MetadataCapabilities.GetStatus(container, MetadataFamily.Xmp, MetadataOperation.Read));
+            foreach (MetadataFamily family in new[] { MetadataFamily.Exif, MetadataFamily.Xmp })
+                foreach (MetadataOperation write in new[] { MetadataOperation.Insert, MetadataOperation.Replace, MetadataOperation.Remove })
+                {
+                    Assert.True(MetadataCapabilities.TryGet(container, family, write, out CapabilityDescriptor row));
+                    Assert.Equal(CapabilityStatus.Partial, row.Status);
+                    Assert.Equal(write == MetadataOperation.Remove, row.Note!.Contains("removal of the whole"));
+                }
+            Assert.Equal(CapabilityStatus.NotSupported, MetadataCapabilities.GetStatus(container, MetadataFamily.IptcIim, MetadataOperation.Read));
+        }
     }
 
     [Fact]

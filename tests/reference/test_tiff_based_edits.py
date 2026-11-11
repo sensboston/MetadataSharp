@@ -111,6 +111,21 @@ class CheckTests(unittest.TestCase):
         problems, checked, skipped = self.run_check({"a.tif": (0, SOURCE, ""), "a-edit.tif": (1, "", "damaged")}, True)
         self.assertEqual((1, 1, 0), (len(problems), checked, skipped))
 
+    def test_a_row_without_a_source_needs_only_the_edited_file_to_read_and_print_what_was_added(self):
+        def run_check(outputs):
+            with tempfile.TemporaryDirectory() as directory:
+                (Path(directory) / "manifest.tsv").write_text("-\tnew.heic\t\tXmp.xmp.CreatorTool|MetadataSharp\n", encoding="utf-8")
+                return t.check(directory, ["tool"], lambda command, path: outputs[path.name])
+
+        added = "Xmp.xmp.CreatorTool  XmpText  13  MetadataSharp\n"
+        # The tool is never asked for a file named "-": the runner knows only the edited one.
+        self.assertEqual(([], 1, 0), run_check({"new.heic": (0, added, "")}))
+        problems, _, _ = run_check({"new.heic": (253, "", "No Exif data found in the file")})
+        self.assertIn("not read (exit 253)", problems[0][1])
+        problems, _, _ = run_check({"new.heic": (0, "Exif.Image.Make  Ascii  2  x\n", "")})
+        self.assertEqual(["expected text is not printed: Xmp.xmp.CreatorTool", "expected text is not printed: MetadataSharp"],
+                         [message for _, message in problems])
+
     def test_main_reports_the_outcome_through_its_exit_code(self):
         with tempfile.TemporaryDirectory() as directory:
             (Path(directory) / "manifest.tsv").write_text("a.tif\tb.tif\t\t\n", encoding="utf-8")

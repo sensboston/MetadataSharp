@@ -9,7 +9,7 @@ namespace MetadataSharp.Formats.Bmff;
 /// <summary>
 /// Read-only ISO BMFF (HEIC, HEIF, AVIF) metadata: the major brand of the file type box and the
 /// EXIF and XMP items the top-level <c>meta</c> box declares. Image items are never decoded and
-/// nothing is written.
+/// nothing is written; <see cref="BmffMetadataDocument"/> edits the two items.
 /// </summary>
 public sealed class BmffMetadata
 {
@@ -61,6 +61,7 @@ internal ref struct BmffReader
 
     private readonly ReadOnlySpan<byte> data;
     private readonly MetadataLimits limits;
+    private readonly XmpReadOptions? xmpOptions;
     private readonly List<Item> items;
     private readonly List<Location> locations;
     private int boxes;
@@ -75,10 +76,11 @@ internal ref struct BmffReader
     private bool hasLocations;
     private bool hasIdat;
 
-    private BmffReader(ReadOnlySpan<byte> data, MetadataLimits limits)
+    private BmffReader(ReadOnlySpan<byte> data, MetadataLimits limits, XmpReadOptions? xmpOptions)
     {
         this.data = data;
         this.limits = limits;
+        this.xmpOptions = xmpOptions;
         items = [];
         locations = [];
         boxes = 0;
@@ -94,13 +96,13 @@ internal ref struct BmffReader
         hasIdat = false;
     }
 
-    internal static BmffMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits)
+    internal static BmffMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, XmpReadOptions? xmpOptions = null)
     {
         limits ??= new MetadataLimits();
         limits.Validate();
         if (data.Length > limits.MaxInputBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The BMFF file exceeds the input budget.", 0);
-        return new BmffReader(data, limits).Parse();
+        return new BmffReader(data, limits, xmpOptions).Parse();
     }
 
     private BmffMetadata Parse()
@@ -386,7 +388,7 @@ internal ref struct BmffReader
             found = true;
             id = item.Id;
         }
-        return found ? XmpPacket.Parse(Bytes(id, out _)) : null;
+        return found ? XmpPacket.Parse(Bytes(id, out _), xmpOptions) : null;
     }
 
     /// <summary>The item data, its extents concatenated in order and every one of them bounds-checked.</summary>

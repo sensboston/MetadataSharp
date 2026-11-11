@@ -331,6 +331,21 @@ jobs:
           dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-corpus
           python tools/reference/tiff_based_edits.py artifacts/parity/edited-corpus --skip-unreadable-sources \
             --title "TIFF-based corpus edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+      # The same rule for the BMFF writer: authored HEIC and AVIF files in the layouts whose item
+      # location box the pinned tool reads, after each kind of edit; then the HEIC, HEIF and AVIF
+      # files of the pinned corpus, where a refusal of the writer is counted by its code.
+      - name: Files edited by the BMFF writer still read in the pinned tool (exiv2 -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- bmff-edits artifacts/parity/edited-bmff
+          python tools/reference/tiff_based_edits.py artifacts/parity/edited-bmff \
+            --title "BMFF edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+      - name: Corpus files edited by the BMFF writer still read in the pinned tool (exiv2 -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- bmff-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-bmff-corpus
+          python tools/reference/tiff_based_edits.py artifacts/parity/edited-bmff-corpus --skip-unreadable-sources \
+            --title "BMFF corpus edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
       - name: Upload parity reports (measurements only - no corpus bytes, no external source)
         if: always()
         uses: actions/upload-artifact@v4
