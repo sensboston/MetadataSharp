@@ -29,8 +29,8 @@ internal static class NikonMakerNoteCipher
     }
 
     /// <summary>
-    /// The serial key: the serial number tag read as an unsigned decimal number, or, when it is not one,
-    /// 0x22 for a D50 and 0x60 for any other model. Null when the model is unknown as well.
+    /// The serial key: the serial number tag read as an unsigned decimal number, or, when it is not one
+    /// or is absent, 0x22 for a D50 and 0x60 for any other model. Null when the model is unknown as well.
     /// </summary>
     internal static uint? SerialKey(ReadOnlySpan<byte> serialNumber, ReadOnlySpan<byte> model)
     {
