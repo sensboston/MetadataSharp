@@ -69,6 +69,15 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   value of 16 MiB and 64 MiB retained. The `MetadataLimits` defaults (65,527 bytes, 1 MiB) are the
   sizes of an EXIF block in a JPEG segment and refused `ReaganLargeTiff.tiff` (ICC profile, tag
   0x8773, 1,613,600 bytes); with the new defaults no corpus TIFF is refused for a budget.
+- ICC profiles, read-only: `IccProfiles.Read` returns the profile bytes of JPEG and EXV (APP2 chunks),
+  PNG (iCCP), TIFF (tag 0x8773, first directory), WebP (ICCP), HEIC/HEIF/AVIF (`colr` of the primary
+  item), JPEG 2000 (`colr` of `jp2h`) and PSD (resource 0x040F); header checked (size, `acsp`), nothing
+  interpreted; new code `InvalidIccProfile`. `MetadataSharp.Dump --icc`; the parity job requires the
+  17 profiles the pinned tests give for `exiv2 -pC` (`tools/parity/run_icc.py`).
+- Comments, read-only: `Comments.Read` lists the COM segments of a JPEG or EXV and the PNG text
+  chunks with the keyword `Comment` (`exiv2 -pc` prints `Description` instead, so no parity for PNG).
+  `MetadataSharp.Dump --comments`. Capability rows: ICC under Extract for ten kinds, comments under Read.
+  The parity job also runs both readers over every corpus file (`tools/parity/run_sweep.py`).
 
 ## Next (in order)
 
@@ -81,6 +90,6 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
-- No ICC or comment APIs yet; a BMFF item is edited or added, never removed. Previews are not
-  decoded and not written.
+- ICC profiles and comments are read, never written; a BMFF item is edited or added, never
+  removed. Previews are not decoded and not written.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.

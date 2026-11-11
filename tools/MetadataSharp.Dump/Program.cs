@@ -34,6 +34,15 @@ using MetadataSharp.Formats.WebP;
 // With --previews the TAG records give way to one record per preview the library lists, in its order:
 //   PREVIEW <index from 1>  <mime type>  <width>x<height>  <length in bytes>  <source>
 // An unknown dimension is written as 0.
+//
+// With --icc they give way to at most one record, for the ICC profile IccProfiles.Read returns:
+//   ICC     <length in bytes>  <MD5 of the bytes, in lower-case hexadecimal>
+// The reference prints the profile itself (exiv2 -pC) and its own tests keep the MD5 of that output,
+// so the record says of the profile what the reference's expectations say of it.
+//
+// With --comments they give way to one record per comment Comments.Read lists, in its order:
+//   COMMENT <index from 1>  <text, escaped like a value>
+// The reference prints one comment and a line end (exiv2 -pc): for a JPEG, the first of these.
 internal static class Program
 {
     private const long MaxWholeFileBytes = 64L * 1024 * 1024;
@@ -41,16 +50,18 @@ internal static class Program
     private static int Main(string[] args)
     {
         var paths = new List<string>();
-        bool previews = false;
+        bool previews = false, icc = false, comments = false;
         for (int i = 0; i < args.Length; i++)
         {
             string arg = args[i];
             if (arg is "-h" or "--help")
             {
-                Console.Error.WriteLine("usage: MetadataSharp.Dump [--previews] [--files-from FILE|-] [file...]");
+                Console.Error.WriteLine("usage: MetadataSharp.Dump [--previews|--icc|--comments] [--files-from FILE|-] [file...]");
                 return 0;
             }
             if (arg == "--previews") { previews = true; continue; }
+            if (arg == "--icc") { icc = true; continue; }
+            if (arg == "--comments") { comments = true; continue; }
             if (arg == "--files-from")
             {
                 if (++i == args.Length) { Console.Error.WriteLine("--files-from wants a path or -"); return 2; }
@@ -63,6 +74,11 @@ internal static class Program
             }
             if (arg.Length != 0) paths.Add(arg);
         }
+        if ((previews ? 1 : 0) + (icc ? 1 : 0) + (comments ? 1 : 0) > 1)
+        {
+            Console.Error.WriteLine("--previews, --icc and --comments each replace the TAG records: give one");
+            return 2;
+        }
         if (paths.Count == 0) { Console.Error.WriteLine("no input paths given"); return 2; }
 
         using var stdout = new StreamWriter(Console.OpenStandardOutput(), new UTF8Encoding(false));
@@ -73,6 +89,8 @@ internal static class Program
             try
             {
                 if (previews) ListPreviews(path, stdout);
+                else if (icc) IccProfile(path, stdout);
+                else if (comments) ListComments(path, stdout);
                 else Dump(path, stdout);
             }
             catch (MetadataException failure) { Record(stdout, "STATUS", "refused", failure.Code.ToString()); }
@@ -99,6 +117,26 @@ internal static class Program
             Record(stdout, "PREVIEW", (i + 1).ToString(CultureInfo.InvariantCulture), preview.MimeType, size,
                 preview.Length.ToString(CultureInfo.InvariantCulture), preview.Source);
         }
+        Done(stdout);
+    }
+
+    private static void IccProfile(string path, StreamWriter stdout)
+    {
+        if (!WithinBudget(new FileInfo(path).Length, stdout)) return;
+        if (IccProfiles.Read(File.ReadAllBytes(path)) is byte[] profile)
+        {
+            string digest = Convert.ToHexString(System.Security.Cryptography.MD5.HashData(profile)).ToLowerInvariant();
+            Record(stdout, "ICC", profile.Length.ToString(CultureInfo.InvariantCulture), digest);
+        }
+        Done(stdout);
+    }
+
+    private static void ListComments(string path, StreamWriter stdout)
+    {
+        if (!WithinBudget(new FileInfo(path).Length, stdout)) return;
+        IReadOnlyList<string> found = Comments.Read(File.ReadAllBytes(path));
+        for (int i = 0; i < found.Count; i++)
+            Record(stdout, "COMMENT", (i + 1).ToString(CultureInfo.InvariantCulture), Escape(found[i]));
         Done(stdout);
     }
 

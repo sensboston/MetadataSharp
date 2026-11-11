@@ -473,6 +473,21 @@ public sealed class IccProfileTests
         Assert.Equal(profile, IccProfiles.Read(Heif([Extent, Colr(kind, profile)], [1, 2], primary: 70_000, wide: true)));
     }
 
+    [Theory]
+    [InlineData("avif")]
+    [InlineData("heic")]
+    [InlineData("heix")]
+    [InlineData("mif1")]
+    public void TheBrandOfABmffFileDoesNotDecideWhereItsProfileIs(string brand)
+    {
+        byte[] profile = Profile(548);
+        byte[] file = Heif([Extent, Colr("prof", profile)], [1, 2]);
+        // The major brand follows the size and the type of the first box.
+        BmffFixture.Ascii(brand).CopyTo(file, 8);
+
+        Assert.Equal(profile, IccProfiles.Read(file));
+    }
+
     [Fact]
     public void ColourInformationThatIsNotAProfileIsNotOne()
     {
