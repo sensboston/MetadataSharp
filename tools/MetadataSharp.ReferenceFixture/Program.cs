@@ -325,6 +325,7 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
         Limits = new MetadataLimits { MaxDirectories = 256, MaxEntriesPerDirectory = 2_048, MaxTotalEntries = 16_384, MaxValueBytes = 4_194_304, MaxRetainedMetadataBytes = 16_777_216 }
     };
     var refusals = new List<(string File, string Kind, string Reason)>();
+    var budgets = new List<string>();
     Directory.CreateDirectory(args[2]);
     var manifest = new List<string>();
     var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
@@ -381,6 +382,45 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
             var caption = new IptcEdit();
             caption.ReplaceText(new(2, 120), ["A caption"]);
 
+            // Which default budget a file does not fit: the same edit in place with the default
+            // options, then with one budget widened at a time; the wide read says what is large.
+            string? LimitRefusal(TiffReadOptions? options)
+            {
+                try
+                {
+                    using var probe = TiffBasedMetadataDocument.Open(path, options);
+                    probe.SaveExif(new MemoryStream(), inPlace);
+                    return null;
+                }
+                catch (MetadataException refusal) when (refusal.Code == MetadataErrorCode.LimitExceeded)
+                {
+                    return $"{refusal.Message} (offset {refusal.SourceOffset})";
+                }
+                catch (MetadataException) { return null; }
+            }
+            if (LimitRefusal(null) is { } byDefault)
+            {
+                (string Name, MetadataLimits Limits)[] single =
+                [
+                    ("MaxDirectories", new() { MaxDirectories = wide.Limits.MaxDirectories }),
+                    ("MaxEntriesPerDirectory", new() { MaxEntriesPerDirectory = wide.Limits.MaxEntriesPerDirectory }),
+                    ("MaxTotalEntries", new() { MaxTotalEntries = wide.Limits.MaxTotalEntries }),
+                    ("MaxValueBytes", new() { MaxValueBytes = wide.Limits.MaxValueBytes }),
+                    ("MaxRetainedMetadataBytes", new() { MaxRetainedMetadataBytes = wide.Limits.MaxRetainedMetadataBytes }),
+                ];
+                string enough = string.Join(", ", single.Where(one => LimitRefusal(new TiffReadOptions { Limits = one.Limits }) is null).Select(one => one.Name));
+                string large;
+                try
+                {
+                    var entries = document.ReadExif().Entries;
+                    large = $"{entries.Count} entries, {entries.Sum(entry => (long)entry.Value.ByteLength)} value bytes; over {new MetadataLimits().MaxValueBytes}: "
+                        + string.Join(", ", entries.Where(entry => entry.Value.ByteLength > new MetadataLimits().MaxValueBytes)
+                            .Select(entry => $"{entry.Key.Directory} 0x{entry.Key.TagId:X4} {entry.Value.Type} {entry.Value.ByteLength}"));
+                }
+                catch (MetadataException unread) { large = "not read: " + unread.Message; }
+                budgets.Add($"{Path.GetFileName(path)} ({new FileInfo(path).Length} bytes): {byDefault} Widening one budget is enough: {(enough.Length == 0 ? "none" : enough)}. {large}");
+            }
+
             Try("inplace", "Exif.Photo.DateTimeOriginal", date, target => document.SaveExifAs(target, inPlace));
             Try("grow", "Exif.Image.Artist,Exif.Image.ExifTag,Exif.Image.GPSTag,Exif.Photo.DateTimeDigitized," + gpsKeys, artist,
                 target => document.SaveExifAs(target, grow));
@@ -397,6 +437,9 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
         .ToArray();
     foreach (string[] chunk in reasons.Chunk(20))
         Console.WriteLine("::notice title=TIFF-based corpus refusals::" + string.Join("%0A", chunk));
+    Console.WriteLine("::notice title=TIFF-based corpus budgets::" + (budgets.Count == 0
+        ? "every file the writer accepts fits the default budgets"
+        : string.Join("%0A", budgets.Select(line => line.Replace("%", "%25")))));
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=TIFF-based writer defect::" + crash);
     if (crashes.Count != 0) return 1;
 }
