@@ -54,6 +54,13 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   refused unless only the named tags differ. Parity job (run 43082543288): `exiv2 -pa` reads the 84
   edited fixtures and the 27 files written from the corpus's TIFFs; the corpus has no whole RAW file.
   Capability rows for TIFF, DNG, ARW, CR2, NEF, ORF, PEF (authored layouts) and RW2 (in place only).
+- Write, BMFF (HEIC, HEIF, AVIF): `BmffMetadataDocument` `SaveExif/SaveXmp` edit the Exif and XMP
+  items of the `meta` box. An item that keeps its length is written in place; one that grows or is
+  new goes to a new `mdat` at the end and its `iloc` entry is repointed; no item data moves, old
+  bytes stay. `meta` is rewritten in place, grows when it is the last box, or is appended (the old
+  one becomes `free`). The output is read back and refused unless only the edit differs. Parity job
+  (run 43093871306): `exiv2 -pa` reads the 36 edited fixtures and 30 of the 33 files written from
+  the corpus's 15 BMFF files (the tool reads no source of the other 3). Rows for AVIF, HEIC, HEIF.
 - Whole TIFF-based files: default `TiffReadOptions` (and `TiffExif.Read` without limits) allow a
   value of 16 MiB and 64 MiB retained. The `MetadataLimits` defaults (65,527 bytes, 1 MiB) are the
   sizes of an EXIF block in a JPEG segment and refused `ReaganLargeTiff.tiff` (ICC profile, tag
@@ -61,7 +68,7 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 ## Next (in order)
 
-1. Write side: BMFF (HEIC/HEIF/AVIF); MakerNote-safe rules per vendor.
+1. Write side: MakerNote-safe rules per vendor; removal of a whole BMFF item.
 2. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.
 3. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
@@ -70,4 +77,5 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
-- No ICC or comment APIs yet; no BMFF write. Previews are not decoded and not written.
+- No ICC or comment APIs yet; a BMFF item is edited or added, never removed. Previews are not
+  decoded and not written.
