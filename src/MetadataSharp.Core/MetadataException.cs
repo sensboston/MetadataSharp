@@ -23,7 +23,8 @@ public enum MetadataErrorCode
     InvalidPsd,
     InvalidJp2,
     InvalidEps,
-    InvalidExv
+    InvalidExv,
+    InvalidBmff
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>
