@@ -32,12 +32,17 @@ jobs:
       DOTNET_NOLOGO: '1'
     steps:
       - uses: actions/checkout@v4
-      - name: Install .NET 8 and 10 SDKs
+      # SDK 10 builds every target; the .NET 8 SDK (and its runtime) is installed only where net8.0
+      # code runs. Downloading SDKs was the slowest step of the Windows legs.
+      - name: Install .NET 10 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 10.0.x
+      - name: Install .NET 8 SDK
+        if: matrix.tfm == 'net8.0'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
       - name: Record SDK and runtime environment
         run: dotnet --info
       - name: Restore
@@ -147,11 +152,17 @@ jobs:
       DOTNET_NOLOGO: '1'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      # SDK 10 builds every target; the .NET 8 SDK (and its runtime) is installed only where net8.0
+      # code runs. Downloading SDKs was the slowest step of the Windows legs.
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 10.0.x
+      - name: Install .NET 8 SDK
+        if: matrix.tfm == 'net8.0'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
       - name: Install external CLI tools
         run: |
           # Runner mirrors occasionally fail DNS; fail fast and retry instead of hanging for minutes.
@@ -201,11 +212,17 @@ jobs:
       AUDIT_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      # SDK 10 builds every target; the .NET 8 SDK (and its runtime) is installed only where net8.0
+      # code runs. Downloading SDKs was the slowest step of the Windows legs.
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 10.0.x
+      - name: Install .NET 8 SDK
+        if: matrix.tfm == 'net8.0'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
       - name: Record SDK and environment
         run: dotnet --info
       - name: Measure and audit local candidates
@@ -235,12 +252,10 @@ jobs:
       DUMP: dotnet run --project tools/MetadataSharp.Dump -c Release -f net10.0 --no-build --
     steps:
       - uses: actions/checkout@v4
-      - name: Install .NET 8 and 10 SDKs
+      - name: Install .NET 10 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 10.0.x
       - name: Build the dump tool (restricted to the public API by construction)
         run: dotnet build tools/MetadataSharp.Dump/MetadataSharp.Dump.csproj --configuration Release -f net10.0
       - name: Checkout pinned upstream corpus (CI-time fetch; never vendored, never executed)
