@@ -11,9 +11,15 @@ edit, and manifest.tsv with one row per edited file:
 For each row the tool is run on both files. The edited file passes when
 the tool exits with 0 for it, prints every expected text, and prints every
 line it printed for the source whose key the edit was not allowed to
-change. A source the tool cannot read is a broken fixture, and a failure.
+change; a key that ends in * names every key that begins with what is before
+it. A source the tool cannot read is a broken fixture, and a failure.
 
-Usage: tiff_based_edits.py DIRECTORY --exiv2-command "exiv2 -pa"
+The generator's tiff-based-corpus command writes the same manifest for
+files this repository did not author. Many of those are damaged on purpose,
+so with --skip-unreadable-sources a source the tool cannot read is counted
+and skipped: the rule is about files the tool could read before the edit.
+
+Usage: tiff_based_edits.py DIRECTORY --exiv2-command "exiv2 -pa" [--skip-unreadable-sources]
 """
 import argparse
 import shlex
@@ -58,8 +64,9 @@ def compare(source_output, edited_output, changed, expected):
         if item not in edited_output:
             problems.append(f"expected text is not printed: {item}")
     before, after = rows(source_output), rows(edited_output)
+    prefixes = tuple(key[:-1] for key in changed if key.endswith("*"))
     for key, lines in before.items():
-        if key in changed:
+        if key in changed or key.startswith(prefixes):
             continue
         if key not in after:
             problems.append(f"{key} is no longer printed")
@@ -69,48 +76,59 @@ def compare(source_output, edited_output, changed, expected):
 
 
 def run(command, path):
-    done = subprocess.run(command + [str(path)], capture_output=True, timeout=60)
+    try:
+        done = subprocess.run(command + [str(path)], capture_output=True, timeout=60)
+    except subprocess.TimeoutExpired:
+        return 124, "", "the tool did not finish in 60 seconds"
     return (done.returncode, done.stdout.decode("utf-8", "replace"),
             done.stderr.decode("utf-8", "replace"))
 
 
-def check(directory, command, runner=run):
-    """Every problem found, as (file, message), and the number of edited files checked."""
+def check(directory, command, runner=run, skip_unreadable=False):
+    """Every problem found, as (file, message); the edited files checked; those skipped for their source."""
     directory = Path(directory)
     entries = parse_manifest((directory / "manifest.tsv").read_text(encoding="utf-8"))
-    problems, sources = [], {}
+    problems, sources, checked, skipped = [], {}, 0, 0
     for source, edited, changed, expected in entries:
         if source not in sources:
             sources[source] = runner(command, directory / source)
         code, output, errors = sources[source]
         if code != 0 or not output.strip():
-            problems.append((source, f"the source is not read (exit {code}): {errors.strip()[:300]}"))
+            if skip_unreadable:
+                skipped += 1
+            else:
+                problems.append((source, f"the source is not read (exit {code}): {errors.strip()[:300]}"))
             continue
+        checked += 1
         edited_code, edited_output, edited_errors = runner(command, directory / edited)
         if edited_code != 0:
             problems.append((edited, f"not read (exit {edited_code}): {edited_errors.strip()[:300]}"))
             continue
         for problem in compare(output, edited_output, changed, expected):
             problems.append((edited, problem))
-    return problems, len(entries)
+    return problems, checked, skipped
 
 
 def main(argv=None, runner=run):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("directory")
     parser.add_argument("--exiv2-command", required=True)
+    parser.add_argument("--skip-unreadable-sources", action="store_true")
+    parser.add_argument("--title", default="TIFF-based edits")
     args = parser.parse_args(argv)
-    problems, count = check(args.directory, shlex.split(args.exiv2_command), runner)
+    problems, count, skipped = check(args.directory, shlex.split(args.exiv2_command), runner,
+                                     args.skip_unreadable_sources)
     for name, message in problems[:MAX_ANNOTATIONS]:
         text = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
-        print(f"::error title=TIFF-based edits {name}::{text}")
+        print(f"::error title={args.title} {name}::{text}")
     for name, message in problems:
         print(f"FAIL {name}: {message}")
     if problems:
         print(f"{len(problems)} problem(s) in {count} edited file(s)")
         return 1
-    print(f"::notice title=TIFF-based edits::{count} edited files are read by the pinned tool; "
-          "every line of their sources that the edit did not name is still printed")
+    left_out = f" ({skipped} left out: the tool does not read their source)" if skipped else ""
+    print(f"::notice title={args.title}::{count} edited files are read by the pinned tool; "
+          f"every line of their sources that the edit did not name is still printed{left_out}")
     return 0
 
 

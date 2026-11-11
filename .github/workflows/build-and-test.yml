@@ -322,6 +322,15 @@ jobs:
           dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-edits artifacts/parity/edited
           python tools/reference/tiff_based_edits.py artifacts/parity/edited \
             --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+      # The same rule on the TIFF-based files of the pinned corpus: real camera files, and files
+      # damaged on purpose. A refusal of the writer is counted by its code; a file it did write has
+      # to read in the pinned tool as its source did, wherever the tool could read the source.
+      - name: Corpus files edited by the TIFF-based writer still read in the pinned tool (exiv2 -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-corpus
+          python tools/reference/tiff_based_edits.py artifacts/parity/edited-corpus --skip-unreadable-sources \
+            --title "TIFF-based corpus edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
       - name: Upload parity reports (measurements only - no corpus bytes, no external source)
         if: always()
         uses: actions/upload-artifact@v4

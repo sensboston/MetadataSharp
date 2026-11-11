@@ -47,6 +47,12 @@ class CompareTests(unittest.TestCase):
         gone = "".join(line + "\n" for line in EDITED.splitlines() if "Make" not in line)
         self.assertEqual(["Exif.Image.Make is no longer printed"], t.compare(SOURCE, gone, CHANGED, []))
 
+    def test_a_key_that_ends_in_a_star_names_a_family_of_keys(self):
+        source = "Xmp.dc.title  LangAlt  1  old\nIptc.Application2.Caption  String  3  old\n"
+        edited = "Xmp.xmp.CreatorTool  XmpText  3  new\nIptc.Application2.Caption  String  3  old\n"
+        self.assertEqual([], t.compare(source, edited, {"Xmp.*"}, []))
+        self.assertEqual(["Xmp.dc.title is no longer printed"], t.compare(source, edited, {"Iptc.*"}, []))
+
     def test_expected_text_has_to_be_printed(self):
         self.assertEqual(["expected text is not printed: Xmp.xmp.CreatorTool"],
                          t.compare(SOURCE, EDITED, CHANGED, ["Xmp.xmp.CreatorTool"]))
@@ -70,25 +76,31 @@ class ManifestTests(unittest.TestCase):
 
 
 class CheckTests(unittest.TestCase):
-    def run_check(self, outputs):
+    def run_check(self, outputs, skip_unreadable=False):
         with tempfile.TemporaryDirectory() as directory:
             (Path(directory) / "manifest.tsv").write_text(
                 "a.tif\ta-edit.tif\tExif.Image.ExifTag,Exif.Photo.DateTimeOriginal\t2021:06:07 08:09:10\n", encoding="utf-8")
-            return t.check(directory, ["tool"], lambda command, path: outputs[path.name])
+            return t.check(directory, ["tool"], lambda command, path: outputs[path.name], skip_unreadable)
 
     def test_a_file_that_still_reads_passes(self):
-        self.assertEqual(([], 1), self.run_check({"a.tif": (0, SOURCE, ""), "a-edit.tif": (0, EDITED, "")}))
+        self.assertEqual(([], 1, 0), self.run_check({"a.tif": (0, SOURCE, ""), "a-edit.tif": (0, EDITED, "")}))
 
     def test_an_edited_file_the_tool_refuses_fails(self):
-        problems, _ = self.run_check({"a.tif": (0, SOURCE, ""), "a-edit.tif": (1, "", "corrupted image metadata")})
+        problems, _, _ = self.run_check({"a.tif": (0, SOURCE, ""), "a-edit.tif": (1, "", "corrupted image metadata")})
         self.assertEqual("a-edit.tif", problems[0][0])
         self.assertIn("not read (exit 1): corrupted image metadata", problems[0][1])
 
     def test_a_source_the_tool_cannot_read_is_a_failure_not_a_pass(self):
-        problems, _ = self.run_check({"a.tif": (1, "", "not an image"), "a-edit.tif": (0, EDITED, "")})
+        problems, _, _ = self.run_check({"a.tif": (1, "", "not an image"), "a-edit.tif": (0, EDITED, "")})
         self.assertEqual("a.tif", problems[0][0])
-        problems, _ = self.run_check({"a.tif": (0, "", ""), "a-edit.tif": (0, EDITED, "")})
+        problems, _, _ = self.run_check({"a.tif": (0, "", ""), "a-edit.tif": (0, EDITED, "")})
         self.assertIn("the source is not read", problems[0][1])
+
+    def test_a_file_that_was_never_readable_can_be_left_out_and_is_counted(self):
+        self.assertEqual(([], 0, 1), self.run_check({"a.tif": (1, "", "not an image"), "a-edit.tif": (1, "", "")}, True))
+        # Leaving unreadable sources out does not excuse an edited file whose source did read.
+        problems, checked, skipped = self.run_check({"a.tif": (0, SOURCE, ""), "a-edit.tif": (1, "", "damaged")}, True)
+        self.assertEqual((1, 1, 0), (len(problems), checked, skipped))
 
     def test_main_reports_the_outcome_through_its_exit_code(self):
         with tempfile.TemporaryDirectory() as directory:

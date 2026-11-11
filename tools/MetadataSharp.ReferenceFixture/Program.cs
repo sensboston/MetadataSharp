@@ -312,7 +312,77 @@ else if (args.Length == 2 && args[0] == "tiff-based-edits")
     }
     File.WriteAllLines(Path.Combine(args[1], "manifest.tsv"), manifest);
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
+else if (args.Length == 3 && args[0] == "tiff-based-corpus")
+{
+    // The same check on files this repository did not author: every TIFF-based file under a
+    // directory is edited four ways, each from the file as it is. A refusal is counted by its code;
+    // a file that was written goes into the manifest for the pinned tool to read. Anything that is
+    // not a refusal - an exception of another type - is a defect of the writer and fails the run.
+    Directory.CreateDirectory(args[2]);
+    var manifest = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    var crashes = new List<string>();
+    string[] extensions = [".tif", ".tiff", ".dng", ".cr2", ".nef", ".nrw", ".arw", ".sr2", ".pef", ".orf", ".rw2", ".srw", ".raw"];
+    const string date = "2021:06:07 08:09:10", artist = "An artist whose name is longer than any slot";
+    const string gpsKeys = "Exif.GPSInfo.GPSVersionID,Exif.GPSInfo.GPSLatitudeRef,Exif.GPSInfo.GPSLatitude,Exif.GPSInfo.GPSLongitudeRef,Exif.GPSInfo.GPSLongitude";
+    int files = 0, number = 0;
+    void Count(string outcome) => outcomes[outcome] = outcomes.GetValueOrDefault(outcome) + 1;
+    foreach (string path in Directory.EnumerateFiles(args[1], "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+    {
+        string extension = Path.GetExtension(path).ToLowerInvariant();
+        if (!extensions.Contains(extension) || new FileInfo(path).Length > 64 * 1024 * 1024) continue;
+        TiffBasedMetadataDocument document;
+        try { document = TiffBasedMetadataDocument.Open(path); }
+        catch (MetadataException) { continue; } // not a TIFF structure, whatever its name says
+        files++;
+        using (document)
+        {
+            void Try(string kind, string changed, string expected, Action<string> save)
+            {
+                string target = Path.Combine(args[2], $"c{++number:D5}-{kind}{extension}");
+                try
+                {
+                    save(target);
+                    manifest.Add(string.Join('\t', Path.GetFullPath(path), Path.GetFileName(target), changed, expected));
+                    Count(kind + " written");
+                }
+                catch (MetadataException refusal) { Count(kind + " refused " + refusal.Code); }
+                catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+                {
+                    crashes.Add($"{Path.GetFileName(path)} {kind}: {defect.GetType().Name}: {defect.Message}");
+                }
+            }
+
+            var inPlace = new ExifEdit();
+            inPlace.Set(new(ExifDirectoryKind.Exif, 0x9003), AsciiValue(date));
+            var grow = new ExifEdit();
+            grow.Set(new(ExifDirectoryKind.Ifd0, 0x013B), AsciiValue(artist));
+            grow.Set(new(ExifDirectoryKind.Exif, 0x9004), AsciiValue(date));
+            grow.Set(new(ExifDirectoryKind.Gps, 0), ExifValue.FromRaw(TiffFieldType.Byte, 4, Endianness.LittleEndian, [2, 3, 0, 0]));
+            grow.Set(new(ExifDirectoryKind.Gps, 1), AsciiValue("N"));
+            grow.Set(new(ExifDirectoryKind.Gps, 2), ExifValue.FromRaw(TiffFieldType.Rational, 3, Endianness.LittleEndian,
+                [42, 0, 0, 0, 1, 0, 0, 0, 22, 0, 0, 0, 1, 0, 0, 0, 30, 0, 0, 0, 1, 0, 0, 0]));
+            grow.Set(new(ExifDirectoryKind.Gps, 3), AsciiValue("W"));
+            grow.Set(new(ExifDirectoryKind.Gps, 4), ExifValue.FromRaw(TiffFieldType.Rational, 3, Endianness.LittleEndian,
+                [71, 0, 0, 0, 1, 0, 0, 0, 14, 0, 0, 0, 1, 0, 0, 0, 15, 0, 0, 0, 1, 0, 0, 0]));
+            var tool = new XmpEdit();
+            tool.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("MetadataSharp"));
+            var caption = new IptcEdit();
+            caption.ReplaceText(new(2, 120), ["A caption"]);
+
+            Try("inplace", "Exif.Photo.DateTimeOriginal", date, target => document.SaveExifAs(target, inPlace));
+            Try("grow", "Exif.Image.Artist,Exif.Image.ExifTag,Exif.Image.GPSTag,Exif.Photo.DateTimeDigitized," + gpsKeys, artist,
+                target => document.SaveExifAs(target, grow));
+            Try("xmp", "Xmp.*,Exif.Image.XMLPacket", "Xmp.xmp.CreatorTool", target => document.SaveXmpAs(target, tool));
+            Try("iptc", "Iptc.*,Exif.Image.IPTCNAA", "A caption", target => document.SaveIptcAs(target, caption));
+        }
+    }
+    File.WriteAllLines(Path.Combine(args[2], "manifest.tsv"), manifest);
+    Console.WriteLine($"::notice title=TIFF-based corpus edits::{files} TIFF-based files; " + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
+    foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=TIFF-based writer defect::" + crash);
+    if (crashes.Count != 0) return 1;
+}
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
 
 
