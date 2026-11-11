@@ -32,7 +32,9 @@ public sealed class BmffMetadata
 
     /// <summary>
     /// Reads one complete BMFF buffer. Boxes other than the file type box and <c>meta</c> are
-    /// skipped, and items other than EXIF and XMP are never interpreted.
+    /// skipped, and items other than EXIF and XMP are never interpreted. Without
+    /// <paramref name="limits"/> the budgets are the defaults of <see cref="BmffReadOptions"/>; the
+    /// EXIF block of an item may be longer than a JPEG APP1 segment holds.
     /// </summary>
     public static BmffMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
         BmffReader.Read(data, limits);
@@ -98,7 +100,7 @@ internal ref struct BmffReader
 
     internal static BmffMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, XmpReadOptions? xmpOptions = null)
     {
-        limits ??= new MetadataLimits();
+        limits ??= BmffReadOptions.DefaultLimits;
         limits.Validate();
         if (data.Length > limits.MaxInputBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The BMFF file exceeds the input budget.", 0);
@@ -373,7 +375,8 @@ internal ref struct BmffReader
         uint skip = BinaryPrimitives.ReadUInt32BigEndian(bytes);
         long start = 4L + skip;
         if (start >= bytes.Length) throw Fail("The EXIF TIFF header lies past its item.", source);
-        return ExifTiffReader.Inspect(bytes.AsSpan((int)start), limits, source + start);
+        // The 65,527 bytes of a JPEG APP1 segment are no rule of this container: the budgets bound the block.
+        return ExifTiffReader.Inspect(bytes.AsSpan((int)start), limits, source + start, ExifTiffReader.NoCeiling);
     }
 
     private XmpPacket? XmpItem()

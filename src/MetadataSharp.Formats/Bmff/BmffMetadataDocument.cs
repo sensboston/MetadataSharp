@@ -34,8 +34,6 @@ namespace MetadataSharp.Formats.Bmff;
 /// </remarks>
 public sealed class BmffMetadataDocument : IDisposable, IAsyncDisposable
 {
-    /// <summary>The longest EXIF block the reader of an item accepts.</summary>
-    private const int MaxExifBytes = 65_527;
     private const int MaxAccountedRanges = 16_384;
 
     private readonly byte[] source;
@@ -153,10 +151,10 @@ public sealed class BmffMetadataDocument : IDisposable, IAsyncDisposable
     /// output fails its verification; <see cref="MetadataErrorCode.UnsupportedFeature"/> for a file
     /// without a <c>meta</c> box or without a primary item to attach a new item to, a top-level box
     /// of a kind that may not be followed by new data, an item built from other items or stored in
-    /// another file, and removal of all EXIF; <see cref="MetadataErrorCode.ExifTooLarge"/> when the
-    /// EXIF block would exceed 65,527 bytes; <see cref="MetadataErrorCode.LimitExceeded"/> when the
-    /// output would exceed the input budget of the limits or another of their budgets; otherwise
-    /// the code the reader reports for the file.
+    /// another file, and removal of all EXIF; <see cref="MetadataErrorCode.LimitExceeded"/> when a
+    /// value, the EXIF item or the output would exceed a budget of the limits (the item has no
+    /// other bound: it may be longer than a JPEG APP1 segment holds); otherwise the code the
+    /// reader reports for the file.
     /// </exception>
     public void SaveExif(Stream destination, ExifEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
     public Task SaveExifAsync(Stream destination, ExifEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
@@ -265,7 +263,9 @@ public sealed class BmffMetadataDocument : IDisposable, IAsyncDisposable
             if (edit.Changes.Values.All(value => value is null)) return null;
             desired = edit.Apply(null, Endianness.LittleEndian, limits);
             if (desired.Entries.Count == 0) return null;
-            ExifWritePlan block = ExifLayoutPlanner.Create(null, desired, limits);
+            ExifWritePlan block = ExifLayoutPlanner.Create(null, desired, limits, ExifTiffReader.NoCeiling);
+            if (block.Length > Array.MaxLength - 4)
+                throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF item exceeds the length of an array.");
             // The item begins with the offset of the TIFF header from the byte after it: zero.
             byte[] created = new byte[4 + block.Length];
             ExifTiffSerializer.Write(block, created.AsSpan(4));
@@ -304,9 +304,8 @@ public sealed class BmffMetadataDocument : IDisposable, IAsyncDisposable
         if (plan.IsEmpty) return null;
         byte[] edited = plan.Apply(tiff);
         TiffBasedWriteVerifier.Verify(tiff, directories, before, edited, plan, limits, MaxAccountedRanges);
-        if (edited.Length > MaxExifBytes)
-            throw new MetadataException(MetadataErrorCode.ExifTooLarge,
-                "The edited EXIF block exceeds 65,527 bytes, the most the reader of an item accepts.");
+        if (edited.Length > Array.MaxLength - start)
+            throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF item exceeds the length of an array.");
         tiffPlan = plan;
         byte[] payload = new byte[(int)start + edited.Length];
         bytes.AsSpan(0, (int)start).CopyTo(payload);

@@ -165,6 +165,31 @@ public sealed class TiffExifTests
     public void TheApp1PathKeepsItsSizeCap()
     {
         Assert.Equal(MetadataErrorCode.ExifTooLarge, Code(() => ExifTiffReader.Read(Large())));
+        Assert.Equal(MetadataErrorCode.ExifTooLarge, Code(() => ExifTiffReader.ReadRelaxed(Large())));
+        Assert.Equal(MetadataErrorCode.ExifTooLarge, Code(() => ExifTiffReader.Inspect(Large())));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ABlockOfAContainerWithoutThatCapIsBoundedByTheBudgetsAlone(bool big)
+    {
+        // The cap is a rule of the JPEG segment, so the caller that reads a block of another
+        // container lifts it; the block is then as long as the budgets allow.
+        byte[] block = Large(big);
+        ExifMetadata metadata = ExifTiffReader.Inspect(block, null, 0, ExifTiffReader.NoCeiling);
+        Assert.Equal(3, metadata.Entries.Count);
+        Assert.True(metadata.TryGetEntry(new(ExifDirectoryKind.Exif, 0x9003), out ExifEntry? taken));
+        Assert.Equal("2026:11:11 10:20:30", Ascii(taken.Value));
+
+        // A block is retained as a whole: its length counts, and then the 26 bytes of the three
+        // values read out of it.
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Code(() => ExifTiffReader.Inspect(block,
+            new MetadataLimits { MaxRetainedMetadataBytes = block.Length - 1 }, 0, ExifTiffReader.NoCeiling)));
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Code(() => ExifTiffReader.Inspect(block,
+            new MetadataLimits { MaxRetainedMetadataBytes = block.Length + 25 }, 0, ExifTiffReader.NoCeiling)));
+        Assert.Equal(3, ExifTiffReader.Inspect(block,
+            new MetadataLimits { MaxRetainedMetadataBytes = block.Length + 26 }, 0, ExifTiffReader.NoCeiling).Entries.Count);
     }
 
     [Theory]

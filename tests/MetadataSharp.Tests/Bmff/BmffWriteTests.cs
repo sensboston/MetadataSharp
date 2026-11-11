@@ -4,6 +4,7 @@ using MetadataSharp.Core;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
+using MetadataSharp.Formats.Tiff;
 using Xunit;
 
 namespace MetadataSharp.Tests.Bmff;
@@ -666,12 +667,118 @@ public sealed class BmffWriteTests
         Assert.Equal(fixture.Bytes.Length, output.Length);
     }
 
-    [Fact]
-    public void AnExifBlockLongerThanTheReaderAcceptsIsRefused()
+    // ---- an EXIF item longer than a JPEG segment holds ----
+    //
+    // 65,527 bytes of TIFF is what fits a JPEG APP1 segment. An item of a BMFF file has no such
+    // bound: the layout "heic-large" (one of the layouts of every theory above) has a MakerNote of
+    // 70,000 bytes, and the cases below add what the theories do not say.
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnExifItemLongerThanAJpegSegmentHoldsIsRead(bool big)
     {
-        BmffFixture fixture = BmffFixture.Create("heic", false);
-        string text = new('x', 65_500);
-        Assert.Equal(MetadataErrorCode.ExifTooLarge, Code(() => Save(fixture.Bytes, Edit(edit => edit.Set(Description, Ascii(text))))));
+        BmffFixture fixture = BmffFixture.Create("heic-large", big);
+        Assert.True(BmffFixture.ItemBytes(fixture.Bytes, BmffFixture.ExifId).Length > 65_535);
+
+        ExifMetadata exif = BmffMetadata.Read(fixture.Bytes).Exif!;
+        Assert.Equal(big ? Endianness.BigEndian : Endianness.LittleEndian, exif.ByteOrder);
+        Assert.Equal(OldDate, Text(exif, DateTimeOriginal));
+        Assert.Equal("TestCompany", Text(exif, Make));
+        Assert.True(exif.TryGetEntry(new(ExifDirectoryKind.Exif, 0x927C), out ExifEntry? note));
+        byte[] expected = new byte[BmffFixture.LargeNoteLength];
+        for (int i = 0; i < expected.Length; i++) expected[i] = (byte)(0xA0 + i);
+        Assert.Equal(expected, Raw(note.Value));
+
+        using BmffMetadataDocument document = BmffMetadataDocument.Open(new MemoryStream(fixture.Bytes));
+        ExifMetadata read = document.ReadExif()!;
+        Assert.True(read.TryGetEntry(new(ExifDirectoryKind.Exif, 0x927C), out ExifEntry? same));
+        Assert.Equal(expected, Raw(same.Value));
+    }
+
+    [Fact]
+    public void TheBudgetsAreWhatBoundsALongExifItem()
+    {
+        byte[] file = BmffFixture.Create("heic-large", false).Bytes;
+
+        // The defaults of the options are the budgets of a whole TIFF-based file.
+        Assert.Equal(16_777_216, new BmffReadOptions().Limits.MaxValueBytes);
+        Assert.Equal(67_108_864, new BmffReadOptions().Limits.MaxRetainedMetadataBytes);
+        Assert.Equal(new TiffReadOptions().Limits, new BmffReadOptions().Limits);
+
+        // The defaults of MetadataLimits are those of a block in a JPEG segment: no value over
+        // 65,527 bytes. A caller who names them gets them, as a budget and under that code.
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Code(() => BmffMetadata.Read(file, new MetadataLimits())));
+        Assert.NotNull(BmffMetadata.Read(file, new MetadataLimits { MaxValueBytes = BmffFixture.LargeNoteLength }).Exif);
+        Assert.Equal(MetadataErrorCode.LimitExceeded,
+            Code(() => BmffMetadata.Read(file, new MetadataLimits { MaxValueBytes = BmffFixture.LargeNoteLength, MaxRetainedMetadataBytes = 65_536 })));
+
+        using BmffMetadataDocument document = BmffMetadataDocument.Open(new MemoryStream(file),
+            new BmffReadOptions { Limits = new MetadataLimits() });
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Code(() => document.ReadExif()));
+        using var output = new MemoryStream();
+        Assert.Equal(MetadataErrorCode.LimitExceeded,
+            Code(() => document.SaveExif(output, Edit(edit => edit.Set(DateTimeOriginal, Ascii(NewDate))))));
+        Assert.Equal(0, output.Length);
+    }
+
+    [Theory]
+    [MemberData(nameof(Layouts))]
+    public void AValueLongerThanAJpegSegmentHoldsIsWrittenToAnItemThatIsThere(string name, bool big)
+    {
+        BmffFixture fixture = BmffFixture.Create(name, big);
+        string text = new('x', 70_000);
+        byte[] output = Save(fixture.Bytes, Edit(edit => edit.Set(Description, Ascii(text))));
+
+        BmffFixture.BoxInfo added = AssertOneMediaDataBoxAppended(fixture.Bytes, output);
+        AssertOtherItemsStay(fixture, output, BmffFixture.ExifId);
+        AssertOneExtent(output, BmffFixture.ExifId, added.Payload, added.Length - 8);
+        byte[] was = BmffFixture.ItemBytes(fixture.Bytes, BmffFixture.ExifId), now = BmffFixture.ItemBytes(output, BmffFixture.ExifId);
+        Assert.True(now.Length > was.Length + text.Length);
+        // The MakerNote is at the offset it had, whatever its length.
+        int note = fixture.Plan.ExifPrefix + BmffFixture.NoteAt;
+        Assert.Equal(was[note..], now[note..was.Length]);
+
+        ExifMetadata before = BmffMetadata.Read(fixture.Bytes).Exif!, after = BmffMetadata.Read(output).Exif!;
+        Assert.Equal(text, Text(after, Description));
+        Assert.Equal(OldDate, Text(after, DateTimeOriginal));
+        Assert.Equal("TestCompany", Text(after, Make));
+        Assert.Equal(before.Entries.Count + 1, after.Entries.Count);
+
+        // The item that is now long is edited again, where it is.
+        byte[] again = Save(output, Edit(edit => edit.Set(DateTimeOriginal, Ascii(NewDate))));
+        Assert.Equal(output.Length, again.Length);
+        Assert.Equal(NewDate, Text(BmffMetadata.Read(again).Exif!, DateTimeOriginal));
+        Assert.Equal(text, Text(BmffMetadata.Read(again).Exif!, Description));
+    }
+
+    [Theory]
+    [MemberData(nameof(BareLayouts))]
+    public void ANewExifItemMayBeLongerThanAJpegSegmentHolds(string name)
+    {
+        BmffFixture fixture = BmffFixture.Create(name, false);
+        string text = new('x', 70_000);
+        byte[] output = Save(fixture.Bytes, Edit(edit =>
+        {
+            edit.Set(Description, Ascii(text));
+            edit.Set(DateTimeOriginal, Ascii(NewDate));
+        }));
+
+        AssertOtherItemsStay(fixture, output, 0);
+        Assert.Equal("1:hvc1 2:Exif", Declared(output));
+        AssertDescribesThePrimaryItem(output, 2);
+        byte[] item = BmffFixture.ItemBytes(output, 2);
+        Assert.True(item.Length > 65_535);
+        Assert.Equal(new byte[] { 0, 0, 0, 0, 0x49, 0x49, 0x2A, 0 }, item[..8]);
+
+        ExifMetadata after = BmffMetadata.Read(output).Exif!;
+        Assert.Equal(text, Text(after, Description));
+        Assert.Equal(NewDate, Text(after, DateTimeOriginal));
+
+        // The budgets still bound it: a value over the value budget is not planned.
+        var narrow = new BmffReadOptions { Limits = new MetadataLimits() };
+        Assert.Equal(MetadataErrorCode.LimitExceeded,
+            Code(() => Save(fixture.Bytes, Edit(edit => edit.Set(Description, Ascii(text))), narrow)));
     }
 
     [Fact]

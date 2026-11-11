@@ -301,7 +301,7 @@ internal static class BmffWriteVerifier
     /// the limits of the document allow to be read back.
     /// </summary>
     private static MetadataException? Limit(MetadataException failure) =>
-        failure.Code is MetadataErrorCode.LimitExceeded or MetadataErrorCode.ExifTooLarge
+        failure.Code is MetadataErrorCode.LimitExceeded
             ? new MetadataException(failure.Code,
                 "The edited file exceeds a budget of the limits it would be read with: " + failure.Message)
             : null;
