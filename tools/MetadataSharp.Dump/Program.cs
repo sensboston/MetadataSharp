@@ -477,8 +477,20 @@ internal static class Program
     private static string Name(ExifTagKey key)
     {
         ExifTagDefinition? definition = ExifTags.Find(key);
-        return definition is null ? "0x" + Hex(key.TagId) : definition.Name;
+        return definition is null ? "0x" + Hex(key.TagId) : ReferenceSpelling(key) ?? definition.Name;
     }
+
+    /// <summary>The key the reference prints for a tag it spells differently from Exif 3.0. The library
+    /// keeps the standard's spelling; a comparison by key needs the two tools to say the same word for the
+    /// same tag number. Only tags the library already names are listed: this is spelling, not vocabulary.</summary>
+    private static string? ReferenceSpelling(ExifTagKey key) => (key.Directory, key.TagId) switch
+    {
+        (ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail, 0x8769) => "ExifTag", // ExifIFDPointer
+        (ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail, 0x8825) => "GPSTag", // GPSInfoIFDPointer
+        (ExifDirectoryKind.Exif, 0x8827) => "ISOSpeedRatings", // PhotographicSensitivity
+        (ExifDirectoryKind.Exif, 0xA005) => "InteroperabilityTag", // InteroperabilityIFDPointer
+        _ => null,
+    };
 
     private static string Group(ExifDirectoryKind directory) => directory switch
     {
