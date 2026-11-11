@@ -13,13 +13,16 @@ internal static class XmpCodec
     internal static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "XMP exceeds a resource budget.");
     internal static MetadataException Unsupported() => new(MetadataErrorCode.UnsupportedFeature, "The XMP packet is outside the editable profile.");
 
-    internal static (bool Editable, Dictionary<XmpPropertyName, XmpValue> Properties, bool HasExtendedReference) Read(byte[] bytes, XmpLimits limits, CancellationToken token)
+    internal static (bool Editable, Dictionary<XmpPropertyName, XmpValue> Properties, bool HasExtendedReference, IReadOnlyList<XmpEntry> Entries) Read(byte[] bytes, XmpLimits limits, CancellationToken token)
     {
         if (bytes.Length > limits.MaxPacketBytes) throw Limit();
         try
         {
             string xml = Utf8.GetString(bytes);
             if (xml.StartsWith('\uFEFF')) xml = xml[1..];
+            // Containers that store a packet in a fixed or aligned slot pad it with NUL bytes after the
+            // closing processing instruction. They are not part of the document; the bytes stay as read.
+            if (xml.EndsWith('\0')) xml = xml.TrimEnd('\0');
             if (xml.Length > limits.MaxXmlCharacters) throw Limit();
             var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null,
                 MaxCharactersInDocument = 0, IgnoreWhitespace = false };
@@ -54,6 +57,7 @@ internal static class XmpCodec
             XElement? root = document.Root;
             XElement? rdf = root?.Name == Rdf + "RDF" ? root : root?.Name == XName.Get("xmpmeta", MetaUri) ? root.Elements(Rdf + "RDF").FirstOrDefault() : null;
             if (rdf is null) throw new MetadataException(MetadataErrorCode.InvalidXmp, "An XMP packet requires an RDF root.");
+            IReadOnlyList<XmpEntry> entries = XmpEntryReader.Read(rdf, limits, token);
             XName reference = XName.Get("HasExtendedXMP", "http://ns.adobe.com/xmp/note/");
             bool hasReference = document.Descendants().Any(e => e.Name == reference || e.Attributes().Any(a => a.Name == reference));
             bool editable = PlainContainer(rdf) && (root == rdf || (OnlyWhitespace(root!) && root!.Elements().Count() == 1 &&
@@ -67,7 +71,7 @@ internal static class XmpCodec
             }
             XElement[] descriptions = rdf.Elements().ToArray();
             var properties = new Dictionary<XmpPropertyName, XmpValue>();
-            if (descriptions.Length != 1 || descriptions[0].Name != Rdf + "Description") return (false, properties, hasReference);
+            if (descriptions.Length != 1 || descriptions[0].Name != Rdf + "Description") return (false, properties, hasReference, entries);
             XElement description = descriptions[0];
             editable &= OnlyWhitespace(description) && description.Attribute(Rdf + "about")?.Value == "";
             int propertyCount = 0, itemCount = 0;
@@ -88,7 +92,7 @@ internal static class XmpCodec
                 XmpValue? value = Value(element, limits, ref itemCount);
                 if (value is null) editable = false; else properties.Add(name, value);
             }
-            return (editable, properties, hasReference);
+            return (editable, properties, hasReference, entries);
         }
         catch (DecoderFallbackException e) { throw new MetadataException(MetadataErrorCode.InvalidXmp, "Invalid UTF-8 XMP: " + e.Message); }
         catch (ArgumentException) { throw Limit(); }

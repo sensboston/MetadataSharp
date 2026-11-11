@@ -10,12 +10,19 @@ public sealed class XmpPacket
     private readonly byte[] bytes;
     private readonly XmpLimits limits;
     private readonly IReadOnlyDictionary<XmpPropertyName, XmpValue> properties;
-    private XmpPacket(byte[] bytes, XmpLimits limits, bool editable, Dictionary<XmpPropertyName, XmpValue> properties, bool hasExtendedReference)
-    { HasExtendedReference = hasExtendedReference; this.bytes = bytes; this.limits = limits; IsEditable = editable; this.properties = new ReadOnlyDictionary<XmpPropertyName, XmpValue>(properties); }
+    private XmpPacket(byte[] bytes, XmpLimits limits, bool editable, Dictionary<XmpPropertyName, XmpValue> properties, bool hasExtendedReference, IReadOnlyList<XmpEntry> entries)
+    { HasExtendedReference = hasExtendedReference; this.bytes = bytes; this.limits = limits; IsEditable = editable; this.properties = new ReadOnlyDictionary<XmpPropertyName, XmpValue>(properties); Entries = entries; }
     internal bool HasExtendedReference { get; }
     public bool IsEditable { get; }
     public int ByteLength => bytes.Length;
     public IReadOnlyDictionary<XmpPropertyName, XmpValue> Properties => IsEditable ? properties : throw XmpCodec.Unsupported();
+    /// <summary>
+    /// Every property of the packet as a flat, read-only list in packet order, whether or not the packet
+    /// is editable: structures, arrays of structures and qualifiers are reported under path keys, in
+    /// both the element and the attribute form of RDF. A property whose RDF is not a form XMP defines
+    /// has no entries.
+    /// </summary>
+    public IReadOnlyList<XmpEntry> Entries { get; }
     public void CopyRawTo(Span<byte> destination)
     {
         if (destination.Length < bytes.Length) throw new ArgumentException("Destination is too small.", nameof(destination));
@@ -41,7 +48,7 @@ public sealed class XmpPacket
     {
         var result = XmpCodec.Read(bytes, limits, token);
         token.ThrowIfCancellationRequested();
-        return new(bytes, limits, result.Editable, result.Properties, result.HasExtendedReference);
+        return new(bytes, limits, result.Editable, result.Properties, result.HasExtendedReference, result.Entries);
     }
     public static XmpPacket Load(Stream source, XmpReadOptions? options = null) => LoadCore(source, Settings(options), false, default).GetAwaiter().GetResult();
     public static Task<XmpPacket> LoadAsync(Stream source, XmpReadOptions? options = null, CancellationToken cancellationToken = default) => LoadCore(source, Settings(options), true, cancellationToken);
