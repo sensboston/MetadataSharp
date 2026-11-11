@@ -134,6 +134,13 @@ public sealed class MakerNote
     public MakerNoteFormat Format { get; }
     public Endianness ByteOrder { get; }
 
+    /// <summary>
+    /// Where the note starts, counted from the first byte of the TIFF header of the EXIF block it was
+    /// read from: the value offset of the MakerNote entry, or of DNGPrivateData for a note stored there.
+    /// Offsets that a vendor counts from the TIFF header are only meaningful while the note stays here.
+    /// </summary>
+    public long Offset { get; internal set; }
+
     /// <summary>Entries in directory order.</summary>
     public IReadOnlyList<MakerNoteEntry> Entries { get; }
 

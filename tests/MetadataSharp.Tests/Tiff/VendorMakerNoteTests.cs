@@ -68,6 +68,7 @@ public sealed class VendorMakerNoteTests
         Assert.NotNull(note);
         Assert.Equal(format, note.Format);
         Assert.Equal(order, note.ByteOrder);
+        Assert.Equal(MakerNoteStart, note.Offset);
         MakerNoteEntry entry = Assert.Single(note.Entries);
         byte[] raw = new byte[entry.Value.ByteLength];
         entry.Value.CopyRawTo(raw);
@@ -117,6 +118,31 @@ public sealed class VendorMakerNoteTests
         byte[] note = Note(Header("PENTAX \0MM"), big, 0x0005, text => text);
         Single(Wrap(big, "PENTAX Co", note), MakerNoteFormat.PentaxDng,
             big ? Endianness.BigEndian : Endianness.LittleEndian);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ANoteInDngPrivateDataReportsWhereThatValueStarts(bool big)
+    {
+        // IFD0 holds Make and DNGPrivateData and there is no Exif directory at all: the note is found
+        // through tag 0xC634, and its offset is the offset of that value.
+        byte[] note = Note(Header("PENTAX \0MM"), big, 0x0005, text => text);
+        const int start = 48;
+        var tiff = new byte[start + note.Length];
+        tiff[0] = tiff[1] = (byte)(big ? 'M' : 'I');
+        U16(tiff, 2, 42, big); U32(tiff, 4, 8, big);
+        U16(tiff, 8, 2, big);
+        Entry(tiff, 10, 0x010F, 2, 10, 38, big);
+        Entry(tiff, 22, 0xC634, 1, note.Length, start, big);
+        Encoding.ASCII.GetBytes("PENTAX Co").CopyTo(tiff, 38);
+        note.CopyTo(tiff, start);
+
+        MakerNote? read = ExifTiffReader.Read(tiff).Metadata.MakerNote;
+        Assert.NotNull(read);
+        Assert.Equal(MakerNoteFormat.PentaxDng, read.Format);
+        Assert.Equal(start, read.Offset);
+        Assert.Single(read.Entries);
     }
 
     [Theory]

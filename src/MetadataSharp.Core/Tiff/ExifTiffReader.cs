@@ -195,12 +195,21 @@ internal ref struct ExifTiffReader
     private MakerNote? ReadMakerNote()
     {
         long budget = limits.MaxRetainedMetadataBytes - retainedBytes;
+        MakerNote? note = null;
+        int start = 0;
         if (makerNoteLength != 0)
-            return MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Make(), Model(), limits, budget);
-        // Pentax DNGs carry their MakerNote in DNGPrivateData instead of the Exif MakerNote tag.
-        if (dngPrivateLength != 0 && data.Slice(dngPrivateStart, dngPrivateLength).StartsWith("PENTAX \0"u8))
-            return MakerNotes.MakerNoteReader.TryRead(data, dngPrivateStart, dngPrivateLength, order, Make(), Model(), limits, budget);
-        return null;
+        {
+            start = makerNoteStart;
+            note = MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Make(), Model(), limits, budget);
+        }
+        else if (dngPrivateLength != 0 && data.Slice(dngPrivateStart, dngPrivateLength).StartsWith("PENTAX \0"u8))
+        {
+            // Pentax DNGs carry their MakerNote in DNGPrivateData instead of the Exif MakerNote tag.
+            start = dngPrivateStart;
+            note = MakerNotes.MakerNoteReader.TryRead(data, dngPrivateStart, dngPrivateLength, order, Make(), Model(), limits, budget);
+        }
+        if (note is not null) note.Offset = start;
+        return note;
     }
 
     /// <summary>The raw bytes of the 0th IFD ASCII Make tag, or empty.</summary>
