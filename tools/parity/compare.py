@@ -15,6 +15,12 @@ testable without a build or a corpus. The outcome vocabulary is deliberately sma
 ``extra-key``
     We printed a tag the reference did not. Reported, never counted as a failure: a file can carry
     metadata the reference tool's print options do not select.
+
+The interpreted (human-readable) value is a second question about a row that already has one of the
+outcomes above, and it is answered apart: a row gains ``match-interpreted`` or ``interpreted-diff``
+under its own field, the two are tallied in their own table, and nothing they say reaches the raw
+outcomes, the key rate or the value rate. A row is asked the question only when both sides print the
+key, our record offers an interpreted field, and the reference's two columns can be separated.
 """
 
 from __future__ import annotations
@@ -31,6 +37,17 @@ EXTRA_KEY = "extra-key"
 #: The reference printed tags for a file we did not read, so the keys were never even compared.
 NOT_READ = "not-read"
 OUTCOMES = (MATCH_VALUE, MATCH_KEY, VALUE_DIFF, MISSING_KEY, EXTRA_KEY, NOT_READ)
+
+#: Both sides say the same about what the value means - the same text, or nothing beyond the raw value.
+MATCH_INTERPRETED = "match-interpreted"
+#: The two interpretations differ, or only one side has one.
+INTERPRETED_DIFF = "interpreted-diff"
+#: Deliberately not part of OUTCOMES: every sum over that tuple is a statement about raw values.
+INTERPRETED_OUTCOMES = (MATCH_INTERPRETED, INTERPRETED_DIFF)
+#: Why a key both sides print was not asked about its interpretation.
+NOT_OFFERED = "not-offered"
+NO_REFERENCE_COLUMN = "no-reference-column"
+INTERPRETED_SAMPLE_WIDTH = 60
 
 #: A value column may be followed by exiv2's decoded label, which starts after a wider gap.
 COLUMN_GAP = re.compile(r"\s{2,}")
@@ -88,8 +105,41 @@ def row(key: str, outcome: str, *, ours: tuple[str, int, str] | None, theirs: di
     return entry
 
 
-def compare_tags(reference: dict[str, dict], dumped: dict[str, tuple[str, int, str]]) -> list[dict[str, Any]]:
-    """Rows for every key on either side, in reference order first."""
+def judge_interpreted(entry: dict[str, Any], theirs: dict, ours: str | None) -> None:
+    """Add the interpreted verdict to a row for a key both sides print. The row's outcome is not read.
+
+    The reference prints its raw value again where it has no translation, so "we have none" (an empty
+    field) agrees with exactly that and with nothing else; ``translated`` records which of the two
+    cases a row is, because agreeing that there is nothing to say is a weaker fact than agreeing on
+    what is said. Text is compared as printed, less the surrounding blanks a line format cannot keep.
+    """
+    if ours is None:
+        entry["interpreted_skipped"] = NOT_OFFERED
+        return
+    their_text = theirs.get("interpreted")
+    their_raw = theirs.get("raw")
+    if their_text is None or their_raw is None:
+        entry["interpreted_skipped"] = NO_REFERENCE_COLUMN
+        return
+    translated = their_raw.strip() != their_text.strip()
+    if ours == "":
+        agreed = not translated
+    else:
+        agreed = ours.strip() == their_text.strip()
+    entry["interpreted"] = MATCH_INTERPRETED if agreed else INTERPRETED_DIFF
+    entry["translated"] = translated
+    entry["our_interpreted"] = ours[:INTERPRETED_SAMPLE_WIDTH]
+    entry["their_interpreted"] = their_text[:INTERPRETED_SAMPLE_WIDTH]
+
+
+def compare_tags(reference: dict[str, dict], dumped: dict[str, tuple[str, int, str]],
+                 interpreted: dict[str, str] | None = None) -> list[dict[str, Any]]:
+    """Rows for every key on either side, in reference order first.
+
+    ``interpreted`` maps a key to the interpreted value our record offered for it. It only ever adds
+    fields to a row whose raw outcome has already been decided.
+    """
+    interpreted = interpreted or {}
     rows: list[dict[str, Any]] = []
     for key, theirs in reference.items():
         ours = dumped.get(key)
@@ -109,7 +159,9 @@ def compare_tags(reference: dict[str, dict], dumped: dict[str, tuple[str, int, s
             outcome = MATCH_VALUE
         else:
             outcome = VALUE_DIFF
-        rows.append(row(key, outcome, ours=ours, theirs=theirs, flags=tuple(flags)))
+        entry = row(key, outcome, ours=ours, theirs=theirs, flags=tuple(flags))
+        judge_interpreted(entry, theirs, interpreted.get(key))
+        rows.append(entry)
     for key in dumped:
         if key not in reference:
             rows.append(row(key, EXTRA_KEY, ours=dumped[key], theirs=None))
@@ -118,14 +170,14 @@ def compare_tags(reference: dict[str, dict], dumped: dict[str, tuple[str, int, s
 
 def compare_file(label: str, corpus: str, format_name: str, status: str, detail: str,
                  reference: dict[str, dict], dumped: dict[str, tuple[str, int, str]],
-                 notes: list[str]) -> dict[str, Any]:
+                 notes: list[str], interpreted: dict[str, str] | None = None) -> dict[str, Any]:
     """One file's verdict. Only files we attempted contribute rows to parity.
 
     A refusal is a different kind of answer, not a wrong one: the library refusing a file the
     reference tool could not read either is the expected outcome, so those files are counted apart.
     """
     counted = status == "ok"
-    rows = compare_tags(reference, dumped) if counted else [
+    rows = compare_tags(reference, dumped, interpreted) if counted else [
         row(key, NOT_READ, ours=None, theirs=theirs) for key, theirs in reference.items()
     ]
     return {
@@ -183,6 +235,12 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
     unread_tags: Counter[str] = Counter()
     extra_files: Counter[str] = Counter()
     extra_tags: Counter[str] = Counter()
+    # The interpreted column has its own counters from here to the end of the report.
+    interpreted_outcomes: Counter[str] = Counter()
+    interpreted_by_kind: dict[str, Counter[str]] = defaultdict(Counter)
+    interpreted_by_family: dict[str, Counter[str]] = defaultdict(Counter)
+    interpreted_diffs: Counter[str] = Counter()
+    interpreted_pairs: dict[str, Counter[tuple[str, str]]] = defaultdict(Counter)
 
     for entry in files:
         statuses[entry["status"]] += 1
@@ -215,6 +273,22 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
             elif r["outcome"] == EXTRA_KEY:
                 extra_files[r["key"]] += 1
                 extra_tags[r["key"]] += 1
+            kind_name = r["key"].split(".")[0]
+            if "interpreted_skipped" in r:
+                interpreted_by_kind[kind_name][r["interpreted_skipped"]] += 1
+            verdict = r.get("interpreted")
+            if verdict is None:
+                continue
+            interpreted_outcomes[verdict] += 1
+            for bucket_name, table in ((kind_name, interpreted_by_kind), (family(r["key"]), interpreted_by_family)):
+                table[bucket_name][verdict] += 1
+                if r["translated"]:
+                    table[bucket_name]["translated"] += 1
+                    if verdict == MATCH_INTERPRETED:
+                        table[bucket_name]["translated-match"] += 1
+            if verdict == INTERPRETED_DIFF:
+                interpreted_diffs[r["key"]] += 1
+                interpreted_pairs[r["key"]][(r["our_interpreted"], r["their_interpreted"])] += 1
 
     attempted = sum(1 for entry in files if entry["attempted"])
     expected = outcomes[MATCH_VALUE] + outcomes[MATCH_KEY] + outcomes[VALUE_DIFF]
@@ -258,6 +332,17 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
         "by_family": {name: dict(counts) for name, counts in sorted(by_family.items())},
         "by_kind_format": {name: {fmt: dict(counts) for fmt, counts in sorted(formats.items())}
                            for name, formats in sorted(by_kind_format.items())},
+        "interpreted": {
+            "outcomes": dict(interpreted_outcomes),
+            "compared": sum(interpreted_outcomes.values()),
+            "rate": rate(interpreted_outcomes[MATCH_INTERPRETED], sum(interpreted_outcomes.values())),
+            "by_kind": {name: dict(counts) for name, counts in sorted(interpreted_by_kind.items())},
+            "by_family": {name: dict(counts) for name, counts in sorted(interpreted_by_family.items())},
+            # One line per key, with the pair of texts that accounts for most of its differences.
+            "diffs": [{"key": key, "tags": count, "ours": pair[0], "theirs": pair[1], "pair_tags": pair_count}
+                      for key, count in interpreted_diffs.most_common()
+                      for pair, pair_count in interpreted_pairs[key].most_common(1)],
+        },
         "gaps": {
             "missing_keys": gaps(missing_files, missing_tags, MISSING_KEY),
             "unread_keys": gaps(unread_files, unread_tags, NOT_READ),
