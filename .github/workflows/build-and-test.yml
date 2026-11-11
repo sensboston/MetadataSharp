@@ -164,6 +164,7 @@ jobs:
         with:
           dotnet-version: 8.0.x
       - name: Install external CLI tools
+        timeout-minutes: 5
         run: |
           # Runner mirrors occasionally fail DNS; fail fast and retry instead of hanging for minutes.
           APT_OPTS='-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20'
@@ -273,44 +274,18 @@ jobs:
         run: |
           python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
             --dump-command "$DUMP" --out artifacts/parity/upstream --title 'PARITY upstream' --annotate
-      - name: Restore the pinned exiv2 binary
-        id: exiv2-cache
-        uses: actions/cache@v4
-        with:
-          path: artifacts/parity/build/bin/exiv2
-          key: exiv2-b0859fc6-${{ runner.os }}-${{ hashFiles('tools/parity/exiv2_build_options.py') }}
-      - name: Check the cached binary's shared libraries
-        id: exiv2-libs
-        if: steps.exiv2-cache.outputs.cache-hit == 'true'
+      # The oracle is the official 0.28.9 release binary from github.com: no apt, no compiler, no
+      # 1-minute build. The Ubuntu package mirrors have failed DNS for hours at a time on the runners.
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
         shell: bash
         run: |
-          if ldd artifacts/parity/build/bin/exiv2 | grep -q 'not found'; then echo "ok=false" >> "$GITHUB_OUTPUT"; else echo "ok=true" >> "$GITHUB_OUTPUT"; fi
-      - name: Install external build dependencies
-        if: steps.exiv2-libs.outputs.ok != 'true'
-        run: |
-          # Runner mirrors occasionally fail DNS; fail fast and retry instead of hanging for minutes.
-          APT_OPTS='-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20'
-          for attempt in 1 2 3; do
-            sudo apt-get $APT_OPTS update &&
-              sudo apt-get $APT_OPTS install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev && break
-            [ "$attempt" = 3 ] && exit 1
-            # The runner's Azure mirror has failed DNS for hours at a time; fall back to the main archive.
-            echo 'http://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
-            sudo sed -i 's|mirror+file:/etc/apt/apt-mirrors.txt|http://archive.ubuntu.com/ubuntu/|' /etc/apt/sources.list.d/ubuntu.sources || true
-            sleep 10
-          done
-      - name: Configure external black-box build with explicit policy
-        if: steps.exiv2-cache.outputs.cache-hit != 'true'
-        shell: python
-        run: |
-          import subprocess, sys
-          sys.path.insert(0, 'tools/parity')
-          from exiv2_build_options import OPTIONS
-          subprocess.run(['cmake', '-S', 'artifacts/parity/exiv2', '-B', 'artifacts/parity/build', '-G', 'Ninja',
-                          *[f'-D{k}={v}' for k, v in OPTIONS.items()]], check=True)
-      - name: Build only external executable (no upstream tests or fixture imports)
-        if: steps.exiv2-cache.outputs.cache-hit != 'true'
-        run: cmake --build artifacts/parity/build --target exiv2 --parallel 2
+          mkdir -p artifacts/parity/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/parity/exiv2.tar.gz             https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          echo "10041994  artifacts/parity/exiv2.tar.gz" | python -c "import sys,os; n,f=sys.stdin.read().split(); assert os.path.getsize(f)==int(n), 'unexpected size'"
+          tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
+          artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
       - name: Generate this repository's own fixtures
         shell: bash
         run: |
@@ -327,7 +302,7 @@ jobs:
             --fixtures artifacts/parity/generated --fixtures tests/fixtures/b7 --fixtures tests/fixtures/b8 \
             --fixtures tests/fixtures/b9 --fixtures tests/fixtures/b10 --fixtures tests/fixtures/b11 \
             --fixtures tests/fixtures/b11l \
-            --exiv2-command "artifacts/parity/build/bin/exiv2 -Pkycvt" \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
             --dump-command "$DUMP" --out artifacts/parity/owned --title 'PARITY owned' --annotate
       - name: Upload parity reports (measurements only - no corpus bytes, no external source)
         if: always()
