@@ -12,7 +12,10 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0).
 - MakerNotes (`ExifMetadata.MakerNote`, read-only): Canon (incl. arrays and AFInfo), Nikon 1/2/3
   (incl. versioned and encrypted arrays), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
-  Sony (incl. enciphered arrays), Panasonic, Olympus/OM System (incl. sub-directories).
+  Sony (incl. enciphered arrays), Panasonic, Olympus/OM System (incl. sub-directories),
+  Minolta/Konica Minolta (incl. the camera-settings arrays), Casio (both layouts), Samsung
+  (plain IFD and PictureWizard; "AOC" notes read as Pentax), Sigma/Foveon. Run 42974953667: +113
+  EXIF values (Minolta 90, Sigma 23); the corpus has no Casio or Samsung file, so unit tests only.
 - Reading tolerates unaligned TIFF offsets.
 - XMP: `XmpPacket.Entries` lists every property of any packet (structures, arrays of structures,
   qualifiers) as read-only path rows; editing stays on the bounded profile. NUL padding is ignored.
@@ -31,9 +34,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 2. TIFF-based RAW read (CR2, NEF, ARW, ORF, RW2, PEF) with MakerNotes, measured on the corpus.
 3. Interpreted values for MakerNote, IPTC and XMP entries (standard EXIF is done); name
    InteroperabilityVersion in the vocabulary (it changes raw key counts, so it is its own step).
-4. Remaining MakerNote vendors (Minolta, Casio, Samsung, Sigma).
-5. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
-6. Write side: TIFF/RAW, then BMFF; MakerNote-safe rules per vendor.
+4. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
+5. Write side: TIFF/RAW, then BMFF; MakerNote-safe rules per vendor.
 
 ## Known limits
 

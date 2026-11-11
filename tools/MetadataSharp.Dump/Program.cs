@@ -239,6 +239,8 @@ internal static class Program
                         : keepParent ? group
                         : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
                         : makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 ? SonyArrayGroup(entry.TagId)
+                        : makerNote.Format == MakerNoteFormat.Minolta ? MinoltaArrayGroup(entry.TagId)
+                        : makerNote.Format == MakerNoteFormat.Samsung2 ? "SamsungPictureWizard"
                         : group + ArrayGroup(entry.TagId);
                     foreach (MakerNoteField field in entry.Fields)
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
@@ -256,6 +258,12 @@ internal static class Program
         0x2010 => "OlympusEq", 0x2020 => "OlympusCs", 0x2030 => "OlympusRd", 0x2031 => "OlympusRd2",
         0x2040 => "OlympusIp", 0x2050 => "OlympusFi", 0x3000 => "OlympusRi",
         _ => "Olympus0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
+    };
+
+    private static string MinoltaArrayGroup(ushort tag) => tag switch
+    {
+        0x0001 => "MinoltaCsOld", 0x0003 => "MinoltaCsNew", 0x0004 => "MinoltaCs7D", 0x0114 => "MinoltaCs5D",
+        _ => "Minolta0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
     };
 
     private static string SonyArrayGroup(ushort tag) => tag switch
