@@ -22,10 +22,11 @@ using MetadataSharp.Formats.WebP;
 //   FILE    <path, escaped like a value>
 //   TAG     <key>  <type>  <count>  <value>  [<interpreted>]
 //   STATUS  ok | refused | not-attempted | error  <detail>
-// The sixth TAG field is optional and is written for the standard EXIF directories only: it is what
-// ExifTags.Interpret makes of the value, and it is empty where that is null. A record without the
-// field says no interpretation is offered for the tag at all, which is the case for MakerNote, IPTC
-// and XMP records.
+// The sixth TAG field is optional. It is what the library makes of the value - ExifTags.Interpret for
+// the standard EXIF directories, MakerNote.Interpret for MakerNote tags and their fields, and
+// IptcDatasetNames.Interpret for IPTC datasets - and it is empty where that is null. A record without
+// the field says no interpretation is offered for the tag at all, which is the case for XMP records
+// and for the elements of an array nested in a MakerNote sub-directory.
 // A file whose reader refused or was not attempted simply carries no TAG records. A JPEG, PNG, TIFF or PSD
 // that was read, with one kind of its metadata refused, is ok with the detail exif-refused:<code>,
 // iptc-refused:<code> or xmp-refused:<code>, several of them separated by commas.
@@ -293,7 +294,8 @@ internal static class Program
                     bool sonyMinolta = sony && entry.TagId == 0xB028;
                     bool keepParent = olympusIfd || nikonPreview || sonyMinolta || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
-                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
+                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value),
+                            makerNote.Interpret(entry));
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
                         : nikonPreview ? "NikonPreview"
                         : sonyMinolta ? "SonyMinolta"
@@ -312,7 +314,8 @@ internal static class Program
                             byte[] array = new byte[entry.Value.ByteLength];
                             entry.Value.CopyRawTo(array);
                             Tag(stdout, "Exif.NikonVr." + field.Name, "Byte", 3,
-                                string.Join(' ', array[4..7].Select(b => b.ToString(CultureInfo.InvariantCulture))));
+                                string.Join(' ', array[4..7].Select(b => b.ToString(CultureInfo.InvariantCulture))),
+                                makerNote.Interpret(entry, field));
                             continue;
                         }
                         // An entry of a sub-directory that is itself a split array: its elements only,
@@ -326,12 +329,13 @@ internal static class Program
                             continue;
                         }
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
-                            TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value));
+                            TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value),
+                            makerNote.Interpret(entry, field));
                     }
                     continue;
                 }
                 Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
-                    TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
+                    TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value), makerNote.Interpret(entry));
             }
         }
     }
@@ -410,27 +414,29 @@ internal static class Program
             string field = IptcDatasetNames.TryGetName(dataset.Key, out string? name)
                 ? name : "0x" + dataset.Key.Dataset.ToString("x2", CultureInfo.InvariantCulture);
             string key = RecordName(dataset.Key.Record) + "." + field;
+            // The typed form the library offers; the raw column below is the dump's own and is unchanged.
+            string? typed = IptcDatasetNames.Interpret(dataset.Key, dataset.Value);
             // A value in the form the specification gives its dataset is printed as that form reads;
             // one in any other form, a time without seconds for one, is printed as the text it is.
             switch (IptcDatasetNames.FormatOf(dataset.Key))
             {
                 case IptcValueFormat.UInt16 when bytes.Length == 2:
-                    Tag(stdout, key, "Short", 1, ((bytes[0] << 8) | bytes[1]).ToString(CultureInfo.InvariantCulture));
+                    Tag(stdout, key, "Short", 1, ((bytes[0] << 8) | bytes[1]).ToString(CultureInfo.InvariantCulture), typed);
                     continue;
                 case IptcValueFormat.Date when bytes.Length == 8 && Digits(bytes, 0, 8):
-                    Tag(stdout, key, "Date", 8, Ascii(bytes, 0, 4) + "-" + Ascii(bytes, 4, 2) + "-" + Ascii(bytes, 6, 2));
+                    Tag(stdout, key, "Date", 8, Ascii(bytes, 0, 4) + "-" + Ascii(bytes, 4, 2) + "-" + Ascii(bytes, 6, 2), typed);
                     continue;
                 case IptcValueFormat.Time when IptcTime(bytes) is string time:
-                    Tag(stdout, key, "Time", 11, time);
+                    Tag(stdout, key, "Time", 11, time, typed);
                     continue;
                 case IptcValueFormat.Binary:
-                    Tag(stdout, key, "Undefined", (uint)bytes.Length, string.Join(' ', bytes.Select(b => b.ToString(CultureInfo.InvariantCulture))));
+                    Tag(stdout, key, "Undefined", (uint)bytes.Length, string.Join(' ', bytes.Select(b => b.ToString(CultureInfo.InvariantCulture))), typed);
                     continue;
             }
             bytes = Trim(bytes);
             // Without a declared character set the bytes are UTF-8 if they read as UTF-8, and Latin-1 if not.
             string text = packet.CharacterSet == IptcCharacterSet.Utf8 ? Encoding.UTF8.GetString(bytes) : Utf8OrLatin1(bytes);
-            Tag(stdout, key, "String", (uint)bytes.Length, Escape(text));
+            Tag(stdout, key, "String", (uint)bytes.Length, Escape(text), typed);
         }
     }
 

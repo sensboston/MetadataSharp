@@ -866,7 +866,7 @@ public static partial class ExifTags
         return false;
     }
 
-    private static bool TryInteger(ExifValue value, int index, out long number)
+    internal static bool TryInteger(ExifValue value, int index, out long number)
     {
         number = 0;
         if (index < 0 || (uint)index >= value.Count)
