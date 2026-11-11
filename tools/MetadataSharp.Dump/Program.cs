@@ -197,10 +197,12 @@ internal static class Program
                 if (entry.Fields.Count != 0)
                 {
                     // AFInfo is printed whole and its fields share the MakerNote's own group.
-                    bool keepParent = makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
+                    bool olympusIfd = makerNote.Format is MakerNoteFormat.Olympus2 or MakerNoteFormat.OMSystem;
+                    bool keepParent = olympusIfd || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
                         Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
-                    string fieldGroup = keepParent ? group
+                    string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
+                        : keepParent ? group
                         : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
                         : makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 ? SonyArrayGroup(entry.TagId)
                         : group + ArrayGroup(entry.TagId);
@@ -214,6 +216,13 @@ internal static class Program
             }
         }
     }
+
+    private static string OlympusGroup(ushort tag) => tag switch
+    {
+        0x2010 => "OlympusEq", 0x2020 => "OlympusCs", 0x2030 => "OlympusRd", 0x2031 => "OlympusRd2",
+        0x2040 => "OlympusIp", 0x2050 => "OlympusFi", 0x3000 => "OlympusRi",
+        _ => "Olympus0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
+    };
 
     private static string SonyArrayGroup(ushort tag) => tag switch
     {

@@ -61,6 +61,8 @@ internal static class MakerNoteReader
             return Directory(MakerNoteFormat.Panasonic, tiff, start + 12, end, 0, order, 0,
                 limits, retainedBudget, VendorMakerNoteNames.Panasonic, null);
         }
+        if (make.StartsWith("OLYMPUS"u8) || make.StartsWith("OM Digital"u8))
+            return Olympus(tiff, start, length, order, note, limits, retainedBudget);
         if (make.StartsWith("NIKON"u8) || make.StartsWith("Nikon"u8))
         {
             if (note.StartsWith(NikonSignature) && note.Length >= 18 && note[6] == 0x02)
@@ -95,6 +97,76 @@ internal static class MakerNoteReader
             limits, retainedBudget, NikonMakerNoteNames.Nikon3, NikonMakerNoteArrays.Decompose);
         return note is null ? null : DecryptNikon3(note, model);
     }
+
+    /// <summary>
+    /// Olympus: "OLYMP" + 3 bytes, then an IFD with offsets from the TIFF header; or "OLYMPUS" + 0 +
+    /// byte order + 2 bytes (or "OM SYSTEM" + 3 zeros + byte order + 2 bytes), then an IFD whose
+    /// offsets, including those of its sub-directories, count from the MakerNote.
+    /// </summary>
+    private static MakerNote? Olympus(ReadOnlySpan<byte> tiff, int start, int length, Endianness order,
+        ReadOnlySpan<byte> note, MetadataLimits limits, long retainedBudget)
+    {
+        int end = start + length;
+        if (note.StartsWith("OLYMPUS\0"u8) && length >= 12 + 18 && OrderMark(note.Slice(8, 2)) is Endianness o2)
+            return OlympusSubDirectories(Directory(MakerNoteFormat.Olympus2, tiff, start + 12, end, start, o2, 0,
+                limits, retainedBudget, OlympusMakerNoteNames.Main, null), tiff, start, end, limits, retainedBudget);
+        if (note.StartsWith("OM SYSTEM\0\0\0"u8) && length >= 16 + 18 && OrderMark(note.Slice(12, 2)) is Endianness om)
+            return OlympusSubDirectories(Directory(MakerNoteFormat.OMSystem, tiff, start + 16, end, start, om, 0,
+                limits, retainedBudget, OlympusMakerNoteNames.Main, null), tiff, start, end, limits, retainedBudget);
+        if (note.StartsWith("OLYMP\0"u8) && length >= 8 + 18)
+            return Directory(MakerNoteFormat.Olympus, tiff, start + 8, end, 0, order, 0,
+                limits, retainedBudget, OlympusMakerNoteNames.Main, null);
+        return null;
+    }
+
+    /// <summary>Reads the sub-directories that the Olympus2 tags 0x2010-0x3000 point to, as their fields.</summary>
+    private static MakerNote? OlympusSubDirectories(MakerNote? note, ReadOnlySpan<byte> tiff, int start, int end,
+        MetadataLimits limits, long retainedBudget)
+    {
+        if (note is null)
+            return null;
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        bool changed = false;
+        foreach (MakerNoteEntry entry in note.Entries)
+        {
+            Func<ushort, string?>? names = entry.TagId switch
+            {
+                0x2010 => OlympusMakerNoteNames.Eq,
+                0x2020 => OlympusMakerNoteNames.Cs,
+                0x2030 => OlympusMakerNoteNames.Rd,
+                0x2031 => OlympusMakerNoteNames.Rd2,
+                0x2040 => OlympusMakerNoteNames.Ip,
+                0x2050 => OlympusMakerNoteNames.Fi,
+                0x3000 => OlympusMakerNoteNames.Ri,
+                _ => null
+            };
+            MakerNote? sub = null;
+            if (names is not null && entry.Value.FieldType == TiffFieldType.Long && entry.Value.Count == 1)
+            {
+                ReadOnlySpan<byte> raw = entry.Value.RawBytes;
+                uint offset = note.ByteOrder == Endianness.LittleEndian
+                    ? BinaryPrimitives.ReadUInt32LittleEndian(raw) : BinaryPrimitives.ReadUInt32BigEndian(raw);
+                if (offset < (uint)(end - start))
+                    sub = Directory(note.Format, tiff, start + (int)offset, end, start, note.ByteOrder, 0, limits,
+                        retainedBudget, names, null);
+            }
+            if (sub is null)
+            {
+                entries.Add(entry);
+                continue;
+            }
+            var fields = new List<MakerNoteField>(sub.Entries.Count);
+            foreach (MakerNoteEntry field in sub.Entries)
+                fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value));
+            entries.Add(new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields));
+            changed = true;
+        }
+        return changed ? new MakerNote(note.Format, note.ByteOrder, entries) : note;
+    }
+
+    private static Endianness? OrderMark(ReadOnlySpan<byte> mark) =>
+        mark[0] == 0x49 && mark[1] == 0x49 ? Endianness.LittleEndian :
+        mark[0] == 0x4D && mark[1] == 0x4D ? Endianness.BigEndian : null;
 
     /// <summary>Splits the Sony array tags, whose layouts may depend on the camera model.</summary>
     private static MakerNote SplitSony(MakerNote note, ReadOnlySpan<byte> model)
@@ -165,9 +237,10 @@ internal static class MakerNoteReader
             ushort tag = U16(tiff, p, little);
             ushort typeCode = U16(tiff, p + 2, little);
             uint valueCount = U32(tiff, p + 4, little);
-            if (typeCode is < 1 or > 12)
+            if (typeCode is < 1 or > 13)
                 continue; // Not a TIFF field type; vendor-private.
-            var type = (TiffFieldType)typeCode;
+            // Type 13 (IFD) is a LONG offset of a sub-directory.
+            var type = typeCode == 13 ? TiffFieldType.Long : (TiffFieldType)typeCode;
             if (!CheckedRange.TryMultiply(valueCount, ExifValue.GetWidth(type), out int byteLength) ||
                 byteLength > limits.MaxValueBytes)
                 return null;

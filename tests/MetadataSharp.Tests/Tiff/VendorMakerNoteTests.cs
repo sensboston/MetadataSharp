@@ -228,3 +228,83 @@ public sealed class SonyMakerNoteArrayTests
         Assert.Empty(Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x2010, Undefined(stored), "ILCE-7M3"u8));
     }
 }
+
+public sealed class OlympusMakerNoteTests
+{
+    private static void U16(byte[] b, int at, int v, bool big) { if (big) BinaryPrimitives.WriteUInt16BigEndian(b.AsSpan(at), (ushort)v); else BinaryPrimitives.WriteUInt16LittleEndian(b.AsSpan(at), (ushort)v); }
+    private static void U32(byte[] b, int at, long v, bool big) { if (big) BinaryPrimitives.WriteUInt32BigEndian(b.AsSpan(at), (uint)v); else BinaryPrimitives.WriteUInt32LittleEndian(b.AsSpan(at), (uint)v); }
+    private static void Entry(byte[] b, int at, int tag, int type, long count, long value, bool big) { U16(b, at, tag, big); U16(b, at + 2, type, big); U32(b, at + 4, count, big); U32(b, at + 8, value, big); }
+
+    /// <summary>
+    /// TIFF (IFD0 Make "OLYMPUS", ExifIFD) whose MakerNote is "OLYMPUS\0" + mark + 03 00, a main IFD
+    /// at 12 with CameraSettings (type 13, IFD) pointing at 32, and a CameraSettings IFD there with
+    /// one SHORT entry. All MakerNote offsets count from the MakerNote; its order is <paramref name="innerBig"/>.
+    /// </summary>
+    private static byte[] Build(bool outerBig, bool innerBig, uint pointer = 32)
+    {
+        var note = new byte[60];
+        "OLYMPUS\0"u8.CopyTo(note);
+        note[8] = note[9] = (byte)(innerBig ? 'M' : 'I');
+        note[10] = 3;
+        U16(note, 12, 1, innerBig);
+        Entry(note, 14, 0x2020, 13, 1, pointer, innerBig);
+        U32(note, 26, 0, innerBig);
+        U16(note, 32, 1, innerBig);
+        Entry(note, 34, 0x0100, 3, 1, 0, innerBig);
+        U16(note, 42, 7, innerBig);
+        U32(note, 46, 0, innerBig);
+
+        const int at = 66;
+        var b = new byte[at + note.Length];
+        b[0] = b[1] = (byte)(outerBig ? 'M' : 'I');
+        U16(b, 2, 42, outerBig); U32(b, 4, 8, outerBig);
+        U16(b, 8, 2, outerBig);
+        Entry(b, 10, 0x010F, 2, 8, 38, outerBig);
+        Entry(b, 22, 0x8769, 4, 1, 48, outerBig);
+        "OLYMPUS\0"u8.CopyTo(b.AsSpan(38));
+        U16(b, 48, 1, outerBig);
+        Entry(b, 50, 0x927C, 7, note.Length, at, outerBig);
+        note.CopyTo(b, at);
+        return b;
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Olympus2SubDirectoriesBecomeFieldsOfTheirPointerTag(bool outerBig, bool innerBig)
+    {
+        MakerNote? note = ExifTiffReader.Read(Build(outerBig, innerBig)).Metadata.MakerNote;
+        Assert.NotNull(note);
+        Assert.Equal(MakerNoteFormat.Olympus2, note.Format);
+        Assert.True(note.TryGetEntry(0x2020, out MakerNoteEntry? settings));
+        Assert.Equal("CameraSettings", settings.Name);
+        Assert.Equal(TiffFieldType.Long, settings.Value.FieldType);
+        MakerNoteField field = Assert.Single(settings.Fields);
+        Assert.Equal((ushort)0x0100, field.Index);
+        byte[] raw = new byte[2];
+        field.Value.CopyRawTo(raw);
+        Assert.Equal(7, innerBig ? BinaryPrimitives.ReadUInt16BigEndian(raw) : BinaryPrimitives.ReadUInt16LittleEndian(raw));
+    }
+
+    [Fact]
+    public void ASubDirectoryOutsideTheMakerNoteIsLeftUnsplit()
+    {
+        MakerNote? note = ExifTiffReader.Read(Build(false, false, pointer: 5000)).Metadata.MakerNote;
+        Assert.NotNull(note);
+        Assert.True(note.TryGetEntry(0x2020, out MakerNoteEntry? settings));
+        Assert.Empty(settings.Fields);
+    }
+
+    [Fact]
+    public void OlympusNameTablesAreSortedAndUnique()
+    {
+        foreach (var table in new[] { Core.MakerNotes.OlympusMakerNoteNames.MainNames, Core.MakerNotes.OlympusMakerNoteNames.CsNames,
+                     Core.MakerNotes.OlympusMakerNoteNames.EqNames, Core.MakerNotes.OlympusMakerNoteNames.IpNames })
+        {
+            var ids = table.Select(t => t.Id).ToArray();
+            Assert.Equal(ids.OrderBy(i => i), ids);
+            Assert.Equal(ids.Length, ids.Distinct().Count());
+        }
+    }
+}

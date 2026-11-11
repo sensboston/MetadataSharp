@@ -35,7 +35,17 @@ public enum MakerNoteFormat
     Sony2,
 
     /// <summary>Panasonic: a signature, then an IFD with no next-IFD pointer; offsets relative to the TIFF header.</summary>
-    Panasonic
+    Panasonic,
+
+    /// <summary>Olympus, older cameras: an "OLYMP" signature, then an IFD; offsets relative to the TIFF header.</summary>
+    Olympus,
+
+    /// <summary>Olympus: an "OLYMPUS" signature and a byte order, then an IFD whose offsets, and those of its
+    /// sub-directories (reported as the fields of their pointer tags), are relative to the MakerNote.</summary>
+    Olympus2,
+
+    /// <summary>OM System: as <see cref="Olympus2"/>, with an "OM SYSTEM" signature.</summary>
+    OMSystem
 }
 
 /// <summary>One named field inside an array-valued MakerNote tag.</summary>
@@ -74,8 +84,9 @@ public sealed class MakerNoteEntry
     public ExifValue Value { get; }
 
     /// <summary>
-    /// The named fields of an array-valued tag whose layout this release knows, in element order;
-    /// empty otherwise. Elements without a known meaning are not listed.
+    /// The named fields of an array-valued tag whose layout this release knows, in element order, or
+    /// the entries of the sub-directory a pointer tag leads to; empty otherwise. Elements without a
+    /// known meaning are not listed.
     /// </summary>
     public IReadOnlyList<MakerNoteField> Fields { get; }
 }
