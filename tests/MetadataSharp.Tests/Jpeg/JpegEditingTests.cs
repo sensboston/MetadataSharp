@@ -188,6 +188,34 @@ public sealed class JpegEditingTests
     }
 
     [Fact]
+    public void ABlockOutsideTheEditableProfileIsReadAndNotEdited()
+    {
+        // StripOffsets, as an uncompressed Exif thumbnail has: valid to read, not something the planner writes.
+        byte[] tiff = [0x49, 0x49, 42, 0, 8, 0, 0, 0, 1, 0, 0x11, 0x01, 4, 0, 1, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0];
+        byte[] jpeg = JpegFixture.Build(JpegFixture.Segment(0xE1, JpegFixture.Exif(tiff)));
+        using var doc = JpegMetadataDocument.Open(new MemoryStream(jpeg));
+        ExifMetadata metadata = Assert.IsType<ExifMetadata>(doc.Exif);
+        Assert.False(metadata.IsEditable);
+        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0111), Assert.Single(metadata.Entries).Key);
+
+        using var copy = new MemoryStream();
+        doc.Save(copy, new ExifEdit());
+        Assert.Equal(jpeg, copy.ToArray());
+
+        var set = new ExifEdit(); set.Set(new(ExifDirectoryKind.Ifd0, 0x0112), ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, new byte[] { 1, 0 }));
+        var remove = new ExifEdit(); remove.RemoveAllExif();
+        foreach (ExifEdit edit in new[] { set, remove })
+        {
+            using var output = new MemoryStream();
+            Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => doc.Save(output, edit)).Code);
+            Assert.Empty(output.ToArray());
+        }
+
+        using var plain = JpegMetadataDocument.Open(new MemoryStream(JpegFixture.Build(JpegFixture.Segment(0xE1, JpegFixture.Exif()))));
+        Assert.True(Assert.IsType<ExifMetadata>(plain.Exif).IsEditable);
+    }
+
+    [Fact]
     public void AliasingNonemptyOutputMalformedExifAndOversizeAreRejected()
     {
         using var source = new MemoryStream(JpegFixture.Build());

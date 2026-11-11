@@ -116,6 +116,24 @@ public sealed class PngTests
         var remove = new ExifEdit(); remove.RemoveAllExif(); Assert.Equal(PngFixture.Build(), ExifSave(brokenExif, remove));
     }
     [Fact]
+    public void ExifOutsideTheEditableProfileIsReadAndNotEdited()
+    {
+        // StripOffsets, as an uncompressed Exif thumbnail has: valid to read, not something the planner writes.
+        byte[] strips = [0x49, 0x49, 42, 0, 8, 0, 0, 0, 1, 0, 0x11, 0x01, 4, 0, 1, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0];
+        byte[] original = PngFixture.Build(PngFixture.Chunk("eXIf", strips));
+        using (var doc = PngMetadataDocument.Open(new MemoryStream(original)))
+        {
+            ExifMetadata metadata = Assert.IsType<ExifMetadata>(doc.ReadExif());
+            Assert.False(metadata.IsEditable);
+            Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0111), Assert.Single(metadata.Entries).Key);
+        }
+        var edit = new ExifEdit(); edit.Set(new(ExifDirectoryKind.Ifd0, 0x0112), ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, new byte[] { 6, 0 }));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => ExifSave(original, edit)).Code);
+        Assert.Equal(original, ExifSave(original, new()));
+        using var plain = PngMetadataDocument.Open(new MemoryStream(PngFixture.Build(PngFixture.Chunk("eXIf", JpegFixture.OrientationTiff))));
+        Assert.True(Assert.IsType<ExifMetadata>(plain.ReadExif()).IsEditable);
+    }
+    [Fact]
     public void StructuralOrderTruncationAndCountsAreChecked()
     {
         byte[] bytes = PngFixture.Build();

@@ -73,7 +73,14 @@ public sealed class PngMetadataDocument : IDisposable, IAsyncDisposable
     private async Task<ExifMetadata?> ReadExifCore(bool asynchronous, CancellationToken token)
     {
         await Verify(asynchronous, token).ConfigureAwait(false); PngChunk? chunk = Unique(false);
-        return chunk is null ? null : (await Exif(chunk, asynchronous, token).ConfigureAwait(false)).Metadata;
+        if (chunk is null) return null;
+        try { return (await Exif(chunk, asynchronous, token).ConfigureAwait(false)).Metadata; }
+        catch (MetadataException failure) when (ExifTiffReader.IsRelaxable(failure))
+        {
+            // Read-only rules for a block the editable profile refuses; SaveExif keeps refusing it.
+            byte[] bytes = await Payload(chunk, asynchronous, token).ConfigureAwait(false);
+            ExifMetadata relaxed = ExifTiffReader.ReadRelaxed(bytes, options.Limits, chunk.Payload); token.ThrowIfCancellationRequested(); return relaxed;
+        }
     }
     public XmpPacket? ReadXmp(XmpReadOptions? options = null) => ReadXmpCore(options, false, default).GetAwaiter().GetResult();
     public Task<XmpPacket?> ReadXmpAsync(XmpReadOptions? options = null, CancellationToken cancellationToken = default) => ReadXmpCore(options, true, cancellationToken);

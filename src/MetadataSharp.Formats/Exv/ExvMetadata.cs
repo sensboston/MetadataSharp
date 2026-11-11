@@ -63,7 +63,7 @@ public sealed class ExvMetadata
             int payloadAt = position + 4;
             ReadOnlySpan<byte> payload = data.Slice(payloadAt, length - 2);
             if (marker == 0xE1 && exif is null && payload.StartsWith("Exif\0\0"u8))
-                exif = ExifTiffReader.Read(payload[6..], limits, payloadAt + 6).Metadata;
+                exif = ExifTiffReader.Inspect(payload[6..], limits, payloadAt + 6);
             else if (marker == 0xE1 && xmp is null && payload.StartsWith("http://ns.adobe.com/xap/1.0/\0"u8))
                 xmp = XmpPacket.Parse(payload["http://ns.adobe.com/xap/1.0/\0"u8.Length..]);
             else if (marker == 0xED && iptc is null && payload.StartsWith("Photoshop 3.0\0"u8))

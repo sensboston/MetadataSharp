@@ -25,7 +25,7 @@ using MetadataSharp.Formats.WebP;
 // ExifTags.Interpret makes of the value, and it is empty where that is null. A record without the
 // field says no interpretation is offered for the tag at all, which is the case for MakerNote, IPTC
 // and XMP records.
-// A file whose reader refused or was not attempted simply carries no TAG records. A TIFF or PSD
+// A file whose reader refused or was not attempted simply carries no TAG records. A JPEG, TIFF or PSD
 // that was read, with its IPTC stream or XMP packet refused, is ok with the detail
 // iptc-refused:<code>, xmp-refused:<code>, or both separated by a comma.
 internal static class Program
@@ -106,9 +106,18 @@ internal static class Program
         if (!WithinBudget(length, stdout)) return;
         using JpegMetadataDocument document = JpegMetadataDocument.Open(path);
         Exif(document.Exif, stdout);
-        if (document.ReadIptc() is IptcPacket iptc) Iptc(iptc, stdout);
-        if (document.ReadXmp() is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
+        // The document reads each kind on its own, so a refused IPTC stream or XMP packet leaves the
+        // rows of the other kinds in place and travels in the detail of the status, as for a TIFF.
+        var refused = new List<string>();
+        IptcPacket? iptc = null;
+        try { iptc = document.ReadIptc(); }
+        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
+        if (iptc is not null) Iptc(iptc, stdout);
+        XmpPacket? xmp = null;
+        try { xmp = document.ReadXmp(); }
+        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
+        if (xmp is not null) Xmp(xmp, stdout);
+        Done(stdout, refused);
     }
 
     private static void Png(string path, StreamWriter stdout, long length)

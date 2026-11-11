@@ -42,6 +42,24 @@ public sealed class WebPTests
         Assert.Equal(kind is 2 or 3 ? 0x10 : 0, Chunks(removed)[0].Body[0]);
         Assert.Equal(JpegFixture.OrientationTiff[..18], Chunks(exif).Single(c => c.Kind == "EXIF").Body[..18]);
     }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ExifOutsideTheEditableProfileIsReadAndNotEdited(bool wrapped)
+    {
+        // StripOffsets, as an uncompressed Exif thumbnail has: valid to read, not something the planner writes.
+        byte[] strips = [0x49, 0x49, 42, 0, 8, 0, 0, 0, 1, 0, 0x11, 0x01, 4, 0, 1, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0];
+        byte[] legacy = [.. "Exif\0\0"u8, .. strips];
+        byte[] original = WebPFixture.Extended(8, WebPFixture.Image(0)[12..], WebPFixture.Chunk("EXIF", wrapped ? legacy : strips));
+        using (var doc = WebPMetadataDocument.Open(new MemoryStream(original)))
+        {
+            ExifMetadata metadata = Assert.IsType<ExifMetadata>(doc.ReadExif());
+            Assert.False(metadata.IsEditable);
+            Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0111), Assert.Single(metadata.Entries).Key);
+        }
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => Save(original, Exif())).Code);
+        Assert.Equal(original, Save(original, new ExifEdit()));
+    }
     [Fact]
     public void LegacyExifWrapperIsRetainedOnNoOpAndRemovedOnRebuild()
     {

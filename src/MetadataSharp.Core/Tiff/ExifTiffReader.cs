@@ -7,6 +7,10 @@ namespace MetadataSharp.Core.Tiff;
 /// Reads the approved classic TIFF/EXIF subset without recursion or image decoding. Two entry points
 /// share one walk: <see cref="Read"/> takes the TIFF payload of an APP1-sized EXIF block, and
 /// <see cref="ReadFile"/> takes a whole TIFF-based file, whose image directories are left alone.
+/// Both refuse whatever the editable profile cannot write back. <see cref="Inspect"/> and
+/// <see cref="InspectFile"/> are for reading only: when the strict walk refuses the input they walk it
+/// again under the read-only rules, which accept three structures the TIFF and Exif specifications
+/// allow and mark the result as not editable. Malformed input is refused by both walks.
 /// </summary>
 internal ref struct ExifTiffReader
 {
@@ -19,6 +23,7 @@ internal ref struct ExifTiffReader
     private readonly MetadataLimits limits;
     private readonly long sourceBase;
     private readonly bool wholeFile;
+    private readonly bool readOnly;
     private readonly Endianness order;
     private readonly List<ExifEntry> entries;
     private readonly List<ExifDirectoryKind> directories;
@@ -33,12 +38,14 @@ internal ref struct ExifTiffReader
     private int dngPrivateStart;
     private int dngPrivateLength;
 
-    private ExifTiffReader(ReadOnlySpan<byte> data, MetadataLimits limits, long sourceBase, bool wholeFile)
+    private ExifTiffReader(ReadOnlySpan<byte> data, MetadataLimits limits, long sourceBase, bool wholeFile,
+        bool readOnly)
     {
         this.data = data;
         this.limits = limits;
         this.sourceBase = sourceBase;
         this.wholeFile = wholeFile;
+        this.readOnly = readOnly;
         order = data[0] == 0x49 ? Endianness.LittleEndian : Endianness.BigEndian;
         entries = [];
         directories = [];
@@ -56,7 +63,42 @@ internal ref struct ExifTiffReader
     }
 
     internal static TiffReadResult Read(ReadOnlySpan<byte> tiff, MetadataLimits? limits = null,
+        long sourceBase = 0) => ReadBlock(tiff, limits, sourceBase, readOnly: false);
+
+    /// <summary>
+    /// Reads an EXIF block under the read-only rules alone. They differ from <see cref="Read"/> in three
+    /// places, each a structure the specifications allow and the editable profile cannot write back: an
+    /// entry whose field type is not one of the twelve this reader knows is left out, as TIFF 6.0 tells
+    /// a reader to do; strip, tile and SubIFD tags are ordinary entries that are never followed (an
+    /// uncompressed Exif thumbnail is stored in strips); and values may share bytes with each other or
+    /// with a directory. Every other rule stands, so out-of-range offsets, duplicate or unordered tags
+    /// and bad pointers are refused exactly as before. No thumbnail is extracted, and the metadata
+    /// reports <see cref="ExifMetadata.IsEditable"/> as false.
+    /// </summary>
+    internal static ExifMetadata ReadRelaxed(ReadOnlySpan<byte> tiff, MetadataLimits? limits = null,
+        long sourceBase = 0) => ReadBlock(tiff, limits, sourceBase, readOnly: true).Metadata;
+
+    /// <summary>
+    /// Whether a refusal of the strict walk is worth a second walk under the read-only rules. Budgets,
+    /// the APP1 size cap and duplicate tags are refused by both, so they are not.
+    /// </summary>
+    internal static bool IsRelaxable(MetadataException failure) =>
+        failure.Code is MetadataErrorCode.UnsupportedFeature or MetadataErrorCode.InvalidExif;
+
+    /// <summary>
+    /// Reads an EXIF block for reading only: the strict walk, and where it refuses the block, the
+    /// read-only rules of <see cref="ReadRelaxed"/>. A block both walks refuse fails with the second
+    /// walk's error.
+    /// </summary>
+    internal static ExifMetadata Inspect(ReadOnlySpan<byte> tiff, MetadataLimits? limits = null,
         long sourceBase = 0)
+    {
+        try { return Read(tiff, limits, sourceBase).Metadata; }
+        catch (MetadataException failure) when (IsRelaxable(failure)) { return ReadRelaxed(tiff, limits, sourceBase); }
+    }
+
+    private static TiffReadResult ReadBlock(ReadOnlySpan<byte> tiff, MetadataLimits? limits, long sourceBase,
+        bool readOnly)
     {
         limits ??= new();
         limits.Validate();
@@ -70,7 +112,7 @@ internal ref struct ExifTiffReader
             throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF header is truncated.", sourceBase);
         if (!HasByteOrderMark(tiff))
             throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF byte order mark is invalid.", sourceBase);
-        var reader = new ExifTiffReader(tiff, limits, sourceBase, wholeFile: false);
+        var reader = new ExifTiffReader(tiff, limits, sourceBase, wholeFile: false, readOnly);
         return reader.Parse();
     }
 
@@ -81,7 +123,21 @@ internal ref struct ExifTiffReader
     /// ordinary entries that are never followed; and directories chained after the second one are image
     /// directories that are neither read nor refused. Every other rule is the same.
     /// </summary>
-    internal static TiffReadResult ReadFile(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
+    internal static TiffReadResult ReadFile(ReadOnlySpan<byte> file, MetadataLimits? limits = null) =>
+        ReadWhole(file, limits, readOnly: false);
+
+    /// <summary>
+    /// Reads the EXIF directories of a whole TIFF-based file for reading only: the strict walk of
+    /// <see cref="ReadFile"/>, and where it refuses the file, the read-only rules described at
+    /// <see cref="ReadRelaxed"/>. A file both walks refuse fails with the second walk's error.
+    /// </summary>
+    internal static ExifMetadata InspectFile(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
+    {
+        try { return ReadFile(file, limits).Metadata; }
+        catch (MetadataException failure) when (IsRelaxable(failure)) { return ReadWhole(file, limits, readOnly: true).Metadata; }
+    }
+
+    private static TiffReadResult ReadWhole(ReadOnlySpan<byte> file, MetadataLimits? limits, bool readOnly)
     {
         limits ??= new();
         limits.Validate();
@@ -91,7 +147,7 @@ internal ref struct ExifTiffReader
             throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF header is truncated.", 0);
         if (!HasByteOrderMark(file))
             throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF byte order mark is invalid.", 0);
-        var reader = new ExifTiffReader(file, limits, 0, wholeFile: true);
+        var reader = new ExifTiffReader(file, limits, 0, wholeFile: true, readOnly);
         return reader.Parse();
     }
 
@@ -129,9 +185,10 @@ internal ref struct ExifTiffReader
             var item = pending.Dequeue();
             ReadDirectory(item.Offset, item.Kind, item.Depth);
         }
-        byte[]? thumbnail = ReadThumbnail();
+        // A read-only result is never planned for writing, so its picture is not taken out either.
+        byte[]? thumbnail = readOnly ? null : ReadThumbnail();
         MakerNote? makerNote = ReadMakerNote();
-        return new TiffReadResult(new ExifMetadata(order, entries, makerNote),
+        return new TiffReadResult(new ExifMetadata(order, entries, makerNote, editable: !readOnly),
             directories.AsReadOnly(), thumbnail);
     }
 
@@ -199,7 +256,13 @@ internal ref struct ExifTiffReader
             previous = tag;
             ushort typeCode = U16(p + 2);
             if (typeCode is < 1 or > 12)
+            {
+                // TIFF 6.0: a reader skips a field whose type it does not expect. Its width is unknown,
+                // so the entry cannot be written back; reading leaves it out and keeps the rest.
+                if (readOnly)
+                    continue;
                 throw Error(MetadataErrorCode.UnsupportedFeature, "The TIFF field type has no supported width.", p + 2);
+            }
             var type = (TiffFieldType)typeCode;
             uint valueCount = U32(p + 4);
             if (!CheckedRange.TryMultiply(valueCount, ExifValue.GetWidth(type), out int byteLength))
@@ -232,7 +295,7 @@ internal ref struct ExifTiffReader
             }
             // In a whole file these describe image data and further image directories: the entry is kept
             // like any other, and nothing it points at is read.
-            if (!wholeFile && tag is 0x014A or 0x0111 or 0x0117 or 0x0144 or 0x0145)
+            if (!wholeFile && !readOnly && tag is 0x014A or 0x0111 or 0x0117 or 0x0144 or 0x0145)
                 throw Error(MetadataErrorCode.UnsupportedFeature, "SubIFDs, strips and tiles are outside the EXIF subset.", p);
             if (tag == 0x927C && kind == ExifDirectoryKind.Exif)
             {
@@ -322,6 +385,10 @@ internal ref struct ExifTiffReader
 
     private void ClaimRange(int start, int length)
     {
+        // Shared bytes are a hazard for relocation only. Each range was already checked to lie inside
+        // the payload, and every directory is visited once, so reading them is bounded without this.
+        if (readOnly)
+            return;
         foreach (var range in ranges)
             if (start < range.Start + range.Length && range.Start < start + length)
                 throw Error(MetadataErrorCode.InvalidExif, "TIFF structures or external values overlap.", start);

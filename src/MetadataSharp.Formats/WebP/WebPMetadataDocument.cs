@@ -79,7 +79,15 @@ public sealed class WebPMetadataDocument : IDisposable, IAsyncDisposable
     private async Task<ExifMetadata?> ReadExifCore(bool asynchronous, CancellationToken token)
     {
         await Verify(asynchronous, token).ConfigureAwait(false); WebPChunk? chunk = Unique(false);
-        return chunk is null ? null : (await Exif(chunk, asynchronous, token).ConfigureAwait(false)).Metadata;
+        if (chunk is null) return null;
+        try { return (await Exif(chunk, asynchronous, token).ConfigureAwait(false)).Metadata; }
+        catch (MetadataException failure) when (ExifTiffReader.IsRelaxable(failure))
+        {
+            // Read-only rules for a block the editable profile refuses; SaveExif keeps refusing it.
+            byte[] bytes = await Payload(chunk, asynchronous, token).ConfigureAwait(false);
+            int skip = bytes.AsSpan().StartsWith("Exif\0\0"u8) ? 6 : 0;
+            ExifMetadata relaxed = ExifTiffReader.ReadRelaxed(bytes.AsSpan(skip), options.Limits, chunk.Payload + skip); token.ThrowIfCancellationRequested(); return relaxed;
+        }
     }
     public XmpPacket? ReadXmp(XmpReadOptions? options = null) => ReadXmpCore(options, false, default).GetAwaiter().GetResult();
     public Task<XmpPacket?> ReadXmpAsync(XmpReadOptions? options = null, CancellationToken cancellationToken = default) => ReadXmpCore(options, true, cancellationToken);

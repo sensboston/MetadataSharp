@@ -17,14 +17,24 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
     private readonly MetadataLimits limits;
     private readonly JpegScanResult scan;
     private readonly TiffReadResult? tiff;
+    private readonly ExifMetadata? exif;
+    private readonly MetadataException? exifRefusal;
     private readonly byte[] digest;
     private bool disposed;
 
     private JpegMetadataDocument(Stream source, bool ownsSource, string? sourcePath, MetadataLimits limits,
-        JpegScanResult scan, TiffReadResult? tiff, byte[] digest)
-    { this.source = source; this.ownsSource = ownsSource; this.sourcePath = sourcePath; this.limits = limits; this.scan = scan; this.tiff = tiff; this.digest = digest; }
+        JpegScanResult scan, TiffReadResult? tiff, ExifMetadata? exif, MetadataException? exifRefusal, byte[] digest)
+    {
+        this.source = source; this.ownsSource = ownsSource; this.sourcePath = sourcePath; this.limits = limits; this.scan = scan;
+        this.tiff = tiff; this.exif = exif; this.exifRefusal = exifRefusal; this.digest = digest;
+    }
 
-    public ExifMetadata? Exif => tiff?.Metadata;
+    /// <summary>
+    /// The EXIF metadata, or null when the file has none. A block the editable profile refuses for a
+    /// structure that is valid to read is returned with <see cref="ExifMetadata.IsEditable"/> false;
+    /// saving an EXIF edit of such a file fails with the error the editable profile raised.
+    /// </summary>
+    public ExifMetadata? Exif => exif;
 
     public static JpegMetadataDocument Open(string path, JpegReadOptions? options = null) =>
         OpenPath(path, SnapshotLimits(options), false, default).GetAwaiter().GetResult();
@@ -59,6 +69,8 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         {
             JpegScanResult scan = asynchronous ? await JpegScanner.ScanAsync(source, settings, token).ConfigureAwait(false) : JpegScanner.Scan(source, settings);
             TiffReadResult? tiff = null;
+            ExifMetadata? metadata = null;
+            MetadataException? refusal = null;
             if (scan.Exif is JpegSegment exif)
             {
                 int size = exif.PayloadLength - 6;
@@ -67,10 +79,20 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
                 byte[] bytes = new byte[size];
                 source.Position = exif.PayloadOffset + 6;
                 await ReadExact(source, bytes, asynchronous, token).ConfigureAwait(false);
-                tiff = ExifTiffReader.Read(bytes, settings, exif.PayloadOffset + 6);
+                try
+                {
+                    tiff = ExifTiffReader.Read(bytes, settings, exif.PayloadOffset + 6);
+                    metadata = tiff.Metadata;
+                }
+                catch (MetadataException failure) when (ExifTiffReader.IsRelaxable(failure))
+                {
+                    // Readable, not editable: the strict result stays absent and its error is kept for Save.
+                    metadata = ExifTiffReader.ReadRelaxed(bytes, settings, exif.PayloadOffset + 6);
+                    refusal = failure;
+                }
             }
             byte[] hash = await Hash(source, scan.Length, settings.CopyBufferBytes, asynchronous, token).ConfigureAwait(false);
-            return new(source, owns, path, settings, scan, tiff, hash);
+            return new(source, owns, path, settings, scan, tiff, metadata, refusal, hash);
         }
         catch
         {
@@ -140,6 +162,8 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         if (!CryptographicOperations.FixedTimeEquals(digest, current))
             throw new MetadataException(MetadataErrorCode.SourceChanged, "The source content has changed since opening.");
         if (edit.IsEmpty) return new(true, null);
+        // The block was opened for reading only. Editing it refuses as opening it used to.
+        if (exifRefusal is not null) throw new MetadataException(exifRefusal.Code, exifRefusal.Message, exifRefusal.SourceOffset);
         if (edit.RemoveAll) return new(scan.Exif is null, null);
         Endianness order = tiff?.Metadata.ByteOrder ?? Endianness.LittleEndian;
         ExifMetadata desired = edit.Apply(tiff, order, limits);

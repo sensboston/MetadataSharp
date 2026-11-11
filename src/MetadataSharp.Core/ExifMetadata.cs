@@ -7,8 +7,13 @@ public sealed class ExifMetadata
 {
     private readonly Dictionary<ExifTagKey, ExifEntry> lookup;
 
-    internal ExifMetadata(Endianness byteOrder, IReadOnlyList<ExifEntry> entries, MakerNote? makerNote)
-        : this(byteOrder, entries) => MakerNote = makerNote;
+    internal ExifMetadata(Endianness byteOrder, IReadOnlyList<ExifEntry> entries, MakerNote? makerNote,
+        bool editable = true)
+        : this(byteOrder, entries)
+    {
+        MakerNote = makerNote;
+        IsEditable = editable;
+    }
 
     internal ExifMetadata(Endianness byteOrder, IReadOnlyList<ExifEntry> entries)
     {
@@ -33,6 +38,13 @@ public sealed class ExifMetadata
 
     public Endianness ByteOrder { get; }
     public IReadOnlyList<ExifEntry> Entries { get; }
+
+    /// <summary>
+    /// False when the block was read under the read-only rules: it holds a structure the editable
+    /// profile refuses (an unknown field type, whose entry is left out; strip, tile or SubIFD tags;
+    /// values that share bytes), so a document returns it for reading and refuses to edit it.
+    /// </summary>
+    public bool IsEditable { get; } = true;
 
     /// <summary>
     /// A read-only decoding of the MakerNote when its vendor layout is recognised, otherwise null.
