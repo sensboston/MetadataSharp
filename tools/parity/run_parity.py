@@ -41,6 +41,8 @@ CHUNK_TITLE = "PARITY"
 #: Notices one workflow step may leave. The summary is written first and must fit; the per-file
 #: detail takes what is left and is trimmed to it.
 STEP_NOTICE_LIMIT = 10
+#: Characters of each value kept when the detail shows one differing pair per key.
+SAMPLE_WIDTH = 48
 #: Files per tool invocation. A batch is only a performance detail: an incomplete batch is retried
 #: file by file, so one hostile input cannot take the measurement down.
 DUMP_CHUNK_FILES = 40
@@ -338,12 +340,14 @@ def detail(files: list[dict[str, Any]]) -> dict[str, Any]:
 
     One entry per file that is not a complete agreement - its status, the reader's reason, and how
     many of its keys per group are missing, different or unread - and every missing or differing key
-    with its count. Nothing here is a new measurement: it is the per-file rows, counted. It has to be
+    with its count; a differing key also carries the two values of its first occurrence, ours then
+    theirs, cut to SAMPLE_WIDTH characters. Nothing here is a new measurement: it is the per-file rows, counted. It has to be
     taken before the rows are bounded for the JSON report.
     """
     listed: dict[str, dict[str, Any]] = {}
     missing: dict[str, int] = {}
     differing: dict[str, int] = {}
+    samples: dict[str, list[str]] = {}
     for entry in files:
         groups: dict[str, dict[str, int]] = {}
         extra = 0
@@ -359,6 +363,7 @@ def detail(files: list[dict[str, Any]]) -> dict[str, Any]:
                     missing[r["key"]] = missing.get(r["key"], 0) + 1
                 elif outcome == compare_mod.VALUE_DIFF:
                     differing[r["key"]] = differing.get(r["key"], 0) + 1
+                    samples.setdefault(r["key"], [r.get("our_value", "")[:SAMPLE_WIDTH], r.get("their_value", "")[:SAMPLE_WIDTH]])
         if entry["status"] == "ok" and not entry["detail"] and not groups:
             continue
         row: dict[str, Any] = {"format": entry["format"], "status": entry["status"]}
@@ -368,7 +373,7 @@ def detail(files: list[dict[str, Any]]) -> dict[str, Any]:
             row["extra"] = extra
         row.update(groups)
         listed[entry["label"]] = row
-    return {"files": listed, "missing": missing, "differing": differing, "trimmed": 0}
+    return {"files": listed, "missing": missing, "differing": differing, "samples": samples, "trimmed": 0}
 
 
 def encode(payload: dict[str, Any]) -> str:
@@ -376,7 +381,8 @@ def encode(payload: dict[str, Any]) -> str:
 
 
 def fit_detail(payload: dict[str, Any], notices: int) -> dict[str, Any] | None:
-    """The detail, with its rarest missing keys dropped until it fits ``notices`` annotations.
+    """The detail, cut until it fits ``notices`` annotations: the samples go first, all of them, then
+    the rarest missing keys.
 
     ``trimmed`` says how many keys went, so a reader of the annotations knows the table is not the
     whole of it; the per-file counts are never cut. ``None`` when not even those fit.
@@ -384,6 +390,9 @@ def fit_detail(payload: dict[str, Any], notices: int) -> dict[str, Any] | None:
     budget = notices * CHUNK_SIZE
     if budget <= 0:
         return None
+    if len(encode(payload)) <= budget:
+        return payload
+    payload = dict(payload, samples={})
     if len(encode(payload)) <= budget:
         return payload
     ranked = sorted(payload["missing"].items(), key=lambda pair: (-pair[1], pair[0]))
