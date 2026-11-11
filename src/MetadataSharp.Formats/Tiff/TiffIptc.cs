@@ -53,7 +53,7 @@ public static class TiffIptc
     /// Anything else, including a stream this walk cannot follow, is left whole for the IPTC reader
     /// to judge.
     /// </summary>
-    private static int UnpaddedLength(ReadOnlySpan<byte> stream)
+    internal static int UnpaddedLength(ReadOnlySpan<byte> stream)
     {
         int at = 0;
         while (at < stream.Length && stream[at] == 0x1C)

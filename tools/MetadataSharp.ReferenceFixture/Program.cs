@@ -246,7 +246,73 @@ else if (args.Length == 3 && args[0] == "noop")
 {
     using var doc = JpegMetadataDocument.Open(args[1]); doc.SaveAs(args[2], new ExifEdit());
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
+else if (args.Length == 2 && args[0] == "tiff-based-edits")
+{
+    // Files for the pinned tool to read after the TIFF-based writer edited them: every authored
+    // layout in both byte orders, one file per kind of edit and one with all of them. Each row of
+    // the manifest names an edited file, the file it was made from, the keys the edit may change
+    // and the text the tool has to print for the edited file.
+    Directory.CreateDirectory(args[1]);
+    var manifest = new List<string>();
+    const string date = "2021:06:07 08:09:10", longText = "A considerably longer text than the one before";
+    foreach (string name in TiffBasedFixture.Names)
+    {
+        foreach (bool big in new[] { false, true })
+        {
+            TiffBasedFixture fixture = TiffBasedFixture.Create(name, big);
+            string stem = name + (big ? "-be" : "-le"), extension = name == "tiff" ? ".tif" : "." + name;
+            string source = stem + extension;
+            File.WriteAllBytes(Path.Combine(args[1], source), fixture.Bytes);
+            string textKey = fixture.TextTag == 0x010F ? "Exif.Image.Make" : "Exif.Image.Model";
+
+            var inPlace = new ExifEdit();
+            inPlace.Set(new(ExifDirectoryKind.Exif, 0x9003), AsciiValue(date));
+            var grow = new ExifEdit();
+            grow.Set(new(ExifDirectoryKind.Ifd0, (ushort)fixture.TextTag), AsciiValue(longText));
+            grow.Set(new(ExifDirectoryKind.Exif, 0x9004), AsciiValue(date));
+            var gps = new ExifEdit();
+            gps.Set(new(ExifDirectoryKind.Gps, 0), ExifValue.FromRaw(TiffFieldType.Byte, 4, Endianness.LittleEndian, [2, 3, 0, 0]));
+            gps.Set(new(ExifDirectoryKind.Gps, 1), AsciiValue("N"));
+            gps.Set(new(ExifDirectoryKind.Gps, 2), ExifValue.FromRaw(TiffFieldType.Rational, 3, Endianness.LittleEndian,
+                [42, 0, 0, 0, 1, 0, 0, 0, 22, 0, 0, 0, 1, 0, 0, 0, 30, 0, 0, 0, 1, 0, 0, 0]));
+            gps.Set(new(ExifDirectoryKind.Gps, 3), AsciiValue("W"));
+            gps.Set(new(ExifDirectoryKind.Gps, 4), ExifValue.FromRaw(TiffFieldType.Rational, 3, Endianness.LittleEndian,
+                [71, 0, 0, 0, 1, 0, 0, 0, 14, 0, 0, 0, 1, 0, 0, 0, 15, 0, 0, 0, 1, 0, 0, 0]));
+            var tool = new XmpEdit();
+            tool.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("MetadataSharp"));
+            var caption = new IptcEdit();
+            caption.ReplaceText(new(2, 120), ["A caption"]);
+
+            string Edited(string from, string kind, Action<TiffBasedMetadataDocument, string> save)
+            {
+                string target = stem + "-" + kind + extension;
+                using TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(Path.Combine(args[1], from));
+                save(document, Path.Combine(args[1], target));
+                return target;
+            }
+            void Row(string target, string changed, string expected) => manifest.Add(string.Join('\t', source, target, changed, expected));
+
+            const string gpsText = "Exif.GPSInfo.GPSLatitudeRef|Exif.GPSInfo.GPSLatitude |Exif.GPSInfo.GPSLongitudeRef|Exif.GPSInfo.GPSLongitude ";
+            Row(Edited(source, "inplace", (document, path) => document.SaveExifAs(path, inPlace)), "Exif.Photo.DateTimeOriginal", date);
+            Row(Edited(source, "grow", (document, path) => document.SaveExifAs(path, grow)), textKey + ",Exif.Image.ExifTag",
+                longText + "|Exif.Photo.DateTimeDigitized");
+            Row(Edited(source, "gps", (document, path) => document.SaveExifAs(path, gps)), "Exif.Image.GPSTag", gpsText);
+            Row(Edited(source, "xmp", (document, path) => document.SaveXmpAs(path, tool)), "", "Xmp.xmp.CreatorTool|MetadataSharp");
+            Row(Edited(source, "iptc", (document, path) => document.SaveIptcAs(path, caption)), "", "Iptc.Application2.Caption|A caption");
+
+            // One edit after another, each on the output of the one before.
+            string step = Edited(source, "all-1", (document, path) => document.SaveExifAs(path, inPlace));
+            step = Edited(step, "all-2", (document, path) => document.SaveExifAs(path, grow));
+            step = Edited(step, "all-3", (document, path) => document.SaveExifAs(path, gps));
+            step = Edited(step, "all-4", (document, path) => document.SaveXmpAs(path, tool));
+            step = Edited(step, "all", (document, path) => document.SaveIptcAs(path, caption));
+            Row(step, "Exif.Photo.DateTimeOriginal," + textKey + ",Exif.Image.ExifTag,Exif.Image.GPSTag",
+                date + "|" + longText + "|Exif.Photo.DateTimeDigitized|" + gpsText + "|Xmp.xmp.CreatorTool|Iptc.Application2.Caption");
+        }
+    }
+    File.WriteAllLines(Path.Combine(args[1], "manifest.tsv"), manifest);
+}
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
 
 
@@ -256,6 +322,9 @@ static byte[] Resource(ushort id, byte[] data)
     BinaryPrimitives.WriteUInt16BigEndian(result.AsSpan(4), id);
     BinaryPrimitives.WriteUInt32BigEndian(result.AsSpan(8), (uint)data.Length); data.CopyTo(result, 12); return result;
 }
+
+static ExifValue AsciiValue(string text) =>
+    ExifValue.FromRaw(TiffFieldType.Ascii, (uint)text.Length + 1, Endianness.LittleEndian, Encoding.ASCII.GetBytes(text + "\0"));
 
 static string? RawText(ExifValue? value)
 {

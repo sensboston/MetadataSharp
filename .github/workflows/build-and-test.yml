@@ -313,6 +313,15 @@ jobs:
             --fixtures tests/fixtures/b11l \
             --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
             --dump-command "$DUMP" --out artifacts/parity/owned --title 'PARITY owned' --annotate
+      # Not key parity: nothing here is compared with what this library reads. The pinned tool has
+      # to read every file the TIFF-based writer edited, print what the edit wrote, and print
+      # unchanged every line of the source file that the edit did not name.
+      - name: Files edited by the TIFF-based writer still read in the pinned tool (exiv2 -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-edits artifacts/parity/edited
+          python tools/reference/tiff_based_edits.py artifacts/parity/edited \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
       - name: Upload parity reports (measurements only - no corpus bytes, no external source)
         if: always()
         uses: actions/upload-artifact@v4

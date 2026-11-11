@@ -47,10 +47,15 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   not interpreted and translated by the reference: 4,400 (Canon 807, Nikon 948, Sony 534, other
   vendors 1,906, standard EXIF 205). Equal of both-interpreted: Canon 3,288 of 3,334, Nikon 2,518
   of 2,538, Sony 2,300 of 2,330, standard EXIF 7,845 of 8,117; the reference translates no IPTC value.
+- Write, TIFF-based files (TIFF, DNG, CR2, NEF, ARW, PEF, ORF, RW2): `TiffBasedMetadataDocument`
+  `SaveExif/SaveXmp/SaveIptc`. A value that fits is written in place; what grows is appended and
+  one pointer changed; no byte moves, old bytes stay. Image data and the MakerNote are never written
+  to; an append is refused when image data runs to the end of the file. The output is read back and
+  refused unless only the named tags differ. Parity job: `exiv2 -pa` reads every edited fixture.
 
 ## Next (in order)
 
-1. Write side: TIFF-family in-place/append writer, then BMFF; MakerNote-safe rules per vendor.
+1. Write side: capability rows for the TIFF-based writer, then BMFF; MakerNote-safe rules per vendor.
 2. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.
 3. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
@@ -59,4 +64,4 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
-- No ICC or comment APIs yet; no BMFF/RAW write. Previews are not decoded and not written.
+- No ICC or comment APIs yet; no BMFF write. Previews are not decoded and not written.
