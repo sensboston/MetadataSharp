@@ -277,8 +277,9 @@ internal static class Program
             dataset.Value.CopyRawTo(bytes);
             bytes = Trim(bytes);
             string text = (packet.CharacterSet == IptcCharacterSet.Utf8 ? Encoding.UTF8 : Encoding.Latin1).GetString(bytes);
-            Tag(stdout, RecordName(dataset.Key.Record) + ".0x" + dataset.Key.Dataset.ToString("x2", CultureInfo.InvariantCulture),
-                "String", (uint)bytes.Length, Escape(text));
+            string field = IptcDatasetNames.TryGetName(dataset.Key, out string? name)
+                ? name : "0x" + dataset.Key.Dataset.ToString("x2", CultureInfo.InvariantCulture);
+            Tag(stdout, RecordName(dataset.Key.Record) + "." + field, "String", (uint)bytes.Length, Escape(text));
         }
     }
 
