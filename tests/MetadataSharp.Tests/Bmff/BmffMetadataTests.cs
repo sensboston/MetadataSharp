@@ -179,6 +179,21 @@ public sealed class BmffMetadataTests
     }
 
     [Fact]
+    public void AnEntryWithoutAUsableVersionStillCountsTowardsTheDeclaration()
+    {
+        byte[] item = ExifPayload();
+        byte[] Build(uint offset) => Concat(
+            FileType(),
+            Meta(Handler(), PrimaryItem(2), ItemInformation(ProtectedEntry(1), ItemEntry(2, "Exif")),
+                ItemLocationFile(2, offset, (uint)item.Length)),
+            Box("mdat", item));
+        BmffMetadata metadata = BmffMetadata.Read(Build((uint)(Build(0).Length - item.Length)));
+        Assert.NotNull(metadata.Exif);
+        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), Assert.Single(metadata.Exif.Entries).Key);
+        Assert.Null(metadata.Xmp);
+    }
+
+    [Fact]
     public void AFileWithoutAMetaBoxHasABrandAndNoMetadata()
     {
         BmffMetadata metadata = BmffMetadata.Read(Concat(FileType("qt  "), Box("mdat", new byte[] { 1, 2, 3 })));
@@ -253,6 +268,10 @@ public sealed class BmffMetadataTests
         if (contentType is not null) parts.Add(Concat(Ascii(contentType), new byte[] { 0 }));
         return Box("infe", parts.ToArray());
     }
+
+    /// <summary>infe version 1: an item_ID, a protection index and three NUL-terminated strings, no item type.</summary>
+    private static byte[] ProtectedEntry(uint id) =>
+        Box("infe", U32(0x01000000), U16(id), U16(0), new byte[] { 0 }, new byte[] { 0 }, new byte[] { 0 });
 
     private static byte[] ItemInformation(params byte[][] entries) =>
         Box("iinf", U32(0), U16((uint)entries.Length), Concat(entries));

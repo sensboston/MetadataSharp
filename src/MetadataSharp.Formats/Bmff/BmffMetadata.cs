@@ -234,13 +234,17 @@ internal ref struct BmffReader
             declared = U32(box.Payload + 4);
             position = box.Payload + 8;
         }
-        int before = items.Count;
+        // Every infe child counts towards the declaration, including the versions this profile has no
+        // use for: the count describes the boxes that are there, not the items that are retained.
+        int entries = 0;
         while (position < box.End)
         {
             BoxHeader entry = Next(ref position, box.End, 3);
-            if (entry.Type == ItemEntryBox) ItemEntry(entry);
+            if (entry.Type != ItemEntryBox) continue;
+            entries++;
+            ItemEntry(entry);
         }
-        if ((uint)(items.Count - before) != declared)
+        if ((uint)entries != declared)
             throw Fail("The item information entry count does not match its entries.", box.Payload + 4);
     }
 
