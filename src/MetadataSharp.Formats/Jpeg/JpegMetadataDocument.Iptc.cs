@@ -36,12 +36,37 @@ public sealed partial class JpegMetadataDocument
         PhotoshopResources resources = PhotoshopResources.Parse(payload, settings); resources.ValidateTargets();
         token.ThrowIfCancellationRequested(); return resources;
     }
+    /// <summary>
+    /// Reads every Photoshop APP13 segment and joins their resource data, as a writer splits one resource
+    /// block across consecutive segments. Used for reading only: editing still needs a single segment.
+    /// </summary>
+    private async Task<PhotoshopResources> LoadJoinedPhotoshop(JpegSegment[] segments, IptcLimits settings, bool asynchronous, CancellationToken token)
+    {
+        const int Signature = 14; // "Photoshop 3.0\0"
+        long total = Signature + segments.Sum(s => (long)s.PayloadLength - Signature);
+        if (total > int.MaxValue) throw IptcPacket.Limit();
+        CheckIptcBudget((int)total, settings);
+        byte[] joined = new byte[total];
+        "Photoshop 3.0\0"u8.CopyTo(joined);
+        int at = Signature;
+        foreach (JpegSegment segment in segments)
+        {
+            byte[] payload = new byte[segment.PayloadLength]; source.Position = segment.PayloadOffset;
+            await ReadExact(source, payload, asynchronous, token).ConfigureAwait(false);
+            payload.AsSpan(Signature).CopyTo(joined.AsSpan(at)); at += payload.Length - Signature;
+        }
+        PhotoshopResources resources = PhotoshopResources.Parse(joined, settings); resources.ValidateTargets();
+        token.ThrowIfCancellationRequested(); return resources;
+    }
     private async Task<IptcPacket?> ReadIptcCore(IptcReadOptions? options, bool asynchronous, CancellationToken token)
     {
         IptcLimits settings = IptcPacket.Settings(options);
         await VerifyIptcSource(asynchronous, token).ConfigureAwait(false);
-        JpegSegment? segment = UniquePhotoshop(); if (segment is null) return null;
-        PhotoshopResources resources = await LoadPhotoshop(segment, settings, asynchronous, token).ConfigureAwait(false);
+        JpegSegment[] photoshop = scan.Segments.Where(s => s.IsPhotoshop).ToArray();
+        if (photoshop.Length == 0) return null;
+        PhotoshopResources resources = photoshop.Length == 1
+            ? await LoadPhotoshop(photoshop[0], settings, asynchronous, token).ConfigureAwait(false)
+            : await LoadJoinedPhotoshop(photoshop, settings, asynchronous, token).ConfigureAwait(false);
         if (resources.Iptc is not PhotoshopResources.Resource iptc) return null;
         IptcPacket packet = IptcPacket.Parse(iptc.Data.Span, new() { Limits = settings });
         token.ThrowIfCancellationRequested(); return packet;

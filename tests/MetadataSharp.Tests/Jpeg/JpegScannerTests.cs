@@ -195,7 +195,6 @@ public sealed class JpegScannerTests
     [InlineData("dac-selector", MetadataErrorCode.InvalidJpeg)]
     [InlineData("interleaved-scan", MetadataErrorCode.InvalidJpeg)]
     [InlineData("scan-before-frame", MetadataErrorCode.InvalidJpeg)]
-    [InlineData("bytes-between-segments", MetadataErrorCode.InvalidJpeg)]
     public void RejectsUnsupportedAndMalformedStructures(string mutation, MetadataErrorCode expected)
     {
         byte[] bytes = mutation switch
@@ -281,5 +280,13 @@ public sealed class JpegScannerTests
         byte[] data = [.. JpegFixture.Build(), 0, 1, 2, 3];
         JpegScanResult result = JpegScanner.Scan(new MemoryStream(data), new());
         Assert.Equal(data.Length, result.Length);
+    }
+
+    [Fact]
+    public void StrayBytesBetweenSegmentsAreSkipped()
+    {
+        byte[] data = JpegFixture.Build(prefix: [.. JpegFixture.Segment(0xFE, 104, 105), 0x99, 0x00]);
+        JpegScanResult result = JpegScanner.Scan(new MemoryStream(data), new());
+        Assert.Contains(result.Segments, s => s.Marker == 0xFE);
     }
 }

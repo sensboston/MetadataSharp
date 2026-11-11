@@ -188,4 +188,20 @@ public sealed class JpegIptcTests
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         { byte[] bytes = buffer.ToArray(); base.Write(bytes, 0, bytes.Length); return ValueTask.CompletedTask; }
     }
+    [Fact]
+    public void AResourceBlockSplitAcrossTwoSegmentsIsReadButNotEdited()
+    {
+        var caption = new IptcEdit(); caption.ReplaceText(new(2, 120), ["split"]);
+        IptcPacket packet = IptcPacket.CreateEmpty().Apply(caption)!;
+        byte[] whole = IptcCodecTests.Photoshop(IptcCodecTests.Block(0x0404, IptcCodecTests.Raw(packet)));
+        int cut = 14 + 9;
+        byte[] first = whole[..cut];
+        byte[] second = [.. "Photoshop 3.0 "u8, .. whole[cut..]];
+        byte[] image = JpegFixture.Build([.. JpegFixture.Segment(0xed, first), .. JpegFixture.Segment(0xed, second)]);
+        using var doc = JpegMetadataDocument.Open(new MemoryStream(image));
+        IptcPacket? read = doc.ReadIptc();
+        Assert.NotNull(read);
+        Assert.Equal("split", GetCaption(read));
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => Save(image, Caption("x"))).Code);
+    }
 }
