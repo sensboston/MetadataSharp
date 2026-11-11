@@ -125,8 +125,6 @@ internal ref struct ExifTiffReader
     private void ReadDirectory(uint offset, ExifDirectoryKind kind, int depth)
     {
         int start = RequireRange(offset, 2);
-        if ((offset & 1) != 0)
-            throw Error(MetadataErrorCode.InvalidExif, "IFDs must begin on a word boundary.", offset);
         int count = U16(start);
         if (count > limits.MaxEntriesPerDirectory || count > limits.MaxTotalEntries - totalEntries)
             throw Error(MetadataErrorCode.LimitExceeded, "The IFD entry budget was exceeded.", offset);
@@ -160,8 +158,6 @@ internal ref struct ExifTiffReader
             {
                 uint valueOffset = U32(p + 8);
                 valueStart = RequireRange(valueOffset, byteLength);
-                if ((valueOffset & 1) != 0)
-                    throw Error(MetadataErrorCode.InvalidExif, "External TIFF values must be word aligned.", p + 8);
                 ClaimRange(valueStart, byteLength);
             }
             ReserveBytes(byteLength, p);

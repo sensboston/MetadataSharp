@@ -75,7 +75,7 @@ internal static class JpegScanner
                 {
                     if (frames == 0 || scans == 0) throw Error(MetadataErrorCode.InvalidJpeg, "The image holds no frame or no scan.", start);
                     if (frame is { HeightZero: true } && !sawDnl) throw Error(MetadataErrorCode.InvalidJpeg, "A frame of zero height needs DNL.", start);
-                    if (input.Position != length) throw Error(MetadataErrorCode.UnsupportedFeature, "Trailing bytes after EOI are not supported.", input.Position);
+                    // Bytes after EOI (camera trailers, appended previews) are not interpreted; edits copy them verbatim.
                     return new(length, segments.AsReadOnly(), exif, insertion, scanAt, entropyAt, start, scans, frames);
                 }
                 if (marker is 0 or 0xD8 or >= 0xD0 and <= 0xD7)

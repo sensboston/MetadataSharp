@@ -186,7 +186,6 @@ public sealed class JpegScannerTests
     [InlineData("restart-order", MetadataErrorCode.InvalidJpeg)]
     [InlineData("stuff-fill", MetadataErrorCode.InvalidJpeg)]
     [InlineData("empty", MetadataErrorCode.InvalidJpeg)]
-    [InlineData("trailing", MetadataErrorCode.UnsupportedFeature)]
     [InlineData("short-length", MetadataErrorCode.InvalidJpeg)]
     [InlineData("reserved-sof", MetadataErrorCode.UnsupportedFeature)]
     [InlineData("extension-marker", MetadataErrorCode.UnsupportedFeature)]
@@ -274,5 +273,13 @@ public sealed class JpegScannerTests
             temporary.AsMemory(0, read).CopyTo(buffer);
             return ValueTask.FromResult(read);
         }
+    }
+
+    [Fact]
+    public void BytesAfterEoiAreAcceptedAndCountedInTheLength()
+    {
+        byte[] data = [.. JpegFixture.Build(), 0, 1, 2, 3];
+        JpegScanResult result = JpegScanner.Scan(new MemoryStream(data), new());
+        Assert.Equal(data.Length, result.Length);
     }
 }

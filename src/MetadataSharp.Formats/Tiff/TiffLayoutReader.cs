@@ -23,7 +23,12 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
     private ushort U16(byte[] bytes, int at = 0) => order == Endianness.LittleEndian ? BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(at)) : BinaryPrimitives.ReadUInt16BigEndian(bytes.AsSpan(at));
     private uint U32(byte[] bytes, int at = 0) => order == Endianness.LittleEndian ? BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(at)) : BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(at));
     private void Bounds(long start, long count, bool aligned = false)
-    { if (start < 0 || count < 0 || start > length || count > length - start || (aligned && (start & 1) != 0)) throw Bad("Invalid TIFF range/alignment."); }
+    {
+        // TIFF 6.0 recommends word-aligned directories and values; files that ignore it are read as they are,
+        // since every write appends its own aligned structures and never moves the source bytes.
+        _ = aligned;
+        if (start < 0 || count < 0 || start > length || count > length - start) throw Bad("Invalid TIFF range.");
+    }
     private async Task<byte[]> At(long start, int count)
     {
         token.ThrowIfCancellationRequested(); Bounds(start, count); source.Position = start;
