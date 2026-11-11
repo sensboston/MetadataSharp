@@ -11,10 +11,11 @@ internal sealed class ExifWritePlan
     private readonly byte[] thumbnail;
 
     internal ExifWritePlan(Endianness order, int length, IReadOnlyList<PlannedDirectory> directories,
-        int? thumbnailOffset, ReadOnlySpan<byte> thumbnail)
+        int? thumbnailOffset, ReadOnlySpan<byte> thumbnail, int ceiling = ExifTiffReader.SegmentCeiling)
     {
         ByteOrder = order;
         Length = length;
+        Ceiling = ceiling;
         ArgumentNullException.ThrowIfNull(directories);
         Directories = Array.AsReadOnly(directories.Select(d => d with
         {
@@ -26,6 +27,9 @@ internal sealed class ExifWritePlan
 
     internal Endianness ByteOrder { get; }
     internal int Length { get; }
+
+    /// <summary>The longest block the container of the plan holds; the serializer refuses a longer plan.</summary>
+    internal int Ceiling { get; }
     internal IReadOnlyList<PlannedDirectory> Directories { get; }
     internal int? ThumbnailOffset { get; }
     internal ReadOnlySpan<byte> Thumbnail => thumbnail;
