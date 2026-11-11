@@ -39,10 +39,14 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   texts equal the reference's (96.4%); the rest are terms where the reference leaves the standard.
 - Interpreted values beyond standard EXIF: `IptcDatasetNames.Interpret` (numbers, dates, times) and
   `MakerNote.Interpret` for Canon, Nikon3 and Sony (hand-written labels and units for the tags and
-  numbers the corpus has; an unlisted number reads `(n)`; other vendors answer null). Run 43069964377,
-  texts equal of those the reference translates: Canon 3,288 of 4,141, Nikon 2,518 of 3,486, Sony
-  2,300 of 2,864; IPTC 255 of 255 compared. Left out on purpose: logarithmic codes (apertures,
-  shutter speeds, sensitivities), lens identifiers, fields whose meaning depends on the camera model.
+  numbers the corpus has; an unlisted number reads `(n)`; other vendors answer null). Left out on
+  purpose: logarithmic codes (apertures, shutter speeds, sensitivities), lens identifiers, fields
+  whose meaning depends on the camera model.
+- Interpreted report: the rate is over the values both sides interpret; a value we return nothing
+  for is `not-interpreted`, counted beside it. Run 43071738560: 15,951 of 16,319 texts equal (97.7%);
+  not interpreted and translated by the reference: 4,400 (Canon 807, Nikon 948, Sony 534, other
+  vendors 1,906, standard EXIF 205). Equal of both-interpreted: Canon 3,288 of 3,334, Nikon 2,518
+  of 2,538, Sony 2,300 of 2,330, standard EXIF 7,845 of 8,117; the reference translates no IPTC value.
 
 ## Next (in order)
 
