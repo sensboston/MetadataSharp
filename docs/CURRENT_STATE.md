@@ -61,6 +61,10 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   one becomes `free`). The output is read back and refused unless only the edit differs. Parity job
   (run 43093871306): `exiv2 -pa` reads the 36 edited fixtures and 30 of the 33 files written from
   the corpus's 15 BMFF files (the tool reads no source of the other 3). Rows for AVIF, HEIC, HEIF.
+- BMFF Exif items are bounded by the budgets, not by the 65,527 bytes of a JPEG APP1 segment:
+  read, edit and insert. `BmffReadOptions` and `BmffMetadata.Read` default to the whole-file
+  budgets below. Run 43104853783: 1,845 tests; `exiv2 -pa` reads 46 edited fixtures, 10 of them
+  with an Exif item of 70,116 bytes or more. JPEG, PNG, WebP and PSD blocks keep the cap.
 - Whole TIFF-based files: default `TiffReadOptions` (and `TiffExif.Read` without limits) allow a
   value of 16 MiB and 64 MiB retained. The `MetadataLimits` defaults (65,527 bytes, 1 MiB) are the
   sizes of an EXIF block in a JPEG segment and refused `ReaganLargeTiff.tiff` (ICC profile, tag
@@ -79,3 +83,4 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
 - No ICC or comment APIs yet; a BMFF item is edited or added, never removed. Previews are not
   decoded and not written.
+- EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.
