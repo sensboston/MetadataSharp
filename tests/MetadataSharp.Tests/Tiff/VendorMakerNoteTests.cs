@@ -164,3 +164,67 @@ public sealed class VendorMakerNoteTests
         }
     }
 }
+
+public sealed class SonyMakerNoteArrayTests
+{
+    private static byte[] Encipher(byte[] plain) =>
+        plain.Select(p => p < 249 ? (byte)(p * p * p % 249) : p).ToArray();
+
+    private static ExifValue Undefined(byte[] raw) =>
+        ExifValue.FromRaw(TiffFieldType.Undefined, (uint)raw.Length, Endianness.BigEndian, raw);
+
+    [Fact]
+    public void TheDecipherInvertsTheCubeSubstitution()
+    {
+        byte[] plain = Enumerable.Range(0, 256).Select(i => (byte)i).ToArray();
+        Assert.Equal(plain, Core.MakerNotes.SonyMakerNoteArrays.Plain(Encipher(plain)));
+    }
+
+    [Fact]
+    public void Misc2bIsChosenByItsDecipheredBytesAndIsLittleEndian()
+    {
+        byte[] plain = new byte[40];
+        plain[0] = 9; plain[3] = 2; plain[12] = 4;
+        BinaryPrimitives.WriteUInt16LittleEndian(plain.AsSpan(30), 300);
+        IReadOnlyList<MakerNoteField> fields = Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x9404, Undefined(Encipher(plain)), "ILCE-7M3"u8);
+        Assert.Equal(new[] { "ExposureProgram", "IntelligentAuto", "LensZoomPosition", "FocusPosition2" }, fields.Select(f => f.Name));
+        MakerNoteField zoom = fields.Single(f => f.Name == "LensZoomPosition");
+        Assert.Equal(Endianness.LittleEndian, zoom.Value.ByteOrder);
+        byte[] raw = new byte[2];
+        zoom.Value.CopyRawTo(raw);
+        Assert.Equal(300, BinaryPrimitives.ReadUInt16LittleEndian(raw));
+
+        plain[3] = 3;
+        Assert.Empty(Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x9404, Undefined(Encipher(plain)), "ILCE-7M3"u8));
+    }
+
+    [Theory]
+    [InlineData("ILCE-7M3", 4)]
+    [InlineData("SLT-A77", 0)]
+    [InlineData("ILCA-77M2", 0)]
+    public void FocusPositionDependsOnTheModel(string model, int expected)
+    {
+        IReadOnlyList<MakerNoteField> fields = Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x9402, Undefined(Encipher(new byte[48])),
+            Encoding.ASCII.GetBytes(model));
+        Assert.Equal(expected, fields.Count);
+    }
+
+    [Fact]
+    public void ShotInfoIsNotEnciphered()
+    {
+        byte[] raw = new byte[68];
+        Encoding.ASCII.GetBytes("2020:01:02 03:04:05\0").CopyTo(raw, 6);
+        MakerNoteField date = Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x3000, Undefined(raw), default).Single(f => f.Name == "SonyDateTime");
+        byte[] text = new byte[20];
+        date.Value.CopyRawTo(text);
+        Assert.Equal("2020:01:02 03:04:05\0", Encoding.ASCII.GetString(text));
+    }
+
+    [Fact]
+    public void Info2010eNeedsAKnownModel()
+    {
+        byte[] stored = Encipher(new byte[6400]);
+        Assert.NotEmpty(Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x2010, Undefined(stored), "NEX-6\0"u8));
+        Assert.Empty(Core.MakerNotes.SonyMakerNoteArrays.Decompose(0x2010, Undefined(stored), "ILCE-7M3"u8));
+    }
+}
