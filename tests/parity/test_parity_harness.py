@@ -503,6 +503,18 @@ class HarnessTests(unittest.TestCase):
         decoded = json.loads(zlib.decompress(base64.b64decode(payload)))
         self.assertEqual(decoded["parity"]["value_rate"], 1.0)
         self.assertEqual(decoded["problem_count"], 0)
+        self.assertEqual(decoded["by_kind"], {"Exif": {"match-value": 1}})
+
+    def test_the_summary_folds_families_into_metadata_kinds(self):
+        folded = run_parity.by_kind({
+            "Xmp.dc": {"match-value": 2, "missing-key": 1},
+            "Xmp.xmpMM": {"match-value": 3, "value-diff": 1},
+            "Iptc.Application2": {"missing-key": 4},
+            "Exif.Image": {"match-value": 5},
+        })
+        self.assertEqual(list(folded), ["Exif", "Iptc", "Xmp"])
+        self.assertEqual(folded["Xmp"], {"match-value": 5, "missing-key": 1, "value-diff": 1})
+        self.assertEqual(folded["Iptc"], {"missing-key": 4})
 
     def test_a_summary_too_large_for_the_channel_is_an_error(self):
         entries = [compare_mod.compare_file(f"exiv2:n{index}", "exiv2", "jpg", "ok", "", {}, {}, []) for index in range(20)]

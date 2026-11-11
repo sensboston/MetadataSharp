@@ -225,6 +225,19 @@ def text_report(report: dict[str, Any], problems: list[str]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def by_kind(by_family: dict[str, dict[str, int]]) -> dict[str, dict[str, int]]:
+    """The per-family outcome table folded on the first segment of the key (Exif, Iptc, Xmp).
+
+    The full table has a row per group and stays in the report; three rows are what the annotation
+    channel can carry, and they are what a change to one kind of metadata is measured by."""
+    folded: dict[str, dict[str, int]] = {}
+    for name, counts in by_family.items():
+        bucket = folded.setdefault(name.split(".")[0], {})
+        for outcome, count in counts.items():
+            bucket[outcome] = bucket.get(outcome, 0) + count
+    return {name: folded[name] for name in sorted(folded)}
+
+
 def summary(report: dict[str, Any], problems: list[str]) -> dict[str, Any]:
     """The part of the report small enough for the annotation channel, which is the only one that can
     be read back from this environment."""
@@ -234,6 +247,7 @@ def summary(report: dict[str, Any], problems: list[str]) -> dict[str, Any]:
         "outcomes": report["outcomes"],
         "advisory": report["advisory"],
         "by_format": report["by_format"],
+        "by_kind": by_kind(report["by_family"]),
         "missing_top": report["gaps"]["missing_keys"][:30],
         "unread_top": report["gaps"]["unread_keys"][:12],
         "extra_top": report["gaps"]["extra_keys"][:12],
