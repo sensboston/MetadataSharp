@@ -58,8 +58,17 @@ class CompareTests(unittest.TestCase):
                          t.compare(SOURCE, EDITED, CHANGED, ["Xmp.xmp.CreatorTool"]))
 
     def test_column_padding_is_not_a_difference_and_repeated_keys_keep_their_order(self):
-        self.assertEqual([], t.compare("K.a.b  Ascii   2  x\nK.a.b  Ascii   2  y\n", "K.a.b Ascii 2 x\nK.a.b Ascii 2 y\n", set(), []))
-        self.assertEqual(1, len(t.compare("K.a.b Ascii 2 x\nK.a.b Ascii 2 y\n", "K.a.b Ascii 2 y\nK.a.b Ascii 2 x\n", set(), [])))
+        self.assertEqual([], t.compare("Exif.a.b  Ascii   2  x\nExif.a.b  Ascii   2  y\n", "Exif.a.b Ascii 2 x\nExif.a.b Ascii 2 y\n", set(), []))
+        self.assertEqual(1, len(t.compare("Exif.a.b Ascii 2 x\nExif.a.b Ascii 2 y\n", "Exif.a.b Ascii 2 y\nExif.a.b Ascii 2 x\n", set(), [])))
+
+    def test_a_value_with_a_line_break_belongs_to_the_key_it_started_under(self):
+        source = "Iptc.Application2.Caption  String  9  first line\nUSS second line\nExif.Image.Make  Ascii  2  x\n"
+        self.assertEqual({"Iptc.Application2.Caption": ["String 9 first line\nUSS second line"], "Exif.Image.Make": ["Ascii 2 x"]},
+                         t.rows(source))
+        # The continuation is part of the caption: when the caption may change, so may it.
+        edited = "Iptc.Application2.Caption  String  3  new\nExif.Image.Make  Ascii  2  x\n"
+        self.assertEqual([], t.compare(source, edited, {"Iptc.*"}, []))
+        self.assertEqual(1, len(t.compare(source, edited, set(), [])))
 
 
 class ManifestTests(unittest.TestCase):

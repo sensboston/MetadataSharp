@@ -318,6 +318,13 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
     // directory is edited four ways, each from the file as it is. A refusal is counted by its code;
     // a file that was written goes into the manifest for the pinned tool to read. Anything that is
     // not a refusal - an exception of another type - is a defect of the writer and fails the run.
+    // The budgets are wide: the question here is what the writer does with a file, not whether the
+    // file fits the defaults (a phone DNG with thirty sub-images does not fit sixteen directories).
+    var wide = new TiffReadOptions
+    {
+        Limits = new MetadataLimits { MaxDirectories = 256, MaxEntriesPerDirectory = 2_048, MaxTotalEntries = 16_384, MaxValueBytes = 4_194_304, MaxRetainedMetadataBytes = 16_777_216 }
+    };
+    var refusals = new List<string>();
     Directory.CreateDirectory(args[2]);
     var manifest = new List<string>();
     var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
@@ -332,7 +339,7 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
         string extension = Path.GetExtension(path).ToLowerInvariant();
         if (!extensions.Contains(extension) || new FileInfo(path).Length > 64 * 1024 * 1024) continue;
         TiffBasedMetadataDocument document;
-        try { document = TiffBasedMetadataDocument.Open(path); }
+        try { document = TiffBasedMetadataDocument.Open(path, wide); }
         catch (MetadataException) { continue; } // not a TIFF structure, whatever its name says
         files++;
         using (document)
@@ -346,7 +353,11 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
                     manifest.Add(string.Join('\t', Path.GetFullPath(path), Path.GetFileName(target), changed, expected));
                     Count(kind + " written");
                 }
-                catch (MetadataException refusal) { Count(kind + " refused " + refusal.Code); }
+                catch (MetadataException refusal)
+                {
+                    Count(kind + " refused " + refusal.Code);
+                    refusals.Add($"{Path.GetFileName(path)} {kind}: {refusal.Code}: {refusal.Message}");
+                }
                 catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
                 {
                     crashes.Add($"{Path.GetFileName(path)} {kind}: {defect.GetType().Name}: {defect.Message}");
@@ -379,6 +390,9 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
     }
     File.WriteAllLines(Path.Combine(args[2], "manifest.tsv"), manifest);
     Console.WriteLine($"::notice title=TIFF-based corpus edits::{files} TIFF-based files; " + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
+    // Why each file was refused, a few to a notice: the counts above do not say which file it was.
+    foreach (string[] chunk in refusals.Chunk(12))
+        Console.WriteLine("::notice title=TIFF-based corpus refusals::" + string.Join("%0A", chunk.Select(line => line.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "))));
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=TIFF-based writer defect::" + crash);
     if (crashes.Count != 0) return 1;
 }

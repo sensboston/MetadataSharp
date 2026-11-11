@@ -30,14 +30,23 @@ from pathlib import Path
 MAX_ANNOTATIONS = 20
 
 
+FAMILIES = ("Exif.", "Iptc.", "Xmp.")
+
+
 def rows(text):
-    """The lines of a print-out by key: the first column, then the rest with its padding folded."""
-    by_key = {}
+    """The lines of a print-out by key: the first column, then the rest with its padding folded.
+
+    A value that holds a line break continues on the next line, which then begins with no key:
+    it belongs to the row before it.
+    """
+    by_key, last = {}, None
     for line in text.splitlines():
         parts = line.split(None, 3)
-        if len(parts) < 2:
-            continue
-        by_key.setdefault(parts[0], []).append(" ".join(parts[1:]))
+        if len(parts) >= 2 and parts[0].startswith(FAMILIES):
+            last = by_key.setdefault(parts[0], [])
+            last.append(" ".join(parts[1:]))
+        elif last is not None and line.strip():
+            last[-1] += "\n" + " ".join(line.split())
     return by_key
 
 
