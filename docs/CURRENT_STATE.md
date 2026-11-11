@@ -14,7 +14,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   (incl. versioned and encrypted arrays), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
   Sony (incl. enciphered arrays), Panasonic, Olympus/OM System (incl. sub-directories),
   Minolta/Konica Minolta (incl. the camera-settings arrays), Casio (both layouts), Samsung
-  (plain IFD and PictureWizard; "AOC" notes read as Pentax), Sigma/Foveon.
+  (plain IFD and PictureWizard; "AOC" notes read as Pentax), Sigma/Foveon. Run 42974953667: +113
+  EXIF values (Minolta 90, Sigma 23); the corpus has no Casio or Samsung file, so unit tests only.
 - Reading tolerates unaligned TIFF offsets.
 - XMP: `XmpPacket.Entries` lists every property of any packet (structures, arrays of structures,
   qualifiers) as read-only path rows; editing stays on the bounded profile. NUL padding is ignored.
