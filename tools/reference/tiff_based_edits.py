@@ -1,9 +1,10 @@
-"""The pinned exiv2 must still read every file the TIFF-based writer edited.
+"""The pinned exiv2 must still read every file the TIFF-based and BMFF writers edited.
 
 A separate check from key parity: nothing here is compared with what this
-library reads. The fixture generator (tiff-based-edits) writes authored
-TIFF, DNG, NEF-like and CR2-like files, the same files after each kind of
-edit, and manifest.tsv with one row per edited file:
+library reads. The fixture generator (tiff-based-edits, bmff-edits) writes
+authored TIFF, DNG, NEF-like and CR2-like files, or HEIC and AVIF files,
+the same files after each kind of edit, and manifest.tsv with one row per
+edited file:
 
     source <TAB> edited <TAB> keys the edit may change, comma-separated
            <TAB> text the tool has to print for the edited file, |-separated
@@ -14,8 +15,13 @@ line it printed for the source whose key the edit was not allowed to
 change; a key that ends in * names every key that begins with what is before
 it. A source the tool cannot read is a broken fixture, and a failure.
 
-The generator's tiff-based-corpus command writes the same manifest for
-files this repository did not author. Many of those are damaged on purpose,
+A source named "-" is no file: the edit gave metadata to a file that had
+none, for which the tool prints nothing and does not exit with 0. Such an
+edited file passes when the tool exits with 0 for it and prints every
+expected text.
+
+The generator's tiff-based-corpus and bmff-corpus commands write the same
+manifest for files this repository did not author. Many of those are damaged on purpose,
 so with --skip-unreadable-sources a source the tool cannot read is counted
 and skipped: the rule is about files the tool could read before the edit.
 
@@ -31,6 +37,7 @@ MAX_ANNOTATIONS = 20
 
 
 FAMILIES = ("Exif.", "Iptc.", "Xmp.")
+NO_SOURCE = "-"
 
 
 def rows(text):
@@ -99,10 +106,13 @@ def check(directory, command, runner=run, skip_unreadable=False):
     entries = parse_manifest((directory / "manifest.tsv").read_text(encoding="utf-8"))
     problems, sources, checked, skipped = [], {}, 0, 0
     for source, edited, changed, expected in entries:
-        if source not in sources:
-            sources[source] = runner(command, directory / source)
-        code, output, errors = sources[source]
-        if code != 0 or not output.strip():
+        if source == NO_SOURCE:
+            code, output, errors = 0, "", ""
+        else:
+            if source not in sources:
+                sources[source] = runner(command, directory / source)
+            code, output, errors = sources[source]
+        if source != NO_SOURCE and (code != 0 or not output.strip()):
             if skip_unreadable:
                 skipped += 1
             else:

@@ -15,6 +15,8 @@ using MetadataSharp.Formats.Dng;
 using MetadataSharp.Tests.Tiff;
 using MetadataSharp.Tests.WebP;
 using MetadataSharp.Tests.Dng;
+using MetadataSharp.Formats.Bmff;
+using MetadataSharp.Tests.Bmff;
 
 if (args.Length == 2 && args[0] == "generate")
 {
@@ -444,7 +446,164 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=TIFF-based writer defect::" + crash);
     if (crashes.Count != 0) return 1;
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
+else if (args.Length == 2 && args[0] == "bmff-edits")
+{
+    // Files for the pinned tool to read after the BMFF writer edited them: every authored HEIC and
+    // AVIF layout whose item location box the tool reads (32-bit offsets and lengths, one extent
+    // for every item, items addressed from the start of the file), one file per kind of edit and
+    // one with all of them. A file without metadata has no print-out to compare with: its rows
+    // name "-" as their source, and the tool has to read the edited file and print what was added.
+    Directory.CreateDirectory(args[1]);
+    var manifest = new List<string>();
+    const string date = "2021:06:07 08:09:10", longText = "A considerably longer text than the one before";
+    const string gpsText = "Exif.GPSInfo.GPSLatitudeRef|Exif.GPSInfo.GPSLatitude |Exif.GPSInfo.GPSLongitudeRef|Exif.GPSInfo.GPSLongitude ";
+    var inPlace = new ExifEdit();
+    inPlace.Set(new(ExifDirectoryKind.Exif, 0x9003), AsciiValue(date));
+    var grow = new ExifEdit();
+    grow.Set(new(ExifDirectoryKind.Ifd0, 0x010F), AsciiValue(longText));
+    grow.Set(new(ExifDirectoryKind.Exif, 0x9004), AsciiValue(date));
+    var gps = new ExifEdit();
+    gps.Set(new(ExifDirectoryKind.Gps, 0), ExifValue.FromRaw(TiffFieldType.Byte, 4, Endianness.LittleEndian, [2, 3, 0, 0]));
+    gps.Set(new(ExifDirectoryKind.Gps, 1), AsciiValue("N"));
+    gps.Set(new(ExifDirectoryKind.Gps, 2), ExifValue.FromRaw(TiffFieldType.Rational, 3, Endianness.LittleEndian,
+        [42, 0, 0, 0, 1, 0, 0, 0, 22, 0, 0, 0, 1, 0, 0, 0, 30, 0, 0, 0, 1, 0, 0, 0]));
+    gps.Set(new(ExifDirectoryKind.Gps, 3), AsciiValue("W"));
+    gps.Set(new(ExifDirectoryKind.Gps, 4), ExifValue.FromRaw(TiffFieldType.Rational, 3, Endianness.LittleEndian,
+        [71, 0, 0, 0, 1, 0, 0, 0, 14, 0, 0, 0, 1, 0, 0, 0, 15, 0, 0, 0, 1, 0, 0, 0]));
+    var tool = new XmpEdit();
+    tool.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("MetadataSharp"));
+    var created = new ExifEdit();
+    created.Set(new(ExifDirectoryKind.Ifd0, 0x010E), AsciiValue("A caption"));
+    created.Set(new(ExifDirectoryKind.Exif, 0x9003), AsciiValue(date));
+
+    foreach (string name in BmffFixture.Names)
+    {
+        bool bare = BmffFixture.Bare.Contains(name);
+        foreach (bool big in bare ? new[] { false } : new[] { false, true })
+        {
+            BmffFixture fixture = BmffFixture.Create(name, big);
+            if (!fixture.Plan.ToolReads) continue;
+            string stem = name + (bare ? "" : big ? "-be" : "-le"), extension = "." + fixture.Plan.Brand;
+            string source = stem + extension;
+            File.WriteAllBytes(Path.Combine(args[1], source), fixture.Bytes);
+
+            string Edited(string from, string kind, Action<BmffMetadataDocument, string> save)
+            {
+                string target = stem + "-" + kind + extension;
+                using BmffMetadataDocument document = BmffMetadataDocument.Open(Path.Combine(args[1], from));
+                save(document, Path.Combine(args[1], target));
+                return target;
+            }
+            void Row(string target, string changed, string expected) =>
+                manifest.Add(string.Join('\t', bare ? "-" : source, target, changed, expected));
+
+            if (bare)
+            {
+                const string exifText = "Exif.Image.ImageDescription|A caption|Exif.Photo.DateTimeOriginal|" + date;
+                Row(Edited(source, "exif", (document, path) => document.SaveExifAs(path, created)), "", exifText);
+                string packet = Edited(source, "xmp", (document, path) => document.SaveXmpAs(path, tool));
+                Row(packet, "", "Xmp.xmp.CreatorTool|MetadataSharp");
+                Row(Edited(packet, "both", (document, path) => document.SaveExifAs(path, created)), "", exifText + "|Xmp.xmp.CreatorTool|MetadataSharp");
+                continue;
+            }
+            Row(Edited(source, "inplace", (document, path) => document.SaveExifAs(path, inPlace)), "Exif.Photo.DateTimeOriginal", date);
+            Row(Edited(source, "grow", (document, path) => document.SaveExifAs(path, grow)), "Exif.Image.Make,Exif.Image.ExifTag",
+                longText + "|Exif.Photo.DateTimeDigitized");
+            Row(Edited(source, "gps", (document, path) => document.SaveExifAs(path, gps)), "Exif.Image.GPSTag", gpsText);
+            Row(Edited(source, "xmp", (document, path) => document.SaveXmpAs(path, tool)), "", "Xmp.xmp.CreatorTool|MetadataSharp|Xmp.xmp.Label");
+
+            // One edit after another, each on the output of the one before.
+            string step = Edited(source, "all-1", (document, path) => document.SaveExifAs(path, inPlace));
+            step = Edited(step, "all-2", (document, path) => document.SaveExifAs(path, grow));
+            step = Edited(step, "all-3", (document, path) => document.SaveExifAs(path, gps));
+            step = Edited(step, "all", (document, path) => document.SaveXmpAs(path, tool));
+            Row(step, "Exif.Photo.DateTimeOriginal,Exif.Image.Make,Exif.Image.ExifTag,Exif.Image.GPSTag",
+                date + "|" + longText + "|Exif.Photo.DateTimeDigitized|" + gpsText + "|Xmp.xmp.CreatorTool|Xmp.xmp.Label");
+        }
+    }
+    File.WriteAllLines(Path.Combine(args[1], "manifest.tsv"), manifest);
+}
+else if (args.Length == 3 && args[0] == "bmff-corpus")
+{
+    // The same check on files this repository did not author: every HEIC, HEIF and AVIF file under
+    // a directory is edited three ways, each from the file as it is. A refusal is counted by its
+    // code; a file that was written goes into the manifest for the pinned tool to read. Anything
+    // that is not a refusal - an exception of another type - is a defect of the writer and fails
+    // the run. The options are the default ones.
+    var refusals = new List<(string File, string Kind, string Reason)>();
+    Directory.CreateDirectory(args[2]);
+    var manifest = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    var crashes = new List<string>();
+    string[] extensions = [".heic", ".heif", ".hif", ".avif"];
+    const string date = "2021:06:07 08:09:10", artist = "An artist whose name is longer than any slot";
+    const string gpsKeys = "Exif.GPSInfo.GPSVersionID,Exif.GPSInfo.GPSLatitudeRef,Exif.GPSInfo.GPSLatitude,Exif.GPSInfo.GPSLongitudeRef,Exif.GPSInfo.GPSLongitude";
+    int files = 0, number = 0;
+    void Count(string outcome) => outcomes[outcome] = outcomes.GetValueOrDefault(outcome) + 1;
+    foreach (string path in Directory.EnumerateFiles(args[1], "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+    {
+        string extension = Path.GetExtension(path).ToLowerInvariant();
+        if (!extensions.Contains(extension) || new FileInfo(path).Length > 64 * 1024 * 1024) continue;
+        BmffMetadataDocument document;
+        try { document = BmffMetadataDocument.Open(path); }
+        catch (MetadataException) { continue; } // not a BMFF file, whatever its name says
+        files++;
+        using (document)
+        {
+            void Try(string kind, string changed, string expected, Action<string> save)
+            {
+                string target = Path.Combine(args[2], $"b{++number:D5}-{kind}{extension}");
+                try
+                {
+                    save(target);
+                    manifest.Add(string.Join('\t', Path.GetFullPath(path), Path.GetFileName(target), changed, expected));
+                    Count(kind + " written");
+                }
+                catch (MetadataException refusal)
+                {
+                    Count(kind + " refused " + refusal.Code);
+                    refusals.Add((Path.GetFileName(path), kind, $"{refusal.Code}: {refusal.Message}"));
+                }
+                catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+                {
+                    crashes.Add($"{Path.GetFileName(path)} {kind}: {defect.GetType().Name}: {defect.Message}");
+                }
+            }
+
+            var inPlace = new ExifEdit();
+            inPlace.Set(new(ExifDirectoryKind.Exif, 0x9003), AsciiValue(date));
+            var grow = new ExifEdit();
+            grow.Set(new(ExifDirectoryKind.Ifd0, 0x013B), AsciiValue(artist));
+            grow.Set(new(ExifDirectoryKind.Exif, 0x9004), AsciiValue(date));
+            grow.Set(new(ExifDirectoryKind.Gps, 0), ExifValue.FromRaw(TiffFieldType.Byte, 4, Endianness.LittleEndian, [2, 3, 0, 0]));
+            grow.Set(new(ExifDirectoryKind.Gps, 1), AsciiValue("N"));
+            grow.Set(new(ExifDirectoryKind.Gps, 2), ExifValue.FromRaw(TiffFieldType.Rational, 3, Endianness.LittleEndian,
+                [42, 0, 0, 0, 1, 0, 0, 0, 22, 0, 0, 0, 1, 0, 0, 0, 30, 0, 0, 0, 1, 0, 0, 0]));
+            grow.Set(new(ExifDirectoryKind.Gps, 3), AsciiValue("W"));
+            grow.Set(new(ExifDirectoryKind.Gps, 4), ExifValue.FromRaw(TiffFieldType.Rational, 3, Endianness.LittleEndian,
+                [71, 0, 0, 0, 1, 0, 0, 0, 14, 0, 0, 0, 1, 0, 0, 0, 15, 0, 0, 0, 1, 0, 0, 0]));
+            var tool = new XmpEdit();
+            tool.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("MetadataSharp"));
+
+            Try("inplace", "Exif.Photo.DateTimeOriginal,Exif.Image.ExifTag", date, target => document.SaveExifAs(target, inPlace));
+            Try("grow", "Exif.Image.Artist,Exif.Image.ExifTag,Exif.Image.GPSTag,Exif.Photo.DateTimeDigitized," + gpsKeys, artist,
+                target => document.SaveExifAs(target, grow));
+            Try("xmp", "Xmp.*", "Xmp.xmp.CreatorTool", target => document.SaveXmpAs(target, tool));
+        }
+    }
+    File.WriteAllLines(Path.Combine(args[2], "manifest.tsv"), manifest);
+    Console.WriteLine($"::notice title=BMFF corpus edits::{files} BMFF files; " + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
+    // Why each file was refused, one line for a file and a reason: the counts do not say which file it was.
+    string[] reasons = refusals.GroupBy(refusal => (refusal.File, refusal.Reason))
+        .Select(group => $"{group.Key.File} [{string.Join(' ', group.Select(refusal => refusal.Kind))}]: {group.Key.Reason}"
+            .Replace("%", "%25").Replace("\r", " ").Replace("\n", " "))
+        .ToArray();
+    foreach (string[] chunk in reasons.Chunk(20))
+        Console.WriteLine("::notice title=BMFF corpus refusals::" + string.Join("%0A", chunk));
+    foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=BMFF writer defect::" + crash);
+    if (crashes.Count != 0) return 1;
+}
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
 
 

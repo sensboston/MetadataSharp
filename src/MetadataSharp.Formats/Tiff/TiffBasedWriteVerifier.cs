@@ -119,7 +119,11 @@ internal static class TiffBasedWriteVerifier
         return joined;
     }
 
-    private static void Reader(ExifMetadata before, ExifMetadata after, TiffBasedWritePlan plan)
+    /// <summary>
+    /// What a reader returns after the edit, against what it returned before: also the check of an
+    /// EXIF block that was edited inside another container.
+    /// </summary>
+    internal static void Reader(ExifMetadata before, ExifMetadata after, TiffBasedWritePlan plan)
     {
         var edited = new Dictionary<ExifTagKey, TiffBasedChange?>();
         foreach (KeyValuePair<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> change in plan.Effective)
