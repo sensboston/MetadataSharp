@@ -244,8 +244,8 @@ jobs:
         shell: python
         run: |
           import subprocess, sys
-          sys.path.insert(0, 'tools/reference')
-          from exiv2_baseline import OPTIONS
+          sys.path.insert(0, 'tools/parity')
+          from exiv2_build_options import OPTIONS
           subprocess.run(['cmake', '-S', 'artifacts/parity/exiv2', '-B', 'artifacts/parity/build', '-G', 'Ninja',
                           *[f'-D{k}={v}' for k, v in OPTIONS.items()]], check=True)
       - name: Build only external executable (no upstream tests or fixture imports)
