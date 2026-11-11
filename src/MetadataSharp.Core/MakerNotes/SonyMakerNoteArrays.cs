@@ -53,12 +53,14 @@ internal static class SonyMakerNoteArrays
 
     private static Layout? Select(ushort tag, ReadOnlySpan<byte> stored, ReadOnlySpan<byte> model) => tag switch
     {
+        // The camera settings come in several lengths, one per camera generation; this is the 280-byte one.
+        0x0114 when stored.Length == 280 => CameraSettings,
         0x2010 when Is2010eModel(model) => Info2010e,
         0x3000 => ShotInfo,
         // Misc3c is chosen by its first byte as stored (not deciphered).
         // Misc3c is chosen by its first byte as stored, Misc2b by its deciphered bytes.
         0x9400 when stored.Length >= 1 && stored[0] is 35 or 36 or 38 or 40 or 49 or 50 or 51 or 52 or 65 or 67 => Misc3c,
-        0x9402 when !model.IsEmpty && !model.StartsWith("SLT-"u8) && !model.StartsWith("HV"u8) && !model.StartsWith("ILCA-"u8) => FocusPosition,
+        0x9402 when !model.StartsWith("SLT-"u8) && !model.StartsWith("HV"u8) && !model.StartsWith("ILCA-"u8) => FocusPosition,
         0x9403 => Misc1,
         0x9404 when stored.Length >= 4 && Decipher[stored[0]] is 9 or 12 or 13 or 15 or 16 && Decipher[stored[3]] == 2 => Misc2b,
         _ => null
@@ -74,6 +76,21 @@ internal static class SonyMakerNoteArrays
 
     private const TiffFieldType S = TiffFieldType.Short;
     private const TiffFieldType L = TiffFieldType.Long;
+
+    /// <summary>Big-endian SHORTs, whatever the MakerNote's byte order; the offsets are in bytes.</summary>
+    private static readonly Layout CameraSettings = new(
+    [
+        new(8, "DriveMode", S), new(12, "WhiteBalanceFineTune", TiffFieldType.SShort), new(32, "FocusMode", S),
+        new(34, "AFAreaMode", S), new(36, "LocalAFAreaPoint", S), new(42, "MeteringMode", S),
+        new(44, "ISOSetting", S), new(48, "DynamicRangeOptimizerMode", S),
+        new(50, "DynamicRangeOptimizerLevel", S), new(52, "CreativeStyle", S), new(56, "Sharpness", S),
+        new(58, "Contrast", S), new(60, "Saturation", S), new(62, "ZoneMatchingValue", S),
+        new(68, "Brightness", S), new(70, "FlashMode", S), new(80, "PrioritySetupShutterRelease", S),
+        new(82, "AFIlluminator", S), new(84, "AFWithShutter", S), new(86, "LongExposureNoiseReduction", S),
+        new(88, "HighISONoiseReduction", S), new(90, "ImageStyle", S), new(120, "ExposureProgram", S),
+        new(122, "ImageStabilization", S), new(126, "Rotation", S), new(168, "SonyImageSize", S),
+        new(170, "AspectRatio", S), new(172, "Quality", S), new(176, "ExposureLevelIncrements", S),
+    ], Endianness.BigEndian, Enciphered: false);
 
     private static readonly Layout ShotInfo = new(
     [

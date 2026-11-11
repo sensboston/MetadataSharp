@@ -51,7 +51,7 @@ internal static class MakerNoteReader
             MakerNote? sony = note.StartsWith("SONY DSC \0\0\0"u8)
                 ? Directory(MakerNoteFormat.Sony1, tiff, start + 12, end, 0, order, 0, limits, retainedBudget, VendorMakerNoteNames.Sony, null)
                 : Directory(MakerNoteFormat.Sony2, tiff, start, end, 0, order, 0, limits, retainedBudget, VendorMakerNoteNames.Sony, null);
-            return sony is null ? null : SplitSony(sony, model);
+            return sony is null ? null : SonyMinoltaDirectory(SplitSony(sony, model), tiff, model, limits, retainedBudget);
         }
         if (make.StartsWith("Panasonic"u8))
         {
@@ -282,6 +282,45 @@ internal static class MakerNoteReader
             changed |= fields.Count != 0;
         }
         return changed ? new MakerNote(note.Format, note.ByteOrder, entries) : note;
+    }
+
+    /// <summary>
+    /// Reads the directory that Sony tag 0xB028 points to, as the fields of that tag. The DSLR-A100 keeps
+    /// the MakerNote of the Minolta cameras it descends from there: a directory of Minolta tags in the
+    /// note's byte order, with offsets from the TIFF header. Its camera-settings array is split for the
+    /// DSLR-A100, the one model whose layout is known. A pointer that does not lead to a directory stays
+    /// a plain number.
+    /// </summary>
+    private static MakerNote SonyMinoltaDirectory(MakerNote note, ReadOnlySpan<byte> tiff, ReadOnlySpan<byte> model,
+        MetadataLimits limits, long retainedBudget)
+    {
+        if (!note.TryGetEntry(0xB028, out MakerNoteEntry? pointer) || pointer.Fields.Count != 0 ||
+            pointer.Value.FieldType != TiffFieldType.Long || pointer.Value.Count != 1)
+            return note;
+        ReadOnlySpan<byte> raw = pointer.Value.RawBytes;
+        uint offset = note.ByteOrder == Endianness.LittleEndian
+            ? BinaryPrimitives.ReadUInt32LittleEndian(raw) : BinaryPrimitives.ReadUInt32BigEndian(raw);
+        if (offset < 8 || offset >= (uint)tiff.Length)
+            return note;
+        bool a100 = model.StartsWith("DSLR-A100"u8);
+        Func<ushort, string?> names = VendorMakerNoteNames.Minolta;
+        Func<ushort, ExifValue, IReadOnlyList<MakerNoteField>>? split = null;
+        if (a100)
+        {
+            names = static tag => tag == 0x0114 ? "CameraSettingsA100" : VendorMakerNoteNames.Minolta(tag);
+            split = MinoltaMakerNoteArrays.DecomposeSonyA100;
+        }
+        MakerNote? minolta = Directory(note.Format, tiff, (int)offset, tiff.Length, 0, note.ByteOrder, 0, limits,
+            retainedBudget, names, split);
+        if (minolta is null)
+            return note;
+        var fields = new List<MakerNoteField>(minolta.Entries.Count);
+        foreach (MakerNoteEntry field in minolta.Entries)
+            fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value, field.Fields));
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        foreach (MakerNoteEntry entry in note.Entries)
+            entries.Add(ReferenceEquals(entry, pointer) ? new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields) : entry);
+        return new MakerNote(note.Format, note.ByteOrder, entries);
     }
 
     /// <summary>

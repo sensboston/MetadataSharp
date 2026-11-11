@@ -14,7 +14,7 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   names only, marked by `ExifTagDefinition.Source`, from TIFF/EP, DNG 1.7, DCF, Microsoft, PIM).
 - MakerNotes (`ExifMetadata.MakerNote`, read-only): Canon (incl. arrays and AFInfo), Nikon 1/2/3
   (incl. versioned and encrypted arrays, preview directory), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
-  Sony (incl. enciphered arrays), Panasonic, Olympus/OM System (incl. sub-directories),
+  Sony (incl. enciphered arrays, camera settings, the A100's Minolta directory), Panasonic, Olympus/OM System (incl. sub-directories),
   Minolta/Konica Minolta (incl. the camera-settings arrays), Casio (both layouts), Samsung
   (plain IFD and PictureWizard; "AOC" notes read as Pentax), Sigma/Foveon. Run 42974953667: +113
   EXIF values (Minolta 90, Sigma 23); the corpus has no Casio or Samsung file, so unit tests only.
