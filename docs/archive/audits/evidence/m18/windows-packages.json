@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "sourceCommit": "4d89a00e016d32845bd44395bba7f0076dcc1217",
+  "sdkInfo": ".NET SDK:\n Version:           8.0.427\n Commit:            38c6707c62\n Workload version:  8.0.400-manifests.29236f5f\n MSBuild version:   17.11.69+4d6a29faa\n\nRuntime Environment:\n OS Name:     Windows\n OS Version:  10.0.26100\n OS Platform: Windows\n RID:         win-x64\n Base Path:   C:\\Program Files\\dotnet\\sdk\\8.0.427\\\n\n.NET workloads installed:\nConfigured to use loose manifests when installing new manifests.\n [maui-windows]\n   Installation Source: VS 18.11.12328.437\n   Manifest Version:    8.0.3/8.0.100\n   Manifest Path:       C:\\Program Files\\dotnet\\sdk-manifests\\8.0.100\\microsoft.net.sdk.maui\\8.0.3\\WorkloadManifest.json\n   Install Type:        FileBased\n\n [maccatalyst]\n   Installation Source: VS 18.11.12328.437\n   Manifest Version:    17.0.8478/8.0.100\n   Manifest Path:       C:\\Program Files\\dotnet\\sdk-manifests\\8.0.100\\microsoft.net.sdk.maccatalyst\\17.0.8478\\WorkloadManifest.json\n   Install Type:        FileBased\n\n [ios]\n   Installation Source: VS 18.11.12328.437\n   Manifest Version:    17.0.8478/8.0.100\n   Manifest Path:       C:\\Program Files\\dotnet\\sdk-manifests\\8.0.100\\microsoft.net.sdk.ios\\17.0.8478\\WorkloadManifest.json\n   Install Type:        FileBased\n\n [android]\n   Installation Source: VS 18.11.12328.437\n   Manifest Version:    34.0.43/8.0.100\n   Manifest Path:       C:\\Program Files\\dotnet\\sdk-manifests\\8.0.100\\microsoft.net.sdk.android\\34.0.43\\WorkloadManifest.json\n   Install Type:        FileBased\n\n [wasm-tools]\n   Installation Source: VS 18.11.12328.437\n   Manifest Version:    8.0.33/8.0.100\n   Manifest Path:       C:\\Program Files\\dotnet\\sdk-manifests\\8.0.100\\microsoft.net.workload.mono.toolchain.current\\8.0.33\\WorkloadManifest.json\n   Install Type:        FileBased\n\n\nHost:\n  Version:      10.0.14\n  Architecture: x64\n  Commit:       0427b9abbe\n\n.NET SDKs installed:\n  8.0.133 [C:\\Program Files\\dotnet\\sdk]\n  8.0.206 [C:\\Program Files\\dotnet\\sdk]\n  8.0.319 [C:\\Program Files\\dotnet\\sdk]\n  8.0.427 [C:\\Program Files\\dotnet\\sdk]\n  9.0.123 [C:\\Program Files\\dotnet\\sdk]\n  9.0.205 [C:\\Program Files\\dotnet\\sdk]\n  9.0.320 [C:\\Program Files\\dotnet\\sdk]\n  10.0.114 [C:\\Program Files\\dotnet\\sdk]\n  10.0.204 [C:\\Program Files\\dotnet\\sdk]\n  10.0.303 [C:\\Program Files\\dotnet\\sdk]\n  10.0.403 [C:\\Program Files\\dotnet\\sdk]\n\n.NET runtimes installed:\n  Microsoft.AspNetCore.App 8.0.6 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 8.0.22 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 8.0.33 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 9.0.6 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 9.0.22 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.8 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.11 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n  Microsoft.AspNetCore.App 10.0.14 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n  Microsoft.NETCore.App 8.0.6 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n  Microsoft.NETCore.App 8.0.22 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n  Microsoft.NETCore.App 8.0.33 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n  Microsoft.NETCore.App 9.0.6 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n  Microsoft.NETCore.App 9.0.22 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.8 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.11 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n  Microsoft.NETCore.App 10.0.14 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n  Microsoft.WindowsDesktop.App 8.0.6 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\n  Microsoft.WindowsDesktop.App 8.0.22 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\n  Microsoft.WindowsDesktop.App 8.0.33 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\n  Microsoft.WindowsDesktop.App 9.0.6 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\n  Microsoft.WindowsDesktop.App 9.0.22 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\n  Microsoft.WindowsDesktop.App 10.0.8 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\n  Microsoft.WindowsDesktop.App 10.0.11 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\n  Microsoft.WindowsDesktop.App 10.0.14 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\n\nOther architectures found:\n  x86   [C:\\Program Files (x86)\\dotnet]\n    registered at [HKLM\\SOFTWARE\\dotnet\\Setup\\InstalledVersions\\x86\\InstallLocation]\n\nEnvironment variables:\n  DOTNET_CLI_TELEMETRY_OPTOUT              [1]\n  DOTNET_MULTILEVEL_LOOKUP                 [0]\n  DOTNET_NOLOGO                            [1]\n  DOTNET_ROOT                              [C:\\Program Files\\dotnet]\n  DOTNET_SKIP_FIRST_TIME_EXPERIENCE        [1]\n\nglobal.json file:\n  D:\\a\\MetadataSharp\\MetadataSharp\\global.json\n\nLearn more:\n  https://aka.ms/dotnet/info\n\nDownload .NET:\n  https://aka.ms/dotnet/download\n",
+  "packages": [
+    {
+      "package": "MetadataSharp.Core.0.0.0-audit.nupkg",
+      "sha256": "cbfcf558298c504d4cce3a15e708ecb24ae933fdf04367aa50696c1f5880811d",
+      "entries": [
+        "LICENSE",
+        "MetadataSharp.Core.nuspec",
+        "README.md",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net8.0/MetadataSharp.Core.dll",
+        "lib/net8.0/MetadataSharp.Core.xml",
+        "package/services/metadata/core-properties/10914be6f8054a38b7890de562788747.psmdcp"
+      ],
+      "dependencies": [],
+      "documentedMembers": 45
+    },
+    {
+      "package": "MetadataSharp.Formats.0.0.0-audit.nupkg",
+      "sha256": "37587614293a6c7e92c46113d2dd847f07a156af8f4bdcd26f069f5d1aa48d21",
+      "entries": [
+        "LICENSE",
+        "MetadataSharp.Formats.nuspec",
+        "README.md",
+        "[Content_Types].xml",
+        "_rels/.rels",
+        "lib/net8.0/MetadataSharp.Formats.dll",
+        "lib/net8.0/MetadataSharp.Formats.xml",
+        "package/services/metadata/core-properties/1dd089b765be46c89125d15332a6abcb.psmdcp"
+      ],
+      "dependencies": [
+        [
+          "MetadataSharp.Core",
+          "0.0.0-audit"
+        ]
+      ],
+      "documentedMembers": 19
+    }
+  ],
+  "offlineConsumer": "passed",
+  "publication": "not attempted",
+  "docCaveat": "XML member counts are not full API documentation coverage; CS1591 suppressed only for audit candidates"
+}
