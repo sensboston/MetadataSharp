@@ -2,10 +2,12 @@ name: Build and test
 
 on:
   push:
-    branches: [master, 'arena/**']
+    branches: ['**']
   pull_request:
     branches: [master]
   workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'
 
 permissions:
   contents: read
@@ -16,6 +18,9 @@ concurrency:
 
 jobs:
   build-and-test:
+    # Branches of this repository are built by their push run, which GitHub also shows on the PR;
+    # pull_request runs only for forks, so each commit is built once.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: ${{ matrix.tfm }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -29,12 +34,17 @@ jobs:
       DOTNET_NOLOGO: '1'
     steps:
       - uses: actions/checkout@v4
-      - name: Install .NET 8 and 10 SDKs
+      # SDK 10 builds every target; the .NET 8 SDK (and its runtime) is installed only where net8.0
+      # code runs. Downloading SDKs was the slowest step of the Windows legs.
+      - name: Install .NET 10 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 10.0.x
+      - name: Install .NET 8 SDK
+        if: matrix.tfm == 'net8.0'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
       - name: Record SDK and runtime environment
         run: dotnet --info
       - name: Restore
@@ -127,6 +137,11 @@ jobs:
           retention-days: 7
 
   external-reference:
+    # Depends on Ubuntu's package mirror (exiv2 0.27.6, exiftool, webp from apt), which has failed for
+    # hours at a time on the runners. Runs nightly and on demand; parity against the pinned 0.28.9
+    # binary is the per-commit gate.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    continue-on-error: true
     name: References / ${{ matrix.tfm }}
     runs-on: ubuntu-24.04
     strategy:
@@ -141,15 +156,31 @@ jobs:
       DOTNET_NOLOGO: '1'
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      # SDK 10 builds every target; the .NET 8 SDK (and its runtime) is installed only where net8.0
+      # code runs. Downloading SDKs was the slowest step of the Windows legs.
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 10.0.x
+      - name: Install .NET 8 SDK
+        if: matrix.tfm == 'net8.0'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
       - name: Install external CLI tools
+        timeout-minutes: 5
         run: |
-          sudo apt-get update
-          sudo apt-get install -y exiv2 libimage-exiftool-perl webp
+          # Runner mirrors occasionally fail DNS; fail fast and retry instead of hanging for minutes.
+          APT_OPTS='-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20'
+          for attempt in 1 2 3; do
+            sudo apt-get $APT_OPTS update &&
+              sudo apt-get $APT_OPTS install -y exiv2 libimage-exiftool-perl webp && break
+            [ "$attempt" = 3 ] && exit 1
+            # The runner's Azure mirror has failed DNS for hours at a time; fall back to the main archive.
+            echo 'http://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+            sudo sed -i 's|mirror+file:/etc/apt/apt-mirrors.txt|http://archive.ubuntu.com/ubuntu/|' /etc/apt/sources.list.d/ubuntu.sources || true
+            sleep 10
+          done
           mkdir -p artifacts/reference
           dpkg-query -W exiv2 libimage-exiftool-perl webp > artifacts/reference/packages.txt
           cp /usr/share/doc/exiv2/copyright artifacts/reference/exiv2-copyright.txt
@@ -170,13 +201,17 @@ jobs:
           retention-days: 7
 
   performance-package-audit:
+    # Branches of this repository are built by their push run, which GitHub also shows on the PR;
+    # pull_request runs only for forks, so each commit is built once.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: Audit / ${{ matrix.os }} / ${{ matrix.tfm }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Package contents and the dependency audit do not depend on the OS; one runner is enough.
+        os: [ubuntu-latest]
         tfm: [net8.0, net10.0]
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
@@ -185,11 +220,17 @@ jobs:
       AUDIT_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      # SDK 10 builds every target; the .NET 8 SDK (and its runtime) is installed only where net8.0
+      # code runs. Downloading SDKs was the slowest step of the Windows legs.
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 10.0.x
+      - name: Install .NET 8 SDK
+        if: matrix.tfm == 'net8.0'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
       - name: Record SDK and environment
         run: dotnet --info
       - name: Measure and audit local candidates
@@ -206,6 +247,9 @@ jobs:
           retention-days: 30
 
   differential-parity:
+    # Branches of this repository are built by their push run, which GitHub also shows on the PR;
+    # pull_request runs only for forks, so each commit is built once.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: Exiv2 0.28.9 / differential parity
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -216,12 +260,10 @@ jobs:
       DUMP: dotnet run --project tools/MetadataSharp.Dump -c Release -f net10.0 --no-build --
     steps:
       - uses: actions/checkout@v4
-      - name: Install .NET 8 and 10 SDKs
+      - name: Install .NET 10 SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 10.0.x
       - name: Build the dump tool (restricted to the public API by construction)
         run: dotnet build tools/MetadataSharp.Dump/MetadataSharp.Dump.csproj --configuration Release -f net10.0
       - name: Checkout pinned upstream corpus (CI-time fetch; never vendored, never executed)
@@ -236,20 +278,18 @@ jobs:
         run: |
           python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
             --dump-command "$DUMP" --out artifacts/parity/upstream --title 'PARITY upstream' --annotate
-      - name: Install external build dependencies
+      # The oracle is the official 0.28.9 release binary from github.com: no apt, no compiler, no
+      # 1-minute build. The Ubuntu package mirrors have failed DNS for hours at a time on the runners.
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
+        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake ninja-build g++ libexpat1-dev zlib1g-dev libbrotli-dev libinih-dev libfmt-dev
-      - name: Configure external black-box build with explicit policy
-        shell: python
-        run: |
-          import subprocess, sys
-          sys.path.insert(0, 'tools/parity')
-          from exiv2_build_options import OPTIONS
-          subprocess.run(['cmake', '-S', 'artifacts/parity/exiv2', '-B', 'artifacts/parity/build', '-G', 'Ninja',
-                          *[f'-D{k}={v}' for k, v in OPTIONS.items()]], check=True)
-      - name: Build only external executable (no upstream tests or fixture imports)
-        run: cmake --build artifacts/parity/build --target exiv2 --parallel 2
+          mkdir -p artifacts/parity/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/parity/exiv2.tar.gz             https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          echo "10041994  artifacts/parity/exiv2.tar.gz" | python -c "import sys,os; n,f=sys.stdin.read().split(); assert os.path.getsize(f)==int(n), 'unexpected size'"
+          tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
+          artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
       - name: Generate this repository's own fixtures
         shell: bash
         run: |
@@ -266,7 +306,7 @@ jobs:
             --fixtures artifacts/parity/generated --fixtures tests/fixtures/b7 --fixtures tests/fixtures/b8 \
             --fixtures tests/fixtures/b9 --fixtures tests/fixtures/b10 --fixtures tests/fixtures/b11 \
             --fixtures tests/fixtures/b11l \
-            --exiv2-command "artifacts/parity/build/bin/exiv2 -Pkycvt" \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
             --dump-command "$DUMP" --out artifacts/parity/owned --title 'PARITY owned' --annotate
       - name: Upload parity reports (measurements only - no corpus bytes, no external source)
         if: always()
