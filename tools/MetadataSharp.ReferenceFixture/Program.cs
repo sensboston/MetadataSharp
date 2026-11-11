@@ -415,7 +415,7 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
                     var entries = document.ReadExif().Entries;
                     large = $"{entries.Count} entries, {entries.Sum(entry => (long)entry.Value.ByteLength)} value bytes; over {new MetadataLimits().MaxValueBytes}: "
                         + string.Join(", ", entries.Where(entry => entry.Value.ByteLength > new MetadataLimits().MaxValueBytes)
-                            .Select(entry => $"{entry.Key.Directory} 0x{entry.Key.TagId:X4} {entry.Value.Type} {entry.Value.ByteLength}"));
+                            .Select(entry => $"{entry.Key.Directory} 0x{entry.Key.TagId:X4} {entry.Value.FieldType} {entry.Value.ByteLength}"));
                 }
                 catch (MetadataException unread) { large = "not read: " + unread.Message; }
                 budgets.Add($"{Path.GetFileName(path)} ({new FileInfo(path).Length} bytes): {byDefault} Widening one budget is enough: {(enough.Length == 0 ? "none" : enough)}. {large}");
