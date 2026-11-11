@@ -2,9 +2,10 @@ namespace MetadataSharp.Core.MakerNotes;
 
 // Nikon (the Nikon3 layout): the fields of the note and of its arrays that occur in the comparison
 // corpus, with the numbers that occur there. Lens data (focal lengths, apertures and distances in
-// logarithmic codes), sensitivities, lens identifiers and the flash outputs whose reading depends on
-// the control mode are left without an interpretation. Two FlashInfo fields, ExternalFlashData1 and
-// ExternalFlashData2, mean different things in versions 0106 and 0107 and are left out for that reason.
+// logarithmic codes), the sensitivities of ISOInfo, lens identifiers and the flash outputs whose reading
+// depends on the control mode are left without an interpretation. Two FlashInfo fields,
+// ExternalFlashData1 and ExternalFlashData2, mean different things in versions 0106 and 0107 and are
+// left out for that reason.
 internal static partial class MakerNoteLabels
 {
     private static (long Number, string Label)[] NotAvailableAtEnds => [(0, "n/a"), (255, "n/a")];
@@ -36,15 +37,19 @@ internal static partial class MakerNoteLabels
         {
             Texts = [("AF-S", "Single autofocus"), ("AF-C", "Continuous autofocus"), ("AF-A", "Automatic")],
         },
+        // The first number says how the sensitivity was set and is not read here.
+        new(Top, "ISOSpeed", [], Form.SecondOfTwo),
+        new(Top, "ISOSettings", [], Form.SecondOfTwo),
+        // Ten places for the retouches applied in the camera; the corpus has none applied.
+        new(Top, "RetouchHistory", [(0, "None")], Form.CodeList),
+        new(Top, "Lens", [], Form.LensRange),
+        new(Top, "ExposureDiff", [], Form.StopFraction),
         new(Top, "ProgramShift", [], Form.StopFraction),
         new(Top, "FlashExposureComp", [], Form.StopFraction),
         new(Top, "FlashBracketComp", [], Form.StopFraction),
         new(Top, "FlashComp", [], Form.StopFraction),
 
-        // The preview directory (0x0011).
-        new(0x0011, "Compression", [(6, "JPEG (old-style)")]),
-        new(0x0011, "ResolutionUnit", [(2, "inch")]),
-        new(0x0011, "YCbCrPositioning", [(2, "Co-sited")]),
+        // The preview directory (0x0011) holds TIFF fields and is read with the EXIF vocabulary.
 
         // VRInfo (0x001F).
         new(0x001F, "VibrationReduction", [(1, "On"), (2, "Off")]),

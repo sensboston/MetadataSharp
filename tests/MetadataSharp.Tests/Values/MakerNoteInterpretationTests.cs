@@ -58,6 +58,17 @@ public sealed class MakerNoteInterpretationTests
         return ExifValue.FromRaw(TiffFieldType.SLong, (uint)numbers.Length, Little, bytes);
     }
 
+    private static ExifValue Rationals(params (uint Numerator, uint Denominator)[] numbers)
+    {
+        var bytes = new byte[numbers.Length * 8];
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(i * 8), numbers[i].Numerator);
+            BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan((i * 8) + 4), numbers[i].Denominator);
+        }
+        return ExifValue.FromRaw(TiffFieldType.Rational, (uint)numbers.Length, Little, bytes);
+    }
+
     /// <summary>What a note of the format makes of a tag of its own directory with this name and value.</summary>
     private static string? Top(MakerNoteFormat format, string? name, ExifValue value)
     {
@@ -66,9 +77,9 @@ public sealed class MakerNoteInterpretationTests
     }
 
     /// <summary>What a note of the format makes of a named field of the array tag.</summary>
-    private static string? Field(MakerNoteFormat format, int tag, string name, ExifValue value)
+    private static string? Field(MakerNoteFormat format, int tag, string name, ExifValue value, int index = 1)
     {
-        var part = new MakerNoteField(1, name, value);
+        var part = new MakerNoteField((ushort)index, name, value);
         var entry = new MakerNoteEntry((ushort)tag, "Array", Undefined(0), [part]);
         return new MakerNote(format, Little, [entry]).Interpret(entry, part);
     }
@@ -84,6 +95,7 @@ public sealed class MakerNoteInterpretationTests
     [InlineData(0x0001, "Macro", 0, "(0)")]
     [InlineData(0x0004, "WhiteBalance", 9, "Manual Temperature (Kelvin)")]
     [InlineData(0x0004, "CameraType", 248, "EOS High-end")]
+    [InlineData(0x0004, "SelfTimer2", 65535, "n/a")]
     public void ACanonArrayFieldReadsAsItsLabel(int tag, string name, int number, string expected) =>
         Assert.Equal(expected, Field(MakerNoteFormat.Canon, tag, name, Shorts(number)));
 
@@ -92,6 +104,8 @@ public sealed class MakerNoteInterpretationTests
     [InlineData(0x0093, "NoiseReduction", 4, "Auto")]
     [InlineData(0x0093, "FilterEffect", -1, "(-1)")]
     [InlineData(0x00A0, "PictureStyle", 131, "Landscape")]
+    [InlineData(0x00A0, "WhiteBalance", 6, "Custom")]
+    [InlineData(0x00A0, "WhiteBalance", -1, "(-1)")]
     public void ASignedCanonFieldReadsAsItsLabel(int tag, string name, int number, string expected) =>
         Assert.Equal(expected, Field(MakerNoteFormat.Canon, tag, name, SignedShorts(number)));
 
@@ -140,6 +154,14 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("100-0054", Top(MakerNoteFormat.Canon, "FileNumber", Longs(1000054)));
         Assert.Equal("889-8982", Top(MakerNoteFormat.Canon, "FileNumber", Longs(8898982)));
         Assert.Equal("(0)", Top(MakerNoteFormat.Canon, "FileNumber", Longs(0)));
+    }
+
+    [Fact]
+    public void ACanonLensSerialNumberIsTheHexadecimalDigitsOfItsBytes()
+    {
+        Assert.Equal("1c00000000", Field(MakerNoteFormat.Canon, 0x4019, "LensSerialNumber", Bytes(0x1C, 0, 0, 0, 0)));
+        Assert.Equal("3490009075", Field(MakerNoteFormat.Canon, 0x4019, "LensSerialNumber", Bytes(0x34, 0x90, 0, 0x90, 0x75)));
+        Assert.Null(Field(MakerNoteFormat.Canon, 0x4019, "LensSerialNumber", Shorts(1, 2)));
     }
 
     [Fact]
@@ -244,6 +266,67 @@ public sealed class MakerNoteInterpretationTests
     }
 
     [Fact]
+    public void TheNikonExposureDifferenceIsAStopFractionToo()
+    {
+        Assert.Equal("0.0 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(0, 1, 12, 0)));
+        Assert.Equal("+0.1 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(1, 1, 12, 0)));
+        Assert.Equal("-1.1 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(243, 1, 12, 0)));
+    }
+
+    [Fact]
+    public void TheNikonSensitivityIsTheSecondOfItsTwoNumbers()
+    {
+        Assert.Equal("200", Top(MakerNoteFormat.Nikon3, "ISOSpeed", Shorts(0, 200)));
+        Assert.Equal("6400", Top(MakerNoteFormat.Nikon3, "ISOSettings", Shorts(0, 6400)));
+        Assert.Equal("0", Top(MakerNoteFormat.Nikon3, "ISOSpeed", Shorts(0, 0)));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "ISOSpeed", Shorts(200)));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "ISOSpeed", Bytes(0, 200)));
+        // The early Coolpix layouts number their tags differently and are not read.
+        Assert.Null(Top(MakerNoteFormat.Nikon2, "ISOSpeed", Shorts(0, 200)));
+    }
+
+    [Fact]
+    public void ANikonRetouchHistoryWithNothingInItSaysSo()
+    {
+        Assert.Equal("None", Top(MakerNoteFormat.Nikon3, "RetouchHistory", Shorts(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)));
+        // A retouch this release cannot name leaves the list unread rather than half read.
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "RetouchHistory", Shorts(0, 3, 0, 0, 0, 0, 0, 0, 0, 0)));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "RetouchHistory", Ascii("0")));
+    }
+
+    [Fact]
+    public void ANikonLensIsItsFocalLengthsAndItsWidestApertures()
+    {
+        Assert.Equal("18-250mm F3.5-6.3",
+            Top(MakerNoteFormat.Nikon3, "Lens", Rationals((180, 10), (2500, 10), (35, 10), (63, 10))));
+        Assert.Equal("50mm F1.4", Top(MakerNoteFormat.Nikon3, "Lens", Rationals((500, 10), (500, 10), (14, 10), (14, 10))));
+        Assert.Equal("70-200mm F2.8",
+            Top(MakerNoteFormat.Nikon3, "Lens", Rationals((700, 10), (2000, 10), (280, 100), (280, 100))));
+        Assert.Equal("10.5mm F2.8", Top(MakerNoteFormat.Nikon3, "Lens", Rationals((105, 10), (105, 10), (28, 10), (28, 10))));
+        Assert.Equal("24-70mm F4", Top(MakerNoteFormat.Nikon3, "Lens", Rationals((240, 10), (700, 10), (400, 100), (400, 100))));
+        // A number that is not a decimal with two places, or has no denominator, is not guessed at.
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "Lens", Rationals((180, 10), (2500, 10), (10, 3), (63, 10))));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "Lens", Rationals((180, 10), (2500, 10), (35, 0), (63, 10))));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "Lens", Rationals((180, 10), (2500, 10), (35, 10))));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "Lens", Longs(18, 250, 3, 6)));
+    }
+
+    [Fact]
+    public void TheNikonPreviewDirectoryIsReadWithTheExifVocabulary()
+    {
+        ExifValue compression = Shorts(6), resolution = Rationals((300, 1)), unit = Shorts(2);
+        string? expected = ExifTags.Interpret(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0103), compression);
+        Assert.NotNull(expected);
+        Assert.Equal(expected, Field(MakerNoteFormat.Nikon3, 0x0011, "Compression", compression, 0x0103));
+        Assert.Equal("300", Field(MakerNoteFormat.Nikon3, 0x0011, "XResolution", resolution, 0x011A));
+        Assert.Equal("inch", Field(MakerNoteFormat.Nikon3, 0x0011, "ResolutionUnit", unit, 0x0128));
+        // The tag number decides, not the name; and only Nikon has this directory.
+        Assert.Equal("inch", Field(MakerNoteFormat.Nikon3, 0x0011, "0x0128", unit, 0x0128));
+        Assert.Null(Field(MakerNoteFormat.Nikon3, 0x0011, "ResolutionUnit", unit, 0xFFF0));
+        Assert.Null(Field(MakerNoteFormat.Canon, 0x0011, "ResolutionUnit", unit, 0x0128));
+    }
+
+    [Fact]
     public void TheNikonFocusAbbreviationIsSpelledOut()
     {
         Assert.Equal("Single autofocus", Top(MakerNoteFormat.Nikon3, "Focus", Ascii("AF-S  ")));
@@ -268,6 +351,19 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("(9999)", Top(format, "SonyModelID", Shorts(9999)));
         Assert.Equal("Tracking", Field(format, 0x9402, "AFAreaMode", Bytes(14)));
         Assert.Equal("iAuto+", Field(format, 0x9404, "ExposureProgram", Bytes(7)));
+        Assert.Equal("n/a", Top(format, "HighISONoiseReduction2", Shorts(65535)));
+        Assert.Equal("DMF", Top(format, "FocusMode2", Bytes(6)));
+        Assert.Equal("Raw + JPEG", Field(format, 0x9400, "Quality2", Bytes(2)));
+    }
+
+    [Fact]
+    public void TheSonyFocusModeIsInTheLowSevenBitsOfItsByte()
+    {
+        Assert.Equal("AF-A", Field(MakerNoteFormat.Sony2, 0x9402, "FocusMode", Bytes(132)));
+        Assert.Equal("AF-A", Field(MakerNoteFormat.Sony2, 0x9402, "FocusMode", Bytes(4)));
+        Assert.Equal("AF-C", Field(MakerNoteFormat.Sony2, 0x9402, "FocusMode", Bytes(131)));
+        Assert.Equal("Manual", Field(MakerNoteFormat.Sony2, 0x9402, "FocusMode", Bytes(0)));
+        Assert.Equal("(77)", Field(MakerNoteFormat.Sony2, 0x9402, "FocusMode", Bytes(205)));
     }
 
     [Fact]
@@ -283,6 +379,30 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("3 shots", Field(MakerNoteFormat.Sony1, 0x9400, "SequenceLength1", Bytes(3)));
         Assert.Equal("1 file", Field(MakerNoteFormat.Sony1, 0x9400, "SequenceLength2", Bytes(1)));
         Assert.Equal("3 files", Field(MakerNoteFormat.Sony1, 0x9400, "SequenceLength2", Bytes(3)));
+        Assert.Equal("4000", Field(MakerNoteFormat.Sony1, 0x9400, "SonyImageHeight", Shorts(500)));
+        Assert.Equal("2014", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(14)));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(255)));
+        Assert.Equal("176, 242", Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176, 242)));
+        Assert.Null(Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176)));
+    }
+
+    [Theory]
+    [InlineData(0, "0%")]
+    [InlineData(130, "13%")]
+    [InlineData(506, "49%")]
+    [InlineData(1013, "99%")]
+    [InlineData(1023, "100%")]
+    [InlineData(128, "12%")]     // 12.5: the even one
+    [InlineData(384, "38%")]     // 37.5: the even one
+    public void TheSonyZoomPositionIsAWholePercentage(int position, string expected) =>
+        Assert.Equal(expected, Field(MakerNoteFormat.Sony1, 0x9404, "LensZoomPosition", Shorts(position)));
+
+    [Fact]
+    public void ThePreciseSonyColourShiftIsInThousandths()
+    {
+        Assert.Equal("A/B: 0, G/M: 0", Top(MakerNoteFormat.Sony1, "WBShiftABGMPrecise", SignedLongs(0, 0)));
+        Assert.Equal("A/B: A1.00, G/M: G1.00", Top(MakerNoteFormat.Sony1, "WBShiftABGMPrecise", SignedLongs(-1000, -1000)));
+        Assert.Equal("A/B: B1.00, G/M: M2.50", Top(MakerNoteFormat.Sony1, "WBShiftABGMPrecise", SignedLongs(1000, 2500)));
     }
 
     [Fact]

@@ -1,8 +1,10 @@
 namespace MetadataSharp.Core.MakerNotes;
 
 // Sony (both layouts share one vocabulary): the fields of the note and of its arrays that occur in the
-// comparison corpus, with the numbers that occur there. The fields whose reading depends on the camera
-// model (the autofocus settings and points, FocusMode, lens identifiers, temperatures) and LensSpec are
+// comparison corpus, with the numbers that occur there. A number is read as what it means on the cameras
+// that use the field; whether a given camera uses it is not decided here. The fields whose numbers mean
+// different things on different cameras (the autofocus area, points and tracking, FocusMode, FocusMode3,
+// lens identifiers), the temperatures, which are only valid together with another byte, and LensSpec are
 // left without an interpretation.
 internal static partial class MakerNoteLabels
 {
@@ -50,6 +52,9 @@ internal static partial class MakerNoteLabels
         new(Top, "MultiFrameNoiseReduction", [(0, "Off")]),
         new(Top, "MultiFrameNREffect", [(0, "Normal")]),
         new(Top, "HighISONoiseReduction", [(0, "Off"), (1, "Low"), (2, "Normal")]),
+        new(Top, "HighISONoiseReduction2", [(0, "Normal"), (65535, "n/a")]),
+        new(Top, "FocusMode2", [(0, "Manual"), (2, "AF-S"), (4, "AF-A"), (6, "DMF")]),
+        new(Top, "FlexibleSpotPosition", [], Form.Pair),
         new(Top, "LongExposureNoiseReduction", [(0, "Off"), (1, "On (unused)")]),
         new(Top, "VignettingCorrection", OffAutoNotAvailable),
         new(Top, "LateralChromaticAberration", OffAutoNotAvailable),
@@ -57,6 +62,7 @@ internal static partial class MakerNoteLabels
         new(Top, "ColorTemperature", [(0, "Auto")], Form.Kelvin),
         new(Top, "ColorCompensationFilter", [], Form.GreenMagenta),
         new(Top, "WBShiftABGM", [], Form.AmberBlueGreenMagenta),
+        new(Top, "WBShiftABGMPrecise", [], Form.AmberBlueGreenMagentaThousandths),
         new(Top, "FullImageSize", [], Form.HeightThenWidth),
         new(Top, "PreviewImageSize", [], Form.HeightThenWidth),
         // The file type and its version, a byte each.
@@ -80,8 +86,13 @@ internal static partial class MakerNoteLabels
         new(0x9400, "SequenceFileNumber", [], Form.OneBased),
         new(0x9400, "SequenceLength1", [], Form.Shots),
         new(0x9400, "SequenceLength2", [], Form.Files),
+        new(0x9400, "Quality2", [(0, "JPEG"), (2, "Raw + JPEG")]),
+        new(0x9400, "SonyImageHeight", [], Form.TimesEight),
+        new(0x9400, "ModelReleaseYear", [(255, "n/a")], Form.YearSince2000),
 
-        // The array of tag 0x9402.
+        // The array of tag 0x9402. The top bit of the focus mode is not part of the mode.
+        new(0x9402, "FocusMode", [(0, "Manual"), (2, "AF-S"), (3, "AF-C"), (4, "AF-A"), (6, "DMF")],
+            Form.LowSevenBits),
         new(0x9402, "AFAreaMode",
         [
             (0, "Multi"), (1, "Center"), (3, "Flexible Spot"), (12, "Expanded Flexible Spot"), (14, "Tracking"),
@@ -95,5 +106,6 @@ internal static partial class MakerNoteLabels
             (7, "iAuto+"),
         ]),
         new(0x9404, "IntelligentAuto", OffOn),
+        new(0x9404, "LensZoomPosition", [], Form.PercentOf1024),
     ];
 }

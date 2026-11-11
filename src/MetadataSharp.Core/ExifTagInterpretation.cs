@@ -838,7 +838,7 @@ public static partial class ExifTags
         return value.Count == 1 && TryRational(value, 0, out numerator, out denominator);
     }
 
-    private static bool TryRational(ExifValue value, int index, out long numerator, out long denominator)
+    internal static bool TryRational(ExifValue value, int index, out long numerator, out long denominator)
     {
         numerator = 0;
         denominator = 0;

@@ -91,6 +91,39 @@ internal static partial class MakerNoteLabels
 
         /// <summary>Text that is an abbreviation with a longer reading.</summary>
         Abbreviation,
+
+        /// <summary>Bytes written as hexadecimal digits, two for each.</summary>
+        Hex,
+
+        /// <summary>Two numbers of which the second is the value.</summary>
+        SecondOfTwo,
+
+        /// <summary>
+        /// A list of codes in which zero is an empty place: the labels of the others, or the label of
+        /// zero when there are none.
+        /// </summary>
+        CodeList,
+
+        /// <summary>A code in the low seven bits of a byte.</summary>
+        LowSevenBits,
+
+        /// <summary>A count of eight pixels.</summary>
+        TimesEight,
+
+        /// <summary>A year counted from 2000.</summary>
+        YearSince2000,
+
+        /// <summary>A position from 0 to 1024, written as a whole percentage.</summary>
+        PercentOf1024,
+
+        /// <summary>Two numbers, written with a comma between them.</summary>
+        Pair,
+
+        /// <summary>Two shifts as in <see cref="Form.AmberBlueGreenMagenta" />, in thousandths of a step.</summary>
+        AmberBlueGreenMagentaThousandths,
+
+        /// <summary>Four rationals: the shortest and the longest focal length, then the widest aperture at each.</summary>
+        LensRange,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -117,8 +150,13 @@ internal static partial class MakerNoteLabels
     internal static string? Interpret(MakerNoteFormat format, MakerNoteEntry entry) =>
         Interpret(format, Top, entry.Name, entry.Value);
 
-    internal static string? Interpret(MakerNoteFormat format, MakerNoteEntry entry, MakerNoteField field) =>
-        Interpret(format, entry.TagId, field.Name, field.Value);
+    internal static string? Interpret(MakerNoteFormat format, MakerNoteEntry entry, MakerNoteField field)
+    {
+        // Nikon's preview directory holds ordinary TIFF fields, and they read as they do anywhere else.
+        if (format == MakerNoteFormat.Nikon3 && entry.TagId == 0x0011)
+            return ExifTags.Interpret(new ExifTagKey(ExifDirectoryKind.Ifd0, field.Index), field.Value);
+        return Interpret(format, entry.TagId, field.Name, field.Value);
+    }
 
     private static string? Interpret(MakerNoteFormat format, int scope, string? name, ExifValue value)
     {
@@ -153,7 +191,19 @@ internal static partial class MakerNoteLabels
             case Form.HeightThenWidth:
                 return HeightThenWidth(value);
             case Form.AmberBlueGreenMagenta:
-                return AmberBlueGreenMagenta(value);
+                return AmberBlueGreenMagenta(value, thousandths: false);
+            case Form.AmberBlueGreenMagentaThousandths:
+                return AmberBlueGreenMagenta(value, thousandths: true);
+            case Form.Hex:
+                return Hex(value);
+            case Form.SecondOfTwo:
+                return SecondOfTwo(value);
+            case Form.CodeList:
+                return CodeList(rule, value);
+            case Form.Pair:
+                return Pair(value);
+            case Form.LensRange:
+                return LensRange(value);
             case Form.FourBytes:
                 return FourBytes(rule, value);
             case Form.StopFraction:
@@ -165,6 +215,8 @@ internal static partial class MakerNoteLabels
         if (value.Count != 1 || value.FieldType == TiffFieldType.Undefined ||
             !ExifTags.TryInteger(value, 0, out long number))
             return null;
+        if (rule.Reading == Form.LowSevenBits)
+            number &= 0x7F;
         foreach ((long candidate, string label) in rule.Labels)
         {
             if (candidate == number)
@@ -173,6 +225,12 @@ internal static partial class MakerNoteLabels
 
         switch (rule.Reading)
         {
+            case Form.TimesEight:
+                return Whole(number * 8);
+            case Form.YearSince2000:
+                return Whole(2000 + number);
+            case Form.PercentOf1024:
+                return number < 0 ? Stored(number) : Whole(HalfEven(number * 100, 1024)) + "%";
             case Form.Millimetres:
                 return Whole(number) + " mm";
             case Form.Hertz:
@@ -271,20 +329,105 @@ internal static partial class MakerNoteLabels
     private static long Signed32(ExifValue value, long number) =>
         value.FieldType == TiffFieldType.Long ? unchecked((int)(uint)number) : number;
 
-    private static string Shift(long amount, char negative, char positive)
+    /// <summary>A quotient of two non-negative numbers, rounded to a whole one; a half goes to the even one.</summary>
+    private static long HalfEven(long dividend, long divisor)
+    {
+        long quotient = dividend / divisor, rest = dividend % divisor;
+        if (rest * 2 > divisor || (rest * 2 == divisor && (quotient & 1) == 1))
+            quotient++;
+        return quotient;
+    }
+
+    private static string Shift(long amount, char negative, char positive, bool thousandths = false)
     {
         if (amount == 0)
             return "0";
-        return (amount < 0 ? negative : positive) + Whole(Math.Abs(amount));
+        long size = Math.Abs(amount);
+        return (amount < 0 ? negative : positive) +
+               (thousandths ? Whole(size / 1000) + "." + TwoDigits(size % 1000 / 10) : Whole(size));
     }
 
-    private static string? AmberBlueGreenMagenta(ExifValue value)
+    private static string? AmberBlueGreenMagenta(ExifValue value, bool thousandths)
     {
         if (value.Count != 2 || value.FieldType is not (TiffFieldType.SLong or TiffFieldType.Long) ||
             !ExifTags.TryInteger(value, 0, out long amberBlue) || !ExifTags.TryInteger(value, 1, out long greenMagenta))
             return null;
-        return "A/B: " + Shift(Signed32(value, amberBlue), 'A', 'B') +
-               ", G/M: " + Shift(Signed32(value, greenMagenta), 'G', 'M');
+        return "A/B: " + Shift(Signed32(value, amberBlue), 'A', 'B', thousandths) +
+               ", G/M: " + Shift(Signed32(value, greenMagenta), 'G', 'M', thousandths);
+    }
+
+    private static string? Hex(ExifValue value)
+    {
+        if (value.Count == 0 || value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined))
+            return null;
+        return Convert.ToHexString(value.RawBytes).ToLowerInvariant();
+    }
+
+    private static string? SecondOfTwo(ExifValue value)
+    {
+        if (value.Count != 2 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.Long) ||
+            !ExifTags.TryInteger(value, 1, out long second))
+            return null;
+        return Whole(second);
+    }
+
+    private static string? Pair(ExifValue value)
+    {
+        if (value.Count != 2 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.Long) ||
+            !ExifTags.TryInteger(value, 0, out long first) || !ExifTags.TryInteger(value, 1, out long second))
+            return null;
+        return Whole(first) + ", " + Whole(second);
+    }
+
+    /// <summary>A code without a label leaves the whole list without a reading: half a list would mislead.</summary>
+    private static string? CodeList(Rule rule, ExifValue value)
+    {
+        if (value.Count == 0 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.Long or TiffFieldType.Byte))
+            return null;
+        var list = new StringBuilder();
+        for (int i = 0; (uint)i < value.Count; i++)
+        {
+            if (!ExifTags.TryInteger(value, i, out long code))
+                return null;
+            if (code == 0)
+                continue;
+            if (Find(rule, code) is not string label)
+                return null;
+            if (list.Length != 0)
+                list.Append(", ");
+            list.Append(label);
+        }
+        return list.Length == 0 ? Find(rule, 0) : list.ToString();
+    }
+
+    private static string? Find(Rule rule, long number)
+    {
+        foreach ((long candidate, string label) in rule.Labels)
+        {
+            if (candidate == number)
+                return label;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// "18-250mm F3.5-6.3", or "50mm F1.4" for a lens with one focal length and one widest aperture.
+    /// Each number has to be a decimal with at most two places; a lens described otherwise is not read.
+    /// </summary>
+    private static string? LensRange(ExifValue value)
+    {
+        if (value.Count != 4 || value.FieldType != TiffFieldType.Rational)
+            return null;
+        var numbers = new string[4];
+        for (int i = 0; i < 4; i++)
+        {
+            if (!ExifTags.TryRational(value, i, out long numerator, out long denominator) || denominator <= 0 ||
+                numerator > int.MaxValue || numerator * 100 % denominator != 0)
+                return null;
+            numbers[i] = Hundredths(numerator * 100 / denominator);
+        }
+        return (numbers[0] == numbers[1] ? numbers[0] : numbers[0] + "-" + numbers[1]) + "mm F" +
+               (numbers[2] == numbers[3] ? numbers[2] : numbers[2] + "-" + numbers[3]);
     }
 
     private static string? HeightThenWidth(ExifValue value)

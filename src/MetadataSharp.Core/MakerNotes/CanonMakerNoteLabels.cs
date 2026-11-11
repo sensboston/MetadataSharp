@@ -10,6 +10,12 @@ internal static partial class MakerNoteLabels
 
     private static (long Number, string Label)[] NormalHigh => [(0, "Normal"), (1, "High")];
 
+    private static (long Number, string Label)[] CanonWhiteBalance =>
+    [
+        (0, "Auto"), (1, "Daylight"), (6, "Custom"), (9, "Manual Temperature (Kelvin)"),
+        (23, "Auto (ambience priority)"),
+    ];
+
     private static readonly Rule[] Canon =
     [
         // The note's own directory.
@@ -99,11 +105,7 @@ internal static partial class MakerNoteLabels
         new(0x0001, "SRAWQuality", [(0, "n/a"), (1, "sRAW1 (mRAW)"), (2, "sRAW2 (sRAW)")]),
 
         // ShotInfo (0x0004).
-        new(0x0004, "WhiteBalance",
-        [
-            (0, "Auto"), (1, "Daylight"), (6, "Custom"), (9, "Manual Temperature (Kelvin)"),
-            (23, "Auto (ambience priority)"),
-        ]),
+        new(0x0004, "WhiteBalance", CanonWhiteBalance),
         new(0x0004, "SlowShutter", [(0, "Off"), (3, "None")]),
         new(0x0004, "CameraTemperature", [(0, "--")], Form.CelsiusPlus128),
         new(0x0004, "FlashBias", [(0, "0 EV")]),
@@ -112,6 +114,7 @@ internal static partial class MakerNoteLabels
         new(0x0004, "CameraType", [(0, "n/a"), (248, "EOS High-end"), (250, "Compact"), (252, "EOS Mid-range")]),
         new(0x0004, "AutoRotate", [(0, "None"), (1, "Rotate 90 CW"), (3, "Rotate 270 CW")]),
         new(0x0004, "NDFilter", [(0, "Off"), (65535, "n/a")]),
+        new(0x0004, "SelfTimer2", [(65535, "n/a")]),
 
         // FileInfo (0x0093).
         new(0x0093, "BracketMode", [(0, "Off"), (1, "AEB")]),
@@ -131,6 +134,8 @@ internal static partial class MakerNoteLabels
         // ProcessingInfo (0x00A0).
         new(0x00A0, "ToneCurve", [(0, "Standard")]),
         new(0x00A0, "SharpnessFrequency", [(0, "n/a")]),
+        // The same numbers as ShotInfo's WhiteBalance; -1, which is what the corpus has, is none of them.
+        new(0x00A0, "WhiteBalance", CanonWhiteBalance),
         new(0x00A0, "PictureStyle",
         [
             (0, "None"), (33, "User Def. 1"), (34, "User Def. 2"), (129, "Standard"), (131, "Landscape"),
@@ -156,6 +161,9 @@ internal static partial class MakerNoteLabels
         new(0x4018, "HighISONoiseReduction", [(0, "Standard"), (1, "Low"), (2, "Strong"), (3, "Off")]),
         new(0x4018, "DigitalLensOptimizer", [(0, "Off"), (1, "Standard")]),
         new(0x4018, "DualPixelRaw", [(0, "Off")]),
+
+        // LensInfo (0x4019): the serial number is five bytes, written as their hexadecimal digits.
+        new(0x4019, "LensSerialNumber", [], Form.Hex),
 
         // AmbienceInfo (0x4020), MultiExp (0x4021), HDRInfo (0x4025).
         new(0x4020, "AmbienceSelection", [(0, "Standard")]),
