@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Globalization;
+using System.Numerics;
 using System.Text;
 
 namespace MetadataSharp.Core;
@@ -8,10 +9,11 @@ namespace MetadataSharp.Core;
 // derived from it for display, is never read back, and is absent (null) wherever the publication gives a
 // value no meaning beyond its digits.
 //
-// Arithmetic is done on the stored rational with System.Decimal and rounded half to even, so a result
-// does not depend on the platform's floating-point formatting. The two APEX conversions need a power of
-// two and go through System.Double; they are rounded to two significant digits or to a whole number, far
-// above the precision at which platforms could differ.
+// A rational becomes a number by single-precision division, which is how metadata tools have always
+// computed it, so that a value halfway between two printed digits falls to the same side here as it does
+// for them. The digits are then taken from the exact binary value with integer arithmetic, an exact tie
+// going to the even digit, so that no platform's floating-point formatting has a say. Coordinates and
+// times are sums of three rationals and are added exactly, with System.Decimal.
 public static partial class ExifTags
 {
     /// <summary>
@@ -19,20 +21,26 @@ public static partial class ExifTags
     /// </summary>
     /// <remarks>
     /// <para>
-    /// An enumerated tag answers with the wording of its <see cref="ExifTagDefinition.ValueMeanings" />.
+    /// An enumerated tag answers with a short label for the standard's meaning, in the form metadata
+    /// tools conventionally print: <c>top, left</c>, <c>inch</c>, <c>Auto</c>. The publication's full
+    /// wording stays in <see cref="ExifTagDefinition.ValueMeanings" />.
     /// A rational answers as a decimal with the unit the standard gives it: ExposureTime as
     /// <c>1/250 s</c>, FNumber as <c>F2.8</c>, FocalLength as <c>50.0 mm</c>, ExposureBiasValue as
     /// <c>+1/3 EV</c>, and ApertureValue, MaxApertureValue and ShutterSpeedValue converted from APEX to
     /// an F-number and an exposure time. A date answers as written. A GPS coordinate answers as degrees,
     /// minutes and seconds, and its reference letter as the direction it names. Flash answers as a
-    /// description of its bit fields, ExifVersion and FlashpixVersion as dotted versions, and UserComment
-    /// as the text behind its character-code prefix.
+    /// short description of its bit fields (<c>Yes, auto, return light detected</c>), ExifVersion and
+    /// FlashpixVersion as dotted versions, and UserComment as the text behind its character-code prefix.
+    /// </para>
+    /// <para>
+    /// A value the tag has an interpretation for but that cannot be read as one answers with the stored
+    /// value in parentheses: <c>(9)</c> for a number an enumerated tag does not assign, <c>(1/0)</c> for
+    /// a rational that cannot be divided.
     /// </para>
     /// <para>
     /// Null means there is nothing to add to the raw value: the tag is outside the vocabulary, the tag
-    /// is free text or a plain number, the number is not one the standard assigns a meaning to, or the
-    /// value does not have the type and count the interpretation needs. Nothing is ever thrown for the
-    /// content of a value.
+    /// is free text or a plain number, or the value does not have the type and count the interpretation
+    /// needs. Nothing is ever thrown for the content of a value.
     /// </para>
     /// </remarks>
     /// <param name="key">The directory and tag the value was read from.</param>
@@ -47,7 +55,7 @@ public static partial class ExifTags
             return InterpretEnumerated(key, definition, value);
         return key.Directory switch
         {
-            ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail => InterpretImage(key.TagId, value),
+            ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail => InterpretImage(key, value),
             ExifDirectoryKind.Exif => InterpretPhoto(key.TagId, value),
             ExifDirectoryKind.Gps => InterpretGps(key.TagId, value),
             _ => null,
@@ -99,14 +107,14 @@ public static partial class ExifTags
 
     private static string? InterpretEnumerated(ExifTagKey key, ExifTagDefinition definition, ExifValue value)
     {
-        // ComponentsConfiguration is the one enumerated tag with four values: the channel in each of
-        // four positions, where 0 says the position is unused. "1 2 3 0" therefore reads YCbCr.
+        // ComponentsConfiguration is the one enumerated tag with a value per position: the channel in
+        // each of up to four positions, where 0 says the position is unused. "1 2 3 0" reads YCbCr.
         if (key.Directory == ExifDirectoryKind.Exif && key.TagId == 0x9101)
         {
-            if (value.Count != 4)
+            if (value.Count == 0 || value.Count > 4)
                 return null;
             var channels = new StringBuilder();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; (uint)i < value.Count; i++)
             {
                 if (!TryInteger(value, i, out long channel))
                     return null;
@@ -120,14 +128,62 @@ public static partial class ExifTags
             return channels.Length == 0 ? null : channels.ToString();
         }
 
-        if (value.Count != 1 || !TryInteger(value, 0, out long number))
+        if (!TryEnumerated(value, out long number))
             return null;
         // The vocabulary's ColorSpace table stops at sRGB; the standard's other assigned value is
         // FFFF.H, which it calls Uncalibrated.
         if (key.Directory == ExifDirectoryKind.Exif && key.TagId == 0xA001 && number == 0xFFFF)
             return "Uncalibrated";
-        return Meaning(definition, number);
+        return Label(key, number) ?? Meaning(definition, number) ?? Unassigned(number);
     }
+
+    /// <summary>
+    /// A tag whose numbers have labels here although the vocabulary lists no meanings for it: the TIFF
+    /// baseline tags the Exif publication only names.
+    /// </summary>
+    private static string? Labelled(ExifTagKey labels, ExifValue value)
+    {
+        if (value.Count != 1 || !TryInteger(value, 0, out long number))
+            return null;
+        return Label(labels, number) ?? Unassigned(number);
+    }
+
+    /// <summary>One format per sample; the samples of an image share theirs, and that is the one to name.</summary>
+    private static string? SampleFormat(ExifTagKey key, ExifValue value)
+    {
+        if (value.Count == 0 || !TryInteger(value, 0, out long format))
+            return null;
+        for (int i = 1; (uint)i < value.Count; i++)
+        {
+            if (!TryInteger(value, i, out long other) || other != format)
+                return null;
+        }
+        return Label(key, format) ?? Unassigned(format);
+    }
+
+    /// <summary>
+    /// The one number of an enumerated value. A one-byte value that a writer padded to a longer field
+    /// still has one number: the first byte, when only zeros follow it.
+    /// </summary>
+    private static bool TryEnumerated(ExifValue value, out long number)
+    {
+        number = 0;
+        if (value.Count == 0 || !TryInteger(value, 0, out number))
+            return false;
+        if (value.Count == 1)
+            return true;
+        if (value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined))
+            return false;
+        foreach (byte padding in value.RawBytes.Slice(1))
+        {
+            if (padding != 0)
+                return false;
+        }
+        return true;
+    }
+
+    /// <summary>A number the tag does not assign, shown as stored so that it is not mistaken for a label.</summary>
+    private static string Unassigned(long number) => "(" + Whole(number) + ")";
 
     private static string? Meaning(ExifTagDefinition definition, long number)
     {
@@ -139,12 +195,155 @@ public static partial class ExifTags
         return null;
     }
 
+    /// <summary>
+    /// The short label of an enumerated number, where it is not the vocabulary's wording as it stands.
+    /// The vocabulary quotes the publication; a label is that meaning in the compact form metadata tools
+    /// print, so that a value reads the same here as it does elsewhere. The TIFF numbers the Exif
+    /// publication does not list are named from TIFF 6.0, its technical notes, TIFF/EP and DNG; numbers
+    /// a camera maker uses privately are not named.
+    /// </summary>
+    private static string? Label(ExifTagKey key, long number) => key.Directory switch
+    {
+        ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail => key.TagId switch
+        {
+            // NewSubfileType
+            0x00FE => number switch
+            {
+                0 => "Primary image",
+                1 => "Thumbnail/Preview image",
+                2 => "Page of a multi-page image",
+                4 => "Transparency mask",
+                _ => null,
+            },
+            // Compression
+            0x0103 => number switch
+            {
+                1 => "Uncompressed",
+                2 => "CCITT RLE",
+                3 => "T4/Group 3 Fax",
+                4 => "T6/Group 4 Fax",
+                5 => "LZW",
+                6 => "JPEG (old-style)",
+                7 => "JPEG",
+                8 => "Adobe Deflate",
+                32773 => "PackBits (Macintosh RLE)",
+                _ => null,
+            },
+            // PhotometricInterpretation
+            0x0106 => number switch
+            {
+                0 => "White Is Zero",
+                1 => "Black Is Zero",
+                3 => "Palette color",
+                4 => "Transparency mask",
+                5 => "CMYK",
+                8 => "CIELab",
+                32803 => "Color Filter Array",      // TIFF/EP, the photometric of a raw sensor image
+                34892 => "Linear Raw",              // DNG
+                _ => null,
+            },
+            // Orientation: where row 0 is, then where column 0 is.
+            0x0112 => number switch
+            {
+                1 => "top, left",
+                2 => "top, right",
+                3 => "bottom, right",
+                4 => "bottom, left",
+                5 => "left, top",
+                6 => "right, top",
+                7 => "right, bottom",
+                8 => "left, bottom",
+                _ => null,
+            },
+            // PlanarConfiguration
+            0x011C => number switch { 1 => "Chunky", 2 => "Planar", _ => null },
+            // ResolutionUnit
+            0x0128 => number switch { 1 => "none", 2 => "inch", 3 => "cm", _ => null },
+            // Predictor
+            0x013D => number switch
+            {
+                1 => "No prediction scheme used",
+                2 => "Horizontal differencing",
+                3 => "Floating point horizontal differencing",
+                _ => null,
+            },
+            // SampleFormat
+            0x0153 => number switch
+            {
+                1 => "Unsigned integer data",
+                2 => "Two's complement signed integer data",
+                3 => "IEEE floating point data",
+                4 => "Undefined data format",
+                _ => null,
+            },
+            // YCbCrPositioning
+            0x0213 => number switch { 1 => "Centered", 2 => "Co-sited", _ => null },
+            _ => null,
+        },
+        ExifDirectoryKind.Exif => key.TagId switch
+        {
+            // ExposureProgram: the publication's parenthesised explanations are left to the vocabulary.
+            0x8822 => number switch
+            {
+                5 => "Creative program",
+                6 => "Action program",
+                7 => "Portrait mode",
+                8 => "Landscape mode",
+                _ => null,
+            },
+            // MeteringMode
+            0x9207 => number switch { 0 => "Unknown", 2 => "Center weighted average", 255 => "Other", _ => null },
+            // LightSource
+            0x9208 => number switch { 0 => "Unknown", 255 => "Other light source", _ => null },
+            // SensingMethod
+            0xA217 => number switch
+            {
+                2 => "One-chip color area",
+                3 => "Two-chip color area",
+                4 => "Three-chip color area",
+                5 => "Color sequential area",
+                7 => "Trilinear",
+                8 => "Color sequential linear",
+                _ => null,
+            },
+            // FileSource
+            0xA300 => number switch
+            {
+                0 => "Others",
+                1 => "Scanner of transparent type",
+                2 => "Scanner of reflex type",
+                3 => "Digital still camera",
+                _ => null,
+            },
+            // SceneType
+            0xA301 => number switch { 1 => "Directly photographed", _ => null },
+            // ExposureMode and WhiteBalance
+            0xA402 or 0xA403 => number switch { 0 => "Auto", 1 => "Manual", _ => null },
+            // Saturation
+            0xA409 => number switch { 1 => "Low", 2 => "High", _ => null },
+            // SubjectDistanceRange
+            0xA40C => number switch { 0 => "Unknown", _ => null },
+            // CompositeImage
+            0xA460 => number switch { 0 => "Unknown", 1 => "Non-composite image", _ => null },
+            _ => null,
+        },
+        ExifDirectoryKind.Gps => key.TagId switch
+        {
+            // GPSDifferential
+            0x001E => number switch { 0 => "Without correction", 1 => "Correction applied", _ => null },
+            _ => null,
+        },
+        _ => null,
+    };
+
     // ---- 0th IFD and thumbnail -------------------------------------------------------------------------
 
-    private static string? InterpretImage(ushort tag, ExifValue value) => tag switch
+    private static string? InterpretImage(ExifTagKey key, ExifValue value) => key.TagId switch
     {
+        0x00FE or 0x013D => Labelled(key, value),                        // NewSubfileType, Predictor
         0x011A or 0x011B or 0x011E or 0x011F => PlainDecimal(value),    // X/YResolution, X/YPosition
         0x0132 => AsciiText(value),                                      // DateTime
+        0x0153 => SampleFormat(key, value),
         _ => null,
     };
 
@@ -172,7 +371,8 @@ public static partial class ExifTags
         0x9404 => Measured(value, "mGal"),                               // Acceleration
         0x9405 => Measured(value, "deg"),                                // CameraElevationAngle
         0xA20B or 0xA20E or 0xA20F or 0xA215 or 0xA500 => PlainDecimal(value),
-        0xA210 => FocalPlaneResolutionUnit(value),
+        // FocalPlaneResolutionUnit is "the same as ResolutionUnit", so that tag's labels answer for it.
+        0xA210 => Labelled(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0128), value),
         0xA404 => DigitalZoomRatio(value),
         0xA405 => FocalLengthIn35mmFilm(value),
         0xA432 => LensSpecification(value),
@@ -181,7 +381,11 @@ public static partial class ExifTags
 
     private static string? ExposureTime(ExifValue value)
     {
-        if (!TrySingleRational(value, out long numerator, out long denominator) || numerator <= 0 || denominator <= 0)
+        if (!TrySingleRational(value, out long numerator, out long denominator))
+            return null;
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
+        if (numerator <= 0 || denominator < 0)
             return null;
         // A time that is one over a whole number is written that way, which is how shutter speeds are
         // named; anything else is the number of seconds.
@@ -190,32 +394,40 @@ public static partial class ExifTags
             long reciprocal = denominator / numerator;
             return reciprocal == 1 ? "1 s" : "1/" + Whole(reciprocal) + " s";
         }
-        return Significant((decimal)numerator / denominator, 6) + " s";
+        return Significant(Quotient(numerator, denominator), 6) + " s";
     }
 
     private static string? FNumber(ExifValue value)
     {
-        if (!TrySingleRational(value, out long numerator, out long denominator) || numerator <= 0 || denominator <= 0)
+        if (!TrySingleRational(value, out long numerator, out long denominator))
             return null;
-        return "F" + Significant((decimal)numerator / denominator, 2);
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
+        if (numerator <= 0 || denominator < 0)
+            return null;
+        return "F" + Significant(Quotient(numerator, denominator), 2);
     }
 
     /// <summary>APEX aperture value to F-number: F = sqrt(2) to the power Av.</summary>
     private static string? Aperture(ExifValue value)
     {
-        if (!TrySingleRational(value, out long numerator, out long denominator) || denominator == 0)
+        if (!TrySingleRational(value, out long numerator, out long denominator))
             return null;
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
         double apex = (double)numerator / denominator;
         if (apex is < -8.0 or > 40.0)
             return null;
-        return "F" + Significant((decimal)Math.Pow(2.0, apex / 2.0), 2);
+        return "F" + Significant(Math.Pow(2.0, apex / 2.0), 2);
     }
 
     /// <summary>APEX shutter speed value to exposure time: t = 1 / 2 to the power Tv.</summary>
     private static string? ShutterSpeed(ExifValue value)
     {
-        if (!TrySingleRational(value, out long numerator, out long denominator) || denominator == 0)
+        if (!TrySingleRational(value, out long numerator, out long denominator))
             return null;
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
         double apex = (double)numerator / denominator;
         if (apex is < -31.0 or > 31.0)
             return null;
@@ -230,8 +442,10 @@ public static partial class ExifTags
 
     private static string? ExposureBias(ExifValue value)
     {
-        if (!TrySingleRational(value, out long numerator, out long denominator) || denominator == 0)
+        if (!TrySingleRational(value, out long numerator, out long denominator))
             return null;
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
         if (denominator < 0)
         {
             numerator = -numerator;
@@ -257,26 +471,22 @@ public static partial class ExifTags
             return "Unknown";
         if (numerator == uint.MaxValue)
             return "Infinity";
-        if (denominator <= 0)
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
+        if (denominator < 0)
             return null;
-        return Fixed((decimal)numerator / denominator, 2) + " m";
+        return Fixed(Quotient(numerator, denominator), 2) + " m";
     }
 
     private static string? FocalLength(ExifValue value)
     {
-        if (!TrySingleRational(value, out long numerator, out long denominator) || numerator < 0 || denominator <= 0)
+        if (!TrySingleRational(value, out long numerator, out long denominator))
             return null;
-        return Fixed((decimal)numerator / denominator, 1) + " mm";
-    }
-
-    /// <summary>"The same as ResolutionUnit", so that tag's meanings are the ones to answer with.</summary>
-    private static string? FocalPlaneResolutionUnit(ExifValue value)
-    {
-        if (value.Count != 1 || !TryInteger(value, 0, out long unit))
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
+        if (numerator < 0 || denominator < 0)
             return null;
-        return Find(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0128)) is ExifTagDefinition resolutionUnit
-            ? Meaning(resolutionUnit, unit)
-            : null;
+        return Fixed(Quotient(numerator, denominator), 1) + " mm";
     }
 
     private static string? FocalLengthIn35mmFilm(ExifValue value)
@@ -293,9 +503,11 @@ public static partial class ExifTags
         // "If the numerator of the recorded value is 0, this indicates that digital zoom was not used."
         if (numerator == 0)
             return "Digital zoom not used";
-        if (denominator <= 0)
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
+        if (denominator < 0)
             return null;
-        return Fixed((decimal)numerator / denominator, 1);
+        return Fixed(Quotient(numerator, denominator), 1);
     }
 
     /// <summary>Shortest and longest focal length, then the widest aperture at each; 0 is unknown.</summary>
@@ -303,7 +515,7 @@ public static partial class ExifTags
     {
         if (value.FieldType != TiffFieldType.Rational || value.Count != 4)
             return null;
-        var parts = new decimal[4];
+        var parts = new double[4];
         var known = new bool[4];
         for (int i = 0; i < 4; i++)
         {
@@ -313,7 +525,7 @@ public static partial class ExifTags
                 continue;
             if (denominator == 0)
                 return null;
-            parts[i] = (decimal)numerator / denominator;
+            parts[i] = Quotient(numerator, denominator);
             known[i] = true;
         }
 
@@ -346,8 +558,8 @@ public static partial class ExifTags
         if (denominator == uint.MaxValue || denominator == -1)
             return "Unknown";
         if (denominator == 0)
-            return null;
-        return Significant((decimal)numerator / denominator, 6) + " " + unit;
+            return Undivided(numerator, denominator);
+        return Significant(Quotient(numerator, denominator), 6) + " " + unit;
     }
 
     /// <summary>Four ASCII digits, two for the major version and two for the minor: "0230" is 2.30.</summary>
@@ -366,27 +578,32 @@ public static partial class ExifTags
     }
 
     /// <summary>
-    /// The Flash bit fields, each named as the standard names it: whether the flash fired, the flash
-    /// mode, whether the camera has a flash at all, red-eye reduction, and the returned light.
+    /// The Flash bit fields in the short form metadata tools print: whether the flash fired, the flash
+    /// mode, red-eye reduction and the returned light. The standard's own list of values calls both
+    /// compulsory modes "compulsory flash mode", and so does this.
     /// </summary>
     private static string? Flash(ExifValue value)
     {
-        if (value.Count != 1 || !TryInteger(value, 0, out long bits) || bits < 0 || bits > 0x7F)
+        if (value.Count != 1 || !TryInteger(value, 0, out long bits))
             return null;
+        if (bits == 0x20)
+            return "No flash function";
         long returned = (bits >> 1) & 3;
-        if (returned == 1)
-            return null;    // reserved
-        var text = new StringBuilder((bits & 1) != 0 ? "Flash fired" : "Flash did not fire");
+        // Bit 7 is not assigned, return value 1 is reserved, and a camera without a flash function has
+        // nothing else to report.
+        if (bits < 0 || bits > 0x7F || returned == 1 || (bits & 0x20) != 0)
+            return Unassigned(bits);
+
+        bool fired = (bits & 1) != 0;
+        var text = new StringBuilder();
         switch ((bits >> 3) & 3)
         {
-            case 1: text.Append(", compulsory flash firing"); break;
-            case 2: text.Append(", compulsory flash suppression"); break;
-            case 3: text.Append(", auto mode"); break;
+            case 0: text.Append(fired ? "Fired" : "No flash"); break;
+            case 3: text.Append(fired ? "Yes" : "No").Append(", auto"); break;
+            default: text.Append(fired ? "Yes" : "No").Append(", compulsory"); break;
         }
-        if ((bits & 0x20) != 0)
-            text.Append(", no flash function");
         if ((bits & 0x40) != 0)
-            text.Append(", red-eye reduction mode");
+            text.Append(", red-eye reduction");
         if (returned == 2)
             text.Append(", return light not detected");
         else if (returned == 3)
@@ -546,15 +763,19 @@ public static partial class ExifTags
         decimal rest = total - (degrees * 3600m);
         decimal minutes = decimal.Truncate(rest / 60m);
         decimal seconds = rest - (minutes * 60m);
-        return Fixed(degrees, 0) + " deg " + Fixed(minutes, 0) + "' " + Fixed(seconds, places) + "\"";
+        return FixedExact(degrees, 0) + " deg " + FixedExact(minutes, 0) + "' " + FixedExact(seconds, places) + "\"";
     }
 
     private static string? GpsAltitude(ExifValue value)
     {
-        if (!TrySingleRational(value, out long numerator, out long denominator) || numerator < 0 || denominator <= 0)
+        if (!TrySingleRational(value, out long numerator, out long denominator))
+            return null;
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
+        if (numerator < 0 || denominator < 0)
             return null;
         // A whole number of metres is printed as one; a finer denominator earns one decimal.
-        return Fixed((decimal)numerator / denominator, denominator > 1 ? 1 : 0) + " m";
+        return Fixed(Quotient(numerator, denominator), denominator > 1 ? 1 : 0) + " m";
     }
 
     /// <summary>UTC as hours, minutes and seconds, with tenths when the stored time has a fraction.</summary>
@@ -591,9 +812,11 @@ public static partial class ExifTags
     /// <summary>One rational as a decimal of at most six significant digits.</summary>
     private static string? PlainDecimal(ExifValue value)
     {
-        if (!TrySingleRational(value, out long numerator, out long denominator) || denominator == 0)
+        if (!TrySingleRational(value, out long numerator, out long denominator))
             return null;
-        return Significant((decimal)numerator / denominator, 6);
+        if (denominator == 0)
+            return Undivided(numerator, denominator);
+        return Significant(Quotient(numerator, denominator), 6);
     }
 
     /// <summary>ASCII text as written, up to its terminator; null for anything that is not ASCII typed.</summary>
@@ -686,8 +909,26 @@ public static partial class ExifTags
 
     private static string Whole(long number) => number.ToString(CultureInfo.InvariantCulture);
 
-    /// <summary>A fixed number of decimals, rounded half to even, never a negative zero.</summary>
-    private static string Fixed(decimal value, int places)
+    /// <summary>A rational that cannot be divided, shown as stored so that it is not mistaken for a number.</summary>
+    private static string Undivided(long numerator, long denominator) =>
+        "(" + Whole(numerator) + "/" + Whole(denominator) + ")";
+
+    /// <summary>
+    /// A rational as a number: single-precision division, widened without change. The denominator is
+    /// never zero here.
+    /// </summary>
+    private static double Quotient(long numerator, long denominator) =>
+        (float)((float)numerator / (float)denominator);
+
+    /// <summary>A fixed number of decimals, rounded from the exact binary value, never a negative zero.</summary>
+    private static string Fixed(double value, int places)
+    {
+        BigInteger scaled = Scaled(Math.Abs(value), places);
+        return (value < 0.0 && !scaled.IsZero ? "-" : string.Empty) + Placed(scaled, places, trim: false);
+    }
+
+    /// <summary>A fixed number of decimals of an exact sum, rounded half to even, never a negative zero.</summary>
+    private static string FixedExact(decimal value, int places)
     {
         decimal rounded = Math.Round(value, places, MidpointRounding.ToEven);
         if (rounded == decimal.Zero)
@@ -697,40 +938,81 @@ public static partial class ExifTags
     }
 
     /// <summary>
-    /// At most <paramref name="digits" /> significant digits, rounded half to even, without an exponent
-    /// and without trailing zeros: 2.8, 11, 0.0896435, 3810.58.
+    /// At most <paramref name="digits" /> significant digits, rounded from the exact binary value,
+    /// without an exponent and without trailing zeros: 2.8, 11, 0.0896435, 3810.58.
     /// </summary>
-    private static string Significant(decimal value, int digits)
+    private static string Significant(double value, int digits)
     {
-        if (value == decimal.Zero)
+        if (value == 0.0 || !double.IsFinite(value))
             return "0";
-        decimal magnitude = Math.Abs(value);
-        int exponent = 0;
-        while (magnitude >= 10m)
+        double magnitude = Math.Abs(value);
+        BigInteger limit = BigInteger.Pow(10, digits);
+        // The logarithm only has to land near the answer: the loop settles the number of decimals
+        // exactly, including for a value that rounds up into one more digit (999999.5 is 1000000).
+        int places = digits - 1 - (int)Math.Floor(Math.Log10(magnitude));
+        BigInteger scaled = Scaled(magnitude, places);
+        while (scaled >= limit)
         {
-            magnitude /= 10m;
-            exponent++;
+            places--;
+            scaled = Scaled(magnitude, places);
         }
-        while (magnitude < 1m)
+        while (scaled * 10 < limit)
         {
-            magnitude *= 10m;
-            exponent--;
+            BigInteger finer = Scaled(magnitude, places + 1);
+            if (finer >= limit)
+                break;
+            places++;
+            scaled = finer;
         }
+        return (value < 0.0 ? "-" : string.Empty) + Placed(scaled, places, trim: true);
+    }
 
-        int places = digits - 1 - exponent;
-        decimal rounded;
-        if (places >= 0)
-        {
-            rounded = Math.Round(value, Math.Min(places, 28), MidpointRounding.ToEven);
-        }
+    /// <summary>
+    /// A finite value that is not negative, times ten to the power <paramref name="places" />, as the
+    /// nearest whole number; exactly halfway goes to the even one. A binary floating-point number is a
+    /// whole number times a power of two, so the arithmetic is exact.
+    /// </summary>
+    private static BigInteger Scaled(double value, int places)
+    {
+        long bits = BitConverter.DoubleToInt64Bits(value);
+        int exponent = (int)((bits >> 52) & 0x7FF);
+        long fraction = bits & 0xFFFFFFFFFFFFFL;
+        BigInteger numerator = exponent == 0 ? fraction : fraction | (1L << 52);
+        int power = exponent == 0 ? -1074 : exponent - 1075;
+
+        BigInteger denominator = BigInteger.One;
+        if (power >= 0)
+            numerator <<= power;
         else
-        {
-            decimal unit = 1m;
-            for (int i = 0; i < -places; i++)
-                unit *= 10m;
-            rounded = Math.Round(value / unit, 0, MidpointRounding.ToEven) * unit;
-        }
-        return rounded.ToString("0.############################", CultureInfo.InvariantCulture);
+            denominator <<= -power;
+        if (places >= 0)
+            numerator *= BigInteger.Pow(10, places);
+        else
+            denominator *= BigInteger.Pow(10, -places);
+
+        BigInteger whole = BigInteger.DivRem(numerator, denominator, out BigInteger remainder);
+        int half = (remainder * 2).CompareTo(denominator);
+        if (half > 0 || (half == 0 && !whole.IsEven))
+            whole += BigInteger.One;
+        return whole;
+    }
+
+    /// <summary>
+    /// The digits of <paramref name="scaled" /> with the decimal point <paramref name="places" /> from
+    /// the right, optionally without trailing zeros.
+    /// </summary>
+    private static string Placed(BigInteger scaled, int places, bool trim)
+    {
+        string digits = scaled.ToString(CultureInfo.InvariantCulture);
+        if (places <= 0)
+            return scaled.IsZero ? "0" : digits + new string('0', -places);
+        if (digits.Length <= places)
+            digits = new string('0', places - digits.Length + 1) + digits;
+        string whole = digits.Substring(0, digits.Length - places);
+        string fraction = digits.Substring(digits.Length - places);
+        if (trim)
+            fraction = fraction.TrimEnd('0');
+        return fraction.Length == 0 ? whole : whole + "." + fraction;
     }
 
     private static long GreatestCommonDivisor(long a, long b)

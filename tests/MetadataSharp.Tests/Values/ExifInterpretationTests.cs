@@ -8,8 +8,9 @@ namespace MetadataSharp.Tests.Values;
 
 /// <summary>
 /// The interpreted form of a standard EXIF value, one family of tags at a time. Each expectation is the
-/// text a person would read in a property sheet: the standard's wording for an enumerated value, a decimal
-/// with its unit for a rational, and null wherever the raw value is all there is to say.
+/// text a person would read in a property sheet: a short label for an enumerated value, a decimal with
+/// its unit for a rational, the stored value in parentheses where it cannot be read as either, and null
+/// wherever the raw value is all there is to say.
 /// </summary>
 public sealed class ExifInterpretationTests
 {
@@ -107,7 +108,7 @@ public sealed class ExifInterpretationTests
     // ---- Enumerated tags -------------------------------------------------------------------------------
 
     [Fact]
-    public void EveryEnumeratedTagAnswersWithTheWordingOfItsDefinition()
+    public void EveryNumberTheVocabularyListsHasALabelAndAnyOtherIsShownAsStored()
     {
         int meanings = 0;
         foreach (ExifDirectoryKind directory in Enum.GetValues<ExifDirectoryKind>())
@@ -121,15 +122,14 @@ public sealed class ExifInterpretationTests
                 TiffFieldType type = definition.Types[0];
                 foreach (ExifTagValueMeaning meaning in definition.ValueMeanings)
                 {
-                    Assert.Equal(meaning.Meaning, ExifTags.Interpret(key, Integer(type, meaning.Number)));
+                    string? label = ExifTags.Interpret(key, Integer(type, meaning.Number));
+                    Assert.False(string.IsNullOrWhiteSpace(label), $"{definition.Name} {meaning.Number} has no label.");
+                    Assert.False(label!.StartsWith('('), $"{definition.Name} {meaning.Number} reads {label}.");
                     meanings++;
                 }
 
-                // A number the standard does not assign has no wording, so there is nothing to answer with.
-                ushort unassigned = 200;
-                while (definition.ValueMeanings.Any(listed => listed.Number == unassigned))
-                    unassigned++;
-                Assert.Null(ExifTags.Interpret(key, Integer(type, unassigned)));
+                // A number nobody assigns is shown as stored, in parentheses, so it cannot pass for a label.
+                Assert.Equal("(200)", ExifTags.Interpret(key, Integer(type, 200)));
             }
         }
 
@@ -137,19 +137,93 @@ public sealed class ExifInterpretationTests
         Assert.True(meanings >= 117, $"Only {meanings} enumerated meanings were exercised.");
     }
 
-    [Fact]
-    public void AnEnumeratedValueReadsAsTheStandardWordsIt()
+    [Theory]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x0112, 1, "top, left")]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x0112, 3, "bottom, right")]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x0112, 6, "right, top")]
+    [InlineData(ExifDirectoryKind.Thumbnail, 0x0112, 8, "left, bottom")]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x0128, 2, "inch")]
+    [InlineData(ExifDirectoryKind.Thumbnail, 0x0128, 3, "cm")]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x0103, 1, "Uncompressed")]
+    [InlineData(ExifDirectoryKind.Thumbnail, 0x0103, 6, "JPEG (old-style)")]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x011C, 1, "Chunky")]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x0213, 1, "Centered")]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x0213, 2, "Co-sited")]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x0106, 2, "RGB")]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x0106, 6, "YCbCr")]
+    [InlineData(ExifDirectoryKind.Exif, 0x8822, 3, "Aperture priority")]
+    [InlineData(ExifDirectoryKind.Exif, 0x8822, 5, "Creative program")]
+    [InlineData(ExifDirectoryKind.Exif, 0x8822, 8, "Landscape mode")]
+    [InlineData(ExifDirectoryKind.Exif, 0x9207, 0, "Unknown")]
+    [InlineData(ExifDirectoryKind.Exif, 0x9207, 2, "Center weighted average")]
+    [InlineData(ExifDirectoryKind.Exif, 0x9207, 3, "Spot")]
+    [InlineData(ExifDirectoryKind.Exif, 0x9207, 255, "Other")]
+    [InlineData(ExifDirectoryKind.Exif, 0x9208, 0, "Unknown")]
+    [InlineData(ExifDirectoryKind.Exif, 0x9208, 10, "Cloudy weather")]
+    [InlineData(ExifDirectoryKind.Exif, 0x9208, 255, "Other light source")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA001, 1, "sRGB")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA217, 2, "One-chip color area")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA217, 7, "Trilinear")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA401, 0, "Normal process")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA402, 0, "Auto")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA402, 1, "Manual")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA402, 2, "Auto bracket")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA403, 0, "Auto")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA403, 1, "Manual")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA406, 0, "Standard")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA407, 2, "High gain up")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA408, 2, "Hard")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA409, 0, "Normal")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA409, 1, "Low")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA409, 2, "High")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA40C, 0, "Unknown")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA40C, 2, "Close view")]
+    [InlineData(ExifDirectoryKind.Exif, 0xA460, 0, "Unknown")]
+    [InlineData(ExifDirectoryKind.Gps, 0x001E, 0, "Without correction")]
+    [InlineData(ExifDirectoryKind.Gps, 0x001E, 1, "Correction applied")]
+    public void AnEnumeratedValueReadsAsAShortLabel(ExifDirectoryKind directory, ushort tag, ushort number, string expected)
     {
-        Assert.Equal("The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side",
-            ExifTags.Interpret(Image(0x0112), Short(1)));
-        Assert.Equal("inches", ExifTags.Interpret(Image(0x0128), Short(2)));
-        Assert.Equal("sRGB", ExifTags.Interpret(Photo(0xA001), Short(1, Endianness.BigEndian)));
-        Assert.Equal("High gain up", ExifTags.Interpret(Photo(0xA407), Short(2)));
-        Assert.Equal("DSC", ExifTags.Interpret(Photo(0xA300), Bytes(TiffFieldType.Undefined, 3)));
+        Assert.Equal(expected, ExifTags.Interpret(new ExifTagKey(directory, tag), Short(number)));
+    }
+
+    [Fact]
+    public void WhereTheStandardHasItsOwnTermTheLabelKeepsIt()
+    {
+        // These are the standard's words; tools that print "Multi-segment", "Auto" or "Above sea level"
+        // for the same numbers are using terms of their own.
+        Assert.Equal("Pattern", ExifTags.Interpret(Photo(0x9207), Short(5)));
+        Assert.Equal("Normal program", ExifTags.Interpret(Photo(0x8822), Short(2)));
+        Assert.Equal("Recommended exposure index (REI)", ExifTags.Interpret(Photo(0x8830), Short(2)));
+        Assert.Equal("General composite image", ExifTags.Interpret(Photo(0xA460), Short(2)));
         Assert.Equal("Positive ellipsoidal height (at or above ellipsoidal surface)",
             ExifTags.Interpret(Gps(0x0005), Bytes(TiffFieldType.Byte, 0)));
-        Assert.Equal("JPEG compression (thumbnails only)",
-            ExifTags.Interpret(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0103), Short(6)));
+    }
+
+    [Fact]
+    public void TheVocabularyKeepsThePublicationsWordingBesideTheLabel()
+    {
+        ExifTagDefinition orientation = ExifTags.Find(Image(0x0112))!;
+        Assert.StartsWith("The 0th row is at the visual top", orientation.ValueMeanings[0].Meaning, StringComparison.Ordinal);
+        Assert.Equal("top, left", ExifTags.Interpret(Image(0x0112), Short(1)));
+    }
+
+    [Fact]
+    public void ALabelDoesNotDependOnTheIntegerTypeTheWriterChose()
+    {
+        Assert.Equal("Digital still camera", ExifTags.Interpret(Photo(0xA300), Bytes(TiffFieldType.Undefined, 3)));
+        Assert.Equal("Directly photographed", ExifTags.Interpret(Photo(0xA301), Bytes(TiffFieldType.Byte, 1)));
+        Assert.Equal("One-chip color area", ExifTags.Interpret(Photo(0xA217), Bytes(TiffFieldType.Byte, 2)));
+        byte[] one = [1, 0, 0, 0];
+        Assert.Equal("top, left", ExifTags.Interpret(Image(0x0112), ExifValue.FromRaw(TiffFieldType.SLong, 1, Endianness.LittleEndian, one)));
+        Assert.Equal("top, left", ExifTags.Interpret(Image(0x0112), ExifValue.FromRaw(TiffFieldType.Long, 1, Endianness.LittleEndian, one)));
+    }
+
+    [Fact]
+    public void AOneByteValuePaddedWithZerosStillHasOneNumber()
+    {
+        // FileSource is one UNDEFINED byte; some writers store four.
+        Assert.Equal("Digital still camera", ExifTags.Interpret(Photo(0xA300), Bytes(TiffFieldType.Undefined, 3, 0, 0, 0)));
+        Assert.Null(ExifTags.Interpret(Photo(0xA300), Bytes(TiffFieldType.Undefined, 3, 0, 1, 0)));
     }
 
     [Fact]
@@ -162,12 +236,25 @@ public sealed class ExifInterpretationTests
     }
 
     [Theory]
+    [InlineData(0, "(0)")]
+    [InlineData(9, "(9)")]
+    [InlineData(256, "(256)")]
+    [InlineData(65535, "(65535)")]
+    public void ANumberTheTagDoesNotAssignIsShownAsStored(ushort number, string expected)
+    {
+        Assert.Equal(expected, ExifTags.Interpret(Image(0x0213), Short(number)));       // YCbCrPositioning
+        Assert.Equal(expected, ExifTags.Interpret(Photo(0xA301), Short(number)));       // SceneType
+    }
+
+    [Theory]
     [InlineData(new byte[] { 1, 2, 3, 0 }, "YCbCr")]
     [InlineData(new byte[] { 4, 5, 6, 0 }, "RGB")]
     [InlineData(new byte[] { 1, 0, 0, 0 }, "Y")]
+    [InlineData(new byte[] { 1, 2, 3 }, "YCbCr")]
+    [InlineData(new byte[] { 1 }, "Y")]
     [InlineData(new byte[] { 0, 0, 0, 0 }, null)]
     [InlineData(new byte[] { 1, 2, 3, 9 }, null)]
-    [InlineData(new byte[] { 1, 2, 3 }, null)]
+    [InlineData(new byte[] { 1, 2, 3, 0, 0 }, null)]
     public void ComponentsConfigurationNamesTheChannelsInOrder(byte[] components, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Photo(0x9101), Bytes(TiffFieldType.Undefined, components)));
@@ -178,10 +265,52 @@ public sealed class ExifInterpretationTests
     {
         // ColorSpace FFFF.H is Uncalibrated; FocalPlaneResolutionUnit is "the same as ResolutionUnit".
         Assert.Equal("Uncalibrated", ExifTags.Interpret(Photo(0xA001), Short(0xFFFF)));
-        Assert.Null(ExifTags.Interpret(Photo(0xA001), Short(2)));
+        Assert.Equal("(2)", ExifTags.Interpret(Photo(0xA001), Short(2)));
         Assert.Equal(ExifTags.Interpret(Image(0x0128), Short(2)), ExifTags.Interpret(Photo(0xA210), Short(2)));
-        Assert.Equal("centimeters", ExifTags.Interpret(Photo(0xA210), Short(3)));
-        Assert.Null(ExifTags.Interpret(Photo(0xA210), Short(9)));
+        Assert.Equal("inch", ExifTags.Interpret(Photo(0xA210), Short(2)));
+        Assert.Equal("cm", ExifTags.Interpret(Photo(0xA210), Short(3)));
+        Assert.Equal("(9)", ExifTags.Interpret(Photo(0xA210), Short(9)));
+    }
+
+    [Theory]
+    [InlineData(0x0103, 5, "LZW")]
+    [InlineData(0x0103, 7, "JPEG")]
+    [InlineData(0x0103, 3, "T4/Group 3 Fax")]
+    [InlineData(0x0103, 32773, "PackBits (Macintosh RLE)")]
+    [InlineData(0x0103, 65535, "(65535)")]
+    [InlineData(0x0106, 0, "White Is Zero")]
+    [InlineData(0x0106, 1, "Black Is Zero")]
+    [InlineData(0x0106, 5, "CMYK")]
+    [InlineData(0x0106, 32803, "Color Filter Array")]
+    [InlineData(0x0106, 34892, "Linear Raw")]
+    [InlineData(0x0103, 32767, "(32767)")]      // a maker's private number is not named
+    [InlineData(0x013D, 1, "No prediction scheme used")]
+    [InlineData(0x013D, 2, "Horizontal differencing")]
+    [InlineData(0x013D, 9, "(9)")]
+    public void TheTiffNumbersTheExifPublicationDoesNotListAreNamedFromTiff(ushort tag, ushort number, string expected)
+    {
+        Assert.Equal(expected, ExifTags.Interpret(Image(tag), Short(number)));
+    }
+
+    [Fact]
+    public void NewSubfileTypeAndSampleFormatAreNamed()
+    {
+        byte[] primary = [0, 0, 0, 0];
+        byte[] reduced = [1, 0, 0, 0];
+        byte[] unassigned = [3, 0, 0, 0];
+        Assert.Equal("Primary image", ExifTags.Interpret(Image(0x00FE), ExifValue.FromRaw(TiffFieldType.Long, 1, Endianness.LittleEndian, primary)));
+        Assert.Equal("Thumbnail/Preview image",
+            ExifTags.Interpret(Image(0x00FE), ExifValue.FromRaw(TiffFieldType.Long, 1, Endianness.LittleEndian, reduced)));
+        Assert.Equal("(3)", ExifTags.Interpret(Image(0x00FE), ExifValue.FromRaw(TiffFieldType.Long, 1, Endianness.LittleEndian, unassigned)));
+
+        // SampleFormat has a value per sample; an image's samples share one format.
+        byte[] three = [1, 0, 1, 0, 1, 0];
+        byte[] mixed = [1, 0, 3, 0, 1, 0];
+        Assert.Equal("Unsigned integer data", ExifTags.Interpret(Image(0x0153), Short(1)));
+        Assert.Equal("Unsigned integer data", ExifTags.Interpret(Image(0x0153), ExifValue.FromRaw(TiffFieldType.Short, 3, Endianness.LittleEndian, three)));
+        Assert.Equal("IEEE floating point data", ExifTags.Interpret(Image(0x0153), Short(3)));
+        Assert.Null(ExifTags.Interpret(Image(0x0153), ExifValue.FromRaw(TiffFieldType.Short, 3, Endianness.LittleEndian, mixed)));
+        Assert.Equal("(7)", ExifTags.Interpret(Image(0x0153), Short(7)));
     }
 
     // ---- Rationals with units --------------------------------------------------------------------------
@@ -196,7 +325,7 @@ public sealed class ExifInterpretationTests
     [InlineData("10/13", "0.769231 s")]
     [InlineData("9974/1000000", "0.009974 s")]
     [InlineData("0/1", null)]
-    [InlineData("1/0", null)]
+    [InlineData("1/0", "(1/0)")]
     public void ExposureTimeIsAFractionOfASecondOrSeconds(string stored, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Photo(0x829A), Rational(stored)));
@@ -209,7 +338,9 @@ public sealed class ExifInterpretationTests
     [InlineData("56/10", "F5.6")]
     [InlineData("9/5", "F1.8")]
     [InlineData("730459/250000", "F2.9")]
-    [InlineData("1/0", null)]
+    [InlineData("5/4", "F1.2")]         // 1.25 and 1.75 are exact ties, and ties go to the even digit
+    [InlineData("7/4", "F1.8")]
+    [InlineData("1/0", "(1/0)")]
     [InlineData("0/10", null)]
     public void FNumberIsWrittenWithTwoSignificantDigits(string stored, string? expected)
     {
@@ -221,7 +352,9 @@ public sealed class ExifInterpretationTests
     [InlineData("237/32", "7.4 mm")]
     [InlineData("1851/100", "18.5 mm")]
     [InlineData("17/4", "4.2 mm")]      // 4.25 is a tie, and ties go to the even digit
-    [InlineData("50/0", null)]
+    [InlineData("255/100", "2.5 mm")]   // not ties in single precision: 2.55 is stored just below,
+    [InlineData("1005/100", "10.1 mm")] // and 10.05 just above
+    [InlineData("50/0", "(50/0)")]
     public void FocalLengthIsMillimetresToOneDecimal(string stored, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Photo(0x920A), Rational(stored)));
@@ -244,7 +377,7 @@ public sealed class ExifInterpretationTests
     [InlineData("-200/100", "-2 EV")]
     [InlineData("33/100", "+33/100 EV")]
     [InlineData("1/-3", "-1/3 EV")]
-    [InlineData("1/0", null)]
+    [InlineData("1/0", "(1/0)")]
     public void ExposureBiasIsASignedFractionOfAStop(string stored, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Photo(0x9204), SignedRational(stored)));
@@ -258,7 +391,7 @@ public sealed class ExifInterpretationTests
     [InlineData(0x9202, "4676053/524288", "F22")]
     [InlineData(0x9205, "30/10", "F2.8")]
     [InlineData(0x9205, "43/10", "F4.4")]
-    [InlineData(0x9205, "3/0", null)]
+    [InlineData(0x9205, "3/0", "(3/0)")]
     public void AnApexApertureIsConvertedToAnFNumber(ushort tag, string stored, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Photo(tag), Rational(stored)));
@@ -272,7 +405,7 @@ public sealed class ExifInterpretationTests
     [InlineData("0/32", "1 s")]
     [InlineData("-200/100", "4 s")]
     [InlineData("-90112/65536", "3 s")]
-    [InlineData("5/0", null)]
+    [InlineData("5/0", "(5/0)")]
     [InlineData("4000/1", null)]
     public void AnApexShutterSpeedIsConvertedToAnExposureTime(string stored, string? expected)
     {
@@ -285,7 +418,11 @@ public sealed class ExifInterpretationTests
     [InlineData("500/100", "5")]
     [InlineData("-61585/686999", "-0.0896435")]
     [InlineData("0/1", "0")]
-    [InlineData("1/0", null)]
+    [InlineData("19944/2560", "7.79063")]   // 7.790625 in decimal, just above it in single precision
+    [InlineData("12345678/1", "12345700")]
+    [InlineData("1/1000000", "0.000001")]
+    [InlineData("-5/100000", "-0.00005")]
+    [InlineData("1/0", "(1/0)")]
     public void BrightnessStaysAnApexValueWithSixSignificantDigits(string stored, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Photo(0x9203), SignedRational(stored)));
@@ -296,7 +433,7 @@ public sealed class ExifInterpretationTests
     [InlineData("7368/1000", "7.37 m")]
     [InlineData("0/1", "Unknown")]
     [InlineData("4294967295/1", "Infinity")]
-    [InlineData("5/0", null)]
+    [InlineData("5/0", "(5/0)")]
     public void SubjectDistanceIsMetresWithItsTwoReservedNumerators(string stored, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Photo(0x9206), Rational(stored)));
@@ -307,7 +444,7 @@ public sealed class ExifInterpretationTests
     [InlineData("153/100", "1.5")]
     [InlineData("0/1", "Digital zoom not used")]
     [InlineData("0/0", "Digital zoom not used")]
-    [InlineData("2/0", null)]
+    [InlineData("2/0", "(2/0)")]
     public void DigitalZoomRatioIsADecimalAndAZeroNumeratorMeansUnused(string stored, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Photo(0xA404), Rational(stored)));
@@ -338,7 +475,8 @@ public sealed class ExifInterpretationTests
     [InlineData(ExifDirectoryKind.Gps, 0x0011, "825189/3865", "213.503")]
     [InlineData(ExifDirectoryKind.Gps, 0x000B, "12/10", "1.2")]
     [InlineData(ExifDirectoryKind.Gps, 0x001F, "65/1", "65")]
-    [InlineData(ExifDirectoryKind.Ifd0, 0x011A, "72/0", null)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x011A, "72/0", "(72/0)")]
+    [InlineData(ExifDirectoryKind.Exif, 0x9102, "0/0", "(0/0)")]
     public void ARationalWithoutAUnitIsItsDecimalValue(ExifDirectoryKind directory, ushort tag, string stored, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(new ExifTagKey(directory, tag), Rational(stored)));
@@ -355,7 +493,7 @@ public sealed class ExifInterpretationTests
         Assert.Equal("-12.5 deg", ExifTags.Interpret(Photo(0x9405), SignedRational("-125/10")));
         Assert.Equal("Unknown", ExifTags.Interpret(Photo(0x9400), SignedRational("0/-1")));
         Assert.Equal("Unknown", ExifTags.Interpret(Photo(0x9402), Rational("0/4294967295")));
-        Assert.Null(ExifTags.Interpret(Photo(0x9401), Rational("1/0")));
+        Assert.Equal("(1/0)", ExifTags.Interpret(Photo(0x9401), Rational("1/0")));
     }
 
     [Fact]
@@ -490,7 +628,7 @@ public sealed class ExifInterpretationTests
     [InlineData("411/10", "41.1 m")]
     [InlineData("0/100", "0.0 m")]
     [InlineData("353700/100", "3537.0 m")]
-    [InlineData("5/0", null)]
+    [InlineData("5/0", "(5/0)")]
     public void GpsAltitudeIsMetres(string stored, string? expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Gps(0x0006), Rational(stored)));
@@ -513,24 +651,30 @@ public sealed class ExifInterpretationTests
     // ---- Flash -----------------------------------------------------------------------------------------
 
     [Theory]
-    [InlineData(0x00, "Flash did not fire")]
-    [InlineData(0x01, "Flash fired")]
-    [InlineData(0x05, "Flash fired, return light not detected")]
-    [InlineData(0x07, "Flash fired, return light detected")]
-    [InlineData(0x08, "Flash did not fire, compulsory flash firing")]
-    [InlineData(0x09, "Flash fired, compulsory flash firing")]
-    [InlineData(0x0D, "Flash fired, compulsory flash firing, return light not detected")]
-    [InlineData(0x10, "Flash did not fire, compulsory flash suppression")]
-    [InlineData(0x18, "Flash did not fire, auto mode")]
-    [InlineData(0x19, "Flash fired, auto mode")]
-    [InlineData(0x1F, "Flash fired, auto mode, return light detected")]
-    [InlineData(0x20, "Flash did not fire, no flash function")]
-    [InlineData(0x41, "Flash fired, red-eye reduction mode")]
-    [InlineData(0x49, "Flash fired, compulsory flash firing, red-eye reduction mode")]
-    [InlineData(0x5F, "Flash fired, auto mode, red-eye reduction mode, return light detected")]
-    [InlineData(0x03, null)]        // return bits 01 are reserved
-    [InlineData(0x80, null)]        // bit 7 is not assigned
-    public void FlashIsDescribedBitFieldByBitField(ushort stored, string? expected)
+    [InlineData(0x00, "No flash")]
+    [InlineData(0x01, "Fired")]
+    [InlineData(0x05, "Fired, return light not detected")]
+    [InlineData(0x07, "Fired, return light detected")]
+    [InlineData(0x09, "Yes, compulsory")]
+    [InlineData(0x0D, "Yes, compulsory, return light not detected")]
+    [InlineData(0x0F, "Yes, compulsory, return light detected")]
+    [InlineData(0x10, "No, compulsory")]
+    [InlineData(0x18, "No, auto")]
+    [InlineData(0x19, "Yes, auto")]
+    [InlineData(0x1D, "Yes, auto, return light not detected")]
+    [InlineData(0x1F, "Yes, auto, return light detected")]
+    [InlineData(0x20, "No flash function")]
+    [InlineData(0x41, "Fired, red-eye reduction")]
+    [InlineData(0x45, "Fired, red-eye reduction, return light not detected")]
+    [InlineData(0x49, "Yes, compulsory, red-eye reduction")]
+    [InlineData(0x4D, "Yes, compulsory, red-eye reduction, return light not detected")]
+    [InlineData(0x59, "Yes, auto, red-eye reduction")]
+    [InlineData(0x5F, "Yes, auto, red-eye reduction, return light detected")]
+    [InlineData(0x08, "No, compulsory")]    // compulsory firing that did not fire: not in the standard's list
+    [InlineData(0x03, "(3)")]               // return bits 01 are reserved
+    [InlineData(0x21, "(33)")]              // no flash function, and yet it fired
+    [InlineData(0x80, "(128)")]             // bit 7 is not assigned
+    public void FlashIsDescribedBitFieldByBitField(ushort stored, string expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(Photo(0x9209), Short(stored)));
     }

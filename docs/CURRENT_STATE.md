@@ -20,15 +20,17 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - Parity harness: `tools/MetadataSharp.Dump` vs the pinned exiv2 0.28.9 corpus (CI job
   `differential-parity`). Run 42962213342, values agreeing of reference keys: EXIF 29,768 of
   34,821; XMP 1,895 of 2,641; IPTC 68 of 319 (no IPTC API for PNG or sidecars; typed values raw).
-- Interpreted values: `ExifTags.Interpret` for standard EXIF tags (the standard's wording, rationals
-  with units, GPS, Flash, versions, UserComment), the dump's sixth column, measured apart from raw
-  values. Run 42967101642: 8,371 of 11,382 EXIF texts equal the reference's; most others differ in wording.
+- Interpreted values: `ExifTags.Interpret` for standard EXIF tags (short labels for enumerated
+  values, rationals with units, GPS, Flash, versions, UserComment, `(raw)` for an unreadable value),
+  the dump's sixth column, measured apart from raw values. Run 42971951262: 10,975 of 11,382 EXIF
+  texts equal the reference's (96.4%); the rest are terms where the reference leaves the standard.
 
 ## Next (in order)
 
 1. BMFF read (HEIC/HEIF/AVIF), 4.2c text fixes, IPTC/XMP dump names — PR #75.
 2. TIFF-based RAW read (CR2, NEF, ARW, ORF, RW2, PEF) with MakerNotes, measured on the corpus.
-3. Interpreted values for MakerNote, IPTC and XMP entries (standard EXIF is done).
+3. Interpreted values for MakerNote, IPTC and XMP entries (standard EXIF is done); name
+   InteroperabilityVersion in the vocabulary (it changes raw key counts, so it is its own step).
 4. Remaining MakerNote vendors (Minolta, Casio, Samsung, Sigma).
 5. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
 6. Write side: TIFF/RAW, then BMFF; MakerNote-safe rules per vendor.
