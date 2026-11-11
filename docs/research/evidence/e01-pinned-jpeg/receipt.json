@@ -1,8 +1,0 @@
-{
-  "runId": "42449222307",
-  "sourceCommit": "601a20b0c1e6d6e1a78b489269f687445ca7827b",
-  "url": "https://github.com/sensboston/MetadataSharp/actions/runs/42449222307",
-  "checkRun": 128634637192,
-  "rawJsonSha256": "3cc23f2b61f507432e7f03dbee173ccc6c6d988dfa9486951c3b13365e5193ef",
-  "encoding": "complete zlib/base64 chunks <=2500 bytes"
-}

@@ -1,80 +1,35 @@
-# Current state — recovery checkpoint
+# Current state
 
-Refreshed 2026-11-11, at the tag vocabulary's shapes and meanings. The only recovery document; the
-chronological record is `docs/PROGRESS.md` (one short entry per merged PR), everything else reference.
+Updated 2026-11-10. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (read-only).
 
-## How this project is run now (2026-11-10 directive; overrides `EXIV2_PARITY_MASTER_PLAN.md` §5)
+## Done (read side unless noted)
 
-- **E01 is frozen where it stands.** No B12/B13/B14, no freeze PR, no second-sample, receipt,
-  relabeling or housekeeping-only PRs. `docs/research/EXIV2_CENSUS.json` (823 rows, all
-  `verification: not-assessed`, `denominatorFrozen: false`) is a **historical reference inventory,
-  not a gate**. Its open gaps (B7/B8 cells, B9's 48 and B10's 32 `blocked-rights` cells, CR3,
-  sub-25-byte recognizer ownership) stay listed and stay unworked. PR #57 (B12+B13) is abandoned;
-  its commits live on the closed PR only.
-- **Approval is required only for new or changed public API.** Put the proposed signatures
-  in the PR description as a short block and ask in Russian. Internal parsers, readers,
-  tables and refactors go ahead without asking.
-- **One feature per PR; merge when CI is green on ubuntu/windows/macos for net8.0+net10.0**
-  — no extra sign-off between units. Report 3–5 lines in Russian after each merge.
-- **Docs budget:** the docs delta stays well under src+tests (guide: <20%). Update only
-  this file, the affected format's `docs/design/*_USAGE_AND_LIMITS.md` (or its implementation
-  note) briefly, and `docs/PROGRESS.md`. No new design/normative/rights document per feature.
-  A **rights review** is needed only for importing third-party fixtures or vendor MakerNote
-  knowledge, and lives as a short section in that PR.
+- JPEG: all frame types; EXIF/IPTC/XMP read and restricted editing; stray bytes, bytes after EOI and
+  IPTC split across several APP13 segments are read (edits copy unknown bytes verbatim).
+- PNG, WebP: EXIF/XMP read and restricted editing. Standalone TIFF: layout accounting and
+  restricted descriptive editing. XMP packets and sidecars (bounded profile). EXV: read.
+  DNG: narrow read-only inventory. PSD/JP2/EPS: narrow inspection.
+- EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0).
+- MakerNotes (`ExifMetadata.MakerNote`, read-only): Canon (incl. arrays and AFInfo), Nikon 1/2/3
+  (incl. versioned and encrypted arrays), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
+  Sony (incl. enciphered arrays), Panasonic, Olympus/OM System (incl. sub-directories).
+- Reading tolerates unaligned TIFF offsets.
+- Parity harness: `tools/MetadataSharp.Dump` vs the pinned exiv2 0.28.9 corpus (CI job
+  `differential-parity`). Measured locally on the fetched corpus: EXIF keys 87.6%,
+  IPTC and XMP keys low (naming in the dump, in progress).
 
-## What works (shipped, test-evidenced)
+## Next (in order)
 
-- **JPEG** `JpegMetadataDocument`: EXIF read/insert/replace/remove, IIM/APP13 read and edit,
-  restricted XMP read/insert/replace/remove, `Save`/`SaveAs` via temp file + `File.Move`. As of 4.1
-  the scanner accepts **every JPEG frame type** (SOF0–3, 5–7, 9–11, 13–15), any number of frames and
-  scans with DHT/DAC between them, and copies entropy-coded bytes verbatim, so progressive,
-  arithmetic, differential and lossless files round-trip their metadata.
-- **PNG** and **WebP** `*MetadataDocument`: EXIF + XMP edit in static files, chunk/RIFF policy.
-- **Standalone TIFF** `TiffMetadataDocument`: layout accounting, restricted descriptive editing
-  with obsolete bytes retained; **DNG**, **PSD**, **JP2**, **EPS** are bounded read-only. The vocabulary
-  `ExifTags` gives 198 IDs from the two reviewed texts a name, types, counts and, for 27 of them, value
-  meanings; an unnamed ID stays numeric, and values are still printed raw until 4.2c.
-- **Differential parity harness** (`tools/parity`, `tools/MetadataSharp.Dump`, CI job
-  `differential-parity`): our readers versus the `exiv2 -Pkycvt` expectations in the pinned upstream
-  test tree, plus our own fixtures against the pinned tool built in the same job. Upstream files are
-  fetched at CI time and read as data - never vendored, built or executed, and their `tests/*.py`
-  (macro-token expectations) are not interpreted. Rates are reported; only a broken run is gated.
-  Latest green run: no structural problem in either corpus. Naming tags moved key parity from 0.5% to
-  **30.2%** (1 502 of 4 981 keys; 1 486 of 1 502 values agree) and from 4.0% to **87.5%** on our own.
-- `MetadataCapabilities`: 35 model-driven rows (JPEG 12, PNG 8, WebP 8, TIFF 3, XMP sidecar 4).
-- Enforced by tests, not convention: MIT, net8.0+net10.0, zero runtime dependencies, bounded
-  hostile-input parsing, refusal instead of unsafe write.
-- Suites: 207 `[Fact]` + 109 `[Theory]` (429 `[InlineData]`) in `tests/MetadataSharp.Tests`;
-  `tests/reference` (224) and `tests/discovery` (112) cover the E01 tooling and owned fixtures,
-  `tests/parity` (45) the harness offline. CI requires ≥450 cases per TFM.
-- src is 6.0k lines, C# tests 5.4k. `pip install --break-system-packages pyyaml` before the python
-  suites; the sandbox has **no dotnet SDK**, so compile and xunit run only in CI.
-
-## What is next, in order
-
-1. **4.2c** Print what the 4.2b vocabulary describes: rationals, date/time, GPS coordinates and the enum
-   meanings it records. The 16 `value-diff` rows are what that gap looks like.
-2. **4.3** One unified read entry point returning a single immutable snapshot (EXIF, IPTC,
-   XMP, ICC, comment) per container. **Public API → short proposal in the PR, then approval.**
-3. **4.4** MakerNotes read-only for Canon, Nikon, Sony, then Fujifilm, Olympus, Panasonic,
-   Pentax — structure from public specs and our own analysis; never copy exiv2 or ExifTool tag
-   tables or source; unknown tags surface by numeric ID; on write, MakerNote bytes stay unchanged and
-   edits that would relocate them are refused. The reference prints `Exif.MakerNote.Offset`/`ByteOrder`
-   for 221 of the 330 corpus files, so those rows stay open until here.
-4. **4.5** ISO BMFF read-only (HEIC/HEIF, then AVIF via `iinf`/`iloc`, then CR3, then JXL
-   container boxes); **4.6** TIFF-derived RAW read-only (CR2, NEF, ARW, then DNG breadth,
-   ORF, RW2, PEF, RAF). 4.5/4.6 also move the corpus's heic/avif/jxl/raw rows out of `not-read`.
-5. **4.7** only afterwards: BMFF/RAW writes, previews and thumbnails, workflow helpers
-   (timestamp shift, copy between files). Exotic formats (PGF, EXV, DCP, CIFF, PSD breadth) last.
+1. BMFF read (HEIC/HEIF/AVIF), 4.2c text fixes, IPTC/XMP dump names — PR #75.
+2. TIFF-based RAW read (CR2, NEF, ARW, ORF, RW2, PEF) with MakerNotes, measured on the corpus.
+3. Interpreted values (4.2c proper) as a separate dump column compared with the reference's
+   interpreted column; enum labels for standard tags first.
+4. Remaining MakerNote vendors (Minolta, Casio, Samsung, Sigma).
+5. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
+6. Write side: TIFF/RAW, then BMFF; MakerNote-safe rules per vendor.
 
 ## Known limits
 
-- Accepting a frame type is about *metadata*, not decoding: no Huffman/arithmetic symbol
-  decoding, no MCU or restart-interval validation, no promise that the pixel stream renders.
-- Refusals stay: trailing bytes after EOI, duplicate EXIF APP1, non-length-bearing or reserved
-  markers (including 0xC8), unbacked table references, over-budget input or segment counts.
-- No MakerNote interpretation yet; ICC is not modelled; a failed thumbnail drops the picture, not
-  the read; no XMP toolkit (restricted packet profile only); Extended XMP is refused, not merged.
-- The harness reads no BMFF, video, EXV, CIFF or EPS, never decodes pixels, skips files above
-  64 MB, and counts an unread file `not-read` rather than as a disagreement. A reference's decoded
-  label is not raw bytes, so `match-key` means "same tag found", not "same meaning printed".
+- Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
+- Interpreted (human-readable) values are not produced yet; the dump prints raw values.
+- No ICC, preview or comment APIs yet; no BMFF/RAW write.

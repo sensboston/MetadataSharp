@@ -65,7 +65,7 @@ public readonly record struct ExifTagValueMeaning(ushort Number, string Meaning)
 /// <summary>The tag vocabulary of the supported EXIF directories: one definition per tag, one lookup.</summary>
 /// <remarks>
 /// The rows are generated from the publications this project reviewed for its read policy (see
-/// docs/design/TIFF_EXIF_NORMATIVE_SOURCES_AND_READ_POLICY.md). Each field of a tag is stated in a row of
+/// docs/archive/design/TIFF_EXIF_NORMATIVE_SOURCES_AND_READ_POLICY.md). Each field of a tag is stated in a row of
 /// an attribute table and repeated, and sometimes qualified, in the section that describes the tag; where
 /// the two disagree the section is the fuller statement and wins. That happens once in the reviewed text:
 /// Exif 3.0 Table 9 gives GainControl as RATIONAL while its section 4.6.6.7.41 gives SHORT and enumerates
