@@ -11,8 +11,8 @@ namespace MetadataSharp.Tests.Tiff;
 
 /// <summary>
 /// Editing the EXIF, GPS, IPTC and XMP of TIFF-based files without moving image data or the
-/// MakerNote. Every case runs on a baseline TIFF, a DNG, a NEF-like and a CR2-like layout, in both
-/// byte orders, and states which bytes of the source may differ in the output.
+/// MakerNote. Every case runs on a baseline TIFF, a DNG and a NEF-, CR2-, ARW-, PEF- and ORF-like
+/// layout, in both byte orders, and states which bytes of the source may differ in the output.
 /// </summary>
 public sealed class TiffBasedWriteTests
 {
@@ -338,6 +338,33 @@ public sealed class TiffBasedWriteTests
     }
 
     [Theory]
+    [InlineData("arw", false, MakerNoteFormat.Sony1)]
+    [InlineData("arw", true, MakerNoteFormat.Sony1)]
+    [InlineData("pef", false, MakerNoteFormat.Pentax)]
+    [InlineData("pef", true, MakerNoteFormat.Pentax)]
+    [InlineData("orf", false, MakerNoteFormat.Olympus)]
+    [InlineData("orf", true, MakerNoteFormat.Olympus)]
+    public void TheMakerNoteOfAnArwPefOrOrfLikeFileReadsTheSameAfterItsDirectoryMoved(string name, bool big, MakerNoteFormat format)
+    {
+        TiffBasedFixture fixture = TiffBasedFixture.Create(name, big);
+        MakerNote? before = TiffExif.Read(fixture.Bytes).MakerNote;
+        Assert.NotNull(before);
+        Assert.Equal(format, before.Format);
+
+        // These notes count their offsets from the start of the file, as Canon's does: the text in
+        // the note is found only while the note is where it was.
+        byte[] output = Save(fixture.Bytes, Edit(edit => edit.Set(DateTimeDigitized, Ascii(NewDate))));
+        Assert.Equal(fixture.Bytes.AsSpan(0, 4).ToArray(), output.AsSpan(0, 4).ToArray());
+        MakerNote? after = TiffExif.Read(output).MakerNote;
+        Assert.NotNull(after);
+        Assert.Equal(format, after.Format);
+        Assert.Equal(fixture.Note.Start, after.Offset);
+        Assert.Equal(before.Entries.Select(entry => entry.TagId), after.Entries.Select(entry => entry.TagId));
+        Assert.True(after.TryGetEntry(0x7F01, out MakerNoteEntry? text));
+        Assert.Equal("NOTE OK", Text(text.Value));
+    }
+
+    [Theory]
     [MemberData(nameof(Layouts))]
     public void AddingGpsWritesItsDirectoryAtTheEnd(string name, bool big)
     {
@@ -591,6 +618,88 @@ public sealed class TiffBasedWriteTests
         Assert.Equal("hi", CaptionOf(TiffIptc.Read(shorter)!));
     }
 
+    [Theory]
+    [MemberData(nameof(Layouts))]
+    public void ATagADatasetAndAPropertyAreRemovedAndRemovingAllIptcRemovesItsTag(string name, bool big)
+    {
+        TiffBasedFixture fixture = TiffBasedFixture.Create(name, big);
+
+        // The tag that was added is taken out again: the directory is rewritten where it is.
+        byte[] added = Save(fixture.Bytes, Edit(edit => edit.Set(DateTimeDigitized, Ascii(NewDate))));
+        byte[] removed = Save(added, Edit(edit => edit.Remove(DateTimeDigitized)));
+        Assert.Equal(added.Length, removed.Length);
+        ExifMetadata exif = TiffExif.Read(removed);
+        Assert.False(exif.TryGetEntry(DateTimeDigitized, out _));
+        Assert.Equal("2020:01:02 03:04:05", Text(exif, DateTimeOriginal));
+        Assert.Equal(TiffExif.Read(fixture.Bytes).Entries.Count, exif.Entries.Count);
+        AssertImageAndMakerNoteUntouched(fixture, removed);
+
+        var title = new IptcDatasetKey(2, 5);
+        var both = new IptcEdit();
+        both.ReplaceText(Caption, ["A caption"]);
+        both.ReplaceText(title, ["A title"]);
+        byte[] file = Save(fixture.Bytes, both);
+
+        // Without the title the stream is shorter: it is written where the longer one was.
+        var removeTitle = new IptcEdit();
+        removeTitle.Remove(title);
+        byte[] one = Save(file, removeTitle);
+        Assert.Equal(file.Length, one.Length);
+        IptcPacket packet = TiffIptc.Read(one)!;
+        Assert.Equal("A caption", CaptionOf(packet));
+        Assert.DoesNotContain(packet.Datasets, dataset => dataset.Key == title);
+
+        var removeAll = new IptcEdit();
+        removeAll.RemoveAllIptc();
+        byte[] none = Save(one, removeAll);
+        Assert.Equal(one.Length, none.Length);
+        Assert.Equal(-1, TiffBasedFixture.EntryAt(none, big, Primary(none, big), 0x83BB));
+        Assert.Null(TiffIptc.Read(none));
+        AssertImageAndMakerNoteUntouched(fixture, none);
+
+        var label = new XmpPropertyName("http://ns.adobe.com/xap/1.0/", "Label");
+        var two = new XmpEdit();
+        two.Set(Tool, XmpValue.CreateText("MetadataSharp"));
+        two.Set(label, XmpValue.CreateText("a label"));
+        var removeLabel = new XmpEdit();
+        removeLabel.Remove(label);
+        byte[] oneProperty = Save(Save(fixture.Bytes, two), removeLabel);
+        using TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(new MemoryStream(oneProperty));
+        XmpPacket xmp = document.ReadXmp()!;
+        Assert.Equal("MetadataSharp", xmp.Properties[Tool].Text);
+        Assert.False(xmp.Properties.ContainsKey(label));
+        AssertImageAndMakerNoteUntouched(fixture, oneProperty);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AFileWithAValueLargerThanAJpegSegmentIsEditedWithTheDefaultOptions(bool big)
+    {
+        // An ICC profile of 70,000 bytes. The value budget of MetadataLimits is the 65,527 bytes of
+        // a JPEG APP1 payload; ReaganLargeTiff.tiff of the reference corpus has a profile of 1,613,600.
+        byte[] profile = new byte[70_000];
+        for (int i = 0; i < profile.Length; i++) profile[i] = (byte)(1 + i % 251);
+        byte[] file = TiffBasedFixture.Flat(big, (0x010F, 2, Encoding.ASCII.GetBytes("TestCompany\0")), (0x8773, 7, profile));
+        var make = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F);
+        int makeAt = (int)TiffBasedFixture.U32(file, big, PrimaryEntry(file, big, 0x010F) + 8);
+        int profileAt = (int)TiffBasedFixture.U32(file, big, PrimaryEntry(file, big, 0x8773) + 8);
+
+        byte[] output = Save(file, Edit(edit => edit.Set(make, Ascii("Other Maker"))));
+        Assert.Equal(file.Length, output.Length);
+        AssertSourceKeptExcept(file, output, (makeAt, 12));
+        Assert.Equal("Other Maker", Text(TiffExif.Read(output), make));
+
+        byte[] grown = Save(file, Edit(edit => edit.Set(make, Ascii(LongText))));
+        Assert.True(profile.AsSpan().SequenceEqual(grown.AsSpan(profileAt, profile.Length)));
+        Assert.Equal(profileAt, TiffBasedFixture.U32(grown, big, PrimaryEntry(grown, big, 0x8773) + 8));
+        Assert.Equal(LongText, Text(TiffExif.Read(grown), make));
+
+        // Budgets the caller names are the budgets: those of an EXIF block refuse the file.
+        var narrow = new TiffReadOptions { Limits = new MetadataLimits() };
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Code(() => Save(file, Edit(edit => edit.Set(make, Ascii("Other Maker"))), narrow)));
+    }
+
     [Fact]
     public void IptcThatLivesInPhotoshopResourcesIsNotShadowedByANewTag()
     {
@@ -617,6 +726,14 @@ public sealed class TiffBasedWriteTests
         Assert.Equal(fixture.Bytes.Length, output.Length);
         AssertSourceKeptExcept(fixture.Bytes, output, (fixture.Date, 20));
         Assert.Equal(NewDate, Text(TiffExif.Read(output), DateTimeOriginal));
+
+        // A tag is removed in place as well: its directory is rewritten where it is.
+        var make = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F);
+        byte[] removed = Save(fixture.Bytes, Edit(edit => edit.Remove(make)));
+        Assert.Equal(fixture.Bytes.Length, removed.Length);
+        Assert.True(fixture.Bytes.AsSpan(200, 100).SequenceEqual(removed.AsSpan(200, 100)));
+        Assert.False(TiffExif.Read(removed).TryGetEntry(make, out _));
+        Assert.Equal("2020:01:02 03:04:05", Text(TiffExif.Read(removed), DateTimeOriginal));
 
         // Anything that grows would be appended, and the raw data would then run over it.
         Assert.Equal(MetadataErrorCode.UnsafeRelocation, Code(() => Save(fixture.Bytes, Edit(edit => edit.Set(DateTimeDigitized, Ascii(NewDate))))));

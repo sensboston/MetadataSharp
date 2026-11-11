@@ -318,13 +318,14 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
     // directory is edited four ways, each from the file as it is. A refusal is counted by its code;
     // a file that was written goes into the manifest for the pinned tool to read. Anything that is
     // not a refusal - an exception of another type - is a defect of the writer and fails the run.
-    // The budgets are wide: the question here is what the writer does with a file, not whether the
-    // file fits the defaults (a phone DNG with thirty sub-images does not fit sixteen directories).
+    // The options are the default ones. A file they refuse for a budget is reported with what is
+    // large in it, read with the wide budgets below, which serve no other purpose.
     var wide = new TiffReadOptions
     {
-        Limits = new MetadataLimits { MaxDirectories = 256, MaxEntriesPerDirectory = 2_048, MaxTotalEntries = 16_384, MaxValueBytes = 4_194_304, MaxRetainedMetadataBytes = 16_777_216 }
+        Limits = new MetadataLimits { MaxDirectories = 256, MaxEntriesPerDirectory = 2_048, MaxTotalEntries = 16_384, MaxValueBytes = 268_435_456, MaxRetainedMetadataBytes = 1_073_741_824 }
     };
     var refusals = new List<(string File, string Kind, string Reason)>();
+    var budgets = new List<string>();
     Directory.CreateDirectory(args[2]);
     var manifest = new List<string>();
     var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
@@ -339,7 +340,7 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
         string extension = Path.GetExtension(path).ToLowerInvariant();
         if (!extensions.Contains(extension) || new FileInfo(path).Length > 64 * 1024 * 1024) continue;
         TiffBasedMetadataDocument document;
-        try { document = TiffBasedMetadataDocument.Open(path, wide); }
+        try { document = TiffBasedMetadataDocument.Open(path); }
         catch (MetadataException) { continue; } // not a TIFF structure, whatever its name says
         files++;
         using (document)
@@ -381,6 +382,46 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
             var caption = new IptcEdit();
             caption.ReplaceText(new(2, 120), ["A caption"]);
 
+            // Which default budget a file does not fit: the same edit in place with the default
+            // options, then with one budget widened at a time; the wide read says what is large.
+            string? LimitRefusal(TiffReadOptions? options)
+            {
+                try
+                {
+                    using var probe = TiffBasedMetadataDocument.Open(path, options);
+                    probe.SaveExif(new MemoryStream(), inPlace);
+                    return null;
+                }
+                catch (MetadataException refusal) when (refusal.Code == MetadataErrorCode.LimitExceeded)
+                {
+                    return $"{refusal.Message} (offset {refusal.SourceOffset})";
+                }
+                catch (MetadataException) { return null; }
+            }
+            if (LimitRefusal(null) is { } byDefault)
+            {
+                MetadataLimits usual = new TiffReadOptions().Limits;
+                (string Name, MetadataLimits Limits)[] single =
+                [
+                    ("MaxDirectories", usual with { MaxDirectories = wide.Limits.MaxDirectories }),
+                    ("MaxEntriesPerDirectory", usual with { MaxEntriesPerDirectory = wide.Limits.MaxEntriesPerDirectory }),
+                    ("MaxTotalEntries", usual with { MaxTotalEntries = wide.Limits.MaxTotalEntries }),
+                    ("MaxValueBytes", usual with { MaxValueBytes = wide.Limits.MaxValueBytes }),
+                    ("MaxRetainedMetadataBytes", usual with { MaxRetainedMetadataBytes = wide.Limits.MaxRetainedMetadataBytes }),
+                ];
+                string enough = string.Join(", ", single.Where(one => LimitRefusal(new TiffReadOptions { Limits = one.Limits }) is null).Select(one => one.Name));
+                string large;
+                try
+                {
+                    var entries = TiffExif.Read(File.ReadAllBytes(path), wide.Limits).Entries;
+                    large = $"{entries.Count} entries, {entries.Sum(entry => (long)entry.Value.ByteLength)} value bytes; over {usual.MaxValueBytes}: "
+                        + string.Join(", ", entries.Where(entry => entry.Value.ByteLength > usual.MaxValueBytes)
+                            .Select(entry => $"{entry.Key.Directory} 0x{entry.Key.TagId:X4} {entry.Value.FieldType} {entry.Value.ByteLength}"));
+                }
+                catch (MetadataException unread) { large = "not read: " + unread.Message; }
+                budgets.Add($"{Path.GetFileName(path)} ({new FileInfo(path).Length} bytes): {byDefault} Widening one budget is enough: {(enough.Length == 0 ? "none" : enough)}. {large}");
+            }
+
             Try("inplace", "Exif.Photo.DateTimeOriginal", date, target => document.SaveExifAs(target, inPlace));
             Try("grow", "Exif.Image.Artist,Exif.Image.ExifTag,Exif.Image.GPSTag,Exif.Photo.DateTimeDigitized," + gpsKeys, artist,
                 target => document.SaveExifAs(target, grow));
@@ -397,6 +438,9 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
         .ToArray();
     foreach (string[] chunk in reasons.Chunk(20))
         Console.WriteLine("::notice title=TIFF-based corpus refusals::" + string.Join("%0A", chunk));
+    Console.WriteLine("::notice title=TIFF-based corpus budgets::" + (budgets.Count == 0
+        ? "no file is refused for a budget of the default options"
+        : string.Join("%0A", budgets.Select(line => line.Replace("%", "%25")))));
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=TIFF-based writer defect::" + crash);
     if (crashes.Count != 0) return 1;
 }

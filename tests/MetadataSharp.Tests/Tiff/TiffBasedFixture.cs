@@ -37,7 +37,7 @@ internal sealed class TiffBasedFixture
     internal int TextTag { get; private init; }
     internal (int Start, int Length) Text { get; private init; }
 
-    internal static readonly string[] Names = ["tiff", "dng", "nef", "cr2"];
+    internal static readonly string[] Names = ["tiff", "dng", "nef", "cr2", "arw", "pef", "orf"];
 
     internal static TiffBasedFixture Create(string name, bool big) => name switch
     {
@@ -45,6 +45,7 @@ internal sealed class TiffBasedFixture
         "dng" => Dng(big),
         "nef" => Nef(big),
         "cr2" => Cr2(big),
+        "arw" or "pef" or "orf" => Vendor(name, big),
         _ => throw new ArgumentOutOfRangeException(nameof(name))
     };
 
@@ -184,6 +185,48 @@ internal sealed class TiffBasedFixture
         {
             Primary = 16, Exif = 130, Image = [(500, 24), (530, 20), (560, 120)], Note = (note, 78), Date = 160,
             TextTag = 0x0110, Text = (106, 14)
+        };
+    }
+
+    /// <summary>
+    /// An ARW-, PEF- or ORF-like layout: what the three ask of a writer. IFD0 at 8 (Make at 120,
+    /// Model at 140, a thumbnail strip at 500 of 24 bytes, one SubIFD, ExifIFD); the SubIFD at 230
+    /// addresses the raw strip at 530 of 80 bytes; the Exif IFD at 300 has ExposureTime at 350,
+    /// DateTimeOriginal at 358 and the MakerNote at 380: the signature of the maker, then a directory
+    /// of two entries whose text is addressed from the start of the file, the way the Sony, the
+    /// Pentax "AOC" and the older Olympus notes address their values. An ORF has its own number
+    /// in the header where a TIFF has 42.
+    /// </summary>
+    internal static TiffBasedFixture Vendor(string name, bool big)
+    {
+        (int magic, string make, string model, byte[] signature) = name switch
+        {
+            "arw" => (42, "SONY\0", "ILCE-7M3\0", "SONY DSC \0\0\0"u8.ToArray()),
+            "pef" => (42, "PENTAX\0", "PENTAX K10D\0", big ? "AOC\0MM"u8.ToArray() : "AOC\0II"u8.ToArray()),
+            "orf" => (0x4F52, "OLYMPUS CORPORATION\0", "E-M1MarkII\0", "OLYMP\0\u0001\0"u8.ToArray()),
+            _ => throw new ArgumentOutOfRangeException(nameof(name))
+        };
+        const int note = 380;
+        int directory = note + signature.Length, text = directory + 30, length = signature.Length + 38;
+        var layout = new Layout(610, big).Header(magic)
+            .Directory(8, 0,
+                (0x00FE, 4, 1, 1), (0x010F, 2, make.Length, 120), (0x0110, 2, model.Length, 140), (0x0111, 4, 1, 500),
+                (0x0117, 4, 1, 24), (0x014A, 4, 1, 230), (0x8769, 4, 1, 300))
+            .Ascii(120, make)
+            .Ascii(140, model)
+            .Directory(230, 0, (0x00FE, 4, 1, 0), (0x0103, 3, 1, 1), (0x0111, 4, 1, 530), (0x0117, 4, 1, 80))
+            .Directory(300, 0, (0x829A, 5, 1, 350), (0x9003, 2, 20, 358), (0x927C, 7, length, note))
+            .U32(350, 1).U32(354, 60)
+            .Ascii(358, "2020:01:02 03:04:05\0")
+            .Raw(note, signature)
+            .Directory(directory, 0, (0x0102, 4, 1, 7), (0x7F01, 2, 8, text))
+            .Ascii(text, "NOTE OK\0")
+            .Pattern(500, 24, 5)
+            .Pattern(530, 80, 23);
+        return new(name, big, layout.Bytes)
+        {
+            Exif = 300, Image = [(500, 24), (530, 80)], Note = (note, length), Date = 358, TextTag = 0x0110,
+            Text = (140, model.Length)
         };
     }
 

@@ -5,7 +5,21 @@ namespace MetadataSharp.Formats.Tiff;
 /// <summary>Finite read-only TIFF framing and accounting budgets, captured before I/O.</summary>
 public sealed record TiffReadOptions
 {
-    public MetadataLimits Limits { get; init; } = new();
+    /// <summary>
+    /// The budgets of a whole TIFF-based file when the caller names none. Two of the defaults of
+    /// <see cref="MetadataLimits"/> are sized for an EXIF block inside another container (65,527
+    /// bytes is the most a JPEG APP1 segment holds), and a valid TIFF-based file exceeds them with
+    /// one ICC profile, Photoshop block or DNG profile table: a value may be 16 MiB here, and
+    /// 64 MiB may be retained in all.
+    /// </summary>
+    internal static MetadataLimits FileLimits { get; } = new() { MaxValueBytes = 16_777_216, MaxRetainedMetadataBytes = 67_108_864 };
+
+    /// <summary>
+    /// The budgets. Unless set, those of <see cref="MetadataLimits"/> with
+    /// <see cref="MetadataLimits.MaxValueBytes"/> 16,777,216 and
+    /// <see cref="MetadataLimits.MaxRetainedMetadataBytes"/> 67,108,864.
+    /// </summary>
+    public MetadataLimits Limits { get; init; } = FileLimits;
     public int MaxDirectoryLinks { get; init; } = 4096;
     public int MaxAccountedRanges { get; init; } = 16384;
     internal TiffReadOptions Snapshot()
