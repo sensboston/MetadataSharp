@@ -1,6 +1,6 @@
 # Current state
 
-Updated 2026-11-10. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (read-only).
+Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (read-only).
 
 ## Done (read side unless noted)
 
@@ -14,9 +14,12 @@ Updated 2026-11-10. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   (incl. versioned and encrypted arrays), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
   Sony (incl. enciphered arrays), Panasonic, Olympus/OM System (incl. sub-directories).
 - Reading tolerates unaligned TIFF offsets.
+- XMP: `XmpPacket.Entries` lists every property of any packet (structures, arrays of structures,
+  qualifiers) as read-only path rows; editing stays on the bounded profile. NUL padding is ignored.
+- TIFF-based files: IPTC read (`TiffIptc.Read`, tag 0x83BB or the resource in 0x8649).
 - Parity harness: `tools/MetadataSharp.Dump` vs the pinned exiv2 0.28.9 corpus (CI job
-  `differential-parity`). Measured locally on the fetched corpus: EXIF keys 87.6%,
-  IPTC and XMP keys low (naming in the dump, in progress).
+  `differential-parity`). Run 42962213342, values agreeing of reference keys: EXIF 29,768 of
+  34,821; XMP 1,895 of 2,641; IPTC 68 of 319 (no IPTC API for PNG or sidecars; typed values raw).
 
 ## Next (in order)
 
