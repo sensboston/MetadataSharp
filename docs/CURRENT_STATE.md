@@ -8,7 +8,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   IPTC split across several APP13 segments are read (edits copy unknown bytes verbatim).
 - PNG, WebP: EXIF/XMP read and restricted editing. Standalone TIFF: layout accounting and
   restricted descriptive editing. XMP packets and sidecars (bounded profile). EXV: read.
-  DNG: narrow read-only inventory. PSD/JP2/EPS: narrow inspection.
+  DNG: narrow read-only inventory. PSD: header and resources of any v1 file, with EXIF, IPTC and
+  XMP read from them (`PsdMetadata.ReadExif/ReadIptc/ReadXmp`). JP2/EPS: narrow inspection.
 - EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0).
 - MakerNotes (`ExifMetadata.MakerNote`, read-only): Canon (incl. arrays and AFInfo), Nikon 1/2/3
   (incl. versioned and encrypted arrays), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),

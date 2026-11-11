@@ -26,8 +26,8 @@ using MetadataSharp.Formats.WebP;
 // field says no interpretation is offered for the tag at all, which is the case for MakerNote, IPTC
 // and XMP records.
 // A file whose reader refused or was not attempted simply carries no TAG records. A JPEG, TIFF or PSD
-// that was read, with its IPTC stream or XMP packet refused, is ok with the detail
-// iptc-refused:<code>, xmp-refused:<code>, or both separated by a comma.
+// that was read, with one kind of its metadata refused, is ok with the detail exif-refused:<code>,
+// iptc-refused:<code> or xmp-refused:<code>, several of them separated by commas.
 internal static class Program
 {
     private const long MaxWholeFileBytes = 64L * 1024 * 1024;
@@ -191,14 +191,18 @@ internal static class Program
     {
         if (!WithinBudget(length, stdout)) return;
         PsdMetadata metadata = PsdMetadata.Read(File.ReadAllBytes(path));
-        if (metadata.GetResource(0x0404) is byte[] resource && resource.Length != 0) Iptc(IptcPacket.Parse(resource), stdout);
-        // As for a TIFF: a packet the XMP reader refuses leaves the rows already written in place.
+        // As for a TIFF: a resource its reader refuses leaves the rows of the other kinds in place.
         var refused = new List<string>();
+        ExifMetadata? exif = null;
+        try { exif = metadata.ReadExif(); }
+        catch (MetadataException failure) { refused.Add("exif-refused:" + failure.Code); }
+        Exif(exif, stdout);
+        IptcPacket? iptc = null;
+        try { iptc = metadata.ReadIptc(); }
+        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
+        if (iptc is not null) Iptc(iptc, stdout);
         XmpPacket? xmp = null;
-        try
-        {
-            if (metadata.GetResource(0x0424) is byte[] packet && packet.Length != 0) xmp = XmpPacket.Parse(packet);
-        }
+        try { xmp = metadata.ReadXmp(); }
         catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
         if (xmp is not null) Xmp(xmp, stdout);
         Done(stdout, refused);
