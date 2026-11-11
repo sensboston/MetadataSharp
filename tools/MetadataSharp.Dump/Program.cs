@@ -4,6 +4,7 @@ using System.Text;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Formats;
 using MetadataSharp.Formats.Bmff;
 using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
@@ -28,6 +29,10 @@ using MetadataSharp.Formats.WebP;
 // A file whose reader refused or was not attempted simply carries no TAG records. A JPEG, PNG, TIFF or PSD
 // that was read, with one kind of its metadata refused, is ok with the detail exif-refused:<code>,
 // iptc-refused:<code> or xmp-refused:<code>, several of them separated by commas.
+//
+// With --previews the TAG records give way to one record per preview the library lists, in its order:
+//   PREVIEW <index from 1>  <mime type>  <width>x<height>  <length in bytes>  <source>
+// An unknown dimension is written as 0.
 internal static class Program
 {
     private const long MaxWholeFileBytes = 64L * 1024 * 1024;
@@ -35,14 +40,16 @@ internal static class Program
     private static int Main(string[] args)
     {
         var paths = new List<string>();
+        bool previews = false;
         for (int i = 0; i < args.Length; i++)
         {
             string arg = args[i];
             if (arg is "-h" or "--help")
             {
-                Console.Error.WriteLine("usage: MetadataSharp.Dump [--files-from FILE|-] [file...]");
+                Console.Error.WriteLine("usage: MetadataSharp.Dump [--previews] [--files-from FILE|-] [file...]");
                 return 0;
             }
+            if (arg == "--previews") { previews = true; continue; }
             if (arg == "--files-from")
             {
                 if (++i == args.Length) { Console.Error.WriteLine("--files-from wants a path or -"); return 2; }
@@ -62,7 +69,11 @@ internal static class Program
         foreach (string path in paths)
         {
             Record(stdout, "FILE", Escape(path));
-            try { Dump(path, stdout); }
+            try
+            {
+                if (previews) ListPreviews(path, stdout);
+                else Dump(path, stdout);
+            }
             catch (MetadataException failure) { Record(stdout, "STATUS", "refused", failure.Code.ToString()); }
             // A bug in a reader is a fact worth reporting precisely, so the type and the first line of
             // the message travel with the record; the harness counts this status as an unsound run.
@@ -74,6 +85,20 @@ internal static class Program
         }
         stdout.Flush();
         return 0;
+    }
+
+    private static void ListPreviews(string path, StreamWriter stdout)
+    {
+        if (!WithinBudget(new FileInfo(path).Length, stdout)) return;
+        IReadOnlyList<PreviewImage> found = Previews.List(File.ReadAllBytes(path));
+        for (int i = 0; i < found.Count; i++)
+        {
+            PreviewImage preview = found[i];
+            string size = (preview.Width ?? 0).ToString(CultureInfo.InvariantCulture) + "x" + (preview.Height ?? 0).ToString(CultureInfo.InvariantCulture);
+            Record(stdout, "PREVIEW", (i + 1).ToString(CultureInfo.InvariantCulture), preview.MimeType, size,
+                preview.Length.ToString(CultureInfo.InvariantCulture), preview.Source);
+        }
+        Done(stdout);
     }
 
     private static void Dump(string path, StreamWriter stdout)

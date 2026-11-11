@@ -27,6 +27,9 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - TIFF-based files: IPTC read (`TiffIptc.Read`, tag 0x83BB or the resource in 0x8649).
 - IPTC read-only forms (`IptcPacket.IsEditable` false): padding, repeated equal controls or resources,
   a digest without a stream. PNG: EXIF and IPTC in "Raw profile type" text chunks, eXIf after IDAT.
+- Previews, read-only: `Previews.List` / `Previews.Extract` in `MetadataSharp.Formats` (EXIF thumbnail,
+  MakerNote pointers, JPEG sub-images of TIFF-based raw files, BMFF `thmb` items, PSD resource 0x040C).
+  `MetadataSharp.Dump --previews`; compared with `exiv2 -pp` as kind "Preview" in the parity job.
 - Parity harness: `tools/MetadataSharp.Dump` vs the pinned exiv2 0.28.9 corpus (CI job
   `differential-parity`). Run 42962213342, values agreeing of reference keys: EXIF 29,768 of
   34,821; XMP 1,895 of 2,641; IPTC 68 of 319 (no IPTC API for PNG or sidecars; typed values raw).
@@ -47,4 +50,4 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
 - Interpreted (human-readable) values are not produced yet; the dump prints raw values.
-- No ICC, preview or comment APIs yet; no BMFF/RAW write.
+- No ICC or comment APIs yet; no BMFF/RAW write. Previews are not decoded and not written.
