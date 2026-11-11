@@ -37,17 +37,22 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   values, rationals with units, GPS, Flash, versions, UserComment, `(raw)` for an unreadable value),
   the dump's sixth column, measured apart from raw values. Run 42971951262: 10,975 of 11,382 EXIF
   texts equal the reference's (96.4%); the rest are terms where the reference leaves the standard.
+- Interpreted values beyond standard EXIF: `IptcDatasetNames.Interpret` (numbers, dates, times) and
+  `MakerNote.Interpret` for Canon, Nikon3 and Sony (hand-written labels and units for the tags and
+  numbers the corpus has; an unlisted number reads `(n)`; other vendors answer null). Run 43069964377,
+  texts equal of those the reference translates: Canon 3,288 of 4,141, Nikon 2,518 of 3,486, Sony
+  2,300 of 2,864; IPTC 255 of 255 compared. Left out on purpose: logarithmic codes (apertures,
+  shutter speeds, sensitivities), lens identifiers, fields whose meaning depends on the camera model.
 
 ## Next (in order)
 
-1. BMFF read (HEIC/HEIF/AVIF), 4.2c text fixes, IPTC/XMP dump names — PR #75.
-2. TIFF-based RAW read (CR2, NEF, ARW, ORF, RW2, PEF) with MakerNotes, measured on the corpus.
-3. Interpreted values for MakerNote, IPTC and XMP entries (standard EXIF is done).
-4. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
-5. Write side: TIFF/RAW, then BMFF; MakerNote-safe rules per vendor.
+1. Write side: TIFF-family in-place/append writer, then BMFF; MakerNote-safe rules per vendor.
+2. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
+   (1,906 corpus texts), XMP.
+3. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
 
 ## Known limits
 
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
-- Interpreted (human-readable) values are not produced yet; the dump prints raw values.
+- Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
 - No ICC or comment APIs yet; no BMFF/RAW write. Previews are not decoded and not written.
