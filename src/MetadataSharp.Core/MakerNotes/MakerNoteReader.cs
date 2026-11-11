@@ -48,11 +48,10 @@ internal static class MakerNoteReader
         if (make.StartsWith("SONY"u8))
         {
             // "SONY DSC \0\0\0" then an IFD, or a bare IFD; offsets from the TIFF header either way.
-            if (note.StartsWith("SONY DSC \0\0\0"u8))
-                return Directory(MakerNoteFormat.Sony1, tiff, start + 12, end, 0, order, 0,
-                    limits, retainedBudget, VendorMakerNoteNames.Sony, null);
-            return Directory(MakerNoteFormat.Sony2, tiff, start, end, 0, order, 0,
-                limits, retainedBudget, VendorMakerNoteNames.Sony, null);
+            MakerNote? sony = note.StartsWith("SONY DSC \0\0\0"u8)
+                ? Directory(MakerNoteFormat.Sony1, tiff, start + 12, end, 0, order, 0, limits, retainedBudget, VendorMakerNoteNames.Sony, null)
+                : Directory(MakerNoteFormat.Sony2, tiff, start, end, 0, order, 0, limits, retainedBudget, VendorMakerNoteNames.Sony, null);
+            return sony is null ? null : SplitSony(sony, model);
         }
         if (make.StartsWith("Panasonic"u8))
         {
@@ -95,6 +94,20 @@ internal static class MakerNoteReader
         MakerNote? note = Directory(MakerNoteFormat.Nikon3, tiff, header + (int)ifd, start + length, header, order, 0,
             limits, retainedBudget, NikonMakerNoteNames.Nikon3, NikonMakerNoteArrays.Decompose);
         return note is null ? null : DecryptNikon3(note, model);
+    }
+
+    /// <summary>Splits the Sony array tags, whose layouts may depend on the camera model.</summary>
+    private static MakerNote SplitSony(MakerNote note, ReadOnlySpan<byte> model)
+    {
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        bool changed = false;
+        foreach (MakerNoteEntry entry in note.Entries)
+        {
+            IReadOnlyList<MakerNoteField> fields = SonyMakerNoteArrays.Decompose(entry.TagId, entry.Value, model);
+            entries.Add(fields.Count == 0 ? entry : new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields));
+            changed |= fields.Count != 0;
+        }
+        return changed ? new MakerNote(note.Format, note.ByteOrder, entries) : note;
     }
 
     /// <summary>Splits the encrypted Nikon3 arrays when the serial number and shutter count are present.</summary>

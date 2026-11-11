@@ -202,6 +202,7 @@ internal static class Program
                         Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
                     string fieldGroup = keepParent ? group
                         : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
+                        : makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 ? SonyArrayGroup(entry.TagId)
                         : group + ArrayGroup(entry.TagId);
                     foreach (MakerNoteField field in entry.Fields)
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
@@ -213,6 +214,13 @@ internal static class Program
             }
         }
     }
+
+    private static string SonyArrayGroup(ushort tag) => tag switch
+    {
+        0x2010 => "Sony2010e", 0x3000 => "SonySInfo1", 0x9400 => "SonyMisc3c", 0x9402 => "Sony2Fp",
+        0x9403 => "SonyMisc1", 0x9404 => "SonyMisc2b",
+        _ => "Sony0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
+    };
 
     /// <summary>The reference tool's group for a split Nikon3 array, chosen like the layout: by tag and version.</summary>
     private static string NikonArrayGroup(MakerNoteEntry entry)
