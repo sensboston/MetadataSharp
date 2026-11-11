@@ -205,6 +205,7 @@ public sealed class BmffWriteTests
         AssertSourceKeptExcept(fixture.Bytes, output, (date, BmffFixture.DateLength - 1));
         Assert.Equal(NewDate + "\0", Encoding.ASCII.GetString(output, date, BmffFixture.DateLength));
 
+        AssertOtherItemsStay(fixture, output, BmffFixture.ExifId);
         BmffMetadata after = BmffMetadata.Read(output);
         Assert.Equal(NewDate, Text(after.Exif!, DateTimeOriginal));
         Assert.Equal("TestCompany", Text(after.Exif!, Make));
@@ -702,6 +703,86 @@ public sealed class BmffWriteTests
         using var empty = new MemoryStream();
         document.SaveXmp(empty, new XmpEdit());
         Assert.Equal(grown, empty.ToArray());
+    }
+
+    // ---- the check of a planned output ----
+
+    /// <summary>
+    /// A planned edit of the XMP item of the usual layout, and four bytes of the file that the edit
+    /// has no business with: one of the image, the first letter of the type of the image in the item
+    /// information box, one of the EXIF item, and (as -1) the last appended byte.
+    /// </summary>
+    private static (byte[] Source, BmffFileMap Map, BmffMetadata Before, BmffWritePlan Plan, int[] Places) Planned()
+    {
+        BmffFixture fixture = BmffFixture.Create("heic", false);
+        byte[] source = fixture.Bytes;
+        var limits = new MetadataLimits();
+        BmffFileMap map = BmffFileMap.Read(source, limits);
+        BmffItem item = map.Find(BmffFileMap.MimeItem, BmffFileMap.XmpContentType)!;
+        BmffWritePlan plan = BmffWritePlanner.Create(source, map, BmffItemKind.Xmp, item,
+            BmffFixture.Xmp("a longer label than the one before"), limits);
+        int[] places =
+        [
+            fixture.Positions[BmffFixture.ImageId][0].Start + 5,
+            Child(source, "iinf").Start + 30,
+            FileOffset(fixture, BmffFixture.ExifId, fixture.Plan.ExifPrefix + BmffFixture.MakeAt),
+            -1
+        ];
+        return (source, map, BmffMetadata.Read(source), plan, places);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void AnOutputThatIsNotThePlanFailsVerification(int place)
+    {
+        (byte[] source, BmffFileMap map, BmffMetadata before, BmffWritePlan plan, int[] places) = Planned();
+        var limits = new MetadataLimits();
+        byte[] output = plan.Apply(source);
+        BmffWriteVerifier.Verify(source, map, before, output, plan, limits, null, null);
+
+        int at = places[place] < 0 ? output.Length - 1 : places[place];
+        output[at] ^= 0x01;
+        Assert.Equal(MetadataErrorCode.UnsafeRelocation, Code(() => BmffWriteVerifier.Verify(source, map, before, output, plan, limits, null, null)));
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void APlanThatWritesWhereItMustNotFailsVerification(int place)
+    {
+        // The output is the plan, byte for byte; the plan itself changes a byte of another item or
+        // of a box the edit did not name. The checks that read the output again refuse it.
+        (byte[] source, BmffFileMap map, BmffMetadata before, BmffWritePlan plan, int[] places) = Planned();
+        var limits = new MetadataLimits();
+        List<(int Offset, byte[] Bytes)> patches = plan.Patches.ToList();
+        patches.Add((places[place], new[] { (byte)(source[places[place]] ^ 0x01) }));
+        var wrong = new BmffWritePlan(source.Length, patches, plan.Tail, plan.Kind, plan.ItemId, plan.Added, plan.Payload, plan.Placement);
+        byte[] output = wrong.Apply(source);
+        Assert.Equal(MetadataErrorCode.UnsafeRelocation, Code(() => BmffWriteVerifier.Verify(source, map, before, output, wrong, limits, null, null)));
+    }
+
+    [Fact]
+    public void EachLayoutIsPlannedTheWayItsMetaBoxAllows()
+    {
+        var limits = new MetadataLimits();
+        BmffMetaPlacement Placement(BmffFixture fixture, bool add, byte[] payload)
+        {
+            BmffFileMap map = BmffFileMap.Read(fixture.Bytes, limits);
+            BmffItem? item = add ? null : map.Find(BmffFileMap.MimeItem, BmffFileMap.XmpContentType);
+            return BmffWritePlanner.Create(fixture.Bytes, map, BmffItemKind.Xmp, item, payload, limits).Placement;
+        }
+        foreach (string name in BmffFixture.WithMetadata)
+        {
+            BmffFixture fixture = BmffFixture.Create(name, false);
+            Assert.Equal(BmffMetaPlacement.Untouched, Placement(fixture, false, BmffFixture.Xmp("heic")));
+            Assert.Equal(BmffMetaPlacement.InPlace, Placement(fixture, false, BmffFixture.Xmp("a longer label")));
+        }
+        Assert.Equal(BmffMetaPlacement.Moved, Placement(BmffFixture.Create("heic-bare", false), true, BmffFixture.Xmp("new")));
+        Assert.Equal(BmffMetaPlacement.Extended, Placement(BmffFixture.Create("heic-bare-last", false), true, BmffFixture.Xmp("new")));
     }
 
     // ---- the document ----

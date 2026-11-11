@@ -16,7 +16,8 @@ namespace MetadataSharp.Formats.Bmff;
 /// where it was and as long as it was, the <c>meta</c> box alone may have become a <c>free</c> box
 /// or grown at the end of the file, and what follows the source is a media data box, a
 /// <c>meta</c> box, or both; the children of the <c>meta</c> box that the edit has no business with
-/// are the ones of the source, byte for byte. The items, through the item location box of the
+/// are the ones of the source, byte for byte (the item data box of an item written where it is
+/// keeps its place and its length; its bytes are held by the first and the third check). The items, through the item location box of the
 /// output: every item of the source but the edited one is still declared and yields the same bytes,
 /// the edited item yields the planned bytes, and no other item addresses them. The reader of the
 /// library: it reads the output, and what it returns differs from the source only in what the edit
@@ -101,6 +102,14 @@ internal static class BmffWriteVerifier
         for (int i = 0; i < kept.Count; i++)
         {
             if (kept[i].Type != found[i].Type) throw Refuse("the children of the meta box changed their order");
+            // An item that was written where it is may lie in the item data box. The box is then
+            // where it was, every byte of it outside the planned ranges is the one of the source,
+            // and the items it holds are compared one by one below.
+            if (plan.Placement == BmffMetaPlacement.Untouched && kept[i].Type == BmffFileMap.ItemData)
+            {
+                if (kept[i] != found[i]) throw Refuse("the item data box moved or changed its length");
+                continue;
+            }
             if (!Payload(source, kept[i]).SequenceEqual(Payload(output, found[i])))
                 throw Refuse("a child of the meta box the edit did not name changed");
         }
