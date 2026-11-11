@@ -16,8 +16,8 @@ internal static class BoundedZlib
         for (int i = 0; i < lengths.Length; i++) lengths[i] = i < 144 ? 8 : i < 256 ? 9 : i < 280 ? 7 : 8;
         return new(lengths);
     }
-    internal static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "Expanded XMP exceeds its budget.");
-    private static MetadataException Bad() => PngScanner.Invalid("Invalid or truncated XMP zlib stream.");
+    internal static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "Expanded data exceeds its budget.");
+    private static MetadataException Bad() => PngScanner.Invalid("Invalid or truncated zlib stream.");
     internal static byte[] Expand(byte[] input, int maximum, CancellationToken token)
     {
         if (input.Length < 8 || (input[0] & 15) != 8 || (input[0] >> 4) > 7 || ((input[0] << 8) | input[1]) % 31 != 0) throw Bad();

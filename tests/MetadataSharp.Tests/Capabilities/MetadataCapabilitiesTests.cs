@@ -24,6 +24,8 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Jpeg, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Bounded restricted XMP profile; Extended XMP and unreviewed structures are refused."),
         (MetadataContainer.Jpeg, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Bounded restricted XMP profile; Extended XMP and unreviewed structures are refused."),
         (MetadataContainer.Jpeg, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal is also supported."),
+        (MetadataContainer.Jpeg, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks before the first scan, joined by their numbers; the bytes the profile declares, not interpreted; a missing, repeated or miscounted chunk is refused."),
+        (MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment before the first scan, in file order; UTF-8 when well-formed, ISO-8859-1 otherwise; ending zero bytes dropped. Nothing is written."),
         (MetadataContainer.Png, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Supported, "eXIf chunk in static PNG within the approved chunk policy; unsupported layouts are refused."),
         (MetadataContainer.Png, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "eXIf in static PNG; approved writable tag subset only; unsupported tags are refused."),
         (MetadataContainer.Png, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "eXIf in static PNG; approved writable tag subset only; unsupported tags are refused."),
@@ -32,6 +34,8 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Png, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "XMP in static PNG; bounded restricted profile; Extended XMP is refused."),
         (MetadataContainer.Png, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "XMP in static PNG; bounded restricted profile; Extended XMP is refused."),
         (MetadataContainer.Png, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "XMP in static PNG; per-property removal within the restricted profile; whole-XMP removal is also supported."),
+        (MetadataContainer.Png, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the iCCP chunk before the image data, inflated within the budget, not interpreted; a failed checksum, a broken stream or a second chunk is refused."),
+        (MetadataContainer.Png, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Partial, "Comments.Read: tEXt, zTXt and iTXt chunks whose keyword is Comment, in file order; other keywords (Description, Title) are not read as comments. Nothing is written."),
         (MetadataContainer.WebP, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Supported, "EXIF in static (non-animated) WebP within the approved RIFF policy; unsupported layouts are refused."),
         (MetadataContainer.WebP, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "EXIF in static WebP; approved writable tag subset only; unsupported tags are refused."),
         (MetadataContainer.WebP, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "EXIF in static WebP; approved writable tag subset only; unsupported tags are refused."),
@@ -40,6 +44,7 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.WebP, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "XMP in static WebP; bounded restricted profile; Extended XMP is refused."),
         (MetadataContainer.WebP, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "XMP in static WebP; bounded restricted profile; Extended XMP is refused."),
         (MetadataContainer.WebP, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "XMP in static WebP; per-property removal within the restricted profile; whole-XMP removal is also supported."),
+        (MetadataContainer.WebP, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the ICCP chunk, not interpreted; a second one is refused."),
         (MetadataContainer.Tiff, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "Classic (non-BigTIFF) TIFF: IFD0, EXIF, GPS, Interop and thumbnail directories as raw values (TiffExif), and read-only range accounting (TiffLayout); sub-image directories are not read as entries."),
         (MetadataContainer.Tiff, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "TiffBasedMetadataDocument: approved IFD0/EXIF/GPS tag subset, appended, image data never moved. TiffMetadataDocument: ten descriptive IFD0 tags via append-preserve rebuild, obsolete bytes retained."),
         (MetadataContainer.Tiff, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument: approved IFD0/EXIF/GPS tag subset, in place when the value fits, appended otherwise. TiffMetadataDocument: ten descriptive IFD0 tags via append-preserve rebuild."),
@@ -52,6 +57,7 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Tiff, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; bounded restricted XMP profile."),
         (MetadataContainer.Tiff, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Tiff, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Tiff, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first directory only, of type BYTE or UNDEFINED, not interpreted; a value outside the file is refused."),
         (MetadataContainer.Dng, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Dng, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); new data is appended, image data and the MakerNote keep their offsets; refused when the file cannot be appended to."),
         (MetadataContainer.Dng, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); written in place when the value fits, appended otherwise; image data and the MakerNote keep their offsets."),
@@ -84,6 +90,7 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "A file without an XMP item gains one (mime, application/rdf+xml) that describes the primary item, appended in a media data box of its own; bounded restricted XMP profile."),
         (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "The packet of the XMP item: in place when it keeps its length, appended in a new media data box otherwise; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
+        (MetadataContainer.Avif, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the colr property of kind prof or rICC that ipma gives the primary item, not interpreted; nclx colour information is not a profile; two profiles are refused."),
         (MetadataContainer.Cr2, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Cr2, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); new data is appended, image data and the MakerNote keep their offsets; refused when the file cannot be appended to. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Cr2, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); written in place when the value fits, appended otherwise; image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -96,6 +103,8 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; bounded restricted XMP profile."),
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks, joined by their numbers as in a JPEG; the bytes the profile declares, not interpreted."),
+        (MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment, in file order, as in a JPEG. Nothing is written."),
         (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; a block longer than a JPEG segment holds is read within the budgets. An item built from other items or stored in another file is refused."),
         (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset; a file without an Exif item gains one that describes the primary item. New data is appended in a media data box of its own and no item data moves; refused when the file cannot be appended to."),
         (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset; written in place when the item keeps its length, appended in a new media data box otherwise. The MakerNote keeps its offset in the item; no other item moves."),
@@ -104,6 +113,7 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "A file without an XMP item gains one (mime, application/rdf+xml) that describes the primary item, appended in a media data box of its own; bounded restricted XMP profile."),
         (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "The packet of the XMP item: in place when it keeps its length, appended in a new media data box otherwise; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
+        (MetadataContainer.Heic, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the colr property of kind prof or rICC that ipma gives the primary item, not interpreted; nclx colour information is not a profile; two profiles are refused."),
         (MetadataContainer.Heif, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; a block longer than a JPEG segment holds is read within the budgets. An item built from other items or stored in another file is refused."),
         (MetadataContainer.Heif, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset; a file without an Exif item gains one that describes the primary item. New data is appended in a media data box of its own and no item data moves; refused when the file cannot be appended to."),
         (MetadataContainer.Heif, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset; written in place when the item keeps its length, appended in a new media data box otherwise. The MakerNote keeps its offset in the item; no other item moves."),
@@ -112,6 +122,8 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "A file without an XMP item gains one (mime, application/rdf+xml) that describes the primary item, appended in a media data box of its own; bounded restricted XMP profile."),
         (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "The packet of the XMP item: in place when it keeps its length, appended in a new media data box otherwise; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
+        (MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the colr property of kind prof or rICC that ipma gives the primary item, not interpreted; nclx colour information is not a profile; two profiles are refused."),
+        (MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the first colr box of the jp2h header whose method is 2 or 3, not interpreted; a colour space named by number is not a profile."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); new data is appended, image data and the MakerNote keep their offsets; refused when the file cannot be appended to. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); written in place when the value fits, appended otherwise; image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -148,6 +160,7 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; bounded restricted XMP profile."),
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: image resource 0x040F, not interpreted; a second one is refused."),
         (MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "In place only: a value of the approved tag subset that fits where the old one is. The raw data runs to the end of the file, so nothing is appended and no tag can be added. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-tag removal within the approved subset, the directory rewritten in place; whole-EXIF removal is refused."),
@@ -228,6 +241,13 @@ public sealed class MetadataCapabilitiesTests
     [InlineData(MetadataContainer.Heic, MetadataFamily.Preview, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Read)]
+    [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Extract)]
+    [InlineData(MetadataContainer.Gif, MetadataFamily.Icc, MetadataOperation.Extract)]
+    [InlineData(MetadataContainer.Jpeg, MetadataFamily.Icc, MetadataOperation.Insert)]
+    [InlineData(MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Insert)]
+    [InlineData(MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Remove)]
+    [InlineData(MetadataContainer.WebP, MetadataFamily.Comment, MetadataOperation.Read)]
+    [InlineData(MetadataContainer.Gif, MetadataFamily.Comment, MetadataOperation.Read)]
     public void TryGet_AbsentRow_FailsClosed(MetadataContainer container, MetadataFamily family, MetadataOperation operation)
     {
         Assert.False(MetadataCapabilities.TryGet(container, family, operation, out CapabilityDescriptor descriptor));
@@ -272,7 +292,8 @@ public sealed class MetadataCapabilitiesTests
         // BmffWriteTests runs on a layout of each of these brands. No row says an item is removed.
         foreach (MetadataContainer container in new[] { MetadataContainer.Avif, MetadataContainer.Heic, MetadataContainer.Heif })
         {
-            Assert.Equal(8, MetadataCapabilities.All.Count(row => row.Container == container));
+            // Eight rows of the document, and the one of the ICC reader.
+            Assert.Equal(9, MetadataCapabilities.All.Count(row => row.Container == container));
             Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(container, MetadataFamily.Exif, MetadataOperation.Read));
             Assert.Equal(CapabilityStatus.Supported, MetadataCapabilities.GetStatus(container, MetadataFamily.Xmp, MetadataOperation.Read));
             foreach (MetadataFamily family in new[] { MetadataFamily.Exif, MetadataFamily.Xmp })
@@ -284,6 +305,36 @@ public sealed class MetadataCapabilitiesTests
                 }
             Assert.Equal(CapabilityStatus.NotSupported, MetadataCapabilities.GetStatus(container, MetadataFamily.IptcIim, MetadataOperation.Read));
         }
+    }
+
+    [Fact]
+    public void TheIccAndCommentReadersHaveARowForEveryKindTheirTestsCoverAndNoneThatWrites()
+    {
+        // IccProfileTests and CommentTests author a file of each of these kinds. The profile is
+        // returned as bytes, which is Extract; of a TIFF only the first directory is looked at.
+        MetadataContainer[] profiles = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.WebP, MetadataContainer.Tiff,
+            MetadataContainer.Avif, MetadataContainer.Exv, MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Psd];
+        MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Exv];
+
+        Assert.Equal(profiles, MetadataCapabilities.All.Where(row => row.Family == MetadataFamily.Icc).Select(row => row.Container));
+        Assert.Equal(comments, MetadataCapabilities.All.Where(row => row.Family == MetadataFamily.Comment).Select(row => row.Container));
+        foreach (CapabilityDescriptor row in MetadataCapabilities.All.Where(row => row.Family == MetadataFamily.Icc))
+        {
+            Assert.Equal(MetadataOperation.Extract, row.Operation);
+            Assert.Equal(row.Container == MetadataContainer.Tiff ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
+            Assert.StartsWith("IccProfiles.Read: ", row.Note);
+            Assert.Contains("not interpreted", row.Note);
+        }
+        foreach (CapabilityDescriptor row in MetadataCapabilities.All.Where(row => row.Family == MetadataFamily.Comment))
+        {
+            Assert.Equal(MetadataOperation.Read, row.Operation);
+            // Of a PNG only the keyword Comment is read.
+            Assert.Equal(row.Container == MetadataContainer.Png ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
+            Assert.StartsWith("Comments.Read: ", row.Note);
+            Assert.EndsWith("Nothing is written.", row.Note);
+        }
+        // Nothing but the profile is extracted through this table.
+        Assert.All(MetadataCapabilities.All.Where(row => row.Operation == MetadataOperation.Extract), row => Assert.Equal(MetadataFamily.Icc, row.Family));
     }
 
     [Fact]

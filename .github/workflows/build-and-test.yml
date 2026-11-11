@@ -283,6 +283,20 @@ jobs:
         run: |
           python tools/parity/run_previews.py --tree artifacts/parity/exiv2 \
             --dump-command "$DUMP" --out artifacts/parity/preview --annotate
+      # A gate, unlike the two measurements above: the profile is a run of bytes the file holds, so
+      # every file the pinned tests give an "exiv2 -pC" output for has to give the same bytes here.
+      - name: ICC parity against upstream expectations (kind "Icc"; the pinned tests of exiv2 -pC read as text)
+        shell: bash
+        run: |
+          python tools/parity/run_icc.py --tree artifacts/parity/exiv2 \
+            --dump-command "$DUMP" --out artifacts/parity/icc --annotate
+      # No comparison: the ICC and comment readers take any bytes, and the corpus has files damaged
+      # on purpose. Each file has to end with a result or a refusal that carries a code.
+      - name: ICC and comment readers over every corpus file (a reader failure fails the job)
+        shell: bash
+        run: |
+          python tools/parity/run_sweep.py --tree artifacts/parity/exiv2 \
+            --dump-command "$DUMP" --out artifacts/parity/sweep --annotate
       # The oracle is the official 0.28.9 release binary from github.com: no apt, no compiler, no
       # 1-minute build. The Ubuntu package mirrors have failed DNS for hours at a time on the runners.
       - name: Download the pinned exiv2 release binary
@@ -356,6 +370,10 @@ jobs:
             artifacts/parity/upstream/parity-report.json
             artifacts/parity/preview/preview-report.txt
             artifacts/parity/preview/preview-report.json
+            artifacts/parity/icc/icc-report.txt
+            artifacts/parity/icc/icc-report.json
+            artifacts/parity/sweep/sweep-report.txt
+            artifacts/parity/sweep/sweep-report.json
             artifacts/parity/owned/parity-report.txt
             artifacts/parity/owned/parity-report.json
           retention-days: 30

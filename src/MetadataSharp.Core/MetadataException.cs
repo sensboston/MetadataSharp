@@ -24,7 +24,8 @@ public enum MetadataErrorCode
     InvalidJp2,
     InvalidEps,
     InvalidExv,
-    InvalidBmff
+    InvalidBmff,
+    InvalidIccProfile
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>
