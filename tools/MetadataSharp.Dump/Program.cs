@@ -275,8 +275,20 @@ internal static class Program
                         : makerNote.Format == MakerNoteFormat.Samsung2 ? "SamsungPictureWizard"
                         : group + ArrayGroup(entry.TagId);
                     foreach (MakerNoteField field in entry.Fields)
+                    {
+                        // The reference prints the vibration-reduction byte of VRInfo together with the two
+                        // bytes that follow it in the array, as one three-byte row.
+                        if (fieldGroup == "NikonVr" && field.Index == 4 && entry.Value.ByteLength >= 7)
+                        {
+                            byte[] array = new byte[entry.Value.ByteLength];
+                            entry.Value.CopyRawTo(array);
+                            Tag(stdout, "Exif.NikonVr." + field.Name, "Byte", 3,
+                                string.Join(' ', array[4..7].Select(b => b.ToString(CultureInfo.InvariantCulture))));
+                            continue;
+                        }
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
                             TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value));
+                    }
                     continue;
                 }
                 Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
@@ -429,9 +441,14 @@ internal static class Program
             {
                 // Rendered the way the reference tool prints a language alternative, so the parity
                 // harness compares text rather than two spellings of the same property.
+                // The reference puts the default language first, wherever the packet has it.
                 var parts = new List<string>();
                 foreach ((string language, string value) in entry.Languages)
-                    parts.Add("lang=\"" + language + "\" " + Escape(value));
+                {
+                    string part = "lang=\"" + language + "\" " + Escape(value);
+                    if (language == "x-default") parts.Insert(0, part);
+                    else parts.Add(part);
+                }
                 Tag(stdout, key, "LangAlt", (uint)parts.Count, string.Join(", ", parts));
             }
             else

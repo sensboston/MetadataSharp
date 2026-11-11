@@ -12,8 +12,9 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   XMP read from them (`PsdMetadata.ReadExif/ReadIptc/ReadXmp`). JP2/EPS: narrow inspection.
 - EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0;
   names only, marked by `ExifTagDefinition.Source`, from TIFF/EP, DNG 1.7, DCF, Microsoft, PIM).
-- MakerNotes (`ExifMetadata.MakerNote`, read-only): Canon (incl. arrays and AFInfo), Nikon 1/2/3
-  (incl. versioned and encrypted arrays), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
+- MakerNotes (`ExifMetadata.MakerNote`, read-only; `MakerNote.Offset` says where the note starts):
+  Canon (incl. arrays and AFInfo), Nikon 1/2/3 (incl. versioned and encrypted arrays and the
+  preview directory), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
   Sony (incl. enciphered arrays), Panasonic, Olympus/OM System (incl. sub-directories),
   Minolta/Konica Minolta (incl. the camera-settings arrays), Casio (both layouts), Samsung
   (plain IFD and PictureWizard; "AOC" notes read as Pentax), Sigma/Foveon. Run 42974953667: +113
