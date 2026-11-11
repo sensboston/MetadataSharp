@@ -244,11 +244,15 @@ internal static class Program
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
             Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
-                TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value),
+                TypeName(entry.Value.FieldType), entry.Value.Count, Value(entry),
                 ExifTags.Interpret(entry.Key, entry.Value));
         if (metadata.MakerNote is MakerNote makerNote)
         {
             string group = makerNote.Format switch { MakerNoteFormat.Canon => "Canon", _ => makerNote.Format.ToString() };
+            // The reference reports where a note it recognises starts and which byte order it is read in
+            // as two rows of a group of their own.
+            Tag(stdout, "Exif.MakerNote.Offset", "Long", 1, makerNote.Offset.ToString(CultureInfo.InvariantCulture));
+            Tag(stdout, "Exif.MakerNote.ByteOrder", "Ascii", 3, makerNote.ByteOrder == Endianness.BigEndian ? "MM" : "II");
             foreach (MakerNoteEntry entry in makerNote.Entries)
             {
                 // The reference tool prints an array tag it splits as its fields only, under a
@@ -257,10 +261,13 @@ internal static class Program
                 {
                     // AFInfo is printed whole and its fields share the MakerNote's own group.
                     bool olympusIfd = makerNote.Format is MakerNoteFormat.Olympus2 or MakerNoteFormat.OMSystem;
-                    bool keepParent = olympusIfd || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
+                    // So is the Nikon preview pointer, whose fields are the directory it points to.
+                    bool nikonPreview = makerNote.Format == MakerNoteFormat.Nikon3 && entry.TagId == 0x0011;
+                    bool keepParent = olympusIfd || nikonPreview || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
                         Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
+                        : nikonPreview ? "NikonPreview"
                         : keepParent ? group
                         : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
                         : makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 ? SonyArrayGroup(entry.TagId)
@@ -268,8 +275,20 @@ internal static class Program
                         : makerNote.Format == MakerNoteFormat.Samsung2 ? "SamsungPictureWizard"
                         : group + ArrayGroup(entry.TagId);
                     foreach (MakerNoteField field in entry.Fields)
+                    {
+                        // The reference prints the vibration-reduction byte of VRInfo together with the two
+                        // bytes that follow it in the array, as one three-byte row.
+                        if (fieldGroup == "NikonVr" && field.Index == 4 && entry.Value.ByteLength >= 7)
+                        {
+                            byte[] array = new byte[entry.Value.ByteLength];
+                            entry.Value.CopyRawTo(array);
+                            Tag(stdout, "Exif.NikonVr." + field.Name, "Byte", 3,
+                                string.Join(' ', array[4..7].Select(b => b.ToString(CultureInfo.InvariantCulture))));
+                            continue;
+                        }
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
                             TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value));
+                    }
                     continue;
                 }
                 Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
@@ -422,9 +441,14 @@ internal static class Program
             {
                 // Rendered the way the reference tool prints a language alternative, so the parity
                 // harness compares text rather than two spellings of the same property.
+                // The reference puts the default language first, wherever the packet has it.
                 var parts = new List<string>();
                 foreach ((string language, string value) in entry.Languages)
-                    parts.Add("lang=\"" + language + "\" " + Escape(value));
+                {
+                    string part = "lang=\"" + language + "\" " + Escape(value);
+                    if (language == "x-default") parts.Insert(0, part);
+                    else parts.Add(part);
+                }
                 Tag(stdout, key, "LangAlt", (uint)parts.Count, string.Join(", ", parts));
             }
             else
@@ -534,6 +558,51 @@ internal static class Program
         _ => 0,
     };
 
+    /// <summary>The value of a standard entry: <see cref="Render(ExifValue)" />, except for the three tags
+    /// Exif gives a character code and the reference prints decoded: UserComment, GPSProcessingMethod and
+    /// GPSAreaInformation.</summary>
+    private static string Value(ExifEntry entry) =>
+        entry.Value.FieldType == TiffFieldType.Undefined
+        && entry.Key is { Directory: ExifDirectoryKind.Exif, TagId: 0x9286 } or { Directory: ExifDirectoryKind.Gps, TagId: 0x001B or 0x001C }
+            ? UserComment(entry.Value)
+            : Render(entry.Value);
+
+    /// <summary>
+    /// A commented value in the reference's notation: the text that follows the eight-byte character code, behind <c>charset=Ascii</c>, <c>charset=Jis</c> or <c>charset=Unicode</c>, bare
+    /// when the code is eight zero bytes, and behind <c>charset=InvalidCharsetId</c> for any other code.
+    /// Text ends at the first zero byte under the ASCII and the zero code; UTF-16 follows its byte order
+    /// mark, or the byte order of the block without one. A value shorter than its code is empty.
+    /// </summary>
+    private static string UserComment(ExifValue value)
+    {
+        var bytes = new byte[value.ByteLength];
+        value.CopyRawTo(bytes);
+        if (bytes.Length < 8) return string.Empty;
+        ReadOnlySpan<byte> code = bytes.AsSpan(0, 8);
+        byte[] body = bytes[8..];
+        if (code.SequenceEqual("UNICODE\0"u8))
+        {
+            bool big = value.ByteOrder == Endianness.BigEndian;
+            int start = 0;
+            if (body.Length >= 2 && body[0] == 0xFF && body[1] == 0xFE) { big = false; start = 2; }
+            else if (body.Length >= 2 && body[0] == 0xFE && body[1] == 0xFF) { big = true; start = 2; }
+            Encoding utf16 = big ? Encoding.BigEndianUnicode : Encoding.Unicode;
+            return "charset=Unicode " + Escape(utf16.GetString(body, start, (body.Length - start) & ~1));
+        }
+        if (code.SequenceEqual("JIS\0\0\0\0\0"u8)) return "charset=Jis " + Escape(Utf8OrLatin1(body));
+        bool ascii = code.SequenceEqual("ASCII\0\0\0"u8);
+        if (!ascii && code.IndexOfAnyExcept((byte)0) >= 0) return "charset=InvalidCharsetId " + Escape(Utf8OrLatin1(body));
+        int end = Array.IndexOf(body, (byte)0);
+        string text = Escape(Utf8OrLatin1(end < 0 ? body : body[..end]));
+        return ascii ? "charset=Ascii " + text : text;
+    }
+
+    /// <summary>A FLOAT or DOUBLE the way the reference prints one: fifteen significant digits, shortest form.</summary>
+    private static string Real(double value) =>
+        double.IsNaN(value) ? "nan"
+        : double.IsInfinity(value) ? (value < 0 ? "-inf" : "inf")
+        : value.ToString("G15", CultureInfo.InvariantCulture).Replace('E', 'e');
+
     private static string Render(ExifValue value)
     {
         var bytes = new byte[value.ByteLength];
@@ -544,7 +613,7 @@ internal static class Program
     /// <summary>Every element the declared type and count ask for, or a marker saying they are not there.</summary>
     private static string Render(byte[] bytes, TiffFieldType type, uint count, Endianness order)
     {
-        if (type is TiffFieldType.Ascii) return Escape(Encoding.Latin1.GetString(Trim(bytes)));
+        if (type is TiffFieldType.Ascii) return Escape(Utf8OrLatin1(Text(bytes)));
         int size = Size(type);
         if (size == 0) return "undefined-type";
         if ((long)count * size > bytes.Length) return "truncated-value";
@@ -562,8 +631,8 @@ internal static class Program
                 TiffFieldType.SShort => S16(bytes, at, order).ToString(CultureInfo.InvariantCulture),
                 TiffFieldType.Long => U32(bytes, at, order).ToString(CultureInfo.InvariantCulture),
                 TiffFieldType.SLong => S32(bytes, at, order).ToString(CultureInfo.InvariantCulture),
-                TiffFieldType.Float => ReadSingle(bytes, at, order).ToString("R", CultureInfo.InvariantCulture),
-                TiffFieldType.Double => ReadDouble(bytes, at, order).ToString("R", CultureInfo.InvariantCulture),
+                TiffFieldType.Float => Real(ReadSingle(bytes, at, order)),
+                TiffFieldType.Double => Real(ReadDouble(bytes, at, order)),
                 TiffFieldType.Rational => U32(bytes, at, order).ToString(CultureInfo.InvariantCulture) + "/" +
                     U32(bytes, at + 4, order).ToString(CultureInfo.InvariantCulture),
                 _ => S32(bytes, at, order).ToString(CultureInfo.InvariantCulture) + "/" +
@@ -598,6 +667,14 @@ internal static class Program
         int end = bytes.Length;
         while (end > 0 && bytes[end - 1] == 0) end--;
         return end == bytes.Length ? bytes : bytes[..end];
+    }
+
+    /// <summary>The text of an ASCII value: the bytes before its first NUL, which is where the standard
+    /// ends a string and where the reference stops printing one.</summary>
+    private static byte[] Text(byte[] bytes)
+    {
+        int end = Array.IndexOf(bytes, (byte)0);
+        return end < 0 ? bytes : bytes[..end];
     }
 
     /// <summary>Escapes everything that would break the one-record-per-line grammar.</summary>

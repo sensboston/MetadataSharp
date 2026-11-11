@@ -22,8 +22,9 @@ public sealed record ExifTagDefinition
 
     /// <summary>
     /// The field types the tag may carry, in the order the publication lists them. Two entries mean either
-    /// is written; none is only for the tags whose publication says to use whichever type matches the
-    /// samples. A type of 129, which Exif allows in place of ASCII, is not part of the raw value model and
+    /// is written. For a tag of Exif or TIFF, none is only for the tags whose publication says to use
+    /// whichever type matches the samples; for a tag of any other <see cref="Source" />, none means the
+    /// shape was not recorded. A type of 129, which Exif allows in place of ASCII, is not part of the raw value model and
     /// is recorded by <see cref="ExifTagDefinition.Utf8TextAlternative" /> instead. These arrays come out
     /// of the one table, so they are immutable: a resolved definition cannot be turned against it.
     /// </summary>
@@ -36,11 +37,18 @@ public sealed record ExifTagDefinition
     public uint FixedCount => this.Counts.Length == 1 ? this.Counts[0] : 0U;
 
     /// <summary>
-    /// Every value count the publication allows, ascending; empty when the count varies with the image.
+    /// Every value count the publication allows, ascending; empty when the count varies with the image, and
+    /// for every tag whose <see cref="Source" /> is not Exif or TIFF, whose shape is not recorded.
     /// This is the complete statement; a tag with one allowed count reads it back as <see
     /// cref="FixedCount" />.
     /// </summary>
     public ImmutableArray<uint> Counts { get; init; } = ImmutableArray<uint>.Empty;
+
+    /// <summary>
+    /// The publication the name was taken from. Only a tag of <see cref="ExifTagSource.ExifAndTiff" />
+    /// carries more than its number and its name.
+    /// </summary>
+    public ExifTagSource Source { get; init; }
 
     /// <summary>True where the publication allows UTF-8 in place of ASCII for this tag.</summary>
     public bool Utf8TextAlternative { get; init; }
@@ -55,6 +63,28 @@ public sealed record ExifTagDefinition
     /// </summary>
     public ImmutableArray<ExifTagValueMeaning> ValueMeanings { get; init; }
         = ImmutableArray<ExifTagValueMeaning>.Empty;
+}
+
+/// <summary>The publication that names a tag.</summary>
+public enum ExifTagSource
+{
+    /// <summary>Exif 3.0 (CIPA DC-008) and the TIFF 6.0 fields it builds on: name, types, counts, meanings.</summary>
+    ExifAndTiff,
+
+    /// <summary>ISO 12234-2 (TIFF/EP), for the fields it places in the main directory of a raw file.</summary>
+    TiffEp,
+
+    /// <summary>The Adobe Digital Negative specification, version 1.7.</summary>
+    Dng,
+
+    /// <summary>The Design rule for Camera File system, for the fields of the interoperability directory.</summary>
+    Dcf,
+
+    /// <summary>
+    /// A field one vendor defined and documented: the Microsoft rating and XP text fields, and the PRINT
+    /// Image Matching block.
+    /// </summary>
+    Vendor,
 }
 
 /// <summary>One numeric value of an enumerated tag.</summary>
@@ -74,9 +104,15 @@ public readonly record struct ExifTagValueMeaning(ushort Number, string Meaning)
 /// resolved the same way. Two counts are conditional in the texts themselves and are recorded as the
 /// Exif section gives them: TransferFunction is 3 * 256 for Exif, while TIFF's body ties the length of the
 /// table to BitsPerSample, and DotRange is 2 or 2 * SamplesPerPixel, so it carries no fixed count at all.
-/// Names that only a vendor extension defines are absent from the
-/// vocabulary, so an unnamed tag keeps its numeric ID; a MakerNote subtag is never renamed by a name that
-/// belongs to a different directory.
+/// <para>
+/// Tags of four other sources are listed by number and name only, so that a file is not reported in
+/// hexadecimal where a public specification has a word for the field: TIFF/EP, DNG, DCF and the fields
+/// of two vendors, each marked by <see cref="ExifTagDefinition.Source" />. Nothing but the number and the name is
+/// taken from them; types, counts and value meanings stay with the reviewed Exif and TIFF tables. Where
+/// Exif and one of them name the same number in the same directory, the Exif row is the one kept. A tag
+/// none of them names keeps its numeric ID, and a MakerNote subtag is never renamed by a name that belongs
+/// to a different directory.
+/// </para>
 /// </remarks>
 public static partial class ExifTags
 {
@@ -699,9 +735,15 @@ public static partial class ExifTags
             new() { Id = 0x0001, Name = "InteroperabilityIndex", Types = [Ascii], Counts = ImmutableArray<uint>.Empty },
         ];
 
+    // The reviewed tables above, joined with the rows of ExifTags.OtherSources.cs. These two must stay
+    // below the tables and above ByKey: static fields are initialised in the order they are written.
+    private static readonly ExifTagDefinition[] Ifd0Complete = Join(Ifd0, Ifd0FromOtherSources());
+
+    private static readonly ExifTagDefinition[] InteropComplete = Join(Interop, InteropFromOtherSources());
+
     private static readonly Dictionary<ExifTagKey, ExifTagDefinition> ByKey = Build();
 
-    /// <summary>What the standard prescribes for one tag, or null for a tag the vocabulary does not list.</summary>
+    /// <summary>What its publication says of one tag, or null for a tag the vocabulary does not list.</summary>
     public static ExifTagDefinition? Find(ExifTagKey key) => ByKey.GetValueOrDefault(key);
 
     /// <summary>
@@ -711,11 +753,11 @@ public static partial class ExifTags
     /// <exception cref="ArgumentOutOfRangeException">A value that is not one of the supported directories.</exception>
     public static IReadOnlyList<ExifTagDefinition> Definitions(ExifDirectoryKind directory) => directory switch
     {
-        ExifDirectoryKind.Ifd0 => Ifd0,
-        ExifDirectoryKind.Thumbnail => Ifd0,
+        ExifDirectoryKind.Ifd0 => Ifd0Complete,
+        ExifDirectoryKind.Thumbnail => Ifd0Complete,
         ExifDirectoryKind.Exif => Exif,
         ExifDirectoryKind.Gps => Gps,
-        ExifDirectoryKind.Interop => Interop,
+        ExifDirectoryKind.Interop => InteropComplete,
         _ => throw new ArgumentOutOfRangeException(nameof(directory)),
     };
 

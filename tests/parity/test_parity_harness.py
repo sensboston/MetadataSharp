@@ -555,6 +555,8 @@ class HarnessTests(unittest.TestCase):
             "format": "jpg", "status": "refused", "detail": "InvalidJpeg", "not-read": {"Exif.Image": 1, "Xmp.dc": 1}})
         self.assertEqual(decoded["missing"], {"Exif.Photo.FNumber": 1, "Iptc.Application2.City": 1})
         self.assertEqual(decoded["differing"], {"Exif.Image.Model": 1})
+        # One pair per differing key, ours then theirs, so a difference can be read without the report file.
+        self.assertEqual(decoded["samples"], {"Exif.Image.Model": ["E990", "E995"]})
         self.assertEqual(decoded["trimmed"], 0)
         # The detail is a count of rows the report already has: it moves no number.
         report = self.report()
@@ -579,6 +581,7 @@ class HarnessTests(unittest.TestCase):
         self.assertLessEqual(len(run_parity.encode(fitted)), 300)
         self.assertGreater(fitted["trimmed"], 0)
         self.assertEqual(fitted["trimmed"] + len(fitted["missing"]), 120)
+        self.assertEqual(fitted["samples"], {})                          # samples are the first thing to go
         self.assertIn("Exif.Image.Tag007", fitted["missing"])            # the most frequent key stays
         self.assertEqual(fitted["files"], whole["files"])                # the per-file counts are never cut
         self.assertEqual(whole["trimmed"], 0)                            # and the original is not edited

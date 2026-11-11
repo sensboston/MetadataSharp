@@ -109,19 +109,23 @@ public sealed class ExifTagsTests
     }
 
     [Theory]
-    [InlineData(ExifDirectoryKind.Ifd0, 0x83BB)] // IPTCNAA: an Adobe registration, not a field Exif names.
+    [InlineData(ExifDirectoryKind.Ifd0, 0x8649)] // Photoshop resources: no listed publication names the tag.
+    [InlineData(ExifDirectoryKind.Ifd0, 0xC611)] // One below DNGVersion, the first DNG tag.
     [InlineData(ExifDirectoryKind.Exif, 0x927D)]
+    [InlineData(ExifDirectoryKind.Exif, 0xC612)] // DNG names belong to the first directory only.
     [InlineData(ExifDirectoryKind.Gps, 0x0020)] // The GPS attribute table ends at 0x001F.
-    [InlineData(ExifDirectoryKind.Interop, 0x1001)]
+    [InlineData(ExifDirectoryKind.Interop, 0x0003)]
+    [InlineData(ExifDirectoryKind.Interop, 0x1003)]
     public void TagsOutsideTheVocabularyResolveToNothing(ExifDirectoryKind directory, ushort id)
         => Assert.Null(ExifTags.Find(new ExifTagKey(directory, id)));
 
     [Fact]
     public void ANameBelongsToTheDirectoryThatOwnsIt()
     {
-        // Names are not global, so a field stored in the wrong place keeps its number: 0x829A is
-        // ExposureTime in the Exif sub-IFD and nothing anywhere else.
-        Assert.Null(ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x829A)));
+        // Names are not global, so a field stored in the wrong place keeps its number: 0xA002 is
+        // PixelXDimension in the Exif sub-IFD and nothing anywhere else.
+        Assert.Null(ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Ifd0, 0xA002)));
+        Assert.Null(ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Interop, 0x829A)));
         Assert.Null(ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Gps, 0x0112)));
         Assert.Null(ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Exif, 0x0002)));
         ExifTagDefinition? shared = ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0112));
@@ -130,11 +134,11 @@ public sealed class ExifTagsTests
     }
 
     [Theory]
-    [InlineData(ExifDirectoryKind.Ifd0, 76)]
+    [InlineData(ExifDirectoryKind.Ifd0, 246)]
     [InlineData(ExifDirectoryKind.Exif, 89)]
     [InlineData(ExifDirectoryKind.Gps, 32)]
-    [InlineData(ExifDirectoryKind.Interop, 1)]
-    [InlineData(ExifDirectoryKind.Thumbnail, 76)]
+    [InlineData(ExifDirectoryKind.Interop, 5)]
+    [InlineData(ExifDirectoryKind.Thumbnail, 246)]
     public void EachDirectoryHoldsTheRecordedSetOfTags(ExifDirectoryKind directory, int expected)
     {
         IReadOnlyList<ExifTagDefinition> definitions = ExifTags.Definitions(directory);
@@ -199,7 +203,8 @@ public sealed class ExifTagsTests
         {
             foreach (ExifTagDefinition definition in ExifTags.Definitions(directory))
             {
-                if (definition.Types.Length == 0) untyped.Add(definition.Name);
+                if (definition.Source == ExifTagSource.ExifAndTiff && definition.Types.Length == 0)
+                    untyped.Add(definition.Name);
             }
         }
 
@@ -330,6 +335,105 @@ public sealed class ExifTagsTests
                     $"{definition.Name} is written with {written.Count} values, which its standard rejects.");
             }
         }
+    }
+
+    [Theory]
+    [InlineData(ExifDirectoryKind.Ifd0, ExifTagSource.ExifAndTiff, 76)]
+    [InlineData(ExifDirectoryKind.Ifd0, ExifTagSource.TiffEp, 41)]
+    [InlineData(ExifDirectoryKind.Ifd0, ExifTagSource.Dng, 121)]
+    [InlineData(ExifDirectoryKind.Ifd0, ExifTagSource.Vendor, 8)]
+    [InlineData(ExifDirectoryKind.Ifd0, ExifTagSource.Dcf, 0)]
+    [InlineData(ExifDirectoryKind.Exif, ExifTagSource.ExifAndTiff, 89)]
+    [InlineData(ExifDirectoryKind.Gps, ExifTagSource.ExifAndTiff, 32)]
+    [InlineData(ExifDirectoryKind.Interop, ExifTagSource.ExifAndTiff, 1)]
+    [InlineData(ExifDirectoryKind.Interop, ExifTagSource.Dcf, 4)]
+    public void EachSourceContributesTheRecordedNumberOfTags(ExifDirectoryKind directory, ExifTagSource source, int expected)
+        => Assert.Equal(expected, ExifTags.Definitions(directory).Count(definition => definition.Source == source));
+
+    [Theory]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x014A, "SubIFDs", ExifTagSource.TiffEp)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x829A, "ExposureTime", ExifTagSource.TiffEp)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x83BB, "IPTCNAA", ExifTagSource.TiffEp)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x8773, "InterColorProfile", ExifTagSource.TiffEp)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x8827, "ISOSpeedRatings", ExifTagSource.TiffEp)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x9003, "DateTimeOriginal", ExifTagSource.TiffEp)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x9216, "TIFFEPStandardID", ExifTagSource.TiffEp)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x4746, "Rating", ExifTagSource.Vendor)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x4749, "RatingPercent", ExifTagSource.Vendor)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x9C9B, "XPTitle", ExifTagSource.Vendor)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0x9C9F, "XPSubject", ExifTagSource.Vendor)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0xC4A5, "PrintImageMatching", ExifTagSource.Vendor)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0xC612, "DNGVersion", ExifTagSource.Dng)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0xC614, "UniqueCameraModel", ExifTagSource.Dng)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0xC621, "ColorMatrix1", ExifTagSource.Dng)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0xC634, "DNGPrivateData", ExifTagSource.Dng)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0xC65A, "CalibrationIlluminant1", ExifTagSource.Dng)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0xC71A, "PreviewColorSpace", ExifTagSource.Dng)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0xC7A7, "NewRawImageDigest", ExifTagSource.Dng)]
+    [InlineData(ExifDirectoryKind.Ifd0, 0xCD4B, "JXLDecodeSpeed", ExifTagSource.Dng)]
+    [InlineData(ExifDirectoryKind.Thumbnail, 0xC612, "DNGVersion", ExifTagSource.Dng)]
+    [InlineData(ExifDirectoryKind.Interop, 0x0002, "InteroperabilityVersion", ExifTagSource.Dcf)]
+    [InlineData(ExifDirectoryKind.Interop, 0x1000, "RelatedImageFileFormat", ExifTagSource.Dcf)]
+    [InlineData(ExifDirectoryKind.Interop, 0x1001, "RelatedImageWidth", ExifTagSource.Dcf)]
+    [InlineData(ExifDirectoryKind.Interop, 0x1002, "RelatedImageLength", ExifTagSource.Dcf)]
+    public void ATagAnotherPublicationNamesResolvesToThatNameAndSaysWhereItCameFrom(
+        ExifDirectoryKind directory, ushort id, string name, ExifTagSource source)
+    {
+        ExifTagDefinition? definition = ExifTags.Find(new ExifTagKey(directory, id));
+        Assert.NotNull(definition);
+        Assert.Equal(name, definition.Name);
+        Assert.Equal(source, definition.Source);
+        Assert.Equal(id, definition.Id);
+    }
+
+    [Fact]
+    public void ATagFromAnotherPublicationCarriesItsNumberAndNameAndNothingElse()
+    {
+        // Only the reviewed Exif and TIFF tables state shapes. A row taken from another publication must
+        // not look as if its type or count had been checked, and it offers no interpretation.
+        int seen = 0;
+        foreach (ExifDirectoryKind directory in Enum.GetValues<ExifDirectoryKind>())
+        {
+            foreach (ExifTagDefinition definition in ExifTags.Definitions(directory))
+            {
+                if (definition.Source == ExifTagSource.ExifAndTiff) continue;
+                seen++;
+                Assert.Empty(definition.Types);
+                Assert.Empty(definition.Counts);
+                Assert.Equal(0U, definition.FixedCount);
+                Assert.Empty(definition.ValueMeanings);
+                Assert.Null(definition.Default);
+                Assert.False(definition.Utf8TextAlternative);
+                Assert.Null(ExifTags.Interpret(
+                    new ExifTagKey(directory, definition.Id), ExifValue.FromRaw(TiffFieldType.Short, 1U, Endianness.LittleEndian, new byte[] { 1, 0 })));
+            }
+        }
+
+        // Ifd0 and Thumbnail share one table, so its 170 rows are met twice; Interop adds four.
+        Assert.Equal(170 + 170 + 4, seen);
+    }
+
+    [Fact]
+    public void TheReviewedTableKeepsItsRowWhereAnotherPublicationNamesTheSameNumber()
+    {
+        // TIFF/EP and DNG restate ordinary TIFF fields. The reviewed row, with its shape, is the one kept.
+        foreach (ushort id in new ushort[] { 0x0100, 0x010E, 0x0112, 0x8298, 0x8769, 0x8825 })
+        {
+            ExifTagDefinition? definition = ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Ifd0, id));
+            Assert.NotNull(definition);
+            Assert.Equal(ExifTagSource.ExifAndTiff, definition.Source);
+            Assert.NotEmpty(definition.Types);
+        }
+
+        // The camera fields Exif keeps in its own directory stay there with their reviewed shape; the
+        // TIFF/EP name applies in the first directory only.
+        ExifTagDefinition? photo = ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Exif, 0x829A));
+        ExifTagDefinition? image = ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x829A));
+        Assert.NotNull(photo);
+        Assert.NotNull(image);
+        Assert.Equal(ExifTagSource.ExifAndTiff, photo.Source);
+        Assert.Equal(ExifTagSource.TiffEp, image.Source);
+        Assert.Equal(photo.Name, image.Name);
     }
 
     [Fact]
