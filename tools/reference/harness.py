@@ -122,6 +122,7 @@ def main(argv=None):
                                             Path("tests/MetadataSharp.Tests/Png/PngFixture.cs"),
                                             Path("tests/MetadataSharp.Tests/WebP/WebPFixture.cs"),
                                             Path("tests/MetadataSharp.Tests/Tiff/StandaloneTiffFixture.cs"),
+                                            Path("tests/MetadataSharp.Tests/Tiff/TiffBasedFixture.cs"),
                                             Path("tests/MetadataSharp.Tests/Dng/DngFixture.cs"),
                                             Path("tools/reference/dng_fixtures.py"))}
         report["versions"] = {"exiv2": EXPECTED_EXIV2, "exiftool": EXPECTED_EXIFTOOL, "dwebp": EXPECTED_DWEBP}
