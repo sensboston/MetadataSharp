@@ -10,7 +10,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   restricted descriptive editing. XMP packets and sidecars (bounded profile). EXV: read.
   DNG: narrow read-only inventory. PSD: header and resources of any v1 file, with EXIF, IPTC and
   XMP read from them (`PsdMetadata.ReadExif/ReadIptc/ReadXmp`). JP2/EPS: narrow inspection.
-- EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0).
+- EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0;
+  names only, marked by `ExifTagDefinition.Source`, from TIFF/EP, DNG 1.7, DCF, Microsoft, PIM).
 - MakerNotes (`ExifMetadata.MakerNote`, read-only): Canon (incl. arrays and AFInfo), Nikon 1/2/3
   (incl. versioned and encrypted arrays), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
   Sony (incl. enciphered arrays), Panasonic, Olympus/OM System (incl. sub-directories),
@@ -38,8 +39,7 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 1. BMFF read (HEIC/HEIF/AVIF), 4.2c text fixes, IPTC/XMP dump names — PR #75.
 2. TIFF-based RAW read (CR2, NEF, ARW, ORF, RW2, PEF) with MakerNotes, measured on the corpus.
-3. Interpreted values for MakerNote, IPTC and XMP entries (standard EXIF is done); name
-   InteroperabilityVersion in the vocabulary (it changes raw key counts, so it is its own step).
+3. Interpreted values for MakerNote, IPTC and XMP entries (standard EXIF is done).
 4. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
 5. Write side: TIFF/RAW, then BMFF; MakerNote-safe rules per vendor.
 
