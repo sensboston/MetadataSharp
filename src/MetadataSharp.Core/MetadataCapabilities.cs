@@ -242,6 +242,9 @@ public static class MetadataCapabilities
         new(MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; bounded restricted XMP profile."),
         new(MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; bounded restricted XMP profile; a packet outside it is refused."),
         new(MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal removes tag 700."),
+        // CR3 has no document type either: Cr3Metadata reads, and nothing writes a CR3 file.
+        new(MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "Cr3Metadata.Read: the CMT1, CMT2 and CMT4 boxes of the Canon box as the IFD0, EXIF and GPS directories of one block, CMT3 as the Canon MakerNote, as raw values; boxes that differ in byte order are refused. Nothing is written."),
+        new(MetadataContainer.Cr3, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "Cr3Metadata.Read: the packet of the XMP box at the top level of the file; bounded restricted XMP profile; raw bytes retained for unmodeled constructs. Nothing is written."),
         // EXV, JPEG 2000 and PSD have no document type: what the static readers return is all that is claimed.
         new(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks, joined by their numbers as in a JPEG; the bytes the profile declares, not interpreted."),
         new(MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment, in file order, as in a JPEG. Nothing is written."),

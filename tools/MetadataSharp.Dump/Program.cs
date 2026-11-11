@@ -6,6 +6,7 @@ using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats;
 using MetadataSharp.Formats.Bmff;
+using MetadataSharp.Formats.Cr3;
 using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
 using MetadataSharp.Formats.Jpeg;
@@ -160,6 +161,8 @@ internal static class Program
         if (At(head, 0, 0xFF, 0x01, 0x45, 0x78, 0x69, 0x76, 0x32)) { Exv(path, stdout, length); return; }
         if (At(head, 4, 0x6A, 0x50, 0x20, 0x20)) { Jp2(path, stdout, length); return; }
         if (At(head, 0, 0x3C, 0x3F) || At(head, 0, 0xEF, 0xBB, 0xBF)) { Sidecar(path, stdout, length); return; }
+        // CR3 is a BMFF file of the major brand "crx " that keeps its metadata outside a meta box.
+        if (At(head, 4, 0x66, 0x74, 0x79, 0x70) && At(head, 8, 0x63, 0x72, 0x78, 0x20)) { Cr3(path, stdout, length); return; }
         if (At(head, 4, 0x66, 0x74, 0x79, 0x70)) { Bmff(path, stdout, length); return; }
         if (At(head, 0, 0x1A, 0x45, 0xDF, 0xA3)) { Record(stdout, "STATUS", "not-attempted", "matroska"); return; }
         Record(stdout, "STATUS", "not-attempted", "magic");
@@ -258,6 +261,15 @@ internal static class Program
     {
         if (!WithinBudget(length, stdout)) return;
         BmffMetadata metadata = BmffMetadata.Read(File.ReadAllBytes(path));
+        Exif(metadata.Exif, stdout);
+        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
+        Done(stdout);
+    }
+
+    private static void Cr3(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        Cr3Metadata metadata = Cr3Metadata.Read(File.ReadAllBytes(path));
         Exif(metadata.Exif, stdout);
         if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
         Done(stdout);

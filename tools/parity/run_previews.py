@@ -21,6 +21,10 @@ from the key-by-key one in ``run_parity.py`` and shares none of its rules: a pre
 
 The order is judged separately: a file is ``ordered`` when the previews both sides list come in
 the same order on both.
+
+With ``--fixtures`` and ``--exiv2-command`` the expectation is not that text: the pinned tool lists
+each file of the given directories in the same run, as ``run_parity.py`` does for key parity. This
+is how a file is measured that the pinned tree holds but its preview test does not name.
 """
 from __future__ import annotations
 
@@ -85,6 +89,15 @@ def parse_reference(text: str) -> dict[str, list[Preview]]:
         elif line.startswith("Preview "):
             raise PreviewParityError(f"a preview line does not parse: {line!r}")
     return expected
+
+
+def oracle_reference(outputs: dict[str, str]) -> dict[str, list[Preview]]:
+    """What the pinned tool printed for each file, read by the rules of the expectation text.
+
+    A file the tool printed nothing for expects no preview: whatever we list for it is ``extra``.
+    """
+    blocks = [f"-----> {name} <-----\nCommand: exiv2 -pp {name}\n{text}\n" for name, text in outputs.items()]
+    return parse_reference("".join(blocks))
 
 
 def parse_dump(text: str) -> dict[str, dict[str, Any]]:
@@ -211,21 +224,39 @@ def run_dump(dump_command: list[str], paths: list[Path]) -> dict[str, dict[str, 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Compare our preview list with exiv2's own expectations.")
-    parser.add_argument("--tree", type=Path, required=True, help="root of a pinned exiv2 checkout")
+    parser.add_argument("--tree", type=Path, help="root of a pinned exiv2 checkout, for its preview expectation")
+    parser.add_argument("--fixtures", type=Path, action="append", default=[],
+                        help="a directory of files the pinned tool lists in this run instead; repeatable")
+    parser.add_argument("--exiv2-command", help="the pinned tool with its listing option (exiv2 -pp), split "
+                                                "POSIX-style; the oracle for --fixtures, its output is never stored")
     parser.add_argument("--dump-command", required=True, help="how to run MetadataSharp.Dump, split POSIX-style on spaces")
     parser.add_argument("--out", type=Path, default=ROOT / "artifacts/parity/preview", help="report directory")
     parser.add_argument("--annotate", action="store_true", help="emit the summary as chunked workflow annotations")
     parser.add_argument("--title", default=TITLE, help="annotation title")
     args = parser.parse_args(argv)
 
-    reference = args.tree / REFERENCE
-    if not reference.is_file():
-        raise PreviewParityError(f"no preview expectation at {reference}")
-    expected = parse_reference(reference.read_text(encoding="utf-8", errors="replace"))
-    if not expected:
-        raise PreviewParityError(f"{reference} names no file")
-    data = args.tree / "test" / "data"
-    paths: dict[str, Path | None] = {name: (data / name if (data / name).is_file() else None) for name in expected}
+    if (args.tree is None) == (not args.fixtures):
+        parser.error("pass either --tree or --fixtures")
+    paths: dict[str, Path | None]
+    if args.fixtures:
+        if not args.exiv2_command:
+            raise PreviewParityError("--fixtures needs --exiv2-command: the files have no stored expectation")
+        oracle = shlex.split(args.exiv2_command)
+        paths = {}
+        for candidate in run_parity.corpus_mod.discover_generated(*args.fixtures):
+            if candidate.label in paths:
+                raise PreviewParityError(f"two files are named {candidate.label}")
+            paths[candidate.label] = candidate.path
+        expected = oracle_reference({name: run_parity.run_reference(oracle, path) for name, path in paths.items() if path})
+    else:
+        reference = args.tree / REFERENCE
+        if not reference.is_file():
+            raise PreviewParityError(f"no preview expectation at {reference}")
+        expected = parse_reference(reference.read_text(encoding="utf-8", errors="replace"))
+        if not expected:
+            raise PreviewParityError(f"{reference} names no file")
+        data = args.tree / "test" / "data"
+        paths = {name: (data / name if (data / name).is_file() else None) for name in expected}
     present = [path for path in paths.values() if path is not None]
     if not present:
         raise PreviewParityError("none of the files the expectation names is in the tree")
@@ -245,7 +276,7 @@ def main(argv: list[str] | None = None) -> int:
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except (PreviewParityError, run_parity.StructuralError) as failure:
+    except (PreviewParityError, run_parity.StructuralError, run_parity.corpus_mod.CorpusError) as failure:
         print(f"::error title={TITLE} harness::{failure}", file=sys.stderr)
         print(f"structural failure: {failure}", file=sys.stderr)
         sys.exit(1)
