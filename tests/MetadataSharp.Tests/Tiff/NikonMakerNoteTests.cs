@@ -224,6 +224,89 @@ public sealed class NikonMakerNoteTests
             Assert.Equal(ids.Length, table.Select(t => t.Name).Distinct().Count());
         }
     }
+
+    /// <summary>
+    /// A little-endian TIFF with Make NIKON, the given Model and a Nikon3 note that holds
+    /// <paramref name="tags"/> (ascending; type 4 is LONG, anything else is one byte per element).
+    /// </summary>
+    private static byte[] Nikon3File(string model, params (int Tag, int Type, byte[] Data)[] tags)
+    {
+        int dataAt = 18 + 2 + 12 * tags.Length + 4;
+        var note = new byte[dataAt + tags.Sum(t => t.Data.Length > 4 ? t.Data.Length + (t.Data.Length & 1) : 0)];
+        "Nikon\0"u8.CopyTo(note);
+        note[6] = 0x02; note[7] = 0x10;
+        var w = new Writer(note, false);
+        note[10] = note[11] = (byte)'I';
+        w.U16(12, 42); w.U32(14, 8);
+        w.U16(18, tags.Length);
+        int at = 20;
+        foreach ((int tag, int type, byte[] data) in tags)
+        {
+            // Offsets count from the embedded header, ten bytes into the note.
+            w.Entry(at, tag, type, data.Length / (type == 4 ? 4 : 1), data.Length > 4 ? dataAt - 10 : 0);
+            if (data.Length > 4)
+            {
+                data.CopyTo(note, dataAt);
+                dataAt += data.Length + (data.Length & 1);
+            }
+            else
+                data.CopyTo(note, at + 8);
+            at += 12;
+        }
+
+        byte[] name = Encoding.ASCII.GetBytes(model + "\0");
+        Assert.InRange(name.Length, 5, 24);
+        var b = new byte[98 + note.Length];
+        var outer = new Writer(b, false);
+        b[0] = b[1] = (byte)'I';
+        outer.U16(2, 42); outer.U32(4, 8);
+        outer.U16(8, 3);
+        outer.Entry(10, 0x010F, 2, 6, 50);
+        outer.Entry(22, 0x0110, 2, name.Length, 56);
+        outer.Entry(34, 0x8769, 4, 1, 80);
+        "NIKON\0"u8.CopyTo(b.AsSpan(50));
+        name.CopyTo(b, 56);
+        outer.U16(80, 1);
+        outer.Entry(82, 0x927C, 7, note.Length, 98);
+        note.CopyTo(b, 98);
+        return b;
+    }
+
+    [Theory]
+    [InlineData("3001234", "NIKON D850", 3001234u)]
+    [InlineData("N/A", "NIKON D850", 0x60u)]  // A serial number that is not a number: the model's default key.
+    [InlineData("N/A", "NIKON D50", 0x22u)]
+    [InlineData(null, "NIKON D850", null)]    // No serial number in the note: the array is stored in the clear.
+    public void EncryptedArraysAreReadWithTheNotesKeyAndPlainOnesWithoutASerialNumber(string? serial, string model, uint? key)
+    {
+        byte[] plain = new byte[20];
+        "0204"u8.CopyTo(plain);
+        plain[12] = 0x8A; // LensIDNumber
+        byte[] stored = key is uint k ? Core.MakerNotes.NikonMakerNoteCipher.Decrypt(plain, 4, 777, k) : plain;
+        var tags = new List<(int, int, byte[])>();
+        if (serial is not null)
+            tags.Add((0x001D, 2, Encoding.ASCII.GetBytes(serial.PadRight(7) + "\0")));
+        tags.Add((0x0098, 7, stored));
+        tags.Add((0x00A7, 4, new byte[] { 0x09, 0x03, 0x00, 0x00 })); // ShutterCount 777
+
+        MakerNote? note = ExifTiffReader.Read(Nikon3File(model, [.. tags])).Metadata.MakerNote;
+        Assert.NotNull(note);
+        Assert.True(note.TryGetEntry(0x0098, out MakerNoteEntry? lens));
+        byte[] one = new byte[1];
+        lens.Fields.Single(field => field.Name == "LensIDNumber").Value.CopyRawTo(one);
+        Assert.Equal(0x8A, one[0]);
+    }
+
+    [Fact]
+    public void WithoutAShutterCountTheArraysAreLeftWhole()
+    {
+        byte[] stored = new byte[20];
+        "0204"u8.CopyTo(stored);
+        MakerNote? note = ExifTiffReader.Read(Nikon3File("NIKON D850", (0x0098, 7, stored))).Metadata.MakerNote;
+        Assert.NotNull(note);
+        Assert.True(note.TryGetEntry(0x0098, out MakerNoteEntry? lens));
+        Assert.Empty(lens.Fields);
+    }
 }
 
 public sealed class NikonMakerNoteArrayTests
@@ -334,89 +417,6 @@ public sealed class NikonMakerNoteCipherTests
         Assert.Equal(0x18, one[0]);
         Assert.Empty(Core.MakerNotes.NikonMakerNoteArrays.DecomposeEncrypted(0x0098,
             ExifValue.FromRaw(TiffFieldType.Undefined, 20, Endianness.LittleEndian, [.. "0999"u8, .. new byte[16]]), 777, 1));
-    }
-
-    /// <summary>
-    /// A little-endian TIFF with Make NIKON, the given Model and a Nikon3 note that holds
-    /// <paramref name="tags"/> (ascending; type 4 is LONG, anything else is one byte per element).
-    /// </summary>
-    private static byte[] Nikon3File(string model, params (int Tag, int Type, byte[] Data)[] tags)
-    {
-        int dataAt = 18 + 2 + 12 * tags.Length + 4;
-        var note = new byte[dataAt + tags.Sum(t => t.Data.Length > 4 ? t.Data.Length + (t.Data.Length & 1) : 0)];
-        "Nikon\0"u8.CopyTo(note);
-        note[6] = 0x02; note[7] = 0x10;
-        var w = new Writer(note, false);
-        note[10] = note[11] = (byte)'I';
-        w.U16(12, 42); w.U32(14, 8);
-        w.U16(18, tags.Length);
-        int at = 20;
-        foreach ((int tag, int type, byte[] data) in tags)
-        {
-            // Offsets count from the embedded header, ten bytes into the note.
-            w.Entry(at, tag, type, data.Length / (type == 4 ? 4 : 1), data.Length > 4 ? dataAt - 10 : 0);
-            if (data.Length > 4)
-            {
-                data.CopyTo(note, dataAt);
-                dataAt += data.Length + (data.Length & 1);
-            }
-            else
-                data.CopyTo(note, at + 8);
-            at += 12;
-        }
-
-        byte[] name = Encoding.ASCII.GetBytes(model + "\0");
-        Assert.InRange(name.Length, 5, 24);
-        var b = new byte[98 + note.Length];
-        var outer = new Writer(b, false);
-        b[0] = b[1] = (byte)'I';
-        outer.U16(2, 42); outer.U32(4, 8);
-        outer.U16(8, 3);
-        outer.Entry(10, 0x010F, 2, 6, 50);
-        outer.Entry(22, 0x0110, 2, name.Length, 56);
-        outer.Entry(34, 0x8769, 4, 1, 80);
-        "NIKON\0"u8.CopyTo(b.AsSpan(50));
-        name.CopyTo(b, 56);
-        outer.U16(80, 1);
-        outer.Entry(82, 0x927C, 7, note.Length, 98);
-        note.CopyTo(b, 98);
-        return b;
-    }
-
-    [Theory]
-    [InlineData("3001234", "NIKON D850", 3001234u)]
-    [InlineData(null, "NIKON D850", 0x60u)]   // No serial number in the note: the model's default key.
-    [InlineData(null, "NIKON D50", 0x22u)]
-    [InlineData("N/A", "NIKON D850", 0x60u)]  // A serial number that is not a number: the same default.
-    public void ANoteWithoutASerialNumberIsDecryptedWithTheModelsKey(string? serial, string model, uint key)
-    {
-        byte[] plain = new byte[20];
-        "0204"u8.CopyTo(plain);
-        plain[12] = 0x8A; // LensIDNumber
-        byte[] stored = Core.MakerNotes.NikonMakerNoteCipher.Decrypt(plain, 4, 777, key);
-        var tags = new List<(int, int, byte[])>();
-        if (serial is not null)
-            tags.Add((0x001D, 2, Encoding.ASCII.GetBytes(serial.PadRight(7) + "\0")));
-        tags.Add((0x0098, 7, stored));
-        tags.Add((0x00A7, 4, new byte[] { 0x09, 0x03, 0x00, 0x00 })); // ShutterCount 777
-
-        MakerNote? note = ExifTiffReader.Read(Nikon3File(model, [.. tags])).Metadata.MakerNote;
-        Assert.NotNull(note);
-        Assert.True(note.TryGetEntry(0x0098, out MakerNoteEntry? lens));
-        byte[] one = new byte[1];
-        lens.Fields.Single(field => field.Name == "LensIDNumber").Value.CopyRawTo(one);
-        Assert.Equal(0x8A, one[0]);
-    }
-
-    [Fact]
-    public void WithoutAShutterCountNothingIsDecrypted()
-    {
-        byte[] stored = new byte[20];
-        "0204"u8.CopyTo(stored);
-        MakerNote? note = ExifTiffReader.Read(Nikon3File("NIKON D850", (0x0098, 7, stored))).Metadata.MakerNote;
-        Assert.NotNull(note);
-        Assert.True(note.TryGetEntry(0x0098, out MakerNoteEntry? lens));
-        Assert.Empty(lens.Fields);
     }
 
     [Fact]

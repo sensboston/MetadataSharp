@@ -285,27 +285,26 @@ internal static class MakerNoteReader
     }
 
     /// <summary>
-    /// Splits the encrypted Nikon3 arrays when the shutter count is present. A note without a serial
-    /// number, as in a file that had it removed, is treated like one whose serial number is not a number:
-    /// the model decides the key.
+    /// Splits the encrypted Nikon3 arrays when the shutter count is present. The serial number is half
+    /// of the key, and a camera always writes it; a note without one was rewritten by software, and the
+    /// files seen in that state hold the arrays in the clear, so they are split as stored.
     /// </summary>
     private static MakerNote DecryptNikon3(MakerNote note, ReadOnlySpan<byte> model)
     {
         if (!note.TryGetEntry(0x00A7, out MakerNoteEntry? count) || count.Value.FieldType != TiffFieldType.Long ||
             count.Value.Count == 0)
             return note;
-        ReadOnlySpan<byte> serialNumber = default;
+        uint? key = null;
         if (note.TryGetEntry(0x001D, out MakerNoteEntry? serial))
         {
-            if (serial.Value.FieldType != TiffFieldType.Ascii)
+            if (serial.Value.FieldType != TiffFieldType.Ascii ||
+                NikonMakerNoteCipher.SerialKey(serial.Value.RawBytes, model) is not uint serialKey)
                 return note;
-            serialNumber = serial.Value.RawBytes;
+            key = serialKey;
         }
         ReadOnlySpan<byte> c = count.Value.RawBytes;
         uint shutterCount = note.ByteOrder == Endianness.LittleEndian
             ? BinaryPrimitives.ReadUInt32LittleEndian(c) : BinaryPrimitives.ReadUInt32BigEndian(c);
-        if (NikonMakerNoteCipher.SerialKey(serialNumber, model) is not uint key)
-            return note;
         var entries = new List<MakerNoteEntry>(note.Entries.Count);
         bool changed = false;
         foreach (MakerNoteEntry entry in note.Entries)

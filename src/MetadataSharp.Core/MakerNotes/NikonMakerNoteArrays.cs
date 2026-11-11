@@ -21,9 +21,10 @@ internal static class NikonMakerNoteArrays
 
     /// <summary>
     /// Splits an encrypted array tag after decrypting it with the camera's serial key and shutter
-    /// count. Unknown versions, and versions whose layout differs by camera, are not split.
+    /// count; without a serial key the array is taken to be stored in the clear. Unknown versions, and
+    /// versions whose layout differs by camera, are not split.
     /// </summary>
-    internal static IReadOnlyList<MakerNoteField> DecomposeEncrypted(ushort tag, ExifValue value, uint shutterCount, uint serialKey)
+    internal static IReadOnlyList<MakerNoteField> DecomposeEncrypted(ushort tag, ExifValue value, uint shutterCount, uint? serialKey)
     {
         if (value.FieldType is not (TiffFieldType.Undefined or TiffFieldType.Byte))
             return [];
@@ -31,7 +32,9 @@ internal static class NikonMakerNoteArrays
         (Layout? layout, int start) = SelectEncrypted(tag, raw);
         if (layout is null || raw.Length <= start)
             return [];
-        return Split(layout, NikonMakerNoteCipher.Decrypt(raw, start, shutterCount, serialKey), value.ByteOrder);
+        return serialKey is uint key
+            ? Split(layout, NikonMakerNoteCipher.Decrypt(raw, start, shutterCount, key), value.ByteOrder)
+            : Split(layout, raw, value.ByteOrder);
     }
 
     private static bool Major02(ReadOnlySpan<byte> raw) => raw.Length >= 4 && raw[0] == (byte)'0' && raw[1] == (byte)'2';
