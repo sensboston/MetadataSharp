@@ -21,7 +21,9 @@ using MetadataSharp.Formats.WebP;
 //   FILE    <path, escaped like a value>
 //   TAG     <key>  <type>  <count>  <value>
 //   STATUS  ok | refused | not-attempted | error  <detail>
-// A file whose reader refused or was not attempted simply carries no TAG records.
+// A file whose reader refused or was not attempted simply carries no TAG records. A TIFF or PSD
+// that was read, with its IPTC stream or XMP packet refused, is ok with the detail
+// iptc-refused:<code>, xmp-refused:<code>, or both separated by a comma.
 internal static class Program
 {
     private const long MaxWholeFileBytes = 64L * 1024 * 1024;
@@ -126,8 +128,31 @@ internal static class Program
     private static void Tiff(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
-        Exif(TiffExif.Read(File.ReadAllBytes(path)), stdout);
-        Done(stdout);
+        byte[] file = File.ReadAllBytes(path);
+        ExifMetadata exif = TiffExif.Read(file);
+        Exif(exif, stdout);
+        // IPTC or XMP that its reader refuses does not take the EXIF of the file with it: the rows
+        // already written stand, and each refusal travels in the detail of the status.
+        var refused = new List<string>();
+        IptcPacket? iptc = null;
+        try { iptc = TiffIptc.Read(file); }
+        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
+        if (iptc is not null) Iptc(iptc, stdout);
+        XmpPacket? xmp = null;
+        try { xmp = XmlPacket(exif); }
+        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
+        if (xmp is not null) Xmp(xmp, stdout);
+        Done(stdout, refused);
+    }
+
+    /// <summary>The XMP packet a TIFF-based file stores as the value of tag 700 in its primary directory.</summary>
+    private static XmpPacket? XmlPacket(ExifMetadata exif)
+    {
+        if (!exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x02BC), out ExifEntry? entry) || entry.Value.ByteLength == 0)
+            return null;
+        byte[] packet = new byte[entry.Value.ByteLength];
+        entry.Value.CopyRawTo(packet);
+        return XmpPacket.Parse(packet);
     }
 
     private static void Exv(string path, StreamWriter stdout, long length)
@@ -154,7 +179,16 @@ internal static class Program
         if (!WithinBudget(length, stdout)) return;
         PsdMetadata metadata = PsdMetadata.Read(File.ReadAllBytes(path));
         if (metadata.GetResource(0x0404) is byte[] resource && resource.Length != 0) Iptc(IptcPacket.Parse(resource), stdout);
-        Done(stdout);
+        // As for a TIFF: a packet the XMP reader refuses leaves the rows already written in place.
+        var refused = new List<string>();
+        XmpPacket? xmp = null;
+        try
+        {
+            if (metadata.GetResource(0x0424) is byte[] packet && packet.Length != 0) xmp = XmpPacket.Parse(packet);
+        }
+        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
+        if (xmp is not null) Xmp(xmp, stdout);
+        Done(stdout, refused);
     }
 
     private static void Jp2(string path, StreamWriter stdout, long length)
@@ -285,29 +319,33 @@ internal static class Program
 
     private static void Xmp(XmpPacket packet, StreamWriter stdout)
     {
-        if (!packet.IsEditable) return;
-        foreach (KeyValuePair<XmpPropertyName, XmpValue> property in packet.Properties)
+        foreach (XmpEntry entry in packet.Entries)
         {
-            string key = "Xmp." + Prefix(property.Key.NamespaceUri) + "." + property.Key.LocalName;
-            XmpValue value = property.Value;
-            if (value.Kind is XmpValueKind.Text)
+            string key = "Xmp." + entry.Prefix + "." + entry.Path;
+            if (entry.HasChildEntries)
             {
-                string text = value.Text ?? string.Empty;
+                // The reference tool prints a structure, and an array whose items are not plain text,
+                // as a text row naming the form; the fields and the items follow under their own keys.
+                string form = "type=\"" + entry.Kind + "\"";
+                Tag(stdout, key, "XmpText", (uint)form.Length, form);
+            }
+            else if (entry.Kind is XmpEntryKind.Text)
+            {
+                string text = entry.Values.Count == 0 ? string.Empty : entry.Values[0];
                 Tag(stdout, key, "XmpText", (uint)Encoding.UTF8.GetByteCount(text), Escape(text));
             }
-            else if (value.Kind is XmpValueKind.Bag or XmpValueKind.Sequence)
-            {
-                IReadOnlyList<string> items = value.Items;
-                Tag(stdout, key, value.Kind == XmpValueKind.Bag ? "XmpBag" : "XmpSeq", (uint)items.Count, Join(items));
-            }
-            else
+            else if (entry.Kind is XmpEntryKind.LangAlt)
             {
                 // Rendered the way the reference tool prints a language alternative, so the parity
                 // harness compares text rather than two spellings of the same property.
                 var parts = new List<string>();
-                foreach (KeyValuePair<string, string> language in value.Languages)
-                    parts.Add("lang=\"" + language.Key + "\" " + Escape(language.Value));
+                foreach ((string language, string value) in entry.Languages)
+                    parts.Add("lang=\"" + language + "\" " + Escape(value));
                 Tag(stdout, key, "LangAlt", (uint)parts.Count, string.Join(", ", parts));
+            }
+            else
+            {
+                Tag(stdout, key, "Xmp" + entry.Kind, (uint)entry.Values.Count, Join(entry.Values));
             }
         }
     }
@@ -373,49 +411,6 @@ internal static class Program
         2 => "Iptc.Application2",
         _ => "Iptc.Record" + record.ToString(CultureInfo.InvariantCulture),
     };
-
-    /// <summary>The conventional prefix of a standard namespace URI; anything else keeps its local part.</summary>
-    private static string Prefix(string namespaceUri) => namespaceUri switch
-    {
-        "http://purl.org/dc/elements/1.1/" => "dc",
-        "http://purl.org/dc/terms/" => "dcterms",
-        "http://purl.org/dc/dcmitype/" => "dcmitype",
-        "http://ns.adobe.com/xap/1.0/" => "xmp",
-        "http://ns.adobe.com/xap/1.0/mm/" => "xmpMM",
-        "http://ns.adobe.com/xap/1.0/rights/" => "xmpRights",
-        "http://ns.adobe.com/xap/1.0/bj/" => "xmpBJ",
-        "http://ns.adobe.com/xap/1.0/Note/" => "xmpNote",
-        "http://ns.adobe.com/xap/1.0/sType/ResourceEvent#" => "stEvt",
-        "http://ns.adobe.com/xap/1.0/sType/ResourceRef#" => "stRef",
-        "http://ns.adobe.com/xap/1.0/sType/Part#" => "stPart",
-        "http://ns.adobe.com/photoshop/1.0/" => "photoshop",
-        "http://ns.adobe.com/photograph/1.0/" => "photograph",
-        "http://ns.adobe.com/tiff/1.0/" => "tiff",
-        "http://ns.adobe.com/exif/1.0/" => "exif",
-        "http://ns.adobe.com/exif/1.0/aux/" => "aux",
-        "http://ns.adobe.com/pdf/1.3/" => "pdf",
-        "http://ns.adobe.com/xmp/1.0/DynamicMedia/" => "xmpDM",
-        "http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/" => "Iptc4xmpCore",
-        "http://iptc.org/std/Iptc4xmpExt/2008-02-29/" => "Iptc4xmpExt",
-        "http://prismstandard.org/namespaces/basic/1.0/" => "prism",
-        "http://www.day.com/schemas/handler/1.0/" => "handler",
-        "http://www.flickr.com/ns/creative-commons/2006-06-15/" => "cc",
-        "http://www.w3.org/XML/1998/namespace" => "xml",
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#" => "rdf",
-        _ => Tail(namespaceUri),
-    };
-
-    /// <summary>
-    /// A display prefix for a namespace the table does not know. A packet's own serialization prefix is
-    /// deliberately not part of the property name, so the vendor label in the authority is the closest
-    /// stable guess; a URI without one is reported verbatim rather than as a plausible-looking short name.
-    /// </summary>
-    private static string Tail(string uri)
-    {
-        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? parsed) || parsed.Host.Length == 0) return uri;
-        string first = parsed.Host.Split('.')[0];
-        return first is "www" or "ns" || first.Length == 0 ? parsed.Host : first;
-    }
 
     private static string TypeName(TiffFieldType type) => type switch
     {
@@ -558,6 +553,13 @@ internal static class Program
         Record(stdout, "TAG", key, type, count.ToString(CultureInfo.InvariantCulture), value);
 
     private static void Done(StreamWriter stdout) => Record(stdout, "STATUS", "ok");
+
+    /// <summary>Ends a file that was read, naming the kinds of metadata whose reader refused them.</summary>
+    private static void Done(StreamWriter stdout, List<string> refused)
+    {
+        if (refused.Count == 0) Done(stdout);
+        else Record(stdout, "STATUS", "ok", string.Join(",", refused));
+    }
 
     private static void Record(StreamWriter stdout, params string[] fields)
     {

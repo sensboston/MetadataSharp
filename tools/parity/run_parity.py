@@ -201,6 +201,9 @@ def text_report(report: dict[str, Any], problems: list[str]) -> str:
         *gap_table(report["gaps"]["extra_keys"], 8),
         "",
     ]
+    if report["files"]["partial"]:
+        lines.append("files read with one kind of metadata refused:")
+        lines.extend(f"  {name}: {count}" for name, count in sorted(report["files"]["partial"].items(), key=lambda pair: -pair[1]))
     if report["files"]["refusals"]:
         lines.append("our refusals, by status and code:")
         lines.extend(f"  {name}: {count}" for name, count in sorted(report["files"]["refusals"].items(), key=lambda pair: -pair[1]))
@@ -225,6 +228,19 @@ def text_report(report: dict[str, Any], problems: list[str]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def by_kind(by_family: dict[str, dict[str, int]]) -> dict[str, dict[str, int]]:
+    """The per-family outcome table folded on the first segment of the key (Exif, Iptc, Xmp).
+
+    The full table has a row per group and stays in the report; three rows are what the annotation
+    channel can carry, and they are what a change to one kind of metadata is measured by."""
+    folded: dict[str, dict[str, int]] = {}
+    for name, counts in by_family.items():
+        bucket = folded.setdefault(name.split(".")[0], {})
+        for outcome, count in counts.items():
+            bucket[outcome] = bucket.get(outcome, 0) + count
+    return {name: folded[name] for name in sorted(folded)}
+
+
 def summary(report: dict[str, Any], problems: list[str]) -> dict[str, Any]:
     """The part of the report small enough for the annotation channel, which is the only one that can
     be read back from this environment."""
@@ -234,6 +250,9 @@ def summary(report: dict[str, Any], problems: list[str]) -> dict[str, Any]:
         "outcomes": report["outcomes"],
         "advisory": report["advisory"],
         "by_format": report["by_format"],
+        "by_kind": by_kind(report["by_family"]),
+        # Per format for the two small kinds; EXIF per format is by_format less these.
+        "by_kind_format": {name: formats for name, formats in report["by_kind_format"].items() if name != "Exif"},
         "missing_top": report["gaps"]["missing_keys"][:30],
         "unread_top": report["gaps"]["unread_keys"][:12],
         "extra_top": report["gaps"]["extra_keys"][:12],

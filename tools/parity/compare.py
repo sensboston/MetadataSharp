@@ -171,10 +171,12 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
     outcomes: Counter[str] = Counter()
     statuses: Counter[str] = Counter()
     refusals: Counter[str] = Counter()
+    partial: Counter[str] = Counter()
     advisory: Counter[str] = Counter()
     notes: Counter[str] = Counter()
     by_format: dict[str, Counter[str]] = defaultdict(Counter)
     by_family: dict[str, Counter[str]] = defaultdict(Counter)
+    by_kind_format: dict[str, dict[str, Counter[str]]] = defaultdict(lambda: defaultdict(Counter))
     missing_files: Counter[str] = Counter()
     missing_tags: Counter[str] = Counter()
     unread_files: Counter[str] = Counter()
@@ -186,6 +188,10 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
         statuses[entry["status"]] += 1
         if entry["status"] != "ok" and entry["detail"]:
             refusals[f"{entry['status']}:{entry['detail']}"] += 1
+        # A file that was read, with one kind of its metadata refused: its rows count, and the
+        # refusal is the reason some of them are missing.
+        if entry["status"] == "ok" and entry["detail"]:
+            partial[entry["detail"]] += 1
         for name, count in entry["note_kinds"].items():
             notes[name] += count
         bucket = by_format[entry["format"]]
@@ -197,6 +203,7 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
             outcomes[r["outcome"]] += 1
             bucket[r["outcome"]] += 1
             by_family[family(r["key"])][r["outcome"]] += 1
+            by_kind_format[r["key"].split(".")[0]][entry["format"]][r["outcome"]] += 1
             for flag in r.get("flags", ()):
                 advisory[flag] += 1
             if r["outcome"] == MISSING_KEY:
@@ -233,7 +240,8 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
 
     return {
         "schema": "metadatasharp-parity/1",
-        "files": {"total": len(files), "attempted": attempted, "statuses": dict(statuses), "refusals": dict(refusals)},
+        "files": {"total": len(files), "attempted": attempted, "statuses": dict(statuses), "refusals": dict(refusals),
+                  "partial": dict(partial)},
         "outcomes": dict(outcomes),
         "parity": {
             "expected_keys": expected + outcomes[MISSING_KEY],
@@ -248,6 +256,8 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
         "reference_notes": dict(notes),
         "by_format": {name: dict(counts) for name, counts in sorted(by_format.items())},
         "by_family": {name: dict(counts) for name, counts in sorted(by_family.items())},
+        "by_kind_format": {name: {fmt: dict(counts) for fmt, counts in sorted(formats.items())}
+                           for name, formats in sorted(by_kind_format.items())},
         "gaps": {
             "missing_keys": gaps(missing_files, missing_tags, MISSING_KEY),
             "unread_keys": gaps(unread_files, unread_tags, NOT_READ),

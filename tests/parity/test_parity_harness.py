@@ -393,6 +393,27 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual(report["outcomes"][compare_mod.NOT_READ], 1)
         self.assertEqual(report["parity"]["expected_keys"], 0)
 
+    def test_a_file_read_with_one_kind_refused_is_counted_and_reported_apart(self):
+        self.sample("d.tif", "Exif.Image.Make  Ascii  6  NIKON\nIptc.Application2.Caption  String  5  hello\n"
+                    "Xmp.dc.format  XmpText  10  image/tiff\n")
+        blocks = {str(self.data / "d.tif"): [["TAG", "Exif.Image.Make", "Ascii", 6, "NIKON"],
+                                              ["TAG", "Xmp.dc.format", "XmpText", 10, "image/tiff"],
+                                              ["STATUS", "ok", "iptc-refused:InvalidIptc"]]}
+        code, _ = run_main(self.arguments(write_fake(self.root, blocks)))
+        self.assertEqual(code, 0)
+        report = self.report()
+        self.assertEqual(report["files"]["partial"], {"iptc-refused:InvalidIptc": 1})
+        self.assertEqual(report["files"]["refusals"], {})
+        self.assertEqual(report["files"]["attempted"], 1)
+        self.assertEqual(report["outcomes"], {compare_mod.MATCH_VALUE: 2, compare_mod.MISSING_KEY: 1})
+        self.assertEqual(report["by_kind_format"], {
+            "Exif": {"tiff": {compare_mod.MATCH_VALUE: 1}},
+            "Iptc": {"tiff": {compare_mod.MISSING_KEY: 1}},
+            "Xmp": {"tiff": {compare_mod.MATCH_VALUE: 1}},
+        })
+        summary = run_parity.summary(report, [])
+        self.assertEqual(sorted(summary["by_kind_format"]), ["Iptc", "Xmp"])
+
     def test_a_truncated_dump_fails_the_run_instead_of_reporting_a_gap(self):
         self.sample("d.jpg", "Exif.Image.Make  Ascii  6  NIKON\n")
         script = self.root / "truncating_dump.py"
@@ -503,6 +524,18 @@ class HarnessTests(unittest.TestCase):
         decoded = json.loads(zlib.decompress(base64.b64decode(payload)))
         self.assertEqual(decoded["parity"]["value_rate"], 1.0)
         self.assertEqual(decoded["problem_count"], 0)
+        self.assertEqual(decoded["by_kind"], {"Exif": {"match-value": 1}})
+
+    def test_the_summary_folds_families_into_metadata_kinds(self):
+        folded = run_parity.by_kind({
+            "Xmp.dc": {"match-value": 2, "missing-key": 1},
+            "Xmp.xmpMM": {"match-value": 3, "value-diff": 1},
+            "Iptc.Application2": {"missing-key": 4},
+            "Exif.Image": {"match-value": 5},
+        })
+        self.assertEqual(list(folded), ["Exif", "Iptc", "Xmp"])
+        self.assertEqual(folded["Xmp"], {"match-value": 5, "missing-key": 1, "value-diff": 1})
+        self.assertEqual(folded["Iptc"], {"missing-key": 4})
 
     def test_a_summary_too_large_for_the_channel_is_an_error(self):
         entries = [compare_mod.compare_file(f"exiv2:n{index}", "exiv2", "jpg", "ok", "", {}, {}, []) for index in range(20)]
