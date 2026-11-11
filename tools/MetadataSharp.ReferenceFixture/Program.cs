@@ -324,7 +324,7 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
     {
         Limits = new MetadataLimits { MaxDirectories = 256, MaxEntriesPerDirectory = 2_048, MaxTotalEntries = 16_384, MaxValueBytes = 4_194_304, MaxRetainedMetadataBytes = 16_777_216 }
     };
-    var refusals = new List<string>();
+    var refusals = new List<(string File, string Kind, string Reason)>();
     Directory.CreateDirectory(args[2]);
     var manifest = new List<string>();
     var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
@@ -356,7 +356,7 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
                 catch (MetadataException refusal)
                 {
                     Count(kind + " refused " + refusal.Code);
-                    refusals.Add($"{Path.GetFileName(path)} {kind}: {refusal.Code}: {refusal.Message}");
+                    refusals.Add((Path.GetFileName(path), kind, $"{refusal.Code}: {refusal.Message}"));
                 }
                 catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
                 {
@@ -390,9 +390,13 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
     }
     File.WriteAllLines(Path.Combine(args[2], "manifest.tsv"), manifest);
     Console.WriteLine($"::notice title=TIFF-based corpus edits::{files} TIFF-based files; " + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
-    // Why each file was refused, a few to a notice: the counts above do not say which file it was.
-    foreach (string[] chunk in refusals.Chunk(12))
-        Console.WriteLine("::notice title=TIFF-based corpus refusals::" + string.Join("%0A", chunk.Select(line => line.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "))));
+    // Why each file was refused, one line for a file and a reason: the counts do not say which file it was.
+    string[] reasons = refusals.GroupBy(refusal => (refusal.File, refusal.Reason))
+        .Select(group => $"{group.Key.File} [{string.Join(' ', group.Select(refusal => refusal.Kind))}]: {group.Key.Reason}"
+            .Replace("%", "%25").Replace("\r", " ").Replace("\n", " "))
+        .ToArray();
+    foreach (string[] chunk in reasons.Chunk(20))
+        Console.WriteLine("::notice title=TIFF-based corpus refusals::" + string.Join("%0A", chunk));
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=TIFF-based writer defect::" + crash);
     if (crashes.Count != 0) return 1;
 }

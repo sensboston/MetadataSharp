@@ -51,7 +51,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   `SaveExif/SaveXmp/SaveIptc`. A value that fits is written in place; what grows is appended and
   one pointer changed; no byte moves, old bytes stay. Image data and the MakerNote are never written
   to; an append is refused when image data runs to the end of the file. The output is read back and
-  refused unless only the named tags differ. Parity job: `exiv2 -pa` reads every edited fixture.
+  refused unless only the named tags differ. Parity job (run 43079331617): `exiv2 -pa` reads the 48
+  edited fixtures and the 27 files written from the corpus's TIFFs; the corpus has no whole RAW file.
 
 ## Next (in order)
 
