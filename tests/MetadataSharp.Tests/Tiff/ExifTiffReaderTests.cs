@@ -79,7 +79,6 @@ public sealed class ExifTiffReaderTests
     [InlineData("magic", MetadataErrorCode.InvalidExif)]
     [InlineData("bigtiff", MetadataErrorCode.UnsupportedFeature)]
     [InlineData("zero-ifd", MetadataErrorCode.InvalidExif)]
-    [InlineData("odd-ifd", MetadataErrorCode.InvalidExif)]
     [InlineData("past-ifd", MetadataErrorCode.InvalidExif)]
     [InlineData("header-ifd", MetadataErrorCode.InvalidExif)]
     [InlineData("type", MetadataErrorCode.UnsupportedFeature)]
@@ -88,7 +87,6 @@ public sealed class ExifTiffReaderTests
     [InlineData("bad-value", MetadataErrorCode.InvalidExif)]
     [InlineData("header-value", MetadataErrorCode.InvalidExif)]
     [InlineData("self-value", MetadataErrorCode.InvalidExif)]
-    [InlineData("odd-value", MetadataErrorCode.InvalidExif)]
     [InlineData("subifd", MetadataErrorCode.UnsupportedFeature)]
     [InlineData("strip", MetadataErrorCode.UnsupportedFeature)]
     [InlineData("pointer-type", MetadataErrorCode.InvalidExif)]
@@ -122,6 +120,23 @@ public sealed class ExifTiffReaderTests
         }
         MetadataException error = Assert.Throws<MetadataException>(() => ExifTiffReader.Read(data));
         Assert.Equal(code, error.Code);
+    }
+
+    [Fact]
+    public void OddDirectoryAndValueOffsetsAreRead()
+    {
+        // TIFF 6.0 recommends word alignment; many cameras ignore it, and reading needs no alignment.
+        byte[] data = new byte[40];
+        Orientation().AsSpan(8).CopyTo(data.AsSpan(9));
+        Orientation().AsSpan(0, 8).CopyTo(data);
+        Put32(data, 4, 9);
+        Assert.Single(ExifTiffReader.Read(data).Metadata.Entries);
+
+        data = new byte[40];
+        Orientation().CopyTo(data, 0);
+        Put32(data, 14, 3); Put32(data, 18, 27);
+        ExifEntry entry = Assert.Single(ExifTiffReader.Read(data).Metadata.Entries);
+        Assert.Equal(3u, entry.Value.Count);
     }
 
     [Theory]

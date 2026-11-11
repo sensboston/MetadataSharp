@@ -135,7 +135,7 @@ public sealed class StandaloneTiffTests
         Assert.Equal(MetadataErrorCode.LimitExceeded, Error(f.Bytes, new() { Limits = new() { MaxValueBytes = 4 } }));
         f.Directory(8, []); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
         f.Directory(8, [(330, 4, [0])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
-        f.Directory(8, [(330, 4, [513])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
+        f.Directory(8, [(330, 4, [100_000])]); Assert.Equal(MetadataErrorCode.InvalidTiff, Error(f.Bytes));
         f.Directory(8, [(305, 2, [0])]); Assert.Contains(Read(f.Bytes).Issues, i => i.Code == TiffLayoutIssueCode.MissingImageLayout);
     }
     [Fact]

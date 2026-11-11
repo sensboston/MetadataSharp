@@ -333,4 +333,18 @@ public sealed class JpegEditingTests
     {
         public override void Write(ReadOnlySpan<byte> buffer) { base.Write(buffer[..Math.Min(2, buffer.Length)]); throw new IOException("Injected output failure."); }
     }
+
+    [Fact]
+    public void BytesAfterEoiSurviveAnEditVerbatim()
+    {
+        byte[] trailer = [0x00, 0x11, 0xFF, 0xD8, 0x42];
+        byte[] sourceBytes = [.. JpegFixture.Build(), .. trailer];
+        using JpegMetadataDocument document = JpegMetadataDocument.Open(new MemoryStream(sourceBytes));
+        var edit = new ExifEdit(); edit.Set(new(ExifDirectoryKind.Ifd0, 0x013B), Text("Alice"));
+        using var output = new MemoryStream();
+        document.Save(output, edit);
+        byte[] edited = output.ToArray();
+        Assert.Equal(trailer, edited[^trailer.Length..]);
+        Assert.Equal(sourceBytes, WithoutExif(edited));
+    }
 }
