@@ -4,6 +4,7 @@ using System.Text;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Formats.Bmff;
 using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
 using MetadataSharp.Formats.Jpeg;
@@ -87,7 +88,30 @@ internal static class Program
         if (At(head, 0, 0xFF, 0x01, 0x45, 0x78, 0x69, 0x76, 0x32)) { Exv(path, stdout, length); return; }
         if (At(head, 4, 0x6A, 0x50, 0x20, 0x20)) { Jp2(path, stdout, length); return; }
         if (At(head, 0, 0x3C, 0x3F) || At(head, 0, 0xEF, 0xBB, 0xBF)) { Sidecar(path, stdout, length); return; }
-        if (At(head, 4, 0x66, 0x74, 0x79, 0x70)) { Record(stdout, "STATUS", "not-attempted", "iso-bmff"); return; }
+        if (At(head, 4, 0x66, 0x74, 0x79, 0x70))
+        {
+            try
+            {
+                using var stream = File.OpenRead(path);
+                var span = new ReadOnlySpan<byte>(new byte[length]); // Simplified for now, we'll use BmffMetadata
+                // In real code, we'd read the whole file or stream. For the dump tool, we'll read the file.
+                var data = File.ReadAllBytes(path);
+                var (exif, xmp) = BmffMetadata.Read(data.AsSpan());
+                Exif(exif, stdout);
+                if (xmp is not null) Xmp(xmp, stdout);
+                Done(stdout);
+            }
+            catch (InvalidBmffException failure)
+            {
+                Record(stdout, "STATUS", "refused", "InvalidBmff");
+            }
+            catch (Exception failure)
+            {
+                string reason = failure.GetType().Name + ": " + failure.Message.Split('\n')[0];
+                Record(stdout, "STATUS", "error", Escape(reason.Length > 180 ? reason[..180] : reason));
+            }
+            return;
+        }
         if (At(head, 0, 0x1A, 0x45, 0xDF, 0xA3)) { Record(stdout, "STATUS", "not-attempted", "matroska"); return; }
         Record(stdout, "STATUS", "not-attempted", "magic");
     }

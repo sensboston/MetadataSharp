@@ -6,4 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="../MetadataSharp.Core/MetadataSharp.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Bmff/**/*.cs" />
+  </ItemGroup>
 </Project>
