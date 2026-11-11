@@ -8,9 +8,16 @@ public sealed class IptcPacket
 {
     private readonly byte[] bytes;
     private readonly IptcLimits limits;
-    private IptcPacket(byte[] bytes, IptcLimits limits, List<IptcDataset> datasets, IptcCharacterSet characterSet)
-    { this.bytes = bytes; this.limits = limits; Datasets = datasets.AsReadOnly(); CharacterSet = characterSet; }
+    private readonly MetadataException? refusal;
+    private IptcPacket(byte[] bytes, IptcLimits limits, List<IptcDataset> datasets, IptcCharacterSet characterSet, MetadataException? refusal)
+    { this.bytes = bytes; this.limits = limits; Datasets = datasets.AsReadOnly(); CharacterSet = characterSet; this.refusal = refusal; }
     public IptcCharacterSet CharacterSet { get; }
+    /// <summary>
+    /// False when a container returned the stream for reading only: the stream itself, or the
+    /// resources that hold it, has a form the editable profile refuses. <see cref="Apply"/> then
+    /// refuses a change, and so does the container's save, with the error the strict read gave.
+    /// </summary>
+    public bool IsEditable => refusal is null;
     public IReadOnlyList<IptcDataset> Datasets { get; }
     public int ByteLength => bytes.Length;
     public void CopyRawTo(Span<byte> destination)
@@ -30,16 +37,39 @@ public sealed class IptcPacket
     {
         IptcLimits limits = Settings(options);
         if (bytes.Length > limits.MaxPacketBytes) throw Limit();
-        return Read(bytes.ToArray(), limits);
+        return Read(bytes.ToArray(), limits, null);
     }
-    private static IptcPacket Read(byte[] bytes, IptcLimits limits)
+    /// <summary>
+    /// Reads a stream for reading only. The strict rules of <see cref="Parse"/> run first. A stream
+    /// they refuse as malformed or ambiguous is read again under two wider rules: zero bytes after the
+    /// last dataset are padding, and a character set or record version that is repeated with the same
+    /// value is not ambiguous. The result is then not editable. <paramref name="container"/> is the
+    /// error of a container that could read the stream and could not edit it; it too makes the result
+    /// not editable.
+    /// </summary>
+    internal static IptcPacket Inspect(ReadOnlySpan<byte> bytes, IptcReadOptions? options = null, MetadataException? container = null)
+    {
+        IptcLimits limits = Settings(options);
+        if (bytes.Length > limits.MaxPacketBytes) throw Limit();
+        byte[] owned = bytes.ToArray();
+        if (container is null)
+        {
+            try { return Read(owned, limits, null); }
+            catch (MetadataException failure) when (failure.Code is MetadataErrorCode.InvalidIptc or MetadataErrorCode.AmbiguousMetadata) { container = failure; }
+        }
+        return Read(owned, limits, container);
+    }
+    private static IptcPacket Read(byte[] bytes, IptcLimits limits, MetadataException? refusal)
     {
         var datasets = new List<IptcDataset>(); int at = 0, charsetCount = 0, versionCount = 0;
         IptcCharacterSet charset = IptcCharacterSet.Unspecified;
+        bool readOnly = refusal is not null; IptcValue? firstCharset = null, firstVersion = null;
         while (at < bytes.Length)
         {
             if (datasets.Count >= limits.MaxDatasets) throw Limit();
             int start = at;
+            // Read-only: zero bytes from the end of the last dataset to the end of the stream are padding.
+            if (readOnly && datasets.Count != 0 && bytes.AsSpan(at).IndexOfAnyExcept((byte)0) < 0) break;
             if (bytes.Length - at < 5 || bytes[at] != 0x1c) throw Invalid();
             var key = new IptcDatasetKey(bytes[at + 1], bytes[at + 2]);
             uint length = BinaryPrimitives.ReadUInt16BigEndian(bytes.AsSpan(at + 3)); at += 5;
@@ -58,13 +88,20 @@ public sealed class IptcPacket
             datasets.Add(new(key, value, bytes.AsMemory(start, at - start)));
             if (key == new IptcDatasetKey(1, 90))
             {
-                if (++charsetCount > 1) throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Duplicate IIM character set declarations.");
+                // Read-only: a repeat that says the same thing as the first declaration is not ambiguous.
+                if (++charsetCount > 1 && !(readOnly && value.Span.SequenceEqual(firstCharset!.Span)))
+                    throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Duplicate IIM character set declarations.");
+                firstCharset ??= value;
                 charset = value.Span.SequenceEqual(new byte[] { 0x1b, 0x25, 0x47 }) ? IptcCharacterSet.Utf8 : IptcCharacterSet.Unsupported;
             }
-            if (key == new IptcDatasetKey(2, 0) && ++versionCount > 1)
-                throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Duplicate IIM record version controls.");
+            if (key == new IptcDatasetKey(2, 0))
+            {
+                if (++versionCount > 1 && !(readOnly && value.Span.SequenceEqual(firstVersion!.Span)))
+                    throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Duplicate IIM record version controls.");
+                firstVersion ??= value;
+            }
         }
-        return new(bytes, limits, datasets, charset);
+        return new(bytes, limits, datasets, charset, refusal);
     }
     public string GetText(int datasetIndex)
     {
@@ -84,6 +121,7 @@ public sealed class IptcPacket
         ArgumentNullException.ThrowIfNull(edit);
         var snapshot = edit.Snapshot(); if (snapshot.RemoveAll) return null;
         if (snapshot.Changes.Count == 0) return this;
+        if (refusal is not null) throw new MetadataException(refusal.Code, refusal.Message);
         var frames = new List<ReadOnlyMemory<byte>>(); var emitted = new HashSet<IptcDatasetKey>();
         long size = 0; int count = 0; bool effective = false;
         void Add(ReadOnlyMemory<byte> frame)
@@ -118,6 +156,6 @@ public sealed class IptcPacket
         if (!effective) return this;
         byte[] output = new byte[(int)size]; int offset = 0;
         foreach (var frame in frames) { frame.Span.CopyTo(output.AsSpan(offset)); offset += frame.Length; }
-        return Read(output, limits);
+        return Read(output, limits, null);
     }
 }

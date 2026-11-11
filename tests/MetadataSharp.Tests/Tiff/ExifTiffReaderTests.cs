@@ -289,6 +289,129 @@ public sealed class ExifTiffReaderTests
         }
     }
 
+    // The read-only rules accept three structures the specifications allow and the editable profile
+    // cannot write back. The strict read keeps refusing each of them.
+    [Fact]
+    public void TheReadOnlyRulesLeaveOutAnEntryOfUnknownTypeAndKeepTheRest()
+    {
+        byte[] data = Graph();
+        Put16(data, 84, 14); // the interoperability entry now has a field type TIFF 6.0 does not define
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => ExifTiffReader.Read(data)).Code);
+
+        ExifMetadata metadata = ExifTiffReader.ReadRelaxed(data);
+        Assert.False(metadata.IsEditable);
+        Assert.Equal(7, metadata.Entries.Count);
+        Assert.False(metadata.TryGetEntry(new(ExifDirectoryKind.Interop, 0xFFFF), out _));
+        Assert.True(metadata.TryGetEntry(new(ExifDirectoryKind.Exif, 0xA005), out _));
+        Assert.True(metadata.TryGetEntry(new(ExifDirectoryKind.Thumbnail, 0x0202), out _));
+    }
+
+    [Fact]
+    public void TheReadOnlyRulesReadStripTagsAsEntriesAndFollowNothing()
+    {
+        // An uncompressed thumbnail: StripOffsets and StripByteCounts in place of the JPEG pair.
+        byte[] data = Graph();
+        Put16(data, 112, 0x0111); Put16(data, 124, 0x0117);
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => ExifTiffReader.Read(data)).Code);
+
+        ExifMetadata metadata = ExifTiffReader.ReadRelaxed(data);
+        Assert.False(metadata.IsEditable);
+        Assert.Equal(8, metadata.Entries.Count);
+        Assert.True(metadata.TryGetEntry(new(ExifDirectoryKind.Thumbnail, 0x0111), out ExifEntry? strips));
+        byte[] offset = new byte[4];
+        strips.Value.CopyRawTo(offset);
+        Assert.Equal(new byte[] { 140, 0, 0, 0 }, offset);
+    }
+
+    [Fact]
+    public void TheReadOnlyRulesReadValuesThatShareBytes()
+    {
+        // The MakerNote value is laid over the thumbnail's bytes.
+        byte[] data = Graph();
+        Put32(data, 48, 140);
+        Assert.Equal(MetadataErrorCode.InvalidExif, Assert.Throws<MetadataException>(() => ExifTiffReader.Read(data)).Code);
+
+        ExifMetadata metadata = ExifTiffReader.ReadRelaxed(data);
+        Assert.False(metadata.IsEditable);
+        Assert.Equal(8, metadata.Entries.Count);
+        Assert.True(metadata.TryGetEntry(new(ExifDirectoryKind.Exif, 0x927C), out ExifEntry? maker));
+        byte[] payload = new byte[6];
+        maker.Value.CopyRawTo(payload);
+        Assert.Equal(new byte[] { 0xFF, 0xD8, 0xFF, 0xD9, 1, 2 }, payload);
+    }
+
+    [Fact]
+    public void InspectReadsAValidBlockStrictlyAndFallsBackOnlyWhenRefused()
+    {
+        Assert.True(ExifTiffReader.Read(Graph()).Metadata.IsEditable);
+        ExifMetadata strict = ExifTiffReader.Inspect(Graph());
+        Assert.True(strict.IsEditable);
+        Assert.Equal(8, strict.Entries.Count);
+
+        byte[] data = Graph();
+        Put16(data, 84, 14);
+        ExifMetadata relaxed = ExifTiffReader.Inspect(data);
+        Assert.False(relaxed.IsEditable);
+        Assert.Equal(7, relaxed.Entries.Count);
+    }
+
+    // Malformed input is refused by the read-only rules exactly as by the strict ones.
+    [Theory]
+    [InlineData("bad-value", MetadataErrorCode.InvalidExif)]
+    [InlineData("overflow", MetadataErrorCode.InvalidExif)]
+    [InlineData("past-ifd", MetadataErrorCode.InvalidExif)]
+    [InlineData("pointer-type", MetadataErrorCode.InvalidExif)]
+    [InlineData("bigtiff", MetadataErrorCode.UnsupportedFeature)]
+    [InlineData("duplicate", MetadataErrorCode.AmbiguousMetadata)]
+    [InlineData("unsorted", MetadataErrorCode.InvalidExif)]
+    [InlineData("cycle", MetadataErrorCode.InvalidExif)]
+    [InlineData("shared", MetadataErrorCode.InvalidExif)]
+    [InlineData("nested-next", MetadataErrorCode.UnsupportedFeature)]
+    [InlineData("maker-type", MetadataErrorCode.InvalidExif)]
+    [InlineData("per-directory", MetadataErrorCode.LimitExceeded)]
+    public void TheReadOnlyRulesKeepRefusingMalformedInput(string mutation, MetadataErrorCode code)
+    {
+        byte[] data = Graph();
+        MetadataLimits? limits = null;
+        switch (mutation)
+        {
+            case "bad-value": Put32(data, 48, uint.MaxValue); break;
+            case "overflow": Put16(data, 42, 5); Put32(data, 44, uint.MaxValue); break;
+            case "past-ifd": Put32(data, 4, uint.MaxValue); break;
+            case "pointer-type": Put16(data, 12, 3); break;
+            case "bigtiff": Put16(data, 2, 43); break;
+            case "duplicate": Put16(data, 22, 0x8769); break;
+            case "unsorted": Put16(data, 22, 0x0100); break;
+            case "cycle": Put32(data, 18, 8); break;
+            case "shared": Put32(data, 30, 38); break;
+            case "nested-next": Put32(data, 64, 80); break;
+            case "maker-type": Put16(data, 42, 1); break;
+            case "per-directory": limits = new MetadataLimits { MaxEntriesPerDirectory = 1 }; break;
+        }
+        Assert.Equal(code, Assert.Throws<MetadataException>(() => ExifTiffReader.ReadRelaxed(data, limits)).Code);
+        Assert.Equal(code, Assert.Throws<MetadataException>(() => ExifTiffReader.Inspect(data, limits)).Code);
+    }
+
+    [Fact]
+    public void TheReadOnlyRulesRefuseEveryTruncatedPrefixAndNeverLeakAnotherException()
+    {
+        byte[] whole = Orientation();
+        for (int length = 0; length < whole.Length; length++)
+        {
+            byte[] prefix = whole[..length];
+            Assert.Equal(MetadataErrorCode.InvalidExif, Assert.Throws<MetadataException>(() => ExifTiffReader.ReadRelaxed(prefix)).Code);
+        }
+        var random = new Random(2048);
+        byte[] source = Graph();
+        for (int i = 0; i < 512; i++)
+        {
+            byte[] data = (byte[])source.Clone();
+            data[random.Next(data.Length)] = (byte)random.Next(256);
+            try { ExifTiffReader.ReadRelaxed(data); }
+            catch (MetadataException) { }
+        }
+    }
+
     // Authored synthetic layout, not serialized by production code. All offsets are TIFF-relative.
     private static byte[] Graph(bool big = false)
     {

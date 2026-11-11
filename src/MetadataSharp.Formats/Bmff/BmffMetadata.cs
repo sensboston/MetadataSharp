@@ -371,7 +371,7 @@ internal ref struct BmffReader
         uint skip = BinaryPrimitives.ReadUInt32BigEndian(bytes);
         long start = 4L + skip;
         if (start >= bytes.Length) throw Fail("The EXIF TIFF header lies past its item.", source);
-        return ExifTiffReader.Read(bytes.AsSpan((int)start), limits, source + start).Metadata;
+        return ExifTiffReader.Inspect(bytes.AsSpan((int)start), limits, source + start);
     }
 
     private XmpPacket? XmpItem()

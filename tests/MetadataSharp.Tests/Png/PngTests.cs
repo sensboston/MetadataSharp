@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.IO.Compression;
 using System.Text;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Png;
 using MetadataSharp.Tests.Jpeg;
@@ -116,14 +117,92 @@ public sealed class PngTests
         var remove = new ExifEdit(); remove.RemoveAllExif(); Assert.Equal(PngFixture.Build(), ExifSave(brokenExif, remove));
     }
     [Fact]
+    public void ExifOutsideTheEditableProfileIsReadAndNotEdited()
+    {
+        // StripOffsets, as an uncompressed Exif thumbnail has: valid to read, not something the planner writes.
+        byte[] strips = [0x49, 0x49, 42, 0, 8, 0, 0, 0, 1, 0, 0x11, 0x01, 4, 0, 1, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0];
+        byte[] original = PngFixture.Build(PngFixture.Chunk("eXIf", strips));
+        using (var doc = PngMetadataDocument.Open(new MemoryStream(original)))
+        {
+            ExifMetadata metadata = Assert.IsType<ExifMetadata>(doc.ReadExif());
+            Assert.False(metadata.IsEditable);
+            Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0111), Assert.Single(metadata.Entries).Key);
+        }
+        var edit = new ExifEdit(); edit.Set(new(ExifDirectoryKind.Ifd0, 0x0112), ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, new byte[] { 6, 0 }));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => ExifSave(original, edit)).Code);
+        Assert.Equal(original, ExifSave(original, new()));
+        using var plain = PngMetadataDocument.Open(new MemoryStream(PngFixture.Build(PngFixture.Chunk("eXIf", JpegFixture.OrientationTiff))));
+        Assert.True(Assert.IsType<ExifMetadata>(plain.ReadExif()).IsEditable);
+    }
+    /// <summary>A "Raw profile type NAME" text chunk as ImageMagick writes it, the hex broken into lines.</summary>
+    private static byte[] Profile(string name, byte[] bytes, bool compressed = false)
+    {
+        string hex = string.Join("\n", Convert.ToHexString(bytes).ToLowerInvariant().Chunk(36).Select(line => new string(line)));
+        string count = bytes.Length.ToString(System.Globalization.CultureInfo.InvariantCulture).PadLeft(8);
+        byte[] text = Encoding.ASCII.GetBytes("\n" + name + "\n" + count + "\n" + hex + "\n");
+        byte[] keyword = Encoding.ASCII.GetBytes("Raw profile type " + name);
+        return compressed ? PngFixture.Chunk("zTXt", [.. keyword, 0, 0, .. PngFixture.Compress(text)]) : PngFixture.Chunk("tEXt", [.. keyword, 0, .. text]);
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RawProfilesAreReadAndNotEdited(bool compressed)
+    {
+        byte[] stream = [0x1c, 2, 120, 0, 2, 104, 105];
+        // The stream inside one Photoshop resource, 0x0404, without the APP13 signature.
+        byte[] resources = [.. "8BIM"u8, 4, 4, 0, 0, 0, 0, 0, 7, .. stream, 0];
+        byte[] original = PngFixture.Build([.. Profile("exif", JpegFixture.Exif(), compressed), .. Profile("iptc", resources, compressed)]);
+        using (var doc = PngMetadataDocument.Open(new MemoryStream(original)))
+        {
+            ExifMetadata exif = Assert.IsType<ExifMetadata>(doc.ReadExif());
+            Assert.False(exif.IsEditable);
+            Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), Assert.Single(exif.Entries).Key);
+            IptcPacket iptc = Assert.IsType<IptcPacket>(doc.ReadIptc());
+            Assert.False(iptc.IsEditable);
+            Assert.Equal(new IptcDatasetKey(2, 120), Assert.Single(iptc.Datasets).Key);
+        }
+        // No eXIf chunk is written beside the profile, and removal has nothing it may remove.
+        var remove = new ExifEdit(); remove.RemoveAllExif();
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => ExifSave(original, remove)).Code);
+        Assert.Equal(original, ExifSave(original, new()));
+        // The profile may be the stream itself, and a block without the Exif header is a TIFF stream.
+        using var bare = PngMetadataDocument.Open(new MemoryStream(PngFixture.Build([.. Profile("iptc", stream, compressed), .. Profile("exif", JpegFixture.OrientationTiff, compressed)])));
+        Assert.Single(bare.ReadIptc()!.Datasets);
+        Assert.Single(bare.ReadExif()!.Entries);
+        // The eXIf chunk is the file's EXIF when both are present, and stays editable.
+        using var both = PngMetadataDocument.Open(new MemoryStream(PngFixture.Build([.. PngFixture.Chunk("eXIf", JpegFixture.OrientationTiff), .. Profile("exif", JpegFixture.Exif(), compressed)])));
+        Assert.True(both.ReadExif()!.IsEditable);
+        Assert.Null(both.ReadIptc());
+        using var twice = PngMetadataDocument.Open(new MemoryStream(PngFixture.Build([.. Profile("iptc", stream), .. Profile("iptc", stream, compressed)])));
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => twice.ReadIptc()).Code);
+    }
+    [Theory]
+    [InlineData("\nexif\n       2\n00")]         // fewer bytes than the count
+    [InlineData("\nexif\n       1\n0000")]       // more bytes than the count
+    [InlineData("\nexif\n       2\n000")]        // half a byte
+    [InlineData("\nexif\n       1\n0g")]         // not hexadecimal
+    [InlineData("\nexif\nmany\n00")]             // no count
+    [InlineData("\nexif\n 99999999\n00")]        // a count the text could not spell
+    [InlineData("")]
+    public void MalformedRawProfileTextIsRefused(string text)
+    {
+        byte[] chunk = PngFixture.Chunk("tEXt", [.. "Raw profile type exif\0"u8, .. Encoding.ASCII.GetBytes(text)]);
+        using var doc = PngMetadataDocument.Open(new MemoryStream(PngFixture.Build(chunk)));
+        Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => doc.ReadExif()).Code);
+    }
+    [Fact]
     public void StructuralOrderTruncationAndCountsAreChecked()
     {
         byte[] bytes = PngFixture.Build();
         for (int n = 0; n < bytes.Length; n++) Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => PngMetadataDocument.Open(new MemoryStream(bytes[..n]))).Code);
         Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => PngMetadataDocument.Open(new MemoryStream([.. bytes, 0]))).Code);
         Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => PngMetadataDocument.Open(new MemoryStream(bytes), new() { Limits = new() { MaxSegments = 1 } })).Code);
+        // eXIf may follow the image data, and is then read and edited where it stands; it may not split it.
         byte[] lateExif = PngFixture.Build(after: PngFixture.Chunk("eXIf", JpegFixture.OrientationTiff));
-        Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => PngMetadataDocument.Open(new MemoryStream(lateExif))).Code);
+        using (var late = PngMetadataDocument.Open(new MemoryStream(lateExif))) Assert.True(late.ReadExif()!.IsEditable);
+        var remove = new ExifEdit(); remove.RemoveAllExif(); Assert.Equal(bytes, ExifSave(lateExif, remove));
+        byte[] splitByExif = PngFixture.Build(after: [.. PngFixture.Chunk("eXIf", JpegFixture.OrientationTiff), .. PngFixture.Chunk("IDAT", [])]);
+        Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => PngMetadataDocument.Open(new MemoryStream(splitByExif))).Code);
         byte[] splitIdat = PngFixture.Build(after: [.. PngFixture.Chunk("tEXt", "note\0owned"u8.ToArray()), .. PngFixture.Chunk("IDAT", [])]);
         Assert.Equal(MetadataErrorCode.InvalidPng, Assert.Throws<MetadataException>(() => PngMetadataDocument.Open(new MemoryStream(splitIdat))).Code);
     }

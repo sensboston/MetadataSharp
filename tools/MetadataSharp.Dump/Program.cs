@@ -25,9 +25,9 @@ using MetadataSharp.Formats.WebP;
 // ExifTags.Interpret makes of the value, and it is empty where that is null. A record without the
 // field says no interpretation is offered for the tag at all, which is the case for MakerNote, IPTC
 // and XMP records.
-// A file whose reader refused or was not attempted simply carries no TAG records. A TIFF or PSD
-// that was read, with its IPTC stream or XMP packet refused, is ok with the detail
-// iptc-refused:<code>, xmp-refused:<code>, or both separated by a comma.
+// A file whose reader refused or was not attempted simply carries no TAG records. A JPEG, PNG, TIFF or PSD
+// that was read, with one kind of its metadata refused, is ok with the detail exif-refused:<code>,
+// iptc-refused:<code> or xmp-refused:<code>, several of them separated by commas.
 internal static class Program
 {
     private const long MaxWholeFileBytes = 64L * 1024 * 1024;
@@ -106,18 +106,39 @@ internal static class Program
         if (!WithinBudget(length, stdout)) return;
         using JpegMetadataDocument document = JpegMetadataDocument.Open(path);
         Exif(document.Exif, stdout);
-        if (document.ReadIptc() is IptcPacket iptc) Iptc(iptc, stdout);
-        if (document.ReadXmp() is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
+        // The document reads each kind on its own, so a refused IPTC stream or XMP packet leaves the
+        // rows of the other kinds in place and travels in the detail of the status, as for a TIFF.
+        var refused = new List<string>();
+        IptcPacket? iptc = null;
+        try { iptc = document.ReadIptc(); }
+        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
+        if (iptc is not null) Iptc(iptc, stdout);
+        XmpPacket? xmp = null;
+        try { xmp = document.ReadXmp(); }
+        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
+        if (xmp is not null) Xmp(xmp, stdout);
+        Done(stdout, refused);
     }
 
     private static void Png(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
         using PngMetadataDocument document = PngMetadataDocument.Open(path);
-        Exif(document.ReadExif(), stdout);
-        if (document.ReadXmp() is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
+        // As for a JPEG: each kind is read on its own, and a refusal travels in the detail of the status.
+        var refused = new List<string>();
+        ExifMetadata? exif = null;
+        try { exif = document.ReadExif(); }
+        catch (MetadataException failure) { refused.Add("exif-refused:" + failure.Code); }
+        Exif(exif, stdout);
+        IptcPacket? iptc = null;
+        try { iptc = document.ReadIptc(); }
+        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
+        if (iptc is not null) Iptc(iptc, stdout);
+        XmpPacket? xmp = null;
+        try { xmp = document.ReadXmp(); }
+        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
+        if (xmp is not null) Xmp(xmp, stdout);
+        Done(stdout, refused);
     }
 
     private static void WebP(string path, StreamWriter stdout, long length)
@@ -182,14 +203,18 @@ internal static class Program
     {
         if (!WithinBudget(length, stdout)) return;
         PsdMetadata metadata = PsdMetadata.Read(File.ReadAllBytes(path));
-        if (metadata.GetResource(0x0404) is byte[] resource && resource.Length != 0) Iptc(IptcPacket.Parse(resource), stdout);
-        // As for a TIFF: a packet the XMP reader refuses leaves the rows already written in place.
+        // As for a TIFF: a resource its reader refuses leaves the rows of the other kinds in place.
         var refused = new List<string>();
+        ExifMetadata? exif = null;
+        try { exif = metadata.ReadExif(); }
+        catch (MetadataException failure) { refused.Add("exif-refused:" + failure.Code); }
+        Exif(exif, stdout);
+        IptcPacket? iptc = null;
+        try { iptc = metadata.ReadIptc(); }
+        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
+        if (iptc is not null) Iptc(iptc, stdout);
         XmpPacket? xmp = null;
-        try
-        {
-            if (metadata.GetResource(0x0424) is byte[] packet && packet.Length != 0) xmp = XmpPacket.Parse(packet);
-        }
+        try { xmp = metadata.ReadXmp(); }
         catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
         if (xmp is not null) Xmp(xmp, stdout);
         Done(stdout, refused);
@@ -322,12 +347,58 @@ internal static class Program
         {
             byte[] bytes = new byte[dataset.Value.ByteLength];
             dataset.Value.CopyRawTo(bytes);
-            bytes = Trim(bytes);
-            string text = (packet.CharacterSet == IptcCharacterSet.Utf8 ? Encoding.UTF8 : Encoding.Latin1).GetString(bytes);
             string field = IptcDatasetNames.TryGetName(dataset.Key, out string? name)
                 ? name : "0x" + dataset.Key.Dataset.ToString("x2", CultureInfo.InvariantCulture);
-            Tag(stdout, RecordName(dataset.Key.Record) + "." + field, "String", (uint)bytes.Length, Escape(text));
+            string key = RecordName(dataset.Key.Record) + "." + field;
+            // A value in the form the specification gives its dataset is printed as that form reads;
+            // one in any other form, a time without seconds for one, is printed as the text it is.
+            switch (IptcDatasetNames.FormatOf(dataset.Key))
+            {
+                case IptcValueFormat.UInt16 when bytes.Length == 2:
+                    Tag(stdout, key, "Short", 1, ((bytes[0] << 8) | bytes[1]).ToString(CultureInfo.InvariantCulture));
+                    continue;
+                case IptcValueFormat.Date when bytes.Length == 8 && Digits(bytes, 0, 8):
+                    Tag(stdout, key, "Date", 8, Ascii(bytes, 0, 4) + "-" + Ascii(bytes, 4, 2) + "-" + Ascii(bytes, 6, 2));
+                    continue;
+                case IptcValueFormat.Time when IptcTime(bytes) is string time:
+                    Tag(stdout, key, "Time", 11, time);
+                    continue;
+                case IptcValueFormat.Binary:
+                    Tag(stdout, key, "Undefined", (uint)bytes.Length, string.Join(' ', bytes.Select(b => b.ToString(CultureInfo.InvariantCulture))));
+                    continue;
+            }
+            bytes = Trim(bytes);
+            // Without a declared character set the bytes are UTF-8 if they read as UTF-8, and Latin-1 if not.
+            string text = packet.CharacterSet == IptcCharacterSet.Utf8 ? Encoding.UTF8.GetString(bytes) : Utf8OrLatin1(bytes);
+            Tag(stdout, key, "String", (uint)bytes.Length, Escape(text));
         }
+    }
+
+    private static bool Digits(byte[] bytes, int at, int count)
+    {
+        for (int i = at; i < at + count; i++) if (bytes[i] < '0' || bytes[i] > '9') return false;
+        return true;
+    }
+
+    private static string Ascii(byte[] bytes, int at, int count) => Encoding.ASCII.GetString(bytes, at, count);
+
+    /// <summary>
+    /// HHMMSS, with or without the offset from UTC as a sign and HHMM, written with colons. A time
+    /// without an offset is printed with a zero offset, as the reference prints it.
+    /// </summary>
+    private static string? IptcTime(byte[] bytes)
+    {
+        if (bytes.Length is not (6 or 11) || !Digits(bytes, 0, 6)) return null;
+        string time = Ascii(bytes, 0, 2) + ":" + Ascii(bytes, 2, 2) + ":" + Ascii(bytes, 4, 2);
+        if (bytes.Length == 6) return time + "+00:00";
+        if ((bytes[6] != '+' && bytes[6] != '-') || !Digits(bytes, 7, 4)) return null;
+        return time + (char)bytes[6] + Ascii(bytes, 7, 2) + ":" + Ascii(bytes, 9, 2);
+    }
+
+    private static string Utf8OrLatin1(byte[] bytes)
+    {
+        try { return new UTF8Encoding(false, true).GetString(bytes); }
+        catch (DecoderFallbackException) { return Encoding.Latin1.GetString(bytes); }
     }
 
     private static void Xmp(XmpPacket packet, StreamWriter stdout)
@@ -406,8 +477,20 @@ internal static class Program
     private static string Name(ExifTagKey key)
     {
         ExifTagDefinition? definition = ExifTags.Find(key);
-        return definition is null ? "0x" + Hex(key.TagId) : definition.Name;
+        return definition is null ? "0x" + Hex(key.TagId) : ReferenceSpelling(key) ?? definition.Name;
     }
+
+    /// <summary>The key the reference prints for a tag it spells differently from Exif 3.0. The library
+    /// keeps the standard's spelling; a comparison by key needs the two tools to say the same word for the
+    /// same tag number. Only tags the library already names are listed: this is spelling, not vocabulary.</summary>
+    private static string? ReferenceSpelling(ExifTagKey key) => (key.Directory, key.TagId) switch
+    {
+        (ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail, 0x8769) => "ExifTag", // ExifIFDPointer
+        (ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail, 0x8825) => "GPSTag", // GPSInfoIFDPointer
+        (ExifDirectoryKind.Exif, 0x8827) => "ISOSpeedRatings", // PhotographicSensitivity
+        (ExifDirectoryKind.Exif, 0xA005) => "InteroperabilityTag", // InteroperabilityIFDPointer
+        _ => null,
+    };
 
     private static string Group(ExifDirectoryKind directory) => directory switch
     {

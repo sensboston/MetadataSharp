@@ -8,6 +8,8 @@ namespace MetadataSharp.Formats.Png;
 
 internal sealed record PngChunk(string Type, long Start, int Size, bool Xmp, bool UnsafeUnknown)
 {
+    /// <summary>The NAME of a tEXt or zTXt chunk whose keyword is "Raw profile type NAME", else null.</summary>
+    internal string? Profile { get; init; }
     internal long Payload => Start + 8;
     internal long Length => (long)Size + 12;
 }
@@ -16,6 +18,14 @@ internal static class PngScanner
 {
     internal static MetadataException Invalid(string message = "Malformed PNG container.") => new(MetadataErrorCode.InvalidPng, message);
     private static readonly HashSet<string> Known = ["IHDR", "PLTE", "IDAT", "IEND", "eXIf", "iTXt", "tEXt", "zTXt", "iCCP", "cHRM", "gAMA", "sBIT", "sRGB", "cICP", "mDCV", "cLLI", "bKGD", "hIST", "tRNS", "pHYs", "sPLT", "tIME"];
+    private static string? RawProfileName(ReadOnlySpan<byte> prefix)
+    {
+        ReadOnlySpan<byte> lead = "Raw profile type "u8;
+        if (!prefix.StartsWith(lead)) return null;
+        ReadOnlySpan<byte> rest = prefix[lead.Length..];
+        int end = rest.IndexOf((byte)0);
+        return end <= 0 ? null : Encoding.Latin1.GetString(rest[..end]);
+    }
     internal static async Task<PngScan> Scan(Stream source, MetadataLimits limits, bool asynchronous, CancellationToken token)
     {
         if (!source.CanRead || !source.CanSeek || source.Position != 0) throw new ArgumentException("PNG source must be readable, seekable and at zero.", nameof(source));
@@ -79,7 +89,8 @@ internal static class PngScanner
                 }
                 if (type is "cHRM" or "gAMA" or "iCCP" or "sBIT" or "sRGB" or "cICP" or "mDCV" or "cLLI")
                     if (idat || palette != 0) throw Invalid("Color metadata must precede PLTE/IDAT.");
-                if (type is "bKGD" or "hIST" or "tRNS" or "pHYs" or "sPLT" or "eXIf")
+                // eXIf is not in this list: the specification lets it follow the image data.
+                if (type is "bKGD" or "hIST" or "tRNS" or "pHYs" or "sPLT")
                     if (idat) throw Invalid("This PNG chunk must precede IDAT.");
                 if (type is "bKGD" or "hIST" or "tRNS") paletteDependent = true;
                 if (type == "hIST" && (palette == 0 || size != palette * 2)) throw Invalid("Invalid hIST.");
@@ -88,11 +99,51 @@ internal static class PngScanner
                 int fixedSize = type switch { "gAMA" or "cICP" => 4, "cHRM" => 32, "sRGB" => 1, "pHYs" => 9, "tIME" => 7, "mDCV" => 24, "cLLI" => 8, "sBIT" => color switch { 0 => 1, 2 or 3 => 3, 4 => 2, _ => 4 }, _ => -1 };
                 if (fixedSize >= 0 && size != fixedSize) throw Invalid("Invalid fixed-size ancillary chunk.");
                 bool xmp = type == "iTXt" && prefix.AsSpan().StartsWith("XML:com.adobe.xmp\0"u8);
-                chunks.Add(new(type, start, (int)size, xmp, !Known.Contains(type) && (header[7] & 32) == 0));
+                string? profile = type is "tEXt" or "zTXt" ? RawProfileName(prefix) : null;
+                chunks.Add(new(type, start, (int)size, xmp, !Known.Contains(type) && (header[7] & 32) == 0) { Profile = profile });
             }
             throw Invalid("Missing IEND.");
         }
         finally { ArrayPool<byte>.Shared.Return(buffer); }
+    }
+}
+/// <summary>
+/// The text chunks in which ImageMagick, and the tools that follow it, store a metadata block PNG has
+/// no chunk for. The keyword is "Raw profile type NAME". The text is a line with the name, a line with
+/// the number of bytes in decimal, and the bytes in hexadecimal, broken into lines.
+/// </summary>
+internal static class PngRawProfile
+{
+    private static MetadataException Bad() => PngScanner.Invalid("Malformed raw profile text.");
+    private static bool Blank(byte value) => value == ' ' || value == '\n' || value == '\r' || value == '\t';
+    private static int Nibble(byte value) =>
+        value >= '0' && value <= '9' ? value - '0' : value >= 'a' && value <= 'f' ? value - 'a' + 10 : value >= 'A' && value <= 'F' ? value - 'A' + 10 : -1;
+    internal static byte[] Decode(ReadOnlySpan<byte> text)
+    {
+        int at = 0;
+        // The name line, with the line break writers put in front of it. The keyword has named the profile.
+        while (at < text.Length && (text[at] == '\n' || text[at] == '\r')) at++;
+        while (at < text.Length && text[at] != '\n') at++;
+        while (at < text.Length && Blank(text[at])) at++;
+        long declared = 0; int digits = 0;
+        while (at < text.Length && text[at] >= '0' && text[at] <= '9')
+        {
+            declared = declared * 10 + (text[at++] - '0'); digits++;
+            // Two digits spell one byte, so the text bounds the count before anything is allocated.
+            if (declared > text.Length) throw Bad();
+        }
+        if (digits == 0) throw Bad();
+        byte[] result = new byte[declared]; int count = 0, high = -1;
+        for (; at < text.Length; at++)
+        {
+            if (Blank(text[at])) continue;
+            int nibble = Nibble(text[at]);
+            if (nibble < 0 || count == result.Length) throw Bad();
+            if (high < 0) high = nibble;
+            else { result[count++] = (byte)((high << 4) | nibble); high = -1; }
+        }
+        if (high >= 0 || count != result.Length) throw Bad();
+        return result;
     }
 }
 internal static class Crc

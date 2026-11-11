@@ -38,6 +38,9 @@ import exiv2_print  # noqa: E402
 CHUNK_LIMIT = 10
 CHUNK_SIZE = 4000
 CHUNK_TITLE = "PARITY"
+#: Notices one workflow step may leave. The summary is written first and must fit; the per-file
+#: detail takes what is left and is trimmed to it.
+STEP_NOTICE_LIMIT = 10
 #: Files per tool invocation. A batch is only a performance detail: an incomplete batch is retried
 #: file by file, so one hostile input cannot take the measurement down.
 DUMP_CHUNK_FILES = 40
@@ -330,15 +333,85 @@ def summary(report: dict[str, Any], problems: list[str]) -> dict[str, Any]:
     }
 
 
-def emit_annotations(payload: dict[str, Any], title: str = CHUNK_TITLE) -> None:
-    encoded = base64.b64encode(zlib.compress(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
+def detail(files: list[dict[str, Any]]) -> dict[str, Any]:
+    """What the summary folds away, for the same channel: which file, and which key.
+
+    One entry per file that is not a complete agreement - its status, the reader's reason, and how
+    many of its keys per group are missing, different or unread - and every missing or differing key
+    with its count. Nothing here is a new measurement: it is the per-file rows, counted. It has to be
+    taken before the rows are bounded for the JSON report.
+    """
+    listed: dict[str, dict[str, Any]] = {}
+    missing: dict[str, int] = {}
+    differing: dict[str, int] = {}
+    for entry in files:
+        groups: dict[str, dict[str, int]] = {}
+        extra = 0
+        for r in entry["rows"]:
+            outcome = r["outcome"]
+            if outcome == compare_mod.EXTRA_KEY:
+                extra += 1
+            elif outcome in (compare_mod.MISSING_KEY, compare_mod.VALUE_DIFF, compare_mod.NOT_READ):
+                bucket = groups.setdefault(outcome, {})
+                group = compare_mod.family(r["key"])
+                bucket[group] = bucket.get(group, 0) + 1
+                if outcome == compare_mod.MISSING_KEY:
+                    missing[r["key"]] = missing.get(r["key"], 0) + 1
+                elif outcome == compare_mod.VALUE_DIFF:
+                    differing[r["key"]] = differing.get(r["key"], 0) + 1
+        if entry["status"] == "ok" and not entry["detail"] and not groups:
+            continue
+        row: dict[str, Any] = {"format": entry["format"], "status": entry["status"]}
+        if entry["detail"]:
+            row["detail"] = entry["detail"]
+        if extra:
+            row["extra"] = extra
+        row.update(groups)
+        listed[entry["label"]] = row
+    return {"files": listed, "missing": missing, "differing": differing, "trimmed": 0}
+
+
+def encode(payload: dict[str, Any]) -> str:
+    return base64.b64encode(zlib.compress(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
+
+
+def fit_detail(payload: dict[str, Any], notices: int) -> dict[str, Any] | None:
+    """The detail, with its rarest missing keys dropped until it fits ``notices`` annotations.
+
+    ``trimmed`` says how many keys went, so a reader of the annotations knows the table is not the
+    whole of it; the per-file counts are never cut. ``None`` when not even those fit.
+    """
+    budget = notices * CHUNK_SIZE
+    if budget <= 0:
+        return None
+    if len(encode(payload)) <= budget:
+        return payload
+    ranked = sorted(payload["missing"].items(), key=lambda pair: (-pair[1], pair[0]))
+    low, high = 0, len(ranked)
+    # The encoded size grows with the number of keys kept, so the largest table that fits is found
+    # by bisection rather than by encoding once per key.
+    while low < high:
+        middle = (low + high + 1) // 2
+        trial = dict(payload, missing=dict(ranked[:middle]), trimmed=len(ranked) - middle)
+        if len(encode(trial)) <= budget:
+            low = middle
+        else:
+            high = middle - 1
+    fitted = dict(payload, missing=dict(ranked[:low]), trimmed=len(ranked) - low)
+    return fitted if len(encode(fitted)) <= budget else None
+
+
+def emit_annotations(payload: dict[str, Any], title: str = CHUNK_TITLE, word: str = "summary") -> int:
+    """Write ``payload`` as numbered notices and return how many it took."""
+    encoded = encode(payload)
     parts = [encoded[i : i + CHUNK_SIZE] for i in range(0, len(encoded), CHUNK_SIZE)]
     if not parts:
-        raise StructuralError("the summary is empty; there would be nothing to recover")
+        raise StructuralError(f"the {word} is empty; there would be nothing to recover")
     if len(parts) > CHUNK_LIMIT:
-        raise StructuralError(f"the summary needs {len(parts)} annotations; the recovery limit is {CHUNK_LIMIT}")
+        raise StructuralError(f"the {word} needs {len(parts)} annotations; the recovery limit is {CHUNK_LIMIT}")
     for number, part in enumerate(parts, 1):
-        print(f"::notice title={title} summary {number}/{len(parts)}::{part}")
+        print(f"::notice title={title} {word} {number}/{len(parts)}::{part}")
+    return len(parts)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -394,6 +467,7 @@ def main(argv: list[str] | None = None) -> int:
     # The totals are counted over every row; only the per-file detail is bounded, so a small
     # ``--rows-per-file`` keeps the artifact readable without moving a single number.
     report = compare_mod.aggregate(files, classifications)
+    per_file_detail = detail(files)
     for entry in files:
         keep = entry["rows"][: max(0, args.rows_per_file)]
         entry["rows_dropped"] = max(0, len(entry["rows"]) - len(keep))
@@ -419,7 +493,10 @@ def main(argv: list[str] | None = None) -> int:
     (args.out / "parity-report.txt").write_text(text, encoding="utf-8")
     print(text, end="")
     if args.annotate:
-        emit_annotations(summary(report, problems), args.title)
+        used = emit_annotations(summary(report, problems), args.title)
+        fitted = fit_detail(per_file_detail, min(CHUNK_LIMIT, STEP_NOTICE_LIMIT - used))
+        if fitted is not None:
+            emit_annotations(fitted, args.title, "detail")
     return 1 if problems else 0
 
 

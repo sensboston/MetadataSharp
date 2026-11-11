@@ -139,6 +139,22 @@ public sealed class BmffMetadataTests
     }
 
     [Fact]
+    public void AnExifItemWithAFieldOfUnknownTypeIsReadAsNotEditable()
+    {
+        // Orientation followed by an entry of field type 14, which TIFF 6.0 does not define.
+        byte[] tiff = [0x49, 0x49, 42, 0, 8, 0, 0, 0, 2, 0, 0x12, 1, 3, 0, 1, 0, 0, 0, 6, 0, 0, 0,
+            0x28, 1, 14, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0];
+        byte[] item = Concat(U32(6), Ascii("Exif"), new byte[] { 0, 0 }, tiff);
+        byte[] Build(uint offset) => Concat(FileType(), Meta(Handler(), PrimaryItem(1), ItemInformation(ItemEntry(1, "Exif")),
+            ItemLocationFile(1, offset, (uint)item.Length)), Box("mdat", item));
+        BmffMetadata metadata = BmffMetadata.Read(Build((uint)(Build(0).Length - item.Length)));
+        Assert.NotNull(metadata.Exif);
+        Assert.False(metadata.Exif.IsEditable);
+        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), Assert.Single(metadata.Exif.Entries).Key);
+        Assert.True(BmffMetadata.Read(ExifFile()).Exif!.IsEditable);
+    }
+
+    [Fact]
     public void AnExifTiffOffsetPastItsItemIsRefused()
     {
         byte[] item = Concat(U32(0x400), Ascii("Exif"), new byte[] { 0, 0 }, Orientation);

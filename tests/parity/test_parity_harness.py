@@ -526,6 +526,67 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual(decoded["problem_count"], 0)
         self.assertEqual(decoded["by_kind"], {"Exif": {"match-value": 1}})
 
+    def test_the_detail_names_the_files_and_keys_the_summary_only_counts(self):
+        agreed = self.sample("a.jpg", "Exif.Image.Make  Ascii  6  NIKON\n")
+        short = self.sample("b.jpg", "Exif.Image.Make  Ascii  6  NIKON\nExif.Photo.FNumber  Rational  1  28/10\n"
+                                     "Iptc.Application2.City  String  4  Oslo\nExif.Image.Model  Ascii  5  E995\n")
+        refused = self.sample("c.jpg", "Exif.Image.Make  Ascii  6  NIKON\nXmp.dc.title  LangAlt  1  x\n")
+        blocks = {str(agreed): [["TAG", "Exif.Image.Make", "Ascii", 6, "NIKON"], ["STATUS", "ok"]],
+                  str(short): [["TAG", "Exif.Image.Make", "Ascii", 6, "NIKON"], ["TAG", "Exif.Image.Model", "Ascii", 5, "E990"],
+                               ["TAG", "Exif.Image.Artist", "Ascii", 2, "x"], ["STATUS", "ok", "iptc-refused:InvalidIptc"]],
+                  str(refused): [["STATUS", "refused", "InvalidJpeg"]]}
+        completed = subprocess.run(
+            [sys.executable, str(ROOT / "tools/parity/run_parity.py")] + self.arguments(write_fake(self.root, blocks)) + ["--annotate"],
+            capture_output=True, text=True, check=False)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        import base64
+        import zlib
+
+        marker = "::notice title=PARITY detail 1/1::"
+        self.assertIn(marker, completed.stdout)
+        self.assertLess(completed.stdout.index("PARITY summary 1/1"), completed.stdout.index(marker))
+        decoded = json.loads(zlib.decompress(base64.b64decode(completed.stdout.split(marker)[1].split("\n")[0])))
+        # A file that agrees completely is not listed; the other two are, each with its reason.
+        self.assertEqual(sorted(decoded["files"]), ["exiv2:b.jpg", "exiv2:c.jpg"])
+        self.assertEqual(decoded["files"]["exiv2:b.jpg"], {
+            "format": "jpg", "status": "ok", "detail": "iptc-refused:InvalidIptc", "extra": 1,
+            "missing-key": {"Exif.Photo": 1, "Iptc.Application2": 1}, "value-diff": {"Exif.Image": 1}})
+        self.assertEqual(decoded["files"]["exiv2:c.jpg"], {
+            "format": "jpg", "status": "refused", "detail": "InvalidJpeg", "not-read": {"Exif.Image": 1, "Xmp.dc": 1}})
+        self.assertEqual(decoded["missing"], {"Exif.Photo.FNumber": 1, "Iptc.Application2.City": 1})
+        self.assertEqual(decoded["differing"], {"Exif.Image.Model": 1})
+        self.assertEqual(decoded["trimmed"], 0)
+        # The detail is a count of rows the report already has: it moves no number.
+        report = self.report()
+        self.assertEqual(report["outcomes"], {"match-value": 2, "missing-key": 2, "value-diff": 1, "extra-key": 1, "not-read": 2})
+
+    def test_a_detail_too_large_for_what_the_summary_left_loses_its_rarest_keys_first(self):
+        reference = {f"Exif.Image.Tag{index:03}": {"type": "Short", "count": 1, "value": "1", "labelled": False}
+                     for index in range(120)}
+        entries = [compare_mod.compare_file("exiv2:all", "exiv2", "jpg", "ok", "", reference, {}, []),
+                   compare_mod.compare_file("exiv2:one", "exiv2", "jpg", "ok", "",
+                                            {"Exif.Image.Tag007": reference["Exif.Image.Tag007"]}, {}, [])]
+        whole = run_parity.detail(entries)
+        self.assertEqual(len(whole["missing"]), 120)
+        self.assertEqual(whole["missing"]["Exif.Image.Tag007"], 2)
+        self.assertIs(run_parity.fit_detail(whole, 9), whole)
+
+        original = run_parity.CHUNK_SIZE
+        self.addCleanup(lambda: setattr(run_parity, "CHUNK_SIZE", original))
+        run_parity.CHUNK_SIZE = 300
+        fitted = run_parity.fit_detail(whole, 1)
+        self.assertIsNotNone(fitted)
+        self.assertLessEqual(len(run_parity.encode(fitted)), 300)
+        self.assertGreater(fitted["trimmed"], 0)
+        self.assertEqual(fitted["trimmed"] + len(fitted["missing"]), 120)
+        self.assertIn("Exif.Image.Tag007", fitted["missing"])            # the most frequent key stays
+        self.assertEqual(fitted["files"], whole["files"])                # the per-file counts are never cut
+        self.assertEqual(whole["trimmed"], 0)                            # and the original is not edited
+        # With no notice left, or too few for even the per-file counts, nothing is written.
+        self.assertIsNone(run_parity.fit_detail(whole, 0))
+        run_parity.CHUNK_SIZE = 40
+        self.assertIsNone(run_parity.fit_detail(whole, 1))
+
     def test_the_summary_folds_families_into_metadata_kinds(self):
         folded = run_parity.by_kind({
             "Xmp.dc": {"match-value": 2, "missing-key": 1},

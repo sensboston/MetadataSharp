@@ -398,7 +398,6 @@ public sealed class TiffExifTests
     [InlineData("past-ifd", MetadataErrorCode.InvalidExif)]
     [InlineData("zero-ifd", MetadataErrorCode.InvalidExif)]
     [InlineData("bad-value", MetadataErrorCode.InvalidExif)]
-    [InlineData("type", MetadataErrorCode.UnsupportedFeature)]
     [InlineData("pointer-type", MetadataErrorCode.InvalidExif)]
     public void DirectoryProblemsKeepTheCodesOfTheExifReader(string mutation, MetadataErrorCode code)
     {
@@ -409,10 +408,36 @@ public sealed class TiffExifTests
             case "past-ifd": layout.U32(4, PastTheEnd); break;
             case "zero-ifd": layout.U32(4, 0); break;
             case "bad-value": layout.U32(14, 3).U32(18, PastTheEnd); break;
-            case "type": layout.U16(12, 13); break;
             case "pointer-type": layout.U16(10, 0x8769); break;
         }
         Assert.Equal(code, Code(() => TiffExif.Read(layout.Bytes)));
+    }
+
+    [Fact]
+    public void AFieldOfUnknownTypeIsLeftOutAndTheFileIsReadAsNotEditable()
+    {
+        byte[] file = new Layout(40, false).Header().Directory(8, 0, (0x0112, 3, 1, 6), (0x0128, 13, 1, 2)).Bytes;
+
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Code(() => ExifTiffReader.ReadFile(file)));
+        ExifMetadata metadata = TiffExif.Read(file);
+        Assert.False(metadata.IsEditable);
+        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), Assert.Single(metadata.Entries).Key);
+        Assert.True(TiffExif.Read(Orientation()).IsEditable);
+    }
+
+    [Fact]
+    public void ValuesThatShareBytesAreReadAsNotEditable()
+    {
+        // Two ASCII values of five bytes stored at the same offset.
+        byte[] file = new Layout(48, false).Header()
+            .Directory(8, 0, (0x010F, 2, 5, 40), (0x0110, 2, 5, 40))
+            .Ascii(40, "Same")
+            .Bytes;
+
+        Assert.Equal(MetadataErrorCode.InvalidExif, Code(() => ExifTiffReader.ReadFile(file)));
+        ExifMetadata metadata = TiffExif.Read(file);
+        Assert.False(metadata.IsEditable);
+        Assert.Equal(2, metadata.Entries.Count);
     }
 
     [Fact]

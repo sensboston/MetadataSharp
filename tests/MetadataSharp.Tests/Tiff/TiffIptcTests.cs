@@ -119,11 +119,15 @@ public sealed class TiffIptcTests
     [Fact]
     public void OnlyLongPaddingIsRemoved()
     {
-        // More zeros than a LONG can add, a nonzero byte after the last dataset, and zeros after a
-        // stream that is not stored as LONGs: each is left for the IPTC reader, which refuses it.
-        Assert.Equal(MetadataErrorCode.InvalidIptc, Code(Build(false, (IptcNaa, Long, Join(Caption, new byte[6])))));
+        // More zeros than a LONG can add, and zeros after a stream that is not stored as LONGs, are
+        // left for the IPTC reader. It reads them as padding and marks the stream as not editable.
+        IptcPacket wide = TiffIptc.Read(Build(false, (IptcNaa, Long, Join(Caption, new byte[6]))))!;
+        Assert.False(wide.IsEditable); Assert.Equal(16, wide.ByteLength); Assert.Single(wide.Datasets);
+        IptcPacket bytes = TiffIptc.Read(Build(false, (IptcNaa, Undefined, Join(Caption, new byte[2]))))!;
+        Assert.False(bytes.IsEditable); Assert.Equal(12, bytes.ByteLength);
+        Assert.True(TiffIptc.Read(Build(false, (IptcNaa, Long, Join(Caption, new byte[2]))))!.IsEditable);
+        // A nonzero byte after the last dataset, and bytes that are no dataset at all, are refused.
         Assert.Equal(MetadataErrorCode.InvalidIptc, Code(Build(false, (IptcNaa, Long, Join(Caption, new byte[] { 0, 7 })))));
-        Assert.Equal(MetadataErrorCode.InvalidIptc, Code(Build(false, (IptcNaa, Undefined, Join(Caption, new byte[2])))));
         Assert.Equal(MetadataErrorCode.InvalidIptc, Code(Build(false, (IptcNaa, Undefined, new byte[] { 1, 2, 3, 4, 5, 6 }))));
     }
 

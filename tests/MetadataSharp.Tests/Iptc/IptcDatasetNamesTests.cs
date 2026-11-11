@@ -6,6 +6,27 @@ namespace MetadataSharp.Tests.Iptc;
 public sealed class IptcDatasetNamesTests
 {
     [Theory]
+    [InlineData(1, 0, IptcValueFormat.UInt16)]
+    [InlineData(1, 122, IptcValueFormat.UInt16)]
+    [InlineData(2, 0, IptcValueFormat.UInt16)]
+    [InlineData(2, 201, IptcValueFormat.UInt16)]
+    [InlineData(1, 70, IptcValueFormat.Date)]
+    [InlineData(2, 55, IptcValueFormat.Date)]
+    [InlineData(2, 62, IptcValueFormat.Date)]
+    [InlineData(1, 80, IptcValueFormat.Time)]
+    [InlineData(2, 60, IptcValueFormat.Time)]
+    [InlineData(2, 63, IptcValueFormat.Time)]
+    [InlineData(2, 125, IptcValueFormat.Binary)]
+    [InlineData(2, 202, IptcValueFormat.Binary)]
+    [InlineData(1, 90, IptcValueFormat.Text)]
+    [InlineData(2, 10, IptcValueFormat.Text)]
+    [InlineData(2, 120, IptcValueFormat.Text)]
+    [InlineData(2, 56, IptcValueFormat.Text)]  // not a dataset of record 2
+    [InlineData(3, 0, IptcValueFormat.Text)]   // another record
+    public void TheFormatOfADatasetIsTheOneTheSpecificationGivesIt(int record, int dataset, IptcValueFormat expected) =>
+        Assert.Equal(expected, IptcDatasetNames.FormatOf(new IptcDatasetKey((byte)record, (byte)dataset)));
+
+    [Theory]
     [InlineData(1, 0, "ModelVersion")] // the first row of the table
     [InlineData(1, 90, "CharacterSet")]
     [InlineData(1, 122, "ARMVersion")]

@@ -8,7 +8,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   IPTC split across several APP13 segments are read (edits copy unknown bytes verbatim).
 - PNG, WebP: EXIF/XMP read and restricted editing. Standalone TIFF: layout accounting and
   restricted descriptive editing. XMP packets and sidecars (bounded profile). EXV: read.
-  DNG: narrow read-only inventory. PSD/JP2/EPS: narrow inspection.
+  DNG: narrow read-only inventory. PSD: header and resources of any v1 file, with EXIF, IPTC and
+  XMP read from them (`PsdMetadata.ReadExif/ReadIptc/ReadXmp`). JP2/EPS: narrow inspection.
 - EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0).
 - MakerNotes (`ExifMetadata.MakerNote`, read-only): Canon (incl. arrays and AFInfo), Nikon 1/2/3
   (incl. versioned and encrypted arrays), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
@@ -16,10 +17,15 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   Minolta/Konica Minolta (incl. the camera-settings arrays), Casio (both layouts), Samsung
   (plain IFD and PictureWizard; "AOC" notes read as Pentax), Sigma/Foveon. Run 42974953667: +113
   EXIF values (Minolta 90, Sigma 23); the corpus has no Casio or Samsung file, so unit tests only.
-- Reading tolerates unaligned TIFF offsets.
+- Reading tolerates unaligned TIFF offsets. EXIF that the editable profile refuses for an unknown
+  field type, strip/tile/SubIFD tags or values sharing bytes is read with
+  `ExifMetadata.IsEditable` false (the entry of unknown type is left out) and is still refused for
+  editing; malformed EXIF is still refused for reading too.
 - XMP: `XmpPacket.Entries` lists every property of any packet (structures, arrays of structures,
   qualifiers) as read-only path rows; editing stays on the bounded profile. NUL padding is ignored.
 - TIFF-based files: IPTC read (`TiffIptc.Read`, tag 0x83BB or the resource in 0x8649).
+- IPTC read-only forms (`IptcPacket.IsEditable` false): padding, repeated equal controls or resources,
+  a digest without a stream. PNG: EXIF and IPTC in "Raw profile type" text chunks, eXIf after IDAT.
 - Parity harness: `tools/MetadataSharp.Dump` vs the pinned exiv2 0.28.9 corpus (CI job
   `differential-parity`). Run 42962213342, values agreeing of reference keys: EXIF 29,768 of
   34,821; XMP 1,895 of 2,641; IPTC 68 of 319 (no IPTC API for PNG or sidecars; typed values raw).
