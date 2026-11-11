@@ -45,7 +45,25 @@ public enum MakerNoteFormat
     Olympus2,
 
     /// <summary>OM System: as <see cref="Olympus2"/>, with an "OM SYSTEM" signature.</summary>
-    OMSystem
+    OMSystem,
+
+    /// <summary>Minolta and Konica Minolta: a headerless IFD in the TIFF byte order; offsets relative to the
+    /// TIFF header. The camera-settings arrays are big-endian whatever that byte order is.</summary>
+    Minolta,
+
+    /// <summary>Casio, early cameras: a headerless IFD in the TIFF byte order; offsets relative to the TIFF header.</summary>
+    Casio,
+
+    /// <summary>Casio: a "QVC" signature, then a big-endian IFD; offsets relative to the TIFF header.</summary>
+    Casio2,
+
+    /// <summary>Samsung: a headerless IFD in the TIFF byte order; offsets relative to the MakerNote. A Samsung
+    /// MakerNote with an "AOC" signature is a <see cref="Pentax"/> one and is reported as such.</summary>
+    Samsung2,
+
+    /// <summary>Sigma and Foveon: a "SIGMA" or "FOVEON" signature and two bytes, then an IFD in the TIFF byte
+    /// order; offsets relative to the TIFF header.</summary>
+    Sigma
 }
 
 /// <summary>One named field inside an array-valued MakerNote tag.</summary>

@@ -73,9 +73,81 @@ internal static class MakerNoteReader
             if (!note.StartsWith(NikonSignature))
                 return Directory(MakerNoteFormat.Nikon1, tiff, start, start + length, 0, order, 0, limits,
                     retainedBudget, NikonMakerNoteNames.Nikon1, null);
+            return null;
+        }
+        if (StartsWithIgnoringCase(make, "MINOLTA"u8) || StartsWithIgnoringCase(make, "KONICA MINOLTA"u8))
+        {
+            // A bare IFD in the TIFF's byte order, offsets from the TIFF header. The compact cameras that
+            // carry another maker's layout behind a "MINOL" or "CAMER" signature are not this format.
+            if (note.StartsWith("MINOL"u8) || note.StartsWith("CAMER"u8))
+                return null;
+            return Directory(MakerNoteFormat.Minolta, tiff, start, end, 0, order, 0, limits, retainedBudget,
+                VendorMakerNoteNames.Minolta, MinoltaMakerNoteArrays.Decompose);
+        }
+        if (make.StartsWith("CASIO"u8))
+        {
+            // "QVC\0\0\0" then an IFD that is big-endian whatever the TIFF is; without the signature, a
+            // bare IFD in the TIFF's byte order. Offsets from the TIFF header either way.
+            return note.StartsWith("QVC\0\0\0"u8)
+                ? Directory(MakerNoteFormat.Casio2, tiff, start + 6, end, 0, Endianness.BigEndian, 0, limits, retainedBudget,
+                    VendorMakerNoteNames.Casio2, null)
+                : Directory(MakerNoteFormat.Casio, tiff, start, end, 0, order, 0, limits, retainedBudget,
+                    VendorMakerNoteNames.Casio, null);
+        }
+        if (make.StartsWith("SAMSUNG"u8))
+        {
+            // The cameras Samsung built with Pentax carry Pentax's "AOC" MakerNote. Otherwise a bare IFD in
+            // the TIFF's byte order whose offsets count from the MakerNote.
+            if (note.StartsWith("AOC\0"u8))
+                return length >= 6 + 18
+                    ? Directory(MakerNoteFormat.Pentax, tiff, start + 6, end, 0, order, 0, limits, retainedBudget,
+                        VendorMakerNoteNames.Pentax, null)
+                    : null;
+            return Directory(MakerNoteFormat.Samsung2, tiff, start, end, start, order, 0, limits, retainedBudget,
+                VendorMakerNoteNames.Samsung2, SamsungPictureWizard);
+        }
+        if (make.StartsWith("SIGMA"u8) || make.StartsWith("FOVEON"u8))
+        {
+            // "SIGMA\0\0\0" or "FOVEON\0\0", two version bytes, then an IFD in the TIFF's byte order;
+            // offsets from the TIFF header.
+            if (!note.StartsWith("SIGMA\0\0\0"u8) && !note.StartsWith("FOVEON\0\0"u8))
+                return null;
+            return Directory(MakerNoteFormat.Sigma, tiff, start + 10, end, 0, order, 0, limits, retainedBudget,
+                VendorMakerNoteNames.Sigma, null);
         }
         return null;
     }
+
+    /// <summary>ASCII comparison of a Make with an upper-case prefix; makers spell themselves in either case.</summary>
+    private static bool StartsWithIgnoringCase(ReadOnlySpan<byte> text, ReadOnlySpan<byte> upperCasePrefix)
+    {
+        if (text.Length < upperCasePrefix.Length)
+            return false;
+        for (int i = 0; i < upperCasePrefix.Length; i++)
+        {
+            byte c = text[i];
+            if (c is >= (byte)'a' and <= (byte)'z')
+                c -= 0x20;
+            if (c != upperCasePrefix[i])
+                return false;
+        }
+        return true;
+    }
+
+    /// <summary>Samsung's PictureWizard, five SHORTs in the MakerNote's byte order.</summary>
+    private static IReadOnlyList<MakerNoteField> SamsungPictureWizard(ushort tag, ExifValue value)
+    {
+        if (tag != 0x0021 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.Undefined))
+            return [];
+        ReadOnlySpan<byte> raw = value.RawBytes;
+        var fields = new List<MakerNoteField>(PictureWizardNames.Length);
+        for (int i = 0; i < PictureWizardNames.Length && (i * 2) + 2 <= raw.Length; i++)
+            fields.Add(new MakerNoteField((ushort)i, PictureWizardNames[i],
+                ExifValue.FromRaw(TiffFieldType.Short, 1, value.ByteOrder, raw.Slice(i * 2, 2))));
+        return fields;
+    }
+
+    private static readonly string[] PictureWizardNames = ["Mode", "Color", "Saturation", "Sharpness", "Contrast"];
 
     /// <summary>"Nikon\0", a two-byte version, two bytes, then a TIFF header that the IFD and its
     /// value offsets are relative to; that header carries its own byte order.</summary>

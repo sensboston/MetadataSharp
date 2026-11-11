@@ -144,4 +144,82 @@ internal static class VendorMakerNoteNames
         (0x8008, "TextStamp3"), (0x8009, "TextStamp4"), (0x8010, "BabyAge2"),
         (0x8012, "Transform2"),
     ];
+
+    /// <summary>Minolta and Konica Minolta.</summary>
+    internal static string? Minolta(ushort tag) => MakerNoteReader.Lookup(MinoltaNames, tag);
+
+    internal static readonly (ushort Id, string Name)[] MinoltaNames =
+    [
+        (0x0000, "Version"), (0x0001, "CameraSettingsStdOld"), (0x0003, "CameraSettingsStdNew"),
+        (0x0004, "CameraSettings7D"), (0x0018, "ImageStabilizationData"), (0x0020, "WBInfoA100"),
+        (0x0040, "CompressedImageSize"), (0x0081, "Thumbnail"), (0x0088, "ThumbnailOffset"),
+        (0x0089, "ThumbnailLength"), (0x0100, "SceneMode"), (0x0101, "ColorMode"), (0x0102, "Quality"),
+        (0x0104, "FlashExposureComp"), (0x0105, "Teleconverter"), (0x0107, "ImageStabilization"),
+        (0x0109, "RawAndJpgRecording"), (0x010A, "ZoneMatching"), (0x010B, "ColorTemperature"),
+        (0x010C, "LensID"), (0x0111, "ColorCompensationFilter"), (0x0112, "WhiteBalanceFineTune"),
+        (0x0113, "ImageStabilizationA100"), (0x0114, "CameraSettings5D"), (0x0115, "WhiteBalance"),
+        (0x0E00, "PrintIM"), (0x0F00, "CameraSettingsZ1"),
+    ];
+
+    /// <summary>Casio, the early layout.</summary>
+    internal static string? Casio(ushort tag) => MakerNoteReader.Lookup(CasioNames, tag);
+
+    internal static readonly (ushort Id, string Name)[] CasioNames =
+    [
+        (0x0001, "RecodingMode"), (0x0002, "Quality"), (0x0003, "FocusMode"), (0x0004, "FlashMode"),
+        (0x0005, "FlashIntensity"), (0x0006, "ObjectDistance"), (0x0007, "WhiteBalance"),
+        (0x000A, "DigitalZoom"), (0x000B, "Sharpness"), (0x000C, "Contrast"), (0x000D, "Saturation"),
+        (0x0014, "ISO"), (0x0015, "FirmwareDate"), (0x0016, "Enhancement"), (0x0017, "ColorFilter"),
+        (0x0018, "AFPoint"), (0x0019, "FlashIntensity2"), (0x0020, "CCDSensitivity"), (0x0E00, "PrintIM"),
+    ];
+
+    /// <summary>Casio, the layout behind the "QVC" signature.</summary>
+    internal static string? Casio2(ushort tag) => MakerNoteReader.Lookup(Casio2Names, tag);
+
+    internal static readonly (ushort Id, string Name)[] Casio2Names =
+    [
+        (0x0002, "PreviewImageSize"), (0x0003, "PreviewImageLength"), (0x0004, "PreviewImageStart"),
+        (0x0008, "QualityMode"), (0x0009, "ImageSize"), (0x000D, "FocusMode"), (0x0014, "ISOSpeed"),
+        (0x0019, "WhiteBalance"), (0x001D, "FocalLength"), (0x001F, "Saturation"), (0x0020, "Contrast"),
+        (0x0021, "Sharpness"), (0x0E00, "PrintIM"), (0x2000, "PreviewImage"), (0x2001, "FirmwareDate"),
+        (0x2011, "WhiteBalanceBias"), (0x2012, "WhiteBalance2"), (0x2021, "AFPointPosition"),
+        (0x2022, "ObjectDistance"), (0x2034, "FlashDistance"), (0x2076, "SpecialEffectMode"),
+        (0x2089, "FaceInfo"), (0x211C, "FacesDetected"), (0x3000, "RecordMode"), (0x3001, "ReleaseMode"),
+        (0x3002, "Quality"), (0x3003, "FocusMode2"), (0x3006, "HometownCity"), (0x3007, "BestShotMode"),
+        (0x3008, "AutoISO"), (0x3009, "AFMode"), (0x3011, "Sharpness2"), (0x3012, "Contrast2"),
+        (0x3013, "Saturation2"), (0x3014, "ISO"), (0x3015, "ColorMode"), (0x3016, "Enhancement"),
+        (0x3017, "ColorFilter"), (0x301B, "ArtMode"), (0x301C, "SequenceNumber"),
+        (0x3020, "ImageStabilization"), (0x302A, "LightingMode"), (0x302B, "PortraitRefiner"),
+        (0x3030, "SpecialEffectLevel"), (0x3031, "SpecialEffectSetting"), (0x3103, "DriveMode"),
+        (0x310B, "ArtModeParameters"), (0x4001, "CaptureFrameRate"), (0x4003, "VideoQuality"),
+    ];
+
+    /// <summary>Samsung, the plain directory.</summary>
+    internal static string? Samsung2(ushort tag) => MakerNoteReader.Lookup(Samsung2Names, tag);
+
+    internal static readonly (ushort Id, string Name)[] Samsung2Names =
+    [
+        (0x0001, "Version"), (0x0021, "PictureWizard"), (0x0030, "LocalLocationName"), (0x0031, "LocationName"),
+        (0x0035, "Preview"), (0x0043, "CameraTemperature"), (0xA001, "FirmwareName"), (0xA003, "LensType"),
+        (0xA004, "LensFirmware"), (0xA010, "SensorAreas"), (0xA011, "ColorSpace"), (0xA012, "SmartRange"),
+        (0xA013, "ExposureBiasValue"), (0xA014, "ISO"), (0xA018, "ExposureTime"), (0xA019, "FNumber"),
+        (0xA01A, "FocalLengthIn35mmFormat"), (0xA020, "EncryptionKey"), (0xA021, "WB_RGGBLevelsUncorrected"),
+        (0xA022, "WB_RGGBLevelsAuto"), (0xA023, "WB_RGGBLevelsIlluminator1"),
+        (0xA024, "WB_RGGBLevelsIlluminator2"), (0xA028, "WB_RGGBLevelsBlack"), (0xA030, "ColorMatrix"),
+        (0xA031, "ColorMatrixSRGB"), (0xA032, "ColorMatrixAdobeRGB"), (0xA040, "ToneCurve1"),
+        (0xA041, "ToneCurve2"), (0xA042, "ToneCurve3"), (0xA043, "ToneCurve4"),
+    ];
+
+    /// <summary>Sigma and Foveon.</summary>
+    internal static string? Sigma(ushort tag) => MakerNoteReader.Lookup(SigmaNames, tag);
+
+    internal static readonly (ushort Id, string Name)[] SigmaNames =
+    [
+        (0x0002, "SerialNumber"), (0x0003, "DriveMode"), (0x0004, "ResolutionMode"), (0x0005, "AutofocusMode"),
+        (0x0006, "FocusSetting"), (0x0007, "WhiteBalance"), (0x0008, "ExposureMode"), (0x0009, "MeteringMode"),
+        (0x000A, "LensRange"), (0x000B, "ColorSpace"), (0x000C, "Exposure"), (0x000D, "Contrast"),
+        (0x000E, "Shadow"), (0x000F, "Highlight"), (0x0010, "Saturation"), (0x0011, "Sharpness"),
+        (0x0012, "FillLight"), (0x0014, "ColorAdjustment"), (0x0015, "AdjustmentMode"), (0x0016, "Quality"),
+        (0x0017, "Firmware"), (0x0018, "Software"), (0x0019, "AutoBracket"),
+    ];
 }
