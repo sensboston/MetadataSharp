@@ -166,7 +166,7 @@ def provenance():
                 'the begin PI per XMP Part 1); the wrapped layout carries x:xmpmeta (the shape the '
                 'in-image XMP fixtures of the JPEG/PNG/WebP/TIFF batches already hold); the unwrapped '
                 'layout omits the optional wrapper per Part 1 SS7.3-SS7.5 (editions/blobs pinned in '
-                'docs/design/XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md). CreatorTool is the '
+                'docs/archive/design/XMP_NORMATIVE_REVIEW_AND_RESTRICTED_PROFILE.md). CreatorTool is the '
                 'single simple property; non-UTF-8 variants swap the CreatorTool value for raw '
                 'invalid-UTF-8 bytes (record-only; never asserted). Standalone .xmp files ARE XMP '
                 'packet documents (the sidecar artifact); no image bytes are present. Pinned by '

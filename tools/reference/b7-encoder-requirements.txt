@@ -1,5 +1,0 @@
-# CPython 3.11 Linux x86_64 manylinux wheels used for authored B7 fixtures only.
-Pillow==11.3.0 --hash=sha256:106064daa23a745510dabce1d84f29137a37224831d88eb4ce94bb187b1d7e5f
-pillow-heif==1.1.0 --hash=sha256:d3506f9ed4533f9cd567a3b12c0c3077de0702868fc19cb38ff84ff92540a75d
-imagecodecs==2025.8.2 --hash=sha256:8e993b0b1601d19ee1aadb10fceb93524d88b874ee728f82d3f9b40bddccd223
-numpy==2.2.6 --hash=sha256:ba10f8411898fc418a521833e014a77d3ca01c15b0c6cdcce6a0d2897e6dbbdf
