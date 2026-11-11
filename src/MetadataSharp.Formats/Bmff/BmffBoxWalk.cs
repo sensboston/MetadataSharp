@@ -4,10 +4,10 @@ using MetadataSharp.Core;
 namespace MetadataSharp.Formats.Bmff;
 
 /// <summary>One box of an ISO BMFF structure: its type, where it starts, where its payload starts and where it ends.</summary>
-internal readonly record struct BmffBox(uint Type, int Start, int Payload, int End)
+internal readonly record struct BoxSpan(uint Type, int Start, int Payload, int End)
 {
     /// <summary>The number of payload bytes.</summary>
-    internal int Length => End - Payload;
+    internal int PayloadLength => End - Payload;
 }
 
 /// <summary>
@@ -35,7 +35,7 @@ internal ref struct BmffBoxWalk
     /// Reads the header of the box at <paramref name="position"/> and moves the position past the box.
     /// A size of one is followed by a 64-bit size; a size of zero runs to <paramref name="end"/>.
     /// </summary>
-    internal BmffBox Next(ref int position, int end, int depth)
+    internal BoxSpan Next(ref int position, int end, int depth)
     {
         if (depth > limits.MaxDirectoryDepth)
             throw Limit("The box nesting budget was exceeded.", position);
@@ -63,7 +63,7 @@ internal ref struct BmffBoxWalk
         if (size < header) throw Fail("A box size is smaller than its own header.", start);
         if (size > available) throw Fail("A box size exceeds the box that encloses it.", start);
         position = start + (int)size;
-        return new BmffBox(type, start, start + header, position);
+        return new BoxSpan(type, start, start + header, position);
     }
 
     internal readonly uint U32(int at) => BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at, 4));

@@ -174,17 +174,26 @@ internal sealed class Cr3Fixture
     /// <summary>The same, with the link to a following directory set to <paramref name="next"/>.</summary>
     internal static byte[] Tiff(bool little, uint next, Entry[] entries)
     {
-        int directory = 2 + entries.Length * 12 + 4;
-        var head = new byte[8 + directory];
+        var header = new byte[8];
+        header[0] = header[1] = little ? (byte)0x49 : (byte)0x4D;
+        Write16(header.AsSpan(2), 42, little);
+        Write32(header.AsSpan(4), 8, little);
+        return Join(header, Ifd(little, 8, next, entries));
+    }
+
+    /// <summary>
+    /// One directory that lies at <paramref name="at"/> in its TIFF, followed by the values that do
+    /// not fit an entry; the result has an even length.
+    /// </summary>
+    internal static byte[] Ifd(bool little, int at, uint next, params Entry[] entries)
+    {
+        var head = new byte[2 + entries.Length * 12 + 4];
         var tail = new List<byte>();
-        head[0] = head[1] = little ? (byte)0x49 : (byte)0x4D;
-        Write16(head.AsSpan(2), 42, little);
-        Write32(head.AsSpan(4), 8, little);
-        Write16(head.AsSpan(8), (ushort)entries.Length, little);
+        Write16(head, (ushort)entries.Length, little);
         for (int i = 0; i < entries.Length; i++)
         {
             Entry entry = entries[i];
-            Span<byte> slot = head.AsSpan(10 + i * 12, 12);
+            Span<byte> slot = head.AsSpan(2 + i * 12, 12);
             Write16(slot, entry.Tag, little);
             Write16(slot[2..], entry.Type, little);
             Write32(slot[4..], entry.Count, little);
@@ -194,11 +203,11 @@ internal sealed class Cr3Fixture
                 value.CopyTo(slot[8..]);
                 continue;
             }
-            Write32(slot[8..], (uint)(head.Length + tail.Count), little);
+            Write32(slot[8..], (uint)(at + head.Length + tail.Count), little);
             tail.AddRange(value);
             if ((tail.Count & 1) != 0) tail.Add(0);
         }
-        Write32(head.AsSpan(10 + entries.Length * 12), next, little);
+        Write32(head.AsSpan(2 + entries.Length * 12), next, little);
         return [.. head, .. tail];
     }
 

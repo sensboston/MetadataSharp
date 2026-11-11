@@ -24,6 +24,7 @@ internal ref struct ExifTiffReader
     private readonly long sourceBase;
     private readonly bool wholeFile;
     private readonly bool readOnly;
+    private readonly ExifDirectoryKind firstKind;
     private readonly Endianness order;
     private readonly List<ExifEntry> entries;
     private readonly List<ExifDirectoryKind> directories;
@@ -39,13 +40,14 @@ internal ref struct ExifTiffReader
     private int dngPrivateLength;
 
     private ExifTiffReader(ReadOnlySpan<byte> data, MetadataLimits limits, long sourceBase, bool wholeFile,
-        bool readOnly)
+        bool readOnly, ExifDirectoryKind firstKind = ExifDirectoryKind.Ifd0)
     {
         this.data = data;
         this.limits = limits;
         this.sourceBase = sourceBase;
         this.wholeFile = wholeFile;
         this.readOnly = readOnly;
+        this.firstKind = firstKind;
         order = data[0] == 0x49 ? Endianness.LittleEndian : Endianness.BigEndian;
         entries = [];
         directories = [];
@@ -111,8 +113,28 @@ internal ref struct ExifTiffReader
         }
     }
 
+    /// <summary>
+    /// Reads, for reading only, a block whose header leads to one directory of a known kind instead of
+    /// to the primary one: a Canon CR3 file stores the primary, the Exif and the GPS directory each as
+    /// a TIFF of its own. The directory is read as <paramref name="first"/> and every rule of
+    /// <see cref="Inspect"/> applies from there, so an Exif directory may point at an interoperability
+    /// directory and may not point at another Exif or GPS directory, and only a primary directory may
+    /// be followed by a second one. The length of the block is left to the budgets.
+    /// </summary>
+    internal static ExifMetadata InspectDirectory(ReadOnlySpan<byte> tiff, ExifDirectoryKind first,
+        MetadataLimits? limits = null, long sourceBase = 0)
+    {
+        if (first is not (ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Exif or ExifDirectoryKind.Gps))
+            throw new ArgumentOutOfRangeException(nameof(first));
+        try { return ReadBlock(tiff, limits, sourceBase, readOnly: false, NoCeiling, first).Metadata; }
+        catch (MetadataException failure) when (IsRelaxable(failure))
+        {
+            return ReadBlock(tiff, limits, sourceBase, readOnly: true, NoCeiling, first).Metadata;
+        }
+    }
+
     private static TiffReadResult ReadBlock(ReadOnlySpan<byte> tiff, MetadataLimits? limits, long sourceBase,
-        bool readOnly, int ceiling)
+        bool readOnly, int ceiling, ExifDirectoryKind first = ExifDirectoryKind.Ifd0)
     {
         limits ??= new();
         limits.Validate();
@@ -126,7 +148,7 @@ internal ref struct ExifTiffReader
             throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF header is truncated.", sourceBase);
         if (!HasByteOrderMark(tiff))
             throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF byte order mark is invalid.", sourceBase);
-        var reader = new ExifTiffReader(tiff, limits, sourceBase, wholeFile: false, readOnly);
+        var reader = new ExifTiffReader(tiff, limits, sourceBase, wholeFile: false, readOnly, first);
         return reader.Parse();
     }
 
@@ -193,7 +215,7 @@ internal ref struct ExifTiffReader
         uint first = U32(4);
         if (first == 0)
             throw Error(MetadataErrorCode.InvalidExif, "The primary IFD is missing.", 4);
-        Schedule(first, ExifDirectoryKind.Ifd0, 1);
+        Schedule(first, firstKind, 1);
         while (pending.Count != 0)
         {
             var item = pending.Dequeue();

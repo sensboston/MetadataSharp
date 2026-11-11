@@ -1,4 +1,8 @@
+using System.Buffers.Binary;
 using MetadataSharp.Core;
+using MetadataSharp.Core.MakerNotes;
+using MetadataSharp.Core.Tiff;
+using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
 
 namespace MetadataSharp.Formats.Cr3;
@@ -21,7 +25,8 @@ internal readonly record struct Cr3Layout(Cr3Block Ifd0, Cr3Block Exif, Cr3Block
 /// <summary>
 /// One bounded pass over the boxes of a Canon CR3 file. Three levels are opened and nothing else:
 /// the top level, the movie box and the Canon box inside it. Every other box, the tracks and the
-/// media data among them, is stepped over by its size.
+/// media data among them, is stepped over by its size. The directories are then read by the EXIF
+/// directory reader and the Canon MakerNote reader that read them in every other container.
 /// </summary>
 internal ref struct Cr3Reader
 {
@@ -38,7 +43,9 @@ internal ref struct Cr3Reader
     internal static ReadOnlySpan<byte> XmpBox => new byte[] { 0xBE, 0x7A, 0xCF, 0xCB, 0x97, 0xA9, 0x42, 0xE8, 0x9C, 0x71, 0x99, 0x94, 0x91, 0xE3, 0xAF, 0xAC };
 
     private readonly ReadOnlySpan<byte> data;
+    private readonly MetadataLimits limits;
     private BmffBoxWalk walk;
+    private long retained;
     private Cr3Block ifd0;
     private Cr3Block exif;
     private Cr3Block makerNote;
@@ -50,7 +57,9 @@ internal ref struct Cr3Reader
     private Cr3Reader(ReadOnlySpan<byte> data, MetadataLimits limits)
     {
         this.data = data;
+        this.limits = limits;
         walk = new BmffBoxWalk(data, limits);
+        retained = 0;
         ifd0 = default;
         exif = default;
         makerNote = default;
@@ -65,28 +74,39 @@ internal ref struct Cr3Reader
     /// is refused; a CR3 file without a movie box, a Canon box or an XMP box is not malformed, it
     /// has nothing to find.
     /// </summary>
-    internal static Cr3Layout Locate(ReadOnlySpan<byte> data, MetadataLimits? limits = null)
+    internal static Cr3Layout Locate(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
+        Open(data, limits).Walk();
+
+    /// <summary>Reads the EXIF directories and the XMP packet of a complete CR3 file.</summary>
+    internal static Cr3Metadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, XmpReadOptions? xmpOptions = null)
+    {
+        Cr3Reader reader = Open(data, limits);
+        Cr3Layout layout = reader.Walk();
+        return reader.Metadata(layout, xmpOptions);
+    }
+
+    private static Cr3Reader Open(ReadOnlySpan<byte> data, MetadataLimits? limits)
     {
         limits ??= BmffReadOptions.DefaultLimits;
         limits.Validate();
         if (data.Length > limits.MaxInputBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The CR3 file exceeds the input budget.", 0);
-        return new Cr3Reader(data, limits).Walk();
+        return new Cr3Reader(data, limits);
     }
 
     private Cr3Layout Walk()
     {
         int position = 0;
-        BmffBox fileType = walk.Next(ref position, data.Length, 1);
+        BoxSpan fileType = walk.Next(ref position, data.Length, 1);
         if (fileType.Type != FileTypeBox)
             throw walk.Fail("The file does not start with a file type box.", 0);
-        if (fileType.Length < 8 || fileType.Length % 4 != 0)
+        if (fileType.PayloadLength < 8 || fileType.PayloadLength % 4 != 0)
             throw walk.Fail("The file type box payload is truncated or unaligned.", fileType.Payload);
         if (walk.U32(fileType.Payload) != Brand)
             throw walk.Fail("The major brand is not 'crx ': the file is not a Canon CR3.", fileType.Payload);
         while (position < data.Length)
         {
-            BmffBox box = walk.Next(ref position, data.Length, 1);
+            BoxSpan box = walk.Next(ref position, data.Length, 1);
             if (box.Type == MovieBox)
             {
                 Movie(box);
@@ -94,20 +114,20 @@ internal ref struct Cr3Reader
             else if (box.Type == UuidBox && Identified(box, XmpBox))
             {
                 if (xmp.Present) throw walk.Fail("The XMP box appears more than once.", box.Start);
-                xmp = new Cr3Block(box.Payload + 16, box.Length - 16);
+                xmp = new Cr3Block(box.Payload + 16, box.PayloadLength - 16);
             }
         }
         return new Cr3Layout(ifd0, exif, makerNote, gps, xmp);
     }
 
-    private void Movie(BmffBox movie)
+    private void Movie(BoxSpan movie)
     {
         if (hasMovie) throw walk.Fail("The movie box appears more than once.", movie.Start);
         hasMovie = true;
         int position = movie.Payload;
         while (position < movie.End)
         {
-            BmffBox box = walk.Next(ref position, movie.End, 2);
+            BoxSpan box = walk.Next(ref position, movie.End, 2);
             if (box.Type != UuidBox || !Identified(box, CanonBox)) continue;
             if (hasCanon) throw walk.Fail("The Canon box appears more than once.", box.Start);
             hasCanon = true;
@@ -115,12 +135,12 @@ internal ref struct Cr3Reader
         }
     }
 
-    private void Canon(BmffBox canon)
+    private void Canon(BoxSpan canon)
     {
         int position = canon.Payload + 16;
         while (position < canon.End)
         {
-            BmffBox box = walk.Next(ref position, canon.End, 3);
+            BoxSpan box = walk.Next(ref position, canon.End, 3);
             if (box.Type == Cmt1) Claim(ref ifd0, box);
             else if (box.Type == Cmt2) Claim(ref exif, box);
             else if (box.Type == Cmt3) Claim(ref makerNote, box);
@@ -128,16 +148,143 @@ internal ref struct Cr3Reader
         }
     }
 
-    private readonly void Claim(ref Cr3Block block, BmffBox box)
+    private readonly void Claim(ref Cr3Block block, BoxSpan box)
     {
         if (block.Present) throw walk.Fail("A CMT box appears more than once.", box.Start);
-        block = new Cr3Block(box.Payload, box.Length);
+        block = new Cr3Block(box.Payload, box.PayloadLength);
     }
 
     /// <summary>Whether a uuid box carries the given identifier. A box too short to carry any is malformed.</summary>
-    private readonly bool Identified(BmffBox box, ReadOnlySpan<byte> identifier)
+    private readonly bool Identified(BoxSpan box, ReadOnlySpan<byte> identifier)
     {
-        if (box.Length < 16) throw walk.Fail("A uuid box is shorter than its identifier.", box.Start);
+        if (box.PayloadLength < 16) throw walk.Fail("A uuid box is shorter than its identifier.", box.Start);
         return data.Slice(box.Payload, 16).SequenceEqual(identifier);
+    }
+
+    /// <summary>
+    /// The directories of the CMT boxes as one EXIF block, and the packet of the XMP box. A directory
+    /// is read once: a CMT1 box that leads to an Exif or GPS directory of its own beside a CMT2 or
+    /// CMT4 box says the same thing twice, and is refused rather than merged.
+    /// </summary>
+    private Cr3Metadata Metadata(Cr3Layout layout, XmpReadOptions? xmpOptions)
+    {
+        var entries = new List<ExifEntry>();
+        var kinds = new HashSet<ExifDirectoryKind>();
+        Endianness? order = null;
+        Directory(layout.Ifd0, ExifDirectoryKind.Ifd0, entries, kinds, ref order);
+        Directory(layout.Exif, ExifDirectoryKind.Exif, entries, kinds, ref order);
+        Directory(layout.Gps, ExifDirectoryKind.Gps, entries, kinds, ref order);
+        // The bytes of the MakerNote box and of the packet are counted before the note is decoded.
+        // Decoding is the one step that gives up instead of failing, so it takes what the rest left.
+        int noteDirectory = NoteHeader(layout.MakerNote, out Endianness noteOrder);
+        if (layout.Xmp.Present)
+        {
+            if (layout.Xmp.Length > limits.MaxRetainedMetadataBytes - retained)
+                throw walk.Limit("The XMP box exceeds the retained metadata budget.", layout.Xmp.Start);
+            retained += layout.Xmp.Length;
+        }
+        MakerNote? note = noteDirectory == 0 ? null : Note(layout.MakerNote, noteDirectory, noteOrder, entries);
+        bool any = layout.Ifd0.Present || layout.Exif.Present || layout.MakerNote.Present || layout.Gps.Present;
+        ExifMetadata? metadata = any
+            ? new ExifMetadata(order ?? note?.ByteOrder ?? Endianness.LittleEndian, entries, note, editable: false)
+            : null;
+        XmpPacket? packet = layout.Xmp.Present
+            ? XmpPacket.Parse(data.Slice(layout.Xmp.Start, layout.Xmp.Length), xmpOptions)
+            : null;
+        return new Cr3Metadata(metadata, packet);
+    }
+
+    private void Directory(Cr3Block block, ExifDirectoryKind kind, List<ExifEntry> entries,
+        HashSet<ExifDirectoryKind> kinds, ref Endianness? order)
+    {
+        if (!block.Present) return;
+        MetadataLimits left = Remaining(block, entries.Count);
+        ExifMetadata part = ExifTiffReader.InspectDirectory(data.Slice(block.Start, block.Length), kind, left, block.Start);
+        if (order is Endianness known && known != part.ByteOrder)
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The CMT boxes do not share one byte order.", block.Start);
+        order = part.ByteOrder;
+        // What the directory reader counted against the budget it was given: the block and every value.
+        retained += block.Length;
+        var here = new HashSet<ExifDirectoryKind>();
+        foreach (ExifEntry entry in part.Entries)
+        {
+            retained += entry.Value.ByteLength;
+            here.Add(entry.Key.Directory);
+        }
+        foreach (ExifDirectoryKind found in here)
+        {
+            if (!kinds.Add(found))
+                throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Two CMT boxes declare the same directory.", block.Start);
+        }
+        entries.AddRange(part.Entries);
+    }
+
+    /// <summary>
+    /// The header of the CMT3 box: a TIFF header that leads to the Canon MakerNote directory. It is
+    /// held to the rules of the header of any other CMT box. Returns where the directory starts in
+    /// the box, or zero when the file has no CMT3 box.
+    /// </summary>
+    private int NoteHeader(Cr3Block block, out Endianness order)
+    {
+        order = Endianness.LittleEndian;
+        if (!block.Present) return 0;
+        if (block.Length < 8)
+            throw new MetadataException(MetadataErrorCode.InvalidExif, "A CMT box is too short for a TIFF header.", block.Start);
+        if (block.Length > limits.MaxRetainedMetadataBytes - retained)
+            throw walk.Limit("The CMT boxes exceed the retained metadata budget.", block.Start);
+        ReadOnlySpan<byte> tiff = data.Slice(block.Start, block.Length);
+        bool little = tiff[0] == 0x49 && tiff[1] == 0x49;
+        if (!little && !(tiff[0] == 0x4D && tiff[1] == 0x4D))
+            throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF byte order mark is invalid.", block.Start);
+        ushort magic = little ? BinaryPrimitives.ReadUInt16LittleEndian(tiff.Slice(2, 2)) : BinaryPrimitives.ReadUInt16BigEndian(tiff.Slice(2, 2));
+        if (magic != 42)
+            throw new MetadataException(MetadataErrorCode.InvalidExif, "The TIFF identifier is invalid.", block.Start + 2);
+        uint first = little ? BinaryPrimitives.ReadUInt32LittleEndian(tiff.Slice(4, 4)) : BinaryPrimitives.ReadUInt32BigEndian(tiff.Slice(4, 4));
+        if (first < 8 || first > (uint)(block.Length - 2))
+            throw new MetadataException(MetadataErrorCode.InvalidExif, "The MakerNote directory lies outside the CMT3 box.", block.Start + 4);
+        retained += block.Length;
+        order = little ? Endianness.LittleEndian : Endianness.BigEndian;
+        return (int)first;
+    }
+
+    /// <summary>
+    /// The Canon MakerNote directory of the CMT3 box. Its value offsets count from the TIFF header of
+    /// the box, as they count from the TIFF header in every Canon file. A directory the MakerNote
+    /// reader cannot follow, or one the budget has no room left for, leaves the note undecoded, as
+    /// it does in every other container.
+    /// </summary>
+    private MakerNote? Note(Cr3Block block, int directory, Endianness order, List<ExifEntry> entries)
+    {
+        ReadOnlySpan<byte> model = default;
+        foreach (ExifEntry entry in entries)
+        {
+            if (entry.Key == new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0110) && entry.Value.FieldType == TiffFieldType.Ascii)
+                model = entry.Value.RawBytes;
+        }
+        // The box is Canon's by definition, whatever the Make tag of the primary directory says.
+        MakerNote? note = MakerNoteReader.TryRead(data.Slice(block.Start, block.Length), directory, block.Length - directory,
+            order, "Canon"u8, model, limits, limits.MaxRetainedMetadataBytes - retained);
+        if (note is null) return null;
+        note.Offset = directory;
+        foreach (MakerNoteEntry entry in note.Entries)
+            retained += 2L * entry.Value.ByteLength;
+        return note;
+    }
+
+    /// <summary>
+    /// The budgets one CMT box is read under: those of the file, less the retained bytes and the
+    /// entries the boxes before it took. A box too short for a TIFF header is refused here, so the
+    /// byte budget handed on is never empty.
+    /// </summary>
+    private readonly MetadataLimits Remaining(Cr3Block block, int entries)
+    {
+        if (block.Length < 8)
+            throw new MetadataException(MetadataErrorCode.InvalidExif, "A CMT box is too short for a TIFF header.", block.Start);
+        long left = limits.MaxRetainedMetadataBytes - retained;
+        if (block.Length > left)
+            throw walk.Limit("The CMT boxes exceed the retained metadata budget.", block.Start);
+        if (entries >= limits.MaxTotalEntries)
+            throw walk.Limit("The CMT boxes exceed the entry budget.", block.Start);
+        return limits with { MaxRetainedMetadataBytes = (int)left, MaxTotalEntries = limits.MaxTotalEntries - entries };
     }
 }
