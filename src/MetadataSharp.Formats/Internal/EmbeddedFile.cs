@@ -157,4 +157,43 @@ internal static class EmbeddedFile
         at = next > data.Length ? data.Length : (int)next;
         return true;
     }
+
+    /// <summary>
+    /// Step to the next box of a BMFF or JPEG 2000 file from <paramref name="at"/>, which is left
+    /// behind it. A size of one is followed by the size in 64 bits, a size of zero runs to
+    /// <paramref name="limit"/>. False where no box header remains or the box leaves its parent.
+    /// </summary>
+    /// <param name="data">The file.</param>
+    /// <param name="at">Where the step starts; after a true result, the end of the box.</param>
+    /// <param name="limit">The end of the parent: of the file, for a box of the top level.</param>
+    /// <param name="type">The four characters of the box, as a big-endian number.</param>
+    /// <param name="payload">The first byte after the header.</param>
+    /// <param name="end">One past the last byte of the box.</param>
+    internal static bool Box(ReadOnlySpan<byte> data, ref int at, int limit, out uint type, out int payload, out int end)
+    {
+        type = 0;
+        payload = 0;
+        end = 0;
+        if (at < 0 || limit > data.Length || limit - at < 8) return false;
+        long size = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at, 4));
+        int header = 8;
+        if (size == 1)
+        {
+            if (limit - at < 16) return false;
+            ulong large = BinaryPrimitives.ReadUInt64BigEndian(data.Slice(at + 8, 8));
+            if (large > int.MaxValue) return false;
+            size = (long)large;
+            header = 16;
+        }
+        else if (size == 0)
+        {
+            size = limit - at;
+        }
+        if (size < header || size > limit - at) return false;
+        type = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at + 4, 4));
+        payload = at + header;
+        end = at + (int)size;
+        at = end;
+        return true;
+    }
 }

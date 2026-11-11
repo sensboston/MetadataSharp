@@ -26,6 +26,10 @@ public static class IccProfiles
     /// <item>PNG: the <c>iCCP</c> chunk before the image data, inflated within the budget.</item>
     /// <item>TIFF and the raw formats built on it, DNG among them: tag 0x8773 of the first directory.</item>
     /// <item>WebP: the <c>ICCP</c> chunk.</item>
+    /// <item>HEIC, HEIF and AVIF: the <c>colr</c> property of the kind <c>prof</c> or <c>rICC</c>
+    /// that the item property associations give the primary item.</item>
+    /// <item>JPEG 2000: the first <c>colr</c> box of the header box whose method is 2 or 3.</item>
+    /// <item>PSD: image resource 0x040F.</item>
     /// </list>
     /// </summary>
     /// <param name="file">The whole file.</param>
@@ -41,9 +45,11 @@ public static class IccProfiles
     /// does not inflate; tag 0x8773 is not of the type BYTE or UNDEFINED or points outside the file;
     /// the header is shorter than 128 bytes, its size field does not fit the bytes the file holds,
     /// or the <c>acsp</c> signature is absent.
-    /// <see cref="MetadataErrorCode.AmbiguousMetadata"/> when a PNG or a WebP has two profile chunks.
+    /// <see cref="MetadataErrorCode.AmbiguousMetadata"/> when a PNG or a WebP has two profile chunks,
+    /// the primary item of a BMFF file two profiles, or a PSD two resources 0x040F.
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when the file, the number of its segments,
-    /// chunks or directory entries, or the profile exceeds a budget.
+    /// chunks, boxes, resources, directory entries or property associations, or the profile exceeds
+    /// a budget.
     /// </exception>
     public static byte[]? Read(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
     {
@@ -55,6 +61,9 @@ public static class IccProfiles
             FileKind.Png => Png(file, limits),
             FileKind.Tiff => Tiff(file, limits),
             FileKind.WebP => WebP(file, limits),
+            FileKind.Bmff => Bmff(file, limits),
+            FileKind.Jp2 => Jp2(file, limits),
+            FileKind.Psd => Psd(file, limits),
             _ => null,
         };
     }
@@ -222,4 +231,169 @@ public static class IccProfiles
         }
         return profile;
     }
+
+    // ---- BMFF: a colr property of the primary item that holds a profile ----
+
+    private const uint MetaBox = 0x6D657461, PrimaryItemBox = 0x7069746D, PropertiesBox = 0x69707270,
+        PropertyContainerBox = 0x6970636F, AssociationBox = 0x69706D61, ColourBox = 0x636F6C72,
+        UnrestrictedProfile = 0x70726F66, RestrictedProfile = 0x72494343;
+
+    private static byte[]? Bmff(ReadOnlySpan<byte> data, MetadataLimits limits)
+    {
+        int at = 0, meta = -1, metaEnd = 0;
+        for (int count = 0; EmbeddedFile.Box(data, ref at, data.Length, out uint type, out int payload, out int end); count++)
+        {
+            if (count == limits.MaxSegments)
+                throw EmbeddedFile.Limit("The box count exceeds its budget.", payload);
+            if (type != MetaBox) continue;
+            // A full box: the children follow the version and the flags.
+            meta = payload + 4;
+            metaEnd = end;
+            break;
+        }
+        if (meta < 0 || meta > metaEnd) return null;
+
+        long primary = -1;
+        int container = -1, containerEnd = 0, associations = -1, associationsEnd = 0;
+        at = meta;
+        for (int count = 0; EmbeddedFile.Box(data, ref at, metaEnd, out uint type, out int payload, out int end); count++)
+        {
+            if (count == limits.MaxSegments)
+                throw EmbeddedFile.Limit("The box count exceeds its budget.", payload);
+            if (type == PrimaryItemBox && primary < 0)
+            {
+                // The item in 16 bits, or in 32 from version 1.
+                if (end - payload >= 6 && data[payload] == 0) primary = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(payload + 4, 2));
+                else if (end - payload >= 8 && data[payload] != 0) primary = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(payload + 4, 4));
+            }
+            else if (type == PropertiesBox)
+            {
+                int child = payload;
+                for (int inner = 0; EmbeddedFile.Box(data, ref child, end, out uint kind, out int body, out int bodyEnd); inner++)
+                {
+                    if (inner == limits.MaxSegments)
+                        throw EmbeddedFile.Limit("The box count exceeds its budget.", body);
+                    if (kind == PropertyContainerBox && container < 0) { container = body; containerEnd = bodyEnd; }
+                    else if (kind == AssociationBox && associations < 0) { associations = body; associationsEnd = bodyEnd; }
+                }
+            }
+        }
+        if (primary < 0 || container < 0 || associations < 0) return null;
+
+        HashSet<int> mine = Associated(data.Slice(associations, associationsEnd - associations), (uint)primary, limits, associations);
+        byte[]? profile = null;
+        at = container;
+        // The associations name a property by its place in the container, from one.
+        for (int index = 1; EmbeddedFile.Box(data, ref at, containerEnd, out uint type, out int payload, out int end); index++)
+        {
+            if (index > limits.MaxTotalEntries)
+                throw EmbeddedFile.Limit("The item properties exceed their budget.", payload);
+            if (type != ColourBox || end - payload < 4 || !mine.Contains(index)) continue;
+            uint colour = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(payload, 4));
+            if (colour is not (UnrestrictedProfile or RestrictedProfile)) continue;
+            if (profile is not null)
+                throw Ambiguous("The primary item has more than one ICC profile.", payload);
+            profile = Whole(data.Slice(payload + 4, Bounded(end - payload - 4, limits, payload)), payload + 4);
+        }
+        return profile;
+    }
+
+    /// <summary>
+    /// The properties the association box gives one item. The box holds a version and flags, a
+    /// count of entries, and for each entry the item (in 16 bits, or in 32 from version 1), a count,
+    /// and that many associations: a bit that says the property is essential and its number, in one
+    /// byte, or in two when bit 0 of the flags is set.
+    /// </summary>
+    private static HashSet<int> Associated(ReadOnlySpan<byte> box, uint item, MetadataLimits limits, int offset)
+    {
+        var indices = new HashSet<int>();
+        if (box.Length < 8) return indices;
+        bool wideItem = box[0] != 0, wideIndex = (box[3] & 1) != 0;
+        int itemBytes = wideItem ? 4 : 2, width = wideIndex ? 2 : 1;
+        uint entries = BinaryPrimitives.ReadUInt32BigEndian(box.Slice(4, 4));
+        int at = 8;
+        for (uint entry = 0; entry < entries && box.Length - at > itemBytes; entry++)
+        {
+            if (entry == (uint)limits.MaxTotalEntries)
+                throw EmbeddedFile.Limit("The item property associations exceed their budget.", offset + at);
+            uint id = wideItem ? BinaryPrimitives.ReadUInt32BigEndian(box.Slice(at, 4)) : BinaryPrimitives.ReadUInt16BigEndian(box.Slice(at, 2));
+            at += itemBytes;
+            int count = box[at++];
+            if (box.Length - at < count * width) break;
+            for (int index = 0; index < count; index++, at += width)
+            {
+                if (id != item) continue;
+                int property = wideIndex ? BinaryPrimitives.ReadUInt16BigEndian(box.Slice(at, 2)) & 0x7FFF : box[at] & 0x7F;
+                if (property != 0) indices.Add(property);
+            }
+        }
+        return indices;
+    }
+
+    // ---- JPEG 2000: a colr box of the header box; the method, the precedence, the approximation, the profile ----
+
+    private const uint Jp2Header = 0x6A703268;
+
+    private static byte[]? Jp2(ReadOnlySpan<byte> data, MetadataLimits limits)
+    {
+        int at = 0;
+        for (int count = 0; EmbeddedFile.Box(data, ref at, data.Length, out uint type, out int payload, out int end); count++)
+        {
+            if (count == limits.MaxSegments)
+                throw EmbeddedFile.Limit("The box count exceeds its budget.", payload);
+            if (type != Jp2Header) continue;
+            int child = payload;
+            for (int inner = 0; EmbeddedFile.Box(data, ref child, end, out uint kind, out int body, out int bodyEnd); inner++)
+            {
+                if (inner == limits.MaxSegments)
+                    throw EmbeddedFile.Limit("The box count exceeds its budget.", body);
+                // Method 1 names a colour space by number; 2 (a restricted profile) and 3 (any profile) carry one.
+                if (kind != ColourBox || bodyEnd - body < 3 || data[body] is not (2 or 3)) continue;
+                return Whole(data.Slice(body + 3, Bounded(bodyEnd - body - 3, limits, body)), body + 3);
+            }
+            return null;
+        }
+        return null;
+    }
+
+    // ---- PSD: image resource 0x040F ----
+
+    private static byte[]? Psd(ReadOnlySpan<byte> data, MetadataLimits limits)
+    {
+        // A header of 26 bytes, then the colour mode data and the image resources, each behind its length in 32 bits.
+        if (data.Length < 34) return null;
+        long colour = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(26, 4));
+        if (colour > data.Length - 34) return null;
+        int at = 30 + (int)colour;
+        long section = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at, 4));
+        at += 4;
+        if (section > data.Length - at) return null;
+        int limit = at + (int)section;
+        byte[]? profile = null;
+        // A resource: a signature, its number, a name behind a length byte and padded to an even length,
+        // the length of the data in 32 bits, and the data, padded the same way.
+        for (int count = 0; limit - at >= 12 && IsResource(data.Slice(at, 4)); count++)
+        {
+            if (count == limits.MaxSegments)
+                throw EmbeddedFile.Limit("The resource count exceeds its budget.", at);
+            int id = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(at + 4, 2));
+            int name = (data[at + 6] + 2) & ~1;
+            if (limit - at - 6 - name < 4) break;
+            int payload = at + 6 + name + 4;
+            long length = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(payload - 4, 4));
+            if (length > limit - payload) break;
+            if (id == 0x040F)
+            {
+                if (profile is not null)
+                    throw Ambiguous("The PSD has more than one ICC profile resource.", at);
+                profile = Whole(data.Slice(payload, Bounded(length, limits, payload - 4)), payload);
+            }
+            at = payload + (int)length + (int)(length & 1);
+        }
+        return profile;
+    }
+
+    /// <summary>The resource signatures Adobe applications write; all frame a resource as 8BIM does.</summary>
+    private static bool IsResource(ReadOnlySpan<byte> signature) =>
+        signature.SequenceEqual("8BIM"u8) || signature.SequenceEqual("AgHg"u8) || signature.SequenceEqual("DCSR"u8) || signature.SequenceEqual("PHUT"u8);
 }

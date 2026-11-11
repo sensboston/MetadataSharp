@@ -1,6 +1,7 @@
 using System.Buffers.Binary;
 using MetadataSharp.Core;
 using MetadataSharp.Formats;
+using MetadataSharp.Tests.Bmff;
 using MetadataSharp.Tests.Jpeg;
 using MetadataSharp.Tests.Png;
 using MetadataSharp.Tests.WebP;
@@ -70,6 +71,73 @@ public sealed class IccProfileTests
         Put32(file, 30, offset ?? 38, little);
         profile.CopyTo(file, 38);
         return file;
+    }
+
+    /// <summary>A colr property: the kind of colour information, then the information.</summary>
+    private static byte[] Colr(string kind, byte[] body) => BmffFixture.Box("colr", BmffFixture.Ascii(kind), body);
+
+    /// <summary>
+    /// The least of a HEIC that gives an item its properties: the file type, and a meta box with the
+    /// primary item, the properties in their container, and the associations of the primary item
+    /// and, when given, of item 2. A wide file writes the items in 32 bits and the property numbers in 15.
+    /// </summary>
+    private static byte[] Heif(byte[][] properties, int[] ofPrimary, int[]? ofOther = null, uint? primary = 1, bool wide = false)
+    {
+        var entries = new List<(uint Item, int[] Properties)>();
+        if (ofOther is not null) entries.Add((2, ofOther));
+        entries.Add((primary ?? 1, ofPrimary));
+        var ipma = new List<byte> { (byte)(wide ? 1 : 0), 0, 0, (byte)(wide ? 1 : 0) };
+        ipma.AddRange(BmffFixture.U32((uint)entries.Count));
+        foreach ((uint item, int[] indices) in entries)
+        {
+            ipma.AddRange(wide ? BmffFixture.U32(item) : BmffFixture.U16(item));
+            ipma.Add((byte)indices.Length);
+            foreach (int index in indices)
+            {
+                // The top bit says the property is essential, which is nothing to this reader.
+                if (wide) ipma.AddRange(BmffFixture.U16((uint)(0x8000 | index)));
+                else ipma.Add((byte)(0x80 | index));
+            }
+        }
+        byte[] version = [(byte)(wide ? 1 : 0), 0, 0, 0];
+        byte[] item1 = wide ? BmffFixture.U32(primary ?? 1) : BmffFixture.U16(primary ?? 1);
+        byte[] pitm = primary is null ? Array.Empty<byte>() : BmffFixture.Box("pitm", version, item1);
+        byte[] iprp = BmffFixture.Box("iprp", BmffFixture.Box("ipco", properties), BmffFixture.Box("ipma", ipma.ToArray()));
+        byte[] meta = BmffFixture.Box("meta", new byte[4], pitm, iprp);
+        return Join(BmffFixture.Box("ftyp", BmffFixture.Ascii("heic"), new byte[4], BmffFixture.Ascii("mif1heic")), meta);
+    }
+
+    private static readonly byte[] Extent = BmffFixture.Box("ispe", new byte[12]);
+
+    /// <summary>A colr box of a JPEG 2000 header: the method, the precedence, the approximation, the rest.</summary>
+    private static byte[] Colour(byte method, byte[] rest) => BmffFixture.Box("colr", new byte[] { method, 0, 0 }, rest);
+
+    private static byte[] Jp2(params byte[][] colours)
+    {
+        byte[][] header = [BmffFixture.Box("ihdr", new byte[14]), .. colours];
+        return Join(
+            BmffFixture.Box("jP  ", new byte[] { 0x0D, 0x0A, 0x87, 0x0A }),
+            BmffFixture.Box("ftyp", BmffFixture.Ascii("jp2 "), new byte[4], BmffFixture.Ascii("jp2 ")),
+            BmffFixture.Box("jp2h", header),
+            BmffFixture.Box("jp2c", new byte[4]));
+    }
+
+    /// <summary>An image resource: the signature, the number, the name padded to an even length, the length, the data padded the same way.</summary>
+    private static byte[] Resource(int id, byte[] data, string signature = "8BIM", string name = "")
+    {
+        byte[] field = new byte[(name.Length + 2) & ~1];
+        field[0] = (byte)name.Length;
+        System.Text.Encoding.ASCII.GetBytes(name, field.AsSpan(1));
+        return Join(BmffFixture.Ascii(signature), BmffFixture.U16((uint)id), field, BmffFixture.U32((uint)data.Length), data, new byte[data.Length & 1]);
+    }
+
+    /// <summary>A PSD of one RGB pixel: the header, no colour mode data, the resources, no layers, raw image data.</summary>
+    private static byte[] Psd(params byte[][] resources)
+    {
+        byte[] section = Join(resources);
+        return Join(
+            BmffFixture.Ascii("8BPS"), new byte[] { 0, 1, 0, 0, 0, 0, 0, 0, 0, 3 }, BmffFixture.U32(1), BmffFixture.U32(1), new byte[] { 0, 8, 0, 3 },
+            BmffFixture.U32(0), BmffFixture.U32((uint)section.Length), section, BmffFixture.U32(0), new byte[] { 0, 0 }, new byte[3]);
     }
 
     private static MetadataErrorCode Refusal(byte[] file, MetadataLimits? limits = null) =>
@@ -389,6 +457,134 @@ public sealed class IccProfileTests
         byte[] file = WebPFixture.Extended(0x20, WebPFixture.Chunk("ICCP", Profile(200)));
 
         Assert.Null(IccProfiles.Read(file[..^1]));
+    }
+
+    // ---- BMFF ----
+
+    [Theory]
+    [InlineData("prof", false)]
+    [InlineData("rICC", false)]
+    [InlineData("prof", true)]
+    public void TheProfileOfABmffFileIsAColourPropertyOfThePrimaryItem(string kind, bool wide)
+    {
+        byte[] profile = Profile(548);
+
+        Assert.Equal(profile, IccProfiles.Read(Heif([Extent, Colr(kind, profile)], [1, 2], wide: wide)));
+        Assert.Equal(profile, IccProfiles.Read(Heif([Extent, Colr(kind, profile)], [1, 2], primary: 70_000, wide: true)));
+    }
+
+    [Fact]
+    public void ColourInformationThatIsNotAProfileIsNotOne()
+    {
+        byte[] coded = Colr("nclx", [0, 1, 0, 13, 0, 6, 0x80]);
+
+        Assert.Null(IccProfiles.Read(Heif([Extent, coded], [1, 2])));
+        Assert.Equal(Profile(200), IccProfiles.Read(Heif([coded, Colr("prof", Profile(200))], [1, 2])));
+    }
+
+    [Fact]
+    public void AProfileOfAnotherItemIsNotTheProfileOfTheFile()
+    {
+        byte[][] properties = [Extent, Colr("prof", Profile(200)), Colr("prof", Profile(300, 2))];
+
+        Assert.Null(IccProfiles.Read(Heif(properties, [1], ofOther: [1, 2])));
+        Assert.Equal(Profile(300, 2), IccProfiles.Read(Heif(properties, [1, 3], ofOther: [1, 2])));
+    }
+
+    [Fact]
+    public void ABmffFileWithoutAPrimaryItemHasNoProfile()
+    {
+        Assert.Null(IccProfiles.Read(Heif([Extent, Colr("prof", Profile(200))], [1, 2], primary: null)));
+        Assert.Null(IccProfiles.Read(BmffFixture.Box("ftyp", BmffFixture.Ascii("heic"), new byte[4])));
+    }
+
+    [Fact]
+    public void TwoProfilesOfThePrimaryItemAreRefusedAsAmbiguous()
+    {
+        byte[][] properties = [Colr("prof", Profile(200)), Colr("rICC", Profile(200))];
+
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Refusal(Heif(properties, [1, 2])));
+    }
+
+    [Fact]
+    public void AColourPropertyThatIsNotAProfileAndOneAboveTheBudgetAreRefused()
+    {
+        byte[] file = Heif([Colr("prof", Profile(2_000))], [1]);
+
+        Assert.Equal(MetadataErrorCode.InvalidIccProfile, Refusal(Heif([Colr("prof", new byte[200])], [1])));
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Refusal(file, new MetadataLimits { MaxValueBytes = 1_999 }));
+        Assert.NotNull(IccProfiles.Read(file, new MetadataLimits { MaxValueBytes = 2_000 }));
+    }
+
+    // ---- JPEG 2000 ----
+
+    [Theory]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void TheProfileOfAJpeg2000FileFollowsTheMethodOfItsColourBox(int method)
+    {
+        byte[] profile = Profile(3_144);
+
+        Assert.Equal(profile, IccProfiles.Read(Jp2(Colour((byte)method, profile))));
+        // A box that names the colour space by number comes first in a file that has both.
+        Assert.Equal(profile, IccProfiles.Read(Jp2(Colour(1, BmffFixture.U32(16)), Colour((byte)method, profile))));
+    }
+
+    [Fact]
+    public void AJpeg2000FileThatNamesItsColourSpaceByNumberHasNoProfile()
+    {
+        Assert.Null(IccProfiles.Read(Jp2(Colour(1, BmffFixture.U32(16)))));
+        Assert.Null(IccProfiles.Read(Jp2()));
+    }
+
+    [Fact]
+    public void AJpeg2000ColourBoxThatIsNotAProfileAndOneAboveTheBudgetAreRefused()
+    {
+        Assert.Equal(MetadataErrorCode.InvalidIccProfile, Refusal(Jp2(Colour(2, new byte[200]))));
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Refusal(Jp2(Colour(2, Profile(2_000))), new MetadataLimits { MaxValueBytes = 1_999 }));
+    }
+
+    // ---- PSD ----
+
+    [Theory]
+    [InlineData("8BIM")]
+    [InlineData("AgHg")]
+    public void TheProfileOfAPsdIsItsImageResource(string signature)
+    {
+        byte[] profile = Profile(561);
+        // A resource with a name and one of odd length come first: both are padded to an even length.
+        byte[] file = Psd(Resource(0x03ED, new byte[16], signature, "name"), Resource(0x0404, new byte[5], signature),
+            Resource(0x040F, profile, signature), Resource(0x0424, new byte[2], signature));
+
+        Assert.Equal(profile, IccProfiles.Read(file));
+        Assert.Null(IccProfiles.Read(Psd(Resource(0x0404, new byte[5]))));
+        Assert.Null(IccProfiles.Read(Psd()));
+    }
+
+    [Fact]
+    public void TwoProfileResourcesInAPsdAreRefusedAsAmbiguous()
+    {
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Refusal(Psd(Resource(0x040F, Profile(200)), Resource(0x040F, Profile(200)))));
+    }
+
+    [Fact]
+    public void APsdResourceThatIsNotAProfileAndOneAboveTheBudgetAreRefused()
+    {
+        byte[] file = Psd(Resource(0x0404, new byte[4]), Resource(0x040F, Profile(2_000)));
+
+        Assert.Equal(MetadataErrorCode.InvalidIccProfile, Refusal(Psd(Resource(0x040F, new byte[200]))));
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Refusal(file, new MetadataLimits { MaxValueBytes = 1_999 }));
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Refusal(file, new MetadataLimits { MaxSegments = 1 }));
+    }
+
+    [Fact]
+    public void APsdResourceThatLeavesItsSectionEndsTheWalk()
+    {
+        byte[] file = Psd(Resource(0x040F, Profile(200)));
+        // The length of the resource section, at byte 30, now ends inside the profile.
+        BinaryPrimitives.WriteUInt32BigEndian(file.AsSpan(30), 100);
+
+        Assert.Null(IccProfiles.Read(file));
     }
 
     // ---- no profile, and the budgets ----
