@@ -52,8 +52,13 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
 
 ## What is next, in order
 
-1. **4.2c** Print what the 4.2b vocabulary describes: rationals, date/time, GPS coordinates and the enum
-   meanings it records. The 16 `value-diff` rows are what that gap looks like.
+1. **4.2c (DONE in PR #71)** Print what the 4.2b vocabulary describes: rationals, date/time, GPS coordinates and the enum
+   meanings it records. **Implemented only the free fixes**:
+   - **Ascii layer**: cut at the first NUL byte and prefer UTF-8 decoding (if valid, else Latin-1).
+     Fixes 6 rows (Artist 2, Make 2, Copyright 1, ImageDescription 1) and breaks 0.
+   - **Undefined charset prefixes**: for `UserComment`, `GPSProcessingMethod`, `GPSAreaInformation` (and any other Undefined tag that the reference prints as `charset text`), print `charset text` instead of the decimal bytes.
+   - **No other decoding**: Enum labels (27 tags) stay raw (appending the label breaks 2 768 rows); Rationals stay `num/den` (decimal breaks 1 228 rows); Dates stay raw string (ISO breaks 0 rows but fails parity); GPS DMS stays raw `num/den num/den num/den` (symbol/colon/decimal breaks 28 rows).
+   - **Measurement**: upstream corpus gap is **254 value-diff rows** (223 exv, 25 jpg, 2 tiff, 2 webp, 2 xmp). The local measurement for the 270-file EXV+sub-IFD walk is **22 rows** (9 `no-raw-column` + Software 9 / ImageDescription 4 / Artist 2 / Copyright 2 / Make 2, all Ascii). The 584/517 disagreement figure in `gaps3.txt` is contaminated by the Python replica SRational→Float bug and is **ignored** for the C# dumper measurement.
 2. **4.3** One unified read entry point returning a single immutable snapshot (EXIF, IPTC,
    XMP, ICC, comment) per container. **Public API → short proposal in the PR, then approval.**
 3. **4.4** MakerNotes read-only for Canon, Nikon, Sony, then Fujifilm, Olympus, Panasonic,
@@ -68,6 +73,17 @@ chronological record is `docs/PROGRESS.md` (one short entry per merged PR), ever
    (timestamp shift, copy between files). Exotic formats (PGF, EXV, DCP, CIFF, PSD breadth) last.
 
 ## Known limits
+
+- Accepting a frame type is about *metadata*, not decoding: no Huffman/arithmetic symbol
+  decoding, no MCU or restart-interval validation, no promise that the pixel stream renders.
+- Refusals stay: trailing bytes after EOI, duplicate EXIF APP1, non-length-bearing or reserved
+  markers (including 0xC8), unbacked table references, over-budget input or segment counts.
+- No MakerNote interpretation yet; ICC is not modelled; a failed thumbnail drops the picture, not
+  the read; no XMP toolkit (restricted packet profile only); Extended XMP is refused, not merged.
+- The harness reads no BMFF, video, EXV, CIFF or EPS, never decodes pixels, skips files above
+  64 MB, and counts an unread file `not-read` rather than as a disagreement. A reference's decoded
+  label is not raw bytes, so `match-key` means \"same tag found\", not \"same meaning printed\".
+
 
 - Accepting a frame type is about *metadata*, not decoding: no Huffman/arithmetic symbol
   decoding, no MCU or restart-interval validation, no promise that the pixel stream renders.

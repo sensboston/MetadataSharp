@@ -4,6 +4,7 @@ using System.Text;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
 using MetadataSharp.Formats.Jpeg;
 using MetadataSharp.Formats.Png;
@@ -83,6 +84,7 @@ internal static class Program
         if (At(head, 0, 0x52, 0x49, 0x46, 0x46) && At(head, 8, 0x57, 0x45, 0x42, 0x50)) { WebP(path, stdout, length); return; }
         if (At(head, 0, 0x49, 0x49, 0x2A, 0x00) || At(head, 0, 0x4D, 0x4D, 0x00, 0x2A)) { Tiff(path, stdout, length); return; }
         if (At(head, 0, 0x38, 0x42, 0x50, 0x53)) { Psd(path, stdout, length); return; }
+        if (At(head, 0, 0xFF, 0x01, 0x45, 0x78, 0x69, 0x76, 0x32)) { Exv(path, stdout, length); return; }
         if (At(head, 4, 0x6A, 0x50, 0x20, 0x20)) { Jp2(path, stdout, length); return; }
         if (At(head, 0, 0x3C, 0x3F) || At(head, 0, 0xEF, 0xBB, 0xBF)) { Sidecar(path, stdout, length); return; }
         if (At(head, 4, 0x66, 0x74, 0x79, 0x70)) { Record(stdout, "STATUS", "not-attempted", "iso-bmff"); return; }
@@ -136,9 +138,19 @@ internal static class Program
             {
                 TiffFieldType type = (TiffFieldType)field.FieldType;
                 Tag(stdout, "Exif." + Group(role) + "." + Name(new ExifTagKey(role, field.TagId)), TypeName(type),
-                    field.Count, Render(Slice(data, field.ValueRange), type, field.Count, layout.ByteOrder));
+                    field.Count, Render(Slice(data, field.ValueRange), type, field.Count, layout.ByteOrder, field.TagId));
             }
         }
+        Done(stdout);
+    }
+
+    private static void Exv(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        ExvMetadata metadata = ExvMetadata.Read(File.ReadAllBytes(path));
+        Exif(metadata.Exif, stdout);
+        if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
+        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
         Done(stdout);
     }
 
@@ -174,7 +186,7 @@ internal static class Program
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
             Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
-                TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
+                TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value, entry.Value.FieldType, entry.Value.Count, entry.Value.ByteOrder, entry.Key.TagId));
         if (metadata.MakerNote is MakerNote makerNote)
         {
             string group = makerNote.Format switch { MakerNoteFormat.Canon => "Canon", _ => makerNote.Format.ToString() };
@@ -185,19 +197,42 @@ internal static class Program
                 if (entry.Fields.Count != 0)
                 {
                     // AFInfo is printed whole and its fields share the MakerNote's own group.
-                    bool keepParent = entry.TagId == 0x0026;
+                    bool keepParent = makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
-                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
-                    string fieldGroup = keepParent ? group : group + ArrayGroup(entry.TagId);
+                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value, entry.Value.FieldType, entry.Value.Count, entry.Value.ByteOrder, entry.TagId));
+                    string fieldGroup = keepParent ? group
+                        : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
+                        : group + ArrayGroup(entry.TagId);
                     foreach (MakerNoteField field in entry.Fields)
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
-                            TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value));
+                            TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value, field.Value.FieldType, field.Value.Count, field.Value.ByteOrder));
                     continue;
                 }
                 Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
-                    TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
+                    TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value, entry.Value.FieldType, entry.Value.Count, entry.Value.ByteOrder, entry.TagId));
             }
         }
+    }
+
+    /// <summary>The reference tool's group for a split Nikon3 array, chosen like the layout: by tag and version.</summary>
+    private static string NikonArrayGroup(MakerNoteEntry entry)
+    {
+        byte[] raw = new byte[Math.Min(entry.Value.ByteLength, 4)];
+        if (raw.Length == 4)
+        {
+            byte[] all = new byte[entry.Value.ByteLength];
+            entry.Value.CopyRawTo(all);
+            raw = all[..4];
+        }
+        string version = raw.Length == 4 ? Encoding.ASCII.GetString(raw) : "";
+        return entry.TagId switch
+        {
+            0x001F => "Vr", 0x0023 => "Pc", 0x0024 => "Wt", 0x0025 => "Ii", 0x0088 => "Af",
+            0x0098 => version == "0100" ? "Ld1" : "Ld2",
+            0x00A8 => version switch { "0100" or "0101" => "Fl1", "0102" => "Fl2", "0106" => "Fl6", "0107" or "0108" => "Fl7", _ => "Fl3" },
+            0x00B0 => "Me", 0x00B7 => version == "0100" ? "Af2" : "Af22", 0x00B8 => "Fi", 0x00B9 => "AFT",
+            _ => "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)
+        };
     }
 
     private static string ArrayGroup(ushort tag) => tag switch
@@ -209,6 +244,15 @@ internal static class Program
         0x0012 => "Pi",
         0x0093 => "Fi",
         0x00A0 => "Pr",
+        0x0035 => "Ti",
+        0x4013 => "AfMiAdj",
+        0x4016 => "VigCor2",
+        0x4018 => "LiOp",
+        0x4019 => "Le",
+        0x4020 => "Am",
+        0x4021 => "Me",
+        0x4025 => "Hdr",
+        0x4028 => "AfC",
         _ => "0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
     };
 
@@ -385,17 +429,35 @@ internal static class Program
         _ => 0,
     };
 
-    private static string Render(ExifValue value)
+    private static string Render(ExifValue value, TiffFieldType type, uint count, Endianness order, ushort tagId = 0)
     {
         var bytes = new byte[value.ByteLength];
         value.CopyRawTo(bytes);
-        return Render(bytes, value.FieldType, value.Count, value.ByteOrder);
+        return Render(bytes, type, count, order, tagId);
     }
 
     /// <summary>Every element the declared type and count ask for, or a marker saying they are not there.</summary>
-    private static string Render(byte[] bytes, TiffFieldType type, uint count, Endianness order)
+    private static string Render(byte[] bytes, TiffFieldType type, uint count, Endianness order, ushort tagId = 0)
     {
-        if (type is TiffFieldType.Ascii) return Escape(Encoding.Latin1.GetString(Trim(bytes)));
+        if (type is TiffFieldType.Ascii)
+        {
+            byte[] cut = CutAtFirstNul(bytes);
+            string text = TryUtf8(cut) ?? Encoding.Latin1.GetString(cut);
+            return Escape(text);
+        }
+        if (type is TiffFieldType.Undefined)
+        {
+            // UserComment (0x9286), GPSProcessingMethod (0x001B), GPSAreaInformation (0x001C)
+            if (tagId is 0x9286 or 0x001B or 0x001C)
+            {
+                byte[] cut = CutAtFirstNul(bytes);
+                string text = TryUtf8(cut) ?? Encoding.Latin1.GetString(cut);
+                string charset = TryUtf8(cut) is not null ? "UTF-8" : "Latin-1";
+                return Escape(charset + " " + text);
+            }
+            // Otherwise (ExifVersion, ComponentsConfiguration, FlashpixVersion, CFAPattern, SceneType, FileSource, CompositeImage)
+            // Keep decimal bytes (the reference prints decimal bytes for those)
+        }
         int size = Size(type);
         if (size == 0) return "undefined-type";
         if ((long)count * size > bytes.Length) return "truncated-value";
@@ -422,6 +484,21 @@ internal static class Program
             });
         }
         return text.ToString();
+    }
+
+    private static byte[] CutAtFirstNul(byte[] bytes)
+    {
+        int end = Array.IndexOf(bytes, (byte)0);
+        if (end == -1) return bytes;
+        var cut = new byte[end];
+        Array.Copy(bytes, 0, cut, 0, end);
+        return cut;
+    }
+
+    private static string? TryUtf8(byte[] bytes)
+    {
+        try { return Encoding.UTF8.GetString(bytes); }
+        catch { return null; }
     }
 
     private static ushort U16(byte[] bytes, int at, Endianness order) => order == Endianness.LittleEndian ?
