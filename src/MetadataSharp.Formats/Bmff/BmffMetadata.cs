@@ -237,14 +237,14 @@ internal ref struct BmffReader
         while (position < box.End)
         {
             BoxHeader entry = Next(ref position, box.End, 3);
-            if (entry.Type == ItemEntryBox) Item(entry);
+            if (entry.Type == ItemEntryBox) ItemEntry(entry);
         }
         if ((uint)(items.Count - before) != declared)
             throw Fail("The item information entry count does not match its entries.", box.Payload + 4);
     }
 
     /// <summary>An infe entry of version 2 or 3; the protection-only entries of versions 0 and 1 say nothing about a type.</summary>
-    private void Item(BoxHeader box)
+    private void ItemEntry(BoxHeader box)
     {
         int length = box.End - box.Payload;
         if (length < 4) throw Fail("The item entry is truncated.", box.Payload);
