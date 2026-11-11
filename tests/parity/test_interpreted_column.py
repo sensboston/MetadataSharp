@@ -161,10 +161,9 @@ class InterpretedComparisonTests(unittest.TestCase):
 
     def test_the_same_text_on_both_sides_is_a_match(self):
         rows = self.rows()
-        for key in ("Exif.Image.XResolution", "Exif.Photo.ExposureTime", "Exif.Photo.DateTimeOriginal"):
+        for key in ("Exif.Image.XResolution", "Exif.Photo.ExposureTime"):
             self.assertEqual(rows[key]["interpreted"], compare_mod.MATCH_INTERPRETED, key)
-        self.assertTrue(rows["Exif.Image.XResolution"]["translated"])
-        self.assertFalse(rows["Exif.Photo.DateTimeOriginal"]["translated"])
+            self.assertTrue(rows[key]["translated"], key)
 
     def test_different_wording_is_a_difference_and_the_raw_outcome_does_not_notice(self):
         row = self.rows()["Exif.Image.ResolutionUnit"]
@@ -172,19 +171,29 @@ class InterpretedComparisonTests(unittest.TestCase):
         self.assertEqual(row["outcome"], compare_mod.MATCH_VALUE)
         self.assertEqual((row["our_interpreted"], row["their_interpreted"]), ("inches", "inch"))
 
-    def test_no_interpretation_agrees_only_with_a_reference_that_has_none_either(self):
+    def test_no_interpretation_of_ours_is_its_own_outcome_and_never_a_difference(self):
         rows = self.rows()
-        # The reference repeats the raw value for Make: neither side translates it.
-        self.assertEqual(rows["Exif.Image.Make"]["interpreted"], compare_mod.MATCH_INTERPRETED)
-        self.assertFalse(rows["Exif.Image.Make"]["translated"])
-        # The reference says F2.8 and we say nothing.
-        self.assertEqual(rows["Exif.Photo.FNumber"]["interpreted"], compare_mod.INTERPRETED_DIFF)
+        # The reference says F2.8 and we say nothing: a gap, recorded as one.
+        self.assertEqual(rows["Exif.Photo.FNumber"]["interpreted"], compare_mod.NOT_INTERPRETED)
         self.assertTrue(rows["Exif.Photo.FNumber"]["translated"])
+        self.assertEqual(rows["Exif.Photo.FNumber"]["their_interpreted"], "F2.8")
+        # The reference repeats the raw value for Make: we say nothing either, and that is not a match.
+        self.assertEqual(rows["Exif.Image.Make"]["interpreted"], compare_mod.NOT_INTERPRETED)
+        self.assertFalse(rows["Exif.Image.Make"]["translated"])
 
-    def test_an_interpretation_the_reference_does_not_make_is_a_difference_too(self):
-        row = self.rows()["Exif.Photo.SensitivityType"]
-        self.assertEqual(row["interpreted"], compare_mod.INTERPRETED_DIFF)
-        self.assertFalse(row["translated"])
+    def test_a_field_of_blanks_is_no_interpretation(self):
+        reference = parsed("Exif.Photo.FNumber                           Rational    1  28/10  F2.8\n")
+        row = compare_mod.compare_tags(reference, {"Exif.Photo.FNumber": ("Rational", 1, "28/10")},
+                                       {"Exif.Photo.FNumber": "  "})[0]
+        self.assertEqual(row["interpreted"], compare_mod.NOT_INTERPRETED)
+
+    def test_an_interpretation_the_reference_does_not_make_is_not_compared(self):
+        rows = self.rows()
+        # We name the sensitivity type and the reference prints the number it stored.
+        self.assertEqual(rows["Exif.Photo.SensitivityType"]["interpreted"], compare_mod.REFERENCE_NOT_INTERPRETED)
+        self.assertFalse(rows["Exif.Photo.SensitivityType"]["translated"])
+        # Our text is the raw value and so is the reference's: neither says anything to compare.
+        self.assertEqual(rows["Exif.Photo.DateTimeOriginal"]["interpreted"], compare_mod.REFERENCE_NOT_INTERPRETED)
 
     def test_a_record_without_the_field_is_not_asked(self):
         rows = self.rows()
@@ -206,9 +215,14 @@ class InterpretedComparisonTests(unittest.TestCase):
         reference = parsed("Exif.Image.Artist                            Ascii       6  A  B   A  B\n")
         self.assertEqual(reference["Exif.Image.Artist"]["interpreted"], "A  B")
         tags = {"Exif.Image.Artist": ("Ascii", 6, "A  B")}
+        # The reference repeats its raw value here, so our text has nothing to be compared with.
         same = compare_mod.compare_tags(reference, tags, {"Exif.Image.Artist": "A  B "})[0]
+        self.assertEqual(same["interpreted"], compare_mod.REFERENCE_NOT_INTERPRETED)
+        translated = parsed("Exif.Photo.ExposureTime                      Rational    1  10/2500  1/250 s\n")
+        time = {"Exif.Photo.ExposureTime": ("Rational", 1, "10/2500")}
+        same = compare_mod.compare_tags(translated, time, {"Exif.Photo.ExposureTime": " 1/250 s "})[0]
         self.assertEqual(same["interpreted"], compare_mod.MATCH_INTERPRETED)
-        other = compare_mod.compare_tags(reference, tags, {"Exif.Image.Artist": "A B"})[0]
+        other = compare_mod.compare_tags(translated, time, {"Exif.Photo.ExposureTime": "1/250  s"})[0]
         self.assertEqual(other["interpreted"], compare_mod.INTERPRETED_DIFF)
 
     def test_a_key_only_one_side_prints_gets_no_verdict(self):
@@ -241,7 +255,9 @@ class InterpretedComparisonTests(unittest.TestCase):
         self.assertEqual((row["outcome"], row["interpreted"]), (compare_mod.VALUE_DIFF, compare_mod.MATCH_INTERPRETED))
 
     def test_the_new_outcomes_are_not_raw_outcomes(self):
-        self.assertEqual(compare_mod.INTERPRETED_OUTCOMES, ("match-interpreted", "interpreted-diff"))
+        self.assertEqual(compare_mod.INTERPRETED_OUTCOMES,
+                         ("match-interpreted", "interpreted-diff", "not-interpreted", "reference-not-interpreted"))
+        self.assertEqual(compare_mod.INTERPRETED_COMPARED, ("match-interpreted", "interpreted-diff"))
         for name in compare_mod.INTERPRETED_OUTCOMES:
             self.assertNotIn(name, compare_mod.OUTCOMES)
 
@@ -251,22 +267,39 @@ class InterpretedAggregateTests(unittest.TestCase):
         tags, interpreted = dumped(records)
         return compare_mod.compare_file(label, "exiv2", "jpg", "ok", "", parsed(), tags, [], interpreted)
 
-    def test_the_tally_is_per_kind_and_separates_what_the_reference_translates(self):
+    def test_the_rate_is_over_what_both_sides_interpret_and_the_rest_is_counted_beside_it(self):
         report = compare_mod.aggregate([self.entry()])
         section = report["interpreted"]
-        self.assertEqual(section["outcomes"], {compare_mod.MATCH_INTERPRETED: 4, compare_mod.INTERPRETED_DIFF: 3})
-        self.assertEqual(section["compared"], 7)
-        self.assertEqual(section["rate"], round(4 / 7, 6))
+        self.assertEqual(section["outcomes"], {
+            # XResolution and ExposureTime; ResolutionUnit.
+            compare_mod.MATCH_INTERPRETED: 2, compare_mod.INTERPRETED_DIFF: 1,
+            # Make and FNumber; SensitivityType and DateTimeOriginal.
+            compare_mod.NOT_INTERPRETED: 2, compare_mod.REFERENCE_NOT_INTERPRETED: 2,
+        })
+        self.assertEqual((section["agreed"], section["compared"]), (2, 3))
+        self.assertEqual(section["rate"], round(2 / 3, 6))
+        # Of the two values we do not interpret, the reference translates one: FNumber.
+        self.assertEqual((section["not_interpreted"], section["not_interpreted_translated"]), (2, 1))
         self.assertEqual(section["by_kind"]["Exif"], {
-            compare_mod.MATCH_INTERPRETED: 4, compare_mod.INTERPRETED_DIFF: 3,
-            # XResolution, ResolutionUnit, ExposureTime and FNumber are translated by the reference;
-            # we agree on two of them.
-            "translated": 4, "translated-match": 2,
+            compare_mod.MATCH_INTERPRETED: 2, compare_mod.INTERPRETED_DIFF: 1,
+            compare_mod.NOT_INTERPRETED: 2, compare_mod.NOT_INTERPRETED_TRANSLATED: 1,
+            compare_mod.REFERENCE_NOT_INTERPRETED: 2,
             compare_mod.NOT_OFFERED: 1,
         })
         self.assertEqual(section["by_kind"]["Xmp"], {compare_mod.NOT_OFFERED: 1})
-        self.assertEqual(section["by_family"]["Exif.Photo"][compare_mod.INTERPRETED_DIFF], 2)
+        self.assertEqual(section["by_family"]["Exif.Photo"], {
+            compare_mod.MATCH_INTERPRETED: 1, compare_mod.NOT_INTERPRETED: 1,
+            compare_mod.NOT_INTERPRETED_TRANSLATED: 1, compare_mod.REFERENCE_NOT_INTERPRETED: 2,
+        })
         self.assertNotIn("Exif.Nikon3", section["by_family"])
+
+    def test_a_dump_that_interprets_nothing_has_no_rate_and_no_differences(self):
+        nothing = [row[:5] + [""] if row[0] == "TAG" and len(row) == 6 else row for row in RECORDS]
+        section = compare_mod.aggregate([self.entry(nothing)])["interpreted"]
+        self.assertEqual(section["outcomes"], {compare_mod.NOT_INTERPRETED: 7})
+        self.assertEqual((section["agreed"], section["compared"], section["rate"]), (0, 0, None))
+        self.assertEqual((section["not_interpreted"], section["not_interpreted_translated"]), (7, 4))
+        self.assertEqual(section["diffs"], [])
 
     def test_the_raw_numbers_do_not_move_when_the_column_appears(self):
         with_column = compare_mod.aggregate([self.entry()])
@@ -285,8 +318,14 @@ class InterpretedAggregateTests(unittest.TestCase):
         self.assertEqual(list(diffs)[:1], ["Exif.Image.ResolutionUnit"])
         unit = diffs["Exif.Image.ResolutionUnit"]
         self.assertEqual((unit["tags"], unit["ours"], unit["theirs"], unit["pair_tags"]), (3, "inches", "inch", 2))
-        self.assertEqual(diffs["Exif.Photo.FNumber"]["ours"], "")
-        self.assertNotIn("Exif.Image.Make", diffs)
+        # Only a pair of texts is a difference: no value we leave uninterpreted is listed here.
+        self.assertEqual(list(diffs), ["Exif.Image.ResolutionUnit"])
+
+    def test_what_we_do_not_interpret_is_listed_by_key_with_the_reference_text(self):
+        report = compare_mod.aggregate([self.entry(), self.entry(label="exiv2:b.jpg")])
+        listed = report["interpreted"]["not_interpreted_keys"]
+        # Make is not listed: the reference has no translation for it either.
+        self.assertEqual(listed, [{"key": "Exif.Photo.FNumber", "tags": 2, "theirs": "F2.8", "text_tags": 2}])
 
 
 class InterpretedHarnessTests(unittest.TestCase):
@@ -321,19 +360,27 @@ class InterpretedHarnessTests(unittest.TestCase):
         report = self.report()
         self.assertEqual(report["outcomes"], {compare_mod.MATCH_VALUE: 9})
         self.assertEqual(report["parity"]["value_rate"], 1.0)
-        self.assertEqual(report["interpreted"]["by_kind"]["Exif"][compare_mod.MATCH_INTERPRETED], 4)
-        self.assertEqual(report["interpreted"]["by_kind"]["Exif"][compare_mod.INTERPRETED_DIFF], 3)
+        self.assertEqual(report["interpreted"]["by_kind"]["Exif"][compare_mod.MATCH_INTERPRETED], 2)
+        self.assertEqual(report["interpreted"]["by_kind"]["Exif"][compare_mod.INTERPRETED_DIFF], 1)
+        self.assertEqual(report["interpreted"]["by_kind"]["Exif"][compare_mod.NOT_INTERPRETED], 2)
         text = (self.out / "parity-report.txt").read_text(encoding="utf-8")
+        # The headline is over the values both sides interpret, with the uninterpreted ones beside it.
+        self.assertIn("interpreted:  2/3 = 66.7% of the values both sides interpret; "
+                      "not interpreted: 2 (the reference translates 1 of them)", text)
         self.assertIn("by kind (raw values | interpreted values", text)
-        self.assertIn("interpreted outcomes: match-interpreted=4, interpreted-diff=3", text)
+        self.assertIn("interpreted outcomes: match-interpreted=2, interpreted-diff=1, not-interpreted=2, "
+                      "reference-not-interpreted=2", text)
         # The raw outcome line keeps its six names and gains none.
         self.assertIn("outcomes: match-value=9, match-key=0, value-diff=0, missing-key=0, extra-key=0, not-read=0", text)
         exif = next(line for line in text.splitlines() if line.startswith("Exif "))
-        # keys, found, raw values | compared, agreed, rate, translated, agreed, rate, not offered
-        self.assertEqual(exif.split(), ["Exif", "8", "8", "100.0%", "|", "7", "4", "57.1%", "4", "2", "50.0%", "1"])
+        # keys, found, raw values | both interpret, agreed, rate, not interpreted, of which the
+        # reference translates, only we interpret, not offered
+        self.assertEqual(exif.split(), ["Exif", "8", "8", "100.0%", "|", "3", "2", "66.7%", "2", "1", "2", "1"])
         self.assertIn("Exif.Image.ResolutionUnit", text)
         self.assertIn("inches | inch", text)
-        self.assertIn("(none) | F2.8", text)
+        self.assertNotIn("(none) | F2.8", text)
+        gap = text.split("most frequent values we do not interpret and the reference translates:")[1].split("\n\n")[0]
+        self.assertEqual(gap.split("\n")[2].split(), ["Exif.Photo.FNumber", "1", "F2.8"])
         row = next(row for row in report["per_file"][0]["rows"] if row["key"] == "Exif.Photo.ExposureTime")
         self.assertEqual((row["outcome"], row["interpreted"]), (compare_mod.MATCH_VALUE, compare_mod.MATCH_INTERPRETED))
 
@@ -349,7 +396,10 @@ class InterpretedHarnessTests(unittest.TestCase):
         self.assertEqual(without["interpreted"]["outcomes"], {})
         self.assertIsNone(without["interpreted"]["rate"])
         text = (self.out / "parity-report.txt").read_text(encoding="utf-8")
-        self.assertIn("interpreted outcomes: match-interpreted=0, interpreted-diff=0", text)
+        self.assertIn("interpreted:  0/0 = n/a of the values both sides interpret; "
+                      "not interpreted: 0 (the reference translates 0 of them)", text)
+        self.assertIn("interpreted outcomes: match-interpreted=0, interpreted-diff=0, not-interpreted=0, "
+                      "reference-not-interpreted=0", text)
 
     def test_a_record_with_too_many_fields_fails_the_run(self):
         broken = [["TAG", "Exif.Image.Make", "Ascii", 6, "NIKON", "", "extra"], ["STATUS", "ok"]]
@@ -367,12 +417,15 @@ class InterpretedHarnessTests(unittest.TestCase):
         decoded = json.loads(zlib.decompress(base64.b64decode(completed.stdout.split(marker)[1].split("\n")[0])))
         self.assertEqual(decoded["by_kind"], {"Exif": {"match-value": 8}, "Xmp": {"match-value": 1}})
         section = decoded["interpreted"]
-        self.assertEqual(section["outcomes"], {"match-interpreted": 4, "interpreted-diff": 3})
-        self.assertEqual(section["by_kind"]["Exif"]["translated-match"], 2)
-        self.assertEqual(section["by_family"]["Exif.Image"], {"match-interpreted": 2, "interpreted-diff": 1,
-                                                              "translated": 2, "translated-match": 1})
-        self.assertEqual([entry["key"] for entry in section["diff_top"]],
-                         ["Exif.Image.ResolutionUnit", "Exif.Photo.FNumber", "Exif.Photo.SensitivityType"])
+        self.assertEqual(section["outcomes"], {"match-interpreted": 2, "interpreted-diff": 1,
+                                               "not-interpreted": 2, "reference-not-interpreted": 2})
+        self.assertEqual((section["agreed"], section["compared"], section["rate"]), (2, 3, round(2 / 3, 6)))
+        self.assertEqual((section["not_interpreted"], section["not_interpreted_translated"]), (2, 1))
+        self.assertEqual(section["by_kind"]["Exif"]["not-interpreted-translated"], 1)
+        self.assertEqual(section["by_family"]["Exif.Image"], {"match-interpreted": 1, "interpreted-diff": 1,
+                                                              "not-interpreted": 1})
+        self.assertEqual([entry["key"] for entry in section["diff_top"]], ["Exif.Image.ResolutionUnit"])
+        self.assertEqual([entry["key"] for entry in section["not_interpreted_top"]], ["Exif.Photo.FNumber"])
 
     def test_a_summary_of_a_report_without_the_section_still_builds(self):
         entries = [compare_mod.compare_file("exiv2:n", "exiv2", "jpg", "ok", "", {}, {}, [])]
@@ -382,7 +435,10 @@ class InterpretedHarnessTests(unittest.TestCase):
                              "generated": {"directories": [], "files": 0, "oracle": None}}
         summary = run_parity.summary(report, [])
         self.assertEqual(summary["interpreted"]["by_kind"], {})
-        self.assertIn("interpreted outcomes: match-interpreted=0, interpreted-diff=0", run_parity.text_report(report, []))
+        text = run_parity.text_report(report, [])
+        self.assertIn("interpreted:  0/0 = n/a of the values both sides interpret; not interpreted: 0", text)
+        self.assertIn("interpreted outcomes: match-interpreted=0, interpreted-diff=0, not-interpreted=0, "
+                      "reference-not-interpreted=0", text)
 
 
 if __name__ == "__main__":

@@ -17,10 +17,24 @@ testable without a build or a corpus. The outcome vocabulary is deliberately sma
     metadata the reference tool's print options do not select.
 
 The interpreted (human-readable) value is a second question about a row that already has one of the
-outcomes above, and it is answered apart: a row gains ``match-interpreted`` or ``interpreted-diff``
-under its own field, the two are tallied in their own table, and nothing they say reaches the raw
-outcomes, the key rate or the value rate. A row is asked the question only when both sides print the
-key, our record offers an interpreted field, and the reference's two columns can be separated.
+outcomes above, and it is answered apart: the row gains one of four verdicts under its own field,
+they are tallied in their own table, and nothing they say reaches the raw outcomes, the key rate or
+the value rate. A row is asked the question only when both sides print the key, our record offers an
+interpreted field, and the reference's two columns can be separated.
+
+A side interprets a value when it has something to say beyond the raw value: we, when our field is
+not empty; the reference, when its interpreted column differs from its raw one (it repeats the raw
+value where it has no translation). That gives four cases:
+
+``match-interpreted`` / ``interpreted-diff``
+    Both sides interpret the value, and the two texts are the same or differ. Only these two are
+    compared, and the interpreted rate is taken over them alone.
+``not-interpreted``
+    We return no interpretation. This is a gap, not a disagreement; ``translated`` on the row says
+    whether the reference has a translation we lack.
+``reference-not-interpreted``
+    We return an interpretation and the reference only repeats its raw value, so there is nothing to
+    compare ours with.
 """
 
 from __future__ import annotations
@@ -38,12 +52,20 @@ EXTRA_KEY = "extra-key"
 NOT_READ = "not-read"
 OUTCOMES = (MATCH_VALUE, MATCH_KEY, VALUE_DIFF, MISSING_KEY, EXTRA_KEY, NOT_READ)
 
-#: Both sides say the same about what the value means - the same text, or nothing beyond the raw value.
+#: Both sides interpret the value and say the same.
 MATCH_INTERPRETED = "match-interpreted"
-#: The two interpretations differ, or only one side has one.
+#: Both sides interpret the value and say different things.
 INTERPRETED_DIFF = "interpreted-diff"
+#: We return no interpretation for the value, whatever the reference says.
+NOT_INTERPRETED = "not-interpreted"
+#: We return an interpretation and the reference only repeats its raw value.
+REFERENCE_NOT_INTERPRETED = "reference-not-interpreted"
 #: Deliberately not part of OUTCOMES: every sum over that tuple is a statement about raw values.
-INTERPRETED_OUTCOMES = (MATCH_INTERPRETED, INTERPRETED_DIFF)
+INTERPRETED_OUTCOMES = (MATCH_INTERPRETED, INTERPRETED_DIFF, NOT_INTERPRETED, REFERENCE_NOT_INTERPRETED)
+#: The two verdicts that compare one text with another; the interpreted rate is over these alone.
+INTERPRETED_COMPARED = (MATCH_INTERPRETED, INTERPRETED_DIFF)
+#: A counter beside ``not-interpreted``: the rows of it for which the reference has a translation.
+NOT_INTERPRETED_TRANSLATED = "not-interpreted-translated"
 #: Why a key both sides print was not asked about its interpretation.
 NOT_OFFERED = "not-offered"
 NO_REFERENCE_COLUMN = "no-reference-column"
@@ -108,10 +130,10 @@ def row(key: str, outcome: str, *, ours: tuple[str, int, str] | None, theirs: di
 def judge_interpreted(entry: dict[str, Any], theirs: dict, ours: str | None) -> None:
     """Add the interpreted verdict to a row for a key both sides print. The row's outcome is not read.
 
-    The reference prints its raw value again where it has no translation, so "we have none" (an empty
-    field) agrees with exactly that and with nothing else; ``translated`` records which of the two
-    cases a row is, because agreeing that there is nothing to say is a weaker fact than agreeing on
-    what is said. Text is compared as printed, less the surrounding blanks a line format cannot keep.
+    The reference prints its raw value again where it has no translation; ``translated`` records
+    whether it has one. An empty field of ours is "no interpretation" and is never compared: it is
+    counted as such, with or without a translation on the other side. Text is compared only where
+    both sides have some, as printed, less the surrounding blanks a line format cannot keep.
     """
     if ours is None:
         entry["interpreted_skipped"] = NOT_OFFERED
@@ -122,11 +144,12 @@ def judge_interpreted(entry: dict[str, Any], theirs: dict, ours: str | None) -> 
         entry["interpreted_skipped"] = NO_REFERENCE_COLUMN
         return
     translated = their_raw.strip() != their_text.strip()
-    if ours == "":
-        agreed = not translated
+    if ours.strip() == "":
+        entry["interpreted"] = NOT_INTERPRETED
+    elif not translated:
+        entry["interpreted"] = REFERENCE_NOT_INTERPRETED
     else:
-        agreed = ours.strip() == their_text.strip()
-    entry["interpreted"] = MATCH_INTERPRETED if agreed else INTERPRETED_DIFF
+        entry["interpreted"] = MATCH_INTERPRETED if ours.strip() == their_text.strip() else INTERPRETED_DIFF
     entry["translated"] = translated
     entry["our_interpreted"] = ours[:INTERPRETED_SAMPLE_WIDTH]
     entry["their_interpreted"] = their_text[:INTERPRETED_SAMPLE_WIDTH]
@@ -241,6 +264,9 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
     interpreted_by_family: dict[str, Counter[str]] = defaultdict(Counter)
     interpreted_diffs: Counter[str] = Counter()
     interpreted_pairs: dict[str, Counter[tuple[str, str]]] = defaultdict(Counter)
+    gaps_translated = 0
+    untranslated: Counter[str] = Counter()
+    untranslated_texts: dict[str, Counter[str]] = defaultdict(Counter)
 
     for entry in files:
         statuses[entry["status"]] += 1
@@ -280,19 +306,24 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
             if verdict is None:
                 continue
             interpreted_outcomes[verdict] += 1
+            gap = verdict == NOT_INTERPRETED and r["translated"]
+            if gap:
+                gaps_translated += 1
             for bucket_name, table in ((kind_name, interpreted_by_kind), (family(r["key"]), interpreted_by_family)):
                 table[bucket_name][verdict] += 1
-                if r["translated"]:
-                    table[bucket_name]["translated"] += 1
-                    if verdict == MATCH_INTERPRETED:
-                        table[bucket_name]["translated-match"] += 1
+                if gap:
+                    table[bucket_name][NOT_INTERPRETED_TRANSLATED] += 1
             if verdict == INTERPRETED_DIFF:
                 interpreted_diffs[r["key"]] += 1
                 interpreted_pairs[r["key"]][(r["our_interpreted"], r["their_interpreted"])] += 1
+            elif gap:
+                untranslated[r["key"]] += 1
+                untranslated_texts[r["key"]][r["their_interpreted"]] += 1
 
     attempted = sum(1 for entry in files if entry["attempted"])
     expected = outcomes[MATCH_VALUE] + outcomes[MATCH_KEY] + outcomes[VALUE_DIFF]
     comparable = outcomes[MATCH_VALUE] + outcomes[VALUE_DIFF]
+    compared_texts = sum(interpreted_outcomes[name] for name in INTERPRETED_COMPARED)
 
     def rate(numerator: int, denominator: int) -> float | None:
         return round(numerator / denominator, 6) if denominator else None
@@ -334,14 +365,22 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
                            for name, formats in sorted(by_kind_format.items())},
         "interpreted": {
             "outcomes": dict(interpreted_outcomes),
-            "compared": sum(interpreted_outcomes.values()),
-            "rate": rate(interpreted_outcomes[MATCH_INTERPRETED], sum(interpreted_outcomes.values())),
+            # The rate is over the values both sides interpret; what we do not interpret is beside it.
+            "compared": compared_texts,
+            "agreed": interpreted_outcomes[MATCH_INTERPRETED],
+            "rate": rate(interpreted_outcomes[MATCH_INTERPRETED], compared_texts),
+            "not_interpreted": interpreted_outcomes[NOT_INTERPRETED],
+            "not_interpreted_translated": gaps_translated,
             "by_kind": {name: dict(counts) for name, counts in sorted(interpreted_by_kind.items())},
             "by_family": {name: dict(counts) for name, counts in sorted(interpreted_by_family.items())},
             # One line per key, with the pair of texts that accounts for most of its differences.
             "diffs": [{"key": key, "tags": count, "ours": pair[0], "theirs": pair[1], "pair_tags": pair_count}
                       for key, count in interpreted_diffs.most_common()
                       for pair, pair_count in interpreted_pairs[key].most_common(1)],
+            # One line per key the reference translates and we do not, with its most frequent text.
+            "not_interpreted_keys": [{"key": key, "tags": count, "theirs": text, "text_tags": text_count}
+                                     for key, count in untranslated.most_common()
+                                     for text, text_count in untranslated_texts[key].most_common(1)],
         },
         "gaps": {
             "missing_keys": gaps(missing_files, missing_tags, MISSING_KEY),

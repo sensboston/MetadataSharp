@@ -173,14 +173,15 @@ def kind_table(report: dict[str, Any]) -> list[str]:
 
     The two halves count different things and are never added. The raw half is the per-family table
     folded; the interpreted half is its own tally, over the keys both sides print for which our
-    record offers an interpreted field. ``transl.`` narrows that to the keys the reference really
-    translates - where its interpreted column differs from its raw one - because the rest agree only
-    that there is nothing to say.
+    record offers an interpreted field. ``both`` are the values both sides interpret, the only ones
+    whose texts are compared and the only ones in the rate. ``not int.`` are the values we return no
+    interpretation for, and ``ref. has`` the part of them the reference translates; ``ref. none``
+    are the values we interpret and the reference only repeats.
     """
     raw = by_kind(report["by_family"])
     interpreted = interpreted_by_kind(report)
-    lines = [f"{'kind':<6} {'keys':>7} {'found':>7} {'values':>8} | {'interp.':>8} {'agree':>7} {'rate':>8}"
-             f" {'transl.':>8} {'agree':>7} {'rate':>8} {'not offered':>12}"]
+    lines = [f"{'kind':<6} {'keys':>7} {'found':>7} {'values':>8} | {'both':>8} {'agree':>7} {'rate':>8}"
+             f" {'not int.':>9} {'ref. has':>9} {'ref. none':>10} {'not offered':>12}"]
     for name in sorted(set(raw) | set(interpreted)):
         counts = raw.get(name, {})
         found = sum(counts.get(outcome, 0) for outcome in
@@ -191,13 +192,22 @@ def kind_table(report: dict[str, Any]) -> list[str]:
         ours = interpreted.get(name, {})
         same = ours.get(compare_mod.MATCH_INTERPRETED, 0)
         compared = same + ours.get(compare_mod.INTERPRETED_DIFF, 0)
-        translated = ours.get("translated", 0)
         lines.append(f"{name:<6} {expected:>7} {found:>7} {_percent(agreed, comparable):>8} | "
                      f"{compared:>8} {same:>7} {_percent(same, compared):>8}"
-                     f" {translated:>8} {ours.get('translated-match', 0):>7}"
-                     f" {_percent(ours.get('translated-match', 0), translated):>8}"
+                     f" {ours.get(compare_mod.NOT_INTERPRETED, 0):>9}"
+                     f" {ours.get(compare_mod.NOT_INTERPRETED_TRANSLATED, 0):>9}"
+                     f" {ours.get(compare_mod.REFERENCE_NOT_INTERPRETED, 0):>10}"
                      f" {ours.get(compare_mod.NOT_OFFERED, 0):>12}")
     return lines
+
+
+def interpreted_headline(report: dict[str, Any]) -> str:
+    """The interpreted rate, over the values both sides interpret, with what we do not interpret beside it."""
+    section = report.get("interpreted", {})
+    same, compared = section.get("agreed", 0), section.get("compared", 0)
+    return (f"interpreted:  {same}/{compared} = {_percent(same, compared)} of the values both sides interpret;"
+            f" not interpreted: {section.get('not_interpreted', 0)}"
+            f" (the reference translates {section.get('not_interpreted_translated', 0)} of them)")
 
 
 def interpreted_diff_table(entries: list[dict[str, Any]], limit: int) -> list[str]:
@@ -206,6 +216,17 @@ def interpreted_diff_table(entries: list[dict[str, Any]], limit: int) -> list[st
     lines = [f"  {'key':<44} {'tags':>6}  most frequent pair: ours | reference"]
     for entry in entries[:limit]:
         lines.append(f"  {entry['key']:<44} {entry['tags']:>6}  {entry['ours'] or '(none)'} | {entry['theirs']}")
+    if len(entries) > limit:
+        lines.append(f"  ... {len(entries) - limit} further keys are listed in parity-report.json")
+    return lines
+
+
+def not_interpreted_table(entries: list[dict[str, Any]], limit: int) -> list[str]:
+    if not entries:
+        return ["  (none)"]
+    lines = [f"  {'key':<44} {'tags':>6}  most frequent reference text"]
+    for entry in entries[:limit]:
+        lines.append(f"  {entry['key']:<44} {entry['tags']:>6}  {entry['theirs']}")
     if len(entries) > limit:
         lines.append(f"  ... {len(entries) - limit} further keys are listed in parity-report.json")
     return lines
@@ -235,6 +256,7 @@ def text_report(report: dict[str, Any], problems: list[str]) -> str:
         f"{_percent(parity['found_keys'], parity['expected_keys'])} of the reference's keys",
         f"value parity: {parity['agreed_values']}/{parity['comparable_values']} = "
         f"{_percent(parity['agreed_values'], parity['comparable_values'])} of comparable values",
+        interpreted_headline(report),
         "",
         "outcomes: " + ", ".join(f"{name}={outcomes.get(name, 0)}" for name in compare_mod.OUTCOMES),
         "advisory: " + (", ".join(f"{name}={count}" for name, count in sorted(report["advisory"].items())) or "none"),
@@ -251,8 +273,11 @@ def text_report(report: dict[str, Any], problems: list[str]) -> str:
         + ", ".join(f"{name}={report.get('interpreted', {}).get('outcomes', {}).get(name, 0)}"
                     for name in compare_mod.INTERPRETED_OUTCOMES),
         "",
-        "most frequent interpreted differences (same key, different wording or no interpretation on one side):",
+        "most frequent interpreted differences (both sides interpret the value and word it differently):",
         *interpreted_diff_table(report.get("interpreted", {}).get("diffs", []), 25),
+        "",
+        "most frequent values we do not interpret and the reference translates:",
+        *not_interpreted_table(report.get("interpreted", {}).get("not_interpreted_keys", []), 25),
         "",
         "most frequent missing keys (the reference printed one we did not):",
         *gap_table(report["gaps"]["missing_keys"], 15),
@@ -316,15 +341,21 @@ def summary(report: dict[str, Any], problems: list[str]) -> dict[str, Any]:
         "by_kind": by_kind(report["by_family"]),
         # Per format for the two small kinds; EXIF per format is by_format less these.
         "by_kind_format": {name: formats for name, formats in report["by_kind_format"].items() if name != "Exif"},
-        # The interpreted column, apart from everything above: its outcomes, the per-kind counters the
-        # text report prints beside the raw ones, the standard groups one by one, and the keys that
-        # differ most often with one sample of each side.
+        # The interpreted column, apart from everything above: its outcomes, the rate over the values
+        # both sides interpret with the count of those we do not interpret beside it, the per-kind
+        # counters the text report prints beside the raw ones, the groups one by one, and the keys
+        # that differ or go uninterpreted most often with a sample.
         "interpreted": {
             "outcomes": report.get("interpreted", {}).get("outcomes", {}),
+            "compared": report.get("interpreted", {}).get("compared", 0),
+            "agreed": report.get("interpreted", {}).get("agreed", 0),
             "rate": report.get("interpreted", {}).get("rate"),
+            "not_interpreted": report.get("interpreted", {}).get("not_interpreted", 0),
+            "not_interpreted_translated": report.get("interpreted", {}).get("not_interpreted_translated", 0),
             "by_kind": interpreted_by_kind(report),
             "by_family": report.get("interpreted", {}).get("by_family", {}),
             "diff_top": report.get("interpreted", {}).get("diffs", [])[:40],
+            "not_interpreted_top": report.get("interpreted", {}).get("not_interpreted_keys", [])[:40],
         },
         "missing_top": report["gaps"]["missing_keys"][:30],
         "unread_top": report["gaps"]["unread_keys"][:12],

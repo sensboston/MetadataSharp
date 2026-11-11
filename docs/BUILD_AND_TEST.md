@@ -38,4 +38,5 @@ Each file prints `FILE`, `TAG <key> <type> <count> <value> [<interpreted>]` and
 interpreted value: `ExifTags.Interpret` for standard EXIF tags, `MakerNote.Interpret` for MakerNote tags
 and fields, `IptcDatasetNames.Interpret` for IPTC datasets; XMP records have none.
 `tools/parity/run_parity.py` compares such dumps with exiv2 references and reports the interpreted
-column apart from the raw one.
+column apart from the raw one. Its rate is over the values both sides interpret; a value we return no
+interpretation for is `not-interpreted`, counted beside the rate and never as a difference.
