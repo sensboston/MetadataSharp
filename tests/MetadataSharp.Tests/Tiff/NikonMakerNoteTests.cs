@@ -89,6 +89,65 @@ public sealed class NikonMakerNoteTests
         Assert.Equal(2u, iso.Value.Count);
     }
 
+    /// <summary>
+    /// A Nikon3 note whose only tag is the preview pointer 0x0011, stored as <paramref name="pointer"/>.
+    /// The preview directory sits 26 bytes past the embedded header: Compression 6, XResolution 300/1
+    /// (stored after the directory) and a tag no TIFF table names.
+    /// </summary>
+    private static byte[] Nikon3WithPreview(bool innerBig, long pointer = 26)
+    {
+        var note = new byte[86];
+        "Nikon\0"u8.CopyTo(note);
+        note[6] = 0x02; note[7] = 0x10;
+        var w = new Writer(note, innerBig);
+        note[10] = note[11] = (byte)(innerBig ? 'M' : 'I');
+        w.U16(12, 42); w.U32(14, 8);
+        w.U16(18, 1);
+        w.Entry(20, 0x0011, 4, 1, pointer);
+        w.U16(36, 3);
+        w.Entry(38, 0x0103, 3, 1, 0); w.U16(46, 6);
+        w.Entry(50, 0x011A, 5, 1, 68);
+        w.Entry(62, 0x8888, 3, 1, 0); w.U16(70, 7);
+        w.U32(78, 300); w.U32(82, 1);
+        return note;
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void TheNikon3PreviewDirectoryIsReadAsTheFieldsOfItsPointer(bool outerBig, bool innerBig)
+    {
+        MakerNote? note = ExifTiffReader.Read(Wrap(outerBig, Nikon3WithPreview(innerBig))).Metadata.MakerNote;
+        Assert.NotNull(note);
+        Assert.True(note.TryGetEntry(0x0011, out MakerNoteEntry? preview));
+        Assert.Equal("Preview", preview.Name);
+        Assert.Equal(TiffFieldType.Long, preview.Value.FieldType);   // the pointer itself is kept as stored
+        Assert.Equal(1u, preview.Value.Count);
+        // The fields are ordinary TIFF fields, named by the TIFF table and indexed by their tag numbers.
+        Assert.Equal(new[] { "Compression", "XResolution", "0x8888" }, preview.Fields.Select(field => field.Name).ToArray());
+        Assert.Equal(new ushort[] { 0x0103, 0x011A, 0x8888 }, preview.Fields.Select(field => field.Index).ToArray());
+        Assert.Equal(TiffFieldType.Short, preview.Fields[0].Value.FieldType);
+        Assert.Equal(TiffFieldType.Rational, preview.Fields[1].Value.FieldType);
+        byte[] resolution = new byte[8];
+        preview.Fields[1].Value.CopyRawTo(resolution);
+        Assert.Equal(300u, innerBig ? BinaryPrimitives.ReadUInt32BigEndian(resolution) : BinaryPrimitives.ReadUInt32LittleEndian(resolution));
+    }
+
+    [Theory]
+    [InlineData(0L)]      // Not a directory offset at all.
+    [InlineData(4L)]      // Inside the embedded header.
+    [InlineData(75L)]     // Inside the note, with no room for a directory behind it.
+    [InlineData(4096L)]   // Beyond the note.
+    public void ANikon3PreviewPointerThatLeadsNowhereStaysAPlainNumber(long pointer)
+    {
+        MakerNote? note = ExifTiffReader.Read(Wrap(false, Nikon3WithPreview(false, pointer))).Metadata.MakerNote;
+        Assert.NotNull(note);
+        Assert.True(note.TryGetEntry(0x0011, out MakerNoteEntry? preview));
+        Assert.Empty(preview.Fields);
+    }
+
     [Theory]
     [InlineData(1000L)]   // Beyond the MakerNote.
     [InlineData(-10L)]    // Before the embedded header (wraps to a huge unsigned offset).

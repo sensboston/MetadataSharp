@@ -261,10 +261,13 @@ internal static class Program
                 {
                     // AFInfo is printed whole and its fields share the MakerNote's own group.
                     bool olympusIfd = makerNote.Format is MakerNoteFormat.Olympus2 or MakerNoteFormat.OMSystem;
-                    bool keepParent = olympusIfd || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
+                    // So is the Nikon preview pointer, whose fields are the directory it points to.
+                    bool nikonPreview = makerNote.Format == MakerNoteFormat.Nikon3 && entry.TagId == 0x0011;
+                    bool keepParent = olympusIfd || nikonPreview || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
                         Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value));
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
+                        : nikonPreview ? "NikonPreview"
                         : keepParent ? group
                         : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
                         : makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 ? SonyArrayGroup(entry.TagId)
@@ -538,16 +541,17 @@ internal static class Program
         _ => 0,
     };
 
-    /// <summary>The value of a standard entry: <see cref="Render(ExifValue)" />, except for the one tag the
-    /// reference prints decoded.</summary>
+    /// <summary>The value of a standard entry: <see cref="Render(ExifValue)" />, except for the three tags
+    /// Exif gives a character code and the reference prints decoded: UserComment, GPSProcessingMethod and
+    /// GPSAreaInformation.</summary>
     private static string Value(ExifEntry entry) =>
-        entry.Key is { Directory: ExifDirectoryKind.Exif, TagId: 0x9286 } && entry.Value.FieldType == TiffFieldType.Undefined
+        entry.Value.FieldType == TiffFieldType.Undefined
+        && entry.Key is { Directory: ExifDirectoryKind.Exif, TagId: 0x9286 } or { Directory: ExifDirectoryKind.Gps, TagId: 0x001B or 0x001C }
             ? UserComment(entry.Value)
             : Render(entry.Value);
 
     /// <summary>
-    /// A user comment in the reference's notation: the text that follows the eight-byte character code of
-    /// Exif 4.6.6.5.2, behind <c>charset=Ascii</c>, <c>charset=Jis</c> or <c>charset=Unicode</c>, bare
+    /// A commented value in the reference's notation: the text that follows the eight-byte character code, behind <c>charset=Ascii</c>, <c>charset=Jis</c> or <c>charset=Unicode</c>, bare
     /// when the code is eight zero bytes, and behind <c>charset=InvalidCharsetId</c> for any other code.
     /// Text ends at the first zero byte under the ASCII and the zero code; UTF-16 follows its byte order
     /// mark, or the byte order of the block without one. A value shorter than its code is empty.
@@ -592,7 +596,7 @@ internal static class Program
     /// <summary>Every element the declared type and count ask for, or a marker saying they are not there.</summary>
     private static string Render(byte[] bytes, TiffFieldType type, uint count, Endianness order)
     {
-        if (type is TiffFieldType.Ascii) return Escape(Encoding.Latin1.GetString(Trim(bytes)));
+        if (type is TiffFieldType.Ascii) return Escape(Utf8OrLatin1(Text(bytes)));
         int size = Size(type);
         if (size == 0) return "undefined-type";
         if ((long)count * size > bytes.Length) return "truncated-value";
@@ -646,6 +650,14 @@ internal static class Program
         int end = bytes.Length;
         while (end > 0 && bytes[end - 1] == 0) end--;
         return end == bytes.Length ? bytes : bytes[..end];
+    }
+
+    /// <summary>The text of an ASCII value: the bytes before its first NUL, which is where the standard
+    /// ends a string and where the reference stops printing one.</summary>
+    private static byte[] Text(byte[] bytes)
+    {
+        int end = Array.IndexOf(bytes, (byte)0);
+        return end < 0 ? bytes : bytes[..end];
     }
 
     /// <summary>Escapes everything that would break the one-record-per-line grammar.</summary>

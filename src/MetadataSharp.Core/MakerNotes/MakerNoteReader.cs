@@ -167,7 +167,37 @@ internal static class MakerNoteReader
             return null;
         MakerNote? note = Directory(MakerNoteFormat.Nikon3, tiff, header + (int)ifd, start + length, header, order, 0,
             limits, retainedBudget, NikonMakerNoteNames.Nikon3, NikonMakerNoteArrays.Decompose);
-        return note is null ? null : DecryptNikon3(note, model);
+        return note is null ? null : DecryptNikon3(NikonPreview(note, tiff, header, start + length, limits, retainedBudget), model);
+    }
+
+    /// <summary>
+    /// Reads the directory that Nikon3 tag 0x0011 points to, as the fields of that tag. It describes the
+    /// preview picture with ordinary TIFF fields, so they carry the TIFF names; its offsets count from the
+    /// note's own TIFF header, like the rest of the note. A pointer that does not lead to a directory
+    /// inside the note leaves the tag as the plain number it is.
+    /// </summary>
+    private static MakerNote NikonPreview(MakerNote note, ReadOnlySpan<byte> tiff, int header, int end,
+        MetadataLimits limits, long retainedBudget)
+    {
+        if (!note.TryGetEntry(0x0011, out MakerNoteEntry? pointer) || pointer.Fields.Count != 0 ||
+            pointer.Value.FieldType != TiffFieldType.Long || pointer.Value.Count != 1)
+            return note;
+        ReadOnlySpan<byte> raw = pointer.Value.RawBytes;
+        uint offset = note.ByteOrder == Endianness.LittleEndian
+            ? BinaryPrimitives.ReadUInt32LittleEndian(raw) : BinaryPrimitives.ReadUInt32BigEndian(raw);
+        if (offset < 8 || offset >= (uint)(end - header))
+            return note;
+        MakerNote? preview = Directory(MakerNoteFormat.Nikon3, tiff, header + (int)offset, end, header, note.ByteOrder, 0,
+            limits, retainedBudget, static tag => ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Ifd0, tag))?.Name, null);
+        if (preview is null)
+            return note;
+        var fields = new List<MakerNoteField>(preview.Entries.Count);
+        foreach (MakerNoteEntry field in preview.Entries)
+            fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value));
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        foreach (MakerNoteEntry entry in note.Entries)
+            entries.Add(ReferenceEquals(entry, pointer) ? new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields) : entry);
+        return new MakerNote(note.Format, note.ByteOrder, entries);
     }
 
     /// <summary>
