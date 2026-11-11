@@ -199,7 +199,8 @@ public static partial class ExifTags
     /// The short label of an enumerated number, where it is not the vocabulary's wording as it stands.
     /// The vocabulary quotes the publication; a label is that meaning in the compact form metadata tools
     /// print, so that a value reads the same here as it does elsewhere. The TIFF numbers the Exif
-    /// publication does not list are named from TIFF 6.0 and its technical notes.
+    /// publication does not list are named from TIFF 6.0, its technical notes, TIFF/EP and DNG; numbers
+    /// a camera maker uses privately are not named.
     /// </summary>
     private static string? Label(ExifTagKey key, long number) => key.Directory switch
     {
@@ -237,6 +238,8 @@ public static partial class ExifTags
                 4 => "Transparency mask",
                 5 => "CMYK",
                 8 => "CIELab",
+                32803 => "Color Filter Array",      // TIFF/EP, the photometric of a raw sensor image
+                34892 => "Linear Raw",              // DNG
                 _ => null,
             },
             // Orientation: where row 0 is, then where column 0 is.

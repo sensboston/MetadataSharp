@@ -281,6 +281,9 @@ public sealed class ExifInterpretationTests
     [InlineData(0x0106, 0, "White Is Zero")]
     [InlineData(0x0106, 1, "Black Is Zero")]
     [InlineData(0x0106, 5, "CMYK")]
+    [InlineData(0x0106, 32803, "Color Filter Array")]
+    [InlineData(0x0106, 34892, "Linear Raw")]
+    [InlineData(0x0103, 32767, "(32767)")]      // a maker's private number is not named
     [InlineData(0x013D, 1, "No prediction scheme used")]
     [InlineData(0x013D, 2, "Horizontal differencing")]
     [InlineData(0x013D, 9, "(9)")]
