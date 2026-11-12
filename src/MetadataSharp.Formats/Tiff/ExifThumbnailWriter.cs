@@ -10,7 +10,8 @@ namespace MetadataSharp.Formats.Tiff;
 /// </summary>
 /// <remarks>
 /// <para>No byte of the block moves. A new thumbnail is appended with a directory of its own
-/// (Compression, XResolution, YResolution, ResolutionUnit, JPEGInterchangeFormat and its length),
+/// (Compression, XResolution, YResolution, ResolutionUnit, JPEGInterchangeFormat and its length;
+/// 72 dpi, or the resolution of the directory it replaces),
 /// and the successor link of the primary directory is pointed at it; removing sets that link to
 /// zero. The old directory and the old stream are cleared to zeros where the map of the block shows
 /// that nothing else addresses them, so that a picture that was removed is not left in the file.</para>
@@ -98,6 +99,13 @@ internal static class ExifThumbnailWriter
             Put32(entry, 0);
             Put32(values, 72); Put32(values + 4, 1);
             Put32(values + 8, 72); Put32(values + 12, 1);
+            // The resolution the old directory stated stays: the new stream takes the place of the old one.
+            if (old is not null)
+            {
+                if (Rational(block, old.Find(0x011A)) is int x) block.AsSpan(x, 8).CopyTo(output.AsSpan(values));
+                if (Rational(block, old.Find(0x011B)) is int y) block.AsSpan(y, 8).CopyTo(output.AsSpan(values + 8));
+                if (old.Find(0x0128) is { Type: 3, Count: 1 } && Scalar(block, old.Find(0x0128), little) is uint unit) Put16(start + 2 + (3 * 12) + 8, (ushort)unit);
+            }
             jpeg.CopyTo(output, picture);
             Put32((int)link, (uint)start);
         }
@@ -132,6 +140,10 @@ internal static class ExifThumbnailWriter
             ? (little ? BinaryPrimitives.ReadUInt16LittleEndian(bytes) : BinaryPrimitives.ReadUInt16BigEndian(bytes))
             : (little ? BinaryPrimitives.ReadUInt32LittleEndian(bytes) : BinaryPrimitives.ReadUInt32BigEndian(bytes));
     }
+
+    /// <summary>Where the eight bytes of a single RATIONAL field lie; null for a field that is not one or lies outside the block.</summary>
+    private static int? Rational(byte[] block, TiffBasedField? field) =>
+        field is { Type: 5, Count: 1 } && field.ValueOffset >= 0 && field.ValueOffset <= block.Length - 8 ? (int)field.ValueOffset : null;
 
     private static bool SameOutside(ExifMetadata one, ExifMetadata other)
     {

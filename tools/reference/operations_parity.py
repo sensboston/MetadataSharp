@@ -6,13 +6,13 @@ the operation it offers for the same purpose (the fixture generator,
 operations-parity). Both results are printed by the tool with "exiv2 -pa" and
 the print-outs are compared, key by key:
 
-  adjust     exiv2 ad -a 1:30:15 -Y 1 -O 1 -D 2    MetadataTimestamps.Adjust
+  adjust     exiv2 -a 1:30:15 -Y 1 -O 1 -D 2 ad    MetadataTimestamps.Adjust
   modify     exiv2 -m modify.txt                    ModifyScript.Parse, saved
   delete-a   exiv2 rm                               MetadataOperations.Delete (all)
   delete-t   exiv2 -d t rm                          ... Delete (thumbnail)
   delete-xc  exiv2 -d xc rm                         ... Delete (XMP, comment)
-  extract    exiv2 -e XX ex   (the .exv is printed) MetadataOperations.ExtractExv
-  insert     exiv2 -i XX in   (the tool's .exv into a file without metadata)
+  extract    exiv2 ex         (the .exv is printed) MetadataOperations.ExtractExv
+  insert     exiv2 in         (the tool's .exv into a file without metadata)
                                                     MetadataOperations.InsertExv
   thumbnail  exiv2 -i t in    (NAME-thumb.jpg)      ExifEdit.SetThumbnail
   fixiso     exiv2 fi                               MetadataOperations.FixIso
@@ -20,8 +20,11 @@ the print-outs are compared, key by key:
   rename     exiv2 -F -r FORMAT mv                  MetadataFileNames.Format
              (the name the tool gives the file against the name returned)
 
-A key is "same" when both print-outs hold the same line for it. Every other
-outcome ("differs", "tool only", "ours only") has to be one DOCUMENTED names
+A key is "same" when both print-outs hold the same line for it. Where they
+differ, the print-out of the source says who changed the key: "differs (tool
+changed)" when this library left the line of the source and the tool did not,
+"differs (ours changed)" for the reverse, "differs" when both or neither did.
+Every outcome but "same" (those, "tool only", "ours only") has to be one DOCUMENTED names
 with its reason; an outcome that is not documented fails the check. Keys whose
 value is an offset of the layout are named in LAYOUT and not compared.
 
@@ -58,13 +61,13 @@ set Xmp.photoshop.City Parity City
 
 # operation -> (the tool's arguments before the file, the extension of the result that is printed)
 OPERATIONS = OrderedDict([
-    ("adjust", (["ad", "-a", "1:30:15", "-Y", "1", "-O", "1", "-D", "2"], "jpg")),
+    ("adjust", (["-a", "1:30:15", "-Y", "1", "-O", "1", "-D", "2", "ad"], "jpg")),
     ("modify", (None, "jpg")),
     ("delete-a", (["rm"], "jpg")),
     ("delete-t", (["-d", "t", "rm"], "jpg")),
     ("delete-xc", (["-d", "xc", "rm"], "jpg")),
-    ("extract", (["-e", "XX", "ex"], "exv")),
-    ("insert", (["-i", "XX", "in"], "jpg")),
+    ("extract", (["ex"], "exv")),
+    ("insert", (["in"], "jpg")),
     ("thumbnail", (["-i", "t", "in"], "jpg")),
     ("fixiso", (["fi"], "jpg")),
     ("fixcom", (["-n", "ISO-8859-1", "fc"], "jpg")),
@@ -119,14 +122,26 @@ def printed(exiv2, path, runner=run):
     return found
 
 
-def compare(theirs, ours):
+def compare(theirs, ours, source=None):
     """(key, outcome, the tool's lines, ours) for every key of either side that is no matter of the layout."""
     rows = []
+    source = source or {}
     for key in list(theirs) + [key for key in ours if key not in theirs]:
         if key in LAYOUT:
             continue
-        left, right = theirs.get(key), ours.get(key)
-        kind = "ours only" if left is None else "tool only" if right is None else "same" if left == right else "differs"
+        left, right, before = theirs.get(key), ours.get(key), source.get(key)
+        if left is None:
+            kind = "ours only"
+        elif right is None:
+            kind = "tool only"
+        elif left == right:
+            kind = "same"
+        elif before is not None and right == before:
+            kind = "differs (tool changed)"
+        elif before is not None and left == before:
+            kind = "differs (ours changed)"
+        else:
+            kind = "differs"
         rows.append((key, kind, left, right))
     return rows
 
@@ -195,6 +210,7 @@ def check(work, names, exiv2, failed, renamed, runner=run):
     rows, files, left_out = [], Counter(), Counter()
     state = statuses(work)
     for name in names:
+        before = printed(exiv2, work / (name + ".jpg"), runner)
         for operation in list(OPERATIONS) + ["rename"]:
             status, text = state.get((name, operation), ("missing", ""))
             if (name, operation) in failed:
@@ -215,7 +231,7 @@ def check(work, names, exiv2, failed, renamed, runner=run):
                 rows.append((operation, name, "the file", "differs",
                              ["not printed" if theirs is None else "printed"], ["not printed" if ours is None else "printed"]))
                 continue
-            rows.extend((operation, name, *row) for row in compare(theirs, ours))
+            rows.extend((operation, name, *row) for row in compare(theirs, ours, None if operation == "insert" else before))
     return rows, files, left_out
 
 
@@ -278,7 +294,8 @@ def main(argv=None, runner=run):
              size=2500, limit=8)
     summary = []
     for operation in list(OPERATIONS) + ["rename"]:
-        counts = ", ".join(f"{kind} {totals[(operation, kind)]}" for kind in ("same", "differs", "tool only", "ours only"))
+        counts = ", ".join(f"{kind} {totals[(operation, kind)]}" for kind in
+                           ("same", "differs", "differs (tool changed)", "differs (ours changed)", "tool only", "ours only"))
         tool = sum(count for (op, who, _), count in left_out.items() if op == operation and who == "tool")
         ours = sum(count for (op, who, _), count in left_out.items() if op == operation and who == "ours")
         summary.append(f"{operation}: {files[operation]} files compared (tool failed on {tool}, refused here {ours}); {counts}")

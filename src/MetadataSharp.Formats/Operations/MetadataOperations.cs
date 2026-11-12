@@ -64,18 +64,23 @@ public static class MetadataOperations
         ImageMetadata metadata = ImageMetadata.Read(bytes);
         MetadataFormat format = Writable(metadata.Format);
         var edits = new SyncEdits();
-        if (metadata.Exif is not null)
+        // A kind its reader refuses is there all the same: it is removed whole, which needs no reading of it.
+        bool Held(MetadataFamily family, bool read) => read || metadata.Errors.Any(error => error.Family == family);
+        if (families.HasFlag(MetadataFamilies.Exif))
         {
-            if (families.HasFlag(MetadataFamilies.Exif)) edits.Exif.RemoveAllExif();
-            else if (families.HasFlag(MetadataFamilies.Thumbnail))
+            if (Held(MetadataFamily.Exif, metadata.Exif is not null)) edits.Exif.RemoveAllExif();
+        }
+        else if (metadata.Exif is not null)
+        {
+            if (families.HasFlag(MetadataFamilies.Thumbnail))
             {
                 if (format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP) edits.Exif.RemoveThumbnail();
                 else if (format != MetadataFormat.Tiff && metadata.Exif.Entries.Any(entry => entry.Key.Directory == ExifDirectoryKind.Thumbnail))
                     throw ExifBlockEditor.ThumbnailElsewhere();
             }
         }
-        if (families.HasFlag(MetadataFamilies.Iptc) && metadata.Iptc is not null && HoldsIptc(format)) edits.Iptc.RemoveAllIptc();
-        if (families.HasFlag(MetadataFamilies.Xmp) && metadata.Xmp is not null) edits.Xmp.RemoveAllXmp();
+        if (families.HasFlag(MetadataFamilies.Iptc) && Held(MetadataFamily.IptcIim, metadata.Iptc is not null) && HoldsIptc(format)) edits.Iptc.RemoveAllIptc();
+        if (families.HasFlag(MetadataFamilies.Xmp) && Held(MetadataFamily.Xmp, metadata.Xmp is not null)) edits.Xmp.RemoveAllXmp();
         if (!edits.IsEmpty) bytes = Save(bytes, format, edits);
         if (families.HasFlag(MetadataFamilies.Comment) && metadata.Comments.Count != 0 && HoldsComment(format)) bytes = SaveComment(bytes, format, null);
         if (families.HasFlag(MetadataFamilies.IccProfile) && metadata.IccProfile.Length != 0) bytes = SaveIcc(bytes, format, null);
@@ -85,7 +90,7 @@ public static class MetadataOperations
     // ---- extract ----
 
     /// <summary>
-    /// The metadata of a file as an EXV file: <c>exiv2 ex -e XX</c>, narrowed by the kinds named.
+    /// The metadata of a file as an EXV file: <c>exiv2 ex</c>, narrowed by the kinds named.
     /// </summary>
     /// <remarks>
     /// From a JPEG file the segments are copied as they are, so the EXIF block arrives byte for byte,
@@ -170,7 +175,7 @@ public static class MetadataOperations
     }
 
     /// <summary>
-    /// The file with the metadata of an EXV file in place of its own: <c>exiv2 in -i</c>. Each kind
+    /// The file with the metadata of an EXV file in place of its own: <c>exiv2 in</c>. Each kind
     /// that is named, that the EXV file holds and that the container has a place for replaces that
     /// kind of the file whole; the others stay.
     /// </summary>

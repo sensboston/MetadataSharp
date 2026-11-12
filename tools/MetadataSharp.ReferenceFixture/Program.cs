@@ -1872,7 +1872,7 @@ else if (args.Length == 2 && args[0] == "operations-parity")
         {
             DateTime? taken = Read().Exif?.DateTaken;
             if (taken is null) return (null, ""); // no name: the comparer counts the file as one without a date
-            return (null, MetadataSharp.Core.Operations.MetadataFileNames.Format(format, taken.Value, path) + ".jpg");
+            return (null, MetadataSharp.Core.Operations.MetadataFileNames.Format(format, taken.Value, path));
         });
     }
     File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
