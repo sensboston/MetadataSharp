@@ -126,6 +126,8 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
         (MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the colr property of kind prof or rICC that ipma gives the primary item, not interpreted; nclx colour information is not a profile; two profiles are refused."),
         (MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the first colr box of the jp2h header whose method is 2 or 3, not interpreted; a colour space named by number is not a profile."),
+        (MetadataContainer.Jxl, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "JxlMetadata.Read: the block of the Exif box, plain or Brotli-compressed in a brob box, with a recognised MakerNote, as raw values; read within the budgets, counted after decompression. Nothing is written."),
+        (MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "JxlMetadata.Read: the packet of the xml box, plain or Brotli-compressed in a brob box; bounded restricted XMP profile; raw bytes retained for unmodeled constructs. Nothing is written."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); new data is appended, image data and the MakerNote keep their offsets; refused when the file cannot be appended to. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); written in place when the value fits, appended otherwise; image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -244,7 +246,9 @@ public sealed class MetadataCapabilitiesTests
     [InlineData(MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Replace)]
     [InlineData(MetadataContainer.Cr3, MetadataFamily.IptcIim, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Cr3, MetadataFamily.Preview, MetadataOperation.Extract)]
-    [InlineData(MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Read)]
+    [InlineData(MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Replace)]
+    [InlineData(MetadataContainer.Jxl, MetadataFamily.IptcIim, MetadataOperation.Read)]
+    [InlineData(MetadataContainer.Jxl, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Gif, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Jpeg, MetadataFamily.Icc, MetadataOperation.Insert)]
@@ -324,6 +328,24 @@ public sealed class MetadataCapabilitiesTests
         {
             Assert.Equal(MetadataOperation.Read, row.Operation);
             Assert.StartsWith("Cr3Metadata.Read: ", row.Note);
+            Assert.EndsWith("Nothing is written.", row.Note);
+        }
+    }
+
+    [Fact]
+    public void TheJxlReaderHasItsTwoReadRowsAndNoneThatWrites()
+    {
+        // JxlMetadataTests and JxlCompressedTests author the boxes; no type writes a JPEG XL file.
+        CapabilityDescriptor[] rows = MetadataCapabilities.All.Where(row => row.Container == MetadataContainer.Jxl).ToArray();
+
+        Assert.Equal(2, rows.Length);
+        Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(MetadataContainer.Jxl, MetadataFamily.Exif, MetadataOperation.Read));
+        Assert.Equal(CapabilityStatus.Supported, MetadataCapabilities.GetStatus(MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Read));
+        foreach (CapabilityDescriptor row in rows)
+        {
+            Assert.Equal(MetadataOperation.Read, row.Operation);
+            Assert.StartsWith("JxlMetadata.Read: ", row.Note);
+            Assert.Contains("Brotli-compressed in a brob box", row.Note);
             Assert.EndsWith("Nothing is written.", row.Note);
         }
     }
