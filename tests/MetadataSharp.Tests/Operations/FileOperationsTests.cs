@@ -216,8 +216,9 @@ public sealed class FileOperationsTests
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, open.Code);
         MetadataException budget = Assert.Throws<MetadataException>(() => SaveJpeg(file, edit => edit.SetThumbnail(Picture(0x66, 61_442))));
         Assert.Equal(MetadataErrorCode.LimitExceeded, budget.Code);
-        MetadataException segment = Assert.Throws<MetadataException>(() =>
-            SaveJpeg(SaveJpeg(file, edit => edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010E), new string('d', 10_000))), edit => edit.SetThumbnail(Picture(0x66, 60_000))));
+        // A block that is long already: with the thumbnail it passes the 64 KiB of one segment.
+        byte[] described = SaveJpeg(file, edit => edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010E), new string('d', 10_000)));
+        MetadataException segment = Assert.Throws<MetadataException>(() => SaveJpeg(described, edit => edit.SetThumbnail(Picture(0x66, 60_000))));
         Assert.Equal(MetadataErrorCode.ExifTooLarge, segment.Code);
     }
 
