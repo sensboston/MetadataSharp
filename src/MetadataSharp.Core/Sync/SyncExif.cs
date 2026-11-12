@@ -227,11 +227,12 @@ internal static class SyncExif
                         throw new ArgumentException("Not a GPS coordinate DDD,MM,SSK.");
                 }
                 else seconds = (minutes - decimal.Truncate(minutes)) * 60;
-                uint wholeMinutes = (uint)decimal.Truncate(minutes), tenThousandths = (uint)decimal.Round(seconds * 10000);
-                if (tenThousandths >= 600000) { tenThousandths -= 600000; wholeMinutes++; }
+                // Millionths of a second: the seven decimals of a minute that XMP writers give lose nothing.
+                uint wholeMinutes = (uint)decimal.Truncate(minutes), millionths = (uint)decimal.Round(seconds * 1000000);
+                if (millionths >= 60000000) { millionths -= 60000000; wholeMinutes++; }
                 if (wholeMinutes >= 60) { wholeMinutes -= 60; degrees++; }
                 if (degrees > (latitude ? 90u : 180u)) throw new ArgumentException("The coordinate is outside the globe.");
-                edit.Set(key, new UnsignedRational[] { new(degrees, 1), new(wholeMinutes, 1), new(tenThousandths, 10000) });
+                edit.Set(key, new UnsignedRational[] { new(degrees, 1), new(wholeMinutes, 1), new(millionths, 1000000) });
                 SetText(edit, new(Gps, (ushort)(key.TagId - 1)), reference.ToString());
                 break;
             }

@@ -1671,6 +1671,7 @@ else if (args.Length == 2 && args[0] == "sync-parity")
     // listed with the code of the refusal; an exception of another type is a defect and fails the run.
     string directory = args[1];
     var manifest = new List<string>();
+    string? sample = null;
     var crashes = new List<string>();
     var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
     void Count(string outcome) => outcomes[outcome] = outcomes.GetValueOrDefault(outcome) + 1;
@@ -1711,6 +1712,14 @@ else if (args.Length == 2 && args[0] == "sync-parity")
         string sidecar = Path.Combine(directory, name + ".xmp");
         // The tool leaves an empty sidecar for a file it found nothing in.
         if (!File.Exists(sidecar) || new FileInfo(sidecar).Length == 0) continue;
+        // Or a packet wrapper with no RDF in it: that is no XMP either, and the reader is right to refuse it.
+        string held = File.ReadAllText(sidecar);
+        if (!held.Contains("<rdf:RDF", StringComparison.Ordinal) && !held.Contains(":RDF ", StringComparison.Ordinal) && !held.Contains(":RDF>", StringComparison.Ordinal))
+        {
+            Count("to-exif sidecar without RDF");
+            sample ??= $"{name}.xmp, {held.Length} characters: {Flat(held.Length > 160 ? held[..160] : held)}";
+            continue;
+        }
         try
         {
             XmpPacket theirs = XmpPacket.Load(sidecar);
@@ -1727,6 +1736,7 @@ else if (args.Length == 2 && args[0] == "sync-parity")
     }
     File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
     Console.WriteLine("::notice title=Sync parity fixture::" + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
+    if (sample is not null) Console.WriteLine("::notice title=Sync parity fixture - a sidecar without RDF::" + sample.Replace("%", "%25"));
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=Sync conversion defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
 }

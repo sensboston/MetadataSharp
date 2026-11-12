@@ -152,7 +152,7 @@ public sealed class MetadataSyncTests
             case SyncConversion.GpsTime:
                 return Rationals(TiffFieldType.Rational, 9, 1, 5, 1, 725, 100);
             case SyncConversion.GpsCoordinate:
-                return Rationals(TiffFieldType.Rational, 51, 1, 30, 1, 123400, 10000);
+                return Rationals(TiffFieldType.Rational, 51, 1, 30, 1, 12300000, 1000000);
             case SyncConversion.Version:
                 return Bytes(TiffFieldType.Undefined, "0232"u8.ToArray());
             case SyncConversion.GpsVersion:
@@ -222,9 +222,9 @@ public sealed class MetadataSyncTests
         Assert.Equal(new[] { "2026-11-12T09:05:07.25+02:00" }, Texts(xmp, XmpNs, "CreateDate"));
         Assert.Equal(new[] { "2026-11-12T09:05:07.25+02:00" }, Texts(xmp, XmpNs, "ModifyDate"));
         Assert.Equal(new[] { "2026-11-12T09:05:07.25Z" }, Texts(xmp, ExifNs, "GPSTimeStamp"));
-        Assert.Equal(new[] { "51,30.2056667N" }, Texts(xmp, ExifNs, "GPSLatitude"));
-        Assert.Equal(new[] { "51,30.2056667E" }, Texts(xmp, ExifNs, "GPSLongitude"));
-        Assert.Equal(new[] { "51,30.2056667S" }, Texts(xmp, ExifNs, "GPSDestLatitude"));
+        Assert.Equal(new[] { "51,30.2050000N" }, Texts(xmp, ExifNs, "GPSLatitude"));
+        Assert.Equal(new[] { "51,30.2050000E" }, Texts(xmp, ExifNs, "GPSLongitude"));
+        Assert.Equal(new[] { "51,30.2050000S" }, Texts(xmp, ExifNs, "GPSDestLatitude"));
         Assert.Equal(new[] { "0232" }, Texts(xmp, ExifNs, "ExifVersion"));
         Assert.Equal(new[] { "2.3.0.0" }, Texts(xmp, ExifNs, "GPSVersionID"));
         Assert.Equal(new[] { "1", "2", "3", "1" }, Texts(xmp, ExifNs, "ComponentsConfiguration"));
@@ -292,12 +292,16 @@ public sealed class MetadataSyncTests
         SyncEdits edits = MetadataSync.XmpToExif(xmp);
         Assert.Equal(string.Empty, Notes(edits));
         ExifMetadata exif = Apply(null, edits.Exif);
-        Assert.Equal(Raw(Block((Gps, 2, Rationals(TiffFieldType.Rational, 56, 1, 56, 1, 456000, 10000))), new(Gps, 2)), Raw(exif, new(Gps, 2)));
+        Assert.Equal(Raw(Block((Gps, 2, Rationals(TiffFieldType.Rational, 56, 1, 56, 1, 45600000, 1000000))), new(Gps, 2)), Raw(exif, new(Gps, 2)));
         Assert.Equal("N", Text(exif, Gps, 1));
-        Assert.Equal(Raw(Block((Gps, 4, Rationals(TiffFieldType.Rational, 24, 1, 6, 1, 300000, 10000))), new(Gps, 4)), Raw(exif, new(Gps, 4)));
+        Assert.Equal(Raw(Block((Gps, 4, Rationals(TiffFieldType.Rational, 24, 1, 6, 1, 30000000, 1000000))), new(Gps, 4)), Raw(exif, new(Gps, 4)));
         Assert.Equal("W", Text(exif, Gps, 3));
         Assert.Equal(Raw(Block((Gps, 7, Rationals(TiffFieldType.Rational, 23, 1, 5, 1, 7, 1))), new(Gps, 7)), Raw(exif, new(Gps, 7)));
         Assert.Equal("2026:11:11", Text(exif, Gps, 0x1D));
+
+        // The seven decimals of a minute are kept to the millionth of a second.
+        ExifMetadata fine = Apply(null, MetadataSync.XmpToExif(Xmp(e => e.Set("Xmp.exif.GPSLatitude", "37,47.1632683N"))).Exif);
+        Assert.Equal(Raw(Block((Gps, 2, Rationals(TiffFieldType.Rational, 37, 1, 47, 1, 9796098, 1000000))), new(Gps, 2)), Raw(fine, new(Gps, 2)));
 
         // A coordinate without its reference letter, and a time without its date, are not values.
         SyncEdits lonely = MetadataSync.ExifToXmp(Block((Gps, 2, Rationals(TiffFieldType.Rational, 1, 1, 2, 1, 3, 1)), (Gps, 7, Rationals(TiffFieldType.Rational, 1, 1, 2, 1, 3, 1))));
