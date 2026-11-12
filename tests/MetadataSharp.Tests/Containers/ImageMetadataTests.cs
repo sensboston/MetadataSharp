@@ -439,6 +439,8 @@ public sealed class ImageMetadataTests
         Assert.NotNull(metadata.Xmp);
         Assert.Equal(good.Xmp!.ByteLength, metadata.Xmp.ByteLength);
         Assert.Equal(good.Iptc is not null, metadata.Iptc is not null);
+        // A kind that was refused is not known to be absent: nothing is reconciled without it.
+        Assert.Same(metadata.Errors[0].Exception, Assert.Throws<MetadataException>(() => metadata.Reconcile()));
     }
 
     [Fact]

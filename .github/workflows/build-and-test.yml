@@ -486,3 +486,15 @@ jobs:
             artifacts/parity/cr3-preview/preview-report.txt
             artifacts/parity/cr3-preview/preview-report.json
           retention-days: 30
+      # Not key parity either: what ExifToXmp and XmpToExif produce is held against the conversion
+      # the pinned tool does itself when it writes an XMP sidecar from a file (exiv2 -eX) and when
+      # it reads one. The JPEG files of the pinned corpus, with EXIF as their only metadata. Every
+      # difference has to be one tools/reference/sync_parity.py documents with its reason.
+      - name: ExifToXmp and XmpToExif against the conversion of the pinned tool (exiv2 -eX, -PXkv, -PEkv)
+        shell: bash
+        env:
+          TZ: UTC
+        run: |
+          python tools/reference/sync_parity.py artifacts/parity/exiv2/test/data artifacts/parity/sync \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"

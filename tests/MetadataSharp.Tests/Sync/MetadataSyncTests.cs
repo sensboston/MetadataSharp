@@ -548,4 +548,48 @@ public sealed class MetadataSyncTests
         Assert.Equal(new[] { "2026-11-12T09:05:07" }, Texts(made, XmpNs, "ModifyDate"));
         Assert.Equal(new[] { "Headline" }, Texts(made, Photoshop, "Headline"));
     }
+
+    // ---- Mirroring all of EXIF, and what the edits are saved with ----
+
+    [Fact]
+    public void MirrorAllExifCopiesTheTagsThatAreExifsAloneAndThenFindsNothingToDo()
+    {
+        ExifMetadata exif = Block((Ifd0, 0x010E, Ascii("Caption")), (Ifd0, 0x010F, Ascii("Maker")), (ExifDir, 0x8827, Shorts(100, 200)));
+        XmpPacket xmp = Xmp(e => { e.Set("Xmp.tiff.Make", "Another maker"); e.Set("Xmp.tiff.Model", "A model EXIF does not name"); });
+
+        // By default only the shared field is written.
+        XmpPacket plain = Apply(xmp, MetadataSync.Reconcile(exif, null, xmp).Xmp);
+        Assert.Equal(new[] { "Caption" }, Texts(plain, Dc, "description"));
+        Assert.Equal(new[] { "Another maker" }, Texts(plain, Tiff, "Make"));
+        Assert.Empty(Texts(plain, ExifNs, "ISOSpeedRatings"));
+
+        var options = new ReconcileOptions { MirrorAllExif = true };
+        SyncEdits edits = MetadataSync.Reconcile(exif, null, xmp, options: options);
+        Assert.Equal(string.Empty, Notes(edits));
+        Assert.True(edits.Exif.IsEmpty);
+        XmpPacket mirrored = Apply(xmp, edits.Xmp);
+        Assert.Equal(new[] { "Caption" }, Texts(mirrored, Dc, "description"));
+        Assert.Equal(new[] { "Maker" }, Texts(mirrored, Tiff, "Make"));
+        Assert.Equal(new[] { "100", "200" }, Texts(mirrored, ExifNs, "ISOSpeedRatings"));
+        // A property whose tag EXIF lacks is left alone.
+        Assert.Equal(new[] { "A model EXIF does not name" }, Texts(mirrored, Tiff, "Model"));
+
+        // What was mirrored is left alone.
+        SyncEdits again = MetadataSync.Reconcile(exif, null, mirrored, options: options);
+        Assert.Equal(string.Empty, Notes(again));
+        Assert.True(again.Xmp.IsEmpty);
+        Assert.True(again.IsEmpty);
+    }
+
+    [Fact]
+    public void ReconciledEditsAskForTheDigestAndConvertedEditsDoNot()
+    {
+        IptcPacket iptc = Iptc(e => e.SetHeadline("Headline"));
+        XmpPacket xmp = Xmp(e => e.Set("Xmp.photoshop.Headline", "Headline"));
+        Assert.True(MetadataSync.Reconcile(null, iptc, xmp).IptcWriteOptions.UpdateDigest);
+        Assert.False(MetadataSync.IptcToXmp(iptc).IptcWriteOptions.UpdateDigest);
+        Assert.False(MetadataSync.XmpToIptc(xmp).IptcWriteOptions.UpdateDigest);
+        // A packet that no document read says nothing about a digest.
+        Assert.Equal(IptcDigestState.Absent, iptc.Digest);
+    }
 }

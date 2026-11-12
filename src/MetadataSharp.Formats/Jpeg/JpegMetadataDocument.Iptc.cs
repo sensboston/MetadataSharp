@@ -80,7 +80,7 @@ public sealed partial class JpegMetadataDocument
         if (resources.IptcForReading() is not PhotoshopResources.Resource iptc) return null;
         // What an edit of this file fails with, so the packet can say it is for reading only.
         MetadataException? refusal = photoshop.Length > 1 ? SeveralSegments() : resources.EditRefusal();
-        IptcPacket packet = IptcPacket.Inspect(iptc.Data.Span, new() { Limits = settings }, refusal);
+        IptcPacket packet = IptcPacket.Inspect(iptc.Data.Span, new() { Limits = settings }, refusal).WithDigest(resources.StoredDigest());
         token.ThrowIfCancellationRequested(); return packet;
     }
     private sealed record IptcPrepared(bool CopyOnly, JpegSegment? Segment, byte[]? Payload);
@@ -88,8 +88,18 @@ public sealed partial class JpegMetadataDocument
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(edit);
         IptcEdit captured = edit.Capture();
+        if (!captured.IsEmpty || !(write?.UpdateDigest ?? false)) return await PrepareIptcCore(captured, write, asynchronous, token).ConfigureAwait(false);
+        // An edit without a change that asks for the digest: the digest alone is recomputed where the
+        // resources can be edited, and the file is copied where they cannot, as it is without the option.
+        IptcPrepared copy = await PrepareIptcCore(captured, null, asynchronous, token).ConfigureAwait(false);
+        try { return await PrepareIptcCore(captured, write, asynchronous, token).ConfigureAwait(false); }
+        catch (MetadataException) { return copy; }
+    }
+    private async Task<IptcPrepared> PrepareIptcCore(IptcEdit captured, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
+    {
+        bool refresh = write?.UpdateDigest ?? false;
         await VerifyIptcSource(asynchronous, token).ConfigureAwait(false);
-        if (captured.IsEmpty) return new(true, null, null);
+        if (captured.IsEmpty && !refresh) return new(true, null, null);
         JpegSegment? segment = UniquePhotoshop(); IptcLimits settings = new();
         PhotoshopResources resources = segment is null ? PhotoshopResources.Empty : await LoadPhotoshop(segment, settings, true, asynchronous, token).ConfigureAwait(false);
         if (captured.RemovesAll)
@@ -101,7 +111,7 @@ public sealed partial class JpegMetadataDocument
         IptcPacket packet = resources.Iptc is PhotoshopResources.Resource existing ? IptcPacket.Parse(existing.Data.Span) : IptcPacket.CreateEmpty();
         IptcPacket changed = packet.Apply(captured)!;
         // Nothing was added to an absent stream, or no byte of the stored one was changed.
-        if (ReferenceEquals(packet, changed)) return new(true, null, null);
+        if (ReferenceEquals(packet, changed) && !(refresh && resources.DigestIsStale())) return new(true, null, null);
         // Even a minimal resource needs 14 signature bytes, 12 framing bytes and even data.
         if (changed.ByteLength + (changed.ByteLength & 1) + 26L > 65533)
             throw new MetadataException(MetadataErrorCode.IptcTooLarge, "IPTC cannot fit in one Photoshop APP13 segment.");

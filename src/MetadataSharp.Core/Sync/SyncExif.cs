@@ -160,6 +160,7 @@ internal static class SyncExif
                 break;
             case SyncConversion.Integer:
             {
+                items = Elements(items);
                 long[] numbers = Array.ConvertAll(items, item =>
                     long.TryParse(item.Trim(), NumberStyles.AllowLeadingSign, Invariant, out long n) ? n : throw new ArgumentException("Not an integer."));
                 TiffFieldType type = mapping.FieldType;
@@ -174,6 +175,7 @@ internal static class SyncExif
                 break;
             }
             case SyncConversion.Rational:
+                items = Elements(items);
                 if (mapping.FieldType == TiffFieldType.SRational)
                     edit.Set(key, Array.ConvertAll(items, item => { (long n, long d) = Ratio(item, int.MinValue, int.MaxValue); return new SignedRational((int)n, (int)d); }));
                 else
@@ -291,6 +293,10 @@ internal static class SyncExif
                 break;
         }
     }
+
+    /// <summary>The elements of an array that was written as one text with spaces between them, which is how Exiv2 writes it.</summary>
+    private static string[] Elements(string[] items) =>
+        items.Length == 1 && items[0].Trim().Contains(' ') ? items[0].Split(' ', StringSplitOptions.RemoveEmptyEntries) : items;
 
     private static string One(string[] items) => items.Length == 1 ? items[0] : throw new ArgumentException("The tag holds one value.");
 

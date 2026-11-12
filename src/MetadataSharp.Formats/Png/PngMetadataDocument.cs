@@ -120,7 +120,7 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     }
     private static IptcPacket? ProfileIptc(byte[] profile, IptcLimits limits)
     {
-        ReadOnlySpan<byte> stream = profile; MetadataException? refusal = null;
+        ReadOnlySpan<byte> stream = profile; MetadataException? refusal = null; byte[]? digest = null;
         // The profile is the IIM stream itself, or the Photoshop resources that hold it, which a
         // writer stores with or without the signature an APP13 segment begins with.
         if (profile.Length != 0 && profile[0] != 0x1C)
@@ -130,9 +130,9 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
             PhotoshopResources resources = PhotoshopResources.Parse(payload, limits);
             if (resources.IptcForReading() is not PhotoshopResources.Resource resource) return null;
             // What an edit of these resources fails with, so the packet can say it is for reading only.
-            stream = resource.Data.Span; refusal = resources.EditRefusal();
+            stream = resource.Data.Span; refusal = resources.EditRefusal(); digest = resources.StoredDigest();
         }
-        return IptcPacket.Inspect(stream, new() { Limits = limits }, refusal);
+        return IptcPacket.Inspect(stream, new() { Limits = limits }, refusal).WithDigest(digest);
     }
     /// <summary>
     /// Reads the IPTC stream of the "Raw profile type iptc" text chunk, or returns null when the file

@@ -150,7 +150,8 @@ public static class MetadataSync
     /// <para>
     /// Fields. Every row of <see cref="IptcMappings"/>, and of EXIF the six tags that say the same
     /// thing as IPTC or XMP: ImageDescription, Artist, Copyright, DateTime, DateTimeOriginal and
-    /// DateTimeDigitized. Every other EXIF tag is EXIF's alone and is not copied into XMP.
+    /// DateTimeDigitized. Every other EXIF tag is EXIF's alone and is not copied into XMP, unless
+    /// <see cref="ReconcileOptions.MirrorAllExif"/> asks for it.
     /// </para>
     /// <para>
     /// Which value is taken. EXIF, when it holds the field. Otherwise IPTC when XMP lacks the field,
@@ -166,19 +167,20 @@ public static class MetadataSync
     /// named in <see cref="SyncEdits.Notes"/>.
     /// </para>
     /// <para>
-    /// After the edits are saved IPTC and XMP agree: save IPTC with
-    /// <see cref="IptcWriteOptions.UpdateDigest"/> so that the digest says so.
+    /// After the edits are saved IPTC and XMP agree: save IPTC with <see cref="SyncEdits.IptcWriteOptions"/>,
+    /// which ask for the digest to be recomputed, so that the digest says so.
     /// </para>
     /// </remarks>
     /// <param name="exif">The EXIF block of the file, or null.</param>
     /// <param name="iptc">The IPTC stream of the file, or null.</param>
     /// <param name="xmp">The XMP packet of the file, or null.</param>
-    /// <param name="digest">What the stored IPTC digest says about the stream.</param>
-    /// <param name="options">Whether blocks the file lacks are created.</param>
+    /// <param name="digest">What the stored IPTC digest says about the stream; null for what <paramref name="iptc"/> was read with (<see cref="IptcPacket.Digest"/>).</param>
+    /// <param name="options">Whether blocks the file lacks are created, and whether all of EXIF is mirrored.</param>
     public static SyncEdits Reconcile(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp,
-        IptcDigestState digest = IptcDigestState.Absent, ReconcileOptions? options = null)
+        IptcDigestState? digest = null, ReconcileOptions? options = null)
     {
         options ??= new();
+        digest ??= iptc?.Digest ?? IptcDigestState.Absent;
         var edits = new SyncEdits();
         var view = new SyncXmp(xmp);
         bool writeExif = exif is null ? options.CreateExif : exif.IsEditable;
@@ -220,6 +222,22 @@ public static class MetadataSync
             if (writeIptc && iptcMapping is not null && source != SyncSource.Iptc && !IptcSays(iptcMapping, isDate, fromIptc, value))
                 ToIptc(edits, key, iptcMapping, value);
         }
+        if (options.MirrorAllExif && exif is not null && writeXmp)
+        {
+            // Where several tags name one property the last row of the table gives it, as in ExifToXmp;
+            // it is compared once, so that a mirrored file gives no edit.
+            var mirrored = new Dictionary<string, (ExifXmpMapping Mapping, string[] Items)>(StringComparer.Ordinal);
+            foreach (ExifXmpMapping mapping in SyncTable.Exif)
+            {
+                if (!SyncTable.IsShared(mapping) && SyncExif.Read(exif, mapping) is string[] items) mirrored[mapping.XmpPath] = (mapping, items);
+            }
+            foreach ((ExifXmpMapping mapping, string[] items) in mirrored.Values)
+            {
+                string[]? held = mapping.Conversion == SyncConversion.Flash ? view.ReadFlash() : view.Read(mapping.NamespaceUri, mapping.Name);
+                if (held is null || !Enumerable.SequenceEqual(held, items)) ToXmp(edits, view, SyncExif.Key(mapping.Tag), mapping, items);
+            }
+        }
+        edits.IptcWriteOptions = new() { UpdateDigest = true };
         return edits;
     }
 

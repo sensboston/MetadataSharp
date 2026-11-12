@@ -51,7 +51,14 @@ internal sealed class PhotoshopResources
     /// The IPTC resource for reading only. Repeats of resource 0x0404 that hold the same bytes are one
     /// stream; repeats that differ stay ambiguous. The digest is not consulted: it matters to a writer.
     /// </summary>
-    internal Resource? IptcForReading()
+    internal Resource? IptcForReading() => IptcStream();
+    /// <summary>The 16 bytes of the IPTC digest (resource 0x0425), or null when the resources hold none of that length.</summary>
+    internal byte[]? StoredDigest() =>
+        resources.FirstOrDefault(r => r.Id == 0x0425) is Resource digest && digest.Data.Length == 16 ? digest.Data.ToArray() : null;
+    /// <summary>Whether the resources hold a stream and a digest of 16 bytes that is not the digest of that stream.</summary>
+    internal bool DigestIsStale() =>
+        Iptc is Resource stream && StoredDigest() is byte[] stored && !stored.AsSpan().SequenceEqual(MD5.HashData(stream.Data.Span));
+    private Resource? IptcStream()
     {
         Resource? first = null;
         foreach (Resource resource in resources)

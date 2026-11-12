@@ -1661,7 +1661,69 @@ else if (args.Length == 3 && args[0] == "bmff-icc-corpus")
         return (document, document.SaveIccProfile);
     });
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | png-webp-embedded-edits DIRECTORY | png-webp-embedded-corpus CORPUS DIRECTORY | tiff-based-icc-edits DIRECTORY | tiff-based-icc-corpus CORPUS DIRECTORY | bmff-icc-edits DIRECTORY | bmff-icc-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
+else if (args.Length == 2 && args[0] == "sync-parity")
+{
+    // The conversions of this library on the files the comparer (tools/reference/sync_parity.py)
+    // prepared in the directory: for every NAME.jpg, NAME.ours.xmp holds what ExifToXmp makes of the
+    // EXIF block of the file, starting from no XMP; and for every NAME.xmp, which the pinned tool
+    // wrote from the same file, NAME.back.jpg is a file whose EXIF block is what XmpToExif makes of
+    // that sidecar, starting from no EXIF. Nothing is compared here. A file this library refuses is
+    // listed with the code of the refusal; an exception of another type is a defect and fails the run.
+    string directory = args[1];
+    var manifest = new List<string>();
+    var crashes = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    void Count(string outcome) => outcomes[outcome] = outcomes.GetValueOrDefault(outcome) + 1;
+    string NotesOf(MetadataSharp.Core.Sync.SyncEdits edits) =>
+        string.Join(" | ", edits.Notes.Select(note => $"{note.Source} -> {note.Target}: {note.Reason}")).Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+    byte[] blank = JpegFixture.Build();
+    foreach (string path in Directory.EnumerateFiles(directory, "*.jpg").Order(StringComparer.Ordinal))
+    {
+        string name = Path.GetFileNameWithoutExtension(path);
+        if (name.EndsWith(".back", StringComparison.Ordinal)) continue;
+        try
+        {
+            using JpegMetadataDocument document = JpegMetadataDocument.Open(path);
+            if (document.Exif is not ExifMetadata exif) { manifest.Add($"{name}\tto-xmp\tno-exif\t"); Count("to-xmp no-exif"); }
+            else
+            {
+                MetadataSharp.Core.Sync.SyncEdits edits = MetadataSharp.Core.Sync.MetadataSync.ExifToXmp(exif);
+                if (edits.Xmp.IsEmpty) { manifest.Add($"{name}\tto-xmp\tnothing\t{NotesOf(edits)}"); Count("to-xmp nothing"); }
+                else
+                {
+                    XmpPacket.CreateEmpty().Apply(edits.Xmp)!.SaveAs(Path.Combine(directory, name + ".ours.xmp"));
+                    manifest.Add($"{name}\tto-xmp\twritten\t{NotesOf(edits)}"); Count("to-xmp written");
+                }
+            }
+        }
+        catch (MetadataException refusal) { manifest.Add($"{name}\tto-xmp\trefused {refusal.Code}\t"); Count("to-xmp refused " + refusal.Code); }
+        catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+        {
+            crashes.Add($"{name} to-xmp: {defect.GetType().Name}: {defect.Message}");
+        }
+
+        string sidecar = Path.Combine(directory, name + ".xmp");
+        if (!File.Exists(sidecar)) continue;
+        try
+        {
+            XmpPacket theirs = XmpPacket.Load(sidecar);
+            MetadataSharp.Core.Sync.SyncEdits back = MetadataSharp.Core.Sync.MetadataSync.XmpToExif(theirs);
+            using JpegMetadataDocument target = JpegMetadataDocument.Open(new MemoryStream(blank));
+            target.SaveAs(Path.Combine(directory, name + ".back.jpg"), back.Exif);
+            manifest.Add($"{name}\tto-exif\twritten\t{NotesOf(back)}"); Count("to-exif written");
+        }
+        catch (MetadataException refusal) { manifest.Add($"{name}\tto-exif\trefused {refusal.Code}\t{refusal.Message.Replace('\t', ' ').Replace('\n', ' ')}"); Count("to-exif refused " + refusal.Code); }
+        catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+        {
+            crashes.Add($"{name} to-exif: {defect.GetType().Name}: {defect.Message}");
+        }
+    }
+    File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
+    Console.WriteLine("::notice title=Sync parity fixture::" + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
+    foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=Sync conversion defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
+    return crashes.Count == 0 ? 0 : 1;
+}
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | png-webp-embedded-edits DIRECTORY | png-webp-embedded-corpus CORPUS DIRECTORY | tiff-based-icc-edits DIRECTORY | tiff-based-icc-corpus CORPUS DIRECTORY | bmff-icc-edits DIRECTORY | bmff-icc-corpus CORPUS DIRECTORY | sync-parity DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
 
 

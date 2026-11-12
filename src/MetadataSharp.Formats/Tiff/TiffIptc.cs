@@ -32,7 +32,14 @@ public static class TiffIptc
             ReadOnlySpan<byte> stream = naa.Value.RawBytes;
             // Writers store the stream as LONGs, which rounds its length up to four bytes with zeros.
             if (naa.Value.FieldType == TiffFieldType.Long) stream = stream[..UnpaddedLength(stream)];
-            return IptcPacket.Inspect(stream, options);
+            // The digest of a file that keeps the stream in its own tag lies in the Photoshop resources, when it has them.
+            byte[]? digest = null;
+            if (metadata.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, ImageResourcesTag), out ExifEntry? beside) && beside.Value.ByteLength != 0)
+            {
+                try { digest = PhotoshopResources.Parse([.. "Photoshop 3.0\0"u8, .. beside.Value.RawBytes], iptcLimits).StoredDigest(); }
+                catch (MetadataException) { }
+            }
+            return IptcPacket.Inspect(stream, options).WithDigest(digest);
         }
         if (metadata.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, ImageResourcesTag), out ExifEntry? block) && block.Value.ByteLength != 0)
         {
@@ -43,7 +50,7 @@ public static class TiffIptc
             block.Value.RawBytes.CopyTo(payload.AsSpan(signature.Length));
             PhotoshopResources resources = PhotoshopResources.Parse(payload, iptcLimits);
             if (resources.IptcForReading() is PhotoshopResources.Resource resource)
-                return IptcPacket.Inspect(resource.Data.Span, options);
+                return IptcPacket.Inspect(resource.Data.Span, options).WithDigest(resources.StoredDigest());
         }
         return null;
     }

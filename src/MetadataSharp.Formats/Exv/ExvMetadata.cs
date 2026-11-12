@@ -87,7 +87,7 @@ public sealed class ExvMetadata
                 {
                     PhotoshopResources resources = PhotoshopResources.Parse(payload.ToArray(), new IptcLimits());
                     if (resources.IptcForReading() is PhotoshopResources.Resource resource)
-                        iptc = IptcPacket.Inspect(resource.Data.Span);
+                        iptc = IptcPacket.Inspect(resource.Data.Span).WithDigest(resources.StoredDigest());
                 }
                 catch (MetadataException refusal) when (refusals is not null) { refusals.Iptc = refusal; }
             }

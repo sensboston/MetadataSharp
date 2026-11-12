@@ -1,5 +1,6 @@
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
+using MetadataSharp.Core.Sync;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
 using MetadataSharp.Formats.Cr3;
@@ -104,6 +105,27 @@ public sealed class ImageMetadata
     /// <see cref="MetadataReadError.Exception"/> object.
     /// </summary>
     public IReadOnlyList<MetadataReadError> Errors { get; }
+
+    /// <summary>
+    /// Reconciles the EXIF, IPTC and XMP of the file as the Metadata Working Group guidelines read
+    /// them: <see cref="MetadataSync.Reconcile"/> on <see cref="Exif"/>, <see cref="Iptc"/> and
+    /// <see cref="Xmp"/>, with what the IPTC digest of the file says (<see cref="IptcPacket.Digest"/>).
+    /// Nothing is written: the result holds the edits that bring the three into agreement, for the
+    /// <c>SaveAll</c> of the document of the format, or for its separate saves.
+    /// </summary>
+    /// <param name="options">Whether blocks the file lacks are created, and whether all of EXIF is mirrored.</param>
+    /// <exception cref="MetadataException">
+    /// EXIF, IPTC or XMP is listed in <see cref="Errors"/>: a kind that was refused is not known to
+    /// be absent, and edits made without it could replace what the file holds. The refusal is thrown as it was raised.
+    /// </exception>
+    public SyncEdits Reconcile(ReconcileOptions? options = null)
+    {
+        foreach (MetadataReadError error in Errors)
+        {
+            if (error.Family is MetadataFamily.Exif or MetadataFamily.IptcIim or MetadataFamily.Xmp) throw error.Exception;
+        }
+        return MetadataSync.Reconcile(Exif, Iptc, Xmp, null, options);
+    }
 
     /// <summary>
     /// Tells the format by the signature at the start of a file, never by its name. The first

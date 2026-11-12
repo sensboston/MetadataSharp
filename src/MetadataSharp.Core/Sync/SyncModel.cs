@@ -172,6 +172,13 @@ public sealed class ReconcileOptions
 
     /// <summary>When true, an EXIF block is written into a file that has none. The default does not create one.</summary>
     public bool CreateExif { get; init; }
+
+    /// <summary>
+    /// When true, every other EXIF tag of <see cref="MetadataSync.ExifMappings"/> is copied into XMP
+    /// too, replacing what XMP holds for it, as Exiv2's synchronisation does. The default follows the
+    /// MWG guidance, which keeps a value that is EXIF's alone out of XMP.
+    /// </summary>
+    public bool MirrorAllExif { get; init; }
 }
 
 /// <summary>
@@ -195,6 +202,12 @@ public sealed class SyncEdits
     public IptcEdit Iptc { get; } = new();
     /// <summary>The changes to XMP.</summary>
     public XmpEdit Xmp { get; } = new();
+    /// <summary>
+    /// The options <see cref="Iptc"/> is to be saved with. After <see cref="MetadataSync.Reconcile"/>
+    /// IPTC and XMP agree, so they ask for the digest to be recomputed
+    /// (<see cref="MetadataSharp.Core.Iptc.IptcWriteOptions.UpdateDigest"/>); after a one-way conversion they leave it alone.
+    /// </summary>
+    public IptcWriteOptions IptcWriteOptions { get; internal set; } = new();
     /// <summary>True when no edit holds a change.</summary>
     public bool IsEmpty => Exif.IsEmpty && Iptc.IsEmpty && Xmp.IsEmpty;
     /// <summary>The fields that were found and not written, in the order of the mapping table.</summary>

@@ -52,7 +52,8 @@ public sealed class PsdMetadata
 
     /// <summary>Reads the IPTC stream of resource 0x0404, or returns null when the file has none.</summary>
     public IptcPacket? ReadIptc() =>
-        resources.TryGetValue(0x0404, out byte[]? stream) && stream.Length != 0 ? IptcPacket.Inspect(stream) : null;
+        resources.TryGetValue(0x0404, out byte[]? stream) && stream.Length != 0
+            ? IptcPacket.Inspect(stream).WithDigest(resources.TryGetValue(0x0425, out byte[]? digest) && digest.Length == 16 ? digest : null) : null;
 
     /// <summary>Reads the XMP packet of resource 0x0424, or returns null when the file has none.</summary>
     public XmpPacket? ReadXmp() =>
