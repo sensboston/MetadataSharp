@@ -153,6 +153,9 @@ internal static class Program
                 Snapshot(path, stdout, length);
                 return;
             case MetadataFormat.Exv: Exv(path, stdout, length); return;
+            case MetadataFormat.Crw: CrwFile(path, stdout, length); return;
+            case MetadataFormat.Mrw: MrwFile(path, stdout, length); return;
+            case MetadataFormat.Raf: RafFile(path, stdout, length); return;
             case MetadataFormat.Jp2: Jp2(path, stdout, length); return;
         }
         // A sidecar is told by the rule of this tool, not by the one of the library: any file that
@@ -220,6 +223,50 @@ internal static class Program
         if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
         if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
         Done(stdout);
+    }
+
+    /// <summary>
+    /// A Canon CRW file. The reference has no rows for where the note starts: there is no note in
+    /// the file, only records it gives the names of Canon tags. Where the preview lies it prints as
+    /// two tags of a group of its own.
+    /// </summary>
+    private static void CrwFile(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        var metadata = MetadataSharp.Formats.Crw.CrwMetadata.Read(File.ReadAllBytes(path));
+        Exif(metadata.Exif, stdout, noteRows: false);
+        if (metadata.PreviewOffset is long preview) Embedded(stdout, preview, metadata.PreviewLength);
+        Done(stdout);
+    }
+
+    /// <summary>A Minolta MRW file: the TIFF structure of its TTW block.</summary>
+    private static void MrwFile(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        var metadata = MetadataSharp.Formats.Mrw.MrwMetadata.Read(File.ReadAllBytes(path));
+        Exif(metadata.Exif, stdout);
+        if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
+        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
+        Done(stdout);
+    }
+
+    /// <summary>A Fujifilm RAF file: its JPEG file, where that lies, and the tags only its TIFF structure has.</summary>
+    private static void RafFile(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        var metadata = MetadataSharp.Formats.Raf.RafMetadata.Read(File.ReadAllBytes(path));
+        Exif(metadata.Exif, stdout);
+        Embedded(stdout, metadata.JpegOffset, metadata.JpegLength);
+        if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
+        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
+        Done(stdout);
+    }
+
+    /// <summary>Where a JPEG file lies in a raw file, as the reference names it.</summary>
+    private static void Embedded(StreamWriter stdout, long offset, long length)
+    {
+        Tag(stdout, "Exif.Image2.JPEGInterchangeFormat", "Long", 1, offset.ToString(CultureInfo.InvariantCulture));
+        Tag(stdout, "Exif.Image2.JPEGInterchangeFormatLength", "Long", 1, length.ToString(CultureInfo.InvariantCulture));
     }
 
     private static void Jp2(string path, StreamWriter stdout, long length)
