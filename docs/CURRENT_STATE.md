@@ -206,8 +206,8 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   is a tag without a name of type LONG, SLONG or UNDEFINED unless `allowUnnamed` is passed. The
   result is re-read and every unnamed tag compared byte for byte (`MakerNoteWriter`), and the
   layout around the note is compared (`TiffBasedWriteVerifier.MakerNote`). Parity job
-  "MakerNote edit parity" (run 43316091181): `exiv2 -u -PEkv` reads 181 edits of corpus JPEGs back
-  as set with every other key unchanged (same length 85, grown 42, SHORT 51... see the job notice).
+  "MakerNote edit parity" (run 43316787075): `exiv2 -u -PEkv` reads 178 edits of corpus JPEGs back
+  as set with every other key unchanged (text of the same length 85, grown text 42, SHORT 51).
   Not proven by the tool: TIFF-based files (the corpus has no whole raw file with a decodable
   note; synthetic tests only) and growth in notes that count offsets from themselves (code
   present, switched off).
