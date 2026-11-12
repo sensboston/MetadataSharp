@@ -182,11 +182,14 @@ using (PngMetadataDocument document = PngMetadataDocument.Open(source))
 
 ### Edit IPTC (JPEG, TIFF-based files, PNG)
 
+Any dataset of `IptcDatasets.All` can be set (`edit.Set(new IptcDatasetKey(2, 10), "5")`), with typed
+setters for the common ones (`SetCaption`, `SetKeywords`, `SetDateCreated`, ...); the TIFF-based and
+PNG documents have the same `SaveIptc` methods.
+
 ```csharp
 var edit = new IptcEdit();
-edit.SetCaption("Fishing boats leaving the harbour.");
-edit.SetKeywords(["harbour", "dawn"]);
-edit.Set(new IptcDatasetKey(2, 10), "5");                                               // any dataset of IptcDatasets.All
+edit.ReplaceText(new IptcDatasetKey(2, 120), ["Fishing boats leaving the harbour."]);   // caption
+edit.ReplaceText(new IptcDatasetKey(2, 25), ["harbour", "dawn"]);                       // keywords
 edit.Remove(new IptcDatasetKey(2, 116));                                                // copyright notice
 
 using (JpegMetadataDocument document = JpegMetadataDocument.Open(source))
