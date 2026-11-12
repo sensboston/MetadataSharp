@@ -25,7 +25,11 @@ public enum MetadataErrorCode
     InvalidEps,
     InvalidExv,
     InvalidBmff,
-    InvalidIccProfile
+    InvalidIccProfile,
+    /// <summary>The ICC profile is valid and longer than the container can hold.</summary>
+    IccProfileTooLarge,
+    /// <summary>The comment is longer than the container can hold.</summary>
+    CommentTooLarge
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>

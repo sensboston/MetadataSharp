@@ -94,7 +94,9 @@ internal static class JpegScanner
                 var segment = new JpegSegment(marker, start, input.Position - start, payloadAt, count, isExif,
                     marker == 0xE1 && payload.AsSpan(0, count).StartsWith("http://ns.adobe.com/xap/1.0/\0"u8),
                     marker == 0xE1 && payload.AsSpan(0, count).StartsWith("http://ns.adobe.com/xmp/extension/\0"u8),
-                    marker == 0xED && payload.AsSpan(0, count).StartsWith("Photoshop 3.0\0"u8));
+                    marker == 0xED && payload.AsSpan(0, count).StartsWith("Photoshop 3.0\0"u8),
+                    // A chunk of an ICC profile: the identifier, then the number of the chunk and the count of all.
+                    marker == 0xE2 && count >= 14 && payload.AsSpan(0, count).StartsWith("ICC_PROFILE\0"u8));
                 segments.Add(segment);
                 if (isExif)
                 {
