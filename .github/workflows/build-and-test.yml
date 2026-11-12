@@ -20,8 +20,10 @@ concurrency:
 
 jobs:
   build-and-test:
-    # Two tiers. A push to a work branch builds and tests one leg (ubuntu, net10.0) for a fast answer;
-    # a pull request and master get the full matrix before anything is merged.
+    # Two tiers. A push to a work branch builds and tests two legs in parallel (ubuntu, net8.0 and
+    # net10.0) for a fast answer; a pull request and master get the full matrix before anything is
+    # merged. Both target frameworks are in the fast tier because a failure can belong to one runtime:
+    # ExifEdit.Set of a long text failed on net8.0 only (PR #110) and showed in the pull request run.
     name: ${{ matrix.tfm }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 6
@@ -29,7 +31,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ${{ fromJSON(github.event_name == 'push' && github.ref != 'refs/heads/master' && '["ubuntu-latest"]' || '["ubuntu-latest","windows-latest","macos-latest"]') }}
-        tfm: ${{ fromJSON(github.event_name == 'push' && github.ref != 'refs/heads/master' && '["net10.0"]' || '["net8.0","net10.0"]') }}
+        tfm: ['net8.0', 'net10.0']
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
       DOTNET_NOLOGO: '1'
