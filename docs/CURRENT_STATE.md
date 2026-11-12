@@ -119,13 +119,19 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   raw sensor data) and a first directory that is a reduced image are refused (`UnsupportedFeature`).
   Run 43146310534: 2,408 tests; `exiv2 -pC`, `-pc`, `-pa` agree on 56 + 117 edited fixtures and on
   10 + 15 files written from the corpus (15 of 22 TIFF-based, 2 of 15 BMFF refused). Twelve partial rows.
+- One entry point for reading: `ImageMetadata.Read` (span, stream, async, path) tells the format by
+  signature (`ImageMetadata.Detect`, `MetadataFormat`) and gives EXIF with MakerNote, IPTC, XMP, ICC
+  profile, comments and previews; a kind its reader refuses is listed in `Errors`, the others are
+  read. The readers per container are unchanged. The Dump tool reads eight formats through it: run
+  43152164430, 2,515 tests, all ten parity reports equal to those of the old tool (run 43151606423).
 
 ## Next (in order)
 
-1. Write side: MakerNote-safe rules per vendor; removal of a whole BMFF item.
-2. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
+1. Release readiness for 1.0 on NuGet (package metadata, documentation); no behaviour change.
+2. Write side: MakerNote-safe rules per vendor; removal of a whole BMFF item.
+3. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.
-3. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
+4. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
 
 ## Known limits
 
