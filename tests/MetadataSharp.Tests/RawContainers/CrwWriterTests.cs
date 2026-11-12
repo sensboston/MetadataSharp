@@ -281,7 +281,7 @@ public sealed class CrwWriterTests
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(edit => edit.RemoveAllExif()));
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(edit => edit.Remove(Orientation)));
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(edit => edit.Set(Orientation, (ushort)2)));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(edit => edit.Set(Date, "yesterday")));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(edit => edit.Set(Date, "0000:00:00 00:00:00")));
     }
 
     [Fact]

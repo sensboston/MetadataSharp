@@ -21,6 +21,7 @@ from pathlib import Path
 
 LIMIT = 300 * 1024
 COUNT = 12
+DEFECTS = ("poc", "issue", "bug", "ghsa", "cve", "fuzz", "crash")
 
 
 def mrw(tiff):
@@ -56,6 +57,8 @@ def main(argv=None):
     names = []
     small = sorted(p for p in corpus.iterdir() if p.is_file() and p.stat().st_size <= LIMIT)
 
+    # Files written to show a defect of a reader come last: the tool reads few of them.
+    small.sort(key=lambda p: (any(word in p.name.lower() for word in DEFECTS), p.name))
     tiffs = [p for p in small if p.suffix.lower() in (".tif", ".tiff") and is_tiff(p.read_bytes())][:COUNT]
     for number, path in enumerate(tiffs):
         (out / f"m{number:02d}.mrw").write_bytes(mrw(path.read_bytes()))

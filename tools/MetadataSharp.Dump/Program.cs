@@ -243,23 +243,41 @@ internal static class Program
     private static void MrwFile(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
-        var metadata = MetadataSharp.Formats.Mrw.MrwMetadata.Read(File.ReadAllBytes(path));
-        Exif(metadata.Exif, stdout);
-        if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
-        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
+        Kinds(File.ReadAllBytes(path), stdout, null);
     }
 
     /// <summary>A Fujifilm RAF file: its JPEG file, where that lies, and the tags only its TIFF structure has.</summary>
     private static void RafFile(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
-        var metadata = MetadataSharp.Formats.Raf.RafMetadata.Read(File.ReadAllBytes(path));
-        Exif(metadata.Exif, stdout);
-        Embedded(stdout, metadata.JpegOffset, metadata.JpegLength);
-        if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
-        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
+        byte[] data = File.ReadAllBytes(path);
+        Kinds(data, stdout, () =>
+        {
+            // The header says where the JPEG file lies: two numbers of four bytes, the high byte first.
+            static long At(byte[] bytes, int at) => ((long)bytes[at] << 24) | ((long)bytes[at + 1] << 16) | ((long)bytes[at + 2] << 8) | bytes[at + 3];
+            Embedded(stdout, At(data, 84), At(data, 88));
+        });
+    }
+
+    /// <summary>
+    /// A file whose reader gives each kind of metadata on its own: a refusal of the EXIF ends the
+    /// file as refused, a refusal of the IPTC or the XMP leaves it ok and travels in the detail.
+    /// </summary>
+    private static void Kinds(byte[] data, StreamWriter stdout, Action? afterExif)
+    {
+        ImageMetadata file = ImageMetadata.Read(data);
+        MetadataException? Refusal(MetadataFamily kind) =>
+            file.Errors.FirstOrDefault(error => error.Family == kind)?.Exception;
+        MetadataException? exif = Refusal(MetadataFamily.Exif), iptc = Refusal(MetadataFamily.IptcIim), xmp = Refusal(MetadataFamily.Xmp);
+        if (exif is not null) throw exif;
+        var refused = new List<string>();
+        Exif(file.Exif, stdout);
+        afterExif?.Invoke();
+        if (iptc is not null) refused.Add("iptc-refused:" + iptc.Code);
+        if (file.Iptc is not null) Iptc(file.Iptc, stdout);
+        if (xmp is not null) refused.Add("xmp-refused:" + xmp.Code);
+        if (file.Xmp is not null) Xmp(file.Xmp, stdout);
+        Done(stdout, refused);
     }
 
     /// <summary>Where a JPEG file lies in a raw file, as the reference names it.</summary>
