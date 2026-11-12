@@ -19,7 +19,13 @@ expected profile and the expected comment, and prints with -pa the lines,
 and exits with the code, it did for the source: an edit of the profile or
 the comment changes nothing of the Exif, IPTC and XMP data.
 
-The generator's jpeg-embedded-corpus command writes the same manifest for
+The png-webp-embedded-edits command writes the same manifest for PNG and WebP
+files. Their comment column is always "=": a WebP has no comment, and the tool
+reads that of a PNG from the keyword Description, not from the keyword Comment
+this library writes, so an edit may not change what -pc prints. The comment
+chunk itself is the business of png_chunk_edits.py.
+
+The generator's jpeg-embedded-corpus and png-webp-embedded-corpus commands write the same manifest for
 files this repository did not author. Many of those are damaged on purpose,
 so with --skip-unreadable-sources a source for which -pC or -pc does not
 exit with 0 is counted and skipped: the rule is about files the tool could

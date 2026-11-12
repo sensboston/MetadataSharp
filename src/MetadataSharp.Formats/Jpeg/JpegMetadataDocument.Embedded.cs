@@ -180,13 +180,7 @@ public sealed partial class JpegMetadataDocument
     private byte[][] IccPayloads(byte[]? profile)
     {
         if (profile is null) return [];
-        // The header check of the reader, and one more: what is written is what the header declares, no padding.
-        if (profile.Length < IccProfiles.HeaderBytes)
-            throw IccProfiles.Invalid("An ICC profile is at least the 128 bytes of its header.");
-        if (BinaryPrimitives.ReadUInt32BigEndian(profile) != (uint)profile.Length)
-            throw IccProfiles.Invalid("The size field of the ICC profile header is not the number of bytes given.");
-        if (!profile.AsSpan(36, 4).SequenceEqual("acsp"u8))
-            throw IccProfiles.Invalid("The ICC profile header lacks the 'acsp' signature.");
+        IccProfiles.Exact(profile);
         if (profile.Length > MaxIccChunks * MaxIccChunkBytes)
             throw new MetadataException(MetadataErrorCode.IccProfileTooLarge, "The ICC profile needs more than the 255 APP2 segments a JPEG can number.");
         int count = (profile.Length + MaxIccChunkBytes - 1) / MaxIccChunkBytes;

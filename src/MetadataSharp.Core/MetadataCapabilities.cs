@@ -83,9 +83,9 @@ public enum MetadataFamily
     IptcIim,
     /// <summary>XMP packet (RDF) representation.</summary>
     Xmp,
-    /// <summary>ICC colour profile: returned as its bytes by <c>IccProfiles.Read</c> (operation <see cref="MetadataOperation.Extract"/>) and, in a JPEG, written by <c>JpegMetadataDocument.SaveIccProfile</c>; not interpreted.</summary>
+    /// <summary>ICC colour profile: returned as its bytes by <c>IccProfiles.Read</c> (operation <see cref="MetadataOperation.Extract"/>) and written by <c>SaveIccProfile</c> of the JPEG, PNG and WebP documents; not interpreted.</summary>
     Icc,
-    /// <summary>Free-text comment (a JPEG COM segment, a PNG text chunk with the keyword Comment): listed by <c>Comments.Read</c>; in a JPEG, written by <c>JpegMetadataDocument.SaveComment</c>.</summary>
+    /// <summary>Free-text comment (a JPEG COM segment, a PNG text chunk with the keyword Comment): listed by <c>Comments.Read</c>; written by <c>SaveComment</c> of the JPEG and PNG documents.</summary>
     Comment,
     /// <summary>Embedded thumbnail; no general public API in this build.</summary>
     Thumbnail,
@@ -172,8 +172,14 @@ public static class MetadataCapabilities
         new(MetadataContainer.Png, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "XMP in static PNG; bounded restricted profile; Extended XMP is refused."),
         new(MetadataContainer.Png, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "XMP in static PNG; bounded restricted profile; Extended XMP is refused."),
         new(MetadataContainer.Png, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "XMP in static PNG; per-property removal within the restricted profile; whole-XMP removal is also supported."),
+        new(MetadataContainer.Png, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Supported, "PngMetadataDocument.SaveIccProfile: an iCCP chunk (name ICC Profile, zlib) directly after IHDR; an sRGB chunk is taken out with it; a profile that fails the header check is refused."),
+        new(MetadataContainer.Png, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Supported, "PngMetadataDocument.SaveIccProfile: the iCCP chunk is replaced where it stands and an sRGB chunk taken out; a file that holds exactly the profile is copied; every other chunk is copied."),
+        new(MetadataContainer.Png, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Supported, "PngMetadataDocument.SaveIccProfile with null: the iCCP chunk is taken out; an sRGB chunk and every other chunk are copied."),
         new(MetadataContainer.Png, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the iCCP chunk before the image data, inflated within the budget, not interpreted; a failed checksum, a broken stream or a second chunk is refused."),
-        new(MetadataContainer.Png, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Partial, "Comments.Read: tEXt, zTXt and iTXt chunks whose keyword is Comment, in file order; other keywords (Description, Title) are not read as comments. Nothing is written."),
+        new(MetadataContainer.Png, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Partial, "Comments.Read: tEXt, zTXt and iTXt chunks whose keyword is Comment, in file order; other keywords (Description, Title) are not read as comments."),
+        new(MetadataContainer.Png, MetadataFamily.Comment, MetadataOperation.Insert, CapabilityStatus.Supported, "PngMetadataDocument.SaveComment: one chunk with the keyword Comment before the image data; tEXt when the text is ISO-8859-1 and reads back as itself, else uncompressed iTXt in UTF-8."),
+        new(MetadataContainer.Png, MetadataFamily.Comment, MetadataOperation.Replace, CapabilityStatus.Supported, "PngMetadataDocument.SaveComment: every tEXt, zTXt and iTXt chunk with the keyword Comment is taken out and one written where the first stood; every other chunk is copied."),
+        new(MetadataContainer.Png, MetadataFamily.Comment, MetadataOperation.Remove, CapabilityStatus.Supported, "PngMetadataDocument.SaveComment with null: every tEXt, zTXt and iTXt chunk with the keyword Comment is taken out; every other chunk is copied."),
         // WebP: static images only.
         new(MetadataContainer.WebP, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Supported, "EXIF in static (non-animated) WebP within the approved RIFF policy; unsupported layouts are refused."),
         new(MetadataContainer.WebP, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "EXIF in static WebP; approved writable tag subset only; unsupported tags are refused."),
@@ -183,6 +189,9 @@ public static class MetadataCapabilities
         new(MetadataContainer.WebP, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "XMP in static WebP; bounded restricted profile; Extended XMP is refused."),
         new(MetadataContainer.WebP, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "XMP in static WebP; bounded restricted profile; Extended XMP is refused."),
         new(MetadataContainer.WebP, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "XMP in static WebP; per-property removal within the restricted profile; whole-XMP removal is also supported."),
+        new(MetadataContainer.WebP, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Supported, "WebPMetadataDocument.SaveIccProfile: an ICCP chunk directly after VP8X with the ICC flag set; a file in the simple layout is given a VP8X chunk; a profile that fails the header check is refused."),
+        new(MetadataContainer.WebP, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Supported, "WebPMetadataDocument.SaveIccProfile: the ICCP chunk is replaced where it stands; a file that holds exactly the profile is copied; every other chunk is copied."),
+        new(MetadataContainer.WebP, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Supported, "WebPMetadataDocument.SaveIccProfile with null: the ICCP chunk is taken out and the ICC flag cleared; the VP8X chunk stays; every other chunk is copied."),
         new(MetadataContainer.WebP, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the ICCP chunk, not interpreted; a second one is refused."),
         // TIFF-based files: TiffBasedMetadataDocument edits without moving image data or the MakerNote;
         // for standalone TIFF also range accounting and the older append-preserve editor.

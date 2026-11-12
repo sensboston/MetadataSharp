@@ -10,7 +10,7 @@ namespace MetadataSharp.Formats.WebP;
 
 /// <summary>A validated static WebP source with independently addressed EXIF and XMP operations.</summary>
 /// <remarks>Borrowed streams remain open. No concurrent source/document/edit use is supported.</remarks>
-public sealed class WebPMetadataDocument : IDisposable, IAsyncDisposable
+public sealed partial class WebPMetadataDocument : IDisposable, IAsyncDisposable
 {
     private readonly Stream source;
     private readonly bool owns;

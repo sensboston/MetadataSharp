@@ -15,7 +15,7 @@ namespace MetadataSharp.Formats.Png;
 /// "Raw profile type" text chunks are read and not edited.
 /// </summary>
 /// <remarks>Borrowed streams remain open. No concurrent source/document/edit use is supported.</remarks>
-public sealed class PngMetadataDocument : IDisposable, IAsyncDisposable
+public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
 {
     private readonly Stream source;
     private readonly bool owns;

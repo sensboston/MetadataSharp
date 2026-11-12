@@ -458,7 +458,7 @@ public sealed class JpegIccProfileTests
     }
 
     /// <summary>A source whose asynchronous reads wait while it is held.</summary>
-    private sealed class Held(byte[] data) : MemoryStream(data)
+    internal sealed class Held(byte[] data) : MemoryStream(data)
     {
         private TaskCompletionSource? gate;
 

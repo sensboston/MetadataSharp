@@ -8,7 +8,8 @@ namespace MetadataSharp.Formats;
 /// <summary>
 /// Read-only access to the ICC colour profile a file embeds. The profile is returned as the bytes
 /// its header declares and nothing in it is interpreted: the reader checks the size field and the
-/// <c>acsp</c> signature of the header, and no more. Nothing is written.
+/// <c>acsp</c> signature of the header, and no more. Nothing is written here: the documents of
+/// the formats write a profile (<c>SaveIccProfile</c>).
 /// </summary>
 public static class IccProfiles
 {
@@ -88,6 +89,21 @@ public static class IccProfiles
         if (!carrier.Slice(36, 4).SequenceEqual("acsp"u8))
             throw Invalid("The ICC profile header lacks the 'acsp' signature.", offset + 36);
         return carrier[..(int)size].ToArray();
+    }
+
+    /// <summary>
+    /// The check of a profile that is to be written. It is the check of <see cref="Whole"/> and one
+    /// more: the size field is the number of bytes given, so that what is written is what the
+    /// header declares, without padding.
+    /// </summary>
+    internal static void Exact(ReadOnlySpan<byte> profile)
+    {
+        if (profile.Length < HeaderBytes)
+            throw Invalid("An ICC profile is at least the 128 bytes of its header.");
+        if (BinaryPrimitives.ReadUInt32BigEndian(profile) != (uint)profile.Length)
+            throw Invalid("The size field of the ICC profile header is not the number of bytes given.");
+        if (!profile.Slice(36, 4).SequenceEqual("acsp"u8))
+            throw Invalid("The ICC profile header lacks the 'acsp' signature.");
     }
 
     private static MetadataException Ambiguous(string message, long offset) =>
