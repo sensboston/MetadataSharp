@@ -111,11 +111,17 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   edited fixtures and 25 files written from the corpus, and `exiv2 -pS` lists the expected chunks
   for 19 and 23 PNG files (the tool reads a PNG comment from `Description`, so the `Comment` chunk
   is checked by type, length and CRC-32). Nine capability rows.
+- Write, ICC profile of TIFF-based and BMFF files: `SaveIccProfile` of `TiffBasedMetadataDocument`
+  (tag 0x8773 of the first directory: over the stored value, else appended; removal leaves the bytes
+  unaddressed) and `BmffMetadataDocument` (`colr` `prof` of the primary item: replaced in place,
+  added last, removed as `free`; `iprp` in place, else `meta` grows or is appended; no item moves).
+  Same profile: copy. Verified before written. Run 43144018946: 2,426 tests; `exiv2 -pC`, `-pc`,
+  `-pa` agree on 128 + 117 edited fixtures and on 10 + 15 files written from the corpus (15 of 22
+  TIFF-based and 2 of 15 BMFF files refuse a profile). Twelve partial rows; none for DNG and raw.
 
 ## Next (in order)
 
-1. Write side: the ICC profile for TIFF-based (tag 0x8773) and BMFF (`colr`) files; MakerNote-safe
-   rules per vendor; removal of a whole BMFF item.
+1. Write side: MakerNote-safe rules per vendor; removal of a whole BMFF item.
 2. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.
 3. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
@@ -124,7 +130,7 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
-- ICC profiles are written in JPEG, PNG and WebP only, comments in JPEG and PNG; a PNG profile
+- No ICC write for PSD, JPEG 2000 and EXV; comments are written in JPEG and PNG only; a PNG profile
   over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to
   agree with a written profile. A BMFF item is edited or added, never
   removed. Previews are not decoded and not written. CR3 and JPEG XL are read, never written.
