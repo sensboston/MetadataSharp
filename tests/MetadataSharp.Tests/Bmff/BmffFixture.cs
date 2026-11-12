@@ -63,6 +63,24 @@ internal sealed class BmffFixture
         internal bool ToolReads { get; set; }
         /// <summary>How many bytes precede the TIFF header in the EXIF item: 4, or 10 with an "Exif\0\0" marker.</summary>
         internal int ExifPrefix { get; set; } = 4;
+        /// <summary>The item the primary item box names.</summary>
+        internal uint PrimaryId { get; set; } = ImageId;
+        /// <summary>The boxes of the property container, in order: the extents of the image alone, unless a test says more.</summary>
+        internal List<byte[]> Properties { get; } = [Box("ispe", U32(0), U32(64), U32(48))];
+        /// <summary>
+        /// What the association box gives each item, in order: the numbers of its properties, from
+        /// one, and whether a reader has to understand each.
+        /// </summary>
+        internal List<(uint Item, (bool Essential, int Index)[] Properties)> Associations { get; } =
+            new() { (ImageId, new[] { (true, 1) }) };
+        /// <summary>The association box numbers the properties in 15 bits instead of 7: bit 0 of its flags.</summary>
+        internal bool WideProperties { get; set; }
+        /// <summary>The association box names the items in 32 bits: its version 1.</summary>
+        internal bool WideAssociations { get; set; }
+        /// <summary>Boxes of the item properties box after the association box.</summary>
+        internal byte[] AfterAssociations { get; set; } = [];
+        /// <summary>The meta box has no item properties box.</summary>
+        internal bool NoProperties { get; set; }
     }
 
     private BmffFixture(string name, bool big, Layout layout, byte[] bytes, Dictionary<uint, (int Start, int Length)[]> positions)
@@ -223,7 +241,7 @@ internal sealed class BmffFixture
             {
                 Box("hdlr", U32(0), U32(0), Ascii("pict"), new byte[13])
             };
-            if (layout.Primary) parts.Add(layout.WideIds ? Box("pitm", U32(0x01000000), U32(ImageId)) : Box("pitm", U32(0), U16(ImageId)));
+            if (layout.Primary) parts.Add(layout.WideIds ? Box("pitm", U32(0x01000000), U32(layout.PrimaryId)) : Box("pitm", U32(0), U16(layout.PrimaryId)));
             parts.Add(Locations(layout, positions, idatPayload));
             parts.Add(Box("iinf", U32(0), U16((uint)layout.Items.Count), Concat(layout.Items.Select(item => Entry(layout, item)).ToArray())));
             byte[][] references = layout.Items.Where(item => item.Type is "Exif" or "mime")
@@ -232,7 +250,7 @@ internal sealed class BmffFixture
                     : Box("cdsc", U16(item.Id), U16(1), U16(ImageId)))
                 .ToArray();
             if (references.Length != 0) parts.Add(Box("iref", U32(layout.WideIds ? 0x01000000u : 0), Concat(references)));
-            parts.Add(Box("iprp", Box("ipco", Box("ispe", U32(0), U32(64), U32(48))), Box("ipma", U32(0), U32(1), U16(ImageId), new byte[] { 1, 0x81 })));
+            if (!layout.NoProperties) parts.Add(ItemProperties(layout));
             if (inIdat.Count != 0) parts.Add(Box("idat", Concat(inIdat.ToArray())));
             return Box("meta", U32(0), Concat(parts.ToArray()));
         }
@@ -245,6 +263,31 @@ internal sealed class BmffFixture
             ? Concat(fileType, layout.Before, media, meta, layout.After)
             : Concat(fileType, layout.Before, meta, media, layout.After);
     }
+
+    /// <summary>The item properties box: the property container, the association box, and what a test puts after them.</summary>
+    private static byte[] ItemProperties(Layout layout)
+    {
+        var associations = new List<byte[]>
+        {
+            U32((layout.WideAssociations ? 0x01000000u : 0u) | (layout.WideProperties ? 1u : 0u)),
+            U32((uint)layout.Associations.Count)
+        };
+        foreach ((uint item, (bool Essential, int Index)[] properties) in layout.Associations)
+        {
+            associations.Add(layout.WideAssociations ? U32(item) : U16(item));
+            associations.Add(new[] { (byte)properties.Length });
+            foreach ((bool essential, int index) in properties)
+            {
+                associations.Add(layout.WideProperties
+                    ? U16((uint)((essential ? 0x8000 : 0) | index))
+                    : new[] { (byte)((essential ? 0x80 : 0) | index) });
+            }
+        }
+        return Box("iprp", Box("ipco", layout.Properties.ToArray()), Box("ipma", associations.ToArray()), layout.AfterAssociations);
+    }
+
+    /// <summary>A colr property: the kind of colour information, then the information.</summary>
+    internal static byte[] Colour(string kind, byte[] body) => Box("colr", Ascii(kind), body);
 
     private static byte[] Entry(Layout layout, Item item)
     {
@@ -396,6 +439,57 @@ internal sealed class BmffFixture
     {
         BoxInfo meta = Meta(file);
         return Boxes(file, meta.Payload + 4, meta.End);
+    }
+
+    /// <summary>The children of the item properties box of the file, in order.</summary>
+    internal static List<BoxInfo> PropertyChildren(byte[] file)
+    {
+        BoxInfo properties = MetaChildren(file).Single(box => box.Type == "iprp");
+        return Boxes(file, properties.Payload, properties.End);
+    }
+
+    /// <summary>The boxes of the property container of the file, in order: an association names one by its place, from one.</summary>
+    internal static List<BoxInfo> PropertyBoxes(byte[] file)
+    {
+        BoxInfo container = PropertyChildren(file).Single(box => box.Type == "ipco");
+        return Boxes(file, container.Payload, container.End);
+    }
+
+    /// <summary>The types of the boxes of the property container; colour information with its kind, as in "colr:prof".</summary>
+    internal static string PropertyTypes(byte[] file) => string.Join(' ', PropertyBoxes(file).Select(box =>
+        box.Type == "colr" ? "colr:" + Encoding.Latin1.GetString(file, box.Payload, 4) : box.Type));
+
+    /// <summary>
+    /// What the association box of the file gives each item, as "1:[!1,2] 5:[!1]": the item, then
+    /// the numbers of its properties in order, with an exclamation mark before an essential one.
+    /// The text starts with "wide " when the numbers have 15 bits, and with "v1 " when the items
+    /// have 32.
+    /// </summary>
+    internal static string Associations(byte[] file)
+    {
+        BoxInfo box = PropertyChildren(file).Single(child => child.Type == "ipma");
+        int at = box.Payload;
+        bool wideItems = file[at] != 0, wide = (file[at + 3] & 1) != 0;
+        uint count = BinaryPrimitives.ReadUInt32BigEndian(file.AsSpan(at + 4));
+        at += 8;
+        var entries = new List<string>();
+        for (uint entry = 0; entry < count; entry++)
+        {
+            uint item = wideItems ? BinaryPrimitives.ReadUInt32BigEndian(file.AsSpan(at)) : BinaryPrimitives.ReadUInt16BigEndian(file.AsSpan(at));
+            at += wideItems ? 4 : 2;
+            int properties = file[at++];
+            var numbers = new List<string>();
+            for (int index = 0; index < properties; index++)
+            {
+                int value = wide ? BinaryPrimitives.ReadUInt16BigEndian(file.AsSpan(at)) : file[at];
+                at += wide ? 2 : 1;
+                bool essential = (value & (wide ? 0x8000 : 0x80)) != 0;
+                numbers.Add((essential ? "!" : "") + (value & (wide ? 0x7FFF : 0x7F)));
+            }
+            entries.Add($"{item}:[{string.Join(',', numbers)}]");
+        }
+        if (at != box.End) throw new InvalidDataException("The association box does not end with its last entry.");
+        return (wideItems ? "v1 " : "") + (wide ? "wide " : "") + string.Join(' ', entries);
     }
 
     /// <summary>What the item location box of the file says about an item: its method and its extents in the file.</summary>

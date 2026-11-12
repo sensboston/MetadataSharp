@@ -9,8 +9,9 @@ using MetadataSharp.Formats.Tiff;
 namespace MetadataSharp.Formats.Bmff;
 
 /// <summary>
-/// An ISO BMFF image file (HEIC, HEIF, AVIF) opened for editing its EXIF, GPS and XMP: the EXIF
-/// item and the XMP item that the top-level <c>meta</c> box declares.
+/// An ISO BMFF image file (HEIC, HEIF, AVIF) opened for editing its EXIF, GPS and XMP, the EXIF
+/// item and the XMP item that the top-level <c>meta</c> box declares, and its ICC profile, a
+/// property of the primary item.
 /// </summary>
 /// <remarks>
 /// <para>A save never moves the data of an item. An item whose new bytes are as many as the old
@@ -23,6 +24,9 @@ namespace MetadataSharp.Formats.Bmff;
 /// item it has to grow: it does so in place when it is the last box of the file; otherwise a new
 /// one is appended and the old one becomes a <c>free</c> box. No other box changes its offset or
 /// its length, so image data stays where every offset in the file says it is.</para>
+/// <para>The ICC profile is not an item: it is a <c>colr</c> property in the item properties box,
+/// which is inside the <c>meta</c> box. That box is rewritten in the bytes it has when it does not
+/// grow, and the <c>meta</c> box grows or is replaced, as for a new item, when it does.</para>
 /// <para>Every save is planned, applied to a copy in memory, and read back before anything reaches
 /// the destination; a save that cannot be shown to have changed only what was asked is refused with
 /// a <see cref="MetadataException"/> and writes nothing. An edit that changes nothing writes a copy
@@ -32,7 +36,7 @@ namespace MetadataSharp.Formats.Bmff;
 /// opened; to apply a second kind of edit, open the output of the first. It is not safe for
 /// concurrent use.</para>
 /// </remarks>
-public sealed class BmffMetadataDocument : IDisposable, IAsyncDisposable
+public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
 {
     private const int MaxAccountedRanges = 16_384;
 

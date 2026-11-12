@@ -39,7 +39,7 @@ internal static class BmffWriteVerifier
     internal static void Verify(byte[] source, BmffFileMap before, BmffMetadata readBefore, byte[] output,
         BmffWritePlan plan, MetadataLimits limits, TiffBasedWritePlan? tiffPlan, ExifMetadata? desired)
     {
-        Bytes(source, output, plan);
+        Bytes(source, output, plan.SourceLength, plan.OutputLength, plan.Patches, plan.Tail);
         BmffFileMap after;
         try { after = BmffFileMap.Read(output, limits); }
         catch (MetadataException failure) { throw Limit(failure) ?? Refuse("the box structure of the output is not readable"); }
@@ -51,12 +51,17 @@ internal static class BmffWriteVerifier
         Reader(readBefore, readAfter, plan, tiffPlan, desired);
     }
 
-    private static void Bytes(byte[] source, byte[] output, BmffWritePlan plan)
+    /// <summary>
+    /// The output is the source, the planned ranges overwritten and the planned bytes after it:
+    /// every other byte is the one of the source, at the offset it had.
+    /// </summary>
+    internal static void Bytes(byte[] source, byte[] output, int sourceLength, int outputLength,
+        IReadOnlyList<(int Offset, byte[] Bytes)> patches, byte[] tail)
     {
-        if (plan.SourceLength != source.Length || output.Length != plan.OutputLength)
+        if (sourceLength != source.Length || output.Length != outputLength)
             throw Refuse("the output does not have the planned length");
         int at = 0;
-        foreach ((int offset, byte[] bytes) in plan.Patches.OrderBy(patch => patch.Offset))
+        foreach ((int offset, byte[] bytes) in patches.OrderBy(patch => patch.Offset))
         {
             if (offset < at || bytes.Length > source.Length - offset)
                 throw Refuse("planned ranges overlap or leave the source");
@@ -68,7 +73,7 @@ internal static class BmffWriteVerifier
         }
         if (!source.AsSpan(at).SequenceEqual(output.AsSpan(at, source.Length - at)))
             throw Refuse("a byte outside the planned ranges differs");
-        if (!output.AsSpan(source.Length).SequenceEqual(plan.Tail))
+        if (!output.AsSpan(source.Length).SequenceEqual(tail))
             throw Refuse("the appended bytes were not written as planned");
     }
 
@@ -222,7 +227,7 @@ internal static class BmffWriteVerifier
     }
 
     /// <summary>Whether two lists of segments yield the same sequence of bytes, however they are cut.</summary>
-    private static bool SameBytes(byte[] left, List<BmffSegment> leftSegments, byte[] right, List<BmffSegment> rightSegments)
+    internal static bool SameBytes(byte[] left, List<BmffSegment> leftSegments, byte[] right, List<BmffSegment> rightSegments)
     {
         int i = 0, j = 0, leftAt = 0, rightAt = 0;
         while (true)
@@ -274,7 +279,7 @@ internal static class BmffWriteVerifier
         }
     }
 
-    private static bool SameExif(ExifMetadata? left, ExifMetadata? right)
+    internal static bool SameExif(ExifMetadata? left, ExifMetadata? right)
     {
         if (left is null || right is null) return left is null && right is null;
         if (left.Entries.Count != right.Entries.Count || left.ByteOrder != right.ByteOrder) return false;
@@ -287,25 +292,25 @@ internal static class BmffWriteVerifier
     private static bool SameValue(ExifValue left, ExifValue right) =>
         left.FieldType == right.FieldType && left.Count == right.Count && left.RawBytes.SequenceEqual(right.RawBytes);
 
-    private static byte[] Raw(XmpPacket packet)
+    internal static byte[] Raw(XmpPacket packet)
     {
         byte[] bytes = new byte[packet.ByteLength];
         packet.CopyRawTo(bytes);
         return bytes;
     }
 
-    private static ReadOnlySpan<byte> Payload(byte[] file, BmffBox box) => file.AsSpan(box.Payload, box.End - box.Payload);
+    internal static ReadOnlySpan<byte> Payload(byte[] file, BmffBox box) => file.AsSpan(box.Payload, box.End - box.Payload);
 
     /// <summary>
     /// An output over a budget is a budget refusal, not a failed check: the edit asked for more than
     /// the limits of the document allow to be read back.
     /// </summary>
-    private static MetadataException? Limit(MetadataException failure) =>
+    internal static MetadataException? Limit(MetadataException failure) =>
         failure.Code is MetadataErrorCode.LimitExceeded
             ? new MetadataException(failure.Code,
                 "The edited file exceeds a budget of the limits it would be read with: " + failure.Message)
             : null;
 
-    private static MetadataException Refuse(string what) =>
+    internal static MetadataException Refuse(string what) =>
         new(MetadataErrorCode.UnsafeRelocation, "The planned output failed verification and was not written: " + what + ".");
 }
