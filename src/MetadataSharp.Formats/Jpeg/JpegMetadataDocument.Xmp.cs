@@ -20,6 +20,9 @@ public sealed partial class JpegMetadataDocument
     /// <see cref="MetadataErrorCode.AmbiguousMetadata"/> when the file has two standard packets or
     /// a property is in both parts; otherwise as <see cref="XmpPacket.Parse"/> fails.
     /// </exception>
+    public XmpPacket? ReadXmp(XmpReadOptions? options = null) => ReadXmpCore(options, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="ReadXmp"/>
+    public Task<XmpPacket?> ReadXmpAsync(XmpReadOptions? options = null, CancellationToken cancellationToken = default) => ReadXmpCore(options, true, cancellationToken);
     private async Task VerifyXmpSource(bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
