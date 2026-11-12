@@ -123,7 +123,9 @@ public sealed partial class ExifMetadata
     /// letter that gives its sign: <c>S</c> and <c>W</c> are negative. Both coordinates and both
     /// letters are required; a part with a zero denominator, a letter that is not one of the two the
     /// tag allows, a latitude beyond 90 degrees or a longitude beyond 180 make the whole position null,
-    /// because a position with a guessed hemisphere is a different place.
+    /// because a position with a guessed hemisphere is a different place. Each coordinate is the
+    /// <see cref="double" /> nearest to degrees + minutes / 60 + seconds / 3600 as the three rationals
+    /// state them exactly.
     /// </para>
     /// <para>
     /// The altitude is optional. It is one rational in metres (GPSAltitude, 0x0006), made negative when
@@ -200,7 +202,7 @@ public sealed partial class ExifMetadata
         return size is uint found && found != 0 && found <= int.MaxValue ? (int)found : null;
     }
 
-    private double? Coordinate(ushort tag, ushort referenceTag, char positive, char negative, double limit)
+    private double? Coordinate(ushort tag, ushort referenceTag, char positive, char negative, uint limit)
     {
         if (!TryGetEntry(new ExifTagKey(ExifDirectoryKind.Gps, tag), out ExifEntry? entry) ||
             !entry.Value.TryGetRationalArray(out UnsignedRational[]? parts) || parts.Length != 3)
@@ -208,18 +210,46 @@ public sealed partial class ExifMetadata
         if (Text(ExifDirectoryKind.Gps, referenceTag) is not { Length: 1 } letter ||
             (letter[0] != positive && letter[0] != negative))
             return null;
-        double degrees = 0, scale = 1;
-        foreach (UnsignedRational part in parts)
-        {
-            if (part.Denominator == 0)
-                return null;
-            degrees += part.ToDouble() / scale;
-            scale *= 60;
-        }
-        if (!(degrees <= limit))
+        if (parts[0].Denominator == 0 || parts[1].Denominator == 0 || parts[2].Denominator == 0)
             return null;
-        return letter[0] == negative ? -degrees : degrees;
+
+        // Degrees + minutes / 60 + seconds / 3600 as one fraction. Three quotients added in floating
+        // point land a bit or two away from the value the tag states; the fraction is exact, and its
+        // terms stay below 2^110 for any three rationals of 32-bit parts.
+        UInt128 degrees = parts[0].Denominator, minutes = parts[1].Denominator, seconds = parts[2].Denominator;
+        UInt128 denominator = degrees * minutes * seconds * 3600;
+        UInt128 numerator = (parts[0].Numerator * minutes * seconds * 3600) +
+                            (parts[1].Numerator * degrees * seconds * 60) +
+                            (parts[2].Numerator * degrees * minutes);
+        if (numerator > denominator * limit)
+            return null;
+
+        // Long division, one binary place at a time, until the quotient holds the 53 bits of a double
+        // and two more; what is left over is folded into the last one, so that the conversion rounds
+        // once, to the double nearest the fraction. A fraction this small cannot need more than a few
+        // hundred places, and the scaling by a power of two is exact.
+        (UInt128 whole, UInt128 rest) = UInt128.DivRem(numerator, denominator);
+        long quotient = (long)(ulong)whole;
+        int places = 0;
+        while (rest != 0 && quotient < RoundingBits)
+        {
+            rest <<= 1;
+            quotient <<= 1;
+            if (rest >= denominator)
+            {
+                rest -= denominator;
+                quotient |= 1;
+            }
+            places++;
+        }
+        if (rest != 0)
+            quotient |= 1;
+        double value = Math.ScaleB(quotient, -places);
+        return letter[0] == negative ? -value : value;
     }
+
+    /// <summary>The smallest quotient that has 55 bits: the 53 of a <see cref="double" />, a guard bit and a sticky bit.</summary>
+    private const long RoundingBits = 1L << 54;
 
     private static bool TwoDigits(string text, int at, out int number)
     {

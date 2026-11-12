@@ -554,6 +554,23 @@ public sealed class ExifMetadataPropertyTests
     }
 
     [Fact]
+    public void ACoordinateIsTheDoubleNearestToWhatItsRationalsState()
+    {
+        static double Longitude(params uint[] parts) => Place("N", Lat, "E", parts).GpsPosition!.Longitude;
+
+        // 1 degree 49.5984 minutes is 1.82664 exactly; the three quotients added as doubles give 1.8266399999999998.
+        Assert.Equal(1.82664, Longitude(1, 1, 495984, 10000, 0, 1));
+        Assert.Equal(-1.82664, Place("N", Lat, "W", [1, 1, 495984, 10000, 0, 1]).GpsPosition!.Longitude);
+        Assert.Equal(18424181 / 360000.0, Longitude(51, 1, 10, 1, 4181, 100));
+        // Far below one degree, where the leading bits come late: a third of a second, and the smallest parts there are.
+        Assert.Equal(1 / 10800.0, Longitude(0, 1, 0, 1, 1, 3));
+        Assert.Equal(1 / 15461882262000.0, Longitude(0, 1, 0, 1, 1, 4294967295));
+        Assert.Equal(3661 / 15461882262000.0, Longitude(1, 4294967295, 1, 4294967295, 1, 4294967295));
+        // Parts whose common denominator has more than a hundred bits.
+        Assert.Equal(1.016944445562549, Longitude(4294967295, 4294967291, 4294967279, 4294967231, 4294967197, 4294967189));
+    }
+
+    [Fact]
     public void APositionNeedsBothCoordinatesAndBothLetters()
     {
         Assert.NotNull(Place("N", Lat, "E", Lon).GpsPosition);
