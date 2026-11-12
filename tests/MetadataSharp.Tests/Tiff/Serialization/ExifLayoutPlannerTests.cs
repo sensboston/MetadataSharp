@@ -122,8 +122,23 @@ public sealed class ExifLayoutPlannerTests
         Assert.NotNull(ExifLayoutPlanner.Create(original, metadata));
     }
 
+    // A tag the vocabulary does not list may address bytes the layout would move, so a source that
+    // holds one is not laid out again. Set in a block that is new, the same tag addresses nothing.
+    [Fact]
+    public void AnUnlistedTagBlocksARebuildOfItsSourceAndIsLaidOutInANewBlock()
+    {
+        var entry = new ExifEntry(new(ExifDirectoryKind.Exif, 0xFFFF),
+            ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, [7, 0]));
+        ExifMetadata metadata = Snapshot(entry);
+        var original = new TiffReadResult(metadata, new[] { ExifDirectoryKind.Ifd0, ExifDirectoryKind.Exif }, null);
+        Assert.Equal(MetadataErrorCode.UnsafeRelocation,
+            Assert.Throws<MetadataException>(() => ExifLayoutPlanner.Create(original, Snapshot())).Code);
+        ExifWritePlan plan = ExifLayoutPlanner.Create(null, metadata);
+        PlannedDirectory exif = Assert.Single(plan.Directories, directory => directory.Kind == ExifDirectoryKind.Exif);
+        Assert.Equal(0xFFFF, Assert.Single(exif.Entries).TagId);
+    }
+
     [Theory]
-    [InlineData(0xFFFF, TiffFieldType.Short)]
     [InlineData(0x927C, TiffFieldType.Undefined)]
     [InlineData(0x014A, TiffFieldType.Long)]
     public void UnknownAndOpaqueSourceCannotBeDiscardedToPermitRebuild(int id, TiffFieldType type)
@@ -219,18 +234,20 @@ public sealed class ExifLayoutPlannerTests
     }
 
     [Fact]
-    public void RejectsUnsupportedShapeAndInvalidAsciiAndOrder()
+    public void RejectsUnsupportedShapeAndOrderAndTakesTextAsGiven()
     {
-        var wrong = new ExifEntry(new(ExifDirectoryKind.Ifd0, 0x0112),
-            ExifValue.FromRaw(TiffFieldType.Byte, 1, Endianness.LittleEndian, [6]));
+        // The type and count of a listed tag are held to its definition by ExifEdit.Set; the layout
+        // holds only what it generates itself to a shape.
+        var wrong = new ExifEntry(new(ExifDirectoryKind.Thumbnail, 0x0103),
+            ExifValue.FromRaw(TiffFieldType.Long, 1, Endianness.LittleEndian, [6, 0, 0, 0]));
         Assert.Equal(MetadataErrorCode.UnsupportedFeature,
             Assert.Throws<MetadataException>(() => ExifLayoutPlanner.Create(null, Snapshot(wrong))).Code);
+        // Text that ExifEdit.Set refuses and SetUnchecked takes is laid out as it is given.
         foreach (byte[] bytes in new byte[][] { [65], [0xFF, 0] })
         {
             var artist = new ExifEntry(new(ExifDirectoryKind.Ifd0, 0x013B),
                 ExifValue.FromRaw(TiffFieldType.Ascii, (uint)bytes.Length, Endianness.LittleEndian, bytes));
-            Assert.Equal(MetadataErrorCode.InvalidExif,
-                Assert.Throws<MetadataException>(() => ExifLayoutPlanner.Create(null, Snapshot(artist))).Code);
+            Assert.Equal(0x013B, Assert.Single(Assert.Single(ExifLayoutPlanner.Create(null, Snapshot(artist)).Directories).Entries).TagId);
         }
         var original = new TiffReadResult(Snapshot(), new[] { ExifDirectoryKind.Ifd0 }, null);
         Assert.Throws<ArgumentException>(() => ExifLayoutPlanner.Create(original, new ExifMetadata(Endianness.BigEndian, [])));

@@ -140,21 +140,23 @@ if (image.Iptc is { } iptc)
 ### Edit EXIF in a JPEG
 
 An edit names the tags to set and to remove; everything it does not name stays as it was. A save
-writes a new file or an empty stream and never overwrites its source. `ExifEdit.Set` documents the
-tags that can be written.
+writes a new file or an empty stream and never overwrites its source. Any tag of the IFD0, EXIF, GPS,
+Interoperability and thumbnail directories can be set, in any field type: text and numbers through the
+typed overloads, anything else as a raw `ExifValue`. The pointers between directories, the addresses of
+image data and the MakerNote are not edited as values (`ExifEdit.IsEditable`); a camera's MakerNote stays
+where it is, byte for byte.
 
 ```csharp
 var edit = new ExifEdit();
-edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B), Ascii("Jane Doe"));              // Artist
-edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x8298), Ascii("(c) 2026 Jane Doe"));     // Copyright
-edit.Set(new ExifTagKey(ExifDirectoryKind.Exif, 0x9003), Ascii("2026:11:11 09:30:00"));   // DateTimeOriginal
-edit.Remove(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0131));                              // Software
+edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B), "Jane Doe");               // Artist
+edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x8298), "(c) 2026 Jane Doe");      // Copyright
+edit.Set(new ExifTagKey(ExifDirectoryKind.Exif, 0x9003), "2026:11:11 09:30:00");    // DateTimeOriginal
+edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), (ushort)1);                // Orientation: top, left
+edit.Set(new ExifTagKey(ExifDirectoryKind.Gps, 0x0006), new UnsignedRational(1255, 10));   // GPSAltitude: 125.5 m
+edit.Remove(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0131));                        // Software
 
 using (JpegMetadataDocument document = JpegMetadataDocument.Open(source))
     document.SaveAs(destination, edit);   // a new file; the image data is copied, never re-encoded
-
-static ExifValue Ascii(string text) => ExifValue.FromRaw(
-    TiffFieldType.Ascii, (uint)text.Length + 1, Endianness.LittleEndian, Encoding.ASCII.GetBytes(text + '\0'));
 ```
 
 ### Edit XMP in a PNG
@@ -193,8 +195,7 @@ using (JpegMetadataDocument document = JpegMetadataDocument.Open(source))
 ```csharp
 // TIFF, DNG and the TIFF-based raw formats (CR2, NEF, ARW, PEF, ORF, RW2).
 var edit = new ExifEdit();
-edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112),
-    ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, [6, 0]));   // Orientation: right, top
+edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), (ushort)6);   // Orientation: right, top
 
 using (TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(source))
     document.SaveExifAs(destination, edit);   // no byte of the source moves; image data is not written to

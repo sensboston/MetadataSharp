@@ -1,6 +1,11 @@
 namespace MetadataSharp.Core.Tiff.Serialization;
 
-/// <summary>Plans only reviewed tag shapes; unknown or opaque source data blocks rebuilding.</summary>
+/// <summary>
+/// Lays out an EXIF block from its tags: any tag an <see cref="ExifEdit"/> takes, with the pointers
+/// and the thumbnail pair generated. A source block is carried only when every tag of it can be shown
+/// free of addresses: a tag the vocabulary does not list, a MakerNote or an image-data address in the
+/// source blocks rebuilding, and such a block is edited where it lies instead.
+/// </summary>
 internal static class ExifLayoutPlanner
 {
     private static readonly ExifDirectoryKind[] Order =
@@ -29,10 +34,15 @@ internal static class ExifLayoutPlanner
             original.Directories.Contains(ExifDirectoryKind.Thumbnail))
             throw Failure(MetadataErrorCode.UnsafeRelocation,
                 "The source thumbnail IFD cannot be carried because its JPEG stream was not retained.");
-        // Check the source too: removing an unknown tag is not permission to discard it.
+        // Check the source too: removing an unknown tag is not permission to discard it, and a value
+        // that may hold an address cannot be shown safe to move.
         if (original is not null)
             foreach (ExifEntry entry in original.Metadata.Entries)
+            {
                 ValidateShape(entry);
+                if (!Generated(entry.Key) && ExifTags.Find(entry.Key) is null)
+                    throw Failure(MetadataErrorCode.UnsafeRelocation, "An unknown tag of the source prevents rebuilding EXIF.");
+            }
         foreach (ExifEntry entry in desired.Entries)
             ValidateShape(entry);
         ValidateProtectedEntries(original, desired);
@@ -191,34 +201,30 @@ internal static class ExifLayoutPlanner
         return target != ExifDirectoryKind.Ifd0;
     }
 
+    /// <summary>The tags the layout writes itself: the directory pointers and the thumbnail pair.</summary>
+    private static bool Generated(ExifTagKey key) => TryLink(key.Directory, key.TagId, out _) ||
+        (key.Directory == ExifDirectoryKind.Thumbnail && key.TagId is 0x0201 or 0x0202);
+
+    /// <summary>
+    /// Whether the layout has a place for the entry: a generated tag is one LONG, the compression of a
+    /// carried thumbnail one SHORT, and any other tag is one an edit takes, with at least one element.
+    /// The content of a value is the business of the edit that set it.
+    /// </summary>
     internal static void ValidateShape(ExifEntry entry)
     {
         ExifValue value = entry.Value;
-        var (type, count) = (entry.Key.Directory, entry.Key.TagId) switch
+        if (Generated(entry.Key))
         {
-            (ExifDirectoryKind.Ifd0, 0x010E or 0x010F or 0x0110 or 0x0131 or 0x013B or 0x8298) => (TiffFieldType.Ascii, 0U),
-            (ExifDirectoryKind.Ifd0, 0x0132) or (ExifDirectoryKind.Exif, 0x9003 or 0x9004) => (TiffFieldType.Ascii, 20U),
-            (ExifDirectoryKind.Ifd0, 0x0112) or (ExifDirectoryKind.Thumbnail, 0x0103) => (TiffFieldType.Short, 1U),
-            (ExifDirectoryKind.Exif, 0x829A or 0x829D or 0x920A) => (TiffFieldType.Rational, 1U),
-            (ExifDirectoryKind.Gps, 0) => (TiffFieldType.Byte, 4U),
-            (ExifDirectoryKind.Gps, 1 or 3) => (TiffFieldType.Ascii, 2U),
-            (ExifDirectoryKind.Gps, 2 or 4) => (TiffFieldType.Rational, 3U),
-            (ExifDirectoryKind.Gps, 5) => (TiffFieldType.Byte, 1U),
-            (ExifDirectoryKind.Gps, 6) => (TiffFieldType.Rational, 1U),
-            (ExifDirectoryKind.Ifd0, 0x8769 or 0x8825) or (ExifDirectoryKind.Exif, 0xA005) or
-                (ExifDirectoryKind.Thumbnail, 0x0201 or 0x0202) => (TiffFieldType.Long, 1U),
-            _ => throw Failure(MetadataErrorCode.UnsafeRelocation, "An unknown, opaque or unclassified tag prevents rebuilding EXIF.")
-        };
-        if (value.FieldType != type || value.Count == 0 || (count != 0 && value.Count != count))
-            throw Failure(MetadataErrorCode.UnsupportedFeature, "A tag type or count is outside the reviewed write subset.");
-        if (type == TiffFieldType.Ascii)
-        {
-            if (value.RawBytes[^1] != 0)
-                throw Failure(MetadataErrorCode.InvalidExif, "ASCII values must end with NUL.");
-            foreach (byte b in value.RawBytes)
-                if (b > 127)
-                    throw Failure(MetadataErrorCode.InvalidExif, "ASCII values must use seven-bit characters.");
+            if (value.FieldType != TiffFieldType.Long || value.Count != 1)
+                throw Failure(MetadataErrorCode.UnsupportedFeature, "A pointer or thumbnail address is not a single LONG.");
+            return;
         }
+        if (!ExifEdit.IsEditable(entry.Key))
+            throw Failure(MetadataErrorCode.UnsafeRelocation, "A MakerNote, a pointer or an image-data address prevents rebuilding EXIF.");
+        if (value.Count == 0)
+            throw Failure(MetadataErrorCode.UnsupportedFeature, "A tag without a value has no place in the layout.");
+        if (entry.Key == new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0103) && (value.FieldType != TiffFieldType.Short || value.Count != 1))
+            throw Failure(MetadataErrorCode.UnsupportedFeature, "The compression of the thumbnail is not a single SHORT.");
     }
 
     private static MetadataException Failure(MetadataErrorCode code, string message) => new(code, message);

@@ -79,7 +79,7 @@ public sealed class ExifTiffSerializerTests
     [InlineData("header")]
     [InlineData("offset")]
     [InlineData("next")]
-    [InlineData("unknown")]
+    [InlineData("structural")]
     [InlineData("missing-link")]
     public void ForgedLayoutsAreRejectedBeforeWriting(string mutation)
     {
@@ -93,7 +93,7 @@ public sealed class ExifTiffSerializerTests
             "header" => [directory with { Offset = 0 }],
             "offset" => [directory with { Entries = new[] { plannedValue with { DataOffset = 0 } } }],
             "next" => [directory with { NextIfdOffset = 8 }],
-            "unknown" => [directory with { Entries = new[] { plannedValue with { TagId = 0xFFFF } } }],
+            "structural" => [directory with { Entries = new[] { plannedValue with { TagId = 0x927C } } }],
             _ => [new PlannedDirectory(ExifDirectoryKind.Ifd0, 8, 0, Array.Empty<PlannedEntry>()),
                 new PlannedDirectory(ExifDirectoryKind.Gps, 14, 0, Array.Empty<PlannedEntry>())]
         };

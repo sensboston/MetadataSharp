@@ -362,24 +362,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (edit.RemoveAll)
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
                 "The EXIF of a TIFF-based file is part of the directories that describe its image and cannot be removed as a whole.");
-        foreach (KeyValuePair<ExifTagKey, ExifValue?> change in edit.Changes)
-        {
-            TiffBasedRole role = change.Key.Directory switch
-            {
-                ExifDirectoryKind.Ifd0 => TiffBasedRole.Primary,
-                ExifDirectoryKind.Exif => TiffBasedRole.Exif,
-                ExifDirectoryKind.Gps => TiffBasedRole.Gps,
-                _ => throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
-                    "Only tags of the primary, Exif and GPS directories are edited.")
-            };
-            if (change.Value is null)
-            {
-                changes[(role, change.Key.TagId)] = null;
-                continue;
-            }
-            ExifValue value = ExifEdit.ConvertOrder(change.Value, layout.Order);
-            changes[(role, change.Key.TagId)] = new((ushort)value.FieldType, value.Count, value.RawBytes.ToArray());
-        }
+        ExifBlockEditor.AddChanges(edit, layout.Order, changes);
     }
 
     private void AddXmp(bool removeAll, Dictionary<XmpPropertyName, XmpValue?> edit, TiffBasedFileMap layout,

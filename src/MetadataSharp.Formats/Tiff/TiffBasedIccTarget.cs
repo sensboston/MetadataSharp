@@ -68,7 +68,7 @@ internal static class TiffBasedIccTarget
         if (map is null) return null;
         foreach (TiffBasedDirectory directory in map.Directories)
         {
-            if (directory.Role is not (TiffBasedRole.Primary or TiffBasedRole.Other)) continue;
+            if (directory.Role is not (TiffBasedRole.Primary or TiffBasedRole.Thumbnail or TiffBasedRole.Other)) continue;
             if (Number(file, directory.Find(Photometric), big) is ColourFilterArray or LinearRaw
                 || Number(file, directory.Find(Compression), big) is SonyRaw or NikonRaw or PentaxRaw)
                 return Because("the file holds raw sensor data (a colour filter array, linear raw data or the compression of a raw format)");
