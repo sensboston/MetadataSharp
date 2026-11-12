@@ -16,6 +16,9 @@ public sealed partial class JpegMetadataDocument
     /// <summary>The count of the chunks is one byte.</summary>
     internal const int MaxIccChunks = 255;
 
+    /// <summary>The least a chunk holds of a profile: exiv2 stops reading the segments of a file at a shorter one.</summary>
+    internal const int MinIccChunkBytes = 4;
+
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
     /// <summary>
@@ -64,7 +67,9 @@ public sealed partial class JpegMetadataDocument
     /// profile when it is null. Every APP2 <c>ICC_PROFILE</c> segment before the first scan is taken
     /// out, whether or not they made a whole profile. The new profile is cut into chunks of at most
     /// 65,519 bytes, numbered from one, each with the count of all, in order and next to each other
-    /// directly after the APP0 and APP1 segments the file starts with. Every other byte of the file
+    /// directly after the APP0 and APP1 segments the file starts with. Every chunk but the last is
+    /// full, except that the last two share the bytes when the last would hold fewer than four:
+    /// exiv2 stops reading the segments of a file at a shorter chunk. Every other byte of the file
     /// is copied: the other segments, the image data and whatever follows the image.
     /// <see cref="IccProfiles.Read"/> returns the profile of the result. The profile is not
     /// interpreted; the array is copied before the method returns.
@@ -187,16 +192,23 @@ public sealed partial class JpegMetadataDocument
         int count = (profile.Length + MaxIccChunkBytes - 1) / MaxIccChunkBytes;
         if (profile.Length > limits.MaxRetainedMetadataBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The ICC profile exceeds the retained metadata budget.");
+        // Every chunk but the last is full, unless the last would hold fewer than four bytes: the
+        // pinned exiv2 reads four bytes of each chunk and, at a shorter one, stops reading the
+        // segments of the file, so that what follows the chunk (a comment, IPTC data, the frame)
+        // is lost to it. The chunk before the last then gives up as many bytes as the last lacks.
+        int tail = profile.Length - (count - 1) * MaxIccChunkBytes;
+        int lent = count > 1 && tail < MinIccChunkBytes ? MinIccChunkBytes - tail : 0;
         byte[][] payloads = new byte[count][];
-        for (int index = 0; index < count; index++)
+        for (int index = 0, at = 0; index < count; index++)
         {
-            int at = index * MaxIccChunkBytes, length = Math.Min(MaxIccChunkBytes, profile.Length - at);
+            int length = index == count - 1 ? profile.Length - at : MaxIccChunkBytes - (index == count - 2 ? lent : 0);
             byte[] payload = new byte[14 + length];
             "ICC_PROFILE\0"u8.CopyTo(payload);
             payload[12] = (byte)(index + 1);
             payload[13] = (byte)count;
             profile.AsSpan(at, length).CopyTo(payload.AsSpan(14));
             payloads[index] = payload;
+            at += length;
         }
         return payloads;
     }

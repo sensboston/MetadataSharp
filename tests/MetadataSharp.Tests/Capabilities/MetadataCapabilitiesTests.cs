@@ -24,8 +24,14 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Jpeg, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Bounded restricted XMP profile; Extended XMP and unreviewed structures are refused."),
         (MetadataContainer.Jpeg, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Bounded restricted XMP profile; Extended XMP and unreviewed structures are refused."),
         (MetadataContainer.Jpeg, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal is also supported."),
+        (MetadataContainer.Jpeg, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Supported, "JpegMetadataDocument.SaveIccProfile: APP2 ICC_PROFILE chunks of at most 65,519 bytes directly after the leading APP0 and APP1 segments; at most 255 chunks; a profile that fails the header check is refused."),
+        (MetadataContainer.Jpeg, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Supported, "JpegMetadataDocument.SaveIccProfile: every APP2 ICC_PROFILE segment before the first scan is taken out, a broken set too, and the chunks of the new profile written; every other byte is copied."),
+        (MetadataContainer.Jpeg, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Supported, "JpegMetadataDocument.SaveIccProfile with null: every APP2 ICC_PROFILE segment before the first scan is taken out; every other byte is copied."),
         (MetadataContainer.Jpeg, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks before the first scan, joined by their numbers; the bytes the profile declares, not interpreted; a missing, repeated or miscounted chunk is refused."),
-        (MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment before the first scan, in file order; UTF-8 when well-formed, ISO-8859-1 otherwise; ending zero bytes dropped. Nothing is written."),
+        (MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment before the first scan, in file order; UTF-8 when well-formed, ISO-8859-1 otherwise; ending zero bytes dropped."),
+        (MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Insert, CapabilityStatus.Supported, "JpegMetadataDocument.SaveComment: one COM segment, UTF-8 of at most 65,533 bytes, directly before the first segment that is not an application segment."),
+        (MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Replace, CapabilityStatus.Supported, "JpegMetadataDocument.SaveComment: every COM segment before the first scan is taken out and one written where the first stood; every other byte is copied."),
+        (MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Remove, CapabilityStatus.Supported, "JpegMetadataDocument.SaveComment with null: every COM segment before the first scan is taken out; every other byte is copied."),
         (MetadataContainer.Png, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Supported, "eXIf chunk in static PNG within the approved chunk policy; unsupported layouts are refused."),
         (MetadataContainer.Png, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "eXIf in static PNG; approved writable tag subset only; unsupported tags are refused."),
         (MetadataContainer.Png, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "eXIf in static PNG; approved writable tag subset only; unsupported tags are refused."),
@@ -251,9 +257,9 @@ public sealed class MetadataCapabilitiesTests
     [InlineData(MetadataContainer.Jxl, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Gif, MetadataFamily.Icc, MetadataOperation.Extract)]
-    [InlineData(MetadataContainer.Jpeg, MetadataFamily.Icc, MetadataOperation.Insert)]
-    [InlineData(MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Insert)]
-    [InlineData(MetadataContainer.Jpeg, MetadataFamily.Comment, MetadataOperation.Remove)]
+    [InlineData(MetadataContainer.Png, MetadataFamily.Icc, MetadataOperation.Insert)]
+    [InlineData(MetadataContainer.Png, MetadataFamily.Comment, MetadataOperation.Insert)]
+    [InlineData(MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Remove)]
     [InlineData(MetadataContainer.WebP, MetadataFamily.Comment, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Gif, MetadataFamily.Comment, MetadataOperation.Read)]
     public void TryGet_AbsentRow_FailsClosed(MetadataContainer container, MetadataFamily family, MetadataOperation operation)
@@ -351,33 +357,53 @@ public sealed class MetadataCapabilitiesTests
     }
 
     [Fact]
-    public void TheIccAndCommentReadersHaveARowForEveryKindTheirTestsCoverAndNoneThatWrites()
+    public void TheIccAndCommentReadersHaveARowForEveryKindTheirTestsCover()
     {
         // IccProfileTests and CommentTests author a file of each of these kinds. The profile is
         // returned as bytes, which is Extract; of a TIFF only the first directory is looked at.
         MetadataContainer[] profiles = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.WebP, MetadataContainer.Tiff,
             MetadataContainer.Avif, MetadataContainer.Exv, MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Psd];
         MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Exv];
+        CapabilityDescriptor[] extracted = MetadataCapabilities.All.Where(row => row.Operation == MetadataOperation.Extract).ToArray();
+        CapabilityDescriptor[] listed = MetadataCapabilities.All
+            .Where(row => row.Family == MetadataFamily.Comment && row.Operation == MetadataOperation.Read).ToArray();
 
-        Assert.Equal(profiles, MetadataCapabilities.All.Where(row => row.Family == MetadataFamily.Icc).Select(row => row.Container));
-        Assert.Equal(comments, MetadataCapabilities.All.Where(row => row.Family == MetadataFamily.Comment).Select(row => row.Container));
-        foreach (CapabilityDescriptor row in MetadataCapabilities.All.Where(row => row.Family == MetadataFamily.Icc))
+        Assert.Equal(profiles, extracted.Select(row => row.Container));
+        Assert.Equal(comments, listed.Select(row => row.Container));
+        foreach (CapabilityDescriptor row in extracted)
         {
-            Assert.Equal(MetadataOperation.Extract, row.Operation);
+            // Nothing but the profile is extracted through this table.
+            Assert.Equal(MetadataFamily.Icc, row.Family);
             Assert.Equal(row.Container == MetadataContainer.Tiff ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
             Assert.StartsWith("IccProfiles.Read: ", row.Note);
             Assert.Contains("not interpreted", row.Note);
         }
-        foreach (CapabilityDescriptor row in MetadataCapabilities.All.Where(row => row.Family == MetadataFamily.Comment))
+        foreach (CapabilityDescriptor row in listed)
         {
-            Assert.Equal(MetadataOperation.Read, row.Operation);
             // Of a PNG only the keyword Comment is read.
             Assert.Equal(row.Container == MetadataContainer.Png ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
             Assert.StartsWith("Comments.Read: ", row.Note);
-            Assert.EndsWith("Nothing is written.", row.Note);
         }
-        // Nothing but the profile is extracted through this table.
-        Assert.All(MetadataCapabilities.All.Where(row => row.Operation == MetadataOperation.Extract), row => Assert.Equal(MetadataFamily.Icc, row.Family));
+    }
+
+    [Fact]
+    public void TheProfileAndTheCommentAreWrittenOnlyWhereAWriterAndItsTestsExist()
+    {
+        // JpegIccProfileTests and JpegCommentTests insert, replace and remove; no other container has a writer.
+        MetadataOperation[] writes = [MetadataOperation.Insert, MetadataOperation.Replace, MetadataOperation.Remove];
+        foreach ((MetadataFamily family, string api) in new[] { (MetadataFamily.Icc, "JpegMetadataDocument.SaveIccProfile"), (MetadataFamily.Comment, "JpegMetadataDocument.SaveComment") })
+        {
+            CapabilityDescriptor[] rows = MetadataCapabilities.All.Where(row => row.Family == family && writes.Contains(row.Operation)).ToArray();
+
+            Assert.Equal(writes, rows.Select(row => row.Operation));
+            Assert.All(rows, row =>
+            {
+                Assert.Equal(MetadataContainer.Jpeg, row.Container);
+                Assert.Equal(CapabilityStatus.Supported, row.Status);
+                Assert.StartsWith(api, row.Note);
+            });
+            Assert.StartsWith(api + " with null: ", rows[2].Note);
+        }
     }
 
     [Fact]

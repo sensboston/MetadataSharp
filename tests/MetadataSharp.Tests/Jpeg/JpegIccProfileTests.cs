@@ -135,7 +135,7 @@ public sealed class JpegIccProfileTests
     [Theory]
     [InlineData(128, new[] { 128 })]
     [InlineData(65_519, new[] { 65_519 })]
-    [InlineData(65_520, new[] { 65_519, 1 })]
+    [InlineData(65_523, new[] { 65_519, 4 })]
     [InlineData(131_038, new[] { 65_519, 65_519 })]
     [InlineData(200_000, new[] { 65_519, 65_519, 65_519, 3_443 })]
     public void AProfileIsCutIntoNumberedChunksOfAtMost65519Bytes(int size, int[] lengths)
@@ -151,6 +151,23 @@ public sealed class JpegIccProfileTests
         Assert.Equal(image[..(2 + Jfif.Length)], saved[..(2 + Jfif.Length)]);
         Assert.Equal(image[(2 + Jfif.Length)..], saved[^(image.Length - 2 - Jfif.Length)..]);
         Assert.Equal(image.Length + size + 18 * lengths.Length, saved.Length);
+    }
+
+    [Theory]
+    [InlineData(65_520, new[] { 65_516, 4 })]
+    [InlineData(65_521, new[] { 65_517, 4 })]
+    [InlineData(65_522, new[] { 65_518, 4 })]
+    [InlineData(196_558, new[] { 65_519, 65_519, 65_516, 4 })]
+    public void TheLastChunkHoldsAtLeastFourBytes(int size, int[] lengths)
+    {
+        // exiv2 reads four bytes of every chunk and stops reading the segments of a file at a shorter one.
+        byte[] profile = Profile(size);
+
+        byte[] saved = Save(JpegFixture.Build(Jfif), profile);
+
+        Assert.Equal(lengths.Select((length, index) => (index + 1, lengths.Length, length)), Chunks(saved));
+        Assert.Equal(profile, IccProfiles.Read(saved));
+        Assert.Equal(saved, Save(saved, profile));
     }
 
     [Fact]

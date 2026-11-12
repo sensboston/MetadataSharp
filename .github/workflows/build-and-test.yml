@@ -373,6 +373,21 @@ jobs:
           dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- bmff-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-bmff-corpus
           python tools/reference/tiff_based_edits.py artifacts/parity/edited-bmff-corpus --skip-unreadable-sources \
             --title "BMFF corpus edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+      # Not key parity either: the pinned tool has to print, with -pC and -pc, the ICC profile and
+      # the comment the JPEG writer gave a file, replaced or took out, and with -pa what it printed
+      # for the file the edit started from. Authored files first, then the JPEG files of the pinned
+      # corpus, where a refusal of the writer is counted by its code.
+      - name: Profiles and comments written into JPEG files are printed by the pinned tool (exiv2 -pC, -pc)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- jpeg-embedded-edits artifacts/parity/edited-embedded
+          python tools/reference/embedded_edits.py artifacts/parity/edited-embedded --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      - name: Profiles and comments written into corpus JPEG files are printed by the pinned tool (exiv2 -pC, -pc)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- jpeg-embedded-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-embedded-corpus
+          python tools/reference/embedded_edits.py artifacts/parity/edited-embedded-corpus --skip-unreadable-sources \
+            --title "JPEG corpus profile and comment edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
       - name: Upload parity reports (measurements only - no corpus bytes, no external source)
         if: always()
         uses: actions/upload-artifact@v4
