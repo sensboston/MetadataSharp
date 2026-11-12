@@ -107,8 +107,10 @@ public static class MetadataOperations
     /// <exception cref="MetadataException">What the readers refuse the file with, and what <see cref="ExvFile.Create"/> refuses.</exception>
     public static byte[] ExtractExv(ReadOnlySpan<byte> file, MetadataFamilies families = MetadataFamilies.All)
     {
-        if (ImageMetadata.Detect(file[..Math.Min(file.Length, ImageMetadata.HeaderLength)]) == MetadataFormat.Jpeg)
-            return JpegToExv(file, families);
+        // A JPEG file and an EXV file hold their metadata in the same segments, which are copied as they are.
+        MetadataFormat format = ImageMetadata.Detect(file[..Math.Min(file.Length, ImageMetadata.HeaderLength)]);
+        if (format == MetadataFormat.Jpeg) return SegmentsToExv(file, 2, families);
+        if (format == MetadataFormat.Exv) return SegmentsToExv(file, ExvFile.Signature.Length, families);
         ImageMetadata metadata = ImageMetadata.Read(file);
         bool exif = families.HasFlag(MetadataFamilies.Exif);
         return ExvFile.Create(
@@ -487,11 +489,11 @@ public static class MetadataOperations
     }
 
     /// <summary>The segments of a JPEG file that hold the kinds named, under the signature of an EXV file.</summary>
-    private static byte[] JpegToExv(ReadOnlySpan<byte> file, MetadataFamilies families)
+    private static byte[] SegmentsToExv(ReadOnlySpan<byte> file, int start, MetadataFamilies families)
     {
         var output = new MemoryStream();
         output.Write(ExvFile.Signature);
-        int position = 2;
+        int position = start;
         while (position <= file.Length - 4)
         {
             if (file[position] != 0xFF)
