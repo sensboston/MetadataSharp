@@ -1,5 +1,6 @@
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
+using MetadataSharp.Core.Sync;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Internal;
@@ -256,6 +257,23 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit, IptcWriteOptions)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit, options), true, cancellationToken);
 
+    /// <summary>
+    /// Writes a copy of the file with the EXIF, XMP and IPTC edits of a conversion or a reconciliation
+    /// applied in one pass, IPTC with <see cref="SyncEdits.IptcWriteOptions"/>, so that after
+    /// <see cref="ImageMetadata.Reconcile"/> the IPTC digest, where the file keeps one, says that IPTC
+    /// and XMP agree. Fails as <see cref="SaveExif(Stream, ExifEdit)"/>,
+    /// <see cref="SaveXmp(Stream, XmpEdit)"/> and <see cref="SaveIptc(Stream, IptcEdit, IptcWriteOptions?)"/>
+    /// do, before anything is written. Edits without a change copy the file.
+    /// </summary>
+    public void SaveAll(Stream destination, SyncEdits edits) => SaveCore(destination, Edit(edits), false, default).GetAwaiter().GetResult();
+    /// <summary>As <see cref="SaveAll(Stream, SyncEdits)"/>, to a new file.</summary>
+    public void SaveAllAs(string destinationPath, SyncEdits edits) => SavePath(destinationPath, Edit(edits), false, default).GetAwaiter().GetResult();
+    private static Pending Edit(SyncEdits edits)
+    {
+        ArgumentNullException.ThrowIfNull(edits);
+        return new(edits.Exif.Snapshot(), edits.Xmp.Snapshot(), edits.Iptc.Capture(), null, edits.IptcWriteOptions.UpdateDigest);
+    }
+
     /// <summary>The changes of one save, captured when the save is called.</summary>
     private sealed record Pending(ExifEdit.EditSnapshot? Exif, XmpEdit? Xmp, IptcEdit? Iptc,
         IccChange? Icc = null, bool UpdateDigest = false);
@@ -288,6 +306,17 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// <summary>The bytes of the edited file, verified; the source itself when the edit changes nothing.</summary>
     private byte[] Prepare(Pending edit, CancellationToken token)
     {
+        bool digestOnly = edit.UpdateDigest && edit.Iptc is { IsEmpty: true } && edit.Icc is null
+            && (edit.Exif is null || edit.Exif.IsEmpty) && (edit.Xmp is null || edit.Xmp.IsEmpty);
+        if (!digestOnly) return PrepareCore(edit, token);
+        // Nothing but the digest is asked for: it is recomputed where the file can be edited, and the
+        // file is copied where it cannot, as it is without the option.
+        try { return PrepareCore(edit, token); }
+        catch (MetadataException) { return source; }
+    }
+
+    private byte[] PrepareCore(Pending edit, CancellationToken token)
+    {
         token.ThrowIfCancellationRequested();
         ExifEdit.EditSnapshot? exif = edit.Exif;
         XmpEdit? xmp = edit.Xmp;
@@ -296,7 +325,8 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         bool xmpEmpty = xmp is null || xmp.IsEmpty;
         bool iptcEmpty = iptc is null || iptc.IsEmpty;
         IccChange? icc = edit.Icc;
-        if (exifEmpty && xmpEmpty && iptcEmpty && icc is null) return source;
+        bool refresh = edit.UpdateDigest && iptc is not null && iptcEmpty;
+        if (exifEmpty && xmpEmpty && iptcEmpty && icc is null && !refresh) return source;
         if (icc?.Profile is byte[] profile)
         {
             IccProfiles.Exact(profile);
@@ -318,6 +348,12 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (!exifEmpty) AddExif(exif!, layout, changes);
         if (!xmpEmpty) AddXmp(xmp!, layout, changes);
         if (!iptcEmpty) AddIptc(iptc!, edit.UpdateDigest, layout, limits, changes);
+        else if (refresh)
+        {
+            // The stream stays as it is; a digest that cannot be recomputed is left, as it is without the option.
+            try { AddIptc(iptc!, true, layout, limits, changes); }
+            catch (MetadataException) { }
+        }
         if (icc is not null) AddIcc(icc.Profile, layout, changes);
         if (changes.Count == 0) return source;
 
@@ -428,7 +464,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
             resources.ValidateTargets();
             IptcPacket held = IptcPacket.Parse(resources.Iptc!.Data.Span);
             IptcPacket? edited = held.Apply(edit);
-            if (ReferenceEquals(edited, held)) return;
+            if (ReferenceEquals(edited, held) && !(updateDigest && resources.DigestIsStale())) return;
             byte[]? stream = null;
             if (edited is not null) { stream = new byte[edited.ByteLength]; edited.CopyRawTo(stream); }
             byte[]? rewritten = resources.Rewrite(stream, updateDigest, int.MaxValue);

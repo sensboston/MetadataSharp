@@ -168,6 +168,19 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   there) and PNG (`Raw profile type iptc`, kept in its form; new: zTXt before IDAT). The digest
   0x0425 is left stale unless `IptcWriteOptions.UpdateDigest`; never added. CI job: `exiv2 -u -pi`
   and `-pa` print every written dataset, as often as written, and no other (PR #108).
+- Sync (PR #109): `MetadataSync` in Core converts EXIF, IPTC and XMP into each other
+  (`ExifToXmp`, `XmpToExif`, `IptcToXmp`, `XmpToIptc`; modes overwrite / fill missing, optional
+  erasing of the source) and `Reconcile` brings the shared fields into agreement by the MWG
+  precedence, with the IPTC digest deciding between IPTC and XMP. Results are `SyncEdits`
+  (edits, notes, choices); `SaveAll` / `SaveAllAs` of the JPEG, PNG, WebP, BMFF and TIFF-based
+  documents write them in one pass and refresh an existing digest. The MWG rules were taken from
+  how ExifTool implements them (`MWG.pm`), not from the MWG document, which was not at hand.
+  CI step in `differential-parity` (`tools/reference/sync_parity.py`, run 43270057746) against the
+  conversion of exiv2 0.28.9 on the corpus's JPEGs: EXIF to XMP, 71 files, 2,474 values the same,
+  4 the same in another form, 44 documented differences (29 empty texts the tool writes and we
+  do not); XMP to EXIF, 77 files, 2,391 the same, 8 in another form, 69 documented differences
+  (SubSec digits 39, comment character code 14). An undocumented difference fails the job.
+  14 files this library refuses to read are left out of the first direction.
 
 ## Next (in order)
 
@@ -181,8 +194,11 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 ## Known limits
 
 - Writes refuse when safety is not established; MakerNotes are never moved or edited. EXIF takes any
-  tag; a thumbnail directory (IFD1) is not created. IPTC is not written to PSD or sidecars, and XMP is
-  not brought into agreement with it (the digest is left stale to say so).
+  tag; a thumbnail directory (IFD1) is not created. IPTC is not written to PSD or sidecars. XMP and
+  IPTC agree only when asked (`MetadataSync`); an independent `SaveIptc` leaves the digest stale.
+- Sync: `SaveAll` has no async twin; PSD and sidecars have no `SaveAll`. Not in the mapping table:
+  CFAPattern, OECF, SpatialFrequencyResponse, DeviceSettingDescription. A value of a type or count
+  the tag is not defined with is not converted and is listed in `SyncEdits.Notes`.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
 - No ICC write for PSD, JPEG 2000 and EXV; comments are written in JPEG and PNG only; a PNG profile
   over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to

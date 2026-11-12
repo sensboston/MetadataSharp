@@ -19,6 +19,20 @@ public sealed partial class IptcPacket
     /// refuses a change, and so does the container's save, with the error the strict read gave.
     /// </summary>
     public bool IsEditable => refusal is null;
+    /// <summary>
+    /// What the digest the file keeps beside the stream (Photoshop resource 0x0425) said when a
+    /// document read this stream: that IPTC is as it was when XMP was last brought into agreement, or
+    /// that it was changed since. <see cref="Sync.IptcDigestState.Absent"/> for a file without a
+    /// digest, and for a stream that was parsed from bytes or returned by <see cref="Apply"/>.
+    /// </summary>
+    public Sync.IptcDigestState Digest { get; private set; }
+    /// <summary>Records what the stored digest says; null when the container holds none. Called once, by the reader, before the packet is handed out.</summary>
+    internal IptcPacket WithDigest(byte[]? stored)
+    {
+        Digest = stored is null ? Sync.IptcDigestState.Absent
+            : stored.AsSpan().SequenceEqual(System.Security.Cryptography.MD5.HashData(bytes)) ? Sync.IptcDigestState.Current : Sync.IptcDigestState.Stale;
+        return this;
+    }
     /// <summary>The datasets, in the order they occur.</summary>
     public IReadOnlyList<IptcDataset> Datasets { get; }
     /// <summary>The length of the stream in bytes.</summary>

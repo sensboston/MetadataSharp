@@ -68,8 +68,18 @@ public sealed partial class PngMetadataDocument
     private async Task<Prepared> PrepareIptc(IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         IptcEdit captured = edit.Capture();
+        if (!captured.IsEmpty || !(write?.UpdateDigest ?? false)) return await PrepareIptcCore(captured, write, asynchronous, token).ConfigureAwait(false);
+        // An edit without a change that asks for the digest: the digest alone is recomputed where the
+        // profile can be edited, and the file is copied where it cannot, as it is without the option.
+        Prepared copy = await PrepareIptcCore(captured, null, asynchronous, token).ConfigureAwait(false);
+        try { return await PrepareIptcCore(captured, write, asynchronous, token).ConfigureAwait(false); }
+        catch (MetadataException) { return copy; }
+    }
+    private async Task<Prepared> PrepareIptcCore(IptcEdit captured, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
+    {
+        bool refresh = write?.UpdateDigest ?? false;
         await Verify(asynchronous, token).ConfigureAwait(false);
-        if (captured.IsEmpty) return new(true, null, null);
+        if (captured.IsEmpty && !refresh) return new(true, null, null);
         PngChunk? chunk = Profile("iptc");
         byte[]? profile = chunk is null ? null : await ProfileBytes(chunk, asynchronous, token).ConfigureAwait(false);
 
@@ -99,7 +109,7 @@ public sealed partial class PngMetadataDocument
             IptcPacket start = held ?? IptcPacket.CreateEmpty();
             IptcPacket changed = start.Apply(captured)!;
             // Nothing was added to an absent stream, or no byte of the stored one was changed.
-            if (ReferenceEquals(changed, start)) return new(true, null, null);
+            if (ReferenceEquals(changed, start) && !(refresh && resources is not null && resources.DigestIsStale())) return new(true, null, null);
             stream = new byte[changed.ByteLength]; changed.CopyRawTo(stream);
         }
 

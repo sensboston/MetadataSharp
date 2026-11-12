@@ -82,7 +82,8 @@ public sealed class IptcWriteOptions
     /// stream) is recomputed. False by default: the digest the file has is left as it is, so that it
     /// no longer matches the edited stream, and a reader that follows the Metadata Working Group
     /// guidelines takes the IPTC as newer than the XMP and reads it. Set it when the XMP of the file
-    /// is written to say the same as the IPTC. A digest is never added to a file that has none, and
+    /// is written to say the same as the IPTC; an edit without a change then still recomputes a
+    /// digest that does not match the stream. A digest is never added to a file that has none, and
     /// is removed together with the stream, whatever this says.
     /// </summary>
     public bool UpdateDigest { get; init; }
