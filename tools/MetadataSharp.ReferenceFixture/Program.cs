@@ -1880,7 +1880,7 @@ else if (args.Length == 2 && args[0] == "operations-parity")
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=Operation defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | png-webp-embedded-edits DIRECTORY | png-webp-embedded-corpus CORPUS DIRECTORY | tiff-based-icc-edits DIRECTORY | tiff-based-icc-corpus CORPUS DIRECTORY | bmff-icc-edits DIRECTORY | bmff-icc-corpus CORPUS DIRECTORY | sync-parity DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | png-webp-embedded-edits DIRECTORY | png-webp-embedded-corpus CORPUS DIRECTORY | tiff-based-icc-edits DIRECTORY | tiff-based-icc-corpus CORPUS DIRECTORY | bmff-icc-edits DIRECTORY | bmff-icc-corpus CORPUS DIRECTORY | sync-parity DIRECTORY | operations-parity-blank FILE | operations-parity DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
 
 

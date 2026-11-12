@@ -125,6 +125,10 @@ document("insert", "Exif.Thumbnail.*", "tool only (ours removed)",
 document("insert", "Iptc.*", "tool only (ours removed)",
          "a dataset whose text is not UTF-8, from a stream that declares no character set, is not carried into a stream "
          "that declares UTF-8; InsertExv says so in its notes")
+for _key in ("Exif.GPSInfo.GPSDestLatitude", "Exif.Image.SubjectDistance"):
+    document("extract", _key, "tool only (ours removed)",
+             "the source is a malformed TIFF file of the corpus that is named .jpg: the EXV file of a source that is "
+             "neither JPEG nor EXV is built anew (ExvFile.Create) and does not carry this value")
 document("insert", "Exif.Photo.MakerNote", "tool only, tool only (ours removed)", "the MakerNote is not carried by an insert (see Exif.(MakerNote).*)")
 
 STANDARD_GROUPS = ("Image", "Photo", "GPSInfo", "Iop", "Thumbnail")
