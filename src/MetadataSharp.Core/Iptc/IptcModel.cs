@@ -77,23 +77,4 @@ public sealed class IptcReadOptions
 internal static class IptcText
 {
     internal static readonly UTF8Encoding Utf8 = new(false, true);
-    internal static (int Bytes, bool Repeated) Rule(IptcDatasetKey key) => key switch
-    {
-        (2, 5) => (64, false), (2, 25) => (64, true), (2, 80) => (32, true),
-        (2, 105) => (256, false), (2, 116) => (128, false), (2, 120) => (2000, false),
-        _ => throw new ArgumentException("The dataset is outside the supported text profile.", nameof(key))
-    };
-    internal static byte[] Encode(IptcDatasetKey key, string text)
-    {
-        ArgumentNullException.ThrowIfNull(text);
-        int maximum = Rule(key).Bytes;
-        if (text.Length > maximum || text.Any(c => char.IsControl(c) && !(key.Dataset == 120 && c is '\r' or '\n')))
-            throw new ArgumentException("Text exceeds the field limit or contains unsupported control characters.", nameof(text));
-        try
-        {
-            if (Utf8.GetByteCount(text) > maximum) throw new ArgumentException("Text exceeds the encoded field byte limit.", nameof(text));
-            return Utf8.GetBytes(text);
-        }
-        catch (EncoderFallbackException e) { throw new ArgumentException("Text is not valid Unicode.", nameof(text), e); }
-    }
 }

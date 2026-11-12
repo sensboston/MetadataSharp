@@ -112,7 +112,9 @@ public sealed class IptcCodecTests
         edit.ReplaceText(new(2, 120), ["Привет\r\n世界"]);
         Assert.Equal("Привет\r\n世界", IptcPacket.CreateEmpty().Apply(edit)!.GetText(2));
         var ascii = new IptcEdit(); ascii.ReplaceText(Keywords, ["non-ASCII я"]);
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => IptcPacket.Parse([]).Apply(ascii)).Code);
+        // A stream that declares nothing gains the UTF-8 declaration with its first text beyond ASCII.
+        Assert.Equal(IptcCharacterSet.Utf8, IptcPacket.Parse([]).Apply(ascii)!.CharacterSet);
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => IptcPacket.Parse(Dataset(2, 120, 0xe9)).Apply(ascii)).Code);
     }
     [Fact]
     public void DuplicateControlsAreAmbiguous()

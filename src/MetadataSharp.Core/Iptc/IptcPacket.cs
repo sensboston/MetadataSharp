@@ -115,68 +115,142 @@ public sealed partial class IptcPacket
     }
     /// <summary>Decodes the dataset at an index of <see cref="Datasets"/> as text.</summary>
     /// <exception cref="MetadataException">
-    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the dataset is not a text dataset (see
-    /// <see cref="IptcEdit.ReplaceText"/>), or the stream does not declare UTF-8 and the value is not
-    /// ASCII; <see cref="MetadataErrorCode.InvalidIptc"/> when the value is not valid UTF-8.
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the dataset is not one IIM 4.2 defines
+    /// as text in records 1 and 2 (see <see cref="IptcDatasets"/>), or the stream does not declare
+    /// UTF-8 and the value is not ASCII; <see cref="MetadataErrorCode.InvalidIptc"/> when the value is
+    /// not valid UTF-8.
     /// </exception>
     public string GetText(int datasetIndex)
     {
         if ((uint)datasetIndex >= (uint)Datasets.Count) throw new ArgumentOutOfRangeException(nameof(datasetIndex));
         IptcDataset dataset = Datasets[datasetIndex];
-        try { IptcText.Rule(dataset.Key); }
-        catch (ArgumentException) { throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The dataset is outside the text profile."); }
+        if (!IsText(dataset.Key))
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The dataset is not a text dataset of IIM records 1 and 2.");
         if (CharacterSet == IptcCharacterSet.Unsupported || (CharacterSet == IptcCharacterSet.Unspecified && ContainsHighBit(dataset.Value.Span)))
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The text encoding is unsupported or unspecified for non-ASCII data.");
         try { return IptcText.Utf8.GetString(dataset.Value.Span); }
         catch (DecoderFallbackException) { throw new MetadataException(MetadataErrorCode.InvalidIptc, "The dataset contains invalid UTF-8 text."); }
     }
+    private static bool IsText(IptcDatasetKey key) =>
+        IptcDatasets.TryGet(key, out IptcDatasetDefinition? definition) && !definition.IsManaged
+        && definition.Rule is not (IptcRule.UInt16 or IptcRule.Binary);
     private static bool ContainsHighBit(ReadOnlySpan<byte> value)
     { foreach (byte b in value) if (b >= 0x80) return true; return false; }
+    private readonly record struct Item(IptcDatasetKey Key, ReadOnlyMemory<byte> Frame, IptcValue Value, bool Kept);
     /// <summary>
     /// Returns the stream with the edit applied: null when the edit removes all IPTC, this stream
-    /// when the edit changes nothing. Datasets the edit does not name keep their bytes and order.
+    /// when the edit changes no byte.
     /// </summary>
-    /// <exception cref="MetadataException">The stream is not editable, or the result exceeds a budget.</exception>
+    /// <remarks>
+    /// <para>
+    /// Order. A dataset the edit does not name keeps its bytes, framing included, and its place; so
+    /// does every dataset of a record other than 1 and 2. The occurrences of a dataset the edit names
+    /// are written together where the first of them stood; an occurrence the edit did not replace
+    /// keeps its bytes. A dataset the stream did not have is written after the last dataset of its
+    /// record or of a lower one, so that record 1 stays before record 2 and both before object data.
+    /// </para>
+    /// <para>
+    /// Character set. Text is written as UTF-8. The declaration of the stream (1:90) is kept as it
+    /// is, with one exception: a stream that declares nothing and is given text beyond ASCII gains
+    /// the UTF-8 declaration. That is refused, with <see cref="MetadataErrorCode.UnsupportedFeature"/>,
+    /// when a text dataset that stays in the stream holds bytes above 0x7F - they were written in an
+    /// encoding nobody declared, and the new declaration would rename them. A text write to a stream
+    /// that declares another character set is refused with the same code. Raw writes are not text.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="MetadataException">
+    /// The stream is not editable; <see cref="MetadataErrorCode.InvalidIptcEdit"/> for an index past
+    /// the occurrences of a dataset; <see cref="MetadataErrorCode.UnsupportedFeature"/> for the
+    /// character set refusals; <see cref="MetadataErrorCode.LimitExceeded"/> when the result exceeds a budget.
+    /// </exception>
     public IptcPacket? Apply(IptcEdit edit)
     {
         ArgumentNullException.ThrowIfNull(edit);
-        var snapshot = edit.Snapshot(); if (snapshot.RemoveAll) return null;
-        if (snapshot.Changes.Count == 0) return this;
+        if (edit.RemovesAll) return null;
+        IReadOnlyList<IptcEdit.Operation> operations = edit.Operations;
+        if (operations.Count == 0) return this;
         if (refusal is not null) throw new MetadataException(refusal.Code, refusal.Message);
-        var frames = new List<ReadOnlyMemory<byte>>(); var emitted = new HashSet<IptcDatasetKey>();
-        long size = 0; int count = 0; bool effective = false;
-        void Add(ReadOnlyMemory<byte> frame)
+
+        var lists = new Dictionary<IptcDatasetKey, List<Item>>(); var order = new List<IptcDatasetKey>();
+        bool text = false, wide = false;
+        foreach (IptcEdit.Operation operation in operations)
         {
-            if (++count > limits.MaxDatasets || (size += frame.Length) > limits.MaxPacketBytes) throw Limit();
-            frames.Add(frame);
-        }
-        void Replace(IptcDatasetKey key, IptcEdit.Replacement replacement)
-        {
-            foreach (IptcValue value in replacement.Values)
+            if (!lists.TryGetValue(operation.Key, out List<Item>? list))
             {
-                if (value.ByteLength > limits.MaxValueBytes) throw Limit();
-                if (replacement.Text && (CharacterSet == IptcCharacterSet.Unsupported || (CharacterSet == IptcCharacterSet.Unspecified && ContainsHighBit(value.Span))))
-                    throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "A text edit would require an unapproved encoding conversion.");
-                // Bound the frame before allocating it.
-                int width = value.ByteLength <= 32767 ? 0 : value.ByteLength <= 65535 ? 2 : value.ByteLength <= 0xffffff ? 3 : 4;
-                if (count >= limits.MaxDatasets || size + 5L + width + value.ByteLength > limits.MaxPacketBytes) throw Limit();
-                byte[] frame = new byte[5 + width + value.ByteLength]; frame[0] = 0x1c; frame[1] = key.Record; frame[2] = key.Dataset;
-                BinaryPrimitives.WriteUInt16BigEndian(frame.AsSpan(3), width == 0 ? (ushort)value.ByteLength : (ushort)(0x8000 | width));
-                for (int i = 0; i < width; i++) frame[5 + i] = (byte)((uint)value.ByteLength >> (8 * (width - i - 1)));
-                value.Span.CopyTo(frame.AsSpan(5 + width)); Add(frame);
+                list = [];
+                foreach (IptcDataset dataset in Datasets)
+                    if (dataset.Key == operation.Key) list.Add(new(dataset.Key, dataset.Framing, dataset.Value, true));
+                lists.Add(operation.Key, list); order.Add(operation.Key);
             }
+            switch (operation.Kind)
+            {
+                case IptcEdit.OperationKind.ReplaceAll:
+                    list.Clear();
+                    foreach (IptcValue value in operation.Values) list.Add(Frame(operation.Key, value));
+                    break;
+                case IptcEdit.OperationKind.Append:
+                    list.Add(Frame(operation.Key, operation.Values[0]));
+                    break;
+                case IptcEdit.OperationKind.Insert:
+                    if (operation.Index > list.Count) throw Occurrence(operation, list.Count);
+                    list.Insert(operation.Index, Frame(operation.Key, operation.Values[0]));
+                    break;
+                default:
+                    if (operation.Index >= list.Count) throw Occurrence(operation, list.Count);
+                    list.RemoveAt(operation.Index);
+                    break;
+            }
+            if (list.Count > limits.MaxDatasets) throw Limit();
+            if (!operation.Text) continue;
+            foreach (IptcValue value in operation.Values) { text = true; wide |= ContainsHighBit(value.Span); }
         }
+
+        var output = new List<Item>(); var emitted = new HashSet<IptcDatasetKey>();
         foreach (IptcDataset dataset in Datasets)
         {
-            if (!snapshot.Changes.TryGetValue(dataset.Key, out var replacement)) { Add(dataset.Framing); continue; }
-            effective = true;
-            if (emitted.Add(dataset.Key)) Replace(dataset.Key, replacement);
+            if (!lists.TryGetValue(dataset.Key, out List<Item>? list)) output.Add(new(dataset.Key, dataset.Framing, dataset.Value, true));
+            else if (emitted.Add(dataset.Key)) output.AddRange(list);
         }
-        foreach (var pair in snapshot.Changes)
-            if (emitted.Add(pair.Key) && pair.Value.Values.Length != 0) { effective = true; Replace(pair.Key, pair.Value); }
-        if (!effective) return this;
-        byte[] output = new byte[(int)size]; int offset = 0;
-        foreach (var frame in frames) { frame.Span.CopyTo(output.AsSpan(offset)); offset += frame.Length; }
-        return Read(output, limits, null);
+        foreach (IptcDatasetKey key in order)
+            if (emitted.Add(key)) output.InsertRange(EndOfRecord(output, key.Record), lists[key]);
+
+        if (text && CharacterSet == IptcCharacterSet.Unsupported)
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "A text edit would require an unapproved encoding conversion.");
+        if (text && wide && CharacterSet == IptcCharacterSet.Unspecified)
+        {
+            foreach (Item item in output)
+            {
+                if (item.Kept && IsText(item.Key) && ContainsHighBit(item.Value.Span))
+                    throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
+                        "The stream declares no character set and holds text beyond ASCII; UTF-8 text would mix two encodings.");
+            }
+            output.Insert(EndOfRecord(output, 1), Frame(new(1, 90), new IptcValue(new byte[] { 0x1b, 0x25, 0x47 })));
+        }
+
+        long size = 0;
+        foreach (Item item in output) size += item.Frame.Length;
+        if (output.Count > limits.MaxDatasets || size > limits.MaxPacketBytes) throw Limit();
+        byte[] result = new byte[(int)size]; int offset = 0;
+        foreach (Item item in output) { item.Frame.Span.CopyTo(result.AsSpan(offset)); offset += item.Frame.Length; }
+        return result.AsSpan().SequenceEqual(bytes) ? this : Read(result, limits, null);
+    }
+    /// <summary>The index after the last dataset of the record or of a lower one.</summary>
+    private static int EndOfRecord(List<Item> items, byte record)
+    {
+        for (int i = items.Count - 1; i >= 0; i--)
+            if (items[i].Key.Record <= record) return i + 1;
+        return 0;
+    }
+    private static MetadataException Occurrence(IptcEdit.Operation operation, int count) =>
+        new(MetadataErrorCode.InvalidIptcEdit,
+            "Dataset " + operation.Key.Record + ":" + operation.Key.Dataset + " has " + count + " occurrences; index " + operation.Index + " is past them.");
+    private Item Frame(IptcDatasetKey key, IptcValue value)
+    {
+        if (value.ByteLength > limits.MaxValueBytes || 9L + value.ByteLength > limits.MaxPacketBytes) throw Limit();
+        int width = value.ByteLength <= 32767 ? 0 : value.ByteLength <= 65535 ? 2 : value.ByteLength <= 0xffffff ? 3 : 4;
+        byte[] frame = new byte[5 + width + value.ByteLength]; frame[0] = 0x1c; frame[1] = key.Record; frame[2] = key.Dataset;
+        BinaryPrimitives.WriteUInt16BigEndian(frame.AsSpan(3), width == 0 ? (ushort)value.ByteLength : (ushort)(0x8000 | width));
+        for (int i = 0; i < width; i++) frame[5 + i] = (byte)((uint)value.ByteLength >> (8 * (width - i - 1)));
+        value.Span.CopyTo(frame.AsSpan(5 + width)); return new(key, frame, value, false);
     }
 }

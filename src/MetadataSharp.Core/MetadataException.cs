@@ -63,7 +63,13 @@ public enum MetadataErrorCode
     /// field asked of a node that is not a structure, an item outside its array, an array of
     /// another form. See <see cref="Xmp.XmpEdit"/>.
     /// </summary>
-    InvalidXmpPath
+    InvalidXmpPath,
+    /// <summary>
+    /// An IPTC edit names an occurrence the stream does not have at the time the operation runs:
+    /// an index to remove at or to insert at that is past the occurrences of the dataset. See
+    /// <see cref="Iptc.IptcEdit"/>.
+    /// </summary>
+    InvalidIptcEdit
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>

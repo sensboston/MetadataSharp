@@ -87,21 +87,21 @@ public sealed partial class JpegMetadataDocument
     private async Task<IptcPrepared> PrepareIptc(IptcEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(edit);
-        IptcEdit captured = edit.Capture(); var snapshot = captured.Snapshot();
+        IptcEdit captured = edit.Capture();
         await VerifyIptcSource(asynchronous, token).ConfigureAwait(false);
         if (captured.IsEmpty) return new(true, null, null);
         JpegSegment? segment = UniquePhotoshop(); IptcLimits settings = new();
         PhotoshopResources resources = segment is null ? PhotoshopResources.Empty : await LoadPhotoshop(segment, settings, true, asynchronous, token).ConfigureAwait(false);
-        if (snapshot.RemoveAll)
+        if (captured.RemovesAll)
         {
             if (resources.Iptc is null) return new(true, null, null);
             byte[]? removed = resources.Rewrite(null);
             return new(false, segment, removed);
         }
-        if (resources.Iptc is null && snapshot.Changes.Values.All(v => v.Values.Length == 0)) return new(true, null, null);
         IptcPacket packet = resources.Iptc is PhotoshopResources.Resource existing ? IptcPacket.Parse(existing.Data.Span) : IptcPacket.CreateEmpty();
         IptcPacket changed = packet.Apply(captured)!;
-        if (ReferenceEquals(packet, changed) && resources.Iptc is not null) return new(true, null, null);
+        // Nothing was added to an absent stream, or no byte of the stored one was changed.
+        if (ReferenceEquals(packet, changed)) return new(true, null, null);
         // Even a minimal resource needs 14 signature bytes, 12 framing bytes and even data.
         if (changed.ByteLength + (changed.ByteLength & 1) + 26L > 65533)
             throw new MetadataException(MetadataErrorCode.IptcTooLarge, "IPTC cannot fit in one Photoshop APP13 segment.");
