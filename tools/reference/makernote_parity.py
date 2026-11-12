@@ -5,7 +5,9 @@
 
 Copies the JPEG and TIFF-based raw files of CORPUS to WORK, has the fixture generator
 (makernote-parity) set tags of their MakerNotes, each in a copy of its own, and prints the source
-and every copy with "exiv2 -PEkv" (the key and the value as it is stored). A copy passes when
+and every copy with "exiv2 -u -PEkv" (the key and the value as it is stored, tags without a name
+too; the tag that holds the note is left out, since its value is the bytes of the note). A copy
+passes when
 
   * the tool prints the key that was set with the value that was set,
   * every other key is printed with the lines the source has for it, and no key came or went,
@@ -37,6 +39,9 @@ MAX_BYTES = 24 * 1024 * 1024
 EXTENSIONS = {".jpg": "jpg", ".jpeg": "jpg", ".cr2": "cr2", ".nef": "nef", ".arw": "arw", ".pef": "pef",
               ".orf": "orf", ".dng": "dng", ".srw": "srw", ".sr2": "sr2", ".nrw": "nrw"}
 
+# The tags whose value is the note itself: its bytes, which an edit changes.
+HOLDERS = ("Exif.Photo.MakerNote", "Exif.Image.DNGPrivateData")
+
 # (group of the key, operation, verdict) -> why the difference is accepted. A group is the second
 # part of the key ("Canon" of Exif.Canon.OwnerName); "*" stands for every group.
 EXPECTED = {}
@@ -48,11 +53,11 @@ def expected(group, operation, verdict):
 
 def printed(exiv2, path, runner=run):
     """(key -> the values "exiv2 -PEkv" prints for it, the exit code, the warnings without the path)."""
-    code, output, errors = runner([exiv2, "-PEkv", str(path)])
+    code, output, errors = runner([exiv2, "-u", "-PEkv", str(path)])
     found = OrderedDict()
     for line in output.splitlines():
         parts = line.split(None, 1)
-        if parts and parts[0].startswith("Exif."):
+        if parts and parts[0].startswith("Exif.") and parts[0] not in HOLDERS:
             found.setdefault(parts[0], []).append(parts[1].strip() if len(parts) > 1 else "")
     name = Path(path).name
     warnings = sorted({re.sub(r"\s+", " ", line.replace(str(path), "").replace(name, "")).strip()
