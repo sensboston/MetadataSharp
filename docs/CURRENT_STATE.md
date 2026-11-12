@@ -91,6 +91,21 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   codestream gives an empty result. Tests author every layout; the corpus has three files, none with
   a `brob` box: 177 of their 179 stored keys equal (run 43126968305), the other two are the
   multi-line descriptions of `Reagan.jxl`, cut at the line end in the stored text as in `Reagan.jpg`.
+- Canon CRW, Minolta MRW, Fujifilm RAF (the formats of the Exiv2 0.28.9 registry that are no TIFF
+  file): `CrwMetadata.Read` gives the records of the CIFF heap the reference maps to tags (the Canon
+  ones as a Canon MakerNote, `DateTimeOriginal` in UTC), the comment, and where preview and
+  thumbnail lie; `MrwMetadata.Read` the TIFF structure of the TTW block; `RafMetadata.Read` the
+  metadata of the embedded JPEG file and the IFD0 tags only the TIFF structure has. MRW and RAF are
+  read-only, as in the reference. `CrwMetadataDocument` (`SaveExif`, `SaveComment`, synchronous)
+  writes what the reference writes: make and model, orientation, pixel dimensions, date, color
+  space, subject distance, thumbnail, the Canon tags by key, the comment. The heap is rewritten in
+  the reference's layout, records not named keep bytes and order, the output is read back
+  (`UnsafeRelocation`); other tags: `TagNotEditable`. Measured (run 43327984837): stored
+  expectations of the six corpus files, 116 of 116 keys found, 114 equal (the two differ by the
+  time zone the expectation was made in); pinned tool run on 13 CRW files and 24 MRW / RAF files
+  authored from corpus TIFF / JPEG files (`tools/reference/raw_container_fixtures.py`): 1,504 of
+  1,509 keys found, 1,498 equal; 39 CRW edits read back by the tool as set
+  (`tools/reference/crw_parity.py`), 6 refused here.
 - Write, JPEG ICC profile and comment: `JpegMetadataDocument` `SaveIccProfile` / `SaveComment`
   (null removes). The profile replaces every APP2 `ICC_PROFILE` segment before the first scan with
   numbered chunks of at most 65,519 bytes after the leading APP0/APP1 segments (at most 255, else
@@ -230,8 +245,10 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   CFAPattern, OECF, SpatialFrequencyResponse, DeviceSettingDescription. A value of a type or count
   the tag is not defined with is not converted and is listed in `SyncEdits.Notes`.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
-- No ICC write for PSD, JPEG 2000 and EXV; comments are written in JPEG and PNG only; a PNG profile
+- No ICC write for PSD, JPEG 2000 and EXV; comments are written in JPEG, PNG and CRW only; a PNG profile
   over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to
   agree with a written profile. A BMFF item is edited or added, never
-  removed. Previews are not decoded and not written. CR3 and JPEG XL are read, never written.
+  removed. Previews are not decoded and not written. CR3, JPEG XL, MRW and RAF are read, never
+  written. CRW: no async members; a record outside the directory the reference writes it to is not
+  changed; the Fujifilm directory (0xF000) of a RAF TIFF structure is not read.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.
