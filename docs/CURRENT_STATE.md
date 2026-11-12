@@ -132,12 +132,15 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   the regions of `tests/MetadataSharp.Examples/QuickStart.cs`, run by 12 tests that hold the README to them.
 - Typed reading (nothing throws; absent or unreadable is `false` / null): `ExifValue.TryGet…` for every
   field type (arrays, single values, strings); `ExifMetadata` `Make`, `Model`, `LensModel`,
-  `DateTimeOriginal` (`…WithOffset`), `Orientation`, `ExposureTime`, `FNumber`, `IsoSpeed`,
+  `DateTimeOriginal`, `DateTaken` (0x9003, else 0x9004, else 0x0132; both `…WithOffset`, the
+  offset tag of the same date only), `Orientation`, `ExposureTime`, `FNumber`, `IsoSpeed`,
   `FocalLength`, `PixelWidth` / `PixelHeight`, `GpsPosition` (each coordinate the nearest double to
   its rationals); `IptcPacket` `ObjectName`, `Keywords`, `Bylines`, `Headline`, `Copyright`, `Caption`;
   `XmpPacket` `Title`, `Description`, `Creators`, `Rights`, `Subjects`, `Rating`. Run 43164879862:
   2,706 tests. Against the stored rows of the 330 corpus files (one-off local run, not a CI job):
   2,641 values equal, none different.
+- README: the quick start reads through these properties (16 tests run the snippets and hold the
+  README to them); its links are absolute under `MetadataSharpRepositoryUrl`, checked by a test.
 
 ## Next (in order)
 

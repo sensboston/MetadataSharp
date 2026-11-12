@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using System.Text;
+using System.Text.RegularExpressions;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
@@ -56,13 +57,49 @@ public sealed class QuickStartTests : IDisposable
     }
 
     [Fact]
-    public void ReadTagsGivesTheRawTextAndTheInterpretedValues()
+    public void ReadTagsGivesTheTypedValuesOfACameraFile()
     {
-        var (model, exposure, orientation) = QuickStart.ReadTags(Write("photo.jpg", SampleJpeg()));
+        QuickStart.TagsRead read = QuickStart.ReadTags(Write("camera.jpg", CameraJpeg()));
 
-        Assert.Equal("Example 100", model);
-        Assert.Equal("1/250 s", exposure);
-        Assert.Equal("right, top", orientation);
+        Assert.Equal("Example 100", read.Camera);
+        Assert.Equal(new DateTime(2026, 5, 17, 6, 12, 40), read.Taken);
+        Assert.Equal(new DateTimeOffset(2026, 5, 17, 6, 12, 40, TimeSpan.FromHours(2)), read.Instant);
+        Assert.Equal(new UnsignedRational(1, 250), read.Exposure);
+        Assert.Equal(2.8, read.Aperture);
+        Assert.Equal(400, read.Iso);
+        Assert.Equal(ExifOrientation.RightTop, read.Orientation);
+        Assert.Equal(new GpsPosition(54.3525, 18.66, null, null), read.Position);
+        Assert.Equal("Firmware 1.2", read.Software);
+        Assert.Equal("1/250 s", read.Printed);
+    }
+
+    [Fact]
+    public void ReadTagsAnswersNullForWhatAFileDoesNotHave()
+    {
+        // The small sample: a model, an orientation, a software name and an exposure time, nothing else.
+        QuickStart.TagsRead read = QuickStart.ReadTags(Write("photo.jpg", SampleJpeg()));
+        Assert.Equal(
+            new QuickStart.TagsRead("Example 100", null, null, new UnsignedRational(1, 250), null, null, ExifOrientation.RightTop, null, "Firmware 1 ", "1/250 s"),
+            read);
+
+        // A file without an EXIF block.
+        read = QuickStart.ReadTags(Write("picture.png", PngFixture.Build()));
+        Assert.Equal(new QuickStart.TagsRead(null, null, null, null, null, null, null, null, null, null), read);
+    }
+
+    [Fact]
+    public void ReadTagsFallsBackToTheLaterDatesOfAnEditedFile()
+    {
+        // No DateTimeOriginal: the date of the last change stands in, with its own offset.
+        byte[] tiff = Tiff(
+            [(0x0132, 2, Ascii("2026:06:01 20:15:00"))],
+            [(0x9010, 2, Ascii("-05:00"))],
+            []);
+        QuickStart.TagsRead read = QuickStart.ReadTags(Write("edited.jpg", JpegFixture.Build(JpegFixture.Segment(0xE1, JpegFixture.Exif(tiff)))));
+
+        Assert.Equal(new DateTime(2026, 6, 1, 20, 15, 0), read.Taken);
+        Assert.Equal(new DateTimeOffset(2026, 6, 1, 20, 15, 0, TimeSpan.FromHours(-5)), read.Instant);
+        Assert.Null(ImageMetadata.Read(At("edited.jpg")).Exif!.DateTimeOriginal);
     }
 
     [Fact]
@@ -127,10 +164,24 @@ public sealed class QuickStartTests : IDisposable
 
         List<string> xmp = QuickStart.ReadXmpAndIptc(png), iptc = QuickStart.ReadXmpAndIptc(jpeg);
 
+        // The properties first, in the order the snippet asks for them.
+        Assert.Equal(new[] { "title: Harbour at dawn", "creators: ", "subjects: harbour, dawn", "rating: 4" }, xmp.Take(4).ToArray());
         Assert.Contains("xmp:Rating = 4", xmp);
         Assert.Contains("dc:subject = harbour; dawn", xmp);
+        Assert.Contains("dc:title = Harbour at dawn", xmp);
+        Assert.Equal(7, xmp.Count);
+
+        Assert.Equal(new[] { "headline: ", "caption: Fishing boats leaving the harbour.", "keywords: harbour, dawn" }, iptc.Take(3).ToArray());
         Assert.Contains("2:25 Keywords = harbour", iptc);
+        Assert.Contains("2:25 Keywords = dawn", iptc);
         Assert.Contains("2:120 Caption = Fishing boats leaving the harbour.", iptc);
+    }
+
+    [Fact]
+    public void ReadXmpAndIptcOfAFileWithNeitherListsNothing()
+    {
+        Assert.Empty(QuickStart.ReadXmpAndIptc(Write("photo.jpg", SampleJpeg())));
+        Assert.Empty(QuickStart.ReadXmpAndIptc(Write("picture.png", PngFixture.Build())));
     }
 
     [Fact]
@@ -206,6 +257,44 @@ public sealed class QuickStartTests : IDisposable
         Assert.Equal(compiled, shown);
     }
 
+    [Fact]
+    public void ReadmeLinksAreAbsoluteAndLeadIntoTheRepository()
+    {
+        // The README is packed into the NuGet packages, where a relative link leads nowhere. Every
+        // link has to start with the one property that names the repository, so that a move of
+        // the repository is that property and the link block of the README, and this test says so.
+        string root = RepositoryRoot();
+        Match property = Regex.Match(File.ReadAllText(Path.Combine(root, "Directory.Build.props")),
+            "<MetadataSharpRepositoryUrl[^>]*>([^<]+)</MetadataSharpRepositoryUrl>");
+        Assert.True(property.Success, "Directory.Build.props does not define MetadataSharpRepositoryUrl");
+        string repository = property.Groups[1].Value.Trim();
+        Assert.StartsWith("https://", repository);
+        Assert.False(repository.EndsWith('/'));
+
+        // Code is not prose: fenced blocks and code spans are taken out before links are looked for.
+        string prose = Regex.Replace(File.ReadAllText(Path.Combine(root, "README.md")).Replace("\r\n", "\n"), "(?ms)^```.*?^```[^\n]*$", "");
+        prose = Regex.Replace(prose, "`[^`\n]*`", "");
+
+        var definitions = Regex.Matches(prose, @"(?m)^\[([^\]\n]+)\]:[ \t]*(\S+)[ \t]*$").ToDictionary(match => match.Groups[1].Value, match => match.Groups[2].Value);
+        string[] inline = Regex.Matches(prose, @"\]\(([^)\s]*)\)").Select(match => match.Groups[1].Value).ToArray();
+        string[] referenced = Regex.Matches(prose, @"\]\[([^\]\n]+)\]").Select(match => match.Groups[1].Value).Distinct().ToArray();
+
+        Assert.NotEmpty(definitions);
+        // A label that is used is defined, and the other way round: no dead reference, no stray definition.
+        Assert.Equal(definitions.Keys.Order(StringComparer.Ordinal).ToArray(), referenced.Order(StringComparer.Ordinal).ToArray());
+
+        foreach (string target in inline.Concat(definitions.Values))
+        {
+            string file = repository + "/blob/HEAD/", directory = repository + "/tree/HEAD/";
+            if (target.StartsWith(file, StringComparison.Ordinal))
+                Assert.True(File.Exists(Path.Combine(root, target[file.Length..])), $"{target}: no such file in the repository");
+            else if (target.StartsWith(directory, StringComparison.Ordinal))
+                Assert.True(Directory.Exists(Path.Combine(root, target[directory.Length..])), $"{target}: no such directory in the repository");
+            else
+                Assert.Fail($"{target}: a README link starts with {file} or {directory}");
+        }
+    }
+
     /// <summary>The bodies of the regions of a source file, in order, without their common indent.</summary>
     private static string[] Regions(string source)
     {
@@ -264,9 +353,8 @@ public sealed class QuickStartTests : IDisposable
     private static string Text(ExifMetadata exif, ExifTagKey key)
     {
         Assert.True(exif.TryGetEntry(key, out ExifEntry? entry));
-        byte[] raw = new byte[entry.Value.ByteLength];
-        entry.Value.CopyRawTo(raw);
-        return Encoding.ASCII.GetString(raw).TrimEnd('\0');
+        Assert.True(entry.Value.TryGetString(out string? text));
+        return text;
     }
 
     /// <summary>An EXIF block whose one directory has 600 entries: more than a directory may have under the limits used here.</summary>
@@ -283,6 +371,80 @@ public sealed class QuickStartTests : IDisposable
             field[2] = 1; field[4] = 1;                                // BYTE, count 1, value 0
         }
         return tiff;
+    }
+
+    /// <summary>The authored JPEG of the main suite with the EXIF block of a camera: the tags the typed properties read.</summary>
+    private static byte[] CameraJpeg() => JpegFixture.Build(JpegFixture.Segment(0xE1, JpegFixture.Exif(Tiff(
+        [
+            (0x010F, 2, Ascii("Example")), (0x0110, 2, Ascii("Example 100")), (0x0112, 3, [6, 0]),      // Make, Model, Orientation
+            (0x0131, 2, Ascii("Firmware 1.2")),                                                          // Software
+        ],
+        [
+            (0x829A, 5, Longs(1, 250)), (0x829D, 5, Longs(28, 10)), (0x8827, 3, [0x90, 0x01]),           // 1/250 s, F2.8, ISO 400
+            (0x9003, 2, Ascii("2026:05:17 06:12:40")), (0x9011, 2, Ascii("+02:00")),                     // DateTimeOriginal and its offset
+            (0x920A, 5, Longs(50, 1)),                                                                   // 50 mm
+        ],
+        [
+            (0x0001, 2, Ascii("N")), (0x0002, 5, Longs(54, 1, 21, 1, 9, 1)),                             // 54 deg 21' 9" N
+            (0x0003, 2, Ascii("E")), (0x0004, 5, Longs(18, 1, 39, 1, 36, 1)),                            // 18 deg 39' 36" E
+        ]))));
+
+    private static byte[] Ascii(string text) => [.. Encoding.ASCII.GetBytes(text), 0];
+
+    private static byte[] Longs(params uint[] numbers)
+    {
+        byte[] bytes = new byte[numbers.Length * 4];
+        for (int i = 0; i < numbers.Length; i++) BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(i * 4), numbers[i]);
+        return bytes;
+    }
+
+    /// <summary>
+    /// A little-endian EXIF block laid out here, not by the library: the first directory, which is
+    /// given the pointers to the other two, then the Exif and the GPS directory, then the values
+    /// that do not fit the four bytes of an entry. Entries are (tag, field type, value bytes) in
+    /// ascending tag order; the count follows from the type.
+    /// </summary>
+    private static byte[] Tiff(params (ushort Tag, ushort Type, byte[] Value)[][] directories)
+    {
+        Assert.Equal(3, directories.Length);
+        int[] starts = new int[3];
+        int at = 8;
+        for (int d = 0; d < 3; d++)
+        {
+            starts[d] = at;
+            at += 2 + ((directories[d].Length + (d == 0 ? 2 : 0)) * 12) + 4;
+        }
+        directories[0] = [.. directories[0], (0x8769, 4, Longs((uint)starts[1])), (0x8825, 4, Longs((uint)starts[2]))];
+
+        var head = new List<byte> { 0x49, 0x49, 42, 0, 8, 0, 0, 0 };
+        var values = new List<byte>();
+        void U16(int number) => head.AddRange([(byte)number, (byte)(number >> 8)]);
+        void U32(int number) => head.AddRange([(byte)number, (byte)(number >> 8), (byte)(number >> 16), (byte)(number >> 24)]);
+        foreach (var directory in directories)
+        {
+            U16(directory.Length);
+            foreach ((ushort tag, ushort type, byte[] value) in directory)
+            {
+                int unit = type switch { 2 => 1, 3 => 2, 5 => 8, _ => 4 };    // ASCII, SHORT, RATIONAL, LONG
+                U16(tag);
+                U16(type);
+                U32(value.Length / unit);
+                if (value.Length <= 4)
+                {
+                    head.AddRange(value);
+                    head.AddRange(new byte[4 - value.Length]);
+                }
+                else
+                {
+                    U32(at + values.Count);
+                    values.AddRange(value);
+                    if (values.Count % 2 != 0) values.Add(0);                 // a value starts on an even offset
+                }
+            }
+            U32(0);                                                           // no next directory
+        }
+        Assert.Equal(at, head.Count);
+        return [.. head, .. values];
     }
 
     /// <summary>The authored JPEG of the main suite with an EXIF block written out below.</summary>

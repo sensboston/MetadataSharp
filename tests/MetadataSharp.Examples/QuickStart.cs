@@ -26,7 +26,8 @@ public static class QuickStart
             foreach (ExifEntry entry in exif.Entries)
             {
                 string name = ExifTags.Find(entry.Key)?.Name ?? $"0x{entry.Key.TagId:X4}";
-                string value = ExifTags.Interpret(exif, entry.Key) ?? $"{entry.Value.FieldType} x {entry.Value.Count}";
+                string value = ExifTags.Interpret(exif, entry.Key)               // "1/250 s", "right, top"
+                    ?? (entry.Value.TryGetString(out string? text) ? text : $"{entry.Value.FieldType} x {entry.Value.Count}");
                 Console.WriteLine($"{entry.Key.Directory}.{name} = {value}");
             }
 
@@ -38,29 +39,38 @@ public static class QuickStart
         return image;
     }
 
-    public static (string? Model, string? Exposure, string? Orientation) ReadTags(string path)
+    public static TagsRead ReadTags(string path)
     {
         #region read-tags
-        var model = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0110);
-        var exposureTime = new ExifTagKey(ExifDirectoryKind.Exif, 0x829A);
-        var orientation = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112);
-
         ExifMetadata? exif = ImageMetadata.Read(path).Exif;
-        string? camera = null;
-        if (exif is not null && exif.TryGetEntry(model, out ExifEntry? entry))
-        {
-            // A value is its raw bytes, with the field type, the count and the byte order.
-            byte[] raw = new byte[entry.Value.ByteLength];
-            entry.Value.CopyRawTo(raw);
-            camera = Encoding.ASCII.GetString(raw).TrimEnd('\0');
-        }
 
-        // Interpret gives the text a metadata tool prints: "1/250 s", "right, top".
-        string? exposure = exif is null ? null : ExifTags.Interpret(exif, exposureTime);
-        string? rotation = exif is null ? null : ExifTags.Interpret(exif, orientation);
+        // The tags asked for first are properties. Each is null when the file has no such tag, or
+        // has something in it that cannot be read as the property's type; none of them throws.
+        string? camera = exif?.Model;                          // "Example 100"
+        DateTime? taken = exif?.DateTaken;                     // DateTimeOriginal, else DateTimeDigitized, else DateTime
+        DateTimeOffset? instant = exif?.DateTakenWithOffset;   // with the OffsetTime tag of that date, when the file has it
+        UnsignedRational? exposure = exif?.ExposureTime;       // 1/250, the fraction the file stores
+        double? aperture = exif?.FNumber;                      // 2.8
+        int? iso = exif?.IsoSpeed;                             // 400
+        ExifOrientation? orientation = exif?.Orientation;      // RightTop
+        GpsPosition? position = exif?.GpsPosition;             // decimal degrees; south and west are negative
+
+        // Any other tag is found by its key and read with the accessor for its field type.
+        string? software = null;
+        if (exif is not null && exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0131), out ExifEntry? entry) &&
+            entry.Value.TryGetString(out string? text))
+            software = text;
+
+        // Interpret gives the text a metadata tool prints for a tag: "1/250 s", "F2.8", "right, top".
+        string? printed = exif is null ? null : ExifTags.Interpret(exif, new ExifTagKey(ExifDirectoryKind.Exif, 0x829A));
         #endregion
-        return (camera, exposure, rotation);
+        return new TagsRead(camera, taken, instant, exposure, aperture, iso, orientation, position, software, printed);
     }
+
+    /// <summary>What the "read-tags" snippet read, for the test that runs it.</summary>
+    public sealed record TagsRead(
+        string? Camera, DateTime? Taken, DateTimeOffset? Instant, UnsignedRational? Exposure, double? Aperture, int? Iso,
+        ExifOrientation? Orientation, GpsPosition? Position, string? Software, string? Printed);
 
     public static List<string> ReadXmpAndIptc(string path)
     {
@@ -69,11 +79,25 @@ public static class QuickStart
         ImageMetadata image = ImageMetadata.Read(path);
 
         if (image.Xmp is { } xmp)
+        {
+            // The descriptive properties of Dublin Core and the rating; a text in several languages
+            // gives its x-default. A list the packet does not have is empty, a text is null.
+            lines.Add($"title: {xmp.Title}");
+            lines.Add($"creators: {string.Join(", ", xmp.Creators)}");
+            lines.Add($"subjects: {string.Join(", ", xmp.Subjects)}");
+            lines.Add($"rating: {xmp.Rating}");
+
             foreach (XmpEntry property in xmp.Entries)       // every property; nested ones have a path
                 lines.Add($"{property.Prefix}:{property.Path} = {string.Join("; ", property.Values)}");
+        }
 
         if (image.Iptc is { } iptc)
-            foreach (IptcDataset dataset in iptc.Datasets)
+        {
+            lines.Add($"headline: {iptc.Headline}");
+            lines.Add($"caption: {iptc.Caption}");
+            lines.Add($"keywords: {string.Join(", ", iptc.Keywords)}");
+
+            foreach (IptcDataset dataset in iptc.Datasets)   // every dataset, by record and number
             {
                 IptcDatasetNames.TryGetName(dataset.Key, out string? name);
                 byte[] raw = new byte[dataset.Value.ByteLength];
@@ -81,6 +105,7 @@ public static class QuickStart
                 string text = IptcDatasetNames.Interpret(dataset.Key, dataset.Value) ?? Encoding.UTF8.GetString(raw);
                 lines.Add($"{dataset.Key.Record}:{dataset.Key.Dataset} {name} = {text}");
             }
+        }
         #endregion
         return lines;
     }
