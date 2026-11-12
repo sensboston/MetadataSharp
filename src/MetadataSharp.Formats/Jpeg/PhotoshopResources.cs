@@ -78,13 +78,19 @@ internal sealed class PhotoshopResources
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "An invalid-length or orphan IPTC digest cannot be interpreted safely.");
     }
     internal static PhotoshopResources Empty => new([], new());
-    internal byte[]? Rewrite(byte[]? iptc)
+    /// <summary>
+    /// The resources with the stream replaced, added or (null) removed. Every other resource keeps its
+    /// bytes and its place. The digest (0x0425) is removed with the stream; otherwise it is left as it
+    /// is - stale on purpose, see <see cref="IptcWriteOptions.UpdateDigest"/> - or recomputed when
+    /// <paramref name="updateDigest"/> is set. One is never added.
+    /// </summary>
+    internal byte[]? Rewrite(byte[]? iptc, bool updateDigest = false, int ceiling = 65533)
     {
         ValidateTargets();
         var output = new List<ReadOnlyMemory<byte>>(); long size = 14;
         void Check(long length)
         {
-            if (size + length > 65533) throw new MetadataException(MetadataErrorCode.IptcTooLarge, "Photoshop resources exceed one JPEG APP13 payload.");
+            if (size + length > ceiling) throw new MetadataException(MetadataErrorCode.IptcTooLarge, "Photoshop resources exceed what their container holds.");
             if (size + length > limits.MaxPacketBytes || output.Count >= limits.MaxResources) throw IptcPacket.Limit();
         }
         void Add(ReadOnlyMemory<byte> data)
@@ -96,6 +102,7 @@ internal sealed class PhotoshopResources
             if (resource.Id is 0x0404 or 0x0425)
             {
                 if (iptc is null) continue;
+                if (resource.Id == 0x0425 && !updateDigest) { Add(resource.Block); continue; }
                 int dataLength = resource.Id == 0x0404 ? iptc.Length : 16;
                 Check(resource.NameHeader.Length + 4L + dataLength + (dataLength & 1));
                 byte[] data = resource.Id == 0x0404 ? iptc : MD5.HashData(iptc);

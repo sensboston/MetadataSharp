@@ -7,7 +7,7 @@ public readonly record struct IptcDatasetKey(byte Record, byte Dataset);
 /// <summary>The packet's explicit encoding declaration, never a guessed code page.</summary>
 public enum IptcCharacterSet
 {
-    /// <summary>The packet has no 1:90 dataset.</summary>
+    /// <summary>The packet has no 1:90 dataset, or one that declares ASCII (ESC ( B), which says as much.</summary>
     Unspecified,
     /// <summary>The packet declares UTF-8 (ESC % G).</summary>
     Utf8,
@@ -72,6 +72,20 @@ public sealed class IptcReadOptions
 {
     /// <summary>The budgets of the read.</summary>
     public IptcLimits Limits { get; init; } = new();
+}
+
+/// <summary>What an IPTC save does beside the stream itself.</summary>
+public sealed class IptcWriteOptions
+{
+    /// <summary>
+    /// Whether the IPTC digest of the Photoshop image resources (resource 0x0425, the MD5 of the
+    /// stream) is recomputed. False by default: the digest the file has is left as it is, so that it
+    /// no longer matches the edited stream, and a reader that follows the Metadata Working Group
+    /// guidelines takes the IPTC as newer than the XMP and reads it. Set it when the XMP of the file
+    /// is written to say the same as the IPTC. A digest is never added to a file that has none, and
+    /// is removed together with the stream, whatever this says.
+    /// </summary>
+    public bool UpdateDigest { get; init; }
 }
 
 internal static class IptcText

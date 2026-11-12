@@ -3,6 +3,7 @@ using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Internal;
+using MetadataSharp.Formats.Jpeg;
 
 namespace MetadataSharp.Formats.Tiff;
 
@@ -30,6 +31,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
 {
     private const ushort XmpTag = 0x02BC;
     private const ushort IptcTag = 0x83BB;
+    private const ushort ResourcesTag = 0x8649;
     private const ushort IccTag = 0x8773;
 
     private readonly byte[] source;
@@ -176,13 +178,20 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
 
     /// <summary>
     /// Writes the file with the IPTC edit applied: the stream is the value of tag 0x83BB of the
-    /// primary directory, created when the file has none, and keeps the field type it has. Fails as
-    /// <see cref="SaveExif"/> does, and with <see cref="MetadataErrorCode.UnsupportedFeature"/> when
-    /// the IPTC of the file is stored in its Photoshop image resources only.
+    /// primary directory, created when the file has none, and keeps the field type it has. A file
+    /// without that tag whose IPTC is resource 0x0404 of its Photoshop image resources (tag 0x8649)
+    /// is edited there: every other resource keeps its bytes and its place, and the IPTC digest
+    /// (resource 0x0425) is left as it is unless <see cref="IptcWriteOptions.UpdateDigest"/> asks for
+    /// it to be recomputed; it is removed with the stream and never added. The resources of a file
+    /// whose stream is the value of tag 0x83BB are not touched. Fails as <see cref="SaveExif"/> does.
     /// </summary>
-    public void SaveIptc(Stream destination, IptcEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
+    public void SaveIptc(Stream destination, IptcEdit edit) => SaveCore(destination, Edit(edit, null), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit)"/>
-    public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
+    public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit, null), true, cancellationToken);
+    /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, with options; null options are the defaults.</summary>
+    public void SaveIptc(Stream destination, IptcEdit edit, IptcWriteOptions? options) => SaveCore(destination, Edit(edit, options), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveIptc(Stream, IptcEdit, IptcWriteOptions)"/>
+    public Task SaveIptcAsync(Stream destination, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit, options), true, cancellationToken);
 
     /// <summary>
     /// Writes a plain TIFF with <paramref name="profile"/> as its ICC profile, or without one when
@@ -239,20 +248,24 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
-    public void SaveIptcAs(string destinationPath, IptcEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
+    public void SaveIptcAs(string destinationPath, IptcEdit edit) => SavePath(destinationPath, Edit(edit, null), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit)"/>
-    public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
+    public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit, null), true, cancellationToken);
+    /// <summary>As <see cref="SaveIptcAs(string, IptcEdit)"/>, with options; null options are the defaults.</summary>
+    public void SaveIptcAs(string destinationPath, IptcEdit edit, IptcWriteOptions? options) => SavePath(destinationPath, Edit(edit, options), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveIptcAs(string, IptcEdit, IptcWriteOptions)"/>
+    public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit, options), true, cancellationToken);
 
     /// <summary>The changes of one save, captured when the save is called.</summary>
     private sealed record Pending(ExifEdit.EditSnapshot? Exif, XmpEdit? Xmp, IptcEdit? Iptc,
-        IccChange? Icc = null);
+        IccChange? Icc = null, bool UpdateDigest = false);
 
     /// <summary>The profile the file is to have; null for none.</summary>
     private sealed record IccChange(byte[]? Profile);
 
     private static Pending Edit(ExifEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(edit.Snapshot(), null, null); }
     private static Pending Edit(XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(null, edit.Snapshot(), null); }
-    private static Pending Edit(IptcEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(null, null, edit.Capture()); }
+    private static Pending Edit(IptcEdit edit, IptcWriteOptions? write) { ArgumentNullException.ThrowIfNull(edit); return new(null, null, edit.Capture(), null, write?.UpdateDigest ?? false); }
     private static Pending Icc(byte[]? profile) => new(null, null, null, new IccChange(profile is null ? null : (byte[])profile.Clone()));
 
     private async Task SaveCore(Stream destination, Pending edit, bool asynchronous, CancellationToken token)
@@ -304,7 +317,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
         if (!exifEmpty) AddExif(exif!, layout, changes);
         if (!xmpEmpty) AddXmp(xmp!, layout, changes);
-        if (!iptcEmpty) AddIptc(iptc!, layout, limits, changes);
+        if (!iptcEmpty) AddIptc(iptc!, edit.UpdateDigest, layout, limits, changes);
         if (icc is not null) AddIcc(icc.Profile, layout, changes);
         if (changes.Count == 0) return source;
 
@@ -391,7 +404,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         changes[(TiffBasedRole.Primary, XmpTag)] = new(type, (uint)bytes.Length, bytes);
     }
 
-    private void AddIptc(IptcEdit edit, TiffBasedFileMap layout, MetadataLimits limits,
+    private void AddIptc(IptcEdit edit, bool updateDigest, TiffBasedFileMap layout, MetadataLimits limits,
         Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes)
     {
         TiffBasedField? field = layout.Find(TiffBasedRole.Primary)?.Find(IptcTag);
@@ -404,12 +417,25 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
             if (field!.Type == 4) stream = stream[..TiffIptc.UnpaddedLength(stream)];
             packet = IptcPacket.Inspect(stream);
         }
-        else if (TiffIptc.Read(source, limits) is not null)
+        else if (layout.Find(TiffBasedRole.Primary)?.Find(ResourcesTag) is TiffBasedField block && block.ByteLength != 0
+            && Resources(block) is PhotoshopResources resources && resources.IptcForReading() is not null)
         {
-            // The reader found a stream in the Photoshop resources (0x8649). A new tag would hide it
-            // from this library and leave it in the file for every other reader.
-            throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
-                "The IPTC of this file is stored in its Photoshop image resources, which are not edited.");
+            // The stream lives in the Photoshop resources (0x8649) and is edited there. A new 0x83BB
+            // tag would hide it from this library and leave the old one in the file for every other reader.
+            if (block.Type is not (1 or 7))
+                throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
+                    "The Photoshop image resources of this file are not stored as bytes and are not edited.");
+            resources.ValidateTargets();
+            IptcPacket held = IptcPacket.Parse(resources.Iptc!.Data.Span);
+            IptcPacket? edited = held.Apply(edit);
+            if (ReferenceEquals(edited, held)) return;
+            byte[]? stream = null;
+            if (edited is not null) { stream = new byte[edited.ByteLength]; edited.CopyRawTo(stream); }
+            byte[]? rewritten = resources.Rewrite(stream, updateDigest, int.MaxValue);
+            // The tag holds the resources without the signature an APP13 segment begins with.
+            changes[(TiffBasedRole.Primary, ResourcesTag)] = rewritten is null || rewritten.Length == 14 ? null
+                : new(block.Type, (uint)(rewritten.Length - 14), rewritten[14..]);
+            return;
         }
         IptcPacket? changed = (packet ?? IptcPacket.CreateEmpty()).Apply(edit);
         if (changed is null)
@@ -432,6 +458,17 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         }
         ushort type = field is not null && field.Type == 1 ? (ushort)1 : (ushort)7;
         changes[(TiffBasedRole.Primary, IptcTag)] = new(type, (uint)bytes.Length, bytes);
+    }
+
+    /// <summary>The Photoshop image resources a tag holds.</summary>
+    private PhotoshopResources Resources(TiffBasedField field)
+    {
+        ReadOnlySpan<byte> signature = "Photoshop 3.0\0"u8;
+        ReadOnlySpan<byte> value = Value(field);
+        byte[] payload = new byte[signature.Length + value.Length];
+        signature.CopyTo(payload);
+        value.CopyTo(payload.AsSpan(signature.Length));
+        return PhotoshopResources.Parse(payload, new IptcLimits());
     }
 
     /// <summary>Whether a packet built from the empty one is still the empty one: nothing was added.</summary>

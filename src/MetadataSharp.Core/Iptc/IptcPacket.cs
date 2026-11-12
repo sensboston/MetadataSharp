@@ -102,7 +102,9 @@ public sealed partial class IptcPacket
                 if (++charsetCount > 1 && !(readOnly && value.Span.SequenceEqual(firstCharset!.Span)))
                     throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Duplicate IIM character set declarations.");
                 firstCharset ??= value;
-                charset = value.Span.SequenceEqual(new byte[] { 0x1b, 0x25, 0x47 }) ? IptcCharacterSet.Utf8 : IptcCharacterSet.Unsupported;
+                // ESC ( B designates ASCII: it says of the bytes what a stream without a declaration says.
+                charset = value.Span.SequenceEqual(new byte[] { 0x1b, 0x25, 0x47 }) ? IptcCharacterSet.Utf8
+                    : value.Span.SequenceEqual(new byte[] { 0x1b, 0x28, 0x42 }) ? IptcCharacterSet.Unspecified : IptcCharacterSet.Unsupported;
             }
             if (key == new IptcDatasetKey(2, 0))
             {
@@ -151,8 +153,8 @@ public sealed partial class IptcPacket
     /// </para>
     /// <para>
     /// Character set. Text is written as UTF-8. The declaration of the stream (1:90) is kept as it
-    /// is, with one exception: a stream that declares nothing and is given text beyond ASCII gains
-    /// the UTF-8 declaration. That is refused, with <see cref="MetadataErrorCode.UnsupportedFeature"/>,
+    /// is, with one exception: a stream that declares nothing, or declares ASCII (ESC ( B), and is
+    /// given text beyond ASCII gains the UTF-8 declaration. That is refused, with <see cref="MetadataErrorCode.UnsupportedFeature"/>,
     /// when a text dataset that stays in the stream holds bytes above 0x7F - they were written in an
     /// encoding nobody declared, and the new declaration would rename them. A text write to a stream
     /// that declares another character set is refused with the same code. Raw writes are not text.
@@ -224,7 +226,10 @@ public sealed partial class IptcPacket
                     throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
                         "The stream declares no character set and holds text beyond ASCII; UTF-8 text would mix two encodings.");
             }
-            output.Insert(EndOfRecord(output, 1), Frame(new(1, 90), new IptcValue(new byte[] { 0x1b, 0x25, 0x47 })));
+            Item declaration = Frame(new(1, 90), new IptcValue(new byte[] { 0x1b, 0x25, 0x47 }));
+            // A declaration of ASCII (ESC ( B) is replaced where it stands; a stream without one gains it.
+            int declared = output.FindIndex(item => item.Key == new IptcDatasetKey(1, 90));
+            if (declared >= 0) output[declared] = declaration; else output.Insert(EndOfRecord(output, 1), declaration);
         }
 
         long size = 0;

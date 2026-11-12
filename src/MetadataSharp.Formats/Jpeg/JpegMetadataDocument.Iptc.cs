@@ -11,7 +11,7 @@ public sealed partial class JpegMetadataDocument
     /// Reads the IPTC stream of the Photoshop APP13 resources, or returns null when there is none.
     /// A stream that can be read and not edited comes back with <see cref="IptcPacket.IsEditable"/>
     /// false: resources spread over several segments, a repeated stream or digest, a digest without a
-    /// stream, padding after the last dataset. <see cref="SaveIptc"/> refuses a change to such a file.
+    /// stream, padding after the last dataset. <see cref="SaveIptc(Stream, IptcEdit)"/> refuses a change to such a file.
     /// </summary>
     public IptcPacket? ReadIptc(IptcReadOptions? options = null) => ReadIptcCore(options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="ReadIptc"/>
@@ -84,7 +84,7 @@ public sealed partial class JpegMetadataDocument
         token.ThrowIfCancellationRequested(); return packet;
     }
     private sealed record IptcPrepared(bool CopyOnly, JpegSegment? Segment, byte[]? Payload);
-    private async Task<IptcPrepared> PrepareIptc(IptcEdit edit, bool asynchronous, CancellationToken token)
+    private async Task<IptcPrepared> PrepareIptc(IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(edit);
         IptcEdit captured = edit.Capture();
@@ -106,27 +106,34 @@ public sealed partial class JpegMetadataDocument
         if (changed.ByteLength + (changed.ByteLength & 1) + 26L > 65533)
             throw new MetadataException(MetadataErrorCode.IptcTooLarge, "IPTC cannot fit in one Photoshop APP13 segment.");
         byte[] bytes = new byte[changed.ByteLength]; changed.CopyRawTo(bytes);
-        byte[]? result = resources.Rewrite(bytes);
+        byte[]? result = resources.Rewrite(bytes, write?.UpdateDigest ?? false);
         if (result is not null) CheckIptcBudget(result.Length, settings);
         token.ThrowIfCancellationRequested(); return new(false, segment, result);
     }
     /// <summary>
     /// Writes the file with the IPTC edit applied to a distinct, writable, seekable, empty stream. An edit that changes nothing gives a copy of the source.
-    /// The stream is resource 0x0404 of the Photoshop APP13 segment, created when the file has none.
+    /// The stream is resource 0x0404 of the Photoshop APP13 segment, created when the file has none; every
+    /// other resource keeps its bytes and its place. The IPTC digest (resource 0x0425) is left as the
+    /// file has it, so that it no longer matches and a reader takes the IPTC as newer than the XMP;
+    /// <see cref="IptcWriteOptions.UpdateDigest"/> recomputes it. It is removed with the stream and never added.
     /// </summary>
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
     /// opened; otherwise the code of the reason the edit is refused.
     /// </exception>
-    public void SaveIptc(Stream destination, IptcEdit edit) => SaveIptcCore(destination, edit, false, default).GetAwaiter().GetResult();
+    public void SaveIptc(Stream destination, IptcEdit edit) => SaveIptcCore(destination, edit, null, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit)"/>
-    public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcCore(destination, edit, true, cancellationToken);
-    private async Task SaveIptcCore(Stream destination, IptcEdit edit, bool asynchronous, CancellationToken token)
+    public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcCore(destination, edit, null, true, cancellationToken);
+    /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, with options; null options are the defaults.</summary>
+    public void SaveIptc(Stream destination, IptcEdit edit, IptcWriteOptions? options) => SaveIptcCore(destination, edit, options, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveIptc(Stream, IptcEdit, IptcWriteOptions)"/>
+    public Task SaveIptcAsync(Stream destination, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SaveIptcCore(destination, edit, options, true, cancellationToken);
+    private async Task SaveIptcCore(Stream destination, IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(destination);
         if (ReferenceEquals(source, destination) || !destination.CanWrite || !destination.CanSeek || destination.Position != 0 || destination.Length != 0)
             throw new ArgumentException("Destination must be a distinct writable, seekable, empty stream at zero.", nameof(destination));
-        IptcPrepared prepared = await PrepareIptc(edit, asynchronous, token).ConfigureAwait(false);
+        IptcPrepared prepared = await PrepareIptc(edit, write, asynchronous, token).ConfigureAwait(false);
         await EmitIptc(destination, prepared, asynchronous, token).ConfigureAwait(false);
     }
     private async Task EmitIptc(Stream destination, IptcPrepared prepared, bool asynchronous, CancellationToken token)
@@ -145,16 +152,21 @@ public sealed partial class JpegMetadataDocument
     }
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
     /// <exception cref="IOException">The destination exists or is the source.</exception>
-    public void SaveIptcAs(string destinationPath, IptcEdit edit) => SaveIptcPath(destinationPath, edit, false, default).GetAwaiter().GetResult();
+    public void SaveIptcAs(string destinationPath, IptcEdit edit) => SaveIptcPath(destinationPath, edit, null, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit)"/>
-    public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcPath(destinationPath, edit, true, cancellationToken);
-    private async Task SaveIptcPath(string path, IptcEdit edit, bool asynchronous, CancellationToken token)
+    public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcPath(destinationPath, edit, null, true, cancellationToken);
+    /// <summary>As <see cref="SaveIptcAs(string, IptcEdit)"/>, with options; null options are the defaults.</summary>
+    /// <exception cref="IOException">The destination exists or is the source.</exception>
+    public void SaveIptcAs(string destinationPath, IptcEdit edit, IptcWriteOptions? options) => SaveIptcPath(destinationPath, edit, options, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveIptcAs(string, IptcEdit, IptcWriteOptions)"/>
+    public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SaveIptcPath(destinationPath, edit, options, true, cancellationToken);
+    private async Task SaveIptcPath(string path, IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentException.ThrowIfNullOrEmpty(path);
         string target = Path.GetFullPath(path); StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         if ((sourcePath is not null && string.Equals(sourcePath, target, comparison)) || File.Exists(target) || Directory.Exists(target))
             throw new IOException("The destination must be a new path distinct from the source.");
-        IptcPrepared prepared = await PrepareIptc(edit, asynchronous, token).ConfigureAwait(false);
+        IptcPrepared prepared = await PrepareIptc(edit, write, asynchronous, token).ConfigureAwait(false);
         string temporary = Path.Combine(Path.GetDirectoryName(target)!, ".metadatasharp-iptc-" + Guid.NewGuid().ToString("N") + ".tmp"); bool created = false;
         try
         {

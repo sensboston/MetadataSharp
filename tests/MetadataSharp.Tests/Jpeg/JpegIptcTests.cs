@@ -37,8 +37,21 @@ public sealed class JpegIptcTests
     {
         byte[] packet = IptcCodecTests.Raw(IptcPacket.CreateEmpty()); byte[] unrelated = IptcCodecTests.Block(0x0424, [1, 2, 3], [65, 66], 0x7e);
         byte[] image = JpegFixture.Build(Photos(unrelated, IptcCodecTests.Block(0x0404, packet, [78]), IptcCodecTests.Block(0x0425, new byte[16], [68, 71])));
-        byte[] result = Save(image, Caption("owned")); PhotoshopResources resources = Resources(result);
+        // By default the digest is left as the file has it, so that it no longer matches the stream.
+        byte[] stale = Save(image, Caption("owned")); PhotoshopResources kept = Resources(stale);
+        Assert.Equal("owned", kept.Iptc is null ? null : GetCaption(IptcPacket.Parse(kept.Iptc.Data.Span)));
+        Assert.Equal(new byte[16], kept.Resources[2].Data.ToArray()); Assert.Equal(unrelated, kept.Resources[0].Block.ToArray());
+        byte[] result;
+        using (var doc = JpegMetadataDocument.Open(new MemoryStream(image))) { using var output = new MemoryStream(); doc.SaveIptc(output, Caption("owned"), new IptcWriteOptions { UpdateDigest = true }); result = output.ToArray(); }
+        PhotoshopResources resources = Resources(result);
         Assert.Equal(unrelated, resources.Resources[0].Block.ToArray()); Assert.Equal(MD5.HashData(resources.Iptc!.Data.Span), resources.Resources[2].Data.ToArray());
+        // A digest is never added to a file that has none, whatever the option says.
+        byte[] bare = JpegFixture.Build(Photos(unrelated, IptcCodecTests.Block(0x0404, packet, [78])));
+        using (var doc = JpegMetadataDocument.Open(new MemoryStream(bare)))
+        {
+            using var output = new MemoryStream(); doc.SaveIptc(output, Caption("owned"), new IptcWriteOptions { UpdateDigest = true });
+            Assert.DoesNotContain(Resources(output.ToArray()).Resources, r => r.Id == 0x0425);
+        }
         var remove = new IptcEdit(); remove.RemoveAllIptc(); Assert.Equal(JpegFixture.Build(Photos(unrelated)), Save(result, remove));
     }
     [Theory]

@@ -305,6 +305,27 @@ public sealed class IptcEditTests
         Assert.Equal(IptcCharacterSet.Unsupported, Apply(other, e => e.ReplaceRaw(new(2, 90), [IptcValue.FromRaw([0xe9])])).CharacterSet);
     }
 
+    [Fact]
+    public void ADeclarationOfAsciiSaysWhatNoDeclarationSaysAndIsReplacedWhereItStands()
+    {
+        // ESC ( B designates ASCII.
+        byte[] ascii = Dataset(1, 90, 0x1b, 0x28, 0x42);
+        IptcPacket source = IptcPacket.Parse([.. ascii, .. Dataset(2, 0, 0, 4), .. Dataset(2, 5, "title")]);
+        Assert.Equal(IptcCharacterSet.Unspecified, source.CharacterSet);
+        Assert.Equal("title", source.ObjectName);
+        // ASCII text keeps the declaration the source has.
+        IptcPacket plain = Apply(source, e => e.SetCity("Riga"));
+        Assert.Equal(Join(ascii, Dataset(2, 0, 0, 4), Dataset(2, 5, "title"), Dataset(2, 90, "Riga")), Raw(plain));
+        // Text beyond ASCII turns it into the UTF-8 declaration: one 1:90, in the same place.
+        IptcPacket wide = Apply(source, e => e.SetCity("Rīga"));
+        Assert.Equal(Join(Utf8Declaration, Dataset(2, 0, 0, 4), Dataset(2, 5, "title"), Dataset(2, 90, "Rīga")), Raw(wide));
+        Assert.Equal(IptcCharacterSet.Utf8, wide.CharacterSet);
+        // Bytes above 0x7F under a declaration of ASCII are still text nobody can name.
+        IptcPacket broken = IptcPacket.Parse([.. ascii, .. Dataset(2, 120, 0xe9)]);
+        var edit = new IptcEdit(); edit.SetCity("Rīga");
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => broken.Apply(edit)).Code);
+    }
+
     // ---- Typed convenience ----
 
     [Fact]

@@ -158,7 +158,7 @@ public sealed class PngTests
             Assert.False(exif.IsEditable);
             Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), Assert.Single(exif.Entries).Key);
             IptcPacket iptc = Assert.IsType<IptcPacket>(doc.ReadIptc());
-            Assert.False(iptc.IsEditable);
+            Assert.True(iptc.IsEditable);
             Assert.Equal(new IptcDatasetKey(2, 120), Assert.Single(iptc.Datasets).Key);
         }
         // No eXIf chunk is written beside the profile, and removal has nothing it may remove.
