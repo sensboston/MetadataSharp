@@ -91,12 +91,12 @@ class CheckTests(unittest.TestCase):
         calls = []
 
         def runner(command, path):
-            calls.append((command[1], path.name))
+            calls.append((" ".join(command[1:]), path.name))
             return 0, PRINTED, ""
 
         problems, count = x.check(self.directory(), "exiv2", runner)
         self.assertEqual(([], 1), (problems, count))
-        self.assertEqual([("-pi", "a.jpg"), ("-pa", "a.jpg")], calls)
+        self.assertEqual([("-u -pi", "a.jpg"), ("-u -pa", "a.jpg")], calls)
 
     def test_a_file_the_tool_refuses_is_a_problem(self):
         problems, _ = x.check(self.directory(), "exiv2", lambda command, path: (1, "", "corrupted"))

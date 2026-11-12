@@ -170,7 +170,7 @@ public sealed class PngIptcTests
         Assert.False(Read(repeated)!.IsEditable);
         Assert.Equal(MetadataErrorCode.AmbiguousMetadata, Assert.Throws<MetadataException>(() => Save(repeated, Caption("x"))).Code);
         // An unknown chunk that is not safe to copy, as for every other PNG write.
-        byte[] unsafeChunk = PngFixture.Build(PngFixture.Chunk("abCd", [1]));
+        byte[] unsafeChunk = PngFixture.Build(PngFixture.Chunk("vpAG", [1]));
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => Save(unsafeChunk, Caption("x"))).Code);
         Assert.Equal(unsafeChunk, Save(unsafeChunk, new IptcEdit()));
         // A broken value is refused before anything is written.

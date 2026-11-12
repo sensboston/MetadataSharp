@@ -10,7 +10,11 @@ A line is "key type count value" with single spaces, which is what a line of
 "exiv2 -pi" is once its padding is folded. A value of * stands for any value.
 A dataset that occurs several times is several lines with the same key.
 
-A file passes when both "exiv2 -pi" and "exiv2 -pa" exit with 0 for it, print
+The tool leaves out a dataset it has no name for unless it is asked with -u,
+so both modes are run with it: a dataset the specification does not define,
+written as raw bytes, has to be printed too, under the number of its dataset.
+
+A file passes when both "exiv2 -u -pi" and "exiv2 -u -pa" exit with 0 for it, print
 every line of the row as often as the row has it, and print no other Iptc
 line: nothing was lost, nothing appeared, and no occurrence was doubled.
 The order of the lines is not compared.
@@ -88,7 +92,7 @@ def check(directory, exiv2, runner=run):
     problems = []
     for name, expected in entries:
         for mode in MODES:
-            code, output, errors = runner([exiv2, mode], directory / name)
+            code, output, errors = runner([exiv2, "-u", mode], directory / name)
             if code != 0:
                 problems.append((name, f"{mode}: not read (exit {code}): {errors.strip()[:300]}"))
                 continue

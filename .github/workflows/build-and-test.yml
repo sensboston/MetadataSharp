@@ -408,7 +408,7 @@ jobs:
       # Not key parity either: the pinned tool has to print, with -pi and -pa, every IPTC dataset an
       # edit wrote into a JPEG, a TIFF (tag 0x83BB, and the resources of tag 0x8649) and a PNG file
       # (the raw profile text chunk), as often as it was written, and no other.
-      - name: Every IPTC dataset an edit wrote is printed by the pinned tool (exiv2 -pi, -pa)
+      - name: Every IPTC dataset an edit wrote is printed by the pinned tool (exiv2 -u -pi, -pa)
         shell: bash
         run: |
           dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- iptc-edits artifacts/parity/edited-iptc
