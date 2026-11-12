@@ -98,11 +98,24 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   bytes are copied; the planned output is scanned and compared before it is written. Run
   43131239557: 2,215 tests; `exiv2 -pC`, `-pc` and `-pa` agree on 16 edited fixtures and on the 266
   files written from the corpus's 123 JPEG files (no refusal). Six capability rows for JPEG.
+- Write, PNG ICC profile and comment, WebP ICC profile: `PngMetadataDocument` `SaveIccProfile` /
+  `SaveComment` and `WebPMetadataDocument` `SaveIccProfile` (null removes). PNG: one `iCCP` chunk
+  (name `ICC Profile`, zlib of the platform) where the old one stood, else directly after `IHDR`;
+  writing a profile takes an `sRGB` chunk out, removing one leaves it. The comment replaces every
+  `tEXt` / `zTXt` / `iTXt` chunk with the keyword `Comment` by one where the first stood, else before
+  the first `IDAT`: `tEXt` when the text is ISO-8859-1 and reads back as itself, else uncompressed
+  `iTXt` in UTF-8. WebP: one `ICCP` chunk where the old one stood, else directly after `VP8X`, with
+  the ICC flag; a simple-layout file is given a `VP8X` chunk, which stays when the profile goes. A
+  file that holds exactly the profile is copied. The output is planned (`PlannedOutput`), scanned and
+  compared before it is written. Run 43135792289: 2,283 tests; `exiv2 -pC`, `-pc`, `-pa` agree on 36
+  edited fixtures and 25 files written from the corpus, and `exiv2 -pS` lists the expected chunks
+  for 19 and 23 PNG files (the tool reads a PNG comment from `Description`, so the `Comment` chunk
+  is checked by type, length and CRC-32). Nine capability rows.
 
 ## Next (in order)
 
-1. Write side: ICC profile and comment for PNG and WebP, then the profile for TIFF-based and BMFF
-   files; MakerNote-safe rules per vendor; removal of a whole BMFF item.
+1. Write side: the ICC profile for TIFF-based (tag 0x8773) and BMFF (`colr`) files; MakerNote-safe
+   rules per vendor; removal of a whole BMFF item.
 2. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.
 3. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
@@ -111,6 +124,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
-- ICC profiles and comments are written in JPEG only; a BMFF item is edited or added, never
+- ICC profiles are written in JPEG, PNG and WebP only, comments in JPEG and PNG; a PNG profile
+  over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to
+  agree with a written profile. A BMFF item is edited or added, never
   removed. Previews are not decoded and not written. CR3 and JPEG XL are read, never written.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.

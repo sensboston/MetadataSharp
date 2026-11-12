@@ -929,7 +929,7 @@ else if (args.Length == 3 && args[0] == "png-webp-embedded-corpus")
         {
             PngMetadataDocument document;
             try { document = PngMetadataDocument.Open(new MemoryStream(bytes)); }
-            catch (MetadataException) { continue; } // not a PNG this library opens, whatever its name says
+            catch (MetadataException refusal) { Count("png not opened " + refusal.Code); continue; } // damaged, animated, or no PNG at all
             pngs++;
             using (document)
             {
@@ -943,7 +943,7 @@ else if (args.Length == 3 && args[0] == "png-webp-embedded-corpus")
         {
             WebPMetadataDocument document;
             try { document = WebPMetadataDocument.Open(new MemoryStream(bytes)); }
-            catch (MetadataException) { continue; } // not a static WebP this library opens
+            catch (MetadataException refusal) { Count("webp not opened " + refusal.Code); continue; } // damaged, animated, or no WebP at all
             webps++;
             using (document)
             {
@@ -954,7 +954,7 @@ else if (args.Length == 3 && args[0] == "png-webp-embedded-corpus")
     }
     File.WriteAllLines(Path.Combine(args[2], "manifest.tsv"), manifest);
     File.WriteAllLines(Path.Combine(args[2], "chunks.tsv"), chunks);
-    Console.WriteLine($"::notice title=PNG and WebP corpus profile and comment edits::{pngs} PNG files and {webps} WebP files; "
+    Console.WriteLine($"::notice title=PNG and WebP corpus profile and comment edits::{pngs} PNG files and {webps} WebP files opened; "
         + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
     string[] reasons = refusals.GroupBy(refusal => (refusal.File, refusal.Reason))
         .Select(group => $"{group.Key.File} [{string.Join(' ', group.Select(refusal => refusal.Kind))}]: {group.Key.Reason}"
