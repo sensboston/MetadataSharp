@@ -10,7 +10,7 @@ using MetadataSharp.Tests.Jpeg;
 using Xunit;
 using static MetadataSharp.Tests.Cr3.Cr3Fixture;
 
-namespace MetadataSharp.Tests.Raw;
+namespace MetadataSharp.Tests.RawContainers;
 
 /// <summary>The readers of the RAW containers that are no TIFF file: Canon CRW, Minolta MRW and Fujifilm RAF, on authored files.</summary>
 public sealed class RawContainerTests
