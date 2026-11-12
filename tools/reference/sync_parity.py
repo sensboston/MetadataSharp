@@ -19,10 +19,16 @@ which keys there are and the value the tool prints for each.
 
 A key is "same" when both sides print the same value, and "form" when the
 values are the same items written apart differently (one item per element here,
-one text with spaces there). Every other outcome ("differs", "tool only",
-"ours only") has to be one this file documents in DOCUMENTED, with the reason;
-an outcome that is not documented fails the check. The counts of every outcome
-are printed either way.
+one text with spaces there) or the same rationals over another denominator.
+Every other outcome ("differs", "character code" for the same comment under
+another character code, "tool only", "tool only (empty)", "ours only") has to
+be one this file documents in DOCUMENTED, with the reason; an outcome that is
+not documented fails the check. The counts of every outcome are printed either
+way.
+
+A file this library refuses to read has no conversion to compare: it is left
+out of that direction and counted under the code of the refusal. That is a
+matter of the reader, not of the conversion, and the check says nothing on it.
 
 Usage: sync_parity.py CORPUS WORK --exiv2 PATH --fixture "COMMAND ..."
 """
@@ -33,6 +39,7 @@ import shutil
 import subprocess
 import sys
 from collections import Counter, OrderedDict
+from fractions import Fraction
 from pathlib import Path
 
 MAX_BYTES = 32 * 1024 * 1024
@@ -60,6 +67,24 @@ for _name in ("CFAPattern", "OECF", "SpatialFrequencyResponse", "DeviceSettingDe
              "not in the mapping table: the structure is not converted (a difference approved with the API)")
 document(TO_XMP, "Xmp.exif.GPSTimeStamp", "differs",
          "GPS time is UTC: written with Z and with the fraction the EXIF value has; the tool writes nine zeros and no zone")
+for _name in ("Xmp.dc.subject", "Xmp.xmpMM.*"):
+    document(TO_XMP, _name, "tool only",
+             "not a property any EXIF tag is converted to: the copy still held XMP or IPTC after exiv2 -d xi")
+for _name in ("SubSecTime", "SubSecTimeOriginal", "SubSecTimeDigitized"):
+    document(TO_EXIF, f"Exif.Photo.{_name}", "differs, ours only",
+             "the digits of the fraction as XMP has them (.06 gives 06, .00 gives 00); the tool writes a count of "
+             "nanoseconds without leading zeros (.06 gives 60000000) and nothing for a fraction of zero")
+document(TO_EXIF, "Exif.Photo.UserComment", "character code",
+         "text that is ASCII is written under the ASCII code; the tool writes every comment under UNICODE")
+for _name in ("GPSProcessingMethod", "GPSAreaInformation"):
+    document(TO_EXIF, f"Exif.GPSInfo.{_name}", "differs",
+             "the tool puts its own marker 'charset=Ascii ' into the XMP text it writes and takes it out when it "
+             "reads; this library takes the XMP text as the text")
+document(TO_XMP, "Xmp.exif.FileSource", "tool only",
+         "an EXIF value of a count the tag is not defined with (FileSource of four bytes) is not converted, and noted")
+for _name in ("Exif.Photo.FileSource", "Exif.Image.BitsPerSample"):
+    document(TO_EXIF, _name, "tool only",
+             "a count the EXIF tag is not defined with (FileSource of four, BitsPerSample other than three) is not written, and noted")
 
 
 def documented(direction, key, outcome):
@@ -84,9 +109,27 @@ def properties(text, prefix):
     return found
 
 
+def number(item):
+    """A rational in lowest terms, so that 54/1 and 540000/10000 are one number; any other item as it is."""
+    match = re.fullmatch(r"(-?\d+)/(\d+)", item)
+    if not match or int(match.group(2)) == 0:
+        return item
+    return Fraction(int(match.group(1)), int(match.group(2)))
+
+
 def items(values):
-    """The items of printed values, however they were kept apart."""
-    return [item for value in values for item in re.split(r"[,\s]+", value) if item]
+    """The items of printed values, however they were kept apart and whatever a rational is divided by."""
+    return [number(item) for value in values for item in re.split(r"[,\s]+", value) if item]
+
+
+def coded(values):
+    """The character code the tool prints before a comment, and the values without it."""
+    codes, texts = [], []
+    for value in values:
+        match = re.match(r"charset=(\S+)\s?", value)
+        codes.append(match.group(1) if match else "")
+        texts.append(value[match.end():] if match else value)
+    return codes, texts
 
 
 def empty(values):
@@ -103,6 +146,9 @@ def outcome(theirs, ours):
         return "same"
     if items(theirs) == items(ours):
         return "form"
+    (their_codes, their_texts), (our_codes, our_texts) = coded(theirs), coded(ours)
+    if their_texts == our_texts and their_codes != our_codes:
+        return "character code"
     return "differs"
 
 
@@ -288,7 +334,7 @@ def main(argv=None, runner=run):
              size=2500, limit=6)
     for direction in (TO_XMP, TO_EXIF):
         counts = ", ".join(f"{kind} {totals[(direction, kind)]}"
-                           for kind in ("same", "form", "differs", "tool only", "ours only"))
+                           for kind in ("same", "form", "differs", "character code", "tool only", "tool only (empty)", "ours only"))
         out = ", ".join(f"{count} {status}" for (way, status), count in sorted(left_out.items()) if way == direction)
         print(f"::notice title=Sync parity - {direction}::{files[direction]} files compared of {len(names)} prepared "
               f"({', '.join(f'{count} {why}' for why, count in skipped.items()) or 'none skipped'}); "

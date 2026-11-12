@@ -618,12 +618,12 @@ public sealed class MetadataSyncTests
         Assert.Equal("C12QLJK01SM", Text(Apply((ExifMetadata?)null, back.Exif), ExifDir, 0xA420));
 
         // A count the tag is not defined with is not written; the note gives the reason and nothing else.
-        SyncEdits wrong = MetadataSync.XmpToExif(Xmp(e => e.SetValue("Xmp.tiff.BitsPerSample", XmpValue.CreateArray(XmpValueKind.Seq, new[] { "8", "8", "8", "8" }))));
+        SyncEdits wrong = MetadataSync.XmpToExif(Xmp(e => e.SetValue("Xmp.tiff.BitsPerSample", XmpValue.CreateArray(XmpValueKind.Sequence, new[] { "8", "8", "8", "8" }))));
         Assert.True(wrong.Exif.IsEmpty);
         Assert.Equal("Xmp.tiff.BitsPerSample -> Exif.Ifd0.0x0102: BitsPerSample (0x0102) takes 3 value(s), not 4.", Notes(wrong));
 
         // Elements written as one text with spaces between them, as Exiv2 writes an array, are the elements.
-        SyncEdits spaced = MetadataSync.XmpToExif(Xmp(e => e.SetValue("Xmp.exif.ISOSpeedRatings", XmpValue.CreateArray(XmpValueKind.Seq, new[] { "100 200" }))));
+        SyncEdits spaced = MetadataSync.XmpToExif(Xmp(e => e.SetValue("Xmp.exif.ISOSpeedRatings", XmpValue.CreateArray(XmpValueKind.Sequence, new[] { "100 200" }))));
         Assert.Equal(string.Empty, Notes(spaced));
         Assert.Equal(Raw(Block((ExifDir, 0x8827, Shorts(100, 200))), new(ExifDir, 0x8827)), Raw(Apply(null, spaced.Exif), new(ExifDir, 0x8827)));
     }
