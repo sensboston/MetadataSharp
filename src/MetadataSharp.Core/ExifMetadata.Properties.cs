@@ -24,38 +24,40 @@ public sealed partial class ExifMetadata
     /// because the tag names no time zone. Null without the tag and for text that is not such a date,
     /// which includes the blank date the standard writes for an unknown one.
     /// </summary>
-    public DateTime? DateTimeOriginal =>
-        Text(ExifDirectoryKind.Exif, 0x9003) is { } text &&
-        DateTime.TryParseExact(text, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime moment)
-            ? moment
-            : null;
+    public DateTime? DateTimeOriginal => Moment(ExifDirectoryKind.Exif, 0x9003);
 
     /// <summary>
     /// <see cref="DateTimeOriginal" /> with the offset from UTC that the OffsetTimeOriginal tag (Exif,
     /// 0x9011) gives as <c>+HH:MM</c> or <c>-HH:MM</c>. Null when either tag is absent or cannot be
     /// read, or when the offset is beyond the fourteen hours a <see cref="DateTimeOffset" /> holds.
     /// </summary>
-    public DateTimeOffset? DateTimeOriginalWithOffset
-    {
-        get
-        {
-            if (DateTimeOriginal is not DateTime moment || Text(ExifDirectoryKind.Exif, 0x9011) is not { Length: 6 } text)
-                return null;
-            if (text[0] is not ('+' or '-') || text[3] != ':' ||
-                !TwoDigits(text, 1, out int hours) || !TwoDigits(text, 4, out int minutes) || minutes > 59)
-                return null;
-            var offset = new TimeSpan(hours, minutes, 0);
-            if (offset > TimeSpan.FromHours(14))
-                return null;
-            if (text[0] == '-')
-                offset = -offset;
-            // The local time less the offset has to be a date DateTimeOffset can hold.
-            long utcTicks = moment.Ticks - offset.Ticks;
-            if (utcTicks < DateTime.MinValue.Ticks || utcTicks > DateTime.MaxValue.Ticks)
-                return null;
-            return new DateTimeOffset(moment, offset);
-        }
-    }
+    public DateTimeOffset? DateTimeOriginalWithOffset =>
+        DateTimeOriginal is DateTime moment ? WithOffset(moment, 0x9011) : null;
+
+    /// <summary>
+    /// The best date the file gives for the picture, in the camera's local time: the first of the
+    /// DateTimeOriginal tag (Exif, 0x9003), the DateTimeDigitized tag (Exif, 0x9004) and the DateTime
+    /// tag (IFD0, 0x0132) that holds a date. A tag that is absent, or whose text is not
+    /// <c>YYYY:MM:DD HH:MM:SS</c> (the blank date of the standard among them), is passed over. The
+    /// kind is <see cref="DateTimeKind.Unspecified" />. Null when none of the three holds a date.
+    /// </summary>
+    /// <remarks>
+    /// The later tags are stand-ins: DateTimeDigitized is when the picture was stored as digital data,
+    /// which for a camera is the moment it was taken and for a scan is not; DateTime is when the file
+    /// was last changed, which an editor may have moved. <see cref="DateTimeOriginal" /> answers for
+    /// the first tag alone.
+    /// </remarks>
+    public DateTime? DateTaken => Taken()?.Moment;
+
+    /// <summary>
+    /// <see cref="DateTaken" /> with the offset from UTC of the tag it was read from: OffsetTimeOriginal
+    /// (Exif, 0x9011) for DateTimeOriginal, OffsetTimeDigitized (Exif, 0x9012) for DateTimeDigitized,
+    /// OffsetTime (Exif, 0x9010) for DateTime. Null when there is no date, when that one offset tag is
+    /// absent or is not <c>+HH:MM</c> or <c>-HH:MM</c> within fourteen hours; the offset of another of
+    /// the three dates is never borrowed, so a value here is always <see cref="DateTaken" /> itself.
+    /// </summary>
+    public DateTimeOffset? DateTakenWithOffset =>
+        Taken() is (DateTime moment, ushort offsetTag) ? WithOffset(moment, offsetTag) : null;
 
     /// <summary>
     /// How the stored image is turned: the Orientation tag (IFD0, 0x0112). Null without the tag and
@@ -250,6 +252,45 @@ public sealed partial class ExifMetadata
 
     /// <summary>The smallest quotient that has 55 bits: the 53 of a <see cref="double" />, a guard bit and a sticky bit.</summary>
     private const long RoundingBits = 1L << 54;
+
+    /// <summary>The date of a tag whose text is <c>YYYY:MM:DD HH:MM:SS</c>, or null.</summary>
+    private DateTime? Moment(ExifDirectoryKind directory, ushort tag) =>
+        Text(directory, tag) is { } text &&
+        DateTime.TryParseExact(text, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime moment)
+            ? moment
+            : null;
+
+    /// <summary>The first of the three dates that reads as one, with the tag of the Exif directory that holds its offset.</summary>
+    private (DateTime Moment, ushort OffsetTag)? Taken()
+    {
+        if (Moment(ExifDirectoryKind.Exif, 0x9003) is DateTime original)
+            return (original, 0x9011);
+        if (Moment(ExifDirectoryKind.Exif, 0x9004) is DateTime digitized)
+            return (digitized, 0x9012);
+        if (Moment(ExifDirectoryKind.Ifd0, 0x0132) is DateTime changed)
+            return (changed, 0x9010);
+        return null;
+    }
+
+    /// <summary>A local time with the offset an OffsetTime tag of the Exif directory gives, or null when the tag does not give one.</summary>
+    private DateTimeOffset? WithOffset(DateTime moment, ushort offsetTag)
+    {
+        if (Text(ExifDirectoryKind.Exif, offsetTag) is not { Length: 6 } text)
+            return null;
+        if (text[0] is not ('+' or '-') || text[3] != ':' ||
+            !TwoDigits(text, 1, out int hours) || !TwoDigits(text, 4, out int minutes) || minutes > 59)
+            return null;
+        var offset = new TimeSpan(hours, minutes, 0);
+        if (offset > TimeSpan.FromHours(14))
+            return null;
+        if (text[0] == '-')
+            offset = -offset;
+        // The local time less the offset has to be a date DateTimeOffset can hold.
+        long utcTicks = moment.Ticks - offset.Ticks;
+        if (utcTicks < DateTime.MinValue.Ticks || utcTicks > DateTime.MaxValue.Ticks)
+            return null;
+        return new DateTimeOffset(moment, offset);
+    }
 
     private static bool TwoDigits(string text, int at, out int number)
     {

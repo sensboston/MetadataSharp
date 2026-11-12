@@ -5,7 +5,7 @@ MakerNotes, read and written without decoding or recompressing image data. No na
 no runtime dependencies. Targets .NET 8 and .NET 10.
 
 The goal is exiv2-level functionality as an independent implementation. **Work in progress:**
-see [docs/CURRENT_STATE.md](docs/CURRENT_STATE.md) for what works today and what is next.
+see [docs/CURRENT_STATE.md][state] for what works today and what is next.
 
 ## Highlights
 
@@ -26,10 +26,9 @@ yet, so the reference is to the project in a clone of this repository:
 <ProjectReference Include="MetadataSharp/src/MetadataSharp.Formats/MetadataSharp.Formats.csproj" />
 ```
 
-The snippets below are the code of
-[tests/MetadataSharp.Examples/QuickStart.cs](tests/MetadataSharp.Examples/QuickStart.cs), which CI
-compiles and runs on .NET 8 and .NET 10. In them `path`, `source` and `destination` are file paths
-and `upload` is a `Stream`. They use these namespaces:
+The snippets below are the code of [tests/MetadataSharp.Examples/QuickStart.cs][examples], which
+CI compiles and runs on .NET 8 and .NET 10. In them `path`, `source` and `destination` are file
+paths and `upload` is a `Stream`. They use these namespaces:
 
 ```csharp
 using System.Text;
@@ -56,7 +55,8 @@ if (image.Exif is { } exif)
     foreach (ExifEntry entry in exif.Entries)
     {
         string name = ExifTags.Find(entry.Key)?.Name ?? $"0x{entry.Key.TagId:X4}";
-        string value = ExifTags.Interpret(exif, entry.Key) ?? $"{entry.Value.FieldType} x {entry.Value.Count}";
+        string value = ExifTags.Interpret(exif, entry.Key)               // "1/250 s", "right, top"
+            ?? (entry.Value.TryGetString(out string? text) ? text : $"{entry.Value.FieldType} x {entry.Value.Count}");
         Console.WriteLine($"{entry.Key.Directory}.{name} = {value}");
     }
 
@@ -68,38 +68,65 @@ foreach (MetadataReadError error in image.Errors)
 
 ### Read single tags
 
+`ExifMetadata` has a property for each of the tags an application asks for first: `Make`, `Model`,
+`LensModel`, `DateTimeOriginal`, `DateTaken`, `Orientation`, `ExposureTime`, `FNumber`, `IsoSpeed`,
+`FocalLength`, `PixelWidth`, `PixelHeight` and `GpsPosition`, the two dates also with their offset
+from UTC. For every other tag `ExifValue` has a `TryGet…` accessor per field type.
+
 ```csharp
-var model = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0110);
-var exposureTime = new ExifTagKey(ExifDirectoryKind.Exif, 0x829A);
-var orientation = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112);
-
 ExifMetadata? exif = ImageMetadata.Read(path).Exif;
-string? camera = null;
-if (exif is not null && exif.TryGetEntry(model, out ExifEntry? entry))
-{
-    // A value is its raw bytes, with the field type, the count and the byte order.
-    byte[] raw = new byte[entry.Value.ByteLength];
-    entry.Value.CopyRawTo(raw);
-    camera = Encoding.ASCII.GetString(raw).TrimEnd('\0');
-}
 
-// Interpret gives the text a metadata tool prints: "1/250 s", "right, top".
-string? exposure = exif is null ? null : ExifTags.Interpret(exif, exposureTime);
-string? rotation = exif is null ? null : ExifTags.Interpret(exif, orientation);
+// The tags asked for first are properties. Each is null when the file has no such tag, or
+// has something in it that cannot be read as the property's type; none of them throws.
+string? camera = exif?.Model;                          // "Example 100"
+DateTime? taken = exif?.DateTaken;                     // DateTimeOriginal, else DateTimeDigitized, else DateTime
+DateTimeOffset? instant = exif?.DateTakenWithOffset;   // with the OffsetTime tag of that date, when the file has it
+UnsignedRational? exposure = exif?.ExposureTime;       // 1/250, the fraction the file stores
+double? aperture = exif?.FNumber;                      // 2.8
+int? iso = exif?.IsoSpeed;                             // 400
+ExifOrientation? orientation = exif?.Orientation;      // RightTop
+GpsPosition? position = exif?.GpsPosition;             // decimal degrees; south and west are negative
+
+// Any other tag is found by its key and read with the accessor for its field type.
+string? software = null;
+if (exif is not null && exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0131), out ExifEntry? entry) &&
+    entry.Value.TryGetString(out string? text))
+    software = text;
+
+// Interpret gives the text a metadata tool prints for a tag: "1/250 s", "F2.8", "right, top".
+string? printed = exif is null ? null : ExifTags.Interpret(exif, new ExifTagKey(ExifDirectoryKind.Exif, 0x829A));
 ```
 
 ### Read XMP and IPTC
+
+`XmpPacket` has `Title`, `Description`, `Creators`, `Rights`, `Subjects` and `Rating`; `IptcPacket`
+has `ObjectName`, `Headline`, `Caption`, `Keywords`, `Bylines` and `Copyright`. Everything else is
+in `Entries` and `Datasets`.
 
 ```csharp
 var lines = new List<string>();
 ImageMetadata image = ImageMetadata.Read(path);
 
 if (image.Xmp is { } xmp)
+{
+    // The descriptive properties of Dublin Core and the rating; a text in several languages
+    // gives its x-default. A list the packet does not have is empty, a text is null.
+    lines.Add($"title: {xmp.Title}");
+    lines.Add($"creators: {string.Join(", ", xmp.Creators)}");
+    lines.Add($"subjects: {string.Join(", ", xmp.Subjects)}");
+    lines.Add($"rating: {xmp.Rating}");
+
     foreach (XmpEntry property in xmp.Entries)       // every property; nested ones have a path
         lines.Add($"{property.Prefix}:{property.Path} = {string.Join("; ", property.Values)}");
+}
 
 if (image.Iptc is { } iptc)
-    foreach (IptcDataset dataset in iptc.Datasets)
+{
+    lines.Add($"headline: {iptc.Headline}");
+    lines.Add($"caption: {iptc.Caption}");
+    lines.Add($"keywords: {string.Join(", ", iptc.Keywords)}");
+
+    foreach (IptcDataset dataset in iptc.Datasets)   // every dataset, by record and number
     {
         IptcDatasetNames.TryGetName(dataset.Key, out string? name);
         byte[] raw = new byte[dataset.Value.ByteLength];
@@ -107,6 +134,7 @@ if (image.Iptc is { } iptc)
         string text = IptcDatasetNames.Interpret(dataset.Key, dataset.Value) ?? Encoding.UTF8.GetString(raw);
         lines.Add($"{dataset.Key.Record}:{dataset.Key.Dataset} {name} = {text}");
     }
+}
 ```
 
 ### Edit EXIF in a JPEG
@@ -205,17 +233,29 @@ catch (MetadataException e)
 }
 ```
 
-What each format keeps and where its limits are: [docs/usage](docs/usage).
+What each format keeps and where its limits are: [docs/usage][usage].
 
 ## Documentation
 
-- [Current state and roadmap](docs/CURRENT_STATE.md)
-- [Build and test](docs/BUILD_AND_TEST.md)
-- [Development policy](docs/DEVELOPMENT.md)
-- Usage and preservation limits: [docs/usage](docs/usage)
-- Contributor and agent rules: [METADATASHARP_PROMPT.md](METADATASHARP_PROMPT.md)
-- Design history: [docs/archive](docs/archive) (read-only)
+- [Current state and roadmap][state]
+- [Build and test][build]
+- [Development policy][development]
+- Usage and preservation limits: [docs/usage][usage]
+- Contributor and agent rules: [METADATASHARP_PROMPT.md][rules]
+- Design history: [docs/archive][archive] (read-only)
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+MIT, see [LICENSE][license].
+
+<!-- This file is also the README of the NuGet packages, where a relative link leads nowhere: every
+     link is absolute and starts with MetadataSharpRepositoryUrl of Directory.Build.props.
+     QuickStartTests.ReadmeLinksAreAbsoluteAndLeadIntoTheRepository holds them to it. -->
+[state]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/CURRENT_STATE.md
+[examples]: https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Examples/QuickStart.cs
+[usage]: https://github.com/sensboston/MetadataSharp/tree/HEAD/docs/usage
+[build]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/BUILD_AND_TEST.md
+[development]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/DEVELOPMENT.md
+[rules]: https://github.com/sensboston/MetadataSharp/blob/HEAD/METADATASHARP_PROMPT.md
+[archive]: https://github.com/sensboston/MetadataSharp/tree/HEAD/docs/archive
+[license]: https://github.com/sensboston/MetadataSharp/blob/HEAD/LICENSE

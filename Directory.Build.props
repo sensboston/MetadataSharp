@@ -20,7 +20,9 @@
     <IsAotCompatible>true</IsAotCompatible>
 
     <!-- The repository the packages and their symbols point at. One property, so that a move of the
-         repository is one change: -p:MetadataSharpRepositoryUrl=... or an edit of this line. -->
+         repository is one change: -p:MetadataSharpRepositoryUrl=... or an edit of this line. The
+         packed README links into the repository too: the link block at its end starts with this
+         value, and QuickStartTests fails until the two agree. -->
     <MetadataSharpRepositoryUrl Condition="'$(MetadataSharpRepositoryUrl)' == ''">https://github.com/sensboston/MetadataSharp</MetadataSharpRepositoryUrl>
 
     <Authors>SeNS</Authors>
