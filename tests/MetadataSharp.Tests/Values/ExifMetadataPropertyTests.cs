@@ -174,6 +174,8 @@ public sealed class ExifMetadataPropertyTests
         Assert.Equal(DateTimeKind.Unspecified, exif.DateTimeOriginal!.Value.Kind);
         Assert.Equal(new DateTimeOffset(2024, 2, 29, 13, 14, 15, new TimeSpan(5, 30, 0)), exif.DateTimeOriginalWithOffset);
         Assert.Equal(new TimeSpan(5, 30, 0), exif.DateTimeOriginalWithOffset!.Value.Offset);
+        Assert.Equal(exif.DateTimeOriginal, exif.DateTaken);
+        Assert.Equal(exif.DateTimeOriginalWithOffset, exif.DateTakenWithOffset);
         Assert.Equal(ExifOrientation.RightTop, exif.Orientation);
         Assert.Equal(new UnsignedRational(1, 250), exif.ExposureTime);
         Assert.Equal(2.8, exif.FNumber);
@@ -222,6 +224,8 @@ public sealed class ExifMetadataPropertyTests
             Assert.Null(exif.LensModel);
             Assert.Null(exif.DateTimeOriginal);
             Assert.Null(exif.DateTimeOriginalWithOffset);
+            Assert.Null(exif.DateTaken);
+            Assert.Null(exif.DateTakenWithOffset);
             Assert.Null(exif.Orientation);
             Assert.Null(exif.ExposureTime);
             Assert.Null(exif.FNumber);
@@ -241,6 +245,7 @@ public sealed class ExifMetadataPropertyTests
         ExifMetadata exif = Block(
             (Ifd0, 0x010F, number), (Ifd0, 0x0110, number), (Photo, 0xA434, number),
             (Photo, 0x9003, number), (Photo, 0x9011, number),
+            (Photo, 0x9004, number), (Photo, 0x9012, number), (Ifd0, 0x0132, number), (Photo, 0x9010, number),
             (Ifd0, 0x0112, text), (Photo, 0x829A, signed), (Photo, 0x829D, signed), (Photo, 0x920A, signed),
             (Photo, 0x8827, text), (Photo, 0x8833, text), (Photo, 0x8832, signed), (Photo, 0x8831, text),
             (Photo, 0xA002, text), (Photo, 0xA003, signed), (Ifd0, 0x0100, text), (Ifd0, 0x0101, text),
@@ -250,6 +255,8 @@ public sealed class ExifMetadataPropertyTests
         Assert.Null(exif.LensModel);
         Assert.Null(exif.DateTimeOriginal);
         Assert.Null(exif.DateTimeOriginalWithOffset);
+        Assert.Null(exif.DateTaken);
+        Assert.Null(exif.DateTakenWithOffset);
         Assert.Null(exif.Orientation);
         Assert.Null(exif.ExposureTime);
         Assert.Null(exif.FNumber);
@@ -358,6 +365,168 @@ public sealed class ExifMetadataPropertyTests
         Assert.Null(Block((Photo, 0x9003, Ascii("9999:12:31 23:59:59", II)), (Photo, 0x9011, Ascii("-01:00", II))).DateTimeOriginalWithOffset);
         Assert.NotNull(Block((Photo, 0x9003, Ascii("0001:01:01 00:00:00", II)), (Photo, 0x9011, Ascii("-01:00", II))).DateTimeOriginalWithOffset);
         Assert.NotNull(Block((Photo, 0x9003, Ascii("9999:12:31 23:59:59", II)), (Photo, 0x9011, Ascii("+01:00", II))).DateTimeOriginalWithOffset);
+    }
+
+    // ---- The date taken -------------------------------------------------------------------------------
+
+    private const string Original = "2024:02:29 13:14:15", Digitized = "2024:03:01 08:00:00", Changed = "2024:04:05 18:30:45";
+
+    private static readonly DateTime OriginalMoment = new(2024, 2, 29, 13, 14, 15),
+        DigitizedMoment = new(2024, 3, 1, 8, 0, 0), ChangedMoment = new(2024, 4, 5, 18, 30, 45);
+
+    /// <summary>
+    /// A block with DateTimeOriginal, DateTimeDigitized and DateTime and their three offset tags; a
+    /// null leaves the tag out.
+    /// </summary>
+    private static ExifMetadata Dates(string? original, string? digitized, string? changed,
+        string? originalOffset = null, string? digitizedOffset = null, string? changedOffset = null)
+    {
+        var tags = new List<(ExifDirectoryKind Directory, ushort Tag, ExifValue Value)>();
+        void Add(ExifDirectoryKind directory, ushort tag, string? text)
+        {
+            if (text is not null) tags.Add((directory, tag, Ascii(text, II)));
+        }
+        Add(Ifd0, 0x0132, changed);
+        Add(Photo, 0x9003, original);
+        Add(Photo, 0x9004, digitized);
+        Add(Photo, 0x9010, changedOffset);
+        Add(Photo, 0x9011, originalOffset);
+        Add(Photo, 0x9012, digitizedOffset);
+        return Block([.. tags]);
+    }
+
+    [Fact]
+    public void TheDateTakenIsTheFirstOfTheThreeDatesTheFileHas()
+    {
+        Assert.Equal(OriginalMoment, Dates(Original, Digitized, Changed).DateTaken);
+        Assert.Equal(OriginalMoment, Dates(Original, null, null).DateTaken);
+        Assert.Equal(OriginalMoment, Dates(Original, null, Changed).DateTaken);
+        Assert.Equal(DigitizedMoment, Dates(null, Digitized, Changed).DateTaken);
+        Assert.Equal(DigitizedMoment, Dates(null, Digitized, null).DateTaken);
+        Assert.Equal(ChangedMoment, Dates(null, null, Changed).DateTaken);
+        Assert.Null(Dates(null, null, null).DateTaken);
+        Assert.Equal(DateTimeKind.Unspecified, Dates(null, null, Changed).DateTaken!.Value.Kind);
+    }
+
+    [Fact]
+    public void DateTimeOriginalStaysTheOneTagWhateverTheOthersHold()
+    {
+        ExifMetadata exif = Dates(null, Digitized, Changed, digitizedOffset: "+01:00", changedOffset: "+02:00");
+        Assert.Null(exif.DateTimeOriginal);
+        Assert.Null(exif.DateTimeOriginalWithOffset);
+        Assert.Equal(DigitizedMoment, exif.DateTaken);
+
+        // An offset alone does not make the first tag answer either.
+        Assert.Null(Dates(null, Digitized, Changed, originalOffset: "+01:00").DateTimeOriginalWithOffset);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("    :  :     :  :  ")]            // the standard's form for an unknown date
+    [InlineData("0000:00:00 00:00:00")]
+    [InlineData("2023:02:29 13:14:15")]
+    [InlineData("2024-02-29 13:14:15")]
+    [InlineData("yesterday")]
+    public void ATagThatHoldsNoDateIsPassedOver(string stored)
+    {
+        Assert.Equal(DigitizedMoment, Dates(stored, Digitized, Changed).DateTaken);
+        Assert.Equal(ChangedMoment, Dates(stored, stored, Changed).DateTaken);
+        Assert.Equal(ChangedMoment, Dates(null, stored, Changed).DateTaken);
+        Assert.Equal(OriginalMoment, Dates(Original, stored, stored).DateTaken);
+        Assert.Null(Dates(stored, stored, stored).DateTaken);
+        Assert.Null(Dates(stored, stored, stored, "+01:00", "+01:00", "+01:00").DateTakenWithOffset);
+    }
+
+    [Fact]
+    public void ADateOfAnotherFieldTypeIsPassedOver()
+    {
+        ExifMetadata exif = Block((Photo, 0x9003, Short(II, 2024)), (Photo, 0x9004, Ascii(Digitized, II)));
+        Assert.Equal(DigitizedMoment, exif.DateTaken);
+    }
+
+    [Fact]
+    public void TheDateTakenTakesTheOffsetOfTheTagItWasReadFrom()
+    {
+        ExifMetadata all = Dates(Original, Digitized, Changed, "+05:30", "-08:00", "+01:00");
+        Assert.Equal(new DateTimeOffset(OriginalMoment, new TimeSpan(5, 30, 0)), all.DateTakenWithOffset);
+        Assert.Equal(all.DateTimeOriginalWithOffset, all.DateTakenWithOffset);
+
+        ExifMetadata scanned = Dates(null, Digitized, Changed, "+05:30", "-08:00", "+01:00");
+        Assert.Equal(new DateTimeOffset(DigitizedMoment, TimeSpan.FromHours(-8)), scanned.DateTakenWithOffset);
+        Assert.Equal(TimeSpan.FromHours(-8), scanned.DateTakenWithOffset!.Value.Offset);
+
+        ExifMetadata edited = Dates(null, null, Changed, "+05:30", "-08:00", "+01:00");
+        Assert.Equal(new DateTimeOffset(ChangedMoment, TimeSpan.FromHours(1)), edited.DateTakenWithOffset);
+        Assert.Equal(TimeSpan.FromHours(1), edited.DateTakenWithOffset!.Value.Offset);
+    }
+
+    [Fact]
+    public void TheOffsetOfAnotherDateIsNeverBorrowed()
+    {
+        // The date comes from DateTimeOriginal, which has no offset of its own: the later tags' offsets stay unused.
+        ExifMetadata exif = Dates(Original, Digitized, Changed, null, "-08:00", "+01:00");
+        Assert.Equal(OriginalMoment, exif.DateTaken);
+        Assert.Null(exif.DateTakenWithOffset);
+
+        // And the other way round: a later date does not take the offset of an earlier tag that holds no date.
+        Assert.Null(Dates(null, Digitized, Changed, "+05:30", null, "+01:00").DateTakenWithOffset);
+        Assert.Null(Dates("    :  :     :  :  ", Digitized, Changed, "+05:30", null, "+01:00").DateTakenWithOffset);
+        Assert.Null(Dates(null, null, Changed, "+05:30", "-08:00", null).DateTakenWithOffset);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Z")]
+    [InlineData("+5:30")]
+    [InlineData("05:30")]
+    [InlineData("+05:60")]
+    [InlineData("+14:01")]
+    [InlineData("+0530")]
+    [InlineData("   :  ")]
+    public void AnOffsetThatIsNotOneLeavesTheDateTakenWithoutOne(string stored)
+    {
+        // The matching offset is unreadable; a readable one of a later tag is not taken in its place.
+        ExifMetadata exif = Dates(Original, Digitized, Changed, stored, "-08:00", "+01:00");
+        Assert.Equal(OriginalMoment, exif.DateTaken);
+        Assert.Null(exif.DateTakenWithOffset);
+        Assert.Null(Dates(null, Digitized, null, digitizedOffset: stored).DateTakenWithOffset);
+        Assert.Null(Dates(null, null, Changed, changedOffset: stored).DateTakenWithOffset);
+    }
+
+    [Fact]
+    public void AnOffsetHasToLeaveTheDateTakenRepresentable()
+    {
+        Assert.Null(Dates(null, "0001:01:01 00:00:00", null, digitizedOffset: "+01:00").DateTakenWithOffset);
+        Assert.Null(Dates(null, null, "9999:12:31 23:59:59", changedOffset: "-01:00").DateTakenWithOffset);
+        Assert.NotNull(Dates(null, "0001:01:01 00:00:00", null, digitizedOffset: "-01:00").DateTakenWithOffset);
+        Assert.NotNull(Dates(null, null, "9999:12:31 23:59:59", changedOffset: "+01:00").DateTakenWithOffset);
+    }
+
+    [Theory]
+    [InlineData("jpeg", Endianness.LittleEndian)]
+    [InlineData("jpeg", Endianness.BigEndian)]
+    [InlineData("png", Endianness.LittleEndian)]
+    [InlineData("webp", Endianness.BigEndian)]
+    public void AFileWithOnlyTheLaterDatesStillSaysWhenItWasTaken(string container, Endianness order)
+    {
+        // An edited picture: the first directory has DateTime, the Exif directory its offset and nothing else.
+        (ExifDirectoryKind Directory, ushort Tag, ExifValue Value)[] edited =
+            [(Ifd0, 0x0132, Ascii(Changed, order)), (Photo, 0x9010, Ascii("+02:00", order))];
+        ExifMetadata exif = ImageMetadata.Read(Container(container, Tiff(order, edited))).Exif!;
+        Assert.Null(exif.DateTimeOriginal);
+        Assert.Equal(ChangedMoment, exif.DateTaken);
+        Assert.Equal(new DateTimeOffset(ChangedMoment, TimeSpan.FromHours(2)), exif.DateTakenWithOffset);
+
+        // A scan: DateTimeDigitized and its offset beside a blank DateTimeOriginal.
+        (ExifDirectoryKind Directory, ushort Tag, ExifValue Value)[] scanned =
+        [
+            (Ifd0, 0x0132, Ascii(Changed, order)), (Photo, 0x9003, Ascii("    :  :     :  :  ", order)),
+            (Photo, 0x9004, Ascii(Digitized, order)), (Photo, 0x9012, Ascii("-03:30", order)),
+        ];
+        exif = ImageMetadata.Read(Container(container, Tiff(order, scanned))).Exif!;
+        Assert.Null(exif.DateTimeOriginal);
+        Assert.Equal(DigitizedMoment, exif.DateTaken);
+        Assert.Equal(new DateTimeOffset(DigitizedMoment, new TimeSpan(-3, -30, 0)), exif.DateTakenWithOffset);
     }
 
     // ---- Orientation ----------------------------------------------------------------------------------
