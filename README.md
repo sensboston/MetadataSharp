@@ -141,10 +141,12 @@ if (image.Iptc is { } iptc)
 
 An edit names the tags to set and to remove; everything it does not name stays as it was. A save
 writes a new file or an empty stream and never overwrites its source. Any tag of the IFD0, EXIF, GPS,
-Interoperability and thumbnail directories can be set, in any field type: text and numbers through the
-typed overloads, anything else as a raw `ExifValue`. The pointers between directories, the addresses of
-image data and the MakerNote are not edited as values (`ExifEdit.IsEditable`); a camera's MakerNote stays
-where it is, byte for byte.
+Interoperability and thumbnail directories can be set: text and numbers through the typed overloads,
+anything else as a raw `ExifValue`. `Set` holds a tag the Exif vocabulary lists to the field type and
+count it prescribes; `SetUnchecked` writes the value as given. The pointers between directories, the
+addresses of image data and the MakerNote are not edited as values (`ExifEdit.IsEditable`); a camera's
+MakerNote stays where it is, byte for byte. A thumbnail directory is edited where a file has one and is
+not created.
 
 ```csharp
 var edit = new ExifEdit();

@@ -141,18 +141,30 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   2,641 values equal, none different.
 - README: the quick start reads through these properties (16 tests run the snippets and hold the
   README to them); its links are absolute under `MetadataSharpRepositoryUrl`, checked by a test.
+- Any EXIF tag is written (`ExifEdit.Set` / `Remove`, typed overloads): every tag of IFD0, EXIF, GPS,
+  Interop and an existing thumbnail directory, known to `ExifTags` or not; `Set` holds a listed tag
+  to its definition, `SetUnchecked` writes any field type as given.
+  Pointers, image-data addresses and the MakerNote are not values to set (`TagNotEditable`,
+  `ExifEdit.IsEditable`). JPEG, PNG and WebP now edit a block where it lies, as the TIFF-based and
+  BMFF writers do: in place when a value fits, else appended, the MakerNote at its offset; a
+  directory appears with its first tag and goes with its last; a thumbnail directory is not created.
+  Run 43182485287 / 43182493868: 2,817 tests; `exiv2 -u -pa` reads 54 authored edits and 387 files
+  written from the corpus's 132 JPEG / PNG / WebP files (114 of them gained their block); every
+  line the edit did not name is printed as before. The ExifTool harness (scheduled job) was not run.
 
 ## Next (in order)
 
 1. Publish 1.0 to NuGet: a version and a release workflow (packages are ready; nothing is published).
-2. Write side: MakerNote-safe rules per vendor; removal of a whole BMFF item.
+2. Write side: thumbnail (IFD1) creation and replacement; MakerNote-safe rules per vendor; removal
+   of a whole BMFF item.
 3. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.
 4. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
 
 ## Known limits
 
-- Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
+- Writes refuse when safety is not established; MakerNotes are never moved or edited. EXIF takes any
+  tag; a thumbnail directory (IFD1) is not created, and IPTC and XMP writes keep their profiles.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
 - No ICC write for PSD, JPEG 2000 and EXV; comments are written in JPEG and PNG only; a PNG profile
   over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to
