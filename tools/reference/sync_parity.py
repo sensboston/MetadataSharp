@@ -281,6 +281,11 @@ def main(argv=None, runner=run):
     explained = [(key, value) for key, value in table.items() if key[2] != "form" and documented(*key) is not None]
     forms = [(key, value) for key, value in table.items() if key[2] == "form"]
 
+    # The annotations of a job are capped: what fails goes first.
+    unexplained.sort(key=lambda item: (item[0][2] != "differs", item[0][0], item[0][1]))
+    annotate("error", "Sync parity - differences that are not documented",
+             (f"{direction} {key} {kind}: {count}; {example}" for (direction, key, kind), (count, example) in unexplained),
+             size=2500, limit=6)
     for direction in (TO_XMP, TO_EXIF):
         counts = ", ".join(f"{kind} {totals[(direction, kind)]}"
                            for kind in ("same", "form", "differs", "tool only", "ours only"))
@@ -289,16 +294,13 @@ def main(argv=None, runner=run):
               f"({', '.join(f'{count} {why}' for why, count in skipped.items()) or 'none skipped'}); "
               f"left out, not read by this library: {out or 'none'}; values: {counts}")
     refusals, notes = grouped(args.work)
-    annotate("notice", "Sync parity - files this library did not read", refusals, limit=2)
-    annotate("notice", "Sync parity - values not converted and noted", notes, limit=3)
+    annotate("notice", "Sync parity - files this library did not read", refusals, limit=1)
+    annotate("notice", "Sync parity - values not converted and noted", notes, limit=1)
     annotate("notice", "Sync parity - same items in another form",
              (f"{direction} {key}: {count}; {example}" for (direction, key, _), (count, example) in forms), limit=1)
     annotate("notice", "Sync parity - documented differences",
              (f"{direction} {key} {kind}: {count}; {documented(direction, key, kind)}; {example}"
               for (direction, key, kind), (count, example) in explained), limit=2)
-    unexplained.sort(key=lambda item: (item[0][2] != "differs", item[0][0], item[0][1]))
-    annotate("error", "Sync parity - differences that are not documented",
-             (f"{direction} {key} {kind}: {count}; {example}" for (direction, key, kind), (count, example) in unexplained))
     for (direction, key, kind), (count, example) in unexplained:
         print(f"FAIL {direction} {key} {kind}: {count}; {example}")
     return 1 if unexplained else 0

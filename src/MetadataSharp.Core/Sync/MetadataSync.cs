@@ -57,7 +57,8 @@ public static class MetadataSync
             string[]? items = SyncExif.Read(exif, mapping);
             if (items is null)
             {
-                if (exif.TryGetEntry(mapping.Tag, out _)) edits.Note(SyncExif.Key(mapping.Tag), mapping.XmpPath, "The EXIF value is not one the tag is defined to hold, or it lacks a companion tag.");
+                if (exif.TryGetEntry(mapping.Tag, out _) && !SyncExif.IsBlank(exif, mapping))
+                    edits.Note(SyncExif.Key(mapping.Tag), mapping.XmpPath, "The EXIF value is not one the tag is defined to hold, or it lacks a companion tag.");
                 continue;
             }
             if (options.Mode == SyncMode.FillMissing && view.Has(mapping.NamespaceUri, mapping.Name)) continue;
@@ -276,7 +277,15 @@ public static class MetadataSync
     private static bool ToExif(SyncEdits edits, string source, ExifXmpMapping mapping, string[] items, ExifMetadata? existing)
     {
         try { SyncExif.Write(edits.Exif, mapping, items, existing); return true; }
-        catch (ArgumentException e) { edits.Note(source, SyncExif.Key(mapping.Tag), e.Message); return false; }
+        catch (ArgumentException e)
+        {
+            // The reason alone: the advice of the edit and the parameter name are for its caller.
+            string reason = e.Message;
+            int advice = reason.IndexOf(" SetUnchecked", StringComparison.Ordinal);
+            if (advice < 0) advice = reason.IndexOf(" (Parameter '", StringComparison.Ordinal);
+            edits.Note(source, SyncExif.Key(mapping.Tag), advice > 0 ? reason[..advice] : reason);
+            return false;
+        }
     }
 
     private static bool ToIptc(SyncEdits edits, string source, IptcXmpMapping mapping, string[] items)

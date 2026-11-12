@@ -594,4 +594,37 @@ public sealed class MetadataSyncTests
         // A packet that no document read says nothing about a digest.
         Assert.Equal(IptcDigestState.Absent, iptc.Digest);
     }
+
+    [Fact]
+    public void ABlankTextSaysNothingAndAShortTextIsGivenBackAtItsLength()
+    {
+        // Spaces, NULs, and a comment that is its character code and nothing else: no property and no note.
+        byte[] comment = [.. "ASCII\0\0\0"u8, 0x20, 0x20, 0, 0];
+        ExifMetadata blank = Block((Ifd0, 0x010E, Ascii("   ")), (Ifd0, 0x013B, Ascii(string.Empty)),
+            (ExifDir, 0x9286, Bytes(TiffFieldType.Undefined, comment)), (Ifd0, 0x010F, Ascii("Maker")));
+        SyncEdits edits = MetadataSync.ExifToXmp(blank);
+        Assert.Equal(string.Empty, Notes(edits));
+        XmpPacket xmp = Apply((XmpPacket?)null, edits.Xmp);
+        Assert.Equal(new[] { "Maker" }, Texts(xmp, Tiff, "Make"));
+        Assert.Empty(Texts(xmp, Dc, "description"));
+        Assert.Empty(Texts(xmp, Dc, "creator"));
+        Assert.Empty(Texts(xmp, ExifNs, "UserComment"));
+
+        // ImageUniqueID is defined with 33 bytes and cameras write fewer: the text comes back as it was.
+        ExifMetadata exif = Block((ExifDir, 0xA420, Ascii("C12QLJK01SM")));
+        SyncEdits there = MetadataSync.ExifToXmp(exif);
+        SyncEdits back = MetadataSync.XmpToExif(Apply((XmpPacket?)null, there.Xmp));
+        Assert.Equal(string.Empty, Notes(there) + Notes(back));
+        Assert.Equal("C12QLJK01SM", Text(Apply((ExifMetadata?)null, back.Exif), ExifDir, 0xA420));
+
+        // A count the tag is not defined with is not written; the note gives the reason and nothing else.
+        SyncEdits wrong = MetadataSync.XmpToExif(Xmp(e => e.SetValue("Xmp.tiff.BitsPerSample", XmpValue.CreateArray(XmpValueKind.Seq, new[] { "8", "8", "8", "8" }))));
+        Assert.True(wrong.Exif.IsEmpty);
+        Assert.Equal("Xmp.tiff.BitsPerSample -> Exif.Ifd0.0x0102: BitsPerSample (0x0102) takes 3 value(s), not 4.", Notes(wrong));
+
+        // Elements written as one text with spaces between them, as Exiv2 writes an array, are the elements.
+        SyncEdits spaced = MetadataSync.XmpToExif(Xmp(e => e.SetValue("Xmp.exif.ISOSpeedRatings", XmpValue.CreateArray(XmpValueKind.Seq, new[] { "100 200" }))));
+        Assert.Equal(string.Empty, Notes(spaced));
+        Assert.Equal(Raw(Block((ExifDir, 0x8827, Shorts(100, 200))), new(ExifDir, 0x8827)), Raw(Apply(null, spaced.Exif), new(ExifDir, 0x8827)));
+    }
 }

@@ -298,6 +298,20 @@ internal static class SyncExif
     private static string[] Elements(string[] items) =>
         items.Length == 1 && items[0].Trim().Contains(' ') ? items[0].Split(' ', StringSplitOptions.RemoveEmptyEntries) : items;
 
+    /// <summary>
+    /// Whether the tag holds a text without a character: NULs and spaces, after the character code of
+    /// a comment. Such a value says nothing; a conversion leaves it out without a note.
+    /// </summary>
+    internal static bool IsBlank(ExifMetadata exif, ExifXmpMapping mapping)
+    {
+        if (mapping.Conversion is not (SyncConversion.Text or SyncConversion.TextList or SyncConversion.Comment)) return false;
+        if (!exif.TryGetEntry(mapping.Tag, out ExifEntry? entry)) return false;
+        ReadOnlySpan<byte> bytes = entry.Value.RawBytes;
+        if (mapping.Conversion == SyncConversion.Comment) bytes = bytes.Length > 8 ? bytes[8..] : default;
+        else if (entry.Value.FieldType != TiffFieldType.Ascii) return false;
+        return bytes.IndexOfAnyExcept((byte)0, (byte)0x20) < 0;
+    }
+
     private static string One(string[] items) => items.Length == 1 ? items[0] : throw new ArgumentException("The tag holds one value.");
 
     private static bool Flag(string text) => text.Trim() is "True" or "true" or "1";
@@ -322,11 +336,14 @@ internal static class SyncExif
         else SetText(edit, key, text);
     }
 
-    /// <summary>ASCII as the tag defines it; text beyond ASCII as UTF-8, which is what the MWG guidelines ask for and readers expect.</summary>
+    /// <summary>
+    /// ASCII; text beyond ASCII as UTF-8, which is what the MWG guidelines ask for and readers expect.
+    /// The text is written at its own length: files hold texts shorter than the fixed length a tag is
+    /// defined with (ImageUniqueID), and a conversion that refused them could not give back what it took.
+    /// </summary>
     private static void SetText(ExifEdit edit, ExifTagKey key, string text)
     {
         if (text.Length == 0 || text.Contains('\0')) throw new ArgumentException("EXIF text is not empty and holds no NUL.");
-        if (text.All(char.IsAscii)) { edit.Set(key, text); return; }
         byte[] utf8;
         try { utf8 = StrictUtf8.GetBytes(text); }
         catch (EncoderFallbackException) { throw new ArgumentException("The text is not valid Unicode."); }
