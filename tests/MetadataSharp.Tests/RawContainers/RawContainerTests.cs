@@ -80,7 +80,7 @@ public sealed class RawContainerTests
     {
         Assert.True(exif.TryGetEntry(new ExifTagKey(directory, tag), out ExifEntry? entry));
         Assert.Equal(type, entry.Value.FieldType);
-        byte[] bytes = entry.Value.RawBytes;
+        byte[] bytes = entry.Value.RawBytes.ToArray();
         int width = type == TiffFieldType.Short ? 2 : 4;
         return Enumerable.Range(0, bytes.Length / width).Select(i => width == 2
             ? BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(i * 2))
