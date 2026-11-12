@@ -5,7 +5,7 @@ namespace MetadataSharp.Core.Xmp;
 
 /// <summary>An owned UTF-8 XMP snapshot. Unsupported RDF can be copied but not rewritten.</summary>
 /// <remarks>No concurrent use of borrowed streams or mutable edits is supported.</remarks>
-public sealed class XmpPacket
+public sealed partial class XmpPacket
 {
     private readonly byte[] bytes;
     private readonly XmpLimits limits;
