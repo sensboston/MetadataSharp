@@ -91,8 +91,34 @@ def document(operation, key, outcomes, reason):
 for _key in ("Xmp.xmp.ModifyDate", "Xmp.xmp.CreateDate", "Xmp.photoshop.DateCreated", "Xmp.exif.DateTimeOriginal",
              "Xmp.exif.DateTimeDigitized", "Xmp.tiff.DateTime", "Iptc.Application2.DateCreated",
              "Iptc.Application2.TimeCreated", "Iptc.Application2.DigitizationDate", "Iptc.Application2.DigitizationTime"):
-    document("adjust", _key, "differs",
+    document("adjust", _key, "differs (ours changed)",
              "the XMP and IPTC counterparts of the EXIF timestamps move with them; the tool moves the EXIF tags only")
+for _operation in ("adjust", "modify", "delete-t", "delete-xc", "extract", "thumbnail", "fixiso", "fixcom"):
+    document(_operation, "Exif.Photo.MakerNote", "differs (tool changed)",
+             "the tool writes the MakerNote anew when it writes the block; here its bytes stay as the source has them")
+for _key in ("Iptc.Envelope.CharacterSet", "Iptc.Application2.RecordVersion"):
+    document("modify", _key, "ours only",
+             "an IPTC stream that is created declares UTF-8 and its record version; the tool writes the datasets it was given only")
+    document("insert", _key, "ours only, differs",
+             "the IPTC stream is written anew and declares UTF-8 and the record version of the writer, not those of the EXV file")
+for _key in ("Exif.Thumbnail.XResolution", "Exif.Thumbnail.YResolution", "Exif.Thumbnail.ResolutionUnit"):
+    document("thumbnail", _key, "ours only",
+             "a thumbnail directory is created with the resolution Exif requires of a JPEG thumbnail (72 dpi); "
+             "the tool creates it with the compression and the stream only")
+document("insert", "Exif.(MakerNote).*", "tool only",
+         "the MakerNote is not carried by an insert: its offsets belong to the file it was read from "
+         "(the tool carries it); InsertExv says so in its notes")
+document("insert", "Exif.Photo.MakerNote", "tool only", "the MakerNote is not carried by an insert (see Exif.(MakerNote).*)")
+
+STANDARD_GROUPS = ("Image", "Photo", "GPSInfo", "Iop", "Thumbnail")
+
+
+def grouped_key(operation, key):
+    """The key a row is counted under: the tags of a MakerNote group of an insert are one key."""
+    parts = key.split(".")
+    if operation == "insert" and parts[0] == "Exif" and len(parts) > 2 and parts[1] not in STANDARD_GROUPS:
+        return "Exif.(MakerNote).*"
+    return key
 
 
 def documented(operation, key, outcome):
@@ -241,10 +267,11 @@ def summarise(rows):
     for operation, name, key, kind, theirs, ours in rows:
         if kind == "same":
             continue
-        count, example = table.get((operation, key, kind), (0, None))
+        counted = grouped_key(operation, key)
+        count, example = table.get((operation, counted, kind), (0, None))
         if example is None:
-            example = f"{name}: tool {theirs!r} ours {ours!r}"
-        table[(operation, key, kind)] = (count + 1, example)
+            example = f"{name} {key}: tool {str(theirs)[:70]} ours {str(ours)[:70]}"
+        table[(operation, counted, kind)] = (count + 1, example)
     return table
 
 

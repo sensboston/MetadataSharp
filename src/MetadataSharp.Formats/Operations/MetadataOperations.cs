@@ -183,7 +183,9 @@ public static class MetadataOperations
     /// The EXIF block is written from the tags an <see cref="ExifEdit"/> can set: the MakerNote and
     /// the tags of image data are not carried (exiv2 carries the MakerNote), and
     /// <paramref name="notes"/> says so, with every tag the edit refuses. The thumbnail of the EXV
-    /// file is set in a JPEG, PNG or WebP file. In a TIFF-based file the tags of the EXV file are set
+    /// file is set in a JPEG, PNG or WebP file, with the tags of its directory. The IPTC stream
+    /// written declares UTF-8 (1:90) and its own record version: a dataset whose bytes are not UTF-8,
+    /// from a stream that declares no character set, is not carried, and noted. In a TIFF-based file the tags of the EXV file are set
     /// over the ones the file has, since the tags that describe its image cannot be removed.
     /// </remarks>
     /// <exception cref="MetadataException">What the readers and the documents refuse; <see cref="MetadataErrorCode.UnsupportedFeature"/> for a container no document writes.</exception>
@@ -202,6 +204,7 @@ public static class MetadataOperations
 
         var clear = new SyncEdits();
         var set = new SyncEdits();
+        bool carryThumbnailTags = false;
         if (families.HasFlag(MetadataFamilies.Exif) && from.Exif is not null)
         {
             if (into.Exif is not null && format != MetadataFormat.Tiff) clear.Exif.RemoveAllExif();
@@ -210,7 +213,11 @@ public static class MetadataOperations
             ReadOnlySpan<byte> thumbnail = Thumbnail(exv, from);
             if (thumbnail.Length != 0)
             {
-                if (blocks) set.Exif.SetThumbnail(thumbnail);
+                if (blocks)
+                {
+                    set.Exif.SetThumbnail(thumbnail);
+                    carryThumbnailTags = true;
+                }
                 else said.Add("The thumbnail is not carried: it is written to JPEG, PNG and WebP files.");
             }
         }
@@ -224,9 +231,23 @@ public static class MetadataOperations
             else
             {
                 if (into.Iptc is not null) clear.Iptc.RemoveAllIptc();
+                bool declared = from.Iptc.CharacterSet == IptcCharacterSet.Utf8;
                 foreach (IGrouping<IptcDatasetKey, IptcDataset> group in from.Iptc.Datasets.GroupBy(dataset => dataset.Key))
                 {
-                    if (group.Key is { Record: 1, Dataset: 90 } or { Dataset: 0 }) continue; // the character set and the record versions are the writer's
+                    if (group.Key == new IptcDatasetKey(1, 90) || group.Key == new IptcDatasetKey(2, 0)) continue; // the character set and the record version are the writer's
+                    string name = MetadataSharp.Core.Operations.MetadataKeys.Format(group.Key) ?? $"IPTC {group.Key.Record}:{group.Key.Dataset}";
+                    if (group.Key.Record is not (1 or 2))
+                    {
+                        said.Add(name + " is not carried: only the datasets of records 1 and 2 are written.");
+                        continue;
+                    }
+                    // The stream written declares UTF-8. Bytes that are not UTF-8, under no declaration, are text in a
+                    // character set nobody states: they are not carried as if they were UTF-8.
+                    if (!declared && group.Any(dataset => !IsUtf8(dataset.Value)))
+                    {
+                        said.Add(name + " is not carried: its text is not UTF-8 and the stream does not declare a character set.");
+                        continue;
+                    }
                     set.Iptc.ReplaceRaw(group.Key, group.Select(dataset => dataset.Value));
                 }
             }
@@ -238,6 +259,25 @@ public static class MetadataOperations
         }
         if (!clear.IsEmpty) bytes = Save(bytes, format, clear);
         if (!set.IsEmpty) bytes = Save(bytes, format, set);
+        if (carryThumbnailTags)
+        {
+            // The directory of the thumbnail is there now: the tags the EXV file has in its own are set in it.
+            var tags = new SyncEdits();
+            foreach (ExifEntry entry in from.Exif!.Entries)
+            {
+                if (entry.Key.Directory != ExifDirectoryKind.Thumbnail || entry.Key.TagId == 0x0103 || !ExifEdit.IsEditable(entry.Key)) continue;
+                try { tags.Exif.SetUnchecked(entry.Key, entry.Value); }
+                catch (ArgumentException refusal) { said.Add(MetadataSharp.Core.Operations.MetadataKeys.Format(entry.Key) + " is not carried: " + refusal.Message); }
+            }
+            try
+            {
+                if (!tags.IsEmpty) bytes = Save(bytes, format, tags);
+            }
+            catch (MetadataException refusal)
+            {
+                said.Add("The tags of the thumbnail directory are not carried: " + refusal.Message);
+            }
+        }
         if (families.HasFlag(MetadataFamilies.Comment) && from.Comments.Count != 0)
         {
             if (HoldsComment(format)) bytes = SaveComment(bytes, format, from.Comments[0]);
@@ -286,6 +326,18 @@ public static class MetadataOperations
             if (!iptc.IsEmpty) bytes = Save(bytes, format, iptc);
         }
         return bytes;
+    }
+
+    private static bool IsUtf8(IptcValue value)
+    {
+        byte[] bytes = new byte[value.ByteLength];
+        value.CopyRawTo(bytes);
+        try
+        {
+            _ = new UTF8Encoding(false, throwOnInvalidBytes: true).GetCharCount(bytes);
+            return true;
+        }
+        catch (DecoderFallbackException) { return false; }
     }
 
     private static void CopyProperties(XmpPacket packet, XmpEdit edit)
