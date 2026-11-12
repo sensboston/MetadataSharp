@@ -163,7 +163,7 @@ public sealed class JpegXmpTests
     [Fact]
     public void OpaqueRdfAndCombinedExifBudgetRemainConservative()
     {
-        byte[] xml = Encoding.UTF8.GetBytes("<r:RDF xmlns:r='http://www.w3.org/1999/02/22-rdf-syntax-ns#'><r:Description r:about='' xmlns:p='urn:owned'><p:structure r:parseType='Resource'><p:field>keep</p:field></p:structure></r:Description></r:RDF>");
+        byte[] xml = Encoding.UTF8.GetBytes("<r:RDF xmlns:r='http://www.w3.org/1999/02/22-rdf-syntax-ns#'><r:Description r:about='' xmlns:p='urn:owned'><p:structure r:parseType='Literal'><p:field>keep</p:field></p:structure></r:Description></r:RDF>");
         byte[] image = JpegFixture.Build(Segment(xml));
         using var doc = JpegMetadataDocument.Open(new MemoryStream(image)); Assert.False(doc.ReadXmp()!.IsEditable);
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => Save(image, Set("loss"))).Code);

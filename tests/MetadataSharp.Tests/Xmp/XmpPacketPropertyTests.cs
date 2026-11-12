@@ -65,10 +65,10 @@ public sealed class XmpPacketPropertyTests
     }
 
     [Fact]
-    public void APacketOutsideTheEditableProfileAnswersToo()
+    public void APacketThatIsNotEditableAnswersToo()
     {
-        // A structure is RDF the editable profile refuses: Properties throws, Entries lists.
-        XmpPacket packet = Packet(Picture + "<p:place rdf:parseType='Resource'><p:city>Lisbon</p:city><dc:title>inner</dc:title></p:place>");
+        // A node identifier is RDF that is not written back: Properties throws, Entries lists.
+        XmpPacket packet = Packet(Picture + "<p:place rdf:parseType='Resource'><p:city rdf:ID='c'>Lisbon</p:city><dc:title>inner</dc:title></p:place>");
         Assert.False(packet.IsEditable);
         Assert.Throws<MetadataException>(() => packet.Properties);
         AssertPicture(packet);

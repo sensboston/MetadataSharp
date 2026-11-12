@@ -244,7 +244,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
 
     /// <summary>The changes of one save, captured when the save is called.</summary>
-    private sealed record Pending(ExifEdit.EditSnapshot? Exif, (bool RemoveAll, Dictionary<XmpPropertyName, XmpValue?> Changes)? Xmp, IptcEdit? Iptc,
+    private sealed record Pending(ExifEdit.EditSnapshot? Exif, XmpEdit? Xmp, IptcEdit? Iptc,
         IccChange? Icc = null);
 
     /// <summary>The profile the file is to have; null for none.</summary>
@@ -277,10 +277,10 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     {
         token.ThrowIfCancellationRequested();
         ExifEdit.EditSnapshot? exif = edit.Exif;
-        (bool RemoveAll, Dictionary<XmpPropertyName, XmpValue?> Changes)? xmp = edit.Xmp;
+        XmpEdit? xmp = edit.Xmp;
         IptcEdit? iptc = edit.Iptc;
         bool exifEmpty = exif is null || exif.IsEmpty;
-        bool xmpEmpty = xmp is null || (!xmp.Value.RemoveAll && xmp.Value.Changes.Count == 0);
+        bool xmpEmpty = xmp is null || xmp.IsEmpty;
         bool iptcEmpty = iptc is null || iptc.IsEmpty;
         IccChange? icc = edit.Icc;
         if (exifEmpty && xmpEmpty && iptcEmpty && icc is null) return source;
@@ -303,7 +303,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
 
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
         if (!exifEmpty) AddExif(exif!, layout, changes);
-        if (!xmpEmpty) AddXmp(xmp!.Value.RemoveAll, xmp.Value.Changes, layout, changes);
+        if (!xmpEmpty) AddXmp(xmp!, layout, changes);
         if (!iptcEmpty) AddIptc(iptc!, layout, limits, changes);
         if (icc is not null) AddIcc(icc.Profile, layout, changes);
         if (changes.Count == 0) return source;
@@ -365,27 +365,25 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         ExifBlockEditor.AddChanges(edit, layout.Order, changes);
     }
 
-    private void AddXmp(bool removeAll, Dictionary<XmpPropertyName, XmpValue?> edit, TiffBasedFileMap layout,
+    /// <summary>The padding of a packet that is appended, so that the next edit is written over it.</summary>
+    internal const int XmpPaddingBytes = 2048;
+
+    private void AddXmp(XmpEdit edit, TiffBasedFileMap layout,
         Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes)
     {
         TiffBasedField? field = layout.Find(TiffBasedRole.Primary)?.Find(XmpTag);
         bool stored = field is not null && field.ByteLength != 0;
-        if (removeAll)
+        if (edit.RemovesAll)
         {
             if (field is not null) changes[(TiffBasedRole.Primary, XmpTag)] = null;
             return;
         }
-        // Removing names from a packet that is not there changes nothing.
-        if (!stored && edit.Values.All(value => value is null)) return;
         XmpPacket packet = stored ? XmpPacket.Parse(Value(field!)) : XmpPacket.CreateEmpty();
-        var captured = new XmpEdit();
-        foreach (KeyValuePair<XmpPropertyName, XmpValue?> change in edit)
-        {
-            if (change.Value is null) captured.Remove(change.Key);
-            else captured.Set(change.Key, change.Value);
-        }
-        XmpPacket changed = packet.Apply(captured)!;
-        if (stored && ReferenceEquals(changed, packet)) return;
+        // A packet that still fits is padded to the length of the stored one and written over it;
+        // one that grows is appended with padding of its own.
+        XmpPacket changed = packet.Apply(edit, stored ? (int)Math.Min(field!.ByteLength, int.MaxValue) : 0, XmpPaddingBytes)!;
+        // An edit that leaves the packet as it is, or leaves a file without a packet without one, changes nothing.
+        if (ReferenceEquals(changed, packet)) return;
         byte[] bytes = new byte[changed.ByteLength];
         changed.CopyRawTo(bytes);
         // BYTE is the type the XMP specification gives the tag; a file that uses UNDEFINED keeps it.

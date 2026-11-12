@@ -64,20 +64,17 @@ public sealed partial class JpegMetadataDocument
     private async Task<XmpPrepared> PrepareXmp(XmpEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(edit);
-        var snapshot = edit.Snapshot();
+        XmpEdit snapshot = edit.Snapshot();
         await VerifyXmpSource(asynchronous, token).ConfigureAwait(false);
-        if (!snapshot.RemoveAll && snapshot.Changes.Count == 0) return new(true, null, null);
+        if (snapshot.IsEmpty) return new(true, null, null);
         JpegSegment? segment = UniqueXmp();
-        if (snapshot.RemoveAll) return new(segment is null, segment, null);
-        // Removing missing names from an absent packet must remain an exact copy.
-        if (segment is null && snapshot.Changes.Values.All(v => v is null)) return new(true, null, null);
+        if (snapshot.RemovesAll) return new(segment is null, segment, null);
         XmpPacket packet = segment is null ? XmpPacket.CreateEmpty() : await LoadXmp(segment, null, asynchronous, token).ConfigureAwait(false);
         if (packet.HasExtendedReference) throw XmpCodec.Unsupported();
-        var captured = new XmpEdit();
-        foreach (var pair in snapshot.Changes) { if (pair.Value is null) captured.Remove(pair.Key); else captured.Set(pair.Key, pair.Value); }
-        XmpPacket changed = packet.Apply(captured)!;
+        XmpPacket changed = packet.Apply(snapshot, 0, 0)!;
+        // An edit that leaves the packet as it is, or leaves a file without a packet without one, is a copy.
+        if (ReferenceEquals(changed, packet)) return new(true, null, null);
         if (changed.HasExtendedReference) throw XmpCodec.Unsupported();
-        if (ReferenceEquals(changed, packet) && segment is not null) return new(true, null, null);
         if (changed.ByteLength > 65_504) throw new MetadataException(MetadataErrorCode.XmpTooLarge, "Standard JPEG XMP exceeds 65,504 bytes.");
         CheckXmpBudget(changed.ByteLength, new());
         byte[] bytes = new byte[changed.ByteLength]; changed.CopyRawTo(bytes);

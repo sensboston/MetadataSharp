@@ -10,14 +10,29 @@ public sealed partial class XmpPacket
     private readonly byte[] bytes;
     private readonly XmpLimits limits;
     private readonly IReadOnlyDictionary<XmpPropertyName, XmpValue> properties;
-    private XmpPacket(byte[] bytes, XmpLimits limits, bool editable, Dictionary<XmpPropertyName, XmpValue> properties, bool hasExtendedReference, IReadOnlyList<XmpEntry> entries)
-    { HasExtendedReference = hasExtendedReference; this.bytes = bytes; this.limits = limits; IsEditable = editable; this.properties = new ReadOnlyDictionary<XmpPropertyName, XmpValue>(properties); Entries = entries; }
+    private XmpPacket(byte[] bytes, XmpLimits limits, XmpTree? tree, Dictionary<XmpPropertyName, XmpValue> properties, bool hasExtendedReference, IReadOnlyList<XmpEntry> entries)
+    { HasExtendedReference = hasExtendedReference; this.bytes = bytes; this.limits = limits; Tree = tree; this.properties = new ReadOnlyDictionary<XmpPropertyName, XmpValue>(properties); Entries = entries; }
     internal bool HasExtendedReference { get; }
-    /// <summary>False when the packet holds RDF outside the editable profile; it can be copied and listed through <see cref="Entries"/>, and not changed.</summary>
-    public bool IsEditable { get; }
+    /// <summary>The packet's tree when <see cref="IsEditable"/>, else null. It is shared and never changed: an edit works on a copy.</summary>
+    internal XmpTree? Tree { get; }
+    /// <summary>The budgets the packet was read under.</summary>
+    internal XmpLimits Limits => limits;
+    /// <summary>
+    /// True when the packet can be written again without loss, which is what an edit needs: every
+    /// property is RDF in a form XMP defines (simple values, arrays, structures, qualifiers, at any
+    /// depth, in any namespace). False for RDF outside those forms, a property that occurs twice,
+    /// node identifiers and datatypes, descriptions about different subjects, content beside the RDF
+    /// and a packet marked read-only; such a packet can be copied and listed through
+    /// <see cref="Entries"/>, and not changed.
+    /// </summary>
+    public bool IsEditable => Tree is not null;
     /// <summary>The length of the packet in bytes.</summary>
     public int ByteLength => bytes.Length;
-    /// <summary>The top-level properties of an editable packet, by expanded name.</summary>
+    /// <summary>
+    /// The top-level properties of an editable packet that are text, an array of texts or a language
+    /// alternative, by expanded name. A structure, an array of structures and a qualified value are
+    /// not among them; <see cref="Entries"/> lists everything.
+    /// </summary>
     /// <exception cref="MetadataException"><see cref="MetadataErrorCode.UnsupportedFeature"/> when <see cref="IsEditable"/> is false.</exception>
     public IReadOnlyDictionary<XmpPropertyName, XmpValue> Properties => IsEditable ? properties : throw XmpCodec.Unsupported();
     /// <summary>
@@ -42,7 +57,7 @@ public sealed partial class XmpPacket
     public static XmpPacket CreateEmpty(XmpReadOptions? options = null)
     {
         XmpLimits limits = Settings(options);
-        return ParseOwned(XmpCodec.Write(new Dictionary<XmpPropertyName, XmpValue>(), limits), limits, default);
+        return ParseOwned(XmpWriter.Write(new XmpTree(), limits), limits, default);
     }
     /// <summary>Reads a packet from a copy of the bytes.</summary>
     /// <exception cref="MetadataException">
@@ -59,7 +74,7 @@ public sealed partial class XmpPacket
     {
         var result = XmpCodec.Read(bytes, limits, token);
         token.ThrowIfCancellationRequested();
-        return new(bytes, limits, result.Editable, result.Properties, result.HasExtendedReference, result.Entries);
+        return new(bytes, limits, result.Tree, result.Properties, result.HasExtendedReference, result.Entries);
     }
     /// <summary>Reads a packet, for example a sidecar file, from the stream to its end and leaves the stream open. Fails as <see cref="Parse"/> does.</summary>
     public static XmpPacket Load(Stream source, XmpReadOptions? options = null) => LoadCore(source, Settings(options), false, default).GetAwaiter().GetResult();
@@ -101,29 +116,55 @@ public sealed partial class XmpPacket
     }
     /// <summary>
     /// Returns the packet with the edit applied: null when the edit removes all XMP, this packet when
-    /// the edit changes nothing, otherwise a packet written anew from the changed properties.
+    /// the edit changes nothing, otherwise a packet written anew. The new packet holds every property
+    /// the edit did not name with its value, structure and prefix, in one canonical RDF form; it is
+    /// read back and refused unless it holds exactly what was meant.
     /// </summary>
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when <see cref="IsEditable"/> is false;
+    /// <see cref="MetadataErrorCode.InvalidXmpPath"/> when a change does not apply to the packet;
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when the result exceeds a budget.
     /// </exception>
     public XmpPacket? Apply(XmpEdit edit)
     {
         ArgumentNullException.ThrowIfNull(edit);
-        var snapshot = edit.Snapshot();
-        if (snapshot.RemoveAll) return null;
-        if (snapshot.Changes.Count == 0) return this;
-        if (!IsEditable) throw XmpCodec.Unsupported();
-        var changed = properties.ToDictionary(p => p.Key, p => p.Value);
-        bool effective = false;
-        foreach (var pair in snapshot.Changes)
+        return Apply(edit.Snapshot(), 0, 0);
+    }
+
+    /// <summary>
+    /// <see cref="Apply(XmpEdit)"/> for a container that keeps a packet in a slot. A result that is
+    /// no longer than <paramref name="slotBytes"/> is padded to exactly that length, so that it is
+    /// written over the old packet; a longer one is given <paramref name="paddingBytes"/> of padding,
+    /// so that the next edit finds room. The edit is a snapshot the caller owns.
+    /// </summary>
+    internal XmpPacket? Apply(XmpEdit edit, int slotBytes, int paddingBytes)
+    {
+        if (edit.RemovesAll) return null;
+        if (edit.IsEmpty) return this;
+        if (Tree is null) throw XmpCodec.Unsupported();
+        XmpTree changed = Tree.Clone();
+        XmpEditor.Apply(changed, edit);
+        if (XmpTree.Same(Tree, changed)) return this;
+        return FromTree(changed, limits, edit.Namespaces, slotBytes, paddingBytes);
+    }
+
+    /// <summary>
+    /// The packet of a tree, read back and refused unless it reads as that tree. Padding is left out
+    /// when it would exceed the packet budget.
+    /// </summary>
+    internal static XmpPacket FromTree(XmpTree tree, XmpLimits limits, IReadOnlyDictionary<string, string>? registered = null,
+        int slotBytes = 0, int paddingBytes = 0, bool wrapper = true)
+    {
+        byte[] output = XmpWriter.Write(tree, limits, registered, wrapper);
+        if (wrapper)
         {
-            if (pair.Value is null) effective |= changed.Remove(pair.Key);
-            else { changed[pair.Key] = pair.Value; effective = true; }
+            long padded = output.Length <= slotBytes ? slotBytes : (long)output.Length + paddingBytes;
+            if (padded <= limits.MaxPacketBytes) output = XmpWriter.Pad(output, (int)padded);
         }
-        if (!effective) return this;
-        if (changed.Count > limits.MaxProperties) throw XmpCodec.Limit();
-        return ParseOwned(XmpCodec.Write(changed, limits), limits, default);
+        XmpPacket packet = ParseOwned(output, limits, default);
+        if (packet.Tree is null || !XmpTree.Same(packet.Tree, tree))
+            throw new MetadataException(MetadataErrorCode.UnsafeRelocation, "The XMP packet as written does not read back as the edit; nothing was written.");
+        return packet;
     }
     /// <summary>Writes the packet to a writable, seekable, empty stream.</summary>
     /// <exception cref="ArgumentException">The destination is not such a stream.</exception>

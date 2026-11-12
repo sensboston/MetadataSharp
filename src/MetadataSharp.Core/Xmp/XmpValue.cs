@@ -14,7 +14,9 @@ public enum XmpValueKind
     /// <summary>An ordered array (<c>rdf:Seq</c>).</summary>
     Sequence,
     /// <summary>Alternative texts by language (<c>rdf:Alt</c> with <c>xml:lang</c>).</summary>
-    LanguageAlternative
+    LanguageAlternative,
+    /// <summary>An array of alternatives that are not told apart by language (<c>rdf:Alt</c>); the first item is the default.</summary>
+    Alternative
 }
 
 /// <summary>A deeply owned immutable XMP value; strings are not interpreted as domain values.</summary>
@@ -26,7 +28,7 @@ public sealed class XmpValue
     public XmpValueKind Kind { get; }
     /// <summary>The text of a <see cref="XmpValueKind.Text"/> value; null for the other forms.</summary>
     public string? Text { get; }
-    /// <summary>The items of a bag or a sequence, in order; empty for the other forms.</summary>
+    /// <summary>The items of a bag, a sequence or an array of alternatives, in order; empty for the other forms.</summary>
     public IReadOnlyList<string> Items { get; }
     /// <summary>The texts of a language alternative by language tag, compared without case; empty for the other forms.</summary>
     public IReadOnlyDictionary<string, string> Languages { get; }
@@ -39,12 +41,12 @@ public sealed class XmpValue
         CheckText(text, ref bytes);
         return new(XmpValueKind.Text, text, [], new());
     }
-    /// <summary>Creates a bag or a sequence of texts.</summary>
-    /// <exception cref="ArgumentException">The kind is not <see cref="XmpValueKind.Bag"/> or <see cref="XmpValueKind.Sequence"/>, or the items are not valid or exceed the default budget.</exception>
+    /// <summary>Creates a bag, a sequence or an array of alternatives of texts.</summary>
+    /// <exception cref="ArgumentException">The kind is not <see cref="XmpValueKind.Bag"/>, <see cref="XmpValueKind.Sequence"/> or <see cref="XmpValueKind.Alternative"/>, or the items are not valid or exceed the default budget.</exception>
     public static XmpValue CreateArray(XmpValueKind kind, IEnumerable<string> items)
     {
         ArgumentNullException.ThrowIfNull(items);
-        if (kind is not (XmpValueKind.Bag or XmpValueKind.Sequence)) throw new ArgumentException("An array must be Bag or Sequence.", nameof(kind));
+        if (kind is not (XmpValueKind.Bag or XmpValueKind.Sequence or XmpValueKind.Alternative)) throw new ArgumentException("An array must be Bag, Sequence or Alternative.", nameof(kind));
         var copy = new List<string>(); int bytes = 0;
         foreach (string text in items)
         {
@@ -73,6 +75,11 @@ public sealed class XmpValue
         string[] parts = language.Split('-');
         return parts.All(p => p.Length > 0) && parts[0].All(char.IsAsciiLetter) &&
             parts.Skip(1).All(p => p.All(char.IsAsciiLetterOrDigit));
+    }
+    internal static void CheckText(string text)
+    {
+        int bytes = 0;
+        CheckText(text, ref bytes);
     }
     private static void CheckText(string text, ref int bytes)
     {

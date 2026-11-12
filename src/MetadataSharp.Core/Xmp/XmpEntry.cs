@@ -53,6 +53,13 @@ public sealed class XmpEntry
     /// <summary>The path of the node below its namespace, for example <c>History[2]/stEvt:action</c>.</summary>
     public string Path { get; }
 
+    /// <summary>
+    /// The node's key, <c>Xmp.</c> with <see cref="Prefix"/>, a dot and <see cref="Path"/>: for example
+    /// <c>Xmp.xmpMM.History[2]/stEvt:action</c>. It is the path an <see cref="XmpEdit"/> takes to
+    /// change the node in this packet.
+    /// </summary>
+    public string Key => "Xmp." + Prefix + "." + Path;
+
     /// <summary>The namespace URI of the top-level property the node belongs to.</summary>
     public string NamespaceUri { get; }
 

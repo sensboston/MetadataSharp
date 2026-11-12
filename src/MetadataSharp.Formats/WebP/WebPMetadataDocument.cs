@@ -138,19 +138,18 @@ public sealed partial class WebPMetadataDocument : IDisposable, IAsyncDisposable
         var es = exif?.Snapshot(); var xs = xmp?.Snapshot();
         await Verify(asynchronous, token).ConfigureAwait(false);
         bool isXmp = xmp is not null;
-        bool empty = isXmp ? !xs!.Value.RemoveAll && xs.Value.Changes.Count == 0 : es!.IsEmpty;
+        bool empty = isXmp ? xs!.IsEmpty : es!.IsEmpty;
         if (empty) return new(true, null, null);
         WebPChunk? chunk = Unique(isXmp);
-        bool remove = isXmp ? xs!.Value.RemoveAll : es!.RemoveAll;
+        bool remove = isXmp ? xs!.RemovesAll : es!.RemoveAll;
         if (remove && chunk is null) return new(true, null, null);
         byte[]? bytes = null;
         if (!remove && isXmp)
         {
-            var capture = new XmpEdit(); foreach (var pair in xs!.Value.Changes) { if (pair.Value is null) capture.Remove(pair.Key); else capture.Set(pair.Key, pair.Value); }
-            if (chunk is null && xs.Value.Changes.Values.All(v => v is null)) return new(true, null, null);
             XmpPacket original = chunk is null ? XmpPacket.CreateEmpty() : await Xmp(chunk, null, asynchronous, token).ConfigureAwait(false);
-            XmpPacket changed = original.Apply(capture)!;
-            if (ReferenceEquals(original, changed) && chunk is not null) return new(true, null, null);
+            XmpPacket changed = original.Apply(xs!, 0, 0)!;
+            // An edit that leaves the packet as it is, or leaves a file without a packet without one, is a copy.
+            if (ReferenceEquals(original, changed)) return new(true, null, null);
             Budget((long)changed.ByteLength + original.ByteLength + scan.Chunks.Where(c => c.Type == "EXIF").Sum(c => (long)c.Size));
             bytes = new byte[changed.ByteLength]; changed.CopyRawTo(bytes);
         }
