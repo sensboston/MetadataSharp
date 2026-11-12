@@ -403,6 +403,28 @@ jobs:
             --title "PNG and WebP corpus profile and comment edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
           python tools/reference/png_chunk_edits.py artifacts/parity/edited-embedded-png-webp-corpus --skip-unreadable-sources \
             --title "PNG corpus profile and comment chunks" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      # The same rule for the profile of a TIFF-based file (tag 0x8773 of the first directory) and of
+      # a HEIC, HEIF or AVIF file (a colr property of the primary item). The tool prints the field of
+      # a TIFF-based file with -pa as well: that key is named, left out of the comparison of the
+      # other keys, and has to be printed exactly where the file is to have a profile.
+      - name: Profiles written into TIFF-based and BMFF files are printed by the pinned tool (exiv2 -pC)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-icc-edits artifacts/parity/edited-icc-tiff
+          python tools/reference/embedded_edits.py artifacts/parity/edited-icc-tiff --profile-key Exif.Image.InterColorProfile \
+            --title "TIFF-based profile edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- bmff-icc-edits artifacts/parity/edited-icc-bmff
+          python tools/reference/embedded_edits.py artifacts/parity/edited-icc-bmff \
+            --title "BMFF profile edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      - name: Profiles written into corpus TIFF-based and BMFF files are printed by the pinned tool (exiv2 -pC)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-icc-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-icc-tiff-corpus
+          python tools/reference/embedded_edits.py artifacts/parity/edited-icc-tiff-corpus --skip-unreadable-sources --profile-key Exif.Image.InterColorProfile \
+            --title "TIFF-based corpus profile edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- bmff-icc-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-icc-bmff-corpus
+          python tools/reference/embedded_edits.py artifacts/parity/edited-icc-bmff-corpus --skip-unreadable-sources \
+            --title "BMFF corpus profile edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
       - name: Upload parity reports (measurements only - no corpus bytes, no external source)
         if: always()
         uses: actions/upload-artifact@v4

@@ -139,13 +139,13 @@ public sealed class TiffBasedWriteTests
         throw new InvalidOperationException("The packet has no caption.");
     }
 
-    private static MetadataErrorCode Code(Action action) => Assert.Throws<MetadataException>(action).Code;
+    internal static MetadataErrorCode Code(Action action) => Assert.Throws<MetadataException>(action).Code;
 
     /// <summary>The first directory of the file, read from its header.</summary>
-    private static int Primary(byte[] file, bool big) => (int)TiffBasedFixture.U32(file, big, 4);
+    internal static int Primary(byte[] file, bool big) => (int)TiffBasedFixture.U32(file, big, 4);
 
     /// <summary>The entry of a tag of the primary directory of the file.</summary>
-    private static int PrimaryEntry(byte[] file, bool big, int tag)
+    internal static int PrimaryEntry(byte[] file, bool big, int tag)
     {
         int entry = TiffBasedFixture.EntryAt(file, big, Primary(file, big), tag);
         Assert.True(entry >= 0, $"Tag 0x{tag:X4} is not in the primary directory.");
@@ -156,7 +156,7 @@ public sealed class TiffBasedWriteTests
     /// Every byte of the source is in the output where it was, except inside the given ranges, and
     /// inside each of them something did change.
     /// </summary>
-    private static void AssertSourceKeptExcept(byte[] source, byte[] output, params (int Start, int Length)[] allowed)
+    internal static void AssertSourceKeptExcept(byte[] source, byte[] output, params (int Start, int Length)[] allowed)
     {
         Assert.True(output.Length >= source.Length);
         var touched = new bool[allowed.Length];
@@ -174,7 +174,7 @@ public sealed class TiffBasedWriteTests
     /// Image data and the MakerNote hold the bytes they held, at the offsets they had, and the
     /// directories of the output still address them there.
     /// </summary>
-    private static void AssertImageAndMakerNoteUntouched(TiffBasedFixture fixture, byte[] output)
+    internal static void AssertImageAndMakerNoteUntouched(TiffBasedFixture fixture, byte[] output)
     {
         byte[] source = fixture.Bytes;
         bool big = fixture.Big;

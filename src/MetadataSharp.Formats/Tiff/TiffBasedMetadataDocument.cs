@@ -7,13 +7,13 @@ using MetadataSharp.Formats.Internal;
 namespace MetadataSharp.Formats.Tiff;
 
 /// <summary>
-/// A TIFF-based file opened for editing its EXIF, GPS, IPTC and XMP: TIFF, DNG and the raw formats
-/// that are TIFF structures (CR2, NEF, ARW, PEF, ORF, RW2).
+/// A TIFF-based file opened for editing its EXIF, GPS, IPTC, XMP and ICC profile: TIFF, DNG and the
+/// raw formats that are TIFF structures (CR2, NEF, ARW, PEF, ORF, RW2).
 /// </summary>
 /// <remarks>
 /// <para>A save never moves a byte of the source. A value that fits where the old one is, is written
 /// there. Whatever grows - a longer value, a directory that gains a tag, a new GPS directory, a new
-/// XMP packet or IPTC stream - is appended after the last byte of the file, and the one pointer that
+/// XMP packet, IPTC stream or ICC profile - is appended after the last byte of the file, and the one pointer that
 /// leads to it is changed. The bytes it replaces stay in the file, no longer addressed: an edit is
 /// not an erasure. Image data, SubIFDs and the MakerNote are never written to and keep their
 /// offsets.</para>
@@ -30,6 +30,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
 {
     private const ushort XmpTag = 0x02BC;
     private const ushort IptcTag = 0x83BB;
+    private const ushort IccTag = 0x8773;
 
     private readonly byte[] source;
     private readonly string? sourcePath;
@@ -178,6 +179,52 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     public void SaveIptc(Stream destination, IptcEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
 
+    /// <summary>
+    /// Writes a plain TIFF with <paramref name="profile"/> as its ICC profile, or without one when
+    /// it is null. The profile is the value of tag 0x8773 of the primary directory, which is where
+    /// <see cref="IccProfiles.Read"/> looks for it: the tag is created when the file has none,
+    /// written as UNDEFINED unless the file has it as BYTE, and removed for null. As in every save
+    /// of this document no byte of the source moves: a profile no longer than the stored one is
+    /// written where that one is, a longer one and a new one are appended to the file, and the
+    /// bytes of a profile that was replaced or removed stay in the file, no longer addressed. A
+    /// file that already holds exactly this profile, and a file without a profile that is to have
+    /// none, is copied as it is. The profile is not interpreted; the array is copied before the
+    /// method returns.
+    /// </summary>
+    /// <remarks>
+    /// The tag describes the image of its directory. In a DNG and in a raw file the primary
+    /// directory is commonly that of a reduced image, and a profile there would say how to show
+    /// that one. Such a file is refused, for a profile and for null alike, and nothing is written:
+    /// a file with DNGVersion (0xC612) in the primary directory; a file with the header of an ORF
+    /// or an RW2 or the signature of a CR2; a file whose primary directory is that of a reduced
+    /// image (bit 0 of NewSubfileType, as in a NEF or an ARW); and a file with raw sensor data in
+    /// any image directory (a colour filter array, linear raw data or the compression of a raw
+    /// format, as in a PEF). The file is judged by what it holds, not by its name, and the name
+    /// of the maker alone decides nothing. <see cref="IccProfiles.Read"/> still returns what the
+    /// primary directory of such a file holds.
+    /// </remarks>
+    /// <param name="destination">A writable, seekable, empty stream.</param>
+    /// <param name="profile">The whole profile, or null for none.</param>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.InvalidIccProfile"/> when the profile is shorter than the 128
+    /// bytes of a header, its size field is not the number of bytes given, or the <c>acsp</c>
+    /// signature is absent; <see cref="MetadataErrorCode.LimitExceeded"/> when it is longer than
+    /// <see cref="MetadataLimits.MaxValueBytes"/> or
+    /// <see cref="MetadataLimits.MaxRetainedMetadataBytes"/> of the limits;
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the file is a DNG or a raw file, or
+    /// its primary directory is that of a reduced image; otherwise as <see cref="SaveExif"/> fails.
+    /// </exception>
+    public void SaveIccProfile(Stream destination, byte[]? profile) => SaveCore(destination, Icc(profile), false, default).GetAwaiter().GetResult();
+
+    /// <inheritdoc cref="SaveIccProfile(Stream, byte[])"/>
+    public Task SaveIccProfileAsync(Stream destination, byte[]? profile, CancellationToken cancellationToken = default) => SaveCore(destination, Icc(profile), true, cancellationToken);
+
+    /// <summary>As <see cref="SaveIccProfile(Stream, byte[])"/>, to a new path; the file appears there complete or not at all.</summary>
+    public void SaveIccProfileAs(string destinationPath, byte[]? profile) => SavePath(destinationPath, Icc(profile), false, default).GetAwaiter().GetResult();
+
+    /// <inheritdoc cref="SaveIccProfileAs(string, byte[])"/>
+    public Task SaveIccProfileAsAsync(string destinationPath, byte[]? profile, CancellationToken cancellationToken = default) => SavePath(destinationPath, Icc(profile), true, cancellationToken);
+
     /// <summary>Writes the edited file to a new path; the file appears there complete or not at all.</summary>
     public void SaveExifAs(string destinationPath, ExifEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
     public Task SaveExifAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
@@ -187,11 +234,16 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
 
     /// <summary>The changes of one save, captured when the save is called.</summary>
-    private sealed record Pending(ExifEdit.EditSnapshot? Exif, (bool RemoveAll, Dictionary<XmpPropertyName, XmpValue?> Changes)? Xmp, IptcEdit? Iptc);
+    private sealed record Pending(ExifEdit.EditSnapshot? Exif, (bool RemoveAll, Dictionary<XmpPropertyName, XmpValue?> Changes)? Xmp, IptcEdit? Iptc,
+        IccChange? Icc = null);
+
+    /// <summary>The profile the file is to have; null for none.</summary>
+    private sealed record IccChange(byte[]? Profile);
 
     private static Pending Edit(ExifEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(edit.Snapshot(), null, null); }
     private static Pending Edit(XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(null, edit.Snapshot(), null); }
     private static Pending Edit(IptcEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(null, null, edit.Capture()); }
+    private static Pending Icc(byte[]? profile) => new(null, null, null, new IccChange(profile is null ? null : (byte[])profile.Clone()));
 
     private async Task SaveCore(Stream destination, Pending edit, bool asynchronous, CancellationToken token)
     {
@@ -220,8 +272,18 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         bool exifEmpty = exif is null || exif.IsEmpty;
         bool xmpEmpty = xmp is null || (!xmp.Value.RemoveAll && xmp.Value.Changes.Count == 0);
         bool iptcEmpty = iptc is null || iptc.IsEmpty;
-        if (exifEmpty && xmpEmpty && iptcEmpty) return source;
+        IccChange? icc = edit.Icc;
+        if (exifEmpty && xmpEmpty && iptcEmpty && icc is null) return source;
+        if (icc?.Profile is byte[] profile)
+        {
+            IccProfiles.Exact(profile);
+            if (profile.Length > EmbeddedFile.Budget(options.Limits))
+                throw EmbeddedFile.Limit("The ICC profile exceeds its budget.");
+        }
 
+        // Before the refusal of the map: a raw file is refused for what it is, damaged or not.
+        if (icc is not null && TiffBasedIccTarget.Refusal(source, map) is string unsuitable)
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, unsuitable);
         if (refusal is not null) throw new MetadataException(refusal.Code, refusal.Message, refusal.SourceOffset);
         TiffBasedFileMap layout = map!;
         MetadataLimits limits = options.Limits;
@@ -233,6 +295,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (!exifEmpty) AddExif(exif!, layout, changes);
         if (!xmpEmpty) AddXmp(xmp!.Value.RemoveAll, xmp.Value.Changes, layout, changes);
         if (!iptcEmpty) AddIptc(iptc!, layout, limits, changes);
+        if (icc is not null) AddIcc(icc.Profile, layout, changes);
         if (changes.Count == 0) return source;
 
         token.ThrowIfCancellationRequested();
@@ -240,8 +303,47 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (plan.IsEmpty) return source;
         byte[] output = plan.Apply(source);
         TiffBasedWriteVerifier.Verify(source, layout, before, output, plan, limits, options.MaxAccountedRanges);
+        if (icc is not null) HoldIcc(output, icc.Profile, limits);
         token.ThrowIfCancellationRequested();
         return output;
+    }
+
+    private static void AddIcc(byte[]? profile, TiffBasedFileMap layout,
+        Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes)
+    {
+        TiffBasedField? field = layout.Find(TiffBasedRole.Primary)?.Find(IccTag);
+        if (profile is null)
+        {
+            if (field is not null) changes[(TiffBasedRole.Primary, IccTag)] = null;
+            return;
+        }
+        // UNDEFINED is the type the ICC specification gives the tag; a file that uses BYTE keeps it.
+        // A tag of any other type is not a profile to the reader, and is written as one. The plan
+        // leaves a value alone that the file already has.
+        ushort type = field is not null && field.Type == 1 ? (ushort)1 : (ushort)7;
+        changes[(TiffBasedRole.Primary, IccTag)] = new(type, (uint)profile.Length, profile);
+    }
+
+    /// <summary>
+    /// The last check of a profile save: the reader of profiles, which walks the file on its own,
+    /// returns from the output the profile that was asked for, or none.
+    /// </summary>
+    private static void HoldIcc(byte[] output, byte[]? profile, MetadataLimits limits)
+    {
+        byte[]? read;
+        try { read = IccProfiles.Read(output, limits); }
+        catch (MetadataException failure)
+        {
+            if (failure.Code == MetadataErrorCode.LimitExceeded)
+                throw new MetadataException(failure.Code,
+                    "The edited file exceeds a budget of the limits it would be read with: " + failure.Message);
+            throw new MetadataException(MetadataErrorCode.UnsafeRelocation,
+                "The planned output failed verification and was not written: the reader of ICC profiles refuses it.");
+        }
+        bool held = profile is null ? read is null : read is not null && read.AsSpan().SequenceEqual(profile);
+        if (!held)
+            throw new MetadataException(MetadataErrorCode.UnsafeRelocation,
+                "The planned output failed verification and was not written: the reader does not return the ICC profile as it was asked for.");
     }
 
     private static void AddExif(ExifEdit.EditSnapshot edit, TiffBasedFileMap layout,

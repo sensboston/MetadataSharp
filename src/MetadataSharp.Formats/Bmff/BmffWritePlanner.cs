@@ -15,7 +15,10 @@ internal enum BmffMetaPlacement
 {
     /// <summary>Not a byte of it changes: the item was rewritten where it is.</summary>
     Untouched,
-    /// <summary>The item location box is rewritten in the bytes it has; every other child stays.</summary>
+    /// <summary>
+    /// One child is rewritten in the bytes it has, the item location box or the item properties
+    /// box; every other child stays.
+    /// </summary>
     InPlace,
     /// <summary>The box is the last one of the file and is rewritten, longer, where it starts.</summary>
     Extended,
@@ -79,7 +82,8 @@ internal sealed class BmffWritePlan(int sourceLength, List<(int Offset, byte[] B
 /// </remarks>
 internal sealed class BmffWritePlanner
 {
-    private static readonly uint[] KnownTopLevel =
+    /// <summary>The top-level boxes that new bytes may follow: none of them counts on being the last.</summary>
+    internal static readonly uint[] KnownTopLevel =
     [
         BmffFileMap.FileType, BmffFileMap.Meta, BmffFileMap.MediaData, BmffFileMap.Free,
         0x736b6970, // 'skip'
