@@ -565,19 +565,35 @@ public sealed class TiffBasedWriteTests
         TiffBasedFixture fixture = TiffBasedFixture.Tiff(big);
         byte[] first = Save(fixture.Bytes, Xmp("first"));
         var rights = new XmpPropertyName("http://ns.adobe.com/xap/1.0/", "Label");
+        int entry = PrimaryEntry(first, big, 0x02BC);
+
+        // A new packet carries padding, so a small change is written where the packet is: the file
+        // keeps its length and the entry is not touched.
+        var small = new XmpEdit();
+        small.Set(rights, XmpValue.CreateText("short"));
+        byte[] inPlace = Save(first, small);
+        Assert.Equal(first.Length, inPlace.Length);
+        Assert.Equal(first.AsSpan(entry, 12).ToArray(), inPlace.AsSpan(entry, 12).ToArray());
+        using (TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(new MemoryStream(inPlace)))
+        {
+            XmpPacket packet = document.ReadXmp()!;
+            Assert.Equal("first", packet.Properties[Tool].Text);
+            Assert.Equal("short", packet.Properties[rights].Text);
+        }
+
+        string label = new('l', 3000);
         var edit = new XmpEdit();
-        edit.Set(rights, XmpValue.CreateText("a label that makes the packet longer than it was"));
+        edit.Set(rights, XmpValue.CreateText(label));
         byte[] second = Save(first, edit);
 
-        // The packet grew: the new one is at the end, the directory stays, one entry changes.
-        int entry = PrimaryEntry(first, big, 0x02BC);
+        // The packet outgrew its padding: the new one is at the end, the directory stays, one entry changes.
         AssertSourceKeptExcept(first, second, (entry, 12));
         Assert.True(TiffBasedFixture.U32(second, big, entry + 8) >= first.Length);
         using (TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(new MemoryStream(second)))
         {
             XmpPacket packet = document.ReadXmp()!;
             Assert.Equal("first", packet.Properties[Tool].Text);
-            Assert.Equal("a label that makes the packet longer than it was", packet.Properties[rights].Text);
+            Assert.Equal(label, packet.Properties[rights].Text);
         }
 
         var removeAll = new XmpEdit();

@@ -132,7 +132,7 @@ public sealed class XmpEntryTests
             Rows(packet));
         Assert.Equal(XmpEntryKind.Seq, packet.Entries[0].Kind);
         Assert.Empty(packet.Entries[0].Values);
-        Assert.False(packet.IsEditable);
+        Assert.True(packet.IsEditable);
     }
 
     [Fact]
@@ -246,7 +246,7 @@ public sealed class XmpEntryTests
         XmpPacket packet = XmpPacket.CreateEmpty().Apply(edit)!;
         Assert.True(packet.IsEditable);
         Assert.Equal(
-            new[] { "dc.subject=Bag:alpha|beta", "dc.title=LangAlt:x-default=Hello|fr-FR=Bonjour", "p1.note=Text:n" },
+            new[] { "dc.subject=Bag:alpha|beta", "dc.title=LangAlt:x-default=Hello|fr-FR=Bonjour", "ns1.note=Text:n" },
             Rows(packet));
         Assert.Equal(packet.Properties.Count, packet.Entries.Count);
         Assert.Empty(XmpPacket.CreateEmpty().Entries);

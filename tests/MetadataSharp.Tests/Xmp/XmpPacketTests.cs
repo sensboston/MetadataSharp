@@ -67,7 +67,29 @@ public sealed class XmpPacketTests
     [InlineData("<p:title xml:lang='en'>qualified</p:title>")]
     [InlineData("<p:title><rdf:Alt><rdf:li>unqualified alternative</rdf:li></rdf:Alt></p:title>")]
     [InlineData("<p:title><rdf:Bag><rdf:li><rdf:Description /></rdf:li></rdf:Bag></p:title>")]
-    public void UnsupportedRdfIsOpaqueAndCannotBeDestructivelyEdited(string content)
+    public void StructuredRdfIsEditableAndKeptByAnEditOfAnotherProperty(string content)
+    {
+        byte[] input = Xml(content); XmpPacket packet = XmpPacket.Parse(input);
+        Assert.True(packet.IsEditable);
+        Assert.Empty(packet.Properties);
+        Assert.Equal(input, Raw(packet.Apply(new())!));
+        var edit = new XmpEdit(); edit.Set(new XmpPropertyName("urn:owned:test", "other"), XmpValue.CreateText("added"));
+        XmpPacket changed = packet.Apply(edit)!;
+        Assert.True(changed.IsEditable);
+        Assert.Equal("added", changed.Properties[new XmpPropertyName("urn:owned:test", "other")].Text);
+        // Every row of the structured property is there as it was.
+        string[] before = packet.Entries.Select(e => e.Key + "=" + e.Kind + ":" + string.Join("|", e.Values)).ToArray();
+        string[] after = changed.Entries.Where(e => !e.Path.StartsWith("other", StringComparison.Ordinal)).Select(e => e.Key + "=" + e.Kind + ":" + string.Join("|", e.Values)).ToArray();
+        Assert.Equal(before, after);
+        var removal = new XmpEdit(); removal.RemoveAllXmp(); Assert.Null(packet.Apply(removal));
+    }
+    [Theory]
+    [InlineData("<p:title rdf:parseType='Literal'><b>x</b></p:title>")]
+    [InlineData("<p:title rdf:ID='a'>x</p:title>")]
+    [InlineData("<p:title rdf:datatype='urn:type'>x</p:title>")]
+    [InlineData("<p:title rdf:nodeID='n'/>")]
+    [InlineData("<p:title><rdf:Bag><rdf:li>a</rdf:li>text</rdf:Bag></p:title>")]
+    public void RdfThatCannotBeWrittenBackIsOpaqueAndCannotBeDestructivelyEdited(string content)
     {
         byte[] input = Xml(content); XmpPacket packet = XmpPacket.Parse(input);
         Assert.False(packet.IsEditable);
@@ -78,10 +100,14 @@ public sealed class XmpPacketTests
         var removal = new XmpEdit(); removal.RemoveAllXmp(); Assert.Null(packet.Apply(removal));
     }
     [Fact]
-    public void MultipleDescriptionsAndNonemptyAboutRemainOpaque()
+    public void SeveralDescriptionsAboutOneSubjectAreEditableAndTheSubjectIsKept()
     {
-        Assert.False(XmpPacket.Parse(Encoding.UTF8.GetBytes($"<rdf:RDF xmlns:rdf='{Rdf}'><rdf:Description rdf:about=''/><rdf:Description rdf:about=''/></rdf:RDF>")).IsEditable);
-        Assert.False(XmpPacket.Parse(Encoding.UTF8.GetBytes($"<rdf:RDF xmlns:rdf='{Rdf}'><rdf:Description rdf:about='urn:subject'/></rdf:RDF>")).IsEditable);
+        Assert.True(XmpPacket.Parse(Encoding.UTF8.GetBytes($"<rdf:RDF xmlns:rdf='{Rdf}'><rdf:Description rdf:about=''/><rdf:Description rdf:about=''/></rdf:RDF>")).IsEditable);
+        XmpPacket about = XmpPacket.Parse(Encoding.UTF8.GetBytes($"<rdf:RDF xmlns:rdf='{Rdf}'><rdf:Description rdf:about='urn:subject'/></rdf:RDF>"));
+        Assert.True(about.IsEditable);
+        var edit = new XmpEdit(); edit.Set(Title, XmpValue.CreateText("kept"));
+        Assert.Contains("rdf:about=\"urn:subject\"", Encoding.UTF8.GetString(Raw(about.Apply(edit)!)), StringComparison.Ordinal);
+        Assert.False(XmpPacket.Parse(Encoding.UTF8.GetBytes($"<rdf:RDF xmlns:rdf='{Rdf}'><rdf:Description rdf:about='urn:a'/><rdf:Description rdf:about='urn:b'/></rdf:RDF>")).IsEditable);
     }
     [Theory]
     [InlineData("<p:title>a</p:title><p:title>b</p:title>")]

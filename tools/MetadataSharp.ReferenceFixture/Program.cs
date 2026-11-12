@@ -48,8 +48,9 @@ if (args.Length == 2 && args[0] == "generate")
     foreach (int size in new[] { 65502, 65503, 65504 })
     {
         // Measure the actual serializer overhead, then exercise every disputed boundary.
-        var empty = new XmpEdit(); empty.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText(""));
-        int overhead = XmpPacket.CreateEmpty().Apply(empty)!.ByteLength;
+        // An empty value is written as an empty element, so the measure is taken with one character.
+        var empty = new XmpEdit(); empty.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("a"));
+        int overhead = XmpPacket.CreateEmpty().Apply(empty)!.ByteLength - 1;
         var boundary = new XmpEdit(); boundary.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText(new string('a', size - overhead)));
         edited.SaveXmpAs(Path.Combine(args[1], $"xmp-boundary-{size}.jpg"), boundary);
     }
@@ -445,6 +446,125 @@ else if (args.Length == 3 && args[0] == "tiff-based-corpus")
         : string.Join("%0A", budgets.Select(line => line.Replace("%", "%25")))));
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=TIFF-based writer defect::" + crash);
     if (crashes.Count != 0) return 1;
+}
+else if (args.Length == 2 && args[0] == "xmp-edits")
+{
+    // Files for the pinned tool to read after an XMP edit by path: every node kind, a namespace of
+    // the edit's own, then a second edit of the result, in a JPEG, a PNG, a WebP, a TIFF and a HEIC
+    // file and a sidecar; a JPEG file whose packet is Extended XMP; a JPEG file with qualifiers.
+    // manifest.tsv has one row per file: the file, then every line the tool has to print for its
+    // XMP as "key type count value", |-separated. A value of * stands for any value.
+    Directory.CreateDirectory(args[1]);
+    var manifest = new List<string>();
+    string XmpAt(string name) => Path.Combine(args[1], name);
+    string TextLine(string key, string value) => $"{key} XmpText {Encoding.UTF8.GetByteCount(value)} {value}";
+    // The tool prints a structure or an array of structures as a text that names its form.
+    string NodeLine(string key, string form) => TextLine(key, $"type=\"{form}\"");
+    const string acme = "https://example.com/ns/acme/1.0/";
+    const string title = "Harbour at dawn", french = "Le port \u00E0 l'aube", note = "custom & <escaped>";
+
+    var build = new XmpEdit();
+    build.RegisterNamespace("acme", acme);
+    build.Set("Xmp.xmp.Rating", "4");
+    build.Set("Xmp.xmp.CreatorTool", "MetadataSharp");
+    build.Append("Xmp.dc.subject", XmpValueKind.Bag, "harbour");
+    build.Append("Xmp.dc.subject", XmpValueKind.Bag, "dawn");
+    build.Append("Xmp.dc.creator", XmpValueKind.Sequence, "Ana Mart\u00EDn");
+    build.SetLanguage("Xmp.dc.title", "x-default", title);
+    build.SetLanguage("Xmp.dc.title", "fr-FR", french);
+    build.Set("Xmp.xmpMM.DerivedFrom/stRef:documentID", "xmp.did:1");
+    build.Set("Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiAdrCity", "Boston");
+    build.AppendStruct("Xmp.xmpMM.History", XmpValueKind.Sequence);
+    build.Set("Xmp.xmpMM.History[last()]/stEvt:action", "created");
+    build.AppendStruct("Xmp.xmpMM.History", XmpValueKind.Sequence);
+    build.Set("Xmp.xmpMM.History[last()]/stEvt:action", "saved");
+    build.Set("Xmp.acme.note", note);
+    build.Set("Xmp.acme.job/acme:id", "J-1");
+    build.Append("Xmp.acme.steps", XmpValueKind.Sequence, "one");
+    build.Append("Xmp.acme.steps", XmpValueKind.Sequence, "two");
+    string[] built =
+    [
+        TextLine("Xmp.xmp.Rating", "4"), TextLine("Xmp.xmp.CreatorTool", "MetadataSharp"),
+        "Xmp.dc.subject XmpBag 2 harbour, dawn", "Xmp.dc.creator XmpSeq 1 Ana Mart\u00EDn",
+        $"Xmp.dc.title LangAlt 2 lang=\"x-default\" {title}, lang=\"fr-FR\" {french}",
+        NodeLine("Xmp.xmpMM.DerivedFrom", "Struct"), TextLine("Xmp.xmpMM.DerivedFrom/stRef:documentID", "xmp.did:1"),
+        NodeLine("Xmp.iptc.CreatorContactInfo", "Struct"), TextLine("Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiAdrCity", "Boston"),
+        NodeLine("Xmp.xmpMM.History", "Seq"),
+        NodeLine("Xmp.xmpMM.History[1]", "Struct"), TextLine("Xmp.xmpMM.History[1]/stEvt:action", "created"),
+        NodeLine("Xmp.xmpMM.History[2]", "Struct"), TextLine("Xmp.xmpMM.History[2]/stEvt:action", "saved"),
+        TextLine("Xmp.acme.note", note),
+        NodeLine("Xmp.acme.job", "Struct"), TextLine("Xmp.acme.job/acme:id", "J-1"),
+        "Xmp.acme.steps XmpSeq 2 one, two"
+    ];
+
+    // The second edit names what the first wrote by the keys the packet lists; "acme" is now a
+    // prefix of the packet. The structure that loses its only field goes with it.
+    var change = new XmpEdit();
+    change.Set("Xmp.xmp.Rating", "5");
+    change.RemovePath("Xmp.dc.subject[1]");
+    change.Insert("Xmp.dc.subject", 1, "quay");
+    change.RemoveLanguage("Xmp.dc.title", "fr-FR");
+    change.Set("Xmp.xmpMM.History[1]/stEvt:action", "derived");
+    change.RemovePath("Xmp.xmpMM.History[2]");
+    change.RemovePath("Xmp.acme.job/acme:id");
+    change.Set("Xmp.xmpMM.DerivedFrom/stRef:instanceID", "xmp.iid:2");
+    change.Set("Xmp.acme.steps[last()]", "three");
+    string[] changed =
+    [
+        TextLine("Xmp.xmp.Rating", "5"), TextLine("Xmp.xmp.CreatorTool", "MetadataSharp"),
+        "Xmp.dc.subject XmpBag 2 quay, dawn", "Xmp.dc.creator XmpSeq 1 Ana Mart\u00EDn",
+        $"Xmp.dc.title LangAlt 1 lang=\"x-default\" {title}",
+        NodeLine("Xmp.xmpMM.DerivedFrom", "Struct"), TextLine("Xmp.xmpMM.DerivedFrom/stRef:documentID", "xmp.did:1"),
+        TextLine("Xmp.xmpMM.DerivedFrom/stRef:instanceID", "xmp.iid:2"),
+        NodeLine("Xmp.iptc.CreatorContactInfo", "Struct"), TextLine("Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiAdrCity", "Boston"),
+        NodeLine("Xmp.xmpMM.History", "Seq"),
+        NodeLine("Xmp.xmpMM.History[1]", "Struct"), TextLine("Xmp.xmpMM.History[1]/stEvt:action", "derived"),
+        TextLine("Xmp.acme.note", note),
+        "Xmp.acme.steps XmpSeq 2 one, three"
+    ];
+    void XmpRow(string file, string[] lines) => manifest.Add(file + "\t" + string.Join('|', lines));
+
+    byte[] jpeg = JpegFixture.Build(JpegFixture.Segment(0xE0, [74, 70, 73, 70, 0, 1, 2, 0, 0, 1, 0, 1, 0, 0]));
+    using (var document = JpegMetadataDocument.Open(new MemoryStream(jpeg))) document.SaveXmpAs(XmpAt("built.jpg"), build);
+    using (var document = JpegMetadataDocument.Open(XmpAt("built.jpg"))) document.SaveXmpAs(XmpAt("changed.jpg"), change);
+    using (var document = PngMetadataDocument.Open(new MemoryStream(PngFixture.Build()))) document.SaveXmpAs(XmpAt("built.png"), build);
+    using (var document = PngMetadataDocument.Open(XmpAt("built.png"))) document.SaveXmpAs(XmpAt("changed.png"), change);
+    using (var document = WebPMetadataDocument.Open(new MemoryStream(WebPFixture.Image(0)))) document.SaveXmpAs(XmpAt("built.webp"), build);
+    using (var document = WebPMetadataDocument.Open(XmpAt("built.webp"))) document.SaveXmpAs(XmpAt("changed.webp"), change);
+    using (var document = TiffBasedMetadataDocument.Open(new MemoryStream(TiffBasedFixture.Tiff(false).Bytes))) document.SaveXmpAs(XmpAt("built.tif"), build);
+    using (var document = TiffBasedMetadataDocument.Open(XmpAt("built.tif"))) document.SaveXmpAs(XmpAt("changed.tif"), change);
+    BmffFixture heic = BmffFixture.Bare.Select(name => BmffFixture.Create(name, false)).First(fixture => fixture.Plan.ToolReads);
+    using (var document = BmffMetadataDocument.Open(new MemoryStream(heic.Bytes))) document.SaveXmpAs(XmpAt("built.heic"), build);
+    using (var document = BmffMetadataDocument.Open(XmpAt("built.heic"))) document.SaveXmpAs(XmpAt("changed.heic"), change);
+    XmpPacket sidecar = XmpPacket.CreateEmpty().Apply(build)!;
+    sidecar.SaveAs(XmpAt("built.xmp"));
+    XmpPacket.Load(XmpAt("built.xmp")).Apply(change)!.SaveAs(XmpAt("changed.xmp"));
+    foreach (string extension in new[] { "jpg", "png", "webp", "tif", "heic", "xmp" })
+    {
+        XmpRow("built." + extension, built);
+        XmpRow("changed." + extension, changed);
+    }
+
+    // Extended XMP: the tool reads the standard packet, which keeps everything but the one large
+    // property and names the extension by its digest.
+    var large = new XmpEdit();
+    large.Set("Xmp.acme.large", string.Concat(Enumerable.Range(0, 5000).Select(i => "chunk " + i.ToString("D5") + ". ")));
+    using (var document = JpegMetadataDocument.Open(XmpAt("built.jpg"))) document.SaveXmpAs(XmpAt("extended.jpg"), large);
+    XmpRow("extended.jpg", [.. built, "Xmp.xmpNote.HasExtendedXMP XmpText 32 *"]);
+    // An edit of a file that has Extended XMP, after which the packet is one segment again.
+    var small = new XmpEdit();
+    small.RemovePath("Xmp.acme.large");
+    small.Set("Xmp.xmp.Rating", "5");
+    using (var document = JpegMetadataDocument.Open(XmpAt("extended.jpg"))) document.SaveXmpAs(XmpAt("extended-undone.jpg"), small);
+    XmpRow("extended-undone.jpg", [TextLine("Xmp.xmp.Rating", "5"), .. built.Skip(1)]);
+
+    var qualified = new XmpEdit();
+    qualified.RegisterNamespace("acme", acme);
+    qualified.Set("Xmp.acme.note", note);
+    qualified.Set("Xmp.acme.note/?acme:role", "caption");
+    using (var document = JpegMetadataDocument.Open(new MemoryStream(jpeg))) document.SaveXmpAs(XmpAt("qualified.jpg"), qualified);
+    XmpRow("qualified.jpg", [TextLine("Xmp.acme.note", note), TextLine("Xmp.acme.note/?acme:role", "caption")]);
+    File.WriteAllLines(XmpAt("manifest.tsv"), manifest);
 }
 else if (args.Length == 2 && args[0] == "bmff-edits")
 {

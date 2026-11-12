@@ -185,7 +185,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
 
     /// <summary>The changes of one save, captured when the save is called.</summary>
-    private sealed record Pending(ExifEdit.EditSnapshot? Exif, (bool RemoveAll, Dictionary<XmpPropertyName, XmpValue?> Changes)? Xmp);
+    private sealed record Pending(ExifEdit.EditSnapshot? Exif, XmpEdit? Xmp);
 
     private static Pending Edit(ExifEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(edit.Snapshot(), null); }
     private static Pending Edit(XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(null, edit.Snapshot()); }
@@ -212,9 +212,9 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     {
         token.ThrowIfCancellationRequested();
         ExifEdit.EditSnapshot? exif = edit.Exif;
-        (bool RemoveAll, Dictionary<XmpPropertyName, XmpValue?> Changes)? xmp = edit.Xmp;
+        XmpEdit? xmp = edit.Xmp;
         bool exifEmpty = exif is null || exif.IsEmpty;
-        bool xmpEmpty = xmp is null || (!xmp.Value.RemoveAll && xmp.Value.Changes.Count == 0);
+        bool xmpEmpty = xmp is null || xmp.IsEmpty;
         if (exifEmpty && xmpEmpty) return source;
 
         if (refusal is not null) throw new MetadataException(refusal.Code, refusal.Message, refusal.SourceOffset);
@@ -242,7 +242,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         {
             kind = BmffItemKind.Xmp;
             item = layout.Find(BmffFileMap.MimeItem, BmffFileMap.XmpContentType);
-            payload = XmpPayload(xmp!.Value.RemoveAll, xmp.Value.Changes, layout, item);
+            payload = XmpPayload(xmp!, layout, item);
         }
         if (payload is null) return source;
 
@@ -305,26 +305,24 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         return payload;
     }
 
+    /// <summary>The padding of a packet that is appended, so that the next edit is written in place.</summary>
+    internal const int XmpPaddingBytes = 2048;
+
     /// <summary>The bytes the XMP item is to have, or null when the edit changes nothing.</summary>
-    private byte[]? XmpPayload(bool removeAll, Dictionary<XmpPropertyName, XmpValue?> edit, BmffFileMap layout, BmffItem? item)
+    private byte[]? XmpPayload(XmpEdit edit, BmffFileMap layout, BmffItem? item)
     {
-        if (removeAll)
+        if (edit.RemovesAll)
         {
             if (item is null) return null;
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
                 "An item of a BMFF file is not removed: the XMP item can be edited property by property.");
         }
-        // Removing names from a packet that is not there changes nothing.
-        if (item is null && edit.Values.All(value => value is null)) return null;
         XmpPacket packet = item is null ? XmpPacket.CreateEmpty() : XmpPacket.Parse(ItemBytes(layout, item));
-        var captured = new XmpEdit();
-        foreach (KeyValuePair<XmpPropertyName, XmpValue?> change in edit)
-        {
-            if (change.Value is null) captured.Remove(change.Key);
-            else captured.Set(change.Key, change.Value);
-        }
-        XmpPacket changed = packet.Apply(captured)!;
-        if (item is not null && ReferenceEquals(changed, packet)) return null;
+        // A packet that still fits is padded to the length of the stored one, so that the item keeps
+        // its length and is written in place; one that grows is appended with padding of its own.
+        XmpPacket changed = packet.Apply(edit, item is null ? 0 : packet.ByteLength, XmpPaddingBytes)!;
+        // An edit that leaves the packet as it is, or leaves a file without a packet without one, changes nothing.
+        if (ReferenceEquals(changed, packet)) return null;
         byte[] bytes = new byte[changed.ByteLength];
         changed.CopyRawTo(bytes);
         return bytes;

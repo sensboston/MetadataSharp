@@ -4,65 +4,18 @@ using System.Xml.Linq;
 namespace MetadataSharp.Core.Xmp;
 
 /// <summary>
-/// Flattens the RDF of a parsed packet into <see cref="XmpEntry"/> rows. It reads every packet, not
-/// only the editable profile, and it never refuses one: a property whose RDF it cannot interpret
-/// contributes no rows. The document was bounded before it was loaded, so the recursion here is at
-/// most <see cref="XmpLimits.MaxDepth"/> deep and the rows are at most one per node or attribute;
-/// the one thing that can grow beyond the input is the text of the paths, which is budgeted.
+/// Reads the RDF of a parsed packet into a tree of <see cref="XmpNode"/> and flattens that tree into
+/// <see cref="XmpEntry"/> rows. It reads every packet and never refuses one: a property whose RDF
+/// it cannot interpret contributes no node, and the tree is then reported as not lossless, which
+/// is what keeps such a packet from being rewritten. The document was bounded before it was loaded,
+/// so the recursion here is at most <see cref="XmpLimits.MaxDepth"/> deep and the rows are at most
+/// one per node or attribute; the one thing that can grow beyond the input is the text of the
+/// paths, which is budgeted.
 /// </summary>
 internal static class XmpEntryReader
 {
     private static readonly XNamespace Rdf = XmpCodec.Rdf;
     private static readonly XName Language = XNamespace.Xml + "lang";
-
-    /// <summary>
-    /// Namespaces with a conventional prefix that is used whatever the packet declares: older
-    /// packets declare <c>xap</c>, <c>xapMM</c> and <c>xapRights</c>, the IPTC schemas are declared
-    /// under their long names, and this library's own writer declares generated prefixes.
-    /// </summary>
-    private static readonly Dictionary<string, string> WellKnownPrefixes = new(StringComparer.Ordinal)
-    {
-        ["http://purl.org/dc/elements/1.1/"] = "dc",
-        ["http://ns.adobe.com/xap/1.0/"] = "xmp",
-        ["http://ns.adobe.com/xap/1.0/rights/"] = "xmpRights",
-        ["http://ns.adobe.com/xap/1.0/mm/"] = "xmpMM",
-        ["http://ns.adobe.com/xap/1.0/bj/"] = "xmpBJ",
-        ["http://ns.adobe.com/xmp/1.0/DynamicMedia/"] = "xmpDM",
-        ["http://ns.adobe.com/xmp/note/"] = "xmpNote",
-        ["http://ns.adobe.com/pdf/1.3/"] = "pdf",
-        ["http://ns.adobe.com/photoshop/1.0/"] = "photoshop",
-        ["http://ns.adobe.com/camera-raw-settings/1.0/"] = "crs",
-        ["http://ns.adobe.com/tiff/1.0/"] = "tiff",
-        ["http://ns.adobe.com/exif/1.0/"] = "exif",
-        ["http://ns.adobe.com/exif/1.0/aux/"] = "aux",
-        ["http://cipa.jp/exif/1.0/"] = "exifEX",
-        ["http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/"] = "iptc",
-        ["http://iptc.org/std/Iptc4xmpExt/2008-02-29/"] = "iptcExt",
-        ["http://ns.microsoft.com/photo/1.0/"] = "MicrosoftPhoto",
-    };
-
-    /// <summary>A property, field, item or qualifier before it is flattened.</summary>
-    private sealed class Node(XName name, string prefix)
-    {
-        private HashSet<XName>? fieldNames;
-        internal XName Name { get; } = name;
-        internal string Prefix { get; } = prefix;
-        internal XmpEntryKind Kind { get; set; } = XmpEntryKind.Text;
-        internal string Value { get; set; } = string.Empty;
-        internal string? Language { get; set; }
-        /// <summary>The fields of a structure or the items of an array.</summary>
-        internal List<Node> Children { get; } = [];
-        internal List<Node> Qualifiers { get; } = [];
-
-        /// <summary>Adds a structure field; false when the structure already has one of that name.</summary>
-        internal bool AddField(Node field)
-        {
-            fieldNames ??= new HashSet<XName>();
-            if (!fieldNames.Add(field.Name)) return false;
-            Children.Add(field);
-            return true;
-        }
-    }
 
     /// <summary>The rows being collected and what is left of the budget for the text of their paths.</summary>
     private sealed class Output(int pathCharacters)
@@ -79,30 +32,61 @@ internal static class XmpEntryReader
         }
     }
 
-    internal static IReadOnlyList<XmpEntry> Read(XElement rdf, XmpLimits limits, CancellationToken token)
+    /// <summary>
+    /// The tree of a packet. <paramref name="lossless"/> is false when the packet holds anything the
+    /// tree does not: RDF that is not a form XMP defines, a property that occurs twice, node
+    /// identifiers, datatypes, descriptions about different subjects.
+    /// </summary>
+    internal static XmpTree ReadTree(XElement rdf, CancellationToken token, out bool lossless)
     {
-        var output = new Output(limits.MaxXmlCharacters);
+        var parser = new Parser();
+        var tree = new XmpTree();
+        string? about = null;
         // A property that appears twice is reported once, as its first readable occurrence.
         var seen = new HashSet<XName>();
         foreach (XElement description in rdf.Elements())
         {
-            if (description.Name != Rdf + "Description") continue;
+            if (description.Name != Rdf + "Description") { parser.Lossy = true; continue; }
+            if (!OnlyWhitespace(description)) parser.Lossy = true;
+            string subject = string.Empty;
             foreach (XAttribute attribute in description.Attributes())
             {
                 token.ThrowIfCancellationRequested();
-                if (attribute.IsNamespaceDeclaration || !IsPropertyName(attribute.Name)) continue;
-                if (Named(attribute.Name, description) is not Node node || !seen.Add(node.Name)) continue;
+                if (attribute.IsNamespaceDeclaration) continue;
+                if (attribute.Name == Rdf + "about") { subject = attribute.Value; continue; }
+                if (!IsPropertyName(attribute.Name)) { parser.Lossy = true; continue; }
+                if (Named(attribute.Name, description) is not XmpNode node || !seen.Add(node.Name)) { parser.Lossy = true; continue; }
                 node.Value = attribute.Value;
-                Flatten(output, node);
+                tree.Properties.Add(node);
             }
+            if (about is null) about = subject;
+            else if (!string.Equals(about, subject, StringComparison.Ordinal)) parser.Lossy = true;
             foreach (XElement element in description.Elements())
             {
                 token.ThrowIfCancellationRequested();
-                if (!IsPropertyName(element.Name)) continue;
-                if (Property(element) is not Node node || !seen.Add(node.Name)) continue;
-                Flatten(output, node);
+                if (!IsPropertyName(element.Name)) { parser.Lossy = true; continue; }
+                if (parser.Property(element) is not XmpNode node || !seen.Add(node.Name)) { parser.Lossy = true; continue; }
+                tree.Properties.Add(node);
             }
         }
+        tree.About = about ?? string.Empty;
+        foreach (XElement element in rdf.AncestorsAndSelf()) Declarations(tree, element);
+        foreach (XElement element in rdf.Descendants()) Declarations(tree, element);
+        lossless = !parser.Lossy;
+        return tree;
+    }
+
+    private static void Declarations(XmpTree tree, XElement element)
+    {
+        foreach (XAttribute attribute in element.Attributes())
+            if (attribute.IsNamespaceDeclaration && attribute.Name.Namespace == XNamespace.Xmlns)
+                tree.Declarations.TryAdd(attribute.Name.LocalName, attribute.Value);
+    }
+
+    internal static IReadOnlyList<XmpEntry> Flatten(XmpTree tree, XmpLimits limits)
+    {
+        var output = new Output(limits.MaxXmlCharacters);
+        foreach (XmpNode property in tree.Properties) Flatten(output, property);
         return output.Entries.AsReadOnly();
     }
 
@@ -111,10 +95,10 @@ internal static class XmpEntryReader
         name.Namespace != XNamespace.Xmlns;
 
     /// <summary>A node for a name, or null when no prefix is in scope for its namespace.</summary>
-    private static Node? Named(XName name, XElement scope)
+    private static XmpNode? Named(XName name, XElement scope)
     {
         string? prefix = scope.GetPrefixOfNamespace(name.Namespace);
-        return string.IsNullOrEmpty(prefix) ? null : new Node(name, prefix);
+        return string.IsNullOrEmpty(prefix) ? null : new XmpNode(name, prefix);
     }
 
     private static bool OnlyWhitespace(XElement element)
@@ -124,179 +108,192 @@ internal static class XmpEntryReader
         return true;
     }
 
-    /// <summary>
-    /// Reads one property element: a top-level property, a structure field or an array item. Null
-    /// means the RDF is not a form XMP defines.
-    /// </summary>
-    private static Node? Property(XElement element)
+    private sealed class Parser
     {
-        if (Named(element.Name, element) is not Node node) return null;
-        string? parseType = null;
-        bool valueAttributes = false;
-        foreach (XAttribute attribute in element.Attributes())
-        {
-            if (attribute.IsNamespaceDeclaration) continue;
-            if (attribute.Name == Language) node.Language = attribute.Value;
-            else if (attribute.Name == Rdf + "parseType") parseType = attribute.Value;
-            else if (attribute.Name != Rdf + "ID" && attribute.Name != Rdf + "datatype") valueAttributes = true;
-        }
-        if (parseType is not null)
-        {
-            // Literal and Collection content has no XMP meaning; Resource makes the element a structure.
-            if (parseType != "Resource" || valueAttributes) return null;
-            node.Kind = XmpEntryKind.Struct;
-            return Fields(node, element) ? Resolve(node) : null;
-        }
-        if (valueAttributes) return Shorthand(element, node);
-        if (!element.HasElements)
-        {
-            node.Value = element.Value;
-            return node;
-        }
-        if (!OnlyWhitespace(element)) return null;
-        XElement? child = null;
-        foreach (XElement candidate in element.Elements())
-        {
-            if (child is not null) return null;
-            child = candidate;
-        }
-        if (child is null) return null;
-        if (child.Name == Rdf + "Bag" || child.Name == Rdf + "Seq" || child.Name == Rdf + "Alt")
-        {
-            node.Kind = child.Name.LocalName switch
-            {
-                "Bag" => XmpEntryKind.Bag,
-                "Seq" => XmpEntryKind.Seq,
-                _ => XmpEntryKind.Alt
-            };
-            if (!OnlyWhitespace(child)) return null;
-            foreach (XAttribute attribute in child.Attributes())
-                if (!attribute.IsNamespaceDeclaration) return null;
-            foreach (XElement item in child.Elements())
-            {
-                if (item.Name != Rdf + "li" || Property(item) is not Node value) return null;
-                node.Children.Add(value);
-            }
-            return node;
-        }
-        node.Kind = XmpEntryKind.Struct;
-        if (child.Name != Rdf + "Description")
-        {
-            // A typed node: the element name stands for an rdf:type of the structure.
-            if (child.Name.Namespace == Rdf || child.Name.Namespace == XNamespace.None) return null;
-            if (Named(Rdf + "type", child) is not Node type) return null;
-            type.Value = child.Name.NamespaceName + child.Name.LocalName;
-            node.Qualifiers.Add(type);
-        }
-        foreach (XAttribute attribute in child.Attributes())
-        {
-            if (attribute.IsNamespaceDeclaration || attribute.Name.Namespace == XNamespace.Xml) continue;
-            if (attribute.Name.Namespace == Rdf)
-            {
-                if (attribute.Name.LocalName is "about" or "ID" or "nodeID") continue;
-                return null;
-            }
-            if (Named(attribute.Name, child) is not Node field) return null;
-            field.Value = attribute.Value;
-            if (!node.AddField(field)) return null;
-        }
-        return Fields(node, child) ? Resolve(node) : null;
-    }
+        /// <summary>Set when something in the packet is left out of the tree.</summary>
+        internal bool Lossy { get; set; }
 
-    /// <summary>
-    /// An element that carries its content in attributes: <c>rdf:value</c> or <c>rdf:resource</c>
-    /// gives a simple value and the other attributes qualify it; without either, the attributes
-    /// are the fields of a structure.
-    /// </summary>
-    private static Node? Shorthand(XElement element, Node node)
-    {
-        if (element.HasElements || !OnlyWhitespace(element)) return null;
-        string? value = null, resource = null;
-        var others = new List<Node>();
-        foreach (XAttribute attribute in element.Attributes())
+        /// <summary>
+        /// Reads one property element: a top-level property, a structure field or an array item. Null
+        /// means the RDF is not a form XMP defines.
+        /// </summary>
+        internal XmpNode? Property(XElement element)
         {
-            if (attribute.IsNamespaceDeclaration || attribute.Name == Language) continue;
-            if (attribute.Name.Namespace == Rdf)
+            if (Named(element.Name, element) is not XmpNode node) return null;
+            string? parseType = null;
+            bool valueAttributes = false;
+            foreach (XAttribute attribute in element.Attributes())
             {
-                switch (attribute.Name.LocalName)
+                if (attribute.IsNamespaceDeclaration) continue;
+                if (attribute.Name == Language) node.Language = attribute.Value;
+                else if (attribute.Name == Rdf + "parseType") parseType = attribute.Value;
+                else if (attribute.Name != Rdf + "ID" && attribute.Name != Rdf + "datatype") valueAttributes = true;
+                else Lossy = true;
+            }
+            if (parseType is not null)
+            {
+                // Literal and Collection content has no XMP meaning; Resource makes the element a structure.
+                if (parseType != "Resource" || valueAttributes) return null;
+                node.Kind = XmpEntryKind.Struct;
+                return Fields(node, element) ? Resolve(node) : null;
+            }
+            if (valueAttributes) return Shorthand(element, node);
+            if (!element.HasElements)
+            {
+                node.Value = element.Value;
+                return node;
+            }
+            if (!OnlyWhitespace(element)) return null;
+            XElement? child = null;
+            foreach (XElement candidate in element.Elements())
+            {
+                if (child is not null) return null;
+                child = candidate;
+            }
+            if (child is null) return null;
+            if (child.Name == Rdf + "Bag" || child.Name == Rdf + "Seq" || child.Name == Rdf + "Alt")
+            {
+                node.Kind = child.Name.LocalName switch
                 {
-                    case "value": value = attribute.Value; break;
-                    case "resource": resource = attribute.Value; break;
-                    case "ID" or "nodeID" or "datatype": break;
-                    default: return null;
+                    "Bag" => XmpEntryKind.Bag,
+                    "Seq" => XmpEntryKind.Seq,
+                    _ => XmpEntryKind.Alt
+                };
+                if (!OnlyWhitespace(child)) return null;
+                foreach (XAttribute attribute in child.Attributes())
+                    if (!attribute.IsNamespaceDeclaration) return null;
+                foreach (XElement item in child.Elements())
+                {
+                    if (item.Name != Rdf + "li" || Property(item) is not XmpNode value) return null;
+                    node.Children.Add(value);
                 }
-                continue;
+                return node;
             }
-            if (attribute.Name.Namespace == XNamespace.Xml || Named(attribute.Name, element) is not Node other) return null;
-            other.Value = attribute.Value;
-            others.Add(other);
-        }
-        if (value is not null || resource is not null)
-        {
-            node.Value = value ?? resource!;
-            if (value is not null && resource is not null && Named(Rdf + "resource", element) is Node target)
+            node.Kind = XmpEntryKind.Struct;
+            if (child.Name != Rdf + "Description")
             {
-                target.Value = resource;
-                node.Qualifiers.Add(target);
+                // A typed node: the element name stands for an rdf:type of the structure.
+                if (child.Name.Namespace == Rdf || child.Name.Namespace == XNamespace.None) return null;
+                if (Named(Rdf + "type", child) is not XmpNode type) return null;
+                type.Value = child.Name.NamespaceName + child.Name.LocalName;
+                type.IsUri = true;
+                node.Qualifiers.Add(type);
             }
-            node.Qualifiers.AddRange(others);
+            foreach (XAttribute attribute in child.Attributes())
+            {
+                if (attribute.IsNamespaceDeclaration) continue;
+                if (attribute.Name.Namespace == XNamespace.Xml) { Lossy = true; continue; }
+                if (attribute.Name.Namespace == Rdf)
+                {
+                    if (attribute.Name.LocalName is "about" or "ID" or "nodeID") { Lossy = true; continue; }
+                    return null;
+                }
+                if (Named(attribute.Name, child) is not XmpNode field) return null;
+                field.Value = attribute.Value;
+                if (!node.AddField(field)) return null;
+            }
+            return Fields(node, child) ? Resolve(node) : null;
+        }
+
+        /// <summary>
+        /// An element that carries its content in attributes: <c>rdf:value</c> or <c>rdf:resource</c>
+        /// gives a simple value and the other attributes qualify it; without either, the attributes
+        /// are the fields of a structure.
+        /// </summary>
+        private XmpNode? Shorthand(XElement element, XmpNode node)
+        {
+            if (element.HasElements || !OnlyWhitespace(element)) return null;
+            string? value = null, resource = null;
+            var others = new List<XmpNode>();
+            foreach (XAttribute attribute in element.Attributes())
+            {
+                if (attribute.IsNamespaceDeclaration || attribute.Name == Language) continue;
+                if (attribute.Name.Namespace == Rdf)
+                {
+                    switch (attribute.Name.LocalName)
+                    {
+                        case "value": value = attribute.Value; break;
+                        case "resource": resource = attribute.Value; break;
+                        case "ID" or "nodeID" or "datatype": Lossy = true; break;
+                        default: return null;
+                    }
+                    continue;
+                }
+                if (attribute.Name.Namespace == XNamespace.Xml || Named(attribute.Name, element) is not XmpNode other) return null;
+                other.Value = attribute.Value;
+                others.Add(other);
+            }
+            if (value is not null || resource is not null)
+            {
+                node.Value = value ?? resource!;
+                node.IsUri = value is null;
+                if (value is not null && resource is not null && Named(Rdf + "resource", element) is XmpNode target)
+                {
+                    // A literal and a resource at once is listed, and is not a form that is written back.
+                    Lossy = true;
+                    target.Value = resource;
+                    node.Qualifiers.Add(target);
+                }
+                node.Qualifiers.AddRange(others);
+                return node;
+            }
+            if (others.Count != 0)
+            {
+                node.Kind = XmpEntryKind.Struct;
+                foreach (XmpNode other in others)
+                    if (!node.AddField(other)) return null;
+            }
             return node;
         }
-        if (others.Count != 0)
-        {
-            node.Kind = XmpEntryKind.Struct;
-            foreach (Node other in others)
-                if (!node.AddField(other)) return null;
-        }
-        return node;
-    }
 
-    private static bool Fields(Node node, XElement container)
-    {
-        if (!OnlyWhitespace(container)) return false;
-        foreach (XElement element in container.Elements())
+        private bool Fields(XmpNode node, XElement container)
         {
-            if (element.Name.Namespace == Rdf && element.Name.LocalName is not ("value" or "type")) return false;
-            if (Property(element) is not Node field || !node.AddField(field)) return false;
+            if (!OnlyWhitespace(container)) return false;
+            foreach (XElement element in container.Elements())
+            {
+                if (element.Name.Namespace == Rdf && element.Name.LocalName is not ("value" or "type")) return false;
+                if (Property(element) is not XmpNode field || !node.AddField(field)) return false;
+            }
+            return true;
         }
-        return true;
     }
 
     /// <summary>
     /// A structure with an <c>rdf:value</c> field is that value, and its other fields are qualifiers.
     /// </summary>
-    private static Node Resolve(Node node)
+    private static XmpNode Resolve(XmpNode node)
     {
-        Node? value = null;
-        foreach (Node field in node.Children)
+        XmpNode? value = null;
+        foreach (XmpNode field in node.Children)
             if (field.Name == Rdf + "value") { value = field; break; }
         if (value is null) return node;
-        var resolved = new Node(node.Name, node.Prefix)
+        var resolved = new XmpNode(node.Name, node.Prefix)
         {
             Kind = value.Kind,
             Value = value.Value,
+            IsUri = value.IsUri,
             Language = value.Language ?? node.Language
         };
         resolved.Children.AddRange(value.Children);
         resolved.Qualifiers.AddRange(node.Qualifiers);
         resolved.Qualifiers.AddRange(value.Qualifiers);
-        foreach (Node field in node.Children)
+        foreach (XmpNode field in node.Children)
             if (!ReferenceEquals(field, value)) resolved.Qualifiers.Add(field);
         return resolved;
     }
 
-    private static void Flatten(Output output, Node property)
+    private static void Flatten(Output output, XmpNode property)
     {
         string uri = property.Name.NamespaceName;
-        string prefix = WellKnownPrefixes.TryGetValue(uri, out string? known) ? known : property.Prefix;
+        string prefix = XmpNamespaces.ListedPrefixes.TryGetValue(uri, out string? known) ? known : property.Prefix;
         Flatten(output, uri, prefix, property.Name.LocalName, property);
     }
 
-    private static void Flatten(Output output, string uri, string prefix, string path, Node node)
+    private static void Flatten(Output output, string uri, string prefix, string path, XmpNode node)
     {
         if (node.Kind is XmpEntryKind.Bag or XmpEntryKind.Seq or XmpEntryKind.Alt)
         {
-            List<Node> items = node.Children;
+            List<XmpNode> items = node.Children;
             bool qualified = node.Language is not null || node.Qualifiers.Count != 0;
             if (!qualified && node.Kind == XmpEntryKind.Alt && items.Count != 0 &&
                 items.TrueForAll(item => item.Kind == XmpEntryKind.Text && item.Language is not null && item.Qualifiers.Count == 0))
@@ -328,7 +325,7 @@ internal static class XmpEntryReader
         {
             output.Add(path, uri, prefix, XmpEntryKind.Struct, true, [], []);
             Qualifiers(output, uri, prefix, path, node);
-            foreach (Node field in node.Children)
+            foreach (XmpNode field in node.Children)
                 Flatten(output, uri, prefix, path + "/" + Step(field), field);
             return;
         }
@@ -336,13 +333,13 @@ internal static class XmpEntryReader
         Qualifiers(output, uri, prefix, path, node);
     }
 
-    private static void Qualifiers(Output output, string uri, string prefix, string path, Node node)
+    private static void Qualifiers(Output output, string uri, string prefix, string path, XmpNode node)
     {
         if (node.Language is not null)
             output.Add(path + "/?xml:lang", uri, prefix, XmpEntryKind.Text, false, [node.Language], []);
-        foreach (Node qualifier in node.Qualifiers)
+        foreach (XmpNode qualifier in node.Qualifiers)
             Flatten(output, uri, prefix, path + "/?" + Step(qualifier), qualifier);
     }
 
-    private static string Step(Node node) => node.Prefix + ":" + node.Name.LocalName;
+    private static string Step(XmpNode node) => node.Prefix + ":" + node.Name.LocalName;
 }

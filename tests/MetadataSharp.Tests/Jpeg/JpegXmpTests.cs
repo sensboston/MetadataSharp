@@ -46,7 +46,8 @@ public sealed class JpegXmpTests
     [InlineData(65504)]
     public void FullContainerCapacityIsReadableAndWritable(int size)
     {
-        int overhead = Packet("").Length; byte[] result = Save(JpegFixture.Build(), Set(new string('a', size - overhead)));
+        // An empty value is written as an empty element, so the overhead is measured with one character.
+        int overhead = Packet("a").Length - 1; byte[] result = Save(JpegFixture.Build(), Set(new string('a', size - overhead)));
         using var source = new MemoryStream(result); JpegScanResult scan = JpegScanner.Scan(source, new());
         Assert.Equal(size + 29, Assert.Single(scan.Segments, s => s.IsStandardXmp).PayloadLength);
         source.Position = 0; using var doc = JpegMetadataDocument.Open(source); Assert.Equal(size, doc.ReadXmp()!.ByteLength);
@@ -54,12 +55,16 @@ public sealed class JpegXmpTests
     [Fact]
     public void OversizeRefusesBeforeCallerOutputOrPathPublication()
     {
+        // A packet over one segment is written as Extended XMP; what refuses is the packet budget.
+        var edit = new XmpEdit();
+        edit.Set(Tool, XmpValue.CreateText(new string('a', 600_000)));
+        edit.Set(new("urn:owned:test", "more"), XmpValue.CreateText(new string('b', 600_000)));
         using var doc = JpegMetadataDocument.Open(new MemoryStream(JpegFixture.Build()));
         using var output = new MemoryStream();
-        Assert.Equal(MetadataErrorCode.XmpTooLarge, Assert.Throws<MetadataException>(() => doc.SaveXmp(output, Set(new string('a', 65505)))).Code);
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => doc.SaveXmp(output, edit)).Code);
         Assert.Empty(output.ToArray());
         string target = Path.Combine(Path.GetTempPath(), "xmp-oversize-" + Guid.NewGuid().ToString("N") + ".jpg");
-        Assert.Equal(MetadataErrorCode.XmpTooLarge, Assert.Throws<MetadataException>(() => doc.SaveXmpAs(target, Set(new string('a', 65505)))).Code);
+        Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => doc.SaveXmpAs(target, edit)).Code);
         Assert.False(File.Exists(target));
     }
     [Theory]
@@ -163,7 +168,7 @@ public sealed class JpegXmpTests
     [Fact]
     public void OpaqueRdfAndCombinedExifBudgetRemainConservative()
     {
-        byte[] xml = Encoding.UTF8.GetBytes("<r:RDF xmlns:r='http://www.w3.org/1999/02/22-rdf-syntax-ns#'><r:Description r:about='' xmlns:p='urn:owned'><p:structure r:parseType='Resource'><p:field>keep</p:field></p:structure></r:Description></r:RDF>");
+        byte[] xml = Encoding.UTF8.GetBytes("<r:RDF xmlns:r='http://www.w3.org/1999/02/22-rdf-syntax-ns#'><r:Description r:about='' xmlns:p='urn:owned'><p:structure r:parseType='Literal'><p:field>keep</p:field></p:structure></r:Description></r:RDF>");
         byte[] image = JpegFixture.Build(Segment(xml));
         using var doc = JpegMetadataDocument.Open(new MemoryStream(image)); Assert.False(doc.ReadXmp()!.IsEditable);
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => Save(image, Set("loss"))).Code);

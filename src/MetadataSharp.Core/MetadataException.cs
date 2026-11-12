@@ -57,7 +57,13 @@ public enum MetadataErrorCode
     /// The tag is part of the structure of the file and is not edited as a value: a directory pointer,
     /// an address or length of image or thumbnail data, or the MakerNote. See <see cref="ExifEdit.IsEditable"/>.
     /// </summary>
-    TagNotEditable
+    TagNotEditable,
+    /// <summary>
+    /// A change of an XMP edit does not apply to the packet: a prefix no namespace is known for, a
+    /// field asked of a node that is not a structure, an item outside its array, an array of
+    /// another form. See <see cref="Xmp.XmpEdit"/>.
+    /// </summary>
+    InvalidXmpPath
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>

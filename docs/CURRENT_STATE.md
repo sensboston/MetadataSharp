@@ -151,6 +151,14 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   Run 43182485287 / 43182493868: 2,817 tests; `exiv2 -u -pa` reads 54 authored edits and 387 files
   written from the corpus's 132 JPEG / PNG / WebP files (114 of them gained their block); every
   line the edit did not name is printed as before. The ExifTool harness (scheduled job) was not run.
+- Any XMP property is written (`XmpEdit` by path, the keys `XmpPacket.Entries` lists, `XmpEntry.Key`):
+  simple values, Bag/Seq/Alt items, language alternatives, structures, arrays of structures and
+  qualifiers in any namespace (`RegisterNamespace`); what an edit empties goes with its empty parents.
+  A packet is editable when it can be rewritten without loss, else refused (`UnsupportedFeature`); a
+  path that does not apply is `InvalidXmpPath`. One canonical RDF form, read back before it is kept.
+  JPEG reads and writes Extended XMP (over 65,504 bytes); TIFF and BMFF pad a packet for in-place edits.
+  CI job: `exiv2 -pa` prints every written property and no other in JPEG, PNG, WebP, TIFF, HEIC and a
+  sidecar, `-pX` gives the packet; the tool reads only the standard packet of Extended XMP (PR #107).
 
 ## Next (in order)
 
