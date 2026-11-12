@@ -3,7 +3,7 @@ using MetadataSharp.Core.Binary;
 namespace MetadataSharp.Core;
 
 /// <summary>An immutable, owned raw TIFF value with explicit source byte order.</summary>
-public sealed class ExifValue
+public sealed partial class ExifValue
 {
     private readonly byte[] bytes;
 
