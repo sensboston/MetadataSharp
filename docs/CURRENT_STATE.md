@@ -115,9 +115,10 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   (tag 0x8773 of the first directory: over the stored value, else appended; removal leaves the bytes
   unaddressed) and `BmffMetadataDocument` (`colr` `prof` of the primary item: replaced in place,
   added last, removed as `free`; `iprp` in place, else `meta` grows or is appended; no item moves).
-  Same profile: copy. Verified before written. Run 43144018946: 2,426 tests; `exiv2 -pC`, `-pc`,
-  `-pa` agree on 128 + 117 edited fixtures and on 10 + 15 files written from the corpus (15 of 22
-  TIFF-based and 2 of 15 BMFF files refuse a profile). Twelve partial rows; none for DNG and raw.
+  Same profile: copy. Verified before written. A DNG, a raw file (ORF / RW2 header, CR2 signature,
+  raw sensor data) and a first directory that is a reduced image are refused (`UnsupportedFeature`).
+  Run 43146310534: 2,408 tests; `exiv2 -pC`, `-pc`, `-pa` agree on 56 + 117 edited fixtures and on
+  10 + 15 files written from the corpus (15 of 22 TIFF-based, 2 of 15 BMFF refused). Twelve partial rows.
 
 ## Next (in order)
 
