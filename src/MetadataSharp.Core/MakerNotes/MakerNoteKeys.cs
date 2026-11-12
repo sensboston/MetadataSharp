@@ -45,9 +45,14 @@ internal static class MakerNoteKeys
     /// <summary>
     /// True for the layouts in which a value that grows is appended. Each was confirmed by the
     /// reference tool on files of its corpus (the MakerNote parity job): it reads the appended value
-    /// and every other tag of the note as before. A layout the corpus has no file for is not listed.
+    /// and every other tag of the note as before. All four count their offsets from the TIFF header, so
+    /// the value goes to the end of the EXIF block. A layout is not listed when the corpus has no file
+    /// in which the library could append for it: the notes that count from themselves (Fujifilm,
+    /// Nikon3, Olympus2, OM System, Pentax in a DNG, Samsung2) are the last thing of the block in no
+    /// file of the corpus, and the others have no file with a text tag there.
     /// </summary>
-    internal static bool Grows(MakerNoteFormat format) => true;
+    internal static bool Grows(MakerNoteFormat format) =>
+        format is MakerNoteFormat.Canon or MakerNoteFormat.Nikon1 or MakerNoteFormat.Nikon2 or MakerNoteFormat.Sigma;
 
     /// <summary>Everything of the note a key names, tags before their fields. A key that occurs twice names the first.</summary>
     internal static List<MakerNoteTarget> Enumerate(MakerNote note)

@@ -62,22 +62,30 @@ byte[] filled = MetadataOperations.InsertExv(other, exv, MetadataFamilies.All, o
   order. For the same reason **`InsertExv` and `ExvFile.Create` do not carry the MakerNote** or
   the tags of image data (the tool carries the MakerNote); `InsertExv` says so in its notes.
 - **Tags of the MakerNote are changed where they are** (`ExifEdit.SetByKey`,
-  `SetTextByKey`, `RemoveByKey`, and the same keys in a modify script), in the EXIF block of a JPEG,
-  PNG or WebP file. The note keeps its offset and its length and nothing in it moves, so no offset
-  it holds changes, whatever the maker counts it from. What is done: a value of the stored type
+  `SetTextByKey`, `RemoveByKey`, and the same keys in a modify script; `MakerNote.GetKey` gives the
+  key of an entry), in the EXIF block of a JPEG, PNG or WebP file and in a TIFF-based file (CR2,
+  NEF, ARW, PEF, ORF, DNG). The note keeps its offset and nothing in it moves, so no offset
+  it holds changes, whatever the maker counts it from. In a TIFF-based file every changed byte lies
+  inside the note and the file keeps its length. What is done: a value of the stored type
   that is no longer than the stored one (or fits the four bytes of its entry) is written in its
   place and the rest cleared; a field of an array is written into the array, which is deciphered
   and enciphered again where it is stored so (Nikon with the key of the file, Sony); a tag is
   removed by moving the entries after it up, the count less one, the offset of the next directory
-  kept, the freed bytes cleared. What is refused: a tag the note does not hold, a value of another
-  type, a value that grows, a file without a note the library decodes, TIFF-based and BMFF files
-  (`UnsupportedFeature`); the tags that address data or a directory, their lengths, and Nikon's
+  kept, the freed bytes cleared; **a value that grows** is appended to the end of the EXIF block of
+  a JPEG, PNG or WebP file and its entry addresses it there, for Canon, Nikon1, Nikon2 and Sigma
+  notes, whose offsets count from the TIFF header (the layouts for which the pinned tool read the
+  result back in the "MakerNote edit parity" job: 42 grown values, every other key as before). What
+  is refused: a tag the note does not hold, a value of another type, a value that grows in any
+  other layout, in a Canon note whose footer says it was moved, or in a TIFF-based file, a file
+  without a note the library decodes, BMFF files (`UnsupportedFeature`); a tag this library has no
+  name for whose type is LONG, SLONG or UNDEFINED, which may be an address, unless the call passes
+  `allowUnnamed: true` (`TagNotEditable`; a modify script cannot pass it); the tags that address data or a directory, their lengths, and Nikon's
   SerialNumber and ShutterCount, which key the cipher (`TagNotEditable`); the last tag of a
   directory and a directory with entries the reader skips (removal only). The tool writes the
   whole note again and takes any of these. After the change the block is read again: every tag,
   field and element that was not named reads byte for byte as before, the named ones as set, and
-  every changed byte lies where a change was planned; otherwise `UnsafeRelocation` and nothing is
-  written.
+  every changed byte lies where a change was planned, and the directories around the note are
+  where they were with the tags they had; otherwise `UnsafeRelocation` and nothing is written.
 - **Insert**: the IPTC stream written declares UTF-8 and the writer's record version, not those of
   the EXV file; a dataset whose text is not UTF-8, from a stream without a declared character
   set, and a dataset outside records 1 and 2 are not carried, and noted. A value of no elements

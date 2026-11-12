@@ -12,8 +12,9 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
 - JPEG, PNG, WebP, TIFF, EXV, DNG (read), XMP sidecars; restricted, safety-first editing for
   JPEG, PNG, WebP and TIFF: an edit whose safety cannot be established is refused, never guessed.
 - Typed EXIF vocabulary from the CIPA and TIFF specifications.
-- Read-only MakerNotes for Canon, Nikon (including encrypted arrays), Fujifilm, Pentax, Sony,
-  Panasonic and Olympus/OM System.
+- MakerNotes for Canon, Nikon (including encrypted arrays), Fujifilm, Pentax, Sony, Panasonic and
+  Olympus/OM System: read, and edited tag by tag where the note lies (`ExifEdit.SetByKey`); the
+  note itself is never moved or rebuilt.
 - Bounded parsing of hostile input: every length, offset and count is checked and budgeted.
 - Continuously measured against the exiv2 0.28.9 test corpus.
 
@@ -145,7 +146,8 @@ Interoperability and thumbnail directories can be set: text and numbers through 
 anything else as a raw `ExifValue`. `Set` holds a tag the Exif vocabulary lists to the field type and
 count it prescribes; `SetUnchecked` writes the value as given. The pointers between directories, the
 addresses of image data and the MakerNote are not edited as values (`ExifEdit.IsEditable`); a camera's
-MakerNote stays where it is, byte for byte. A thumbnail directory is edited where a file has one and is
+MakerNote stays where it is, and only the tags of it that are named by key (`SetByKey`, `SetTextByKey`,
+`RemoveByKey`: `Exif.Canon.OwnerName`) change. A thumbnail directory is edited where a file has one and is
 not created.
 
 ```csharp

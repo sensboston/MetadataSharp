@@ -1747,7 +1747,8 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
     // set, each in a copy of its own, NAME.N.ours.EXT. A text is set to one of its own length ("same")
     // and to a longer one ("grow"); a number to another number ("short"). Nothing is compared here.
     // ours.tsv lists NAME, N, the operation, the key, the status ("written" or "refused CODE") and
-    // the value the tool has to print for the key. An exception that is no refusal is a defect.
+    // the value the tool has to print for the key (for a refusal, its message). An exception that is
+    // no refusal is a defect.
     string directory = args[1];
     var manifest = new List<string>();
     var crashes = new List<string>();
@@ -1791,7 +1792,7 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
                 File.WriteAllBytes(Path.Combine(directory, $"{name}.{number}.ours.{extension}"), output.ToArray());
                 status = "written";
             }
-            catch (MetadataException refusal) { status = "refused " + refusal.Code; }
+            catch (MetadataException refusal) { status = "refused " + refusal.Code; text = refusal.Message; }
             catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
             {
                 crashes.Add($"{name} {operation} {key}: {defect.GetType().Name}: {defect.Message}");

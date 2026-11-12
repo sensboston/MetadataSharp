@@ -122,7 +122,7 @@ def check(work, names, exiv2, runner=run):
             continue
         extension = names[name][1]
         if status != "written":
-            outcome, detail = status, key
+            outcome, detail = status, f"{key}: {value}"
         else:
             if name not in prints:
                 prints[name] = printed(exiv2, work / f"{name}.{extension}", runner)
@@ -130,6 +130,8 @@ def check(work, names, exiv2, runner=run):
             outcome, detail = verdict(prints[name], printed(exiv2, copy, runner), key, value)
             copy.unlink(missing_ok=True)
         entry = (group_of(key), operation, outcome)
+        if outcome == "ok":
+            counts[("-", "files", extension)] += 1
         counts[entry] += 1
         examples.setdefault(entry, f"{Path(names[name][0]).name}: {detail}")
     return counts, examples
@@ -165,19 +167,23 @@ def main(argv=None, runner=run):
     failures, accepted, summary = [], [], []
     for (group, operation, outcome), count in sorted(counts.items()):
         line = f"{group} {operation}: {outcome} {count}"
-        if operation == "none" or outcome == "ok" or outcome.startswith("refused "):
+        if operation == "files":
+            summary.append(f"edits read back in .{outcome} files: {count}")
+        elif operation == "none" or outcome == "ok":
             summary.append(line)
+        elif outcome.startswith("refused "):
+            summary.append(f"{line}; e.g. {examples[(group, operation, outcome)]}")
         elif expected(group, operation, outcome):
             accepted.append(f"{line}; {expected(group, operation, outcome)}; e.g. {examples[(group, operation, outcome)]}")
         else:
             failures.append(f"{line}; e.g. {examples[(group, operation, outcome)]}")
-    passed = sum(count for (_, operation, outcome), count in counts.items() if outcome == "ok")
+    passed = sum(count for (_, operation, outcome), count in counts.items() if outcome == "ok" and operation != "files")
     written = {operation: sum(count for (_, op, outcome), count in counts.items() if op == operation and outcome == "ok")
                for operation in ("same", "grow", "short")}
     annotate("error", "MakerNote parity - edits the tool does not read back as set", failures, size=2500, limit=8)
     annotate("notice", "MakerNote parity - accepted differences", accepted)
-    annotate("notice", f"MakerNote parity - {len(names)} files, {passed} edits read back by the tool "
-             f"(same {written['same']}, grow {written['grow']}, short {written['short']})", summary)
+    annotate("notice", f"MakerNote parity - {len(names)} files; {passed} edits read back by the tool "
+             f"(same {written['same']}; grow {written['grow']}; short {written['short']})", summary)
     if passed == 0:
         print("::error title=MakerNote parity::no edit was written and read back")
         return 1
