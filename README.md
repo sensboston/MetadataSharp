@@ -208,6 +208,26 @@ JPEG, PNG, WebP, BMFF or TIFF-based document, which writes the blocks in one pas
 `ImageMetadata.Reconcile()` does it for a file that was read. The mapping tables are public
 (`MetadataSync.ExifMappings`, `IptcMappings`). Details and limits: `docs/usage/SYNC_USAGE_AND_LIMITS.md`.
 
+### Do what the exiv2 command line does
+
+```csharp
+using MetadataSharp.Core.Operations;
+using MetadataSharp.Formats.Operations;
+
+// exiv2 rm -d x, exiv2 ex -e a, exiv2 in -i a
+MetadataOperations.Delete("in.jpg", "out.jpg", MetadataFamilies.Xmp);
+byte[] exv = MetadataOperations.ExtractExv(File.ReadAllBytes("in.jpg"));
+MetadataOperations.InsertExv("other.jpg", "filled.jpg", exv);
+
+// exiv2 -M "set Exif.Image.Artist Ann": edits for SaveAll
+ModifyScript script = ModifyScript.Parse("set Exif.Image.Artist Ann");
+```
+
+Also: shifting timestamps (`MetadataTimestamps.Adjust`), file names from the date taken
+(`MetadataFileNames.Format`), thumbnails (`ExifEdit.SetThumbnail`), XMP sidecars, `FixIso`,
+`FixUserComment`. The table of operations, the differences from exiv2 and the measured parity:
+`docs/usage/OPERATIONS_USAGE_AND_LIMITS.md`.
+
 ### Edit a TIFF, a DNG or a raw file
 
 ```csharp
