@@ -222,6 +222,23 @@ public sealed class FileOperationsTests
         Assert.Equal(MetadataErrorCode.ExifTooLarge, segment.Code);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(999)]
+    [InlineData(1_001)]
+    [InlineData(10_000)]
+    [InlineData(60_000)]
+    public void ALongTextIsSetAsItIs(int length)
+    {
+        // Lengths on both sides of the point where the runtime replaces a running loop with its
+        // optimised form: on .NET 8 a text of 10,000 characters was once refused as a value without bytes.
+        var key = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010E);
+        byte[] file = JpegFixture.Build(JpegFixture.Segment(0xE1, JpegFixture.Exif()));
+        byte[] saved = SaveJpeg(file, edit => edit.Set(key, new string('d', length)));
+        Assert.True(ImageMetadata.Read(saved).Exif!.TryGetEntry(key, out ExifEntry? entry));
+        Assert.Equal((uint)length + 1, entry!.Value.Count);
+    }
+
     [Fact]
     public void DeleteRemovesTheKindsNamedAndKeepsTheOthers()
     {

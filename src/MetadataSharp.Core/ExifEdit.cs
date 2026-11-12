@@ -78,14 +78,22 @@ public sealed class ExifEdit
     public void Set(ExifTagKey key, string text)
     {
         ArgumentNullException.ThrowIfNull(text);
+        if (!IsSevenBitText(text))
+            throw new ArgumentException("An ASCII value holds seven-bit characters and no NUL before its end.", nameof(text));
+        // The array is filled by one call, not by a loop of this method. With the loop here, a long
+        // text set early in a process reached the validation as a value without bytes on .NET 8
+        // (seen in CI on three systems, never on .NET 10); the test ALongTextIsSetAsItIs covers it.
         byte[] bytes = new byte[text.Length + 1];
-        for (int i = 0; i < text.Length; i++)
-        {
-            if (text[i] is '\0' or > '\u007F')
-                throw new ArgumentException("An ASCII value holds seven-bit characters and no NUL before its end.", nameof(text));
-            bytes[i] = (byte)text[i];
-        }
+        int written = System.Text.Encoding.ASCII.GetBytes(text, 0, text.Length, bytes, 0);
+        if (written != text.Length) throw new InvalidOperationException("The ASCII value was not encoded whole.");
         Store(key, ExifValue.FromRaw(TiffFieldType.Ascii, (uint)bytes.Length, Endianness.LittleEndian, bytes), validate: true);
+    }
+
+    private static bool IsSevenBitText(string text)
+    {
+        foreach (char character in text)
+            if (character is '\0' or > '\u007F') return false;
+        return true;
     }
 
     /// <summary>Sets a tag to one SHORT; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
