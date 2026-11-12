@@ -58,5 +58,14 @@ public enum MetadataFormat
     /// JPEG XL: the signature box of a container, or the bytes <c>FF 0A</c> of a bare codestream,
     /// which holds no metadata.
     /// </summary>
-    Jxl
+    Jxl,
+
+    /// <summary>Canon CRW (CIFF): the byte order twice, the length of the header and <c>HEAPCCDR</c>.</summary>
+    Crw,
+
+    /// <summary>Minolta MRW: the header block <c>\0MRM</c>.</summary>
+    Mrw,
+
+    /// <summary>Fujifilm RAF: the text <c>FUJIFILM</c>.</summary>
+    Raf
 }
