@@ -25,8 +25,9 @@ internal static class ExifBlockEditor
 
     /// <summary>The changes of an edit as the planner takes them, in the byte order of the structure.</summary>
     internal static void AddChanges(ExifEdit.EditSnapshot edit, Endianness order,
-        Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes)
+        Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, bool thumbnailApart = false)
     {
+        if (edit.HasThumbnailChange && !thumbnailApart) throw ThumbnailElsewhere();
         foreach (KeyValuePair<ExifTagKey, ExifValue?> change in edit.Changes)
         {
             TiffBasedRole role = TiffBasedWritePlanner.Role(change.Key.Directory);
@@ -53,7 +54,14 @@ internal static class ExifBlockEditor
     internal static byte[]? Create(ExifEdit.EditSnapshot edit, MetadataLimits limits, int ceiling, out ExifMetadata? desired)
     {
         desired = null;
-        if (edit.Changes.Values.All(value => value is null)) return null;
+        if (edit.HasThumbnailChange && ceiling == ExifTiffReader.NoCeiling) throw ThumbnailElsewhere();
+        if (edit.Changes.Values.All(value => value is null))
+        {
+            if (edit.Thumbnail is null) return null;
+            // A block of nothing but the thumbnail: a primary directory without entries leads to it.
+            desired = new ExifMetadata(Endianness.LittleEndian, []);
+            return ExifThumbnailWriter.Apply([0x49, 0x49, 0x2A, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0], edit.Thumbnail, limits, ceiling);
+        }
         if (edit.Changes.Any(change => change.Value is not null && change.Key.Directory == ExifDirectoryKind.Thumbnail))
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
                 "The file has no thumbnail directory: one is not created by a tag edit.");
@@ -74,6 +82,7 @@ internal static class ExifBlockEditor
         foreach (ExifEntry entry in written.Entries)
             if (!desired.TryGetEntry(entry.Key, out _) && !ExifLayoutPlanner.TryLink(entry.Key.Directory, entry.Key.TagId, out _))
                 throw Refuse("the new block holds a tag that was not set");
+        if (edit.Thumbnail is not null) block = ExifThumbnailWriter.Apply(block, edit.Thumbnail, limits, ceiling) ?? block;
         return block;
     }
 
@@ -91,12 +100,24 @@ internal static class ExifBlockEditor
     /// </exception>
     internal static byte[]? Edit(byte[] block, long sourceBase, ExifEdit.EditSnapshot edit, MetadataLimits limits)
     {
+        byte[]? output = EditTags(block, sourceBase, edit, limits);
+        if (!edit.HasThumbnailChange) return output;
+        // The thumbnail after the tags: its directory is no tag edit, and it is checked on its own.
+        return ExifThumbnailWriter.Apply(output ?? block, edit.Thumbnail, limits, ExifTiffReader.SegmentCeiling) ?? output;
+    }
+
+    /// <summary>The thumbnail is written where the EXIF block is a unit of its own.</summary>
+    internal static MetadataException ThumbnailElsewhere() => new(MetadataErrorCode.UnsupportedFeature,
+        "A thumbnail is set or removed in the EXIF block of a JPEG, PNG or WebP file: in this file the directory after the primary one is not edited as a thumbnail.");
+
+    private static byte[]? EditTags(byte[] block, long sourceBase, ExifEdit.EditSnapshot edit, MetadataLimits limits)
+    {
         // The reader of the container first: a block it refuses is not edited.
         TiffReadResult before = ExifTiffReader.Read(block, limits, sourceBase);
         TiffBasedFileMap map = TiffBasedFileMap.Read(block, limits, MaxAccountedRanges);
         ExifMetadata whole = ExifTiffReader.InspectFile(block, limits);
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
-        AddChanges(edit, map.Order, changes);
+        AddChanges(edit, map.Order, changes, thumbnailApart: true);
         TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(block, map, changes, limits, ExifTiffReader.SegmentCeiling,
             emptyPrimary: true);
         if (plan.IsEmpty) return null;

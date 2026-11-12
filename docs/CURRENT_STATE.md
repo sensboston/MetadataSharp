@@ -181,12 +181,23 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   do not); XMP to EXIF, 77 files, 2,391 the same, 8 in another form, 69 documented differences
   (SubSec digits 39, comment character code 14). An undocumented difference fails the job.
   14 files this library refuses to read are left out of the first direction.
+- Operations of the exiv2 command line (PR #110): `MetadataSharp.Core.Operations`
+  (`MetadataTimestamps.Adjust`, `MetadataFileNames.Format`, `ModifyScript`, `MetadataKeys`) and
+  `MetadataSharp.Formats.Operations` (`MetadataOperations.Delete`, `ExtractExv`,
+  `ExtractXmpSidecar`, `ExtractThumbnail`, `InsertExv`, `InsertXmpSidecar`, `FixIso`,
+  `FixUserComment`; `ExvFile.Create`). `ExifEdit.SetThumbnail` / `RemoveThumbnail` create, replace
+  and remove the thumbnail directory (IFD1) in JPEG, PNG and WebP. `XmpEdit.ReplaceWith` puts a
+  whole packet in place of the file's. CI job "operations parity"
+  (`tools/reference/operations_parity.py`, run 43290037609) against exiv2 0.28.9 on 152 files of
+  the corpus, eleven operations, 53 to 136 files compared each, 49,028 keys the same; every
+  difference is documented in the script and an undocumented one fails the job. Table and
+  differences: `docs/usage/OPERATIONS_USAGE_AND_LIMITS.md`.
 
 ## Next (in order)
 
 1. Publish 1.0 to NuGet: a version and a release workflow (packages are ready; nothing is published).
-2. Write side: thumbnail (IFD1) creation and replacement; MakerNote-safe rules per vendor; removal
-   of a whole BMFF item.
+2. Write side: the thumbnail in TIFF-based and BMFF files; MakerNote-safe rules per vendor (so an
+   insert can carry the MakerNote); removal of a whole BMFF item.
 3. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.
 4. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
@@ -194,7 +205,7 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 ## Known limits
 
 - Writes refuse when safety is not established; MakerNotes are never moved or edited. EXIF takes any
-  tag; a thumbnail directory (IFD1) is not created. IPTC is not written to PSD or sidecars. XMP and
+  tag; the thumbnail (IFD1) is edited in JPEG, PNG and WebP only. IPTC is not written to PSD or sidecars. XMP and
   IPTC agree only when asked (`MetadataSync`); an independent `SaveIptc` leaves the digest stale.
 - Sync: `SaveAll` has no async twin; PSD and sidecars have no `SaveAll`. Not in the mapping table:
   CFAPattern, OECF, SpatialFrequencyResponse, DeviceSettingDescription. A value of a type or count

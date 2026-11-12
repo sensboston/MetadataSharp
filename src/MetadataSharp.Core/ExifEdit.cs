@@ -23,7 +23,7 @@ public sealed class ExifEdit
     /// <summary>Creates an edit that holds no change.</summary>
     public ExifEdit() { }
     /// <summary>True when the edit holds no change; a save then copies the source.</summary>
-    public bool IsEmpty => !removeAll && changes.Count == 0;
+    public bool IsEmpty => !removeAll && changes.Count == 0 && thumbnail is null && !removeThumbnail;
 
     /// <summary>
     /// Whether a tag can be set and removed through an edit. The tags that cannot are, in any
@@ -78,14 +78,22 @@ public sealed class ExifEdit
     public void Set(ExifTagKey key, string text)
     {
         ArgumentNullException.ThrowIfNull(text);
+        if (!IsSevenBitText(text))
+            throw new ArgumentException("An ASCII value holds seven-bit characters and no NUL before its end.", nameof(text));
+        // The array is filled by one call, not by a loop of this method. With the loop here, a long
+        // text set early in a process reached the validation as a value without bytes on .NET 8
+        // (seen in CI on three systems, never on .NET 10); the test ALongTextIsSetAsItIs covers it.
         byte[] bytes = new byte[text.Length + 1];
-        for (int i = 0; i < text.Length; i++)
-        {
-            if (text[i] is '\0' or > '\u007F')
-                throw new ArgumentException("An ASCII value holds seven-bit characters and no NUL before its end.", nameof(text));
-            bytes[i] = (byte)text[i];
-        }
+        int written = System.Text.Encoding.ASCII.GetBytes(text, 0, text.Length, bytes, 0);
+        if (written != text.Length) throw new InvalidOperationException("The ASCII value was not encoded whole.");
         Store(key, ExifValue.FromRaw(TiffFieldType.Ascii, (uint)bytes.Length, Endianness.LittleEndian, bytes), validate: true);
+    }
+
+    private static bool IsSevenBitText(string text)
+    {
+        foreach (char character in text)
+            if (character is '\0' or > '\u007F') return false;
+        return true;
     }
 
     /// <summary>Sets a tag to one SHORT; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
@@ -165,8 +173,51 @@ public sealed class ExifEdit
     /// <exception cref="ArgumentException">The edit already holds a tag change.</exception>
     public void RemoveAllExif()
     {
-        if (changes.Count != 0) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
+        if (changes.Count != 0 || thumbnail is not null || removeThumbnail) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
         removeAll = true;
+    }
+
+    private byte[]? thumbnail;
+    private bool removeThumbnail;
+
+    /// <summary>
+    /// Sets the thumbnail of the EXIF block: a JPEG stream in the directory after the primary one
+    /// (IFD1), which is created when the block has none, with Compression 6, a resolution of 72 dpi
+    /// and the address and length of the stream. A thumbnail the block has is replaced: the other
+    /// tags of its directory stay, and the bytes of the old stream are cleared where nothing else
+    /// addresses them. A file without an EXIF
+    /// block gets one. This is <c>exiv2 -it</c>.
+    /// </summary>
+    /// <remarks>
+    /// Written by the documents of JPEG, PNG and WebP, where the EXIF block is a unit of its own.
+    /// The documents of TIFF-based files and of BMFF files refuse it with
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/>: in a TIFF-based file the directory after
+    /// the primary one is an image of the file, not a thumbnail of an EXIF block. The stream has
+    /// to be one the reader takes for a JPEG (it is checked when the block is written) and no longer
+    /// than <see cref="MetadataLimits.MaxThumbnailBytes"/>; with the rest of the block it has to fit
+    /// the 64 KiB of a JPEG APP1 segment.
+    /// </remarks>
+    /// <exception cref="ArgumentException">The bytes do not start as a JPEG stream does, or the edit removes the whole block.</exception>
+    public void SetThumbnail(ReadOnlySpan<byte> jpeg)
+    {
+        if (removeAll) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
+        if (jpeg.Length < 4 || jpeg[0] != 0xFF || jpeg[1] != 0xD8) throw new ArgumentException("A thumbnail is a JPEG stream.", nameof(jpeg));
+        thumbnail = jpeg.ToArray();
+        removeThumbnail = false;
+    }
+
+    /// <summary>
+    /// Removes the thumbnail of the EXIF block with its directory (IFD1): the primary directory no
+    /// longer leads to it, and its bytes are cleared where nothing else addresses them. The block
+    /// keeps its length. Nothing happens for a block without a thumbnail directory. This is
+    /// <c>exiv2 -dt</c>. Written by the same documents as <see cref="SetThumbnail"/>.
+    /// </summary>
+    /// <exception cref="ArgumentException">The edit removes the whole block.</exception>
+    public void RemoveThumbnail()
+    {
+        if (removeAll) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
+        thumbnail = null;
+        removeThumbnail = true;
     }
 
     private static int Length(int count, int width)
@@ -195,8 +246,9 @@ public sealed class ExifEdit
         if (value.FieldType == TiffFieldType.Ascii)
         {
             ReadOnlySpan<byte> bytes = value.RawBytes;
-            if (bytes[^1] != 0) return "is ASCII and has to end with NUL";
-            if (bytes.IndexOfAnyInRange((byte)0x80, (byte)0xFF) >= 0) return "is ASCII and holds seven-bit characters";
+            if (bytes.Length == 0 || bytes[bytes.Length - 1] != 0) return "is ASCII and has to end with NUL";
+            foreach (byte character in bytes)
+                if (character >= 0x80) return "is ASCII and holds seven-bit characters";
         }
         return null;
     }
@@ -212,11 +264,16 @@ public sealed class ExifEdit
     internal static MetadataException NotEditable(ExifTagKey key) => new(MetadataErrorCode.TagNotEditable,
         $"Tag 0x{key.TagId:X4} of the {key.Directory} directory is a pointer, an address or length of image data, or the MakerNote: it is not edited as a value.");
 
-    internal EditSnapshot Snapshot() => new(removeAll, new Dictionary<ExifTagKey, ExifValue?>(changes));
+    internal EditSnapshot Snapshot() => new(removeAll, new Dictionary<ExifTagKey, ExifValue?>(changes)) { Thumbnail = thumbnail, ThumbnailRemoved = removeThumbnail };
 
     internal sealed record EditSnapshot(bool RemoveAll, IReadOnlyDictionary<ExifTagKey, ExifValue?> Changes)
     {
-        internal bool IsEmpty => !RemoveAll && Changes.Count == 0;
+        /// <summary>The JPEG stream to set as the thumbnail, or null.</summary>
+        internal byte[]? Thumbnail { get; init; }
+        /// <summary>True when the thumbnail directory is to be removed.</summary>
+        internal bool ThumbnailRemoved { get; init; }
+        internal bool HasThumbnailChange => Thumbnail is not null || ThumbnailRemoved;
+        internal bool IsEmpty => !RemoveAll && Changes.Count == 0 && !HasThumbnailChange;
         internal ExifMetadata Apply(TiffReadResult? source, Endianness order, MetadataLimits limits)
         {
             var entries = source?.Metadata.Entries.ToDictionary(e => e.Key, e => e.Value) ?? [];

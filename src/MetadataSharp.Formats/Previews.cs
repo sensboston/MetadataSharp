@@ -457,7 +457,9 @@ internal ref struct PreviewScanner
         if (position < frame.Origin || position > frame.End - 2L) return false;
         int at = (int)position;
         int count = U16(at, frame.Little);
-        if (count == 0 || count > limits.MaxEntriesPerDirectory || count * 12L > frame.End - at - 2L) return false;
+        // A directory without entries holds nothing and still leads to its successor: the block of a
+        // file whose only EXIF is a thumbnail starts with one.
+        if (count > limits.MaxEntriesPerDirectory || count * 12L > frame.End - at - 2L) return false;
         directories++;
         tableEnd = at + 2 + count * 12;
         for (int i = 0; i < count; i++)

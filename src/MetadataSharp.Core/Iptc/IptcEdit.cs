@@ -26,7 +26,7 @@ namespace MetadataSharp.Core.Iptc;
 /// </remarks>
 public sealed class IptcEdit
 {
-    internal enum OperationKind { ReplaceAll, Append, Insert, RemoveAt }
+    internal enum OperationKind { ReplaceAll, Append, Insert, RemoveAt, SetFirst }
     internal sealed record Operation(IptcDatasetKey Key, OperationKind Kind, int Index, IptcValue[] Values, bool Text);
     private const int MaxValues = 4096;
     private const long MaxBytes = 1_048_576;
@@ -63,6 +63,16 @@ public sealed class IptcEdit
             copy.Add(new(IptcDatasets.Encode(definition, value)));
         }
         Commit(new(key, OperationKind.ReplaceAll, 0, copy.ToArray(), true));
+    }
+    /// <summary>
+    /// Replaces the first occurrence of a dataset with a text value and leaves the others; a dataset
+    /// the stream does not have is added. This is what <c>set</c> does in an Exiv2 command file.
+    /// </summary>
+    /// <exception cref="ArgumentException">The dataset is not defined, is managed or holds binary data, or the value breaks its definition.</exception>
+    public void SetFirst(IptcDatasetKey key, string value)
+    {
+        Check(key); ArgumentNullException.ThrowIfNull(value);
+        Commit(new(key, OperationKind.SetFirst, 0, [new(IptcDatasets.Encode(Definition(key), value))], true));
     }
     /// <summary>Adds an occurrence of a repeatable dataset after its last one.</summary>
     /// <exception cref="ArgumentException">The dataset is not defined, is managed, does not repeat, or the value breaks its definition.</exception>

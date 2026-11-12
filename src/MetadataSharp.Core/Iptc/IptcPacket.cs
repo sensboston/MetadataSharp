@@ -211,6 +211,10 @@ public sealed partial class IptcPacket
                     if (operation.Index > list.Count) throw Occurrence(operation, list.Count);
                     list.Insert(operation.Index, Frame(operation.Key, operation.Values[0]));
                     break;
+                case IptcEdit.OperationKind.SetFirst:
+                    if (list.Count == 0) list.Add(Frame(operation.Key, operation.Values[0]));
+                    else list[0] = Frame(operation.Key, operation.Values[0]);
+                    break;
                 default:
                     if (operation.Index >= list.Count) throw Occurrence(operation, list.Count);
                     list.RemoveAt(operation.Index);
