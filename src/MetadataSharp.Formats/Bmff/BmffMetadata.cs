@@ -3,6 +3,7 @@ using System.Text;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Formats.Internal;
 
 namespace MetadataSharp.Formats.Bmff;
 
@@ -98,16 +99,22 @@ internal ref struct BmffReader
         hasIdat = false;
     }
 
-    internal static BmffMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, XmpReadOptions? xmpOptions = null)
+    /// <summary>
+    /// Reads the brand and the two items. With <paramref name="refusals"/> an item its reader
+    /// refuses is noted there and the other item is still read; the box structure is held to the
+    /// same rules either way, and a file that breaks them is refused whole.
+    /// </summary>
+    internal static BmffMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, XmpReadOptions? xmpOptions = null,
+        KindRefusals? refusals = null)
     {
         limits ??= BmffReadOptions.DefaultLimits;
         limits.Validate();
         if (data.Length > limits.MaxInputBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The BMFF file exceeds the input budget.", 0);
-        return new BmffReader(data, limits, xmpOptions).Parse();
+        return new BmffReader(data, limits, xmpOptions).Parse(refusals);
     }
 
-    private BmffMetadata Parse()
+    private BmffMetadata Parse(KindRefusals? refusals)
     {
         int position = 0;
         BoxHeader fileType = Next(ref position, data.Length, 1);
@@ -123,8 +130,12 @@ internal ref struct BmffReader
         // a bare AVIF sequence has a brand and nothing of ours, and that is what the caller gets.
         if (!hasMeta) return new BmffMetadata(brand, null, null);
         if (!hasHandler) throw Fail("The meta box declares no handler box.", 0);
-        ExifMetadata? exif = ExifItem();
-        XmpPacket? xmp = XmpItem();
+        ExifMetadata? exif = null;
+        try { exif = ExifItem(); }
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Exif = refusal; }
+        XmpPacket? xmp = null;
+        try { xmp = XmpItem(); }
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Xmp = refusal; }
         return new BmffMetadata(brand, exif, xmp);
     }
 

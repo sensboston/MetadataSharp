@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Tiff.Serialization;
+using MetadataSharp.Formats.Internal;
 
 namespace MetadataSharp.Formats.Jpeg;
 
@@ -45,6 +46,15 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
     public static Task<JpegMetadataDocument> OpenAsync(Stream source, JpegReadOptions? options = null, CancellationToken cancellationToken = default) =>
         OpenCore(source, false, null, SnapshotLimits(options), true, cancellationToken);
 
+    /// <summary>
+    /// Opens a document for reading only, as <see cref="ImageMetadata"/> does. An EXIF block its
+    /// reader refuses is noted in <paramref name="refusals"/> and the document opens without one,
+    /// so that the IPTC and the XMP of the file can still be read; such a document is not for saving.
+    /// </summary>
+    internal static JpegMetadataDocument Open(Stream source, MetadataLimits? limits, KindRefusals refusals) =>
+        OpenCore(source, false, null, SnapshotLimits(limits is null ? null : new JpegReadOptions { Limits = limits }), false, default, refusals)
+            .GetAwaiter().GetResult();
+
     private static MetadataLimits SnapshotLimits(JpegReadOptions? options)
     {
         MetadataLimits settings = options is null ? new() : options.Limits ?? throw new ArgumentException("Limits cannot be null.", nameof(options));
@@ -62,7 +72,8 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         return await OpenCore(file, true, fullPath, settings, asynchronous, token).ConfigureAwait(false);
     }
 
-    private static async Task<JpegMetadataDocument> OpenCore(Stream source, bool owns, string? path, MetadataLimits settings, bool asynchronous, CancellationToken token)
+    private static async Task<JpegMetadataDocument> OpenCore(Stream source, bool owns, string? path, MetadataLimits settings, bool asynchronous, CancellationToken token,
+        KindRefusals? refusals = null)
     {
         ArgumentNullException.ThrowIfNull(source);
         try
@@ -73,22 +84,31 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
             MetadataException? refusal = null;
             if (scan.Exif is JpegSegment exif)
             {
-                int size = exif.PayloadLength - 6;
-                if (size > settings.MaxRetainedMetadataBytes)
-                    throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF input exceeds its budget.");
-                byte[] bytes = new byte[size];
-                source.Position = exif.PayloadOffset + 6;
-                await ReadExact(source, bytes, asynchronous, token).ConfigureAwait(false);
                 try
                 {
-                    tiff = ExifTiffReader.Read(bytes, settings, exif.PayloadOffset + 6);
-                    metadata = tiff.Metadata;
+                    int size = exif.PayloadLength - 6;
+                    if (size > settings.MaxRetainedMetadataBytes)
+                        throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF input exceeds its budget.");
+                    byte[] bytes = new byte[size];
+                    source.Position = exif.PayloadOffset + 6;
+                    await ReadExact(source, bytes, asynchronous, token).ConfigureAwait(false);
+                    try
+                    {
+                        tiff = ExifTiffReader.Read(bytes, settings, exif.PayloadOffset + 6);
+                        metadata = tiff.Metadata;
+                    }
+                    catch (MetadataException failure) when (ExifTiffReader.IsRelaxable(failure))
+                    {
+                        // Readable, not editable: the strict result stays absent and its error is kept for Save.
+                        metadata = ExifTiffReader.ReadRelaxed(bytes, settings, exif.PayloadOffset + 6);
+                        refusal = failure;
+                    }
                 }
-                catch (MetadataException failure) when (ExifTiffReader.IsRelaxable(failure))
+                catch (MetadataException unread) when (refusals is not null)
                 {
-                    // Readable, not editable: the strict result stays absent and its error is kept for Save.
-                    metadata = ExifTiffReader.ReadRelaxed(bytes, settings, exif.PayloadOffset + 6);
-                    refusal = failure;
+                    // Only for a read of every kind: the block is absent and the other kinds stand.
+                    tiff = null; metadata = null; refusal = null;
+                    refusals.Exif = unread;
                 }
             }
             byte[] hash = await Hash(source, scan.Length, settings.CopyBufferBytes, asynchronous, token).ConfigureAwait(false);

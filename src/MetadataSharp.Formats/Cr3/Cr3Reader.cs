@@ -4,6 +4,7 @@ using MetadataSharp.Core.MakerNotes;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
+using MetadataSharp.Formats.Internal;
 
 namespace MetadataSharp.Formats.Cr3;
 
@@ -77,12 +78,17 @@ internal ref struct Cr3Reader
     internal static Cr3Layout Locate(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
         Open(data, limits).Walk();
 
-    /// <summary>Reads the EXIF directories and the XMP packet of a complete CR3 file.</summary>
-    internal static Cr3Metadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, XmpReadOptions? xmpOptions = null)
+    /// <summary>
+    /// Reads the EXIF directories and the XMP packet of a complete CR3 file. With
+    /// <paramref name="refusals"/> what the reader of one of the two refuses is noted there and the
+    /// other is still read; a file whose box structure does not hold is refused whole either way.
+    /// </summary>
+    internal static Cr3Metadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, XmpReadOptions? xmpOptions = null,
+        KindRefusals? refusals = null)
     {
         Cr3Reader reader = Open(data, limits);
         Cr3Layout layout = reader.Walk();
-        return reader.Metadata(layout, xmpOptions);
+        return reader.Metadata(layout, xmpOptions, refusals);
     }
 
     private static Cr3Reader Open(ReadOnlySpan<byte> data, MetadataLimits? limits)
@@ -166,31 +172,45 @@ internal ref struct Cr3Reader
     /// is read once: a CMT1 box that leads to an Exif or GPS directory of its own beside a CMT2 or
     /// CMT4 box says the same thing twice, and is refused rather than merged.
     /// </summary>
-    private Cr3Metadata Metadata(Cr3Layout layout, XmpReadOptions? xmpOptions)
+    private Cr3Metadata Metadata(Cr3Layout layout, XmpReadOptions? xmpOptions, KindRefusals? refusals)
     {
         var entries = new List<ExifEntry>();
         var kinds = new HashSet<ExifDirectoryKind>();
         Endianness? order = null;
-        Directory(layout.Ifd0, ExifDirectoryKind.Ifd0, entries, kinds, ref order);
-        Directory(layout.Exif, ExifDirectoryKind.Exif, entries, kinds, ref order);
-        Directory(layout.Gps, ExifDirectoryKind.Gps, entries, kinds, ref order);
-        // The bytes of the MakerNote box and of the packet are counted before the note is decoded.
-        // Decoding is the one step that gives up instead of failing, so it takes what the rest left.
-        int noteDirectory = NoteHeader(layout.MakerNote, out Endianness noteOrder);
-        if (layout.Xmp.Present)
+        int noteDirectory = 0;
+        Endianness noteOrder = Endianness.LittleEndian;
+        try
         {
-            if (layout.Xmp.Length > limits.MaxRetainedMetadataBytes - retained)
-                throw walk.Limit("The XMP box exceeds the retained metadata budget.", layout.Xmp.Start);
-            retained += layout.Xmp.Length;
+            Directory(layout.Ifd0, ExifDirectoryKind.Ifd0, entries, kinds, ref order);
+            Directory(layout.Exif, ExifDirectoryKind.Exif, entries, kinds, ref order);
+            Directory(layout.Gps, ExifDirectoryKind.Gps, entries, kinds, ref order);
+            // The bytes of the MakerNote box and of the packet are counted before the note is decoded.
+            // Decoding is the one step that gives up instead of failing, so it takes what the rest left.
+            noteDirectory = NoteHeader(layout.MakerNote, out noteOrder);
         }
-        MakerNote? note = noteDirectory == 0 ? null : Note(layout.MakerNote, noteDirectory, noteOrder, entries);
-        bool any = layout.Ifd0.Present || layout.Exif.Present || layout.MakerNote.Present || layout.Gps.Present;
-        ExifMetadata? metadata = any
-            ? new ExifMetadata(order ?? note?.ByteOrder ?? Endianness.LittleEndian, entries, note, editable: false)
-            : null;
-        XmpPacket? packet = layout.Xmp.Present
-            ? XmpPacket.Parse(data.Slice(layout.Xmp.Start, layout.Xmp.Length), xmpOptions)
-            : null;
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Exif = refusal; }
+        bool packetFits = layout.Xmp.Present;
+        try
+        {
+            if (layout.Xmp.Present)
+            {
+                if (layout.Xmp.Length > limits.MaxRetainedMetadataBytes - retained)
+                    throw walk.Limit("The XMP box exceeds the retained metadata budget.", layout.Xmp.Start);
+                retained += layout.Xmp.Length;
+            }
+        }
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Xmp = refusal; packetFits = false; }
+        ExifMetadata? metadata = null;
+        // Directories one of which was refused are not half of an EXIF block: the block is absent.
+        if (refusals?.Exif is null)
+        {
+            MakerNote? note = noteDirectory == 0 ? null : Note(layout.MakerNote, noteDirectory, noteOrder, entries);
+            bool any = layout.Ifd0.Present || layout.Exif.Present || layout.MakerNote.Present || layout.Gps.Present;
+            if (any) metadata = new ExifMetadata(order ?? note?.ByteOrder ?? Endianness.LittleEndian, entries, note, editable: false);
+        }
+        XmpPacket? packet = null;
+        try { packet = packetFits ? XmpPacket.Parse(data.Slice(layout.Xmp.Start, layout.Xmp.Length), xmpOptions) : null; }
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Xmp = refusal; }
         return new Cr3Metadata(metadata, packet);
     }
 

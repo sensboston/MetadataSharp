@@ -3,6 +3,7 @@ using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Formats.Internal;
 using MetadataSharp.Formats.Jpeg;
 
 namespace MetadataSharp.Formats.Exv;
@@ -34,7 +35,15 @@ public sealed class ExvMetadata
     public IptcPacket? Iptc { get; }
 
     /// <summary>Reads a complete EXV buffer. Segments other than EXIF, XMP and Photoshop are skipped.</summary>
-    public static ExvMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null)
+    public static ExvMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
+        Read(data, limits, null);
+
+    /// <summary>
+    /// The same read. With <paramref name="refusals"/> the segment of a kind its reader refuses is
+    /// noted there and the walk goes on, so that the other kinds are still read; a later segment of
+    /// that kind is not taken in its place.
+    /// </summary>
+    internal static ExvMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, KindRefusals? refusals)
     {
         limits ??= new();
         limits.Validate();
@@ -62,15 +71,25 @@ public sealed class ExvMetadata
                 throw Bad("A segment length is invalid.", position);
             int payloadAt = position + 4;
             ReadOnlySpan<byte> payload = data.Slice(payloadAt, length - 2);
-            if (marker == 0xE1 && exif is null && payload.StartsWith("Exif\0\0"u8))
-                exif = ExifTiffReader.Inspect(payload[6..], limits, payloadAt + 6);
-            else if (marker == 0xE1 && xmp is null && payload.StartsWith("http://ns.adobe.com/xap/1.0/\0"u8))
-                xmp = XmpPacket.Parse(payload["http://ns.adobe.com/xap/1.0/\0"u8.Length..]);
-            else if (marker == 0xED && iptc is null && payload.StartsWith("Photoshop 3.0\0"u8))
+            if (marker == 0xE1 && exif is null && refusals?.Exif is null && payload.StartsWith("Exif\0\0"u8))
             {
-                PhotoshopResources resources = PhotoshopResources.Parse(payload.ToArray(), new IptcLimits());
-                if (resources.IptcForReading() is PhotoshopResources.Resource resource)
-                    iptc = IptcPacket.Inspect(resource.Data.Span);
+                try { exif = ExifTiffReader.Inspect(payload[6..], limits, payloadAt + 6); }
+                catch (MetadataException refusal) when (refusals is not null) { refusals.Exif = refusal; }
+            }
+            else if (marker == 0xE1 && xmp is null && refusals?.Xmp is null && payload.StartsWith("http://ns.adobe.com/xap/1.0/\0"u8))
+            {
+                try { xmp = XmpPacket.Parse(payload["http://ns.adobe.com/xap/1.0/\0"u8.Length..]); }
+                catch (MetadataException refusal) when (refusals is not null) { refusals.Xmp = refusal; }
+            }
+            else if (marker == 0xED && iptc is null && refusals?.Iptc is null && payload.StartsWith("Photoshop 3.0\0"u8))
+            {
+                try
+                {
+                    PhotoshopResources resources = PhotoshopResources.Parse(payload.ToArray(), new IptcLimits());
+                    if (resources.IptcForReading() is PhotoshopResources.Resource resource)
+                        iptc = IptcPacket.Inspect(resource.Data.Span);
+                }
+                catch (MetadataException refusal) when (refusals is not null) { refusals.Iptc = refusal; }
             }
             position += 2 + length;
         }

@@ -5,6 +5,7 @@ using MetadataSharp.Core;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
+using MetadataSharp.Formats.Internal;
 
 namespace MetadataSharp.Formats.Jxl;
 
@@ -74,12 +75,17 @@ internal ref struct JxlReader
     internal static JxlLayout Locate(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
         Open(data, limits).Walk();
 
-    /// <summary>Reads the EXIF block and the XMP packet of a complete JPEG XL file.</summary>
-    internal static JxlMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, XmpReadOptions? xmpOptions = null)
+    /// <summary>
+    /// Reads the EXIF block and the XMP packet of a complete JPEG XL file. With
+    /// <paramref name="refusals"/> a box its reader refuses is noted there and the other box is
+    /// still read; a file whose box structure does not hold is refused whole either way.
+    /// </summary>
+    internal static JxlMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, XmpReadOptions? xmpOptions = null,
+        KindRefusals? refusals = null)
     {
         JxlReader reader = Open(data, limits);
         JxlLayout layout = reader.Walk();
-        return reader.Metadata(layout, xmpOptions);
+        return reader.Metadata(layout, xmpOptions, refusals);
     }
 
     private static JxlReader Open(ReadOnlySpan<byte> data, MetadataLimits? limits)
@@ -135,12 +141,16 @@ internal ref struct JxlReader
         block = new JxlBlock(start, box.End - start, compressed);
     }
 
-    private JxlMetadata Metadata(JxlLayout layout, XmpReadOptions? xmpOptions)
+    private JxlMetadata Metadata(JxlLayout layout, XmpReadOptions? xmpOptions, KindRefusals? refusals)
     {
         // The block before the packet, whichever comes first in the file: what the budget has left
         // for the second does not depend on the order of the boxes.
-        ExifMetadata? metadata = layout.Exif.Present ? Exif(layout.Exif) : null;
-        XmpPacket? packet = layout.Xmp.Present ? Xmp(layout.Xmp, xmpOptions) : null;
+        ExifMetadata? metadata = null;
+        try { metadata = layout.Exif.Present ? Exif(layout.Exif) : null; }
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Exif = refusal; }
+        XmpPacket? packet = null;
+        try { packet = layout.Xmp.Present ? Xmp(layout.Xmp, xmpOptions) : null; }
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Xmp = refusal; }
         return new JxlMetadata(metadata, packet, layout.HasJumbf);
     }
 
