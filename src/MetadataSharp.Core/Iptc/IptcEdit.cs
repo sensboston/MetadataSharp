@@ -6,8 +6,12 @@ public sealed class IptcEdit
     internal sealed record Replacement(bool Text, IptcValue[] Values);
     private readonly Dictionary<IptcDatasetKey, Replacement> changes = [];
     private bool removeAll;
+    /// <summary>Creates an edit that holds no change.</summary>
     public IptcEdit() { }
+    /// <summary>True when the edit holds no change.</summary>
     public bool IsEmpty => !removeAll && changes.Count == 0;
+    /// <summary>Replaces every occurrence of a record-2 dataset with the given raw values, in order; no values removes it.</summary>
+    /// <exception cref="ArgumentException">The key is not an ordinary record-2 dataset, the edit already removes all IPTC, or the values exceed the default budget.</exception>
     public void ReplaceRaw(IptcDatasetKey key, IEnumerable<IptcValue> values)
     {
         Check(key); ArgumentNullException.ThrowIfNull(values);
@@ -21,6 +25,12 @@ public sealed class IptcEdit
         }
         Commit(key, new(false, copy.ToArray()));
     }
+    /// <summary>
+    /// Replaces every occurrence of a text dataset with the given strings, encoded as UTF-8. The text
+    /// datasets are 2:5 (object name), 2:25 (keywords, repeatable), 2:80 (by-line, repeatable), 2:105
+    /// (headline), 2:116 (copyright notice) and 2:120 (caption).
+    /// </summary>
+    /// <exception cref="ArgumentException">The dataset is not one of those, a string is longer than the field allows or holds control characters, or a field that does not repeat is given more than one string.</exception>
     public void ReplaceText(IptcDatasetKey key, IEnumerable<string> values)
     {
         Check(key); ArgumentNullException.ThrowIfNull(values);
@@ -34,7 +44,10 @@ public sealed class IptcEdit
         }
         Commit(key, new(true, copy.ToArray()));
     }
+    /// <summary>Removes every occurrence of a record-2 dataset.</summary>
     public void Remove(IptcDatasetKey key) { Check(key); Commit(key, new(false, [])); }
+    /// <summary>Removes the whole IPTC stream.</summary>
+    /// <exception cref="ArgumentException">The edit already holds a dataset change.</exception>
     public void RemoveAllIptc()
     {
         if (changes.Count != 0) throw new ArgumentException("Whole IPTC removal cannot be mixed with dataset edits.");

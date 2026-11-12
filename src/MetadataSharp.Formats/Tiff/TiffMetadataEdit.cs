@@ -8,7 +8,9 @@ namespace MetadataSharp.Formats.Tiff;
 /// <summary>Finite read/write ceilings captured before opening a TIFF editing source.</summary>
 public sealed record TiffEditOptions
 {
+    /// <summary>The budgets for reading the source.</summary>
     public TiffReadOptions ReadOptions { get; init; } = new();
+    /// <summary>The longest output written, in bytes. Default 1,073,741,824; four gigabytes and the input budget bound it as well.</summary>
     public long MaxOutputBytes { get; init; } = 1_073_741_824;
     internal TiffEditOptions Snapshot()
     {
@@ -25,14 +27,27 @@ public readonly record struct TiffFieldKey(uint DirectoryOffset, ushort TagId);
 public sealed class TiffMetadataEdit
 {
     private readonly Dictionary<TiffFieldKey, ExifValue?> changes = [];
+    /// <summary>Creates an edit that holds no change.</summary>
     public TiffMetadataEdit() { }
+    /// <summary>True when the edit holds no change.</summary>
     public bool IsEmpty => changes.Count == 0;
+    /// <summary>
+    /// Sets a descriptive field: the ASCII tags DocumentName (269), ImageDescription (270), Make
+    /// (271), Model (272), PageName (285), Software (305), DateTime (306), Artist (315) and
+    /// HostComputer (316), and Orientation (274).
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// The key is not such a tag in a directory offset of the source, or the value is not printable
+    /// ASCII with a final NUL, a date in the form <c>yyyy:MM:dd HH:mm:ss</c> for DateTime, or a SHORT
+    /// from 1 to 8 for Orientation.
+    /// </exception>
     public void Set(TiffFieldKey key, ExifValue value)
     {
         TiffEditPolicy.Key(key); ArgumentNullException.ThrowIfNull(value);
         if (!TiffEditPolicy.Value(key.TagId, value)) throw new ArgumentException("Value is outside the writable TIFF descriptive shape.", nameof(value));
         changes[key] = value;
     }
+    /// <summary>Removes a descriptive field; see <see cref="Set"/>. The bytes of its value stay in the file, no longer addressed.</summary>
     public void Remove(TiffFieldKey key) { TiffEditPolicy.Key(key); changes[key] = null; }
     internal Dictionary<TiffFieldKey, ExifValue?> Snapshot(long budget = long.MaxValue)
     {

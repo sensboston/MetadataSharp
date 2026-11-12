@@ -36,7 +36,9 @@ public sealed class ExifMetadata
         Entries = Array.AsReadOnly(copy);
     }
 
+    /// <summary>The byte order of the block and of every value in it.</summary>
     public Endianness ByteOrder { get; }
+    /// <summary>Every entry of the block, across its directories.</summary>
     public IReadOnlyList<ExifEntry> Entries { get; }
 
     /// <summary>

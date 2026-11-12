@@ -5,24 +5,42 @@ using System.Xml;
 namespace MetadataSharp.Core.Xmp;
 
 /// <summary>The supported literal and literal-array value forms.</summary>
-public enum XmpValueKind { Text, Bag, Sequence, LanguageAlternative }
+public enum XmpValueKind
+{
+    /// <summary>A simple text value.</summary>
+    Text,
+    /// <summary>An unordered array (<c>rdf:Bag</c>).</summary>
+    Bag,
+    /// <summary>An ordered array (<c>rdf:Seq</c>).</summary>
+    Sequence,
+    /// <summary>Alternative texts by language (<c>rdf:Alt</c> with <c>xml:lang</c>).</summary>
+    LanguageAlternative
+}
 
 /// <summary>A deeply owned immutable XMP value; strings are not interpreted as domain values.</summary>
 public sealed class XmpValue
 {
     private XmpValue(XmpValueKind kind, string? text, string[] items, Dictionary<string, string> languages)
     { Kind = kind; Text = text; Items = Array.AsReadOnly(items); Languages = new ReadOnlyDictionary<string, string>(languages); }
+    /// <summary>The form of the value.</summary>
     public XmpValueKind Kind { get; }
+    /// <summary>The text of a <see cref="XmpValueKind.Text"/> value; null for the other forms.</summary>
     public string? Text { get; }
+    /// <summary>The items of a bag or a sequence, in order; empty for the other forms.</summary>
     public IReadOnlyList<string> Items { get; }
+    /// <summary>The texts of a language alternative by language tag, compared without case; empty for the other forms.</summary>
     public IReadOnlyDictionary<string, string> Languages { get; }
 
+    /// <summary>Creates a simple text value.</summary>
+    /// <exception cref="ArgumentException">The text holds characters XML does not allow or exceeds the default budget.</exception>
     public static XmpValue CreateText(string text)
     {
         int bytes = 0;
         CheckText(text, ref bytes);
         return new(XmpValueKind.Text, text, [], new());
     }
+    /// <summary>Creates a bag or a sequence of texts.</summary>
+    /// <exception cref="ArgumentException">The kind is not <see cref="XmpValueKind.Bag"/> or <see cref="XmpValueKind.Sequence"/>, or the items are not valid or exceed the default budget.</exception>
     public static XmpValue CreateArray(XmpValueKind kind, IEnumerable<string> items)
     {
         ArgumentNullException.ThrowIfNull(items);
@@ -35,6 +53,8 @@ public sealed class XmpValue
         }
         return new(kind, null, copy.ToArray(), new());
     }
+    /// <summary>Creates a language alternative from pairs of a language tag (<c>x-default</c>, <c>en-US</c>) and a text.</summary>
+    /// <exception cref="ArgumentException">A language tag is not valid or occurs twice, or the texts are not valid or exceed the default budget.</exception>
     public static XmpValue CreateLanguageAlternative(IEnumerable<KeyValuePair<string, string>> values)
     {
         ArgumentNullException.ThrowIfNull(values);

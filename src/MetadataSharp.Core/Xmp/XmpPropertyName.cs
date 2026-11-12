@@ -5,13 +5,17 @@ namespace MetadataSharp.Core.Xmp;
 /// <summary>An expanded XML property name, independent of its serialization prefix.</summary>
 public readonly record struct XmpPropertyName
 {
+    /// <summary>Creates a name from a namespace URI and a local name.</summary>
+    /// <exception cref="ArgumentException">The URI is not absolute or is reserved (RDF, <c>x:xmpmeta</c>, XML), or the local name is not an XML name.</exception>
     public XmpPropertyName(string namespaceUri, string localName)
     {
         NamespaceUri = namespaceUri;
         LocalName = localName;
         Validate();
     }
+    /// <summary>The namespace URI, for example <c>http://purl.org/dc/elements/1.1/</c>.</summary>
     public string NamespaceUri { get; }
+    /// <summary>The name inside the namespace, for example <c>title</c>.</summary>
     public string LocalName { get; }
 
     internal void Validate()

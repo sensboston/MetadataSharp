@@ -12,6 +12,8 @@ public sealed class ExifEntry
         Value = value;
     }
 
+    /// <summary>The directory role and tag ID of the entry.</summary>
     public ExifTagKey Key { get; }
+    /// <summary>The raw value of the entry.</summary>
     public ExifValue Value { get; }
 }

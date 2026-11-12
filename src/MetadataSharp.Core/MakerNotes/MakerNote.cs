@@ -80,7 +80,9 @@ public sealed class MakerNoteField
     /// <summary>The position of the field's first element in the parent array; for an entry of a
     /// sub-directory, its tag number.</summary>
     public ushort Index { get; }
+    /// <summary>The name of the field.</summary>
     public string Name { get; }
+    /// <summary>The raw value of the field.</summary>
     public ExifValue Value { get; }
 
     /// <summary>
@@ -101,6 +103,7 @@ public sealed class MakerNoteEntry
         Fields = fields;
     }
 
+    /// <summary>The tag ID in the MakerNote directory.</summary>
     public ushort TagId { get; }
 
     /// <summary>The tag's name, or null when this release does not know the tag.</summary>
@@ -139,7 +142,9 @@ public sealed class MakerNote
         Entries = Array.AsReadOnly(copy);
     }
 
+    /// <summary>The vendor layout the note was recognised as.</summary>
     public MakerNoteFormat Format { get; }
+    /// <summary>The byte order the note was read in.</summary>
     public Endianness ByteOrder { get; }
 
     /// <summary>
@@ -152,6 +157,7 @@ public sealed class MakerNote
     /// <summary>Entries in directory order.</summary>
     public IReadOnlyList<MakerNoteEntry> Entries { get; }
 
+    /// <summary>Looks up an entry by tag ID; the first one when the directory repeats a tag.</summary>
     public bool TryGetEntry(ushort tagId, [NotNullWhen(true)] out MakerNoteEntry? entry) =>
         lookup.TryGetValue(tagId, out entry);
 

@@ -16,10 +16,16 @@ public sealed class TiffMetadataDocument : IDisposable, IAsyncDisposable
     private bool disposed;
     private TiffMetadataDocument(Stream source, bool owns, string? path, TiffEditOptions options, TiffLayout layout, byte[] digest)
     { this.source = source; this.owns = owns; sourcePath = path; this.options = options; Layout = layout; this.digest = digest; }
+    /// <summary>The layout of the source: its directories, the ranges they account for, and the issues found.</summary>
     public TiffLayout Layout { get; }
+    /// <summary>Opens a baseline TIFF from a readable, seekable stream at position zero. The stream stays open, and has to stay unchanged, while the document is in use.</summary>
+    /// <exception cref="MetadataException">The data is not a file this document reads, or it exceeds a budget of the limits.</exception>
     public static TiffMetadataDocument Open(Stream source, TiffEditOptions? options = null) => OpenCore(source, false, null, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
+    /// <summary>Opens a baseline TIFF file and keeps it open, shared for reading, until the document is disposed. Fails as <see cref="Open(Stream, TiffEditOptions?)"/> does.</summary>
     public static TiffMetadataDocument Open(string path, TiffEditOptions? options = null) => OpenPath(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Open(Stream, TiffEditOptions?)"/>
     public static Task<TiffMetadataDocument> OpenAsync(Stream source, TiffEditOptions? options = null, CancellationToken cancellationToken = default) => OpenCore(source, false, null, (options ?? new()).Snapshot(), true, cancellationToken);
+    /// <inheritdoc cref="Open(string, TiffEditOptions?)"/>
     public static Task<TiffMetadataDocument> OpenAsync(string path, TiffEditOptions? options = null, CancellationToken cancellationToken = default) => OpenPath(path, (options ?? new()).Snapshot(), true, cancellationToken);
     private static async Task<TiffMetadataDocument> OpenPath(string path, TiffEditOptions options, bool asynchronous, CancellationToken token)
     {
@@ -49,7 +55,11 @@ public sealed class TiffMetadataDocument : IDisposable, IAsyncDisposable
         token.ThrowIfCancellationRequested(); source.Position = offset; byte[] bytes = new byte[count];
         await ContainerIo.Read(source, bytes, asynchronous, token).ConfigureAwait(false); return bytes;
     }
+    /// <summary>Reads a descriptive field of a source directory, or returns null when the directory does not have it.</summary>
+    /// <exception cref="ArgumentException">The key names no directory of the source, or a tag outside the descriptive set of <see cref="TiffMetadataEdit"/>.</exception>
+    /// <exception cref="MetadataException"><see cref="MetadataErrorCode.UnsupportedFeature"/> when the stored field does not have the shape or content the set allows.</exception>
     public ExifValue? ReadValue(TiffFieldKey key) => ReadValueCore(key, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="ReadValue"/>
     public Task<ExifValue?> ReadValueAsync(TiffFieldKey key, CancellationToken cancellationToken = default) => ReadValueCore(key, true, cancellationToken);
     private async Task<ExifValue?> ReadValueCore(TiffFieldKey key, bool asynchronous, CancellationToken token)
     {
@@ -77,14 +87,30 @@ public sealed class TiffMetadataDocument : IDisposable, IAsyncDisposable
         await ContainerIo.Copy(source, destination, 8, Layout.SourceLength - 8, buffer, asynchronous, token).ConfigureAwait(false);
         await ContainerIo.Write(destination, plan.Tail, asynchronous, token).ConfigureAwait(false);
     }
+    /// <summary>
+    /// Writes the file with the edit applied to a distinct, writable, seekable, empty stream. An edit that changes nothing gives a copy of the source.
+    /// No byte of the source moves: changed directories are appended, and the bytes they replace stay
+    /// in the file, no longer addressed.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
+    /// opened; <see cref="MetadataErrorCode.UnsupportedFeature"/> or
+    /// <see cref="MetadataErrorCode.UnsafeRelocation"/> when the layout is outside the profile that
+    /// can be appended to safely; <see cref="MetadataErrorCode.LimitExceeded"/> when the output
+    /// would exceed a budget.
+    /// </exception>
     public void Save(Stream destination, TiffMetadataEdit edit) => SaveCore(destination, edit, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Save(Stream, TiffMetadataEdit)"/>
     public Task SaveAsync(Stream destination, TiffMetadataEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, edit, true, cancellationToken);
     private async Task SaveCore(Stream destination, TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ContainerIo.Output(source, destination);
         TiffAppendPlan? plan = await Prepare(edit, asynchronous, token).ConfigureAwait(false); await Emit(destination, plan, asynchronous, token).ConfigureAwait(false);
     }
+    /// <summary>As <see cref="Save(Stream, TiffMetadataEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <exception cref="IOException">The destination exists or is the source.</exception>
     public void SaveAs(string destinationPath, TiffMetadataEdit edit) => SavePath(destinationPath, edit, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveAs(string, TiffMetadataEdit)"/>
     public Task SaveAsAsync(string destinationPath, TiffMetadataEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, edit, true, cancellationToken);
     private async Task SavePath(string path, TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
     {
@@ -92,6 +118,8 @@ public sealed class TiffMetadataDocument : IDisposable, IAsyncDisposable
         TiffAppendPlan? plan = await Prepare(edit, asynchronous, token).ConfigureAwait(false);
         await ContainerIo.Publish(target, options.ReadOptions.Limits.CopyBufferBytes, asynchronous, token, destination => Emit(destination, plan, asynchronous, token)).ConfigureAwait(false);
     }
+    /// <summary>Closes the file when the document opened it from a path; a stream the caller gave stays open.</summary>
     public void Dispose() { if (disposed) return; disposed = true; if (owns) source.Dispose(); }
+    /// <inheritdoc cref="Dispose"/>
     public async ValueTask DisposeAsync() { if (disposed) return; disposed = true; if (owns) await source.DisposeAsync().ConfigureAwait(false); }
 }

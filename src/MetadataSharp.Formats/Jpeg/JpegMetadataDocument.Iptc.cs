@@ -14,6 +14,7 @@ public sealed partial class JpegMetadataDocument
     /// stream, padding after the last dataset. <see cref="SaveIptc"/> refuses a change to such a file.
     /// </summary>
     public IptcPacket? ReadIptc(IptcReadOptions? options = null) => ReadIptcCore(options, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="ReadIptc"/>
     public Task<IptcPacket?> ReadIptcAsync(IptcReadOptions? options = null, CancellationToken cancellationToken = default) => ReadIptcCore(options, true, cancellationToken);
     private async Task VerifyIptcSource(bool asynchronous, CancellationToken token)
     {
@@ -109,7 +110,16 @@ public sealed partial class JpegMetadataDocument
         if (result is not null) CheckIptcBudget(result.Length, settings);
         token.ThrowIfCancellationRequested(); return new(false, segment, result);
     }
+    /// <summary>
+    /// Writes the file with the IPTC edit applied to a distinct, writable, seekable, empty stream. An edit that changes nothing gives a copy of the source.
+    /// The stream is resource 0x0404 of the Photoshop APP13 segment, created when the file has none.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
+    /// opened; otherwise the code of the reason the edit is refused.
+    /// </exception>
     public void SaveIptc(Stream destination, IptcEdit edit) => SaveIptcCore(destination, edit, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveIptc(Stream, IptcEdit)"/>
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcCore(destination, edit, true, cancellationToken);
     private async Task SaveIptcCore(Stream destination, IptcEdit edit, bool asynchronous, CancellationToken token)
     {
@@ -133,7 +143,10 @@ public sealed partial class JpegMetadataDocument
         }
         await CopyRange(destination, end, scan.Length - end, asynchronous, token).ConfigureAwait(false);
     }
+    /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <exception cref="IOException">The destination exists or is the source.</exception>
     public void SaveIptcAs(string destinationPath, IptcEdit edit) => SaveIptcPath(destinationPath, edit, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveIptcAs(string, IptcEdit)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcPath(destinationPath, edit, true, cancellationToken);
     private async Task SaveIptcPath(string path, IptcEdit edit, bool asynchronous, CancellationToken token)
     {

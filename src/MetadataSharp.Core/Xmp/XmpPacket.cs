@@ -13,8 +13,12 @@ public sealed class XmpPacket
     private XmpPacket(byte[] bytes, XmpLimits limits, bool editable, Dictionary<XmpPropertyName, XmpValue> properties, bool hasExtendedReference, IReadOnlyList<XmpEntry> entries)
     { HasExtendedReference = hasExtendedReference; this.bytes = bytes; this.limits = limits; IsEditable = editable; this.properties = new ReadOnlyDictionary<XmpPropertyName, XmpValue>(properties); Entries = entries; }
     internal bool HasExtendedReference { get; }
+    /// <summary>False when the packet holds RDF outside the editable profile; it can be copied and listed through <see cref="Entries"/>, and not changed.</summary>
     public bool IsEditable { get; }
+    /// <summary>The length of the packet in bytes.</summary>
     public int ByteLength => bytes.Length;
+    /// <summary>The top-level properties of an editable packet, by expanded name.</summary>
+    /// <exception cref="MetadataException"><see cref="MetadataErrorCode.UnsupportedFeature"/> when <see cref="IsEditable"/> is false.</exception>
     public IReadOnlyDictionary<XmpPropertyName, XmpValue> Properties => IsEditable ? properties : throw XmpCodec.Unsupported();
     /// <summary>
     /// Every property of the packet as a flat, read-only list in packet order, whether or not the packet
@@ -23,6 +27,7 @@ public sealed class XmpPacket
     /// has no entries.
     /// </summary>
     public IReadOnlyList<XmpEntry> Entries { get; }
+    /// <summary>Copies the packet to the start of the destination, which has to be at least <see cref="ByteLength"/> long.</summary>
     public void CopyRawTo(Span<byte> destination)
     {
         if (destination.Length < bytes.Length) throw new ArgumentException("Destination is too small.", nameof(destination));
@@ -33,11 +38,17 @@ public sealed class XmpPacket
         XmpLimits value = options is null ? new() : options.Limits ?? throw new ArgumentException("Limits cannot be null.", nameof(options));
         value.Validate(); return value with { };
     }
+    /// <summary>Creates a packet without properties.</summary>
     public static XmpPacket CreateEmpty(XmpReadOptions? options = null)
     {
         XmpLimits limits = Settings(options);
         return ParseOwned(XmpCodec.Write(new Dictionary<XmpPropertyName, XmpValue>(), limits), limits, default);
     }
+    /// <summary>Reads a packet from a copy of the bytes.</summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.InvalidXmp"/> when the bytes are not a packet;
+    /// <see cref="MetadataErrorCode.LimitExceeded"/> when the packet exceeds a budget.
+    /// </exception>
     public static XmpPacket Parse(ReadOnlySpan<byte> bytes, XmpReadOptions? options = null)
     {
         XmpLimits limits = Settings(options);
@@ -50,9 +61,13 @@ public sealed class XmpPacket
         token.ThrowIfCancellationRequested();
         return new(bytes, limits, result.Editable, result.Properties, result.HasExtendedReference, result.Entries);
     }
+    /// <summary>Reads a packet, for example a sidecar file, from the stream to its end and leaves the stream open. Fails as <see cref="Parse"/> does.</summary>
     public static XmpPacket Load(Stream source, XmpReadOptions? options = null) => LoadCore(source, Settings(options), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Load(Stream, XmpReadOptions?)"/>
     public static Task<XmpPacket> LoadAsync(Stream source, XmpReadOptions? options = null, CancellationToken cancellationToken = default) => LoadCore(source, Settings(options), true, cancellationToken);
+    /// <summary>Reads a packet from a file, for example an <c>.xmp</c> sidecar. Fails as <see cref="Parse"/> does.</summary>
     public static XmpPacket Load(string path, XmpReadOptions? options = null) => LoadPath(path, Settings(options), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Load(string, XmpReadOptions?)"/>
     public static Task<XmpPacket> LoadAsync(string path, XmpReadOptions? options = null, CancellationToken cancellationToken = default) => LoadPath(path, Settings(options), true, cancellationToken);
     private static async Task<XmpPacket> LoadPath(string path, XmpLimits limits, bool asynchronous, CancellationToken token)
     {
@@ -84,6 +99,14 @@ public sealed class XmpPacket
         }
         finally { ArrayPool<byte>.Shared.Return(buffer); }
     }
+    /// <summary>
+    /// Returns the packet with the edit applied: null when the edit removes all XMP, this packet when
+    /// the edit changes nothing, otherwise a packet written anew from the changed properties.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when <see cref="IsEditable"/> is false;
+    /// <see cref="MetadataErrorCode.LimitExceeded"/> when the result exceeds a budget.
+    /// </exception>
     public XmpPacket? Apply(XmpEdit edit)
     {
         ArgumentNullException.ThrowIfNull(edit);
@@ -102,7 +125,10 @@ public sealed class XmpPacket
         if (changed.Count > limits.MaxProperties) throw XmpCodec.Limit();
         return ParseOwned(XmpCodec.Write(changed, limits), limits, default);
     }
+    /// <summary>Writes the packet to a writable, seekable, empty stream.</summary>
+    /// <exception cref="ArgumentException">The destination is not such a stream.</exception>
     public void Save(Stream destination) => SaveCore(destination, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Save(Stream)"/>
     public Task SaveAsync(Stream destination, CancellationToken cancellationToken = default) => SaveCore(destination, true, cancellationToken);
     private async Task SaveCore(Stream destination, bool asynchronous, CancellationToken token)
     {
@@ -119,7 +145,10 @@ public sealed class XmpPacket
             offset += count;
         }
     }
+    /// <summary>Writes the packet to a new file; the file appears there complete or not at all.</summary>
+    /// <exception cref="IOException">The destination exists.</exception>
     public void SaveAs(string destinationPath) => SavePath(destinationPath, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveAs(string)"/>
     public Task SaveAsAsync(string destinationPath, CancellationToken cancellationToken = default) => SavePath(destinationPath, true, cancellationToken);
     private async Task SavePath(string path, bool asynchronous, CancellationToken token)
     {
