@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text;
 using static MetadataSharp.Tests.Cr3.Cr3Fixture;
 
@@ -39,6 +40,44 @@ internal static class JxlFixture
     internal static byte[] ExifBox(byte[] tiff, params byte[][] skipped) => Box("Exif", ExifPayload(tiff, skipped));
 
     internal static byte[] XmlBox(byte[] packet) => Box("xml ", packet);
+
+    /// <summary>A compressed box: the type of the box it stands for, then a Brotli stream of that box's payload.</summary>
+    internal static byte[] Brob(string type, params byte[][] stream) => Box("brob", Encoding.ASCII.GetBytes(type), Join(stream));
+
+    /// <summary>
+    /// A Brotli stream written by hand, so that its bytes are the same on every platform: the
+    /// window bit, then meta-blocks of up to 65,536 bytes that hold the payload as it is, then an
+    /// empty last meta-block. A meta-block header is three bytes: its length less one, shifted past
+    /// the bits before it, and the bit that says the bytes are not compressed. The stream is the
+    /// payload, 3 bytes for each meta-block and one byte at the end.
+    /// </summary>
+    internal static byte[] Stored(byte[] payload)
+    {
+        // The window bit, "last" and "last and empty": a stream of nothing.
+        if (payload.Length == 0) return [0x06];
+        var stream = new List<byte>(payload.Length + 8);
+        for (int at = 0; at < payload.Length; at += 65_536)
+        {
+            int length = Math.Min(65_536, payload.Length - at);
+            // The first header shares its byte with the window bit, so its fields sit one bit higher.
+            int header = at == 0 ? ((length - 1) << 4) | (1 << 20) : ((length - 1) << 3) | (1 << 19);
+            stream.Add((byte)header);
+            stream.Add((byte)(header >> 8));
+            stream.Add((byte)(header >> 16));
+            stream.AddRange(payload.AsSpan(at, length));
+        }
+        stream.Add(0x03);
+        return stream.ToArray();
+    }
+
+    /// <summary>A Brotli stream from the encoder of the runtime: the payload really compressed.</summary>
+    internal static byte[] Squeezed(byte[] payload)
+    {
+        var stream = new byte[BrotliEncoder.GetMaxCompressedLength(payload.Length)];
+        if (!BrotliEncoder.TryCompress(payload, stream, out int written, quality: 5, window: 22))
+            throw new InvalidOperationException("The payload did not compress.");
+        return stream[..written];
+    }
 
     /// <summary>
     /// A TIFF with a primary directory (Make, Model, Orientation, the pointer) and the Exif

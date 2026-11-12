@@ -19,17 +19,22 @@ public sealed class JxlMetadata
     }
 
     /// <summary>
-    /// The EXIF block of the <c>Exif</c> box, or null when the file has no such box. A block that
-    /// only the read-only rules accept comes back with <see cref="ExifMetadata.IsEditable"/> false.
+    /// The EXIF block of the <c>Exif</c> box, plain or Brotli-compressed in a <c>brob</c> box, or
+    /// null when the file has neither. A block that only the read-only rules accept comes back
+    /// with <see cref="ExifMetadata.IsEditable"/> false.
     /// </summary>
     public ExifMetadata? Exif { get; }
 
-    /// <summary>The XMP packet of the <c>xml </c> box, or null when the file has no such box.</summary>
+    /// <summary>
+    /// The XMP packet of the <c>xml </c> box, plain or Brotli-compressed in a <c>brob</c> box, or
+    /// null when the file has neither.
+    /// </summary>
     public XmpPacket? Xmp { get; }
 
     /// <summary>
     /// Whether the file has a <c>jumb</c> box (JUMBF, the carrier of content credentials among other
-    /// things). The box is only noticed: its content is neither read nor checked.
+    /// things), plain or compressed. The box is only noticed: its content is neither decompressed,
+    /// read nor checked.
     /// </summary>
     public bool HasJumbf { get; }
 
@@ -39,11 +44,13 @@ public sealed class JxlMetadata
     /// boxes are walked; the codestream boxes are stepped over. Without <paramref name="limits"/>
     /// the budgets are those of a whole TIFF-based file, as for <c>BmffMetadata.Read</c>;
     /// <see cref="MetadataLimits.MaxRetainedMetadataBytes"/> bounds the EXIF block and the packet
-    /// together.
+    /// together, each by its length after decompression: a compressed box is never decoded past
+    /// what the budget has room for.
     /// </summary>
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.InvalidBmff"/> when the file is neither form, the box structure
-    /// does not hold, the major brand is not <c>jxl </c> or a metadata box appears twice;
+    /// does not hold, the major brand is not <c>jxl </c>, a metadata box appears twice or a
+    /// compressed metadata box does not hold one whole Brotli stream;
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded; otherwise the code
     /// the EXIF reader or the XMP reader reports for what it refused.
     /// </exception>
