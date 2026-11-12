@@ -238,8 +238,9 @@ public sealed class ExifEdit
         if (value.FieldType == TiffFieldType.Ascii)
         {
             ReadOnlySpan<byte> bytes = value.RawBytes;
-            if (bytes[^1] != 0) return "is ASCII and has to end with NUL";
-            if (bytes.IndexOfAnyInRange((byte)0x80, (byte)0xFF) >= 0) return "is ASCII and holds seven-bit characters";
+            if (bytes.Length == 0 || bytes[bytes.Length - 1] != 0) return "is ASCII and has to end with NUL";
+            foreach (byte character in bytes)
+                if (character >= 0x80) return "is ASCII and holds seven-bit characters";
         }
         return null;
     }
