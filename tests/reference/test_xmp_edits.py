@@ -93,6 +93,22 @@ class CheckTests(unittest.TestCase):
         self.assertEqual([("-pa", "a.jpg"), ("-pX", "a.jpg")], asked)
         self.assertIn("1 files", out)
 
+    def test_a_sidecar_is_the_packet_and_is_not_asked_for_it(self):
+        asked = []
+
+        def runner(command, path):
+            asked.append(command[1])
+            return 0, PRINTED, ""
+
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / "manifest.tsv").write_text("a.xmp\t" + "|".join(EXPECTED) + "\nb.xmp\t" + "|".join(EXPECTED) + "\n", encoding="utf-8")
+            (Path(directory) / "a.xmp").write_text(PACKET, encoding="utf-8")
+            (Path(directory) / "b.xmp").write_text("<a/>", encoding="utf-8")
+            problems, count = x.check(directory, "exiv2", runner)
+        self.assertEqual(["-pa", "-pa"], asked)
+        self.assertEqual(2, count)
+        self.assertEqual([("b.xmp", "the sidecar: the packet holds no rdf:RDF element")], problems)
+
     def test_a_file_the_tool_does_not_read_fails(self):
         code, out = self.run_main("a.jpg\t" + "|".join(EXPECTED) + "\n", lambda command, path: (1, "", "no"))
         self.assertEqual(1, code)

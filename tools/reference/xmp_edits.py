@@ -14,6 +14,8 @@ A file passes when
     no Xmp key the row does not name: nothing was lost and nothing appeared;
   - "exiv2 -pX" exits with 0 for it and prints one well-formed XML document
     that holds an rdf:RDF element: the packet as the tool takes it out.
+    The tool does not take the packet out of a sidecar (.xmp): there the file
+    itself has to be that document.
 
 Usage: xmp_edits.py DIRECTORY --exiv2 PATH
 """
@@ -26,6 +28,7 @@ from pathlib import Path
 MAX_ANNOTATIONS = 20
 RDF = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF"
 ANY = "*"
+SIDECAR = ".xmp"
 
 
 def xmp_lines(text):
@@ -107,6 +110,12 @@ def check(directory, exiv2, runner=run):
                 # The whole print-out goes with the first problem: one run shows what the tool prints.
                 found[0] += "\nprinted:\n" + "\n".join(xmp_lines(output))
             problems.extend((name, problem) for problem in found)
+        if name.lower().endswith(SIDECAR):
+            # The tool has no -pX for a sidecar: the file is the packet, and is held to the same rule.
+            problem = packet_problem((directory / name).read_text(encoding="utf-8"))
+            if problem:
+                problems.append((name, "the sidecar: " + problem))
+            continue
         code, output, errors = runner([exiv2, "-pX"], directory / name)
         if code != 0:
             problems.append((name, f"-pX: not read (exit {code}): {errors.strip()[:300]}"))
