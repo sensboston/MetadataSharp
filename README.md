@@ -210,18 +210,10 @@ JPEG, PNG, WebP, BMFF or TIFF-based document, which writes the blocks in one pas
 
 ### Do what the exiv2 command line does
 
-```csharp
-using MetadataSharp.Core.Operations;
-using MetadataSharp.Formats.Operations;
-
-// exiv2 rm -d x, exiv2 ex -e a, exiv2 in -i a
-MetadataOperations.Delete("in.jpg", "out.jpg", MetadataFamilies.Xmp);
-byte[] exv = MetadataOperations.ExtractExv(File.ReadAllBytes("in.jpg"));
-MetadataOperations.InsertExv("other.jpg", "filled.jpg", exv);
-
-// exiv2 -M "set Exif.Image.Artist Ann": edits for SaveAll
-ModifyScript script = ModifyScript.Parse("set Exif.Image.Artist Ann");
-```
+`MetadataOperations` (`MetadataSharp.Formats.Operations`) has the file operations of the tool:
+`Delete` (`exiv2 rm -d`), `ExtractExv` (`ex -e`), `InsertExv` (`in -i`). `ModifyScript.Parse`
+(`MetadataSharp.Core.Operations`) turns the tool's modify commands (`-M "set Exif.Image.Artist Ann"`)
+into edits for `SaveAll`.
 
 Also: shifting timestamps (`MetadataTimestamps.Adjust`), file names from the date taken
 (`MetadataFileNames.Format`), thumbnails (`ExifEdit.SetThumbnail`), XMP sidecars, `FixIso`,
