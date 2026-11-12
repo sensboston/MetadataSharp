@@ -396,7 +396,8 @@ public sealed class MetadataCapabilitiesTests
         // returned as bytes, which is Extract; of a TIFF only the first directory is looked at.
         MetadataContainer[] profiles = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.WebP, MetadataContainer.Tiff,
             MetadataContainer.Avif, MetadataContainer.Exv, MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Psd];
-        MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Exv];
+        // The comment of a CRW file is a record of its heap: CrwMetadata reads it, and RawContainerTests authors one.
+        MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Crw, MetadataContainer.Exv];
         CapabilityDescriptor[] extracted = MetadataCapabilities.All.Where(row => row.Operation == MetadataOperation.Extract).ToArray();
         CapabilityDescriptor[] listed = MetadataCapabilities.All
             .Where(row => row.Family == MetadataFamily.Comment && row.Operation == MetadataOperation.Read).ToArray();
@@ -415,7 +416,7 @@ public sealed class MetadataCapabilitiesTests
         {
             // Of a PNG only the keyword Comment is read.
             Assert.Equal(row.Container == MetadataContainer.Png ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
-            Assert.StartsWith("Comments.Read: ", row.Note);
+            Assert.StartsWith(row.Container == MetadataContainer.Crw ? "CrwMetadata.Read: " : "Comments.Read: ", row.Note);
         }
     }
 
