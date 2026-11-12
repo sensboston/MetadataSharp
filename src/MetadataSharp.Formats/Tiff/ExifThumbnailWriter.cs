@@ -10,8 +10,8 @@ namespace MetadataSharp.Formats.Tiff;
 /// </summary>
 /// <remarks>
 /// <para>No byte of the block moves. A new thumbnail is appended with a directory of its own
-/// (Compression, XResolution, YResolution, ResolutionUnit, JPEGInterchangeFormat and its length;
-/// 72 dpi, or the resolution of the directory it replaces),
+/// (Compression, JPEGInterchangeFormat and its length; with them the other tags of the directory it
+/// replaces, as they are, or XResolution, YResolution and ResolutionUnit of 72 dpi when it replaces none),
 /// and the successor link of the primary directory is pointed at it; removing sets that link to
 /// zero. The old directory and the old stream are cleared to zeros where the map of the block shows
 /// that nothing else addresses them, so that a picture that was removed is not left in the file.</para>
@@ -42,9 +42,25 @@ internal static class ExifThumbnailWriter
         if (link < 8 || link > block.Length - 4)
             throw new MetadataException(MetadataErrorCode.InvalidExif, "The primary directory does not lie inside the EXIF block.");
 
+        // The directory written: the tags the old one has, as they are (their values do not move), but
+        // for the three that describe the stream; a directory that is created states 72 dpi, which
+        // Exif requires of a JPEG thumbnail.
+        var kept = new List<(ushort Tag, int At)>();
+        if (jpeg is not null && old is not null)
+        {
+            foreach (TiffBasedField field in old.Fields)
+            {
+                if (field.Tag is 0x0103 or 0x0201 or 0x0202 or 0x0111 or 0x0117) continue;
+                if (field.EntryOffset < 0 || field.EntryOffset > block.Length - 12) continue;
+                if (kept.Exists(held => held.Tag == field.Tag)) continue;
+                kept.Add((field.Tag, field.EntryOffset));
+            }
+        }
+        bool created = old is null;
+        int entries = kept.Count + 3 + (created ? 3 : 0);
         int start = (block.Length + 1) & ~1;
-        const int Directory = 2 + (6 * 12) + 4, Values = 16;
-        long length = jpeg is null ? block.Length : (long)start + Directory + Values + jpeg.Length;
+        int directoryBytes = 2 + (entries * 12) + 4, valueBytes = created ? 16 : 0;
+        long length = jpeg is null ? block.Length : (long)start + directoryBytes + valueBytes + jpeg.Length;
         if (jpeg is not null && jpeg.Length > limits.MaxThumbnailBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The thumbnail exceeds its budget.");
         if (length > ceiling)
@@ -80,32 +96,48 @@ internal static class ExifThumbnailWriter
         }
         else
         {
-            int values = start + Directory, picture = values + Values, entry = start + 2;
+            int values = start + directoryBytes, picture = values + valueBytes;
+            var table = new List<(ushort Tag, byte[] Entry)>();
             void Entry(ushort tag, ushort type, uint value, bool isShort)
             {
-                Put16(entry, tag);
-                Put16(entry + 2, type);
-                Put32(entry + 4, 1);
-                if (isShort) Put16(entry + 8, (ushort)value); else Put32(entry + 8, value);
-                entry += 12;
+                byte[] made = new byte[12];
+                void Short(int where, ushort number)
+                {
+                    if (little) BinaryPrimitives.WriteUInt16LittleEndian(made.AsSpan(where), number);
+                    else BinaryPrimitives.WriteUInt16BigEndian(made.AsSpan(where), number);
+                }
+                void Long(int where, uint number)
+                {
+                    if (little) BinaryPrimitives.WriteUInt32LittleEndian(made.AsSpan(where), number);
+                    else BinaryPrimitives.WriteUInt32BigEndian(made.AsSpan(where), number);
+                }
+                Short(0, tag);
+                Short(2, type);
+                Long(4, 1);
+                if (isShort) Short(8, (ushort)value); else Long(8, value);
+                table.Add((tag, made));
             }
-            Put16(start, 6);
+            foreach ((ushort keptTag, int keptAt) in kept) table.Add((keptTag, block.AsSpan(keptAt, 12).ToArray()));
             Entry(0x0103, 3, 6, true);                    // Compression: JPEG
-            Entry(0x011A, 5, (uint)values, false);        // XResolution 72/1
-            Entry(0x011B, 5, (uint)values + 8, false);    // YResolution 72/1
-            Entry(0x0128, 3, 2, true);                    // ResolutionUnit: inch
+            if (created)
+            {
+                Entry(0x011A, 5, (uint)values, false);        // XResolution 72/1
+                Entry(0x011B, 5, (uint)values + 8, false);    // YResolution 72/1
+                Entry(0x0128, 3, 2, true);                    // ResolutionUnit: inch
+                Put32(values, 72); Put32(values + 4, 1);
+                Put32(values + 8, 72); Put32(values + 12, 1);
+            }
             Entry(0x0201, 4, (uint)picture, false);       // JPEGInterchangeFormat
             Entry(0x0202, 4, (uint)jpeg.Length, false);   // JPEGInterchangeFormatLength
-            Put32(entry, 0);
-            Put32(values, 72); Put32(values + 4, 1);
-            Put32(values + 8, 72); Put32(values + 12, 1);
-            // The resolution the old directory stated stays: the new stream takes the place of the old one.
-            if (old is not null)
+            table.Sort((left, right) => left.Tag.CompareTo(right.Tag));
+            Put16(start, (ushort)table.Count);
+            int entry = start + 2;
+            foreach ((_, byte[] made) in table)
             {
-                if (Rational(block, old.Find(0x011A)) is int x) block.AsSpan(x, 8).CopyTo(output.AsSpan(values));
-                if (Rational(block, old.Find(0x011B)) is int y) block.AsSpan(y, 8).CopyTo(output.AsSpan(values + 8));
-                if (old.Find(0x0128) is { Type: 3, Count: 1 } && Scalar(block, old.Find(0x0128), little) is uint unit) Put16(start + 2 + (3 * 12) + 8, (ushort)unit);
+                made.CopyTo(output, entry);
+                entry += 12;
             }
+            Put32(entry, 0);
             jpeg.CopyTo(output, picture);
             Put32((int)link, (uint)start);
         }
@@ -140,10 +172,6 @@ internal static class ExifThumbnailWriter
             ? (little ? BinaryPrimitives.ReadUInt16LittleEndian(bytes) : BinaryPrimitives.ReadUInt16BigEndian(bytes))
             : (little ? BinaryPrimitives.ReadUInt32LittleEndian(bytes) : BinaryPrimitives.ReadUInt32BigEndian(bytes));
     }
-
-    /// <summary>Where the eight bytes of a single RATIONAL field lie; null for a field that is not one or lies outside the block.</summary>
-    private static int? Rational(byte[] block, TiffBasedField? field) =>
-        field is { Type: 5, Count: 1 } && field.ValueOffset >= 0 && field.ValueOffset <= block.Length - 8 ? (int)field.ValueOffset : null;
 
     private static bool SameOutside(ExifMetadata one, ExifMetadata other)
     {

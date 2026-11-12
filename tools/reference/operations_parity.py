@@ -96,6 +96,8 @@ for _key in ("Xmp.xmp.ModifyDate", "Xmp.xmp.CreateDate", "Xmp.photoshop.DateCrea
 for _operation in ("adjust", "modify", "delete-t", "delete-xc", "extract", "thumbnail", "fixiso", "fixcom"):
     document(_operation, "Exif.Photo.MakerNote", "differs (tool changed)",
              "the tool writes the MakerNote anew when it writes the block; here its bytes stay as the source has them")
+    document(_operation, "Exif.(MakerNote).*", "differs (tool changed)",
+             "the tool writes the MakerNote anew, so its byte order and the offsets it holds change; here its bytes stay")
 for _key in ("Iptc.Envelope.CharacterSet", "Iptc.Application2.RecordVersion"):
     document("modify", _key, "ours only",
              "an IPTC stream that is created declares UTF-8 and its record version; the tool writes the datasets it was given only")
@@ -108,15 +110,23 @@ for _key in ("Exif.Thumbnail.XResolution", "Exif.Thumbnail.YResolution", "Exif.T
 document("insert", "Exif.(MakerNote).*", "tool only",
          "the MakerNote is not carried by an insert: its offsets belong to the file it was read from "
          "(the tool carries it); InsertExv says so in its notes")
+for _key in ("Exif.Thumbnail.XResolution", "Exif.Thumbnail.YResolution", "Exif.Thumbnail.ResolutionUnit"):
+    document("insert", _key, "ours only",
+             "a thumbnail directory is created with the resolution Exif requires of a JPEG thumbnail (72 dpi)")
+document("insert", "Exif.Thumbnail.*", "tool only",
+         "a thumbnail this library does not read as a JPEG stream (see ExtractThumbnail) is not carried, nor the tags of its directory")
+document("insert", "Iptc.*", "tool only",
+         "a dataset whose text is not UTF-8, from a stream that declares no character set, is not carried into a stream "
+         "that declares UTF-8; InsertExv says so in its notes")
 document("insert", "Exif.Photo.MakerNote", "tool only", "the MakerNote is not carried by an insert (see Exif.(MakerNote).*)")
 
 STANDARD_GROUPS = ("Image", "Photo", "GPSInfo", "Iop", "Thumbnail")
 
 
 def grouped_key(operation, key):
-    """The key a row is counted under: the tags of a MakerNote group of an insert are one key."""
+    """The key a row is counted under: the tags of the MakerNote groups are one key."""
     parts = key.split(".")
-    if operation == "insert" and parts[0] == "Exif" and len(parts) > 2 and parts[1] not in STANDARD_GROUPS:
+    if parts[0] == "Exif" and len(parts) > 2 and parts[1] not in STANDARD_GROUPS:
         return "Exif.(MakerNote).*"
     return key
 
@@ -257,7 +267,9 @@ def check(work, names, exiv2, failed, renamed, runner=run):
                 rows.append((operation, name, "the file", "differs",
                              ["not printed" if theirs is None else "printed"], ["not printed" if ours is None else "printed"]))
                 continue
-            rows.extend((operation, name, *row) for row in compare(theirs, ours, None if operation == "insert" else before))
+            # What an insert starts from is the EXV file the tool wrote.
+            origin = printed(exiv2, work / f"{name}.insert.tool.exv", runner) if operation == "insert" else before
+            rows.extend((operation, name, *row) for row in compare(theirs, ours, origin))
     return rows, files, left_out
 
 

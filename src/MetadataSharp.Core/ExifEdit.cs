@@ -175,8 +175,9 @@ public sealed class ExifEdit
     /// <summary>
     /// Sets the thumbnail of the EXIF block: a JPEG stream in the directory after the primary one
     /// (IFD1), which is created when the block has none, with Compression 6, a resolution of 72 dpi
-    /// and the address and length of the stream. A thumbnail the block has is replaced, and the
-    /// bytes of the old one are cleared where nothing else addresses them. A file without an EXIF
+    /// and the address and length of the stream. A thumbnail the block has is replaced: the other
+    /// tags of its directory stay, and the bytes of the old stream are cleared where nothing else
+    /// addresses them. A file without an EXIF
     /// block gets one. This is <c>exiv2 -it</c>.
     /// </summary>
     /// <remarks>

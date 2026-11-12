@@ -255,7 +255,7 @@ public static class MetadataOperations
         if (families.HasFlag(MetadataFamilies.Xmp) && from.Xmp is not null)
         {
             if (into.Xmp is not null) clear.Xmp.RemoveAllXmp();
-            CopyProperties(from.Xmp, set.Xmp);
+            set.Xmp.ReplaceWith(from.Xmp);
         }
         if (!clear.IsEmpty) bytes = Save(bytes, format, clear);
         if (!set.IsEmpty) bytes = Save(bytes, format, set);
@@ -314,7 +314,7 @@ public static class MetadataOperations
             bytes = Save(bytes, format, clear);
         }
         var set = new SyncEdits();
-        CopyProperties(packet, set.Xmp);
+        set.Xmp.ReplaceWith(packet);
         if (!set.IsEmpty) bytes = Save(bytes, format, set);
         if (!convert) return bytes;
 
@@ -338,17 +338,6 @@ public static class MetadataOperations
             return true;
         }
         catch (DecoderFallbackException) { return false; }
-    }
-
-    private static void CopyProperties(XmpPacket packet, XmpEdit edit)
-    {
-        foreach (XmpEntry entry in packet.Entries)
-        {
-            try { edit.RegisterNamespace(entry.Prefix, entry.NamespaceUri); }
-            catch (ArgumentException) { /* a prefix the edit keeps for another namespace: the writer chooses one */ }
-        }
-        foreach (KeyValuePair<XmpPropertyName, XmpValue> property in packet.Properties)
-            edit.Set(property.Key, property.Value);
     }
 
     // ---- fixiso, fixcom ----

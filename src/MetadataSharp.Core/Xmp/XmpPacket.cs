@@ -141,10 +141,11 @@ public sealed partial class XmpPacket
     {
         if (edit.RemovesAll) return null;
         if (edit.IsEmpty) return this;
-        if (Tree is null) throw XmpCodec.Unsupported();
-        XmpTree changed = Tree.Clone();
+        // A replacement needs nothing of this packet, so it also replaces one that cannot be edited.
+        if (Tree is null && edit.Replacement is null) throw XmpCodec.Unsupported();
+        XmpTree changed = (edit.Replacement ?? Tree!).Clone();
         XmpEditor.Apply(changed, edit);
-        if (XmpTree.Same(Tree, changed)) return this;
+        if (Tree is not null && XmpTree.Same(Tree, changed)) return this;
         return FromTree(changed, limits, edit.Namespaces, slotBytes, paddingBytes);
     }
 

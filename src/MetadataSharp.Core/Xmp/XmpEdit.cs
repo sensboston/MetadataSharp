@@ -43,9 +43,30 @@ public sealed class XmpEdit
     public XmpEdit() { }
 
     /// <summary>True when the edit holds no change.</summary>
-    public bool IsEmpty => !removeAll && operations.Count == 0;
+    public bool IsEmpty => !removeAll && operations.Count == 0 && replacement is null;
 
     internal bool RemovesAll => removeAll;
+
+    private XmpTree? replacement;
+
+    /// <summary>What the packet is to hold in place of everything it holds, or null; the changes of the edit follow it.</summary>
+    internal XmpTree? Replacement => replacement;
+
+    /// <summary>
+    /// Puts everything <paramref name="packet"/> holds in place of everything the packet of the file
+    /// holds: its properties with their structures, qualifiers and prefixes. Changes made to this edit
+    /// apply after it. A file without a packet gets one. This is how a sidecar file or the packet of
+    /// another file is inserted (<c>exiv2 in</c>).
+    /// </summary>
+    /// <exception cref="ArgumentException">The edit removes the whole packet.</exception>
+    /// <exception cref="MetadataException"><see cref="MetadataErrorCode.UnsupportedFeature"/> when <paramref name="packet"/> cannot be edited (<see cref="XmpPacket.IsEditable"/>).</exception>
+    public void ReplaceWith(XmpPacket packet)
+    {
+        ArgumentNullException.ThrowIfNull(packet);
+        if (removeAll) throw new ArgumentException("Whole XMP removal cannot be mixed with property changes.");
+        if (packet.Tree is null) throw XmpCodec.Unsupported();
+        replacement = packet.Tree.Clone();
+    }
     internal IReadOnlyList<XmpOperation> Operations => operations;
     internal IReadOnlyDictionary<string, string> Namespaces => namespaces;
 
@@ -168,7 +189,7 @@ public sealed class XmpEdit
     /// <exception cref="ArgumentException">The edit already holds a property change.</exception>
     public void RemoveAllXmp()
     {
-        if (operations.Count != 0) throw new ArgumentException("Whole XMP removal cannot be mixed with property changes.");
+        if (operations.Count != 0 || replacement is not null) throw new ArgumentException("Whole XMP removal cannot be mixed with property changes.");
         removeAll = true;
     }
 
@@ -197,7 +218,7 @@ public sealed class XmpEdit
     /// <summary>A copy that later changes to this edit do not reach.</summary>
     internal XmpEdit Snapshot()
     {
-        var copy = new XmpEdit { removeAll = removeAll };
+        var copy = new XmpEdit { removeAll = removeAll, replacement = replacement };
         copy.operations.AddRange(operations);
         foreach (KeyValuePair<string, string> pair in namespaces) copy.namespaces[pair.Key] = pair.Value;
         return copy;

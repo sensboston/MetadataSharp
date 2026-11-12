@@ -103,6 +103,54 @@ public sealed class FileOperationsTests
     }
 
     [Fact]
+    public void AReplacedThumbnailKeepsTheOtherTagsOfItsDirectory()
+    {
+        // IFD0 with an orientation; IFD1 with Compression, Orientation 6, and the stream at 62.
+        byte[] stream = Picture(0x31);
+        byte[] tiff = [
+            0x49, 0x49, 42, 0, 8, 0, 0, 0,
+            1, 0, 0x12, 1, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0, 26, 0, 0, 0,
+            4, 0,
+            0x03, 1, 3, 0, 1, 0, 0, 0, 6, 0, 0, 0,
+            0x12, 1, 3, 0, 1, 0, 0, 0, 6, 0, 0, 0,
+            0x01, 2, 4, 0, 1, 0, 0, 0, 80, 0, 0, 0,
+            0x02, 2, 4, 0, 1, 0, 0, 0, (byte)stream.Length, 0, 0, 0,
+            0, 0, 0, 0,
+            .. stream];
+        Assert.Equal(80, tiff.Length - stream.Length);
+        byte[] file = JpegFixture.Build(JpegFixture.Segment(0xE1, JpegFixture.Exif(tiff)));
+        Assert.Equal(stream, MetadataOperations.ExtractThumbnail(file));
+
+        byte[] saved = SaveJpeg(file, edit => edit.SetThumbnail(Picture(0x32, 16)));
+        Assert.Equal(Picture(0x32, 16), MetadataOperations.ExtractThumbnail(saved));
+        Assert.False(Holds(saved, stream));
+        ExifMetadata exif = ImageMetadata.Read(saved).Exif!;
+        Assert.True(exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0112), out ExifEntry? kept));
+        Assert.True(kept!.Value.TryGetUInt32(out uint orientation));
+        Assert.Equal(6u, orientation);
+        // No resolution is added to a directory that is replaced.
+        Assert.False(exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x011A), out _));
+    }
+
+    [Fact]
+    public void AnInsertedPacketArrivesWithItsStructures()
+    {
+        var edit = new XmpEdit();
+        edit.Set("Xmp.photoshop.Headline", "structured");
+        edit.AppendStruct("Xmp.xmpMM.History", XmpValueKind.Sequence);
+        edit.Set("Xmp.xmpMM.History[1]/stEvt:action", "saved");
+        XmpPacket packet = XmpPacket.CreateEmpty().Apply(edit)!;
+        byte[] sidecar = new byte[packet.ByteLength];
+        packet.CopyRawTo(sidecar);
+
+        byte[] target = MetadataOperations.InsertXmpSidecar(FullJpeg(), sidecar, convert: false);
+        XmpPacket arrived = ImageMetadata.Read(target).Xmp!;
+        Assert.Contains(arrived.Entries, entry => entry.Key == "Xmp.xmpMM.History[1]/stEvt:action" && entry.Values.Contains("saved"));
+        Assert.Contains(arrived.Entries, entry => entry.Key == "Xmp.photoshop.Headline" && entry.Values.Contains("structured"));
+        Assert.DoesNotContain(arrived.Entries, entry => entry.Values.Contains("headline"));
+    }
+
+    [Fact]
     public void AThumbnailAndATagAreSetInOneEdit()
     {
         byte[] file = JpegFixture.Build(JpegFixture.Segment(0xE1, JpegFixture.Exif()));
