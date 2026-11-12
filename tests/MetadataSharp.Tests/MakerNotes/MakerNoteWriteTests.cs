@@ -90,7 +90,7 @@ public sealed class MakerNoteWriteTests
         bool noteBig = Note(block).ByteOrder == Endianness.BigEndian;
         Assert.Equal(Zero("NEW OWNER!"), Raw(output, Owner));
         Assert.Equal(B16(9, noteBig), Raw(output, Number));
-        Assert.Equal([.. B32(1, noteBig), .. B32(2, noteBig), .. B32(0x01020304, noteBig)], Raw(output, Triple));
+        Assert.Equal((byte[])[.. B32(1, noteBig), .. B32(2, noteBig), .. B32(0x01020304, noteBig)], Raw(output, Triple));
         AssertRestKept(block, output, Owner, Number, Triple);
     }
 
@@ -108,7 +108,7 @@ public sealed class MakerNoteWriteTests
         bool noteBig = Note(block).ByteOrder == Endianness.BigEndian;
         Assert.Equal(Zero("ME"), Raw(output, Owner));
         Assert.Equal(Zero("SHORTER"), Raw(output, First));
-        Assert.Equal([.. B32(5, noteBig), .. B32(6, noteBig)], Raw(output, Triple));
+        Assert.Equal((byte[])[.. B32(5, noteBig), .. B32(6, noteBig)], Raw(output, Triple));
         AssertRestKept(block, output, Owner, First, Triple);
         // The bytes the longer values had are cleared.
         Assert.DoesNotContain("OWNER NAME", Encoding.Latin1.GetString(output), StringComparison.Ordinal);
@@ -126,7 +126,7 @@ public sealed class MakerNoteWriteTests
         byte[] block = Block(vendor, big);
         byte[] output = Apply(block, edit => edit.SetByKey(Key(block, Number), ShortValue(1, 2)));
         bool noteBig = Note(block).ByteOrder == Endianness.BigEndian;
-        Assert.Equal([.. B16(1, noteBig), .. B16(2, noteBig)], Raw(output, Number));
+        Assert.Equal((byte[])[.. B16(1, noteBig), .. B16(2, noteBig)], Raw(output, Number));
         AssertRestKept(block, output, Number);
     }
 
@@ -171,7 +171,7 @@ public sealed class MakerNoteWriteTests
         Assert.DoesNotContain("FIRST VALUE", Encoding.Latin1.GetString(second), StringComparison.Ordinal);
         AssertRestKept(output, second, First);
         byte[] third = Apply(second, edit => { edit.RemoveByKey(Key(second, Owner)); edit.SetTextByKey(Key(second, Triple), "7 8 9"); });
-        Assert.Equal([0x0008], Note(third).Entries.Select(entry => entry.TagId).ToArray());
+        Assert.Equal(new ushort[] { 0x0008 }, Note(third).Entries.Select(entry => entry.TagId).ToArray());
 
         // The last tag stays: a directory without tags does not read as one.
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(third, edit => edit.RemoveByKey(Key(third, Triple)))));
@@ -489,7 +489,7 @@ public sealed class MakerNoteWriteTests
         byte[] output = MakerNoteWriter.Apply(block, script.Exif.Snapshot().MakerNote, new MetadataLimits());
         Assert.Equal(Zero("NEW OWNER!"), Raw(output, Owner));
         Assert.Null(Raw(output, Number));
-        Assert.Equal([.. B32(5, true), .. B32(6, true), .. B32(7, true)], Raw(output, Triple));
+        Assert.Equal((byte[])[.. B32(5, true), .. B32(6, true), .. B32(7, true)], Raw(output, Triple));
         Assert.Equal(Zero("A TYPE"), Raw(output, First));
         Assert.Throws<ModifyScriptException>(() => ModifyScript.Parse("set Exif.Canon.OwnerName Comment charset=Ascii text"));
         Assert.Throws<ModifyScriptException>(() => ModifyScript.Parse("set Exif.Canon.FileNumber Long five"));
