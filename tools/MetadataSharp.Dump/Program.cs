@@ -5,16 +5,9 @@ using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats;
-using MetadataSharp.Formats.Bmff;
-using MetadataSharp.Formats.Cr3;
 using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
-using MetadataSharp.Formats.Jpeg;
-using MetadataSharp.Formats.Jxl;
-using MetadataSharp.Formats.Png;
-using MetadataSharp.Formats.Psd;
 using MetadataSharp.Formats.Tiff;
-using MetadataSharp.Formats.WebP;
 
 // Byte-level metadata dump for the differential parity harness, deliberately restricted to the
 // public API: whatever this tool prints is what a library consumer can read, and a tag it cannot
@@ -144,7 +137,8 @@ internal static class Program
 
     private static void Dump(string path, StreamWriter stdout)
     {
-        var head = new byte[16];
+        // The head is sixteen bytes whatever the file holds: a shorter file leaves zeros after its own.
+        var head = new byte[ImageMetadata.HeaderLength];
         long length;
         using (var probe = File.OpenRead(path))
         {
@@ -152,103 +146,70 @@ internal static class Program
             int want = (int)Math.Min(length, head.Length);
             if (want > 0) _ = probe.Read(head.AsSpan(0, want));
         }
-        if (At(head, 0, 0xFF, 0xD8)) { Jpeg(path, stdout, length); return; }
-        if (At(head, 0, 0x89, 0x50, 0x4E, 0x47)) { Png(path, stdout, length); return; }
-        if (At(head, 0, 0x52, 0x49, 0x46, 0x46) && At(head, 8, 0x57, 0x45, 0x42, 0x50)) { WebP(path, stdout, length); return; }
-        if (At(head, 0, 0x49, 0x49, 0x2A, 0x00) || At(head, 0, 0x4D, 0x4D, 0x00, 0x2A)) { Tiff(path, stdout, length); return; }
-        // ORF ("IIRO", "MMOR") and RW2 ("IIU\0") are TIFF structures under their own identifier.
-        if (At(head, 0, 0x49, 0x49, 0x52, 0x4F) || At(head, 0, 0x4D, 0x4D, 0x4F, 0x52) || At(head, 0, 0x49, 0x49, 0x55, 0x00)) { Tiff(path, stdout, length); return; }
-        if (At(head, 0, 0x38, 0x42, 0x50, 0x53)) { Psd(path, stdout, length); return; }
-        if (At(head, 0, 0xFF, 0x01, 0x45, 0x78, 0x69, 0x76, 0x32)) { Exv(path, stdout, length); return; }
-        if (At(head, 4, 0x6A, 0x50, 0x20, 0x20)) { Jp2(path, stdout, length); return; }
+        MetadataFormat format = ImageMetadata.Detect(head);
+        switch (format)
+        {
+            case MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Psd:
+                Snapshot(path, stdout, length);
+                return;
+            case MetadataFormat.Exv: Exv(path, stdout, length); return;
+            case MetadataFormat.Jp2: Jp2(path, stdout, length); return;
+        }
+        // A sidecar is told by the rule of this tool, not by the one of the library: any file that
+        // starts with a processing instruction or a byte order mark is handed to the XMP reader, and
+        // one that starts with an element is not. The signatures above come first and the ones below
+        // after, as the library has them.
         if (At(head, 0, 0x3C, 0x3F) || At(head, 0, 0xEF, 0xBB, 0xBF)) { Sidecar(path, stdout, length); return; }
-        // CR3 is a BMFF file of the major brand "crx " that keeps its metadata outside a meta box.
-        if (At(head, 4, 0x66, 0x74, 0x79, 0x70) && At(head, 8, 0x63, 0x72, 0x78, 0x20)) { Cr3(path, stdout, length); return; }
-        if (At(head, 4, 0x66, 0x74, 0x79, 0x70)) { Bmff(path, stdout, length); return; }
-        // JPEG XL: the signature box of a container (its file type box comes second), or the two
-        // bytes a bare codestream starts with, which holds no metadata.
-        if (At(head, 0, 0x00, 0x00, 0x00, 0x0C, 0x4A, 0x58, 0x4C, 0x20, 0x0D, 0x0A, 0x87, 0x0A) || At(head, 0, 0xFF, 0x0A)) { Jxl(path, stdout, length); return; }
+        if (format is MetadataFormat.Cr3 or MetadataFormat.Bmff or MetadataFormat.Jxl) { Snapshot(path, stdout, length); return; }
         if (At(head, 0, 0x1A, 0x45, 0xDF, 0xA3)) { Record(stdout, "STATUS", "not-attempted", "matroska"); return; }
         Record(stdout, "STATUS", "not-attempted", "magic");
     }
 
-    private static void Jpeg(string path, StreamWriter stdout, long length)
+    /// <summary>
+    /// A JPEG, PNG, WebP, TIFF, PSD, BMFF, CR3 or JPEG XL file, read once through the entry point of
+    /// the library and reported under the rules of this tool, which are older and differ by format.
+    /// </summary>
+    private static void Snapshot(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
-        using JpegMetadataDocument document = JpegMetadataDocument.Open(path);
-        Exif(document.Exif, stdout);
-        // The document reads each kind on its own, so a refused IPTC stream or XMP packet leaves the
-        // rows of the other kinds in place and travels in the detail of the status, as for a TIFF.
+        ImageMetadata file = ImageMetadata.Read(path);
+        MetadataException? Refusal(MetadataFamily kind) =>
+            file.Errors.FirstOrDefault(error => error.Family == kind)?.Exception;
+        MetadataException? exif = Refusal(MetadataFamily.Exif), iptc = Refusal(MetadataFamily.IptcIim), xmp = Refusal(MetadataFamily.Xmp);
+
+        // The container itself was refused: the library lists that one exception under EXIF and XMP.
+        if (exif is not null && ReferenceEquals(exif, xmp)) throw exif;
+        // The kinds whose refusal leaves the file ok and travels in the detail of the status. A
+        // refusal of any other kind ends the file as refused, as its reader did when called alone.
+        bool exifInDetail = file.Format is MetadataFormat.Png or MetadataFormat.Psd;
+        bool othersInDetail = exifInDetail || file.Format is MetadataFormat.Jpeg or MetadataFormat.Tiff;
+        // The BMFF, CR3 and JPEG XL readers give every kind or none: no row precedes their refusal.
+        bool allOrNone = file.Format is MetadataFormat.Bmff or MetadataFormat.Cr3 or MetadataFormat.Jxl;
+        if (allOrNone && (exif ?? xmp) is MetadataException first) throw first;
+
         var refused = new List<string>();
-        IptcPacket? iptc = null;
-        try { iptc = document.ReadIptc(); }
-        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
-        if (iptc is not null) Iptc(iptc, stdout);
-        XmpPacket? xmp = null;
-        try { xmp = document.ReadXmp(); }
-        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
-        if (xmp is not null) Xmp(xmp, stdout);
+        if (exif is not null)
+        {
+            if (!exifInDetail) throw exif;
+            refused.Add("exif-refused:" + exif.Code);
+        }
+        // In a CR3 the note is a box of its own, not the value of a tag: the reference prints no
+        // rows for where it starts and how it is ordered.
+        Exif(file.Exif, stdout, noteRows: file.Format != MetadataFormat.Cr3);
+        if (iptc is not null)
+        {
+            if (!othersInDetail) throw iptc;
+            refused.Add("iptc-refused:" + iptc.Code);
+        }
+        if (file.Iptc is not null) Iptc(file.Iptc, stdout);
+        if (xmp is not null)
+        {
+            // A WebP gets here with its EXIF rows written, and they stand.
+            if (!othersInDetail) throw xmp;
+            refused.Add("xmp-refused:" + xmp.Code);
+        }
+        if (file.Xmp is not null) Xmp(file.Xmp, stdout);
         Done(stdout, refused);
-    }
-
-    private static void Png(string path, StreamWriter stdout, long length)
-    {
-        if (!WithinBudget(length, stdout)) return;
-        using PngMetadataDocument document = PngMetadataDocument.Open(path);
-        // As for a JPEG: each kind is read on its own, and a refusal travels in the detail of the status.
-        var refused = new List<string>();
-        ExifMetadata? exif = null;
-        try { exif = document.ReadExif(); }
-        catch (MetadataException failure) { refused.Add("exif-refused:" + failure.Code); }
-        Exif(exif, stdout);
-        IptcPacket? iptc = null;
-        try { iptc = document.ReadIptc(); }
-        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
-        if (iptc is not null) Iptc(iptc, stdout);
-        XmpPacket? xmp = null;
-        try { xmp = document.ReadXmp(); }
-        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
-        if (xmp is not null) Xmp(xmp, stdout);
-        Done(stdout, refused);
-    }
-
-    private static void WebP(string path, StreamWriter stdout, long length)
-    {
-        if (!WithinBudget(length, stdout)) return;
-        using WebPMetadataDocument document = WebPMetadataDocument.Open(path);
-        Exif(document.ReadExif(), stdout);
-        if (document.ReadXmp() is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
-    }
-
-    private static void Tiff(string path, StreamWriter stdout, long length)
-    {
-        if (!WithinBudget(length, stdout)) return;
-        byte[] file = File.ReadAllBytes(path);
-        ExifMetadata exif = TiffExif.Read(file);
-        Exif(exif, stdout);
-        // IPTC or XMP that its reader refuses does not take the EXIF of the file with it: the rows
-        // already written stand, and each refusal travels in the detail of the status.
-        var refused = new List<string>();
-        IptcPacket? iptc = null;
-        try { iptc = TiffIptc.Read(file); }
-        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
-        if (iptc is not null) Iptc(iptc, stdout);
-        XmpPacket? xmp = null;
-        try { xmp = XmlPacket(exif); }
-        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
-        if (xmp is not null) Xmp(xmp, stdout);
-        Done(stdout, refused);
-    }
-
-    /// <summary>The XMP packet a TIFF-based file stores as the value of tag 700 in its primary directory.</summary>
-    private static XmpPacket? XmlPacket(ExifMetadata exif)
-    {
-        if (!exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x02BC), out ExifEntry? entry) || entry.Value.ByteLength == 0)
-            return null;
-        byte[] packet = new byte[entry.Value.ByteLength];
-        entry.Value.CopyRawTo(packet);
-        return XmpPacket.Parse(packet);
     }
 
     private static void Exv(string path, StreamWriter stdout, long length)
@@ -259,57 +220,6 @@ internal static class Program
         if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
         if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
         Done(stdout);
-    }
-
-    private static void Bmff(string path, StreamWriter stdout, long length)
-    {
-        if (!WithinBudget(length, stdout)) return;
-        BmffMetadata metadata = BmffMetadata.Read(File.ReadAllBytes(path));
-        Exif(metadata.Exif, stdout);
-        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
-    }
-
-    private static void Cr3(string path, StreamWriter stdout, long length)
-    {
-        if (!WithinBudget(length, stdout)) return;
-        Cr3Metadata metadata = Cr3Metadata.Read(File.ReadAllBytes(path));
-        // The note is a box of its own here, not the value of a tag: the reference prints no rows
-        // for where it starts and how it is ordered.
-        Exif(metadata.Exif, stdout, noteRows: false);
-        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
-    }
-
-    private static void Jxl(string path, StreamWriter stdout, long length)
-    {
-        if (!WithinBudget(length, stdout)) return;
-        // A jumb box is only a fact about the file, and the record grammar has no line for it.
-        JxlMetadata metadata = JxlMetadata.Read(File.ReadAllBytes(path));
-        Exif(metadata.Exif, stdout);
-        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
-        Done(stdout);
-    }
-
-    private static void Psd(string path, StreamWriter stdout, long length)
-    {
-        if (!WithinBudget(length, stdout)) return;
-        PsdMetadata metadata = PsdMetadata.Read(File.ReadAllBytes(path));
-        // As for a TIFF: a resource its reader refuses leaves the rows of the other kinds in place.
-        var refused = new List<string>();
-        ExifMetadata? exif = null;
-        try { exif = metadata.ReadExif(); }
-        catch (MetadataException failure) { refused.Add("exif-refused:" + failure.Code); }
-        Exif(exif, stdout);
-        IptcPacket? iptc = null;
-        try { iptc = metadata.ReadIptc(); }
-        catch (MetadataException failure) { refused.Add("iptc-refused:" + failure.Code); }
-        if (iptc is not null) Iptc(iptc, stdout);
-        XmpPacket? xmp = null;
-        try { xmp = metadata.ReadXmp(); }
-        catch (MetadataException failure) { refused.Add("xmp-refused:" + failure.Code); }
-        if (xmp is not null) Xmp(xmp, stdout);
-        Done(stdout, refused);
     }
 
     private static void Jp2(string path, StreamWriter stdout, long length)
