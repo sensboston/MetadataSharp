@@ -6,6 +6,7 @@ using MetadataSharp.Formats;
 using MetadataSharp.Formats.Jpeg;
 using MetadataSharp.Formats.Tiff;
 using MetadataSharp.Tests.Jpeg;
+using MetadataSharp.Tests.Tiff;
 using Xunit;
 using static MetadataSharp.Tests.MakerNotes.MakerNoteFixture;
 
@@ -48,11 +49,26 @@ public sealed class MakerNoteWriteTests
     private static void AssertRestKept(byte[] before, byte[] after, params string[] named)
     {
         Assert.Equal(before.Length, after.Length);
+        AssertRestKeptAndGrown(before, after, named);
+    }
+
+    /// <summary>As <see cref="AssertRestKept"/>, for an output with appended bytes: what the source had is where it was.</summary>
+    private static void AssertRestKeptAndGrown(byte[] before, byte[] after, params string[] named)
+    {
+        Assert.True(after.Length >= before.Length);
         MakerNote old = Note(before), now = Note(after);
         Assert.Equal(old.Format, now.Format);
         Assert.Equal(old.Offset, now.Offset);
         Assert.Equal(old.ByteOrder, now.ByteOrder);
-        Assert.Equal(before.AsSpan(0, (int)old.Offset).ToArray(), after.AsSpan(0, (int)now.Offset).ToArray());
+        // Before the note nothing changed but, for a note that grew, the count of the tag that holds it
+        // (the fixture has that entry right before the note: count at 12 bytes before it).
+        byte[] head = before.AsSpan(0, (int)old.Offset).ToArray(), headNow = after.AsSpan(0, (int)now.Offset).ToArray();
+        if (NoteLength(before) != NoteLength(after))
+        {
+            head.AsSpan(head.Length - 12, 4).Clear();
+            headNow.AsSpan(headNow.Length - 12, 4).Clear();
+        }
+        Assert.Equal(head, headNow);
         foreach (MakerNoteTarget target in MakerNoteKeys.Enumerate(old))
         {
             if (named.Any(path => path == target.Path || path.StartsWith(target.Path + "/", StringComparison.Ordinal) ||
@@ -85,7 +101,7 @@ public sealed class MakerNoteWriteTests
         {
             edit.SetByKey(Key(block, Owner), AsciiValue("NEW OWNER!"));
             edit.SetTextByKey(Key(block, Number), "9");
-            edit.SetByKey(Key(block, Triple), LongValue(1, 2, 0x01020304));
+            edit.SetByKey(Key(block, Triple), LongValue(1, 2, 0x01020304), allowUnnamed: true);
         });
         bool noteBig = Note(block).ByteOrder == Endianness.BigEndian;
         Assert.Equal(Zero("NEW OWNER!"), Raw(output, Owner));
@@ -103,7 +119,7 @@ public sealed class MakerNoteWriteTests
         {
             edit.SetTextByKey(Key(block, Owner), "ME");
             edit.SetTextByKey(Key(block, First), "SHORTER");
-            edit.SetByKey(Key(block, Triple), LongValue(5, 6));
+            edit.SetByKey(Key(block, Triple), LongValue(5, 6), allowUnnamed: true);
         });
         bool noteBig = Note(block).ByteOrder == Endianness.BigEndian;
         Assert.Equal(Zero("ME"), Raw(output, Owner));
@@ -130,15 +146,104 @@ public sealed class MakerNoteWriteTests
         AssertRestKept(block, output, Number);
     }
 
+    private static readonly ExifTagKey Holder = new(ExifDirectoryKind.Exif, 0x927C);
+
+    private static int NoteLength(byte[] block)
+    {
+        Assert.True(Exif(block).TryGetEntry(Holder, out ExifEntry? entry));
+        return entry!.Value.ByteLength;
+    }
+
     [Theory]
     [MemberData(nameof(Layouts))]
-    public void AValueThatGrowsIsRefused(string vendor, bool big)
+    public void AValueThatGrowsIsAppendedWhereTheLayoutAllowsIt(string vendor, bool big)
     {
         byte[] block = Block(vendor, big);
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetTextByKey(Key(block, Owner), "OWNER NAME AND MORE"))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetByKey(Key(block, Number), ShortValue(1, 2, 3)))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetByKey(Key(block, Triple), LongValue(1, 2, 3, 4)))));
+        Vendor layout = Find(vendor);
+        const string longer = "OWNER NAME AND A GOOD DEAL MORE";
+        if (!MakerNoteKeys.Grows(layout.Format))
+        {
+            Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetTextByKey(Key(block, Owner), longer))));
+            return;
+        }
+        byte[] output = Apply(block, edit => edit.SetTextByKey(Key(block, Owner), longer));
+        bool noteBig = Note(block).ByteOrder == Endianness.BigEndian;
+        Assert.Equal(Zero(longer), Raw(output, Owner));
+        AssertRestKeptAndGrown(block, output, Owner);
+        int added = output.Length - block.Length;
+        Assert.InRange(added, 32, 33);
+        Assert.DoesNotContain("OWNER NAME\0", Encoding.Latin1.GetString(output), StringComparison.Ordinal);
+        // A note that counts from the TIFF header keeps its length: the value lies after it. One
+        // that counts from itself grows by the value, which lies in it.
+        Assert.Equal(NoteLength(block) + (layout.Base == 0 ? 0 : added), NoteLength(output));
+        Assert.Equal(output.Length - 32, Encoding.Latin1.GetString(output).IndexOf(longer, StringComparison.Ordinal));
+
+        // Again, and another tag, on the result: every appended value is where its entry says.
+        byte[] again = Apply(output, edit =>
+        {
+            edit.SetTextByKey(Key(output, Owner), longer + " AND STILL MORE");
+            edit.SetByKey(Key(output, Number), ShortValue(1, 2, 3));
+            edit.SetByKey(Key(output, Triple), LongValue(9, 8, 7, 6, 5), allowUnnamed: true);
+        });
+        Assert.Equal(Zero(longer + " AND STILL MORE"), Raw(again, Owner));
+        Assert.Equal((byte[])[.. B16(1, noteBig), .. B16(2, noteBig), .. B16(3, noteBig)], Raw(again, Number));
+        Assert.Equal(20, Raw(again, Triple)!.Length);
+        AssertRestKeptAndGrown(output, again, Owner, Number, Triple);
+        // And what was appended is edited in place like any value.
+        byte[] inPlace = Apply(again, edit => edit.SetTextByKey(Key(again, Owner), "BACK TO A SHORT ONE"));
+        Assert.Equal(Zero("BACK TO A SHORT ONE"), Raw(inPlace, Owner));
+        AssertRestKept(again, inPlace, Owner);
     }
+
+    [Theory]
+    [MemberData(nameof(Layouts))]
+    public void ANoteThatCountsFromItselfGrowsOnlyAtTheEndOfTheBlock(string vendor, bool big)
+    {
+        Vendor layout = Find(vendor);
+        if (!MakerNoteKeys.Grows(layout.Format)) return;
+        // Something lies after the note.
+        byte[] block = [.. Block(vendor, big), 0xEE, 0xEE, 0xEE, 0xEE];
+        const string longer = "OWNER NAME AND A GOOD DEAL MORE";
+        if (layout.Base == 0)
+        {
+            byte[] output = Apply(block, edit => edit.SetTextByKey(Key(block, Owner), longer));
+            Assert.Equal(Zero(longer), Raw(output, Owner));
+            Assert.Equal(NoteLength(block), NoteLength(output));
+            AssertRestKeptAndGrown(block, output, Owner);
+            Assert.Equal(block.AsSpan(block.Length - 4).ToArray(), output.AsSpan(block.Length - 4, 4).ToArray());
+        }
+        else
+            Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetTextByKey(Key(block, Owner), longer))));
+    }
+
+    [Theory]
+    [InlineData("Fujifilm")]
+    [InlineData("Sony2")]
+    [InlineData("Minolta")]
+    public void ATagWithoutANameThatMayBeAnAddressIsEditedOnlyWhenAskedTo(string vendor)
+    {
+        byte[] block = Tiff3(vendor);
+        foreach (string key in new[] { Key(block, "6003"), Key(block, "6001"), Key(block, "6002") })
+        {
+            Assert.Contains(".0x", key, StringComparison.Ordinal);
+            Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.SetTextByKey(key, "1 2 3"))));
+            Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.RemoveByKey(key))));
+            byte[] output = Apply(block, edit => edit.SetTextByKey(key, "1 2 3", allowUnnamed: true));
+            Assert.NotEqual(block, output);
+            byte[] removed = Apply(block, edit => edit.RemoveByKey(key, allowUnnamed: true));
+            Assert.Equal(3, Note(removed).Entries.Count);
+        }
+        // Text and a number of two bytes are no address.
+        byte[] text = Apply(block, edit => edit.SetTextByKey(Key(block, Owner), "A NEW NAME"));
+        Assert.Equal(Zero("A NEW NAME"), Raw(text, Owner));
+    }
+
+    /// <summary>A note with a LONG, an SLONG and an UNDEFINED tag of three elements each, none with a name, and a text.</summary>
+    private static byte[] Tiff3(string vendor) => Build(Find(vendor), false, order =>
+    [
+        Ascii(0x0009, "OWNER NAME"), new E(0x6001, 9, 3, [.. B32(4, order), .. B32(5, order), .. B32(6, order)]),
+        Undefined(0x6002, [7, 8, 9]), Long(0x6003, order, 100, 200, 300),
+    ]);
 
     [Theory]
     [MemberData(nameof(Layouts))]
@@ -170,11 +275,11 @@ public sealed class MakerNoteWriteTests
         Assert.Null(Raw(second, First));
         Assert.DoesNotContain("FIRST VALUE", Encoding.Latin1.GetString(second), StringComparison.Ordinal);
         AssertRestKept(output, second, First);
-        byte[] third = Apply(second, edit => { edit.RemoveByKey(Key(second, Owner)); edit.SetTextByKey(Key(second, Triple), "7 8 9"); });
+        byte[] third = Apply(second, edit => { edit.RemoveByKey(Key(second, Owner)); edit.SetTextByKey(Key(second, Triple), "7 8 9", allowUnnamed: true); });
         Assert.Equal(new ushort[] { 0x0008 }, Note(third).Entries.Select(entry => entry.TagId).ToArray());
 
         // The last tag stays: a directory without tags does not read as one.
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(third, edit => edit.RemoveByKey(Key(third, Triple)))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(third, edit => edit.RemoveByKey(Key(third, Triple), allowUnnamed: true))));
     }
 
     [Theory]
@@ -287,6 +392,9 @@ public sealed class MakerNoteWriteTests
         Assert.Null(Raw(output, Number));
         AssertRestKept(block, output, Owner, First, Number);
         Assert.Equal(block.AsSpan(block.Length - 8).ToArray(), output.AsSpan(output.Length - 8).ToArray());
+        // Its offsets count from where the note was: nothing is appended for it.
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature,
+            Refusal(() => Apply(block, edit => edit.SetTextByKey("Exif.Canon.OwnerName", "OWNER NAME AND A GOOD DEAL MORE"))));
     }
 
     [Theory]
@@ -461,6 +569,159 @@ public sealed class MakerNoteWriteTests
         Assert.Equal(Raw(block, Triple), triple!.Value.RawBytes.ToArray());
     }
 
+    [Theory]
+    [MemberData(nameof(Layouts))]
+    public void AJpegIsSavedWithAGrownValue(string vendor, bool big)
+    {
+        if (!MakerNoteKeys.Grows(Find(vendor).Format)) return;
+        byte[] block = Block(vendor, big);
+        const string longer = "A NAME THAT IS LONGER THAN THE PLACE IT HAD";
+        var edit = new ExifEdit();
+        edit.SetTextByKey(Key(block, Owner), longer);
+        edit.SetTextByKey("Exif.Image.Artist", "A photographer");
+        byte[] output = Save(Jpeg(block), edit);
+        ExifMetadata exif = ImageMetadata.Read(output).Exif!;
+        MakerNote note = exif.MakerNote!;
+        Assert.Equal(Note(block).Offset, note.Offset);
+        Assert.True(note.TryGetEntry(0x0009, out MakerNoteEntry? owner));
+        Assert.Equal(Zero(longer), owner!.Value.RawBytes.ToArray());
+        Assert.True(note.TryGetEntry(0x0006, out MakerNoteEntry? first));
+        Assert.Equal(Zero("FIRST VALUE"), first!.Value.RawBytes.ToArray());
+        Assert.True(exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B), out _));
+
+        // The file is edited again as any file is: the appended value stays what it is.
+        var second = new ExifEdit();
+        second.SetTextByKey("Exif.Image.Software", "A program with a name");
+        second.SetTextByKey(note.GetKey(first!), "FIRST AGAIN");
+        MakerNote later = ImageMetadata.Read(Save(output, second)).Exif!.MakerNote!;
+        Assert.True(later.TryGetEntry(0x0009, out owner));
+        Assert.Equal(Zero(longer), owner!.Value.RawBytes.ToArray());
+        Assert.True(later.TryGetEntry(0x0006, out first));
+        Assert.Equal(Zero("FIRST AGAIN"), first!.Value.RawBytes.ToArray());
+    }
+
+    [Fact]
+    public void ABlockOverTheSegmentLimitIsRefusedAsTooLarge()
+    {
+        byte[] block = Block("Canon", false);
+        var edit = new ExifEdit();
+        edit.SetTextByKey("Exif.Canon.OwnerName", new string('A', 66_000));
+        MetadataErrorCode code = Refusal(() => Save(Jpeg(block), edit));
+        Assert.True(code is MetadataErrorCode.ExifTooLarge or MetadataErrorCode.LimitExceeded, code.ToString());
+    }
+
+    [Fact]
+    public void TheNoteGivesTheKeysOfItsTags()
+    {
+        byte[] block = Build(Find("Canon"), false, order =>
+            [Short(0x0001, order, 24, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), Ascii(0x0009, "OWNER NAME")]);
+        MakerNote note = Note(block);
+        Assert.True(note.TryGetEntry(0x0009, out MakerNoteEntry? owner));
+        Assert.True(note.TryGetEntry(0x0001, out MakerNoteEntry? settings));
+        Assert.Equal("Exif.Canon.OwnerName", note.GetKey(owner!));
+        Assert.Equal("Exif.Canon.CameraSettings", note.GetKey(settings!));
+        MakerNoteField quality = settings!.Fields.Single(field => field.Index == 3);
+        Assert.Equal("Exif.CanonCs.Quality", note.GetKey(settings, quality));
+        Assert.Throws<ArgumentException>(() => note.GetKey(owner!, quality));
+        Assert.Throws<ArgumentException>(() => Note(Block("Sigma", false)).GetKey(owner!));
+    }
+
+    // ---- TIFF-based files ---------------------------------------------------------------------------------
+
+    /// <summary>The raw layouts of the write tests, each with a MakerNote that holds a text of eight bytes.</summary>
+    public static IEnumerable<object[]> RawFiles()
+    {
+        foreach (string name in new[] { "nef", "cr2", "arw", "pef", "orf", "tiff-camera" })
+        {
+            yield return [name, false];
+            yield return [name, true];
+        }
+    }
+
+    private static byte[] SaveFile(byte[] file, ExifEdit edit)
+    {
+        using TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(new MemoryStream(file));
+        using var output = new MemoryStream();
+        document.SaveExif(output, edit);
+        return output.ToArray();
+    }
+
+    private static MakerNoteTarget TextOf(byte[] file)
+    {
+        MakerNote note = ImageMetadata.Read(file).Exif!.MakerNote!;
+        return MakerNoteKeys.Enumerate(note).First(target => target.Value.FieldType == TiffFieldType.Ascii && target.Value.Count == 8);
+    }
+
+    [Theory]
+    [MemberData(nameof(RawFiles))]
+    public void ATiffBasedFileIsSavedWithATagOfTheNoteChangedInPlace(string name, bool big)
+    {
+        TiffBasedFixture fixture = TiffBasedFixture.Create(name, big);
+        byte[] file = fixture.Bytes;
+        MakerNoteTarget target = TextOf(file);
+        var edit = new ExifEdit();
+        edit.SetTextByKey(target.Key, "CHANGED");
+        byte[] output = SaveFile(file, edit);
+
+        Assert.Equal(file.Length, output.Length);
+        (int start, int length) = fixture.Note;
+        Assert.Equal(file.AsSpan(0, start).ToArray(), output.AsSpan(0, start).ToArray());
+        Assert.Equal(file.AsSpan(start + length).ToArray(), output.AsSpan(start + length).ToArray());
+        Assert.NotEqual(file.AsSpan(start, length).ToArray(), output.AsSpan(start, length).ToArray());
+        MakerNoteTarget now = TextOf(output);
+        Assert.Equal(target.Key, now.Key);
+        Assert.Equal(Zero("CHANGED"), now.Value.RawBytes.ToArray());
+        MakerNote before = ImageMetadata.Read(file).Exif!.MakerNote!, after = ImageMetadata.Read(output).Exif!.MakerNote!;
+        Assert.Equal(before.Offset, after.Offset);
+        foreach (MakerNoteTarget other in MakerNoteKeys.Enumerate(before))
+            if (other.Path != target.Path)
+                Assert.Equal(other.Value.RawBytes.ToArray(), MakerNoteKeys.Enumerate(after).First(same => same.Path == other.Path).Value.RawBytes.ToArray());
+
+        // Shorter, into the entry; the bytes the text had are cleared.
+        var shorter = new ExifEdit();
+        shorter.SetTextByKey(target.Key, "AB");
+        byte[] small = SaveFile(file, shorter);
+        Assert.Equal(file.Length, small.Length);
+        Assert.Equal(file.AsSpan(start + length).ToArray(), small.AsSpan(start + length).ToArray());
+        Assert.Equal(Zero("AB"), MakerNoteKeys.Enumerate(ImageMetadata.Read(small).Exif!.MakerNote!).First(same => same.Path == target.Path).Value.RawBytes.ToArray());
+    }
+
+    [Theory]
+    [MemberData(nameof(RawFiles))]
+    public void ATiffBasedFileTakesATagOfTheNoteAndAStandardTagInOneSave(string name, bool big)
+    {
+        TiffBasedFixture fixture = TiffBasedFixture.Create(name, big);
+        byte[] file = fixture.Bytes;
+        MakerNoteTarget target = TextOf(file);
+        var edit = new ExifEdit();
+        edit.SetTextByKey(target.Key, "CHANGED");
+        edit.SetTextByKey("Exif.Photo.DateTimeOriginal", "2031:12:30 23:59:58");
+        edit.SetTextByKey("Exif.Image.Artist", "A photographer with a long name");
+        byte[] output = SaveFile(file, edit);
+
+        ExifMetadata exif = ImageMetadata.Read(output).Exif!;
+        Assert.Equal(Zero("CHANGED"), TextOf(output).Value.RawBytes.ToArray());
+        Assert.True(exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Exif, 0x9003), out ExifEntry? date));
+        Assert.Equal(Zero("2031:12:30 23:59:58"), date!.Value.RawBytes.ToArray());
+        Assert.True(exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B), out _));
+        foreach ((int start, int length) in fixture.Image)
+            Assert.Equal(file.AsSpan(start, length).ToArray(), output.AsSpan(start, length).ToArray());
+    }
+
+    [Theory]
+    [MemberData(nameof(RawFiles))]
+    public void ATiffBasedFileRefusesWhatWouldAppendForTheNote(string name, bool big)
+    {
+        byte[] file = TiffBasedFixture.Create(name, big).Bytes;
+        MakerNoteTarget target = TextOf(file);
+        var grow = new ExifEdit();
+        grow.SetTextByKey(target.Key, "LONGER THAN IT WAS");
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => SaveFile(file, grow)));
+        var absent = new ExifEdit();
+        absent.SetTextByKey(target.Key[..target.Key.LastIndexOf('.')] + ".0x6666", "1");
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => SaveFile(file, absent)));
+    }
+
     [Fact]
     public void AFileWithoutANoteAndAContainerThatIsNotABlockRefuse()
     {
@@ -472,7 +733,7 @@ public sealed class MakerNoteWriteTests
         byte[] unknown = Build(false, "ACME CAMERAS", "MODEL ONE", start => Ifd(false, start, 0, true, Common(false)));
         Assert.Null(Exif(unknown).MakerNote);
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Save(Jpeg(unknown), edit)));
-        // A TIFF-based file and a BMFF item plan their changes through here.
+        // A BMFF item plans its changes through here.
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => ExifBlockEditor.AddChanges(edit.Snapshot(), Endianness.LittleEndian, [])));
     }
 

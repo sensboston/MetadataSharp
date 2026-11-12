@@ -548,3 +548,48 @@ jobs:
           python tools/reference/operations_parity.py artifacts/parity/exiv2/test/data artifacts/parity/operations \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
             --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+
+  # MakerNote tags that this library sets (in place, and appended where a value grows), in copies of
+  # the JPEG and raw files of the pinned corpus; the pinned tool has to print the key with the value
+  # that was set and every other key as before (tools/reference/makernote_parity.py).
+  makernote-parity:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    name: Exiv2 0.28.9 / MakerNote edit parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      LC_ALL: C
+      TZ: UTC
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the fixture generator
+        run: dotnet build tools/MetadataSharp.ReferenceFixture/MetadataSharp.ReferenceFixture.csproj --configuration Release -f net10.0
+      - name: Checkout pinned upstream corpus (CI-time fetch; never vendored, never executed)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/parity/exiv2
+          persist-credentials: false
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/parity/exiv2.tar.gz https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          echo "10041994  artifacts/parity/exiv2.tar.gz" | python -c "import sys,os; n,f=sys.stdin.read().split(); assert os.path.getsize(f)==int(n), 'unexpected size'"
+          tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
+          artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      - name: MakerNote tags set by this library, read back by the pinned tool (exiv2 -PEkv)
+        shell: bash
+        run: |
+          python tools/reference/makernote_parity.py artifacts/parity/exiv2/test/data artifacts/parity/makernote \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"

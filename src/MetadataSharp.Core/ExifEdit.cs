@@ -268,7 +268,7 @@ public sealed class ExifEdit
     internal EditSnapshot Snapshot() => new(removeAll, new Dictionary<ExifTagKey, ExifValue?>(changes)) { Thumbnail = thumbnail, ThumbnailRemoved = removeThumbnail, MakerNote = makerNote.ToArray() };
 
     /// <summary>One change of a tag of the MakerNote: a value, or text to read in the type the tag has in the file, or neither to remove the tag.</summary>
-    internal sealed record MakerNoteChange(string Key, ExifValue? Value, string? Text);
+    internal sealed record MakerNoteChange(string Key, ExifValue? Value, string? Text, bool Unchecked = false);
 
     // ---- Keys as text, and the tags of the MakerNote ------------------------------------------------------
 
@@ -291,31 +291,40 @@ public sealed class ExifEdit
     /// <para>The MakerNote is changed where it is and never moves. The key has to name something the
     /// note of the file holds: a tag that is not there is not added. The value has the field type the
     /// tag has in the file; a field of an array also has its count. A value no longer than the one
-    /// stored is written in its place; a longer one is refused. An array that is stored enciphered
-    /// (Nikon ShotInfo, ColorBalance and LensData; several Sony arrays) is deciphered, changed and
-    /// enciphered again with the key it had.</para>
+    /// stored is written in its place. A longer one is appended in the EXIF block of a JPEG, PNG or
+    /// WebP file, where the layout of the note allows it: at the end of the block for a note whose
+    /// offsets count from the TIFF header, at the end of the note for one whose offsets count from the
+    /// note, and then only when the note is the last thing in the block; otherwise it is refused. An
+    /// array that is stored enciphered (Nikon ShotInfo, ColorBalance and LensData; several Sony
+    /// arrays) is deciphered, changed and enciphered again with the key it had.</para>
     /// <para>Not changed as values: a tag that addresses data or a directory and the length that goes
     /// with it (a preview, a sub-directory), and the serial number and shutter count of a Nikon note,
-    /// which are the key of its cipher.</para>
+    /// which are the key of its cipher. A tag this library has no name for (its key ends in
+    /// <c>0x</c> and four digits) of the type LONG, SLONG or UNDEFINED may be such an address without
+    /// this library knowing: it is changed only with <paramref name="allowUnnamed"/>, as
+    /// <see cref="SetUnchecked"/> writes a standard tag as given.</para>
     /// <para>The note is read again after the change and before anything is written: every tag and
     /// field that was not named has to read byte for byte as before, and the named ones as set.</para>
     /// <para>What the documents refuse the edit with:
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a file without a MakerNote this library
-    /// decodes, a key the note does not hold, a value of another field type, a value longer than its
-    /// place, and a container whose MakerNote is not written (TIFF-based and BMFF files);
+    /// decodes, a key the note does not hold, a value of another field type, a value that grows where
+    /// it cannot be appended (always in a TIFF-based file), and a BMFF file;
     /// <see cref="MetadataErrorCode.TagNotEditable"/> for the tags above;
     /// <see cref="MetadataErrorCode.UnsafeRelocation"/> when the note does not read back as planned.</para>
     /// </remarks>
+    /// <param name="key">The key: <c>Exif.Image.Artist</c>, <c>Exif.Canon.OwnerName</c>, <c>Exif.CanonCs.Quality</c>.</param>
+    /// <param name="value">The value.</param>
+    /// <param name="allowUnnamed">True to change a MakerNote tag without a name whose type may hold an address. Nothing for a standard key.</param>
     /// <exception cref="ArgumentException">A key that is neither, a value without elements, or what <see cref="Set(ExifTagKey, ExifValue)"/> refuses.</exception>
     /// <exception cref="MetadataException"><see cref="MetadataErrorCode.TagNotEditable"/> for a standard tag <see cref="IsEditable"/> excludes.</exception>
-    public void SetByKey(string key, ExifValue value)
+    public void SetByKey(string key, ExifValue value, bool allowUnnamed = false)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
         if (Operations.MetadataKeys.TryParseExif(key, out ExifTagKey standard)) { Set(standard, value); return; }
         CheckMakerNoteKey(key);
         if (value.Count == 0) throw new ArgumentException("A value holds at least one element.", nameof(value));
-        StoreMakerNote(new(key, value, null));
+        StoreMakerNote(new(key, value, null, allowUnnamed));
     }
 
     /// <summary>
@@ -323,12 +332,12 @@ public sealed class ExifEdit
     /// is, numbers separated by blanks, rationals as <c>1/3</c>. A tag of a standard directory is read
     /// in the first field type its definition names (ASCII for a tag without one); a tag of the
     /// MakerNote in the field type it has in the file, when the edit is written. Otherwise as
-    /// <see cref="SetByKey(string, ExifValue)"/>.
+    /// <see cref="SetByKey(string, ExifValue, bool)"/>.
     /// </summary>
     /// <exception cref="ArgumentException">A key that is neither, or text that is not a value of the type.</exception>
     /// <exception cref="FormatException">A number that does not read as one of the type.</exception>
     /// <exception cref="OverflowException">A number outside the range of the type.</exception>
-    public void SetTextByKey(string key, string text)
+    public void SetTextByKey(string key, string text, bool allowUnnamed = false)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(text);
@@ -339,7 +348,7 @@ public sealed class ExifEdit
             return;
         }
         CheckMakerNoteKey(key);
-        StoreMakerNote(new(key, null, text));
+        StoreMakerNote(new(key, null, text, allowUnnamed));
     }
 
     /// <summary>
@@ -348,15 +357,15 @@ public sealed class ExifEdit
     /// it move up, the count drops by one, the offset of the next directory keeps its value, and the
     /// twelve bytes that are freed and the bytes of the value are cleared. A field of an array is not
     /// removed, since the array has no place for fewer; nor is the last tag of a directory. The rest
-    /// is as in <see cref="SetByKey(string, ExifValue)"/>.
+    /// is as in <see cref="SetByKey(string, ExifValue, bool)"/>.
     /// </summary>
     /// <exception cref="ArgumentException">A key that is neither.</exception>
-    public void RemoveByKey(string key)
+    public void RemoveByKey(string key, bool allowUnnamed = false)
     {
         ArgumentNullException.ThrowIfNull(key);
         if (Operations.MetadataKeys.TryParseExif(key, out ExifTagKey standard)) { Remove(standard); return; }
         CheckMakerNoteKey(key);
-        StoreMakerNote(new(key, null, null));
+        StoreMakerNote(new(key, null, null, allowUnnamed));
     }
 
     private void CheckMakerNoteKey(string key)

@@ -104,10 +104,21 @@ internal static class ExifBlockEditor
     /// </exception>
     internal static byte[]? Edit(byte[] block, long sourceBase, ExifEdit.EditSnapshot edit, MetadataLimits limits)
     {
-        // The MakerNote first, in place: the block keeps its length, and the tag edit that follows
-        // moves nothing of it.
-        byte[]? noted = edit.MakerNote.Count == 0 ? null : MakerNoteWriter.Apply(block, edit.MakerNote, limits);
-        if (noted is not null && noted.AsSpan().SequenceEqual(block)) noted = null;
+        // The MakerNote first: nothing of the block moves (a value that grows is appended), and the
+        // tag edit that follows moves nothing either.
+        byte[]? noted = null;
+        if (edit.MakerNote.Count != 0)
+        {
+            MakerNoteWriter.Result result = MakerNoteWriter.Apply(block, edit.MakerNote, limits, wholeFile: false);
+            if (!result.Output.AsSpan().SequenceEqual(block))
+            {
+                if (result.Output.Length > ExifTiffReader.SegmentCeiling)
+                    throw new MetadataException(MetadataErrorCode.ExifTooLarge, "The EXIF block with the grown MakerNote value exceeds the limit of a segment.");
+                TiffBasedWriteVerifier.MakerNote(block, TiffBasedFileMap.Read(block, limits, MaxAccountedRanges), result.Output,
+                    result.Ranges, limits, MaxAccountedRanges, wholeFile: false);
+                noted = result.Output;
+            }
+        }
         byte[]? output = noted is not null && edit.Changes.Count == 0 ? noted : EditTags(noted ?? block, sourceBase, edit, limits) ?? noted;
         if (noted is not null) CheckMakerNote(noted, output!, limits);
         if (!edit.HasThumbnailChange) return output;
@@ -117,7 +128,7 @@ internal static class ExifBlockEditor
 
     /// <summary>The MakerNote is changed where the EXIF block is a unit of its own.</summary>
     internal static MetadataException MakerNoteElsewhere() => new(MetadataErrorCode.UnsupportedFeature,
-        "Tags of the MakerNote are changed in the EXIF block of a JPEG, PNG or WebP file: in this file they are not written.");
+        "Tags of the MakerNote are changed in a JPEG, PNG, WebP or TIFF-based file: in this file they are not written.");
 
     /// <summary>After the tag edit the MakerNote still lies where it did and reads as the change left it.</summary>
     private static void CheckMakerNote(byte[] noted, byte[] output, MetadataLimits limits)

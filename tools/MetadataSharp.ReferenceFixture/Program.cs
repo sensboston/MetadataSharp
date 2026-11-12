@@ -1740,6 +1740,98 @@ else if (args.Length == 2 && args[0] == "sync-parity")
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=Sync conversion defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
 }
+else if (args.Length == 2 && args[0] == "makernote-parity")
+{
+    // Edits of MakerNote tags on the files the comparer (tools/reference/makernote_parity.py) prepared
+    // in the directory: for every sNNNNN.EXT, up to three text tags and two SHORT tags of the note are
+    // set, each in a copy of its own, NAME.N.ours.EXT. A text is set to one of its own length ("same")
+    // and to a longer one ("grow"); a number to another number ("short"). Nothing is compared here.
+    // ours.tsv lists NAME, N, the operation, the key, the status ("written" or "refused CODE") and
+    // the value the tool has to print for the key. An exception that is no refusal is a defect.
+    string directory = args[1];
+    var manifest = new List<string>();
+    var crashes = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    string Flat(string text) => text.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+
+    foreach (string path in Directory.EnumerateFiles(directory, "s*.*").Order(StringComparer.Ordinal))
+    {
+        string name = Path.GetFileNameWithoutExtension(path), extension = Path.GetExtension(path).TrimStart('.');
+        if (name.Contains('.') || extension is "tsv" or "txt") continue;
+        byte[] source = File.ReadAllBytes(path);
+        MakerNote? note;
+        try { note = MetadataSharp.Formats.ImageMetadata.Read(source).Exif?.MakerNote; }
+        catch (MetadataException) { note = null; }
+        if (note is null)
+        {
+            manifest.Add($"{name}\t0\tnone\t\tno note\t");
+            continue;
+        }
+        bool jpeg = extension is "jpg";
+        int number = 0;
+        void Run(string operation, string key, string text)
+        {
+            number++;
+            string status;
+            try
+            {
+                var edit = new ExifEdit();
+                edit.SetTextByKey(key, text);
+                var output = new MemoryStream();
+                if (jpeg)
+                {
+                    using JpegMetadataDocument document = JpegMetadataDocument.Open(new MemoryStream(source));
+                    document.Save(output, edit);
+                }
+                else
+                {
+                    using var document = MetadataSharp.Formats.Tiff.TiffBasedMetadataDocument.Open(new MemoryStream(source));
+                    document.SaveExif(output, edit);
+                }
+                File.WriteAllBytes(Path.Combine(directory, $"{name}.{number}.ours.{extension}"), output.ToArray());
+                status = "written";
+            }
+            catch (MetadataException refusal) { status = "refused " + refusal.Code; }
+            catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+            {
+                crashes.Add($"{name} {operation} {key}: {defect.GetType().Name}: {defect.Message}");
+                return;
+            }
+            manifest.Add($"{name}\t{number}\t{operation}\t{key}\t{status}\t{Flat(text)}");
+            string counted = $"{note.Format} {operation} {status}";
+            outcomes[counted] = outcomes.GetValueOrDefault(counted) + 1;
+        }
+
+        int texts = 0, numbers = 0;
+        foreach (MakerNoteEntry entry in note.Entries)
+        {
+            string key;
+            try { key = note.GetKey(entry); }
+            catch (ArgumentException) { continue; }
+            if (entry.Value.FieldType == TiffFieldType.Ascii && entry.Value.Count is > 4 and < 200 && texts < 3)
+            {
+                texts++;
+                int length = (int)entry.Value.Count - 1;
+                Run("same", key, new string('P', length));
+                Run("grow", key, new string('G', length + 15));
+            }
+            else if (entry.Value.FieldType == TiffFieldType.Short && entry.Value.Count == 1 && entry.Fields.Count == 0 && numbers < 2)
+            {
+                numbers++;
+                byte[] raw = new byte[2];
+                entry.Value.CopyRawTo(raw);
+                int value = entry.Value.ByteOrder == Endianness.BigEndian ? (raw[0] << 8) | raw[1] : raw[0] | (raw[1] << 8);
+                Run("short", key, (value ^ 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+        }
+        if (number == 0) manifest.Add($"{name}\t0\tnone\t\tno tag to set\t");
+    }
+
+    File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
+    foreach (KeyValuePair<string, int> outcome in outcomes) Console.WriteLine($"{outcome.Key}: {outcome.Value}");
+    foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=MakerNote parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
+    return crashes.Count == 0 ? 0 : 1;
+}
 else if (args.Length == 2 && args[0] == "operations-parity-blank")
 {
     // A JPEG file without metadata, for the comparer to insert into, and to insert as a thumbnail.

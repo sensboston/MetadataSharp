@@ -157,7 +157,7 @@ public sealed class MakerNoteEntry
 /// <summary>
 /// A read-only view of a recognised MakerNote. The raw MakerNote bytes remain the authoritative
 /// value of the EXIF entry; this view is never written back. A tag of the note is changed through
-/// <see cref="ExifEdit.SetByKey(string, ExifValue)"/>, where it lies in the file.
+/// <see cref="ExifEdit.SetByKey(string, ExifValue, bool)"/>, where it lies in the file.
 /// </summary>
 public sealed class MakerNote
 {
@@ -195,6 +195,34 @@ public sealed class MakerNote
     /// <summary>Looks up an entry by tag ID; the first one when the directory repeats a tag.</summary>
     public bool TryGetEntry(ushort tagId, [NotNullWhen(true)] out MakerNoteEntry? entry) =>
         lookup.TryGetValue(tagId, out entry);
+
+    /// <summary>
+    /// The key of one of this note's tags, as Exiv2 names it and <see cref="ExifEdit.SetByKey(string, ExifValue, bool)"/>
+    /// takes it: <c>Exif.Canon.OwnerName</c>; <c>Exif.Fujifilm.0x1234</c> for a tag without a name.
+    /// </summary>
+    /// <exception cref="ArgumentException">The entry is not one of this note.</exception>
+    public string GetKey(MakerNoteEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        foreach (MakerNotes.MakerNoteTarget target in MakerNotes.MakerNoteKeys.Enumerate(this))
+            if (ReferenceEquals(target.Entry, entry) && target.Field is null) return target.Key;
+        throw new ArgumentException("The entry is not one of this MakerNote.", nameof(entry));
+    }
+
+    /// <summary>
+    /// The key of a field of an array-valued tag, or of an entry of the sub-directory a pointer tag
+    /// leads to: <c>Exif.CanonCs.Quality</c>, <c>Exif.OlympusCs.ExposureMode</c>. For one of the
+    /// <see cref="MakerNoteField.Fields"/> of such an entry, pass that element too.
+    /// </summary>
+    /// <exception cref="ArgumentException">The field is not one of the entry, or the entry not one of this note.</exception>
+    public string GetKey(MakerNoteEntry entry, MakerNoteField field, MakerNoteField? element = null)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(field);
+        foreach (MakerNotes.MakerNoteTarget target in MakerNotes.MakerNoteKeys.Enumerate(this))
+            if (ReferenceEquals(target.Entry, entry) && ReferenceEquals(target.Field, field) && ReferenceEquals(target.Element, element)) return target.Key;
+        throw new ArgumentException("The field is not one of this MakerNote.", nameof(field));
+    }
 
     /// <summary>
     /// The human-readable form of the value of one of this note's tags, or null when this release has

@@ -42,6 +42,13 @@ internal static class MakerNoteKeys
     /// <summary>The group of the tags of the note's own directory.</summary>
     internal static string Group(MakerNoteFormat format) => format == MakerNoteFormat.Canon ? "Canon" : format.ToString();
 
+    /// <summary>
+    /// True for the layouts in which a value that grows is appended. Each was confirmed by the
+    /// reference tool on files of its corpus (the MakerNote parity job): it reads the appended value
+    /// and every other tag of the note as before. A layout the corpus has no file for is not listed.
+    /// </summary>
+    internal static bool Grows(MakerNoteFormat format) => true;
+
     /// <summary>Everything of the note a key names, tags before their fields. A key that occurs twice names the first.</summary>
     internal static List<MakerNoteTarget> Enumerate(MakerNote note)
     {
