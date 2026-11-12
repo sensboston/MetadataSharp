@@ -48,6 +48,7 @@ document.SaveIptcAs("result.jpg", edit);                        // JPEG, TIFF-ba
   which is how readers learn that IPTC changed since XMP was last synchronised. It is never added,
   and it is removed with the stream. `new IptcWriteOptions { UpdateDigest = true }`, passed to
   `SaveIptc*`, recomputes an existing one; use it only when XMP was brought into agreement too.
+  `MetadataSync.Reconcile` with `SaveAll` does both: see `SYNC_USAGE_AND_LIMITS.md`.
 
 ## Independent JPEG IPTC edits
 

@@ -196,6 +196,18 @@ using (JpegMetadataDocument document = JpegMetadataDocument.Open(source))
     document.SaveIptcAs(destination, edit);
 ```
 
+### Keep EXIF, IPTC and XMP in agreement
+
+`MetadataSync` (namespace `MetadataSharp.Core.Sync`) converts between the three: `ExifToXmp`,
+`XmpToExif`, `IptcToXmp`, `XmpToIptc`, and `Reconcile`, which reads the shared fields (caption,
+creator, copyright, keywords, the dates and more) the way the Metadata Working Group guidelines
+do and brings the blocks that exist into agreement. Each returns `SyncEdits`: one edit per block,
+`Notes` for every value that could not be converted, `Choices` for the block each reconciled field
+was taken from. Nothing is written until the edits are passed to `SaveAll` / `SaveAllAs` of the
+JPEG, PNG, WebP, BMFF or TIFF-based document, which writes the blocks in one pass.
+`ImageMetadata.Reconcile()` does it for a file that was read. The mapping tables are public
+(`MetadataSync.ExifMappings`, `IptcMappings`). Details and limits: `docs/usage/SYNC_USAGE_AND_LIMITS.md`.
+
 ### Edit a TIFF, a DNG or a raw file
 
 ```csharp
