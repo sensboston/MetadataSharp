@@ -263,7 +263,7 @@ def main(argv=None, runner=run):
     sys.stdout.write(output)
     if code != 0:
         sys.stdout.write(errors)
-        print(f"::error title=Operations parity::the fixture generator failed (exit {code})")
+        annotate("error", f"Operations parity - the fixture generator failed (exit {code})", errors.strip().splitlines()[-12:] or ["no output"])
         return 1
 
     rows, files, left_out = check(work, names, args.exiv2, failed, renamed, runner)
@@ -294,4 +294,9 @@ def main(argv=None, runner=run):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception:  # the log of a job is not always at hand: the failure is said where the report is
+        import traceback
+        annotate("error", "Operations parity - the comparer failed", traceback.format_exc().splitlines()[-12:])
+        sys.exit(1)
