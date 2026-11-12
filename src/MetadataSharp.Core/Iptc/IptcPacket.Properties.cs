@@ -2,7 +2,7 @@ using System.Text.Unicode;
 
 namespace MetadataSharp.Core.Iptc;
 
-// The six datasets of the text profile, read by the rules of GetText and without its exceptions: where
+// Six common text datasets, read by the rules of GetText and without its exceptions: where
 // GetText would refuse an occurrence, the occurrence is left out. Nothing is decoded that GetText does
 // not decode, and no character set is guessed.
 public sealed partial class IptcPacket

@@ -180,12 +180,13 @@ using (PngMetadataDocument document = PngMetadataDocument.Open(source))
     document.SaveXmpAs(destination, edit);
 ```
 
-### Edit IPTC in a JPEG
+### Edit IPTC (JPEG, TIFF-based files, PNG)
 
 ```csharp
 var edit = new IptcEdit();
-edit.ReplaceText(new IptcDatasetKey(2, 120), ["Fishing boats leaving the harbour."]);   // caption
-edit.ReplaceText(new IptcDatasetKey(2, 25), ["harbour", "dawn"]);                       // keywords
+edit.SetCaption("Fishing boats leaving the harbour.");
+edit.SetKeywords(["harbour", "dawn"]);
+edit.Set(new IptcDatasetKey(2, 10), "5");                                               // any dataset of IptcDatasets.All
 edit.Remove(new IptcDatasetKey(2, 116));                                                // copyright notice
 
 using (JpegMetadataDocument document = JpegMetadataDocument.Open(source))

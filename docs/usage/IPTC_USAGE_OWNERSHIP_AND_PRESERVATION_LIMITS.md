@@ -6,6 +6,49 @@ records editions, source blobs/hashes, exact field limits and deliberate restric
 This is a raw IIM/8BIM subset, not a complete interchange-envelope validator,
 Photoshop/PSB editor or metadata synchronization engine. No new runtime dependency.
 
+## Any dataset, in JPEG, TIFF-based files and PNG
+
+Where this section and a later one differ, this one holds: it describes the write side as it is now.
+
+```csharp
+var edit = new IptcEdit();
+edit.SetCaption("Fishing boats leaving the harbour.");
+edit.SetKeywords(new[] { "harbour", "dawn" });
+edit.AddKeyword("boats");
+edit.SetDateCreated(new DateOnly(2026, 11, 12));
+edit.Set(new IptcDatasetKey(2, 10), "5");                       // any dataset of IptcDatasets.All
+edit.AppendRaw(new IptcDatasetKey(2, 250), IptcValue.FromRaw(new byte[] { 1, 2, 3 }));
+document.SaveIptcAs("result.jpg", edit);                        // JPEG, TIFF-based or PNG document
+```
+
+- `IptcDatasets.All` / `TryGet` is the table of datasets (records 1 to 9 of IIM 4.2): name, value
+  kind, byte limits, whether it repeats. It was written from the specification as remembered, not
+  generated from it; a limit that is wrong there is a bug to report.
+- Operations run in the order they were given. `Set`, `ReplaceText`, `Append`, `Insert`, `RemoveAt`,
+  `Remove`, `SetUInt16`, `SetDate`, `SetTime` are checked against the table; `ReplaceRaw`,
+  `AppendRaw`, `InsertRaw` take any bytes for any dataset the library does not manage itself.
+  1:90 (character set) and 2:0 (record version) are managed and cannot be addressed.
+- A bad value, an unknown or managed key, or a second value for a dataset that does not repeat is an
+  `ArgumentException` when the operation is added. An index past the occurrences is
+  `MetadataException(InvalidIptcEdit)` when the edit is applied.
+- Occurrences that stay keep their bytes and framing; a new dataset goes to the end of its record.
+- Character set: `ESC % G` is UTF-8. No declaration, and `ESC ( B` (ASCII), declare nothing: ASCII
+  text is written as it is, and the first non-ASCII text makes the packet UTF-8 (`ESC ( B` is replaced
+  where it stands, otherwise 1:90 is added) unless a text dataset that stays already has bytes
+  above 0x7F, whose encoding nobody declared: then the edit is refused (`UnsupportedFeature`).
+  Under any other declaration text is not written. Record 1 text is ASCII only.
+- Containers. JPEG: the 0x0404 resource of the one Photoshop APP13 segment, created when absent.
+  TIFF-based files: tag 0x83BB, or, when the file keeps IPTC in the Photoshop resources of tag
+  0x8649, that resource there (no second copy in 0x83BB is made); a file with neither gets 0x83BB.
+  PNG: the `Raw profile type iptc` text chunk, kept in its form (tEXt or zTXt, bare stream or
+  Photoshop resources, signature or none); a new one is zTXt with unsigned resources, before IDAT.
+  PNG refuses as its other writes do (an unknown chunk that is unsafe to copy, two IPTC chunks).
+  PSD, WebP, BMFF and sidecars have no IPTC write.
+- Digest (resource 0x0425): by default it is left as it is, so after an edit it no longer matches,
+  which is how readers learn that IPTC changed since XMP was last synchronised. It is never added,
+  and it is removed with the stream. `new IptcWriteOptions { UpdateDigest = true }`, passed to
+  `SaveIptc*`, recomputes an existing one; use it only when XMP was brought into agreement too.
+
 ## Independent JPEG IPTC edits
 
 ```csharp
@@ -29,10 +72,11 @@ A property replacement occupies the first original occurrence; absent keys appen
 Other datasets retain relative order and untouched framing, including supported
 nonminimal extended-length descriptors. Last operation per key wins. Empty
 replacement means removal. Missing-key removal alone is an exact no-op.
+(Operations now run in order instead of the last one per key winning; see the first section.)
 
 Text encoding is never guessed. A unique ESC % G declaration means UTF-8; absence
 permits ASCII-only convenience reads/writes, not implicit Latin-1. Unknown declarations
-refuse text operations, even for ASCII. Existing charset/version controls are not
+refuse text operations, even for ASCII (`ESC ( B` is not unknown: it reads as no declaration). Existing charset/version controls are not
 silently repaired, added or changed; explicit transcoding is outside this scope.
 New IPTC packets use a UTF-8 declaration and record-2 version 4. GetText decodes
 without trimming or write-time field repairs; malformed UTF-8 is InvalidIptc.
@@ -80,10 +124,10 @@ split resources, orphan digests and digest lengths other than 16 are refused.
 Malformed IRB cannot be removed selectively because resource boundaries are unsafe.
 A uniquely framed malformed IIM payload may be removed whole with its valid digest.
 
-The existing digest, if present, is recomputed over **only the new IIM data bytes**,
-not the resource header/name/padding. No digest is introduced when absent. A stale
-but well-formed digest does not block raw reads or byte-identical no-op; an effective
-write refreshes it. MD5 is a legacy compatibility checksum, not authentication.
+With `IptcWriteOptions.UpdateDigest`, the existing digest is recomputed over **only the
+new IIM data bytes**, not the resource header/name/padding; without it the digest bytes
+stay. No digest is introduced when absent. A stale but well-formed digest does not block
+reads, a byte-identical no-op or a write. MD5 is a legacy compatibility checksum, not authentication.
 Whole IPTC removal also removes that digest, and removes the Photoshop APP13 only
 if no resources remain. Photoshop XMP resource 0x0424 and all unrelated resources
 are preserved, never synchronized or interpreted by this feature.
