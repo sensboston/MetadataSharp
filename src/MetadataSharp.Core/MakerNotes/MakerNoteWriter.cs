@@ -273,8 +273,15 @@ internal static class MakerNoteWriter
             throw Refuse("the MakerNote reads as another note");
         if (result.Entries.Count != source.Entries.Count) throw Refuse("the tags outside the MakerNote changed");
         foreach (ExifEntry entry in source.Entries)
-            if (!result.TryGetEntry(entry.Key, out ExifEntry? same) || !Same(entry.Value, same.Value))
+        {
+            if (!result.TryGetEntry(entry.Key, out ExifEntry? same))
+                throw Refuse("a tag outside the MakerNote is gone");
+            // The tag that holds the note (MakerNote, or DNGPrivateData) keeps its type and its length;
+            // its bytes are the note, which is compared tag by tag below.
+            bool holder = entry.Key.TagId is 0x927C or 0xC634;
+            if (holder ? entry.Value.FieldType != same.Value.FieldType || entry.Value.Count != same.Value.Count : !Same(entry.Value, same.Value))
                 throw Refuse("a tag outside the MakerNote changed");
+        }
 
         Dictionary<string, ExifValue> old = Values(before), now = Values(after);
         foreach (KeyValuePair<string, ExifValue> pair in old)
