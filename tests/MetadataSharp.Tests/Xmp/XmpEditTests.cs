@@ -187,8 +187,7 @@ public sealed class XmpEditTests
                 "Xmp.xmpMM.DerivedFrom=Struct*:",
                 "Xmp.xmpMM.DerivedFrom/stRef:instanceID=Text:xmp.iid:2",
                 "Xmp.iptc.CreatorContactInfo=Struct*:",
-                "Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiAdrCity=Text:Waltham",
-                "Xmp.q.outer=Struct*:"
+                "Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiAdrCity=Text:Waltham"
             },
             Rows(packet));
     }
@@ -231,10 +230,49 @@ public sealed class XmpEditTests
             {
                 "Xmp.xmpMM.History=Seq*:",
                 "Xmp.xmpMM.History[1]=Struct*:",
-                "Xmp.xmpMM.History[2]=Struct*:",
-                "Xmp.xmpMM.History[2]/stEvt:action=Text:exported"
+                "Xmp.xmpMM.History[1]/stEvt:action=Text:exported"
             },
             Rows(packet));
+    }
+
+    [Fact]
+    public void WhatAnEditEmptiesIsRemovedWithTheParentsThatBecomeEmptyAndWhatWasEmptyStays()
+    {
+        XmpPacket packet = XmpPacket.Parse(Xml(
+            "<p:list><rdf:Bag><rdf:li>only</rdf:li></rdf:Bag></p:list>" +
+            "<p:outer rdf:parseType='Resource'><p:inner rdf:parseType='Resource'><p:leaf>x</p:leaf></p:inner></p:outer>" +
+            "<p:jobs><rdf:Seq><rdf:li rdf:parseType='Resource'><p:id>1</p:id></rdf:li></rdf:Seq></p:jobs>" +
+            "<p:kept rdf:parseType='Resource'><p:a>1</p:a><p:b rdf:parseType='Resource'><p:c>2</p:c></p:b></p:kept>" +
+            "<p:title><rdf:Alt><rdf:li xml:lang='x-default'>t</rdf:li></rdf:Alt></p:title>" +
+            "<p:none><rdf:Bag/></p:none><p:hollow rdf:parseType='Resource'/>" +
+            "<p:holder rdf:parseType='Resource'><p:void><rdf:Seq/></p:void><p:v>1</p:v></p:holder>"));
+        XmpPacket changed = Apply(packet, edit =>
+        {
+            edit.RemovePath("Xmp.p.list[1]");
+            edit.RemovePath("Xmp.p.outer/p:inner/p:leaf");
+            edit.RemovePath("Xmp.p.jobs[last()]/p:id");
+            edit.RemovePath("Xmp.p.kept/p:b/p:c");
+            edit.RemoveLanguage("Xmp.p.title", "x-default");
+            // Removing beside an empty array leaves the array, and the structure that still holds it.
+            edit.RemovePath("Xmp.p.holder/p:v");
+        });
+        Assert.Equal(
+            new[]
+            {
+                "Xmp.p.kept=Struct*:",
+                "Xmp.p.kept/p:a=Text:1",
+                "Xmp.p.none=Bag:",
+                "Xmp.p.hollow=Struct:",
+                "Xmp.p.holder=Struct*:",
+                "Xmp.p.holder/p:void=Seq:"
+            },
+            Rows(changed));
+
+        // Nothing is asked of the empty ones, so nothing is removed.
+        var none = new XmpEdit();
+        none.RemovePath("Xmp.p.none[1]");
+        none.RemovePath("Xmp.p.hollow/p:missing");
+        Assert.Same(changed, changed.Apply(none));
     }
 
     [Fact]

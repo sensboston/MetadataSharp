@@ -225,10 +225,10 @@ internal sealed class XmpEditor
             }
             case XmpOperationKind.RemoveLanguage:
             {
-                if (Walk(path, path.Length, false) is not XmpNode array || array.Kind != XmpEntryKind.Alt) break;
-                if (Localized(array, operation.Language!) is not XmpNode item) break;
-                array.Children.Remove(item);
-                if (array.Children.Count == 0) Remove(path, last);
+                if (Chain(path, path.Length) is not List<XmpNode> chain || chain[^1].Kind != XmpEntryKind.Alt) break;
+                if (Localized(chain[^1], operation.Language!) is not XmpNode item) break;
+                chain[^1].Children.Remove(item);
+                Prune(path, chain);
                 break;
             }
         }
@@ -351,14 +351,16 @@ internal sealed class XmpEditor
             if (tree.Find(NameOf(last)) is XmpNode property) tree.Properties.Remove(property);
             return;
         }
-        if (Walk(path, path.Length - 1, false) is not XmpNode parent) return;
+        if (Chain(path, path.Length - 1) is not List<XmpNode> chain) return;
+        XmpNode parent = chain[^1];
+        bool removed = false;
         switch (last.Kind)
         {
             case XmpStepKind.Language:
                 parent.Language = null;
                 break;
             case XmpStepKind.Field:
-                if (parent.Kind == XmpEntryKind.Struct && Find(parent.Children, NameOf(last)) is XmpNode field) parent.Children.Remove(field);
+                if (parent.Kind == XmpEntryKind.Struct && Find(parent.Children, NameOf(last)) is XmpNode field) removed = parent.Children.Remove(field);
                 break;
             case XmpStepKind.Qualifier:
                 if (Find(parent.Qualifiers, NameOf(last)) is XmpNode qualifier) parent.Qualifiers.Remove(qualifier);
@@ -366,8 +368,37 @@ internal sealed class XmpEditor
             default:
                 if (!parent.IsArray) break;
                 int index = last.Kind == XmpStepKind.Last ? parent.Children.Count : last.Index;
-                if (index >= 1 && index <= parent.Children.Count) parent.Children.RemoveAt(index - 1);
+                if (index >= 1 && index <= parent.Children.Count) { parent.Children.RemoveAt(index - 1); removed = true; }
                 break;
+        }
+        if (removed) Prune(path, chain);
+    }
+
+    /// <summary>The nodes the first <paramref name="count"/> steps lead through, or null when one is missing.</summary>
+    private List<XmpNode>? Chain(XmpStep[] path, int count)
+    {
+        var chain = new List<XmpNode>(count);
+        for (int i = 1; i <= count; i++)
+        {
+            if (Walk(path, i, false) is not XmpNode node) return null;
+            chain.Add(node);
+        }
+        return chain;
+    }
+
+    /// <summary>
+    /// Removes the structure or array the edit has just emptied, and each one above it that becomes
+    /// empty by that. One that was empty in the source is never reached: only a removal leads here.
+    /// </summary>
+    private void Prune(XmpStep[] path, List<XmpNode> chain)
+    {
+        for (int i = chain.Count - 1; i >= 0; i--)
+        {
+            XmpNode node = chain[i];
+            if (node.Children.Count != 0 || (node.Kind != XmpEntryKind.Struct && !node.IsArray)) return;
+            if (i == 0) tree.Properties.Remove(node);
+            else if (path[i].Kind == XmpStepKind.Qualifier) chain[i - 1].Qualifiers.Remove(node);
+            else chain[i - 1].Children.Remove(node);
         }
     }
 }
