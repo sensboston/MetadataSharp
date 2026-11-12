@@ -208,6 +208,37 @@ public sealed class ImageMetadata
         return Compose(Drain(file, limits, false, default).GetAwaiter().GetResult(), limits);
     }
 
+    /// <summary>
+    /// Reads every kind of metadata of the file at a path without blocking on it. The file is read
+    /// into memory and closed.
+    /// </summary>
+    /// <param name="path">The path of the file. Its name plays no part: the format is told by the signature.</param>
+    /// <param name="limits">The budgets handed to the readers, or null for the defaults of each reader.</param>
+    /// <param name="cancellationToken">Ends the read of the file.</param>
+    /// <returns>The snapshot, as for the read of a file held in memory.</returns>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.LimitExceeded"/> when the file is longer than
+    /// <see cref="MetadataLimits.MaxInputBytes"/>.
+    /// </exception>
+    /// <exception cref="ArgumentException">The path is null or empty.</exception>
+    public static Task<ImageMetadata> ReadAsync(string path, MetadataLimits? limits = null, CancellationToken cancellationToken = default)
+    {
+        // As for a stream, a wrong call fails at the call. The file is opened and read in the task,
+        // so a file that is not there fails the task.
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        limits?.Validate();
+        return OpenAndCompose(path, limits, cancellationToken);
+    }
+
+    private static async Task<ImageMetadata> OpenAndCompose(string path, MetadataLimits? limits, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var file = new FileStream(Path.GetFullPath(path), FileMode.Open, FileAccess.Read, FileShare.Read,
+            (limits ?? new MetadataLimits()).CopyBufferBytes, FileOptions.SequentialScan | FileOptions.Asynchronous);
+        try { return Compose(await Drain(file, limits, true, token).ConfigureAwait(false), limits); }
+        finally { await file.DisposeAsync().ConfigureAwait(false); }
+    }
+
     // ---- the signature ----
 
     private static bool At(ReadOnlySpan<byte> header, int offset, ReadOnlySpan<byte> bytes) =>

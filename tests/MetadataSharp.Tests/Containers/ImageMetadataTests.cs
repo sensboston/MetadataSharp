@@ -574,7 +574,14 @@ public sealed class ImageMetadataTests
 
         string path = Path.Combine(Path.GetTempPath(), "image-metadata-" + Guid.NewGuid().ToString("N"));
         File.WriteAllBytes(path, file);
-        try { Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => ImageMetadata.Read(path, tooSmall)).Code); }
+        try
+        {
+            Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => ImageMetadata.Read(path, tooSmall)).Code);
+            Assert.Equal(MetadataErrorCode.LimitExceeded,
+                (await Assert.ThrowsAsync<MetadataException>(() => ImageMetadata.ReadAsync(path, tooSmall))).Code);
+            Assert.Empty((await ImageMetadata.ReadAsync(path, fits)).Errors);
+        }
+        // The file was closed after the refusal too: on Windows an open file cannot be deleted.
         finally { File.Delete(path); }
     }
 
@@ -589,7 +596,10 @@ public sealed class ImageMetadataTests
         // The asynchronous read checks its arguments before it starts: these are thrown at the call, not held in the task.
         Assert.Throws<ArgumentOutOfRangeException>(() => { _ = ImageMetadata.ReadAsync(new MemoryStream(file), invalid); });
         Assert.Throws<ArgumentNullException>(() => ImageMetadata.Read((Stream)null!));
-        Assert.Throws<ArgumentNullException>(() => { _ = ImageMetadata.ReadAsync(null!); });
+        Assert.Throws<ArgumentNullException>(() => { _ = ImageMetadata.ReadAsync((Stream)null!); });
+        Assert.Throws<ArgumentOutOfRangeException>(() => { _ = ImageMetadata.ReadAsync("unused", invalid); });
+        Assert.Throws<ArgumentNullException>(() => { _ = ImageMetadata.ReadAsync((string)null!); });
+        Assert.Throws<ArgumentException>(() => { _ = ImageMetadata.ReadAsync(string.Empty); });
         Assert.Throws<ArgumentNullException>(() => ImageMetadata.Read((string)null!));
         Assert.Throws<ArgumentException>(() => ImageMetadata.Read(string.Empty));
         var closed = new MemoryStream(file);
@@ -638,8 +648,14 @@ public sealed class ImageMetadataTests
 
         string path = Path.Combine(Path.GetTempPath(), "image-metadata-" + Guid.NewGuid().ToString("N"));
         File.WriteAllBytes(path, file);
-        try { Same(ImageMetadata.Read(path)); }
+        try
+        {
+            Same(ImageMetadata.Read(path));
+            Same(await ImageMetadata.ReadAsync(path));
+        }
+        // Both reads closed the file: on Windows an open file cannot be deleted.
         finally { File.Delete(path); }
+        Assert.False(File.Exists(path));
     }
 
     [Fact]
@@ -648,6 +664,21 @@ public sealed class ImageMetadataTests
         using var source = new MemoryStream(Sample("jpeg"));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ImageMetadata.ReadAsync(source, null, new CancellationToken(true)));
         Assert.Equal(0, source.Position);
+
+        string path = Path.Combine(Path.GetTempPath(), "image-metadata-" + Guid.NewGuid().ToString("N"));
+        File.WriteAllBytes(path, Sample("jpeg"));
+        try { await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ImageMetadata.ReadAsync(path, null, new CancellationToken(true))); }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
+    public async Task AFileThatIsNotThereFailsTheTaskOfTheAsynchronousRead()
+    {
+        string missing = Path.Combine(Path.GetTempPath(), "image-metadata-" + Guid.NewGuid().ToString("N"));
+        Assert.Throws<FileNotFoundException>(() => ImageMetadata.Read(missing));
+        // The call returns: the arguments are in order, and the file is opened in the task.
+        Task<ImageMetadata> read = ImageMetadata.ReadAsync(missing);
+        await Assert.ThrowsAsync<FileNotFoundException>(() => read);
     }
 
     // ---- the snapshot does not change ----
