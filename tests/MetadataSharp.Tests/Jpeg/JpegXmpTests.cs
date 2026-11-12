@@ -46,7 +46,8 @@ public sealed class JpegXmpTests
     [InlineData(65504)]
     public void FullContainerCapacityIsReadableAndWritable(int size)
     {
-        int overhead = Packet("").Length; byte[] result = Save(JpegFixture.Build(), Set(new string('a', size - overhead)));
+        // An empty value is written as an empty element, so the overhead is measured with one character.
+        int overhead = Packet("a").Length - 1; byte[] result = Save(JpegFixture.Build(), Set(new string('a', size - overhead)));
         using var source = new MemoryStream(result); JpegScanResult scan = JpegScanner.Scan(source, new());
         Assert.Equal(size + 29, Assert.Single(scan.Segments, s => s.IsStandardXmp).PayloadLength);
         source.Position = 0; using var doc = JpegMetadataDocument.Open(source); Assert.Equal(size, doc.ReadXmp()!.ByteLength);
