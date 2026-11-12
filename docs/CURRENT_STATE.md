@@ -84,6 +84,12 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   its box. Tests author every layout. The corpus has one CR3, `Canon-R6-pruned.CR3`, with no stored
   expectation: the parity job runs the pinned tool on it (run 43121692654): 225 of the 226 keys of
   `exiv2 -Pkycvt` with equal values (missing `Exif.CanonFi.RFLensType`), both previews of `exiv2 -pp`.
+- JPEG XL, read-only: `JxlMetadata.Read` gives the block of the `Exif` box, the packet of the `xml `
+  box and `HasJumbf` (a `jumb` box is noticed, not read). A `brob` box is Brotli-decoded
+  (`System.IO.Compression`) when it stands for either, never past the retained budget; a bare
+  codestream gives an empty result. Tests author every layout; the corpus has three files, none with
+  a `brob` box: 177 of their 179 stored keys equal (run 43126968305), the other two are the
+  multi-line descriptions of `Reagan.jxl`, cut at the line end in the stored text as in `Reagan.jpg`.
 
 ## Next (in order)
 
@@ -97,5 +103,5 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
 - ICC profiles and comments are read, never written; a BMFF item is edited or added, never
-  removed. Previews are not decoded and not written. CR3 is read, never written.
+  removed. Previews are not decoded and not written. CR3 and JPEG XL are read, never written.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.
