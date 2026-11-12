@@ -262,6 +262,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         tiffPlan = null;
         desired = null;
         if (edit.HasThumbnailChange) throw ExifBlockEditor.ThumbnailElsewhere();
+        if (edit.MakerNote.Count != 0) throw ExifBlockEditor.MakerNoteElsewhere();
         if (edit.RemoveAll)
         {
             if (item is null) return null;

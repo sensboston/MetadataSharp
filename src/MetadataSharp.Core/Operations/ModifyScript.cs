@@ -186,6 +186,7 @@ public sealed class ModifyScript
         }
         else if (MetadataKeys.TryParseIptc(key, out IptcDatasetKey dataset)) IptcLine(number, command, dataset, type, value);
         else if (MetadataKeys.TryParseExif(key, out ExifTagKey tag)) ExifLine(number, command, tag, type, value, order);
+        else if (ExifEdit.IsMakerNoteKey(key)) MakerNoteLine(number, command, key, type, value);
         else if (XmpPrefix(key) is string prefix && (XmpNamespaces.TryGetUri(prefix, out _) || Xmp.Namespaces.ContainsKey(prefix)))
             XmpLine(number, command, key, type, value);
         else throw new ModifyScriptException(number, $"Invalid key `{key}'.");
@@ -239,64 +240,26 @@ public sealed class ModifyScript
         TiffFieldType field = type is null
             ? (ExifTags.Find(key) is { Types.IsDefaultOrEmpty: false } definition ? definition.Types[0] : TiffFieldType.Ascii)
             : Enum.Parse<TiffFieldType>(type);
-        byte[] bytes;
-        uint count;
-        if (field == TiffFieldType.Ascii)
-        {
-            if (value.Any(c => c is '\0' or > '\u007F')) throw new ModifyScriptException(number, "An Ascii value holds seven-bit characters and no NUL.");
-            bytes = new byte[value.Length + 1];
-            Encoding.ASCII.GetBytes(value, bytes);
-            count = (uint)bytes.Length;
-        }
-        else
-        {
-            string[] items = value.Split(Blank, StringSplitOptions.RemoveEmptyEntries);
-            if (items.Length == 0) throw new ModifyScriptException(number, "The value is empty.");
-            int width = field switch
-            {
-                TiffFieldType.Byte or TiffFieldType.SByte or TiffFieldType.Undefined => 1,
-                TiffFieldType.Short or TiffFieldType.SShort => 2,
-                TiffFieldType.Long or TiffFieldType.SLong or TiffFieldType.Float => 4,
-                TiffFieldType.Rational or TiffFieldType.SRational or TiffFieldType.Double => 8,
-                _ => throw new ModifyScriptException(number, $"The tag is defined with the type {field}, which a script cannot write; name a type."),
-            };
-            bytes = new byte[items.Length * width];
-            count = (uint)items.Length;
-            CultureInfo c = CultureInfo.InvariantCulture;
-            for (int i = 0; i < items.Length; i++)
-            {
-                Span<byte> at = bytes.AsSpan(i * width, width);
-                string item = items[i];
-                switch (field)
-                {
-                    case TiffFieldType.Byte or TiffFieldType.Undefined: at[0] = byte.Parse(item, NumberStyles.None, c); break;
-                    case TiffFieldType.SByte: at[0] = (byte)sbyte.Parse(item, NumberStyles.AllowLeadingSign, c); break;
-                    case TiffFieldType.Short: BinaryPrimitives.WriteUInt16LittleEndian(at, ushort.Parse(item, NumberStyles.None, c)); break;
-                    case TiffFieldType.SShort: BinaryPrimitives.WriteInt16LittleEndian(at, short.Parse(item, NumberStyles.AllowLeadingSign, c)); break;
-                    case TiffFieldType.Long: BinaryPrimitives.WriteUInt32LittleEndian(at, uint.Parse(item, NumberStyles.None, c)); break;
-                    case TiffFieldType.SLong: BinaryPrimitives.WriteInt32LittleEndian(at, int.Parse(item, NumberStyles.AllowLeadingSign, c)); break;
-                    case TiffFieldType.Float: BinaryPrimitives.WriteSingleLittleEndian(at, float.Parse(item, NumberStyles.Float, c)); break;
-                    case TiffFieldType.Double: BinaryPrimitives.WriteDoubleLittleEndian(at, double.Parse(item, NumberStyles.Float, c)); break;
-                    default:
-                    {
-                        int slash = item.IndexOf('/');
-                        string top = slash < 0 ? item : item[..slash], bottom = slash < 0 ? "1" : item[(slash + 1)..];
-                        if (field == TiffFieldType.Rational)
-                        {
-                            BinaryPrimitives.WriteUInt32LittleEndian(at, uint.Parse(top, NumberStyles.None, c));
-                            BinaryPrimitives.WriteUInt32LittleEndian(at[4..], uint.Parse(bottom, NumberStyles.None, c));
-                        }
-                        else
-                        {
-                            BinaryPrimitives.WriteInt32LittleEndian(at, int.Parse(top, NumberStyles.AllowLeadingSign, c));
-                            BinaryPrimitives.WriteInt32LittleEndian(at[4..], int.Parse(bottom, NumberStyles.AllowLeadingSign, c));
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        Exif.SetUnchecked(key, ExifValue.FromRaw(field, count, Endianness.LittleEndian, bytes));
+        ExifValue parsed;
+        try { parsed = ExifValueText.Parse(field, value); }
+        catch (ArgumentException refusal) { throw new ModifyScriptException(number, refusal.Message); }
+        Exif.SetUnchecked(key, parsed);
+    }
+
+    /// <summary>
+    /// A tag of the MakerNote. Without a type the value is read, when the edit is written, in the type
+    /// the tag has in the file; with one it is read now. <c>add</c> is <c>set</c>: a tag that is not
+    /// in the note is not added, which the write refuses.
+    /// </summary>
+    private void MakerNoteLine(int number, ModifyCommandKind command, string key, string? type, string value)
+    {
+        if (command == ModifyCommandKind.Delete) { Exif.Remove(key); return; }
+        if (type is null) { Exif.SetText(key, value); return; }
+        if (Array.IndexOf(ExifTypes, type) < 0 || type == "Comment") throw new ModifyScriptException(number, $"`{type}' is not a type of a MakerNote value.");
+        ExifValue parsed;
+        try { parsed = ExifValueText.Parse(Enum.Parse<TiffFieldType>(type), value); }
+        catch (ArgumentException refusal) { throw new ModifyScriptException(number, refusal.Message); }
+        Exif.Set(key, parsed);
     }
 
     /// <summary>The bytes of a comment: the eight bytes of the character code and the text. Without a marker the code is undefined, as with Exiv2.</summary>

@@ -143,7 +143,7 @@ internal static class MakerNoteReader
         var fields = new List<MakerNoteField>(PictureWizardNames.Length);
         for (int i = 0; i < PictureWizardNames.Length && (i * 2) + 2 <= raw.Length; i++)
             fields.Add(new MakerNoteField((ushort)i, PictureWizardNames[i],
-                ExifValue.FromRaw(TiffFieldType.Short, 1, value.ByteOrder, raw.Slice(i * 2, 2))));
+                ExifValue.FromRaw(TiffFieldType.Short, 1, value.ByteOrder, raw.Slice(i * 2, 2)), null, i * 2));
         return fields;
     }
 
@@ -193,10 +193,10 @@ internal static class MakerNoteReader
             return note;
         var fields = new List<MakerNoteField>(preview.Entries.Count);
         foreach (MakerNoteEntry field in preview.Entries)
-            fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value));
+            fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value) { Slot = field.Slot });
         var entries = new List<MakerNoteEntry>(note.Entries.Count);
         foreach (MakerNoteEntry entry in note.Entries)
-            entries.Add(ReferenceEquals(entry, pointer) ? new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields) : entry);
+            entries.Add(ReferenceEquals(entry, pointer) ? entry.With(fields) : entry);
         return new MakerNote(note.Format, note.ByteOrder, entries);
     }
 
@@ -259,8 +259,8 @@ internal static class MakerNoteReader
             }
             var fields = new List<MakerNoteField>(sub.Entries.Count);
             foreach (MakerNoteEntry field in sub.Entries)
-                fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value));
-            entries.Add(new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields));
+                fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value) { Slot = field.Slot });
+            entries.Add(entry.With(fields));
             changed = true;
         }
         return changed ? new MakerNote(note.Format, note.ByteOrder, entries) : note;
@@ -278,7 +278,10 @@ internal static class MakerNoteReader
         foreach (MakerNoteEntry entry in note.Entries)
         {
             IReadOnlyList<MakerNoteField> fields = SonyMakerNoteArrays.Decompose(entry.TagId, entry.Value, model);
-            entries.Add(fields.Count == 0 ? entry : new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields));
+            bool enciphered = fields.Count != 0 && SonyMakerNoteArrays.IsEnciphered(entry.TagId, entry.Value, model);
+            entries.Add(fields.Count == 0 ? entry
+                : enciphered ? entry.With(fields, static stored => SonyMakerNoteArrays.Plain(stored), static plain => SonyMakerNoteArrays.Stored(plain))
+                : entry.With(fields));
             changed |= fields.Count != 0;
         }
         return changed ? new MakerNote(note.Format, note.ByteOrder, entries) : note;
@@ -316,10 +319,10 @@ internal static class MakerNoteReader
             return note;
         var fields = new List<MakerNoteField>(minolta.Entries.Count);
         foreach (MakerNoteEntry field in minolta.Entries)
-            fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value, field.Fields));
+            fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value, field.Fields) { Slot = field.Slot });
         var entries = new List<MakerNoteEntry>(note.Entries.Count);
         foreach (MakerNoteEntry entry in note.Entries)
-            entries.Add(ReferenceEquals(entry, pointer) ? new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields) : entry);
+            entries.Add(ReferenceEquals(entry, pointer) ? entry.With(fields) : entry);
         return new MakerNote(note.Format, note.ByteOrder, entries);
     }
 
@@ -351,7 +354,15 @@ internal static class MakerNoteReader
             if (entry.Fields.Count == 0 && entry.TagId is 0x0091 or 0x0097 or 0x0098 &&
                 NikonMakerNoteArrays.DecomposeEncrypted(entry.TagId, entry.Value, shutterCount, key) is { Count: > 0 } fields)
             {
-                entries.Add(new MakerNoteEntry(entry.TagId, entry.Name, entry.Value, fields));
+                if (key is uint serialKeyOfCipher)
+                {
+                    // The cipher is its own inverse: the same key stream is XORed either way.
+                    int clear = NikonMakerNoteArrays.EncryptedStart(entry.TagId, entry.Value);
+                    Func<byte[], byte[]> cipher = bytes => NikonMakerNoteCipher.Decrypt(bytes, clear, shutterCount, serialKeyOfCipher);
+                    entries.Add(entry.With(fields, cipher, cipher));
+                }
+                else
+                    entries.Add(entry.With(fields));
                 changed = true;
             }
             else
@@ -407,7 +418,10 @@ internal static class MakerNoteReader
             if (!seen.Add(tag))
                 continue;
             ExifValue value = ExifValue.FromRaw(type, valueCount, order, tiff.Slice((int)valueStart, byteLength));
-            entries.Add(new MakerNoteEntry(tag, name(tag), value, split?.Invoke(tag, value) ?? []));
+            entries.Add(new MakerNoteEntry(tag, name(tag), value, split?.Invoke(tag, value) ?? [])
+            {
+                Slot = new MakerNoteSlot(ifd, p, (int)valueStart, byteLength, little, regionEnd, offsetBase, delta),
+            });
         }
         return new MakerNote(format, order, entries);
     }

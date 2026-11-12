@@ -12,7 +12,7 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   XMP read from them (`PsdMetadata.ReadExif/ReadIptc/ReadXmp`). JP2/EPS: narrow inspection.
 - EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0;
   names only, marked by `ExifTagDefinition.Source`, from TIFF/EP, DNG 1.7, DCF, Microsoft, PIM).
-- MakerNotes (`ExifMetadata.MakerNote`, read-only): Canon (incl. arrays and AFInfo), Nikon 1/2/3
+- MakerNotes (`ExifMetadata.MakerNote`; read, and edited tag by tag in place, see below): Canon (incl. arrays and AFInfo), Nikon 1/2/3
   (incl. versioned and encrypted arrays, preview directory), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
   Sony (incl. enciphered arrays, camera settings, the A100's Minolta directory), Panasonic, Olympus/OM System (incl. sub-directories),
   Minolta/Konica Minolta (incl. the camera-settings arrays), Casio (both layouts), Samsung
@@ -193,6 +193,15 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   difference is documented in the script and an undocumented one fails the job. Table and
   differences: `docs/usage/OPERATIONS_USAGE_AND_LIMITS.md`.
 
+- MakerNote tags are edited in place (`ExifEdit.Set(string, ExifValue)` / `SetText` / `Remove(string)`
+  with the keys the dump prints, `Exif.Canon.OwnerName`, `Exif.CanonCs.Quality`; the same keys in
+  `ModifyScript`): JPEG, PNG and WebP. Every layout the reader decodes; tags, fields of arrays
+  (Nikon re-encrypted with the file's key, Sony re-enciphered), tags of sub-directories (Olympus),
+  removal by compacting the directory. The note never moves or grows: a value that grows, a tag
+  that is not there, TIFF-based and BMFF files are refused (`UnsupportedFeature`); addresses and
+  the Nikon cipher keys are `TagNotEditable`. The block is re-read and every unnamed tag compared
+  byte for byte (`MakerNoteWriter`). Not yet: growth, TIFF-based and BMFF files, the `exiv2` parity job.
+
 ## Next (in order)
 
 1. Publish 1.0 to NuGet: a version and a release workflow (packages are ready; nothing is published).
@@ -204,7 +213,7 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 ## Known limits
 
-- Writes refuse when safety is not established; MakerNotes are never moved or edited. EXIF takes any
+- Writes refuse when safety is not established; MakerNotes are never moved, and their tags are edited only in place. EXIF takes any
   tag; the thumbnail (IFD1) is edited in JPEG, PNG and WebP only. IPTC is not written to PSD or sidecars. XMP and
   IPTC agree only when asked (`MetadataSync`); an independent `SaveIptc` leaves the digest stale.
 - Sync: `SaveAll` has no async twin; PSD and sidecars have no `SaveAll`. Not in the mapping table:

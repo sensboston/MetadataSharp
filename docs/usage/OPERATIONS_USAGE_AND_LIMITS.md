@@ -50,7 +50,8 @@ byte[] filled = MetadataOperations.InsertExv(other, exv, MetadataFamilies.All, o
   `:parentname:`. Conversions that depend on locale or zone are refused, and so is a result with a
   path separator. A name that is taken is the caller's matter.
 - **Modify**: EXIF `add` is `set` (no duplicate tags). IPTC `set` replaces the first occurrence and
-  `add` appends, as the tool does. A key of a MakerNote group is refused. A stream that is created
+  `add` appends, as the tool does. A key of a MakerNote group (`Exif.Canon.OwnerName`,
+  `Exif.CanonCs.Quality`) changes a tag the note of the file has, where it is; see below. A stream that is created
   declares UTF-8 (1:90) and its record version (2:0). The type of an XMP key without one comes
   from the sync tables (`MetadataSync.ExifMappings`, `IptcMappings`) and the Dublin Core arrays;
   any other key is text, where the tool has a table of every schema it knows: name the type
@@ -60,6 +61,23 @@ byte[] filled = MetadataOperations.InsertExv(other, exv, MetadataFamilies.All, o
   tool writes it again with every save, which changes offsets it holds and sometimes its byte
   order. For the same reason **`InsertExv` and `ExvFile.Create` do not carry the MakerNote** or
   the tags of image data (the tool carries the MakerNote); `InsertExv` says so in its notes.
+- **Tags of the MakerNote are changed where they are** (`ExifEdit.Set(string, ExifValue)`,
+  `SetText`, `Remove(string)`, and the same keys in a modify script), in the EXIF block of a JPEG,
+  PNG or WebP file. The note keeps its offset and its length and nothing in it moves, so no offset
+  it holds changes, whatever the maker counts it from. What is done: a value of the stored type
+  that is no longer than the stored one (or fits the four bytes of its entry) is written in its
+  place and the rest cleared; a field of an array is written into the array, which is deciphered
+  and enciphered again where it is stored so (Nikon with the key of the file, Sony); a tag is
+  removed by moving the entries after it up, the count less one, the offset of the next directory
+  kept, the freed bytes cleared. What is refused: a tag the note does not hold, a value of another
+  type, a value that grows, a file without a note the library decodes, TIFF-based and BMFF files
+  (`UnsupportedFeature`); the tags that address data or a directory, their lengths, and Nikon's
+  SerialNumber and ShutterCount, which key the cipher (`TagNotEditable`); the last tag of a
+  directory and a directory with entries the reader skips (removal only). The tool writes the
+  whole note again and takes any of these. After the change the block is read again: every tag,
+  field and element that was not named reads byte for byte as before, the named ones as set, and
+  every changed byte lies where a change was planned; otherwise `UnsafeRelocation` and nothing is
+  written.
 - **Insert**: the IPTC stream written declares UTF-8 and the writer's record version, not those of
   the EXV file; a dataset whose text is not UTF-8, from a stream without a declared character
   set, and a dataset outside records 1 and 2 are not carried, and noted. A value of no elements
