@@ -4,7 +4,9 @@ using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Formats.Jpeg;
 using MetadataSharp.Formats.Tiff;
+using MetadataSharp.Tests.Iptc;
 using Xunit;
 
 namespace MetadataSharp.Tests.Tiff;
@@ -717,18 +719,45 @@ public sealed class TiffBasedWriteTests
     }
 
     [Fact]
-    public void IptcThatLivesInPhotoshopResourcesIsNotShadowedByANewTag()
+    public void IptcThatLivesInPhotoshopResourcesIsEditedThereAndNotShadowedByANewTag()
     {
         byte[] stream = [0x1C, 2, 120, 0, 5, (byte)'h', (byte)'e', (byte)'l', (byte)'l', (byte)'o'];
-        byte[] block = new byte[12 + stream.Length];
-        "8BIM"u8.CopyTo(block);
-        BinaryPrimitives.WriteUInt16BigEndian(block.AsSpan(4), 0x0404);
-        BinaryPrimitives.WriteUInt32BigEndian(block.AsSpan(8), (uint)stream.Length);
-        stream.CopyTo(block, 12);
+        byte[] other = IptcCodecTests.Block(0x0424, [1, 2, 3], [65, 66], 0x7e);
+        byte[] digest = IptcCodecTests.Block(0x0425, new byte[16]);
+        byte[] block = [.. other, .. IptcCodecTests.Block(0x0404, stream, [78]), .. digest];
         byte[] file = TiffBasedFixture.Flat(false, (0x010F, 2, Encoding.ASCII.GetBytes("TestCompany\0")), (0x8649, 1, block));
+        ExifTagKey naa = new(ExifDirectoryKind.Ifd0, 0x83BB), held = new(ExifDirectoryKind.Ifd0, 0x8649);
+        static PhotoshopResources Resources(byte[] tiff, ExifTagKey key)
+        {
+            Assert.True(TiffExif.Read(tiff).TryGetEntry(key, out ExifEntry? entry));
+            return PhotoshopResources.Parse([.. "Photoshop 3.0\0"u8.ToArray(), .. entry!.Value.RawBytes.ToArray()], new());
+        }
 
-        Assert.NotNull(TiffIptc.Read(file));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Code(() => Save(file, Iptc("other"))));
+        Assert.Equal("hello", TiffIptc.Read(file)!.Caption);
+        // The stream is replaced inside the resources: no 0x83BB tag appears beside it, every other
+        // resource keeps its bytes and its place, and the digest is left as it was.
+        byte[] output = Save(file, Iptc("other"));
+        Assert.Equal("other", TiffIptc.Read(output)!.Caption);
+        Assert.False(TiffExif.Read(output).TryGetEntry(naa, out _));
+        PhotoshopResources edited = Resources(output, held);
+        Assert.Equal(new ushort[] { 0x0424, 0x0404, 0x0425 }, edited.Resources.Select(r => r.Id));
+        Assert.Equal(other, edited.Resources[0].Block.ToArray());
+        Assert.Equal(digest, edited.Resources[2].Block.ToArray());
+        Assert.Equal(IptcCodecTests.Block(0x0404, stream, [78])[..8], edited.Resources[1].NameHeader.ToArray());
+        // The option recomputes the digest.
+        using (TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(new MemoryStream(file)))
+        {
+            using var updated = new MemoryStream();
+            document.SaveIptc(updated, Iptc("other"), new IptcWriteOptions { UpdateDigest = true });
+            PhotoshopResources fresh = Resources(updated.ToArray(), held);
+            Assert.Equal(System.Security.Cryptography.MD5.HashData(fresh.Iptc!.Data.Span), fresh.Resources[2].Data.ToArray());
+        }
+        // An edit that changes nothing is a copy; removal takes the stream and its digest out and keeps the rest.
+        Assert.Equal(file, Save(file, Iptc("hello")));
+        var remove = new IptcEdit(); remove.RemoveAllIptc();
+        byte[] removed = Save(file, remove);
+        Assert.Null(TiffIptc.Read(removed));
+        Assert.Equal(other, Assert.Single(Resources(removed, held).Resources).Block.ToArray());
         // The other kinds of metadata of such a file are edited.
         Assert.Equal(LongText, Text(TiffExif.Read(Save(file, Edit(edit => edit.Set(new(ExifDirectoryKind.Ifd0, 0x010F), Ascii(LongText))))),
             new(ExifDirectoryKind.Ifd0, 0x010F)));

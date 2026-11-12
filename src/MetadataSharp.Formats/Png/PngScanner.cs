@@ -150,6 +150,24 @@ internal static class PngRawProfile
         if (high >= 0 || count != result.Length) throw Bad();
         return result;
     }
+    /// <summary>
+    /// The text of a profile as exiv2 and ImageMagick write it: a line break, the name, the number of
+    /// bytes right-aligned in eight columns, then the bytes in hexadecimal, thirty-six to a line.
+    /// </summary>
+    internal static byte[] Encode(string name, ReadOnlySpan<byte> profile)
+    {
+        const string Hex = "0123456789abcdef";
+        var text = new System.Text.StringBuilder(profile.Length * 2 + profile.Length / 36 + name.Length + 16);
+        text.Append('\n').Append(name).Append('\n')
+            .Append(profile.Length.ToString(System.Globalization.CultureInfo.InvariantCulture).PadLeft(8));
+        for (int i = 0; i < profile.Length; i++)
+        {
+            if (i % 36 == 0) text.Append('\n');
+            text.Append(Hex[profile[i] >> 4]).Append(Hex[profile[i] & 15]);
+        }
+        text.Append('\n');
+        return System.Text.Encoding.ASCII.GetBytes(text.ToString());
+    }
 }
 internal static class Crc
 {

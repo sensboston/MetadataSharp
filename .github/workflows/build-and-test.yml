@@ -405,6 +405,14 @@ jobs:
         run: |
           dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- xmp-edits artifacts/parity/edited-xmp
           python tools/reference/xmp_edits.py artifacts/parity/edited-xmp --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      # Not key parity either: the pinned tool has to print, with -pi and -pa, every IPTC dataset an
+      # edit wrote into a JPEG, a TIFF (tag 0x83BB, and the resources of tag 0x8649) and a PNG file
+      # (the raw profile text chunk), as often as it was written, and no other.
+      - name: Every IPTC dataset an edit wrote is printed by the pinned tool (exiv2 -u -pi, -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- iptc-edits artifacts/parity/edited-iptc
+          python tools/reference/iptc_edits.py artifacts/parity/edited-iptc --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
       # Not key parity either: the pinned tool has to print, with -pC and -pc, the ICC profile and
       # the comment the JPEG writer gave a file, replaced or took out, and with -pa what it printed
       # for the file the edit started from. Authored files first, then the JPEG files of the pinned

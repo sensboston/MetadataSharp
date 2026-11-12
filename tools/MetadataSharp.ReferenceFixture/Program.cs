@@ -566,6 +566,125 @@ else if (args.Length == 2 && args[0] == "xmp-edits")
     XmpRow("qualified.jpg", [TextLine("Xmp.acme.note", note), TextLine("Xmp.acme.note/?acme:role", "caption")]);
     File.WriteAllLines(XmpAt("manifest.tsv"), manifest);
 }
+else if (args.Length == 2 && args[0] == "iptc-edits")
+{
+    // Files for the pinned tool to read after an IPTC edit: datasets of every class of records 1 and
+    // 2 and one the specification does not define, then a second edit of the result that appends,
+    // inserts and removes occurrences, in a JPEG, a TIFF and a PNG file; and a TIFF file whose
+    // stream lives in its Photoshop resources (tag 0x8649) beside another resource and a digest.
+    // manifest.tsv has one row per file: the file, then every line the tool has to print for its
+    // IPTC as "key type count value", |-separated. A value of * stands for any value.
+    Directory.CreateDirectory(args[1]);
+    var manifest = new List<string>();
+    string IptcAt(string name) => Path.Combine(args[1], name);
+    string Text(string key, string value) => $"Iptc.{key} String {Encoding.UTF8.GetByteCount(value)} {value}";
+    string Day(string key, string value) => $"Iptc.{key} Date 8 {value}";
+    string Clock(string key, string value) => $"Iptc.{key} Time 11 {value}";
+    string Number(string key, int value) => $"Iptc.{key} Short 1 {value}";
+    var keywords = new IptcDatasetKey(2, 25);
+    const string caption = "\u041F\u0440\u0438\u0432\u0435\u0442, \u043F\u043E\u0440\u0442", creator = "Ana Mart\u00EDn", city = "R\u012Bga";
+
+    var build = new IptcEdit();
+    build.SetObjectName("Harbour at dawn");
+    build.SetKeywords(["harbour", "dawn"]);
+    build.AddKeyword("boats");
+    build.SetBylines([creator]);
+    build.SetBylineTitles(["Staff"]);
+    build.SetHeadline("Boats leave");
+    build.SetCaption(caption);
+    build.SetCopyright("(c) 2026 Example");
+    build.SetCredit("Example");
+    build.SetSource("Desk");
+    build.SetCity(city);
+    build.SetSubLocation("Old town");
+    build.SetProvinceState("Vidzeme");
+    build.SetCountryCode("LVA");
+    build.SetCountryName("Latvia");
+    build.SetDateCreated(new DateTimeOffset(2026, 11, 12, 9, 5, 7, TimeSpan.FromHours(2)));
+    build.Set(new(2, 10), "5");
+    build.Set(new(2, 15), "SPO");
+    build.ReplaceText(new(2, 20), ["football", "cup"]);
+    build.Set(new(2, 12), "IPTC:15054000:sport:soccer");
+    build.Set(new(2, 130), "3Y");
+    build.SetDate(new(2, 30), new DateOnly(2026, 12, 1));
+    build.SetTime(new(2, 35), new TimeOnly(8, 0, 0), new TimeSpan(-5, -30, 0));
+    build.SetUInt16(new(1, 20), 11);
+    build.Set(new(1, 30), "MSHARP");
+    build.Set(new(1, 40), "00000042");
+    build.SetDate(new(1, 70), new DateOnly(2026, 11, 13));
+    build.ReplaceRaw(new(2, 250), [IptcValue.FromRaw("opaque"u8)]);
+    string[] common =
+    [
+        "Iptc.Envelope.CharacterSet String 3 *", Number("Envelope.FileFormat", 11), Text("Envelope.ServiceId", "MSHARP"),
+        Text("Envelope.EnvelopeNumber", "00000042"), Day("Envelope.DateSent", "2026-11-13"),
+        Number("Application2.RecordVersion", 4), Text("Application2.ObjectName", "Harbour at dawn"),
+        Text("Application2.BylineTitle", "Staff"), Text("Application2.Headline", "Boats leave"),
+        Text("Application2.Copyright", "(c) 2026 Example"), Text("Application2.Credit", "Example"), Text("Application2.Source", "Desk"),
+        Text("Application2.SubLocation", "Old town"), Text("Application2.ProvinceState", "Vidzeme"),
+        Text("Application2.CountryCode", "LVA"), Text("Application2.CountryName", "Latvia"),
+        Text("Application2.Urgency", "5"), Text("Application2.Category", "SPO"),
+        Text("Application2.Subject", "IPTC:15054000:sport:soccer"), Text("Application2.ImageType", "3Y"),
+        Day("Application2.ReleaseDate", "2026-12-01"), Clock("Application2.ReleaseTime", "08:00:00-05:30"),
+        Text("Application2.0x00fa", "opaque"), Text("Application2.Byline", creator),
+    ];
+    string[] built =
+    [
+        .. common,
+        Text("Application2.Keywords", "harbour"), Text("Application2.Keywords", "dawn"), Text("Application2.Keywords", "boats"),
+        Text("Application2.Caption", caption), Text("Application2.City", city),
+        Day("Application2.DateCreated", "2026-11-12"), Clock("Application2.TimeCreated", "09:05:07+02:00"),
+        Text("Application2.SuppCategory", "football"), Text("Application2.SuppCategory", "cup"),
+    ];
+
+    // The second edit works on occurrences: one removed, one inserted, one appended; a repeatable
+    // dataset removed whole; a date set alone, which takes the time out; a raw occurrence appended.
+    var change = new IptcEdit();
+    change.RemoveAt(keywords, 0);
+    change.Insert(keywords, 1, "quay");
+    change.Append(new(2, 80), "Li Wei");
+    change.SetCity("Riga");
+    change.Remove(new(2, 20));
+    change.SetDateCreated(new DateOnly(2027, 1, 2));
+    change.SetCaption(null);
+    change.AppendRaw(new(2, 250), IptcValue.FromRaw("second"u8));
+    string[] changed =
+    [
+        .. common,
+        Text("Application2.Keywords", "dawn"), Text("Application2.Keywords", "quay"), Text("Application2.Keywords", "boats"),
+        Text("Application2.Byline", "Li Wei"), Text("Application2.City", "Riga"),
+        Day("Application2.DateCreated", "2027-01-02"), Text("Application2.0x00fa", "second"),
+    ];
+    void IptcRow(string file, string[] lines) => manifest.Add(file + "\t" + string.Join('|', lines));
+
+    byte[] jpeg = JpegFixture.Build(JpegFixture.Segment(0xE0, [74, 70, 73, 70, 0, 1, 2, 0, 0, 1, 0, 1, 0, 0]));
+    using (var document = JpegMetadataDocument.Open(new MemoryStream(jpeg))) document.SaveIptcAs(IptcAt("built.jpg"), build);
+    using (var document = JpegMetadataDocument.Open(IptcAt("built.jpg"))) document.SaveIptcAs(IptcAt("changed.jpg"), change);
+    using (var document = TiffBasedMetadataDocument.Open(new MemoryStream(TiffBasedFixture.Tiff(false).Bytes))) document.SaveIptcAs(IptcAt("built.tif"), build);
+    using (var document = TiffBasedMetadataDocument.Open(IptcAt("built.tif"))) document.SaveIptcAs(IptcAt("changed.tif"), change);
+    using (var document = PngMetadataDocument.Open(new MemoryStream(PngFixture.Build()))) document.SaveIptcAs(IptcAt("built.png"), build);
+    using (var document = PngMetadataDocument.Open(IptcAt("built.png"))) document.SaveIptcAs(IptcAt("changed.png"), change);
+    foreach (string extension in new[] { "jpg", "tif", "png" })
+    {
+        IptcRow("built." + extension, built);
+        IptcRow("changed." + extension, changed);
+    }
+
+    // The stream of this TIFF file is resource 0x0404 of tag 0x8649, between another resource and a
+    // digest; it declares no character set and is given ASCII, so it still declares none.
+    byte[] held = [0x1C, 2, 120, 0, 5, (byte)'h', (byte)'e', (byte)'l', (byte)'l', (byte)'o', 0x1C, 2, 25, 0, 3, (byte)'o', (byte)'l', (byte)'d'];
+    byte[] block = [.. Resource(0x0424, [1, 2, 3, 4]), .. Resource(0x0404, held), .. Resource(0x0425, new byte[16])];
+    var inResources = new IptcEdit();
+    inResources.SetCaption("changed");
+    inResources.AddKeyword("new");
+    using (var document = TiffBasedMetadataDocument.Open(new MemoryStream(TiffBasedFixture.Flat(false, (0x010F, 2, Encoding.ASCII.GetBytes("TestCompany\0")), (0x8649, 1, block)))))
+        document.SaveIptcAs(IptcAt("resources.tif"), inResources);
+    IptcRow("resources.tif", [Text("Application2.Caption", "changed"), Text("Application2.Keywords", "old"), Text("Application2.Keywords", "new")]);
+    // The same stream in the resources of a JPEG file, with the digest recomputed on request.
+    using (var document = JpegMetadataDocument.Open(new MemoryStream(JpegFixture.Build(JpegFixture.Segment(0xED, [.. "Photoshop 3.0\0"u8, .. block])))))
+        document.SaveIptcAs(IptcAt("digest.jpg"), inResources, new IptcWriteOptions { UpdateDigest = true });
+    IptcRow("digest.jpg", [Text("Application2.Caption", "changed"), Text("Application2.Keywords", "old"), Text("Application2.Keywords", "new")]);
+    File.WriteAllLines(IptcAt("manifest.tsv"), manifest);
+}
 else if (args.Length == 2 && args[0] == "bmff-edits")
 {
     // Files for the pinned tool to read after the BMFF writer edited them: every authored HEIC and

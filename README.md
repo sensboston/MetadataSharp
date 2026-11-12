@@ -180,7 +180,11 @@ using (PngMetadataDocument document = PngMetadataDocument.Open(source))
     document.SaveXmpAs(destination, edit);
 ```
 
-### Edit IPTC in a JPEG
+### Edit IPTC (JPEG, TIFF-based files, PNG)
+
+Any dataset of `IptcDatasets.All` can be set (`edit.Set(new IptcDatasetKey(2, 10), "5")`), with typed
+setters for the common ones (`SetCaption`, `SetKeywords`, `SetDateCreated`, ...); the TIFF-based and
+PNG documents have the same `SaveIptc` methods.
 
 ```csharp
 var edit = new IptcEdit();

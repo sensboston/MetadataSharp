@@ -1,6 +1,6 @@
 # Current state
 
-Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (read-only).
+Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (read-only).
 
 ## Done (read side unless noted)
 
@@ -26,7 +26,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   qualifiers) as read-only path rows; editing stays on the bounded profile. NUL padding is ignored.
 - TIFF-based files: IPTC read (`TiffIptc.Read`, tag 0x83BB or the resource in 0x8649).
 - IPTC read-only forms (`IptcPacket.IsEditable` false): padding, repeated equal controls or resources,
-  a digest without a stream. PNG: EXIF and IPTC in "Raw profile type" text chunks, eXIf after IDAT.
+  a digest without a stream. PNG: EXIF in a "Raw profile type" text chunk, eXIf after IDAT
+  (IPTC in its raw profile chunk is editable, see below).
 - Previews, read-only: `Previews.List` / `Previews.Extract` in `MetadataSharp.Formats` (EXIF thumbnail,
   MakerNote pointers, JPEG sub-images of TIFF-based raw files, BMFF `thmb` items, PSD resource 0x040C).
   `MetadataSharp.Dump --previews`; compared with `exiv2 -pp` as kind "Preview" in the parity job.
@@ -159,6 +160,14 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   JPEG reads and writes Extended XMP (over 65,504 bytes); TIFF and BMFF pad a packet for in-place edits.
   CI job: `exiv2 -pa` prints every written property and no other in JPEG, PNG, WebP, TIFF, HEIC and a
   sidecar, `-pX` gives the packet; the tool reads only the standard packet of Extended XMP (PR #107).
+- Any IPTC dataset is written (`IptcEdit`, ordered operations; `IptcDatasets` is the table of records
+  1 to 9, written from IIM 4.2 as remembered): text, numbers, dates, times, repeated values by index,
+  raw bytes for anything else. Kept occurrences keep their bytes. `ESC ( B` reads as no declaration;
+  the first non-ASCII text makes a packet UTF-8, or is refused when undeclared 8-bit text stays.
+  JPEG (APP13), TIFF-based files (0x83BB, or the 0x0404 resource inside 0x8649 when IPTC lives
+  there) and PNG (`Raw profile type iptc`, kept in its form; new: zTXt before IDAT). The digest
+  0x0425 is left stale unless `IptcWriteOptions.UpdateDigest`; never added. CI job: `exiv2 -u -pi`
+  and `-pa` print every written dataset, as often as written, and no other (PR #108).
 
 ## Next (in order)
 
@@ -172,7 +181,8 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 ## Known limits
 
 - Writes refuse when safety is not established; MakerNotes are never moved or edited. EXIF takes any
-  tag; a thumbnail directory (IFD1) is not created, and IPTC and XMP writes keep their profiles.
+  tag; a thumbnail directory (IFD1) is not created. IPTC is not written to PSD or sidecars, and XMP is
+  not brought into agreement with it (the digest is left stale to say so).
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
 - No ICC write for PSD, JPEG 2000 and EXV; comments are written in JPEG and PNG only; a PNG profile
   over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to

@@ -94,7 +94,7 @@ public sealed class IptcCodecTests
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => legacy.GetText(0)).Code);
         IptcPacket invalid = IptcPacket.Parse([.. Raw(IptcPacket.CreateEmpty()), .. Dataset(2, 25, 0xc3, 0x28)]);
         Assert.Equal(MetadataErrorCode.InvalidIptc, Assert.Throws<MetadataException>(() => invalid.GetText(2)).Code);
-        IptcPacket unknown = IptcPacket.Parse([.. Dataset(1, 90, 0x1b, 0x28, 0x42), .. Dataset(2, 25, 65)]);
+        IptcPacket unknown = IptcPacket.Parse([.. Dataset(1, 90, 0x1b, 0x2e, 0x41), .. Dataset(2, 25, 65)]);
         Assert.Equal(IptcCharacterSet.Unsupported, unknown.CharacterSet);
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => unknown.GetText(1)).Code);
         var edit = new IptcEdit(); edit.ReplaceText(Keywords, ["ASCII"]);
@@ -112,7 +112,9 @@ public sealed class IptcCodecTests
         edit.ReplaceText(new(2, 120), ["Привет\r\n世界"]);
         Assert.Equal("Привет\r\n世界", IptcPacket.CreateEmpty().Apply(edit)!.GetText(2));
         var ascii = new IptcEdit(); ascii.ReplaceText(Keywords, ["non-ASCII я"]);
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => IptcPacket.Parse([]).Apply(ascii)).Code);
+        // A stream that declares nothing gains the UTF-8 declaration with its first text beyond ASCII.
+        Assert.Equal(IptcCharacterSet.Utf8, IptcPacket.Parse([]).Apply(ascii)!.CharacterSet);
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => IptcPacket.Parse(Dataset(2, 120, 0xe9)).Apply(ascii)).Code);
     }
     [Fact]
     public void DuplicateControlsAreAmbiguous()
@@ -211,7 +213,10 @@ public sealed class IptcCodecTests
         byte[] unknown = Block(0x1234, [9, 8, 7], [65, 66], 0x7e);
         byte[] iptc = Block(0x0404, [1], [88], 0x7f); byte[] digest = Block(0x0425, new byte[16], [68, 71]);
         PhotoshopResources source = PhotoshopResources.Parse(Photoshop(unknown, iptc, digest), new()); source.ValidateTargets();
-        byte[] result = source.Rewrite(Encoding.ASCII.GetBytes("abc"))!;
+        // The digest is left as it is - stale on purpose - unless the caller asks for it.
+        PhotoshopResources stale = PhotoshopResources.Parse(source.Rewrite(Encoding.ASCII.GetBytes("abc"))!, new());
+        Assert.Equal(digest, stale.Resources[2].Block.ToArray());
+        byte[] result = source.Rewrite(Encoding.ASCII.GetBytes("abc"), updateDigest: true)!;
         PhotoshopResources changed = PhotoshopResources.Parse(result, new());
         Assert.Equal(unknown, changed.Resources[0].Block.ToArray());
         Assert.Equal(Convert.FromHexString("900150983CD24FB0D6963F7D28E17F72"), changed.Resources[2].Data.ToArray());

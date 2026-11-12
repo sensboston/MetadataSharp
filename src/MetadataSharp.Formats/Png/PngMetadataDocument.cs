@@ -11,8 +11,9 @@ namespace MetadataSharp.Formats.Png;
 
 /// <summary>
 /// A validated static PNG source with independently addressed EXIF and XMP operations. EXIF is the
-/// eXIf chunk and XMP the XML:com.adobe.xmp iTXt chunk; both can be edited. EXIF and IPTC held in
-/// "Raw profile type" text chunks are read and not edited.
+/// eXIf chunk and XMP the XML:com.adobe.xmp iTXt chunk; both can be edited. PNG defines no chunk for
+/// IPTC: it is read from and written to the "Raw profile type iptc" text chunk, as exiv2 and
+/// ImageMagick do. EXIF held in a "Raw profile type" text chunk is read and not edited.
 /// </summary>
 /// <remarks>Borrowed streams remain open. No concurrent source/document/edit use is supported.</remarks>
 public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
@@ -119,22 +120,25 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     }
     private static IptcPacket? ProfileIptc(byte[] profile, IptcLimits limits)
     {
-        ReadOnlySpan<byte> stream = profile;
+        ReadOnlySpan<byte> stream = profile; MetadataException? refusal = null;
         // The profile is the IIM stream itself, or the Photoshop resources that hold it, which a
         // writer stores with or without the signature an APP13 segment begins with.
         if (profile.Length != 0 && profile[0] != 0x1C)
         {
             ReadOnlySpan<byte> signature = "Photoshop 3.0\0"u8;
             byte[] payload = stream.StartsWith(signature) ? profile : [.. signature, .. profile];
-            if (PhotoshopResources.Parse(payload, limits).IptcForReading() is not PhotoshopResources.Resource resource) return null;
-            stream = resource.Data.Span;
+            PhotoshopResources resources = PhotoshopResources.Parse(payload, limits);
+            if (resources.IptcForReading() is not PhotoshopResources.Resource resource) return null;
+            // What an edit of these resources fails with, so the packet can say it is for reading only.
+            stream = resource.Data.Span; refusal = resources.EditRefusal();
         }
-        return IptcPacket.Inspect(stream, new() { Limits = limits }, ProfileIsReadOnly("IPTC"));
+        return IptcPacket.Inspect(stream, new() { Limits = limits }, refusal);
     }
     /// <summary>
     /// Reads the IPTC stream of the "Raw profile type iptc" text chunk, or returns null when the file
-    /// has none. PNG defines no chunk for IPTC, so the packet is for reading only:
-    /// <see cref="IptcPacket.IsEditable"/> is false and this document has no IPTC save.
+    /// has none. The profile is the IIM stream itself or Photoshop image resources that hold it. A
+    /// stream that can be read and not edited comes back with <see cref="IptcPacket.IsEditable"/>
+    /// false, and <see cref="SaveIptc(Stream, IptcEdit)"/> refuses a change to it.
     /// </summary>
     public IptcPacket? ReadIptc(IptcReadOptions? options = null) => ReadIptcCore(options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="ReadIptc"/>

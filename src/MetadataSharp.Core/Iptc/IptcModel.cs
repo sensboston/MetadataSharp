@@ -7,7 +7,7 @@ public readonly record struct IptcDatasetKey(byte Record, byte Dataset);
 /// <summary>The packet's explicit encoding declaration, never a guessed code page.</summary>
 public enum IptcCharacterSet
 {
-    /// <summary>The packet has no 1:90 dataset.</summary>
+    /// <summary>The packet has no 1:90 dataset, or one that declares ASCII (ESC ( B), which says as much.</summary>
     Unspecified,
     /// <summary>The packet declares UTF-8 (ESC % G).</summary>
     Utf8,
@@ -74,26 +74,21 @@ public sealed class IptcReadOptions
     public IptcLimits Limits { get; init; } = new();
 }
 
+/// <summary>What an IPTC save does beside the stream itself.</summary>
+public sealed class IptcWriteOptions
+{
+    /// <summary>
+    /// Whether the IPTC digest of the Photoshop image resources (resource 0x0425, the MD5 of the
+    /// stream) is recomputed. False by default: the digest the file has is left as it is, so that it
+    /// no longer matches the edited stream, and a reader that follows the Metadata Working Group
+    /// guidelines takes the IPTC as newer than the XMP and reads it. Set it when the XMP of the file
+    /// is written to say the same as the IPTC. A digest is never added to a file that has none, and
+    /// is removed together with the stream, whatever this says.
+    /// </summary>
+    public bool UpdateDigest { get; init; }
+}
+
 internal static class IptcText
 {
     internal static readonly UTF8Encoding Utf8 = new(false, true);
-    internal static (int Bytes, bool Repeated) Rule(IptcDatasetKey key) => key switch
-    {
-        (2, 5) => (64, false), (2, 25) => (64, true), (2, 80) => (32, true),
-        (2, 105) => (256, false), (2, 116) => (128, false), (2, 120) => (2000, false),
-        _ => throw new ArgumentException("The dataset is outside the supported text profile.", nameof(key))
-    };
-    internal static byte[] Encode(IptcDatasetKey key, string text)
-    {
-        ArgumentNullException.ThrowIfNull(text);
-        int maximum = Rule(key).Bytes;
-        if (text.Length > maximum || text.Any(c => char.IsControl(c) && !(key.Dataset == 120 && c is '\r' or '\n')))
-            throw new ArgumentException("Text exceeds the field limit or contains unsupported control characters.", nameof(text));
-        try
-        {
-            if (Utf8.GetByteCount(text) > maximum) throw new ArgumentException("Text exceeds the encoded field byte limit.", nameof(text));
-            return Utf8.GetBytes(text);
-        }
-        catch (EncoderFallbackException e) { throw new ArgumentException("Text is not valid Unicode.", nameof(text), e); }
-    }
 }
