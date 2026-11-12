@@ -103,6 +103,8 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; bounded restricted XMP profile."),
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "Cr3Metadata.Read: the CMT1, CMT2 and CMT4 boxes of the Canon box as the IFD0, EXIF and GPS directories of one block, CMT3 as the Canon MakerNote, as raw values; boxes that differ in byte order are refused. Nothing is written."),
+        (MetadataContainer.Cr3, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "Cr3Metadata.Read: the packet of the XMP box at the top level of the file; bounded restricted XMP profile; raw bytes retained for unmodeled constructs. Nothing is written."),
         (MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks, joined by their numbers as in a JPEG; the bytes the profile declares, not interpreted."),
         (MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment, in file order, as in a JPEG. Nothing is written."),
         (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; a block longer than a JPEG segment holds is read within the budgets. An item built from other items or stored in another file is refused."),
@@ -239,7 +241,9 @@ public sealed class MetadataCapabilitiesTests
     [InlineData(MetadataContainer.XmpSidecar, MetadataFamily.Exif, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Avif, MetadataFamily.IptcIim, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Heic, MetadataFamily.Preview, MetadataOperation.Extract)]
-    [InlineData(MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Read)]
+    [InlineData(MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Replace)]
+    [InlineData(MetadataContainer.Cr3, MetadataFamily.IptcIim, MetadataOperation.Read)]
+    [InlineData(MetadataContainer.Cr3, MetadataFamily.Preview, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Gif, MetadataFamily.Icc, MetadataOperation.Extract)]
@@ -304,6 +308,23 @@ public sealed class MetadataCapabilitiesTests
                     Assert.Equal(write == MetadataOperation.Remove, row.Note!.Contains("removal of the whole"));
                 }
             Assert.Equal(CapabilityStatus.NotSupported, MetadataCapabilities.GetStatus(container, MetadataFamily.IptcIim, MetadataOperation.Read));
+        }
+    }
+
+    [Fact]
+    public void TheCr3ReaderHasItsTwoReadRowsAndNoneThatWrites()
+    {
+        // Cr3ExifTests and Cr3XmpTests author the layouts; no type writes a CR3 file.
+        CapabilityDescriptor[] rows = MetadataCapabilities.All.Where(row => row.Container == MetadataContainer.Cr3).ToArray();
+
+        Assert.Equal(2, rows.Length);
+        Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Read));
+        Assert.Equal(CapabilityStatus.Supported, MetadataCapabilities.GetStatus(MetadataContainer.Cr3, MetadataFamily.Xmp, MetadataOperation.Read));
+        foreach (CapabilityDescriptor row in rows)
+        {
+            Assert.Equal(MetadataOperation.Read, row.Operation);
+            Assert.StartsWith("Cr3Metadata.Read: ", row.Note);
+            Assert.EndsWith("Nothing is written.", row.Note);
         }
     }
 

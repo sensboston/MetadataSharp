@@ -95,8 +95,9 @@ def _isolate(dump_command: list[str], batch: list[Path]) -> dict[str, dict]:
 def run_reference(reference_command: list[str], path: Path) -> str:
     """The pinned reference tool's own print for one of our fixtures.
 
-    Only ever run on files this project wrote. Its output is parsed in memory and never stored, so
-    no expectation of ours - and none of theirs - ends up in the repository.
+    Run on files this project wrote, and on a file of the pinned tree that the tree gives no
+    expectation for. Its output is parsed in memory and never stored, so no expectation of ours -
+    and none of theirs - ends up in the repository.
     """
     finished = subprocess.run(reference_command + [str(path)], capture_output=True, text=True,
                               encoding="utf-8", errors="replace", timeout=300, check=False)

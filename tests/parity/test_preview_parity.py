@@ -1,5 +1,7 @@
 """Offline rules of the preview comparison: how the expectation and the dump are read, and how a
 file's previews are judged. No external tool runs here."""
+import contextlib
+import io
 import sys
 import unittest
 from pathlib import Path
@@ -59,6 +61,37 @@ class ReferenceTests(unittest.TestCase):
             run_previews.parse_reference(REFERENCE + "\n-----> one.jpg <-----\n")
         with self.assertRaises(run_previews.PreviewParityError):
             run_previews.parse_reference("Preview 1: image/jpeg, 1x1 pixels, 9 bytes\n")
+
+
+class OracleTests(unittest.TestCase):
+    def test_what_the_pinned_tool_printed_is_read_by_the_rules_of_the_expectation(self):
+        expected = run_previews.oracle_reference({
+            "raw.cr3": "Preview 1: image/jpeg, 160x120 pixels, 4158 bytes\nPreview 2: image/jpeg, 320x240 pixels, 16993 bytes\n",
+            "warned.cr3": "Warning: Directory Canon has an unexpected next pointer; ignored.\n"
+                          "Preview 1: image/tiff, 96x72 pixels, 20916 bytes\n",
+        })
+        self.assertEqual(["raw.cr3", "warned.cr3"], list(expected))
+        self.assertEqual([SMALL, LARGE], expected["raw.cr3"])
+        self.assertEqual([("image/tiff", 96, 72, 20916)], expected["warned.cr3"])
+
+    def test_a_file_the_tool_printed_nothing_for_expects_no_preview(self):
+        expected = run_previews.oracle_reference({"silent.cr3": "", "raw.cr3": "Preview 1: image/jpeg, 160x120 pixels, 4158 bytes"})
+        self.assertEqual([], expected["silent.cr3"])
+        self.assertEqual([SMALL], expected["raw.cr3"])
+        outcome = run_previews.compare_file(expected["silent.cr3"], [SMALL])
+        self.assertEqual((0, [], [SMALL]), (outcome["match"], outcome["missing"], outcome["extra"]))
+
+    def test_a_line_of_the_tool_that_does_not_parse_is_an_error(self):
+        with self.assertRaises(run_previews.PreviewParityError):
+            run_previews.oracle_reference({"raw.cr3": "Preview 1: image/jpeg, 160 by 120"})
+
+    def test_the_two_sources_of_the_expectation_exclude_each_other(self):
+        for arguments in ([], ["--tree", "t", "--fixtures", "f"]):
+            with self.assertRaises(SystemExit):
+                with contextlib.redirect_stderr(io.StringIO()):
+                    run_previews.main(["--dump-command", "dump"] + arguments)
+        with self.assertRaises(run_previews.PreviewParityError):
+            run_previews.main(["--dump-command", "dump", "--fixtures", "f"])
 
 
 class DumpTests(unittest.TestCase):

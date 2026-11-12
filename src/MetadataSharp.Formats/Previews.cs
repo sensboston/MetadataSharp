@@ -602,7 +602,7 @@ internal ref struct PreviewScanner
             {
                 // CR3: a count of eight bytes, then the PRVW box with the width, the height and the size of a JPEG.
                 if (Box(payload + 24, end, out uint inner, out int body, out int bodyEnd) && inner == CanonPreview && bodyEnd - body >= 16)
-                    Jpeg(body + 16, BinaryPrimitives.ReadUInt32BigEndian(data.Slice(body + 12, 4)), "Canon.PRVW", 0, 0);
+                    Boxed(body + 16, bodyEnd, BinaryPrimitives.ReadUInt32BigEndian(data.Slice(body + 12, 4)), "Canon.PRVW");
             }
             at = end;
         }
@@ -617,14 +617,21 @@ internal ref struct PreviewScanner
                 int child = payload + 16;
                 for (int inner = 0; inner < limits.MaxSegments && Box(child, end, out uint kind, out int body, out int bodyEnd); inner++)
                 {
-                    // CR3: THMB holds the width, the height and the size of a JPEG, then the JPEG.
-                    if (kind == CanonThumbnail && bodyEnd - body >= 16)
-                        Jpeg(body + 16, BinaryPrimitives.ReadUInt32BigEndian(data.Slice(body + 8, 4)), "Canon.THMB", 0, 0);
+                    // CR3: THMB holds the width, the height and the size of a JPEG, then the JPEG. That is
+                    // version 0 of the box; version 1 holds a picture of another coding and is not listed.
+                    if (kind == CanonThumbnail && bodyEnd - body >= 16 && data[body] == 0)
+                        Boxed(body + 16, bodyEnd, BinaryPrimitives.ReadUInt32BigEndian(data.Slice(body + 8, 4)), "Canon.THMB");
                     child = bodyEnd;
                 }
             }
             at = end;
         }
+    }
+
+    /// <summary>A JPEG that a box states the length of: the picture has to end inside the box.</summary>
+    private void Boxed(int at, int boxEnd, uint length, string source)
+    {
+        if (length <= (uint)(boxEnd - at)) Jpeg(at, length, source, 0, 0);
     }
 
     private void Meta(int at, int limit)

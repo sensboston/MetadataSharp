@@ -6,6 +6,7 @@ using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats;
 using MetadataSharp.Formats.Bmff;
+using MetadataSharp.Formats.Cr3;
 using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
 using MetadataSharp.Formats.Jpeg;
@@ -160,6 +161,8 @@ internal static class Program
         if (At(head, 0, 0xFF, 0x01, 0x45, 0x78, 0x69, 0x76, 0x32)) { Exv(path, stdout, length); return; }
         if (At(head, 4, 0x6A, 0x50, 0x20, 0x20)) { Jp2(path, stdout, length); return; }
         if (At(head, 0, 0x3C, 0x3F) || At(head, 0, 0xEF, 0xBB, 0xBF)) { Sidecar(path, stdout, length); return; }
+        // CR3 is a BMFF file of the major brand "crx " that keeps its metadata outside a meta box.
+        if (At(head, 4, 0x66, 0x74, 0x79, 0x70) && At(head, 8, 0x63, 0x72, 0x78, 0x20)) { Cr3(path, stdout, length); return; }
         if (At(head, 4, 0x66, 0x74, 0x79, 0x70)) { Bmff(path, stdout, length); return; }
         if (At(head, 0, 0x1A, 0x45, 0xDF, 0xA3)) { Record(stdout, "STATUS", "not-attempted", "matroska"); return; }
         Record(stdout, "STATUS", "not-attempted", "magic");
@@ -263,6 +266,17 @@ internal static class Program
         Done(stdout);
     }
 
+    private static void Cr3(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        Cr3Metadata metadata = Cr3Metadata.Read(File.ReadAllBytes(path));
+        // The note is a box of its own here, not the value of a tag: the reference prints no rows
+        // for where it starts and how it is ordered.
+        Exif(metadata.Exif, stdout, noteRows: false);
+        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
+        Done(stdout);
+    }
+
     private static void Psd(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
@@ -303,7 +317,7 @@ internal static class Program
         Done(stdout);
     }
 
-    private static void Exif(ExifMetadata? metadata, StreamWriter stdout)
+    private static void Exif(ExifMetadata? metadata, StreamWriter stdout, bool noteRows = true)
     {
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
@@ -315,8 +329,11 @@ internal static class Program
             string group = makerNote.Format switch { MakerNoteFormat.Canon => "Canon", _ => makerNote.Format.ToString() };
             // The reference reports where a note it recognises starts and which byte order it is read in
             // as two rows of a group of their own.
-            Tag(stdout, "Exif.MakerNote.Offset", "Long", 1, makerNote.Offset.ToString(CultureInfo.InvariantCulture));
-            Tag(stdout, "Exif.MakerNote.ByteOrder", "Ascii", 3, makerNote.ByteOrder == Endianness.BigEndian ? "MM" : "II");
+            if (noteRows)
+            {
+                Tag(stdout, "Exif.MakerNote.Offset", "Long", 1, makerNote.Offset.ToString(CultureInfo.InvariantCulture));
+                Tag(stdout, "Exif.MakerNote.ByteOrder", "Ascii", 3, makerNote.ByteOrder == Endianness.BigEndian ? "MM" : "II");
+            }
             foreach (MakerNoteEntry entry in makerNote.Entries)
             {
                 // The reference tool prints an array tag it splits as its fields only, under a

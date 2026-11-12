@@ -78,6 +78,12 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   chunks with the keyword `Comment` (`exiv2 -pc` prints `Description` instead, so no parity for PNG).
   `MetadataSharp.Dump --comments`. Capability rows: ICC under Extract for ten kinds, comments under Read.
   The parity job also runs both readers over every corpus file (`tools/parity/run_sweep.py`).
+- Canon CR3, read-only: `Cr3Metadata.Read` gives the CMT1, CMT2 and CMT4 boxes of the Canon box as
+  the IFD0, Exif and GPS directories of one block (not editable), CMT3 as the Canon MakerNote, and
+  the packet of the XMP box. `Previews` lists THMB (version 0) and PRVW; a picture has to end in
+  its box. Tests author every layout. The corpus has one CR3, `Canon-R6-pruned.CR3`, with no stored
+  expectation: the parity job runs the pinned tool on it (run 43121692654): 225 of the 226 keys of
+  `exiv2 -Pkycvt` with equal values (missing `Exif.CanonFi.RFLensType`), both previews of `exiv2 -pp`.
 
 ## Next (in order)
 
@@ -91,5 +97,5 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
 - ICC profiles and comments are read, never written; a BMFF item is edited or added, never
-  removed. Previews are not decoded and not written.
+  removed. Previews are not decoded and not written. CR3 is read, never written.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.
