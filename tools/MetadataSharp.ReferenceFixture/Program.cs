@@ -1740,6 +1740,146 @@ else if (args.Length == 2 && args[0] == "sync-parity")
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=Sync conversion defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
 }
+else if (args.Length == 2 && args[0] == "operations-parity-blank")
+{
+    // A JPEG file without metadata, for the comparer to insert into, and to insert as a thumbnail.
+    File.WriteAllBytes(args[1], JpegFixture.Build());
+}
+else if (args.Length == 2 && args[0] == "operations-parity")
+{
+    // The operations of this library on the files the comparer (tools/reference/operations_parity.py)
+    // prepared in the directory: for every NAME.jpg, NAME.OPERATION.ours.jpg (or .exv) is what the
+    // operation makes of it. Nothing is compared here. ours.tsv lists NAME, OPERATION, the status
+    // ("written", "unchanged" for an operation with nothing to do, in which case the file is a copy,
+    // or "refused CODE") and a text. An exception that is no refusal is a defect and fails the run.
+    string directory = args[1];
+    var manifest = new List<string>();
+    var crashes = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    string Flat(string text) => text.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+    byte[] blank = File.ReadAllBytes(Path.Combine(directory, "blank.jpg"));
+    string script = File.ReadAllText(Path.Combine(directory, "modify.txt"));
+    string format = File.ReadAllText(Path.Combine(directory, "rename.txt")).Trim();
+    var shift = new MetadataSharp.Core.Operations.TimestampShift(1, 1, 2, new TimeSpan(1, 30, 15));
+
+    static byte[] SaveExif(byte[] file, ExifEdit edit)
+    {
+        using JpegMetadataDocument document = JpegMetadataDocument.Open(new MemoryStream(file));
+        var output = new MemoryStream();
+        document.Save(output, edit);
+        return output.ToArray();
+    }
+
+    foreach (string path in Directory.EnumerateFiles(directory, "s*.jpg").Order(StringComparer.Ordinal))
+    {
+        string name = Path.GetFileNameWithoutExtension(path);
+        if (name.Contains('.')) continue;
+        byte[] source = File.ReadAllBytes(path);
+        void Run(string operation, string extension, Func<(byte[]? Bytes, string Text)> make)
+        {
+            string status, text = "";
+            try
+            {
+                (byte[]? bytes, text) = make();
+                if (extension.Length != 0) File.WriteAllBytes(Path.Combine(directory, $"{name}.{operation}.ours.{extension}"), bytes ?? source);
+                status = bytes is null && extension.Length != 0 ? "unchanged" : "written";
+            }
+            catch (MetadataException refusal) { status = "refused " + refusal.Code; text = refusal.Message; }
+            catch (MetadataSharp.Core.Operations.ModifyScriptException refusal) { status = "refused script"; text = refusal.Message; }
+            catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+            {
+                crashes.Add($"{name} {operation}: {defect.GetType().Name}: {defect.Message}");
+                return;
+            }
+            manifest.Add($"{name}\t{operation}\t{status}\t{Flat(text)}");
+            string counted = operation + " " + status;
+            outcomes[counted] = outcomes.GetValueOrDefault(counted) + 1;
+        }
+        MetadataSharp.Formats.ImageMetadata Read()
+        {
+            MetadataSharp.Formats.ImageMetadata read = MetadataSharp.Formats.ImageMetadata.Read(source);
+            if (read.Errors.Count != 0) throw read.Errors[0].Exception;
+            return read;
+        }
+
+        Run("adjust", "jpg", () =>
+        {
+            MetadataSharp.Formats.ImageMetadata read = Read();
+            MetadataSharp.Core.Sync.SyncEdits edits = MetadataSharp.Core.Operations.MetadataTimestamps.Adjust(read.Exif, read.Iptc, read.Xmp, shift);
+            string notes = string.Join(" | ", edits.Notes.Select(note => $"{note.Source}: {note.Reason}"));
+            if (edits.IsEmpty) return (null, notes);
+            using JpegMetadataDocument document = JpegMetadataDocument.Open(new MemoryStream(source));
+            var output = new MemoryStream();
+            document.SaveAll(output, edits);
+            return (output.ToArray(), notes);
+        });
+        Run("modify", "jpg", () =>
+        {
+            MetadataSharp.Formats.ImageMetadata read = Read();
+            var parsed = MetadataSharp.Core.Operations.ModifyScript.Parse(script, read.Exif?.ByteOrder ?? Endianness.LittleEndian);
+            byte[] bytes = source;
+            if (!parsed.Exif.IsEmpty) bytes = SaveExif(bytes, parsed.Exif);
+            if (!parsed.Iptc.IsEmpty)
+            {
+                using JpegMetadataDocument document = JpegMetadataDocument.Open(new MemoryStream(bytes));
+                var output = new MemoryStream();
+                document.SaveIptc(output, parsed.Iptc);
+                bytes = output.ToArray();
+            }
+            if (!parsed.Xmp.IsEmpty)
+            {
+                using JpegMetadataDocument document = JpegMetadataDocument.Open(new MemoryStream(bytes));
+                var output = new MemoryStream();
+                document.SaveXmp(output, parsed.Xmp);
+                bytes = output.ToArray();
+            }
+            return (bytes, "");
+        });
+        Run("delete-a", "jpg", () => (MetadataSharp.Formats.Operations.MetadataOperations.Delete(source), ""));
+        Run("delete-t", "jpg", () => (MetadataSharp.Formats.Operations.MetadataOperations.Delete(source, MetadataSharp.Formats.Operations.MetadataFamilies.Thumbnail), ""));
+        Run("delete-xc", "jpg", () => (MetadataSharp.Formats.Operations.MetadataOperations.Delete(source,
+            MetadataSharp.Formats.Operations.MetadataFamilies.Xmp | MetadataSharp.Formats.Operations.MetadataFamilies.Comment), ""));
+        Run("extract", "exv", () => (MetadataSharp.Formats.Operations.MetadataOperations.ExtractExv(source), ""));
+        string theirs = Path.Combine(directory, name + ".insert.tool.exv");
+        if (File.Exists(theirs))
+        {
+            Run("insert", "jpg", () =>
+            {
+                byte[] made = MetadataSharp.Formats.Operations.MetadataOperations.InsertExv(blank, File.ReadAllBytes(theirs),
+                    MetadataSharp.Formats.Operations.MetadataFamilies.All, out IReadOnlyList<string> notes);
+                return (made, string.Join(" | ", notes.Select(note => note.StartsWith("Exif.", StringComparison.Ordinal) ? "a tag is not carried: " + note[(note.IndexOf(':') + 1)..] : note).Distinct()));
+            });
+        }
+        Run("thumbnail", "jpg", () =>
+        {
+            var edit = new ExifEdit();
+            edit.SetThumbnail(blank);
+            return (SaveExif(source, edit), "");
+        });
+        Run("fixiso", "jpg", () =>
+        {
+            ExifMetadata? exif = Read().Exif;
+            ExifEdit? fix = exif is null ? null : MetadataSharp.Formats.Operations.MetadataOperations.FixIso(exif);
+            return (fix is null ? null : SaveExif(source, fix), "");
+        });
+        Run("fixcom", "jpg", () =>
+        {
+            ExifMetadata? exif = Read().Exif;
+            ExifEdit? fix = exif is null ? null : MetadataSharp.Formats.Operations.MetadataOperations.FixUserComment(exif, Encoding.Latin1);
+            return (fix is null ? null : SaveExif(source, fix), "");
+        });
+        Run("rename", "", () =>
+        {
+            DateTime? taken = Read().Exif?.DateTaken;
+            if (taken is null) return (null, ""); // no name: the comparer counts the file as one without a date
+            return (null, MetadataSharp.Core.Operations.MetadataFileNames.Format(format, taken.Value, path) + ".jpg");
+        });
+    }
+    File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
+    Console.WriteLine("::notice title=Operations parity fixture::" + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
+    foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=Operation defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
+    return crashes.Count == 0 ? 0 : 1;
+}
 else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | png-webp-embedded-edits DIRECTORY | png-webp-embedded-corpus CORPUS DIRECTORY | tiff-based-icc-edits DIRECTORY | tiff-based-icc-corpus CORPUS DIRECTORY | bmff-icc-edits DIRECTORY | bmff-icc-corpus CORPUS DIRECTORY | sync-parity DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
 

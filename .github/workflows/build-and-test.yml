@@ -498,3 +498,17 @@ jobs:
           python tools/reference/sync_parity.py artifacts/parity/exiv2/test/data artifacts/parity/sync \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
             --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      # Not key parity either: the operations of the tool's command line (adjust, modify, delete,
+      # extract, insert, thumbnail, fixiso, fixcom, rename) against the operations this library offers
+      # for the same purpose, on copies of the JPEG files of the pinned corpus; both results are
+      # printed with exiv2 -pa. Every difference has to be one tools/reference/operations_parity.py
+      # documents with its reason.
+      - name: The operations of the command line against the pinned tool (exiv2 ad, mo, rm, ex, in, fi, fc, mv; -pa)
+        if: always()
+        shell: bash
+        env:
+          TZ: UTC
+        run: |
+          python tools/reference/operations_parity.py artifacts/parity/exiv2/test/data artifacts/parity/operations \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"

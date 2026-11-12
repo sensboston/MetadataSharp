@@ -28,7 +28,10 @@ public sealed class FileOperationsTests
     {
         byte[] bytes = new byte[length];
         Array.Fill(bytes, filler);
-        bytes[0] = 0xFF; bytes[1] = 0xD8; bytes[^2] = 0xFF; bytes[^1] = 0xD9;
+        // The start of the image, one comment segment that holds the filler, the end of the image.
+        bytes[0] = 0xFF; bytes[1] = 0xD8; bytes[2] = 0xFF; bytes[3] = 0xFE;
+        bytes[4] = (byte)((length - 6) >> 8); bytes[5] = (byte)(length - 6);
+        bytes[^2] = 0xFF; bytes[^1] = 0xD9;
         return bytes;
     }
 
