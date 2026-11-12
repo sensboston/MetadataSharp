@@ -25,9 +25,9 @@ internal static class ExifBlockEditor
 
     /// <summary>The changes of an edit as the planner takes them, in the byte order of the structure.</summary>
     internal static void AddChanges(ExifEdit.EditSnapshot edit, Endianness order,
-        Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes)
+        Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, bool thumbnailApart = false)
     {
-        if (edit.HasThumbnailChange) throw ThumbnailElsewhere();
+        if (edit.HasThumbnailChange && !thumbnailApart) throw ThumbnailElsewhere();
         foreach (KeyValuePair<ExifTagKey, ExifValue?> change in edit.Changes)
         {
             TiffBasedRole role = TiffBasedWritePlanner.Role(change.Key.Directory);
@@ -117,7 +117,7 @@ internal static class ExifBlockEditor
         TiffBasedFileMap map = TiffBasedFileMap.Read(block, limits, MaxAccountedRanges);
         ExifMetadata whole = ExifTiffReader.InspectFile(block, limits);
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
-        AddChanges(edit, map.Order, changes);
+        AddChanges(edit, map.Order, changes, thumbnailApart: true);
         TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(block, map, changes, limits, ExifTiffReader.SegmentCeiling,
             emptyPrimary: true);
         if (plan.IsEmpty) return null;
