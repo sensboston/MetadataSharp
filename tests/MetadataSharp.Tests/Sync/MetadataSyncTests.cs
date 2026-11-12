@@ -514,7 +514,13 @@ public sealed class MetadataSyncTests
         });
 
         SyncEdits edits = MetadataSync.Reconcile(exif, iptc, xmp, IptcDigestState.Stale);
-        Assert.True(edits.IsEmpty, Notes(edits));
+        Assert.Equal(string.Empty, Notes(edits));
+        Assert.True(edits.Iptc.IsEmpty);
+        Assert.True(edits.Xmp.IsEmpty);
+        // EXIF exists and lacks the creator: it is given the whole name, which is all the edits do.
+        ExifMetadata written = Apply(exif, edits.Exif);
+        Assert.Equal(2, written.Entries.Count);
+        Assert.Equal(longName, Text(written, Ifd0, 0x013B));
         Assert.Contains(new SyncChoice("Xmp.dc.creator", SyncSource.Xmp), edits.Choices);
         Assert.Contains(new SyncChoice("Xmp.photoshop.DateCreated", SyncSource.Exif), edits.Choices);
     }
