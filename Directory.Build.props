@@ -9,17 +9,50 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(MetadataSharpAuditPackage)' == 'true' and ('$(MSBuildProjectName)' == 'MetadataSharp.Core' or '$(MSBuildProjectName)' == 'MetadataSharp.Formats')">
-    <IsPackable>true</IsPackable>
+
+  <!-- The two libraries, in every build and not only when a package is made. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'MetadataSharp.Core' or '$(MSBuildProjectName)' == 'MetadataSharp.Formats'">
+    <!-- The XML documentation file is always written, so a public member without a comment (CS1591)
+         or a comment that names something that does not exist fails the build. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Marks the assemblies trimmable and runs the trim, native AOT and single-file analyzers on both
+         targets: code that reflection-free publishing cannot keep fails the build (IL2xxx, IL3xxx). -->
+    <IsAotCompatible>true</IsAotCompatible>
+
+    <!-- The repository the packages and their symbols point at. One property, so that a move of the
+         repository is one change: -p:MetadataSharpRepositoryUrl=... or an edit of this line. -->
+    <MetadataSharpRepositoryUrl Condition="'$(MetadataSharpRepositoryUrl)' == ''">https://github.com/sensboston/MetadataSharp</MetadataSharpRepositoryUrl>
+
     <Authors>SeNS</Authors>
     <Copyright>Copyright (c) 2026 SeNS</Copyright>
-    <Version>0.0.0-audit</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <Description>Restricted metadata library; local audit candidate, not publication authorization.</Description>
-    <RepositoryUrl>https://github.com/sensboston/MetadataSharp</RepositoryUrl>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <!-- Existing public documentation gaps are reported in the audit, not claimed fixed. -->
-    <NoWarn>$(NoWarn);1591</NoWarn>
+    <PackageProjectUrl>$(MetadataSharpRepositoryUrl)</PackageProjectUrl>
+    <PackageTags>exif;iptc;xmp;makernote;icc;metadata;image;jpeg;png;webp;tiff;dng;raw;heic;avif</PackageTags>
+    <RepositoryUrl>$(MetadataSharpRepositoryUrl)</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <!-- Source Link (part of the SDK): the PDB maps every source file to its commit in the repository,
+         files outside the repository are embedded, and the package records the commit it was built
+         from. The symbols travel beside the package as a .snupkg. -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!-- On CI the build machine's paths are taken out of the binaries, which makes them reproducible. -->
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'MetadataSharp.Core'">
+    <Description>EXIF, IPTC and XMP for .NET without native code or dependencies: a typed EXIF tag vocabulary, read-only camera MakerNotes, bounded parsing of hostile input, and edits that are refused when their safety cannot be established. The model and the codecs; MetadataSharp.Formats reads and writes the files.</Description>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'MetadataSharp.Formats'">
+    <Description>Reads image metadata (EXIF with MakerNotes, IPTC, XMP, ICC profiles, comments, previews) from JPEG, PNG, WebP, TIFF, DNG, TIFF-based raw files, HEIC/HEIF/AVIF, PSD, JPEG 2000, EXV, CR3, JPEG XL and XMP sidecars, and edits it in JPEG, PNG, WebP, TIFF-based and HEIC/HEIF/AVIF files without decoding or recompressing image data. Fully managed; depends only on MetadataSharp.Core.</Description>
+  </PropertyGroup>
+
+  <!-- Nothing is published from this repository yet. A package is made only on request, as a local
+       candidate for the audit (tools/audit/run.py), under a version that cannot be mistaken for a release. -->
+  <PropertyGroup Condition="'$(MetadataSharpAuditPackage)' == 'true' and ('$(MSBuildProjectName)' == 'MetadataSharp.Core' or '$(MSBuildProjectName)' == 'MetadataSharp.Formats')">
+    <IsPackable>true</IsPackable>
+    <Version>0.0.0-audit</Version>
   </PropertyGroup>
 </Project>
