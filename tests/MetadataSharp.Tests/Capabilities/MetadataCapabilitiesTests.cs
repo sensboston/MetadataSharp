@@ -72,6 +72,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Tiff, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; bounded restricted XMP profile."),
         (MetadataContainer.Tiff, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Tiff, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Tiff, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: tag 0x8773 of the primary directory, as UNDEFINED, appended with a copy of the directory; no byte of the source moves; a file that cannot be appended to is refused, and so is a profile that fails the header check."),
+        (MetadataContainer.Tiff, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: the value of tag 0x8773 of the primary directory, keeping its type BYTE or UNDEFINED; written where the stored one is when it is no longer than that, appended otherwise; a file that holds exactly the profile is copied."),
+        (MetadataContainer.Tiff, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: tag 0x8773 is taken out of the primary directory, which is rewritten where it is; the bytes of the profile stay in the file, no longer addressed."),
         (MetadataContainer.Tiff, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first directory only, of type BYTE or UNDEFINED, not interpreted; a value outside the file is refused."),
         (MetadataContainer.Dng, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Dng, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); new data is appended, image data and the MakerNote keep their offsets; refused when the file cannot be appended to."),
@@ -105,6 +108,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "A file without an XMP item gains one (mime, application/rdf+xml) that describes the primary item, appended in a media data box of its own; bounded restricted XMP profile."),
         (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "The packet of the XMP item: in place when it keeps its length, appended in a new media data box otherwise; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Avif, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
+        (MetadataContainer.Avif, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile: a colr property of kind prof after the last property, given to the primary item alone, first and not essential; the meta box grows as the last box of the file or is replaced by a new one after it; no item moves; a file without a primary item or an item properties box is refused."),
+        (MetadataContainer.Avif, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile: the colr property of kind prof or rICC of the primary item is replaced where it is, for every item that shares it; in the bytes of the item properties box when that keeps its length or becomes at least eight bytes shorter, otherwise the meta box changes its length; a file that holds exactly the profile is copied."),
+        (MetadataContainer.Avif, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile with null: the property becomes a free box of eight bytes that no item is given; the item properties box is rewritten in the bytes it has; nclx colour information stays."),
         (MetadataContainer.Avif, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the colr property of kind prof or rICC that ipma gives the primary item, not interpreted; nclx colour information is not a profile; two profiles are refused."),
         (MetadataContainer.Cr2, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Cr2, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset (descriptive IFD0/EXIF/GPS tags); new data is appended, image data and the MakerNote keep their offsets; refused when the file cannot be appended to. Tested on authored layouts, not on camera files."),
@@ -130,6 +136,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "A file without an XMP item gains one (mime, application/rdf+xml) that describes the primary item, appended in a media data box of its own; bounded restricted XMP profile."),
         (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "The packet of the XMP item: in place when it keeps its length, appended in a new media data box otherwise; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Heic, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
+        (MetadataContainer.Heic, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile: a colr property of kind prof after the last property, given to the primary item alone, first and not essential; the meta box grows as the last box of the file or is replaced by a new one after it; no item moves; a file without a primary item or an item properties box is refused."),
+        (MetadataContainer.Heic, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile: the colr property of kind prof or rICC of the primary item is replaced where it is, for every item that shares it; in the bytes of the item properties box when that keeps its length or becomes at least eight bytes shorter, otherwise the meta box changes its length; a file that holds exactly the profile is copied."),
+        (MetadataContainer.Heic, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile with null: the property becomes a free box of eight bytes that no item is given; the item properties box is rewritten in the bytes it has; nclx colour information stays."),
         (MetadataContainer.Heic, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the colr property of kind prof or rICC that ipma gives the primary item, not interpreted; nclx colour information is not a profile; two profiles are refused."),
         (MetadataContainer.Heif, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; a block longer than a JPEG segment holds is read within the budgets. An item built from other items or stored in another file is refused."),
         (MetadataContainer.Heif, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Approved writable tag subset; a file without an Exif item gains one that describes the primary item. New data is appended in a media data box of its own and no item data moves; refused when the file cannot be appended to."),
@@ -139,6 +148,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "A file without an XMP item gains one (mime, application/rdf+xml) that describes the primary item, appended in a media data box of its own; bounded restricted XMP profile."),
         (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "The packet of the XMP item: in place when it keeps its length, appended in a new media data box otherwise; bounded restricted XMP profile; a packet outside it is refused."),
         (MetadataContainer.Heif, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-property removal within the restricted profile; removal of the whole XMP item is refused."),
+        (MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile: a colr property of kind prof after the last property, given to the primary item alone, first and not essential; the meta box grows as the last box of the file or is replaced by a new one after it; no item moves; a file without a primary item or an item properties box is refused."),
+        (MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile: the colr property of kind prof or rICC of the primary item is replaced where it is, for every item that shares it; in the bytes of the item properties box when that keeps its length or becomes at least eight bytes shorter, otherwise the meta box changes its length; a file that holds exactly the profile is copied."),
+        (MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile with null: the property becomes a free box of eight bytes that no item is given; the item properties box is rewritten in the bytes it has; nclx colour information stays."),
         (MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the colr property of kind prof or rICC that ipma gives the primary item, not interpreted; nclx colour information is not a profile; two profiles are refused."),
         (MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the first colr box of the jp2h header whose method is 2 or 3, not interpreted; a colour space named by number is not a profile."),
         (MetadataContainer.Jxl, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "JxlMetadata.Read: the block of the Exif box, plain or Brotli-compressed in a brob box, with a recognised MakerNote, as raw values; read within the budgets, counted after decompression. Nothing is written."),
@@ -266,7 +278,8 @@ public sealed class MetadataCapabilitiesTests
     [InlineData(MetadataContainer.Jxl, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Gif, MetadataFamily.Icc, MetadataOperation.Extract)]
-    [InlineData(MetadataContainer.Tiff, MetadataFamily.Icc, MetadataOperation.Insert)]
+    [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Insert)]
+    [InlineData(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Replace)]
     [InlineData(MetadataContainer.WebP, MetadataFamily.Comment, MetadataOperation.Insert)]
     [InlineData(MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Remove)]
     [InlineData(MetadataContainer.WebP, MetadataFamily.Comment, MetadataOperation.Read)]
@@ -315,8 +328,8 @@ public sealed class MetadataCapabilitiesTests
         // BmffWriteTests runs on a layout of each of these brands. No row says an item is removed.
         foreach (MetadataContainer container in new[] { MetadataContainer.Avif, MetadataContainer.Heic, MetadataContainer.Heif })
         {
-            // Eight rows of the document, and the one of the ICC reader.
-            Assert.Equal(9, MetadataCapabilities.All.Count(row => row.Container == container));
+            // Eight rows of the EXIF and XMP of the document, three of its ICC profile, and the one of the ICC reader.
+            Assert.Equal(12, MetadataCapabilities.All.Count(row => row.Container == container));
             Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(container, MetadataFamily.Exif, MetadataOperation.Read));
             Assert.Equal(CapabilityStatus.Supported, MetadataCapabilities.GetStatus(container, MetadataFamily.Xmp, MetadataOperation.Read));
             foreach (MetadataFamily family in new[] { MetadataFamily.Exif, MetadataFamily.Xmp })
@@ -399,26 +412,44 @@ public sealed class MetadataCapabilitiesTests
     public void TheProfileAndTheCommentAreWrittenOnlyWhereAWriterAndItsTestsExist()
     {
         // The tests named <Format>IccProfileTests and <Format>CommentTests insert, replace and remove; no other container has a writer.
+        // A TIFF and the BMFF brands are written by the documents that edit their EXIF, which refuse the layouts they cannot
+        // account for: their rows are partial, as the other rows of those documents are. DNG and the raw formats have no row:
+        // the primary directory of such a file is commonly that of a reduced image.
         MetadataOperation[] writes = [MetadataOperation.Insert, MetadataOperation.Replace, MetadataOperation.Remove];
-        (MetadataFamily Family, string Save, MetadataContainer[] Containers)[] writers =
+        (MetadataContainer Container, string Document, CapabilityStatus Status)[] profiles =
         [
-            (MetadataFamily.Icc, "SaveIccProfile", new[] { MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.WebP }),
-            (MetadataFamily.Comment, "SaveComment", new[] { MetadataContainer.Jpeg, MetadataContainer.Png }),
+            (MetadataContainer.Jpeg, "JpegMetadataDocument", CapabilityStatus.Supported),
+            (MetadataContainer.Png, "PngMetadataDocument", CapabilityStatus.Supported),
+            (MetadataContainer.WebP, "WebPMetadataDocument", CapabilityStatus.Supported),
+            (MetadataContainer.Tiff, "TiffBasedMetadataDocument", CapabilityStatus.Partial),
+            (MetadataContainer.Avif, "BmffMetadataDocument", CapabilityStatus.Partial),
+            (MetadataContainer.Heic, "BmffMetadataDocument", CapabilityStatus.Partial),
+            (MetadataContainer.Heif, "BmffMetadataDocument", CapabilityStatus.Partial),
         ];
-        foreach ((MetadataFamily family, string save, MetadataContainer[] containers) in writers)
+        (MetadataContainer Container, string Document, CapabilityStatus Status)[] comments =
+        [
+            (MetadataContainer.Jpeg, "JpegMetadataDocument", CapabilityStatus.Supported),
+            (MetadataContainer.Png, "PngMetadataDocument", CapabilityStatus.Supported),
+        ];
+        (MetadataFamily Family, string Save, (MetadataContainer Container, string Document, CapabilityStatus Status)[] Writers)[] families =
+        [
+            (MetadataFamily.Icc, "SaveIccProfile", profiles),
+            (MetadataFamily.Comment, "SaveComment", comments),
+        ];
+        foreach ((MetadataFamily family, string save, (MetadataContainer Container, string Document, CapabilityStatus Status)[] writers) in families)
         {
             CapabilityDescriptor[] rows = MetadataCapabilities.All.Where(row => row.Family == family && writes.Contains(row.Operation)).ToArray();
 
-            Assert.Equal(containers, rows.Select(row => row.Container).Distinct());
-            foreach (MetadataContainer container in containers)
+            Assert.Equal(writers.Select(writer => writer.Container), rows.Select(row => row.Container).Distinct());
+            foreach ((MetadataContainer container, string document, CapabilityStatus status) in writers)
             {
                 CapabilityDescriptor[] own = rows.Where(row => row.Container == container).ToArray();
-                string api = container + "MetadataDocument." + save;
+                string api = document + "." + save;
 
                 Assert.Equal(writes, own.Select(row => row.Operation));
                 Assert.All(own, row =>
                 {
-                    Assert.Equal(CapabilityStatus.Supported, row.Status);
+                    Assert.Equal(status, row.Status);
                     Assert.StartsWith(api, row.Note);
                 });
                 Assert.StartsWith(api + " with null: ", own[2].Note);

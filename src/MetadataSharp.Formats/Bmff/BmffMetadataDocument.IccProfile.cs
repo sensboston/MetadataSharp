@@ -19,11 +19,11 @@ public sealed partial class BmffMetadataDocument
     /// of every later property, and no item is given it any more.</item>
     /// </list>
     /// Colour information of the kind <c>nclx</c> is another property and is not touched. The
-    /// item properties box is rewritten in the bytes it has when it does not grow; what it no
-    /// longer needs becomes free space after it. When it grows, the <c>meta</c> box grows where it
-    /// is if it is the last box of the file; otherwise a new one is appended and the old one
-    /// becomes a <c>free</c> box, with the old profile still in it. No item and no other box
-    /// moves. A file that already holds exactly this profile, and a file without a profile that is
+    /// item properties box is rewritten in the bytes it has when it keeps its length or becomes at
+    /// least eight bytes shorter; what it no longer needs becomes free space after it. Otherwise
+    /// the <c>meta</c> box changes its length where it is if it is the last box of the file, or a
+    /// new one is appended and the old one becomes a <c>free</c> box, with the old profile still
+    /// in it. No item and no other box moves. A file that already holds exactly this profile, and a file without a profile that is
     /// to have none, is copied as it is. The profile is not interpreted; the array is copied before
     /// the method returns.
     /// </summary>

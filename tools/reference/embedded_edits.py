@@ -25,14 +25,30 @@ reads that of a PNG from the keyword Description, not from the keyword Comment
 this library writes, so an edit may not change what -pc prints. The comment
 chunk itself is the business of png_chunk_edits.py.
 
-The generator's jpeg-embedded-corpus and png-webp-embedded-corpus commands write the same manifest for
+The tiff-based-icc-edits and bmff-icc-edits commands write the same manifest
+for TIFF-based files and for HEIC and AVIF files, whose comment column is
+always "=" too: this library writes no comment into them.
+
+A TIFF-based file holds its profile in a field of its first directory, and
+the tool prints that field with -pa as well, under a key. Such a key is named
+with --profile-key. Its lines are taken out of both -pa print-outs before they
+are compared, and where -pa exits with 0 for the edited file, it has to print
+one line of such a key when the file is to have a profile and none when it is
+to have none.
+
+The tool begins the -pC print-out of an ORF and of an RW2 file with a line
+that names the format. That line is no part of the profile: it is taken off
+the print-out of a file with that extension.
+
+The generator's jpeg-embedded-corpus, png-webp-embedded-corpus, tiff-based-icc-corpus and
+bmff-icc-corpus commands write the same manifest for
 files this repository did not author. Many of those are damaged on purpose,
 so with --skip-unreadable-sources a source for which -pC or -pc does not
 exit with 0 is counted and skipped: the rule is about files the tool could
 read before the edit. Without the option such a source is a broken fixture,
 and a failure.
 
-Usage: embedded_edits.py DIRECTORY --exiv2 PATH [--skip-unreadable-sources] [--title TEXT]
+Usage: embedded_edits.py DIRECTORY --exiv2 PATH [--skip-unreadable-sources] [--title TEXT] [--profile-key KEY]...
 """
 import argparse
 import subprocess
@@ -42,6 +58,7 @@ from pathlib import Path
 MAX_ANNOTATIONS = 20
 NONE, SAME = "-", "="
 PROFILE, COMMENT, KEYS = "-pC", "-pc", "-pa"
+BANNERS = {".orf": b"ORF IMAGE\n", ".rw2": b"RW2 IMAGE\n"}
 
 
 def parse_manifest(text):
@@ -69,18 +86,41 @@ def printed_comment(output):
     return output[:-1] if output.endswith(b"\n") else None
 
 
+def printed_profile(name, output):
+    """The profile of a -pC print-out: without the line the tool puts before that of an ORF or an RW2 file."""
+    banner = BANNERS.get(Path(name).suffix.lower())
+    return output[len(banner):] if banner and output.startswith(banner) else output
+
+
+def without_keys(output, keys):
+    """A -pa print-out without the lines of the given keys, and the number of those lines."""
+    if not keys:
+        return output, 0
+    kept, count = [], 0
+    for line in output.splitlines(keepends=True):
+        first = line.split(None, 1)[:1]
+        if first and first[0].decode("utf-8", "replace") in keys:
+            count += 1
+        else:
+            kept.append(line)
+    return b"".join(kept), count
+
+
 def short(data):
     """Bytes for a message: their length, and the first of them."""
     return f"{len(data)} bytes {data[:24].hex()}" + ("..." if len(data) > 24 else "")
 
 
-def compare(expected_profile, expected_comment, source_keys, profile, comment, keys):
+def compare(expected_profile, expected_comment, source_keys, profile, comment, keys, profile_keys=()):
     """What the print-outs of an edited file lack; an empty list when they lack nothing.
 
     Each of profile, comment and keys is (exit code, standard output, standard error) of one
-    run on the edited file; source_keys is the same for -pa on the source.
+    run on the edited file; source_keys is the same for -pa on the source. profile_keys are
+    the keys under which -pa prints the profile itself.
     """
     problems = []
+    source_lines, _ = without_keys(source_keys[1], profile_keys)
+    lines, own = without_keys(keys[1], profile_keys)
     if profile[0] != 0:
         problems.append(f"{PROFILE} does not read the file (exit {profile[0]}): {profile[2].strip()[:300]}")
     elif profile[1] != expected_profile:
@@ -95,13 +135,16 @@ def compare(expected_profile, expected_comment, source_keys, profile, comment, k
             problems.append(f"{COMMENT} prints {short(found)}, expected {short(expected_comment)}")
     if keys[0] != source_keys[0]:
         problems.append(f"{KEYS} exits with {keys[0]}, with {source_keys[0]} for the source")
-    if keys[1] != source_keys[1]:
-        before, after = source_keys[1].splitlines(), keys[1].splitlines()
+    if lines != source_lines:
+        before, after = source_lines.splitlines(), lines.splitlines()
         gone = [line for line in before if line not in after]
         new = [line for line in after if line not in before]
         detail = gone[0] if gone else new[0] if new else b"the same lines in another order"
         problems.append(f"{KEYS} prints {len(gone)} line(s) fewer and {len(new)} more than for the source: "
                         + detail.decode("utf-8", "replace")[:200])
+    wanted = 1 if expected_profile else 0
+    if profile_keys and keys[0] == 0 and own != wanted:
+        problems.append(f"{KEYS} prints {own} line(s) of {' or '.join(profile_keys)}, expected {wanted}")
     return problems
 
 
@@ -113,14 +156,20 @@ def run(command, path):
     return done.returncode, done.stdout, done.stderr.decode("utf-8", "replace")
 
 
-def check(directory, exiv2, runner=run, skip_unreadable=False):
+def read(runner, exiv2, directory, name):
+    """The three runs on one file, the banner of its format taken off the profile."""
+    code, output, errors = runner([exiv2, PROFILE], directory / name)
+    return [(code, printed_profile(name, output), errors)] + [runner([exiv2, option], directory / name) for option in (COMMENT, KEYS)]
+
+
+def check(directory, exiv2, runner=run, skip_unreadable=False, profile_keys=()):
     """Every problem found, as (file, message); the edited files checked; those skipped for their source."""
     directory = Path(directory)
     entries = parse_manifest((directory / "manifest.tsv").read_text(encoding="utf-8"))
     problems, sources, profiles, checked, skipped = [], {}, {}, 0, 0
     for source, edited, profile, comment in entries:
         if source not in sources:
-            sources[source] = tuple(runner([exiv2, option], directory / source) for option in (PROFILE, COMMENT, KEYS))
+            sources[source] = tuple(read(runner, exiv2, directory, source))
         source_profile, source_comment, source_keys = sources[source]
         unread = [option for option, result in ((PROFILE, source_profile), (COMMENT, source_comment)) if result[0] != 0]
         if not unread and printed_comment(source_comment[1]) is None:
@@ -144,8 +193,8 @@ def check(directory, exiv2, runner=run, skip_unreadable=False):
         else:
             expected_comment = b"" if comment == NONE else comment
         checked += 1
-        results = [runner([exiv2, option], directory / edited) for option in (PROFILE, COMMENT, KEYS)]
-        for problem in compare(expected_profile, expected_comment, source_keys, *results):
+        results = read(runner, exiv2, directory, edited)
+        for problem in compare(expected_profile, expected_comment, source_keys, *results, profile_keys=profile_keys):
             problems.append((edited, problem))
     return problems, checked, skipped
 
@@ -156,8 +205,10 @@ def main(argv=None, runner=run):
     parser.add_argument("--exiv2", required=True)
     parser.add_argument("--skip-unreadable-sources", action="store_true")
     parser.add_argument("--title", default="JPEG profile and comment edits")
+    parser.add_argument("--profile-key", action="append", default=[])
     args = parser.parse_args(argv)
-    problems, count, skipped = check(args.directory, args.exiv2, runner, args.skip_unreadable_sources)
+    keys = tuple(args.profile_key)
+    problems, count, skipped = check(args.directory, args.exiv2, runner, args.skip_unreadable_sources, keys)
     for name, message in problems[:MAX_ANNOTATIONS]:
         text = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
         print(f"::error title={args.title} {name}::{text}")
@@ -167,8 +218,9 @@ def main(argv=None, runner=run):
         print(f"{len(problems)} problem(s) in {count} edited file(s)")
         return 1
     left_out = f" ({skipped} left out: the tool does not read their source)" if skipped else ""
+    also = f", but for {' and '.join(keys)}, which it prints where there is a profile and nowhere else" if keys else ""
     print(f"::notice title={args.title}::{count} edited files: the pinned tool prints the profile ({PROFILE}) and the "
-          f"comment ({COMMENT}) each was to have, and with {KEYS} what it prints for the source{left_out}")
+          f"comment ({COMMENT}) each was to have, and with {KEYS} what it prints for the source{also}{left_out}")
     return 0
 
 

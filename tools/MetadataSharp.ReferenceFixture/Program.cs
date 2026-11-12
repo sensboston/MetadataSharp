@@ -965,7 +965,189 @@ else if (args.Length == 3 && args[0] == "png-webp-embedded-corpus")
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=PNG or WebP writer defect::" + crash);
     if (crashes.Count != 0) return 1;
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | png-webp-embedded-edits DIRECTORY | png-webp-embedded-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
+else if (args.Length == 2 && args[0] == "tiff-based-icc-edits")
+{
+    // Files for the pinned tool to read after the TIFF-based writer gave them an ICC profile,
+    // replaced it or took it out: every authored layout in both byte orders. manifest.tsv is that
+    // of the JPEG command: the source, the edited file, the profile the tool has to print for it,
+    // and "=" for the comment, which this library does not write into such a file.
+    Directory.CreateDirectory(args[1]);
+    var manifest = new List<string>();
+    string At(string name) => Path.Combine(args[1], name);
+    string Stored(string name, byte[] profile) { File.WriteAllBytes(At(name), profile); return name; }
+    bool Same(string one, string other) => File.ReadAllBytes(At(one)).AsSpan().SequenceEqual(File.ReadAllBytes(At(other)));
+    byte[] small = IccProfile(3_144, 1), odd = IccProfile(70_001, 2), brief = IccProfile(560, 3), large = IccProfile(1_000_000, 4);
+    string smallIcc = Stored("small.icc", small), oddIcc = Stored("odd.icc", odd), briefIcc = Stored("brief.icc", brief), largeIcc = Stored("large.icc", large);
+    const string date = "2021:06:07 08:09:10", longText = "A considerably longer text than the one before";
+    foreach (string name in TiffBasedFixture.Names)
+    {
+        foreach (bool big in new[] { false, true })
+        {
+            TiffBasedFixture fixture = TiffBasedFixture.Create(name, big);
+            string stem = name + (big ? "-be" : "-le"), extension = name == "tiff" ? ".tif" : "." + name;
+            string source = stem + extension;
+            File.WriteAllBytes(At(source), fixture.Bytes);
+            var grow = new ExifEdit();
+            grow.Set(new(ExifDirectoryKind.Ifd0, (ushort)fixture.TextTag), AsciiValue(longText));
+            grow.Set(new(ExifDirectoryKind.Exif, 0x9004), AsciiValue(date));
+
+            string Edited(string from, string kind, Action<TiffBasedMetadataDocument, string> save)
+            {
+                string target = stem + "-" + kind + extension;
+                using TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(At(from));
+                save(document, At(target));
+                return target;
+            }
+            string Icc(string from, string kind, byte[]? profile) => Edited(from, kind, (document, path) => document.SaveIccProfileAs(path, profile));
+            void Row(string from, string edited, string profile) => manifest.Add(string.Join('\t', from, edited, profile, "="));
+
+            // A new field; then a value that has to be appended, one that fits the bytes of the
+            // old one, none, and the one the file has.
+            string given = Icc(source, "icc", small);
+            Row(source, given, smallIcc);
+            Row(given, Icc(given, "icc-longer", odd), oddIcc);
+            Row(given, Icc(given, "icc-shorter", brief), briefIcc);
+            Row(given, Icc(given, "icc-removed", null), "-");
+            string same = Icc(given, "icc-same", small);
+            Row(given, same, "=");
+            if (name == "tiff") Row(source, Icc(source, "icc-large", large), largeIcc);
+
+            // After an edit of the EXIF data that moved the directory, and before one: the file
+            // that was edited afterwards still has the profile, and gives it up or takes another.
+            string first = Edited(source, "exif", (document, path) => document.SaveExifAs(path, grow));
+            Row(first, Icc(first, "exif-icc", small), smallIcc);
+            string then = Edited(given, "icc-exif", (document, path) => document.SaveExifAs(path, grow));
+            string kept = Icc(then, "icc-exif-same", small);
+            Row(then, kept, smallIcc);
+            Row(then, Icc(then, "icc-exif-longer", odd), oddIcc);
+            Row(then, Icc(then, "icc-exif-removed", null), "-");
+
+            // What the tool cannot say: saving the profile a file has changes no byte.
+            if (!Same(same, given) || !Same(kept, then))
+            {
+                Console.WriteLine($"::error title=TIFF-based profile edits::saving the profile {source} has changed the file");
+                return 1;
+            }
+        }
+    }
+    File.WriteAllLines(At("manifest.tsv"), manifest);
+}
+else if (args.Length == 3 && args[0] == "tiff-based-icc-corpus")
+{
+    // The same check on TIFF-based files this repository did not author: each is given a profile
+    // and has its profile taken out, each time from the file as it is. Default options.
+    string[] extensions = [".tif", ".tiff", ".dng", ".cr2", ".nef", ".nrw", ".arw", ".sr2", ".pef", ".orf", ".rw2", ".srw", ".raw"];
+    return IccCorpus(args[1], args[2], "TIFF-based", extensions, path =>
+    {
+        TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(path);
+        return (document, document.SaveIccProfile);
+    });
+}
+else if (args.Length == 2 && args[0] == "bmff-icc-edits")
+{
+    // The same files for the BMFF writer: every authored HEIC and AVIF layout whose item location
+    // box the pinned tool reads, then a file whose profile another writer stored as a restricted
+    // one that two items share, beside colour information that is no profile.
+    Directory.CreateDirectory(args[1]);
+    var manifest = new List<string>();
+    string At(string name) => Path.Combine(args[1], name);
+    string Stored(string name, byte[] profile) { File.WriteAllBytes(At(name), profile); return name; }
+    bool Same(string one, string other) => File.ReadAllBytes(At(one)).AsSpan().SequenceEqual(File.ReadAllBytes(At(other)));
+    string Edited(string from, string target, Action<BmffMetadataDocument, string> save)
+    {
+        using BmffMetadataDocument document = BmffMetadataDocument.Open(At(from));
+        save(document, At(target));
+        return target;
+    }
+    string Icc(string from, string target, byte[]? profile) => Edited(from, target, (document, path) => document.SaveIccProfileAs(path, profile));
+    void Row(string from, string edited, string profile) => manifest.Add(string.Join('\t', from, edited, profile, "="));
+    const string title = "::error title=BMFF profile edits::";
+
+    byte[] small = IccProfile(3_144, 1), odd = IccProfile(70_001, 2), brief = IccProfile(560, 3), large = IccProfile(1_000_000, 4), twin = IccProfile(3_144, 8);
+    string smallIcc = Stored("small.icc", small), oddIcc = Stored("odd.icc", odd), briefIcc = Stored("brief.icc", brief), largeIcc = Stored("large.icc", large);
+    string twinIcc = Stored("twin.icc", twin);
+    const string date = "2021:06:07 08:09:10", longText = "A considerably longer text than the one before";
+    var grow = new ExifEdit();
+    grow.Set(new(ExifDirectoryKind.Ifd0, 0x010F), AsciiValue(longText));
+    grow.Set(new(ExifDirectoryKind.Exif, 0x9004), AsciiValue(date));
+    var created = new ExifEdit();
+    created.Set(new(ExifDirectoryKind.Ifd0, 0x010E), AsciiValue("A caption"));
+    created.Set(new(ExifDirectoryKind.Exif, 0x9003), AsciiValue(date));
+
+    foreach (string name in BmffFixture.Names)
+    {
+        bool bare = BmffFixture.Bare.Contains(name);
+        foreach (bool big in bare ? new[] { false } : new[] { false, true })
+        {
+            BmffFixture fixture = BmffFixture.Create(name, big);
+            if (!fixture.Plan.ToolReads) continue;
+            string stem = name + (bare ? "" : big ? "-be" : "-le"), extension = "." + fixture.Plan.Brand;
+            string source = stem + extension;
+            File.WriteAllBytes(At(source), fixture.Bytes);
+            string Named(string kind) => stem + "-" + kind + extension;
+
+            // A new property; then a profile that needs a longer meta box, one that leaves free
+            // space, one of the same length, none, one in a file whose property is free space,
+            // and the one the file has.
+            string given = Icc(source, Named("icc"), small);
+            Row(source, given, smallIcc);
+            Row(given, Icc(given, Named("icc-longer"), odd), oddIcc);
+            Row(given, Icc(given, Named("icc-shorter"), brief), briefIcc);
+            Row(given, Icc(given, Named("icc-twin"), twin), twinIcc);
+            string removed = Icc(given, Named("icc-removed"), null);
+            Row(given, removed, "-");
+            Row(removed, Icc(removed, Named("icc-again"), odd), oddIcc);
+            string same = Icc(given, Named("icc-same"), small);
+            Row(given, same, "=");
+            if (name == "heic") Row(source, Icc(source, Named("icc-large"), large), largeIcc);
+
+            // After an edit of the EXIF data and before one, as for the TIFF-based files; a file
+            // without metadata is given its EXIF item by that edit.
+            ExifEdit edit = bare ? created : grow;
+            string first = Edited(source, Named("exif"), (document, path) => document.SaveExifAs(path, edit));
+            Row(first, Icc(first, Named("exif-icc"), small), smallIcc);
+            string then = Edited(given, Named("icc-exif"), (document, path) => document.SaveExifAs(path, edit));
+            string kept = Icc(then, Named("icc-exif-same"), small);
+            Row(then, kept, smallIcc);
+            Row(then, Icc(then, Named("icc-exif-longer"), odd), oddIcc);
+            Row(then, Icc(then, Named("icc-exif-removed"), null), "-");
+
+            if (!Same(same, given) || !Same(kept, then))
+            { Console.WriteLine(title + $"saving the profile {source} has changed the file"); return 1; }
+        }
+    }
+
+    byte[] stored = IccProfile(560, 6);
+    BmffFixture.Layout layout = BmffFixture.LayoutOf("heic", false);
+    layout.Items.Add(new BmffFixture.Item(5, "hvc1", BmffFixture.Pattern(64, 3)));
+    layout.Properties.Insert(0, BmffFixture.Colour("rICC", stored));
+    layout.Properties.Add(BmffFixture.Colour("nclx", [0, 1, 0, 13, 0, 6, 0x80]));
+    layout.Associations.Clear();
+    layout.Associations.Add((BmffFixture.ImageId, new[] { (true, 1), (true, 2), (false, 3) }));
+    layout.Associations.Add((5, new[] { (true, 2), (true, 1) }));
+    const string shared = "shared.heic";
+    File.WriteAllBytes(At(shared), BmffFixture.Build("heic", false, layout).Bytes);
+    Row(shared, Icc(shared, "shared-icc-replaced.heic", small), smallIcc);
+    // Eight bytes shorter fits the bytes of the item properties box; four bytes shorter does not.
+    Row(shared, Icc(shared, "shared-icc-shorter.heic", IccProfile(552, 9)), Stored("shorter.icc", IccProfile(552, 9)));
+    Row(shared, Icc(shared, "shared-icc-nearly.heic", IccProfile(556, 10)), Stored("nearly.icc", IccProfile(556, 10)));
+    Row(shared, Icc(shared, "shared-icc-removed.heic", null), "-");
+    string unchanged = Icc(shared, "shared-icc-same.heic", stored);
+    Row(shared, unchanged, "=");
+    File.WriteAllLines(At("manifest.tsv"), manifest);
+    if (!Same(unchanged, shared))
+    { Console.WriteLine(title + "saving the profile a file has as a restricted one changed the file"); return 1; }
+}
+else if (args.Length == 3 && args[0] == "bmff-icc-corpus")
+{
+    // The same check on the HEIC, HEIF and AVIF files this repository did not author.
+    return IccCorpus(args[1], args[2], "BMFF", [".heic", ".heif", ".hif", ".avif"], path =>
+    {
+        BmffMetadataDocument document = BmffMetadataDocument.Open(path);
+        return (document, document.SaveIccProfile);
+    });
+}
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | png-webp-embedded-edits DIRECTORY | png-webp-embedded-corpus CORPUS DIRECTORY | tiff-based-icc-edits DIRECTORY | tiff-based-icc-corpus CORPUS DIRECTORY | bmff-icc-edits DIRECTORY | bmff-icc-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
 
 
@@ -992,4 +1174,74 @@ static byte[] IccProfile(int size, int seed)
     BinaryPrimitives.WriteUInt32BigEndian(profile, (uint)size);
     "acsp"u8.CopyTo(profile.AsSpan(36));
     return profile;
+}
+
+// Every file of a kind under a directory is given a profile and has its profile taken out, each
+// time from the file as it is and with the options it was opened with. A file that does not open
+// is counted by the code of its refusal, and so is an edit that is refused; an edit that changes
+// nothing is counted; a file that was written goes into manifest.tsv for the pinned tool, with
+// the profile it has to print. An exception that is no refusal is a defect of the writer and
+// fails the run.
+static int IccCorpus(string corpus, string directory, string kind, string[] extensions,
+    Func<string, (IDisposable Document, Action<Stream, byte[]?> Save)> open)
+{
+    Directory.CreateDirectory(directory);
+    var manifest = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    var refusals = new List<(string File, string Edit, string Reason)>();
+    var crashes = new List<string>();
+    byte[] profile = IccProfile(70_001, 7);
+    File.WriteAllBytes(Path.Combine(directory, "given.icc"), profile);
+    int files = 0, number = 0;
+    void Count(string outcome) => outcomes[outcome] = outcomes.GetValueOrDefault(outcome) + 1;
+    foreach (string path in Directory.EnumerateFiles(corpus, "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+    {
+        string extension = Path.GetExtension(path).ToLowerInvariant();
+        if (!extensions.Contains(extension) || new FileInfo(path).Length > 64 * 1024 * 1024) continue;
+        byte[] bytes = File.ReadAllBytes(path);
+        (IDisposable Document, Action<Stream, byte[]?> Save) opened;
+        try { opened = open(path); }
+        catch (MetadataException refusal) { Count("not opened " + refusal.Code); continue; } // damaged, or not such a file at all
+        files++;
+        using (opened.Document)
+        {
+            void Try(string edit, string expected, byte[]? given)
+            {
+                try
+                {
+                    using var output = new MemoryStream();
+                    opened.Save(output, given);
+                    byte[] written = output.ToArray();
+                    if (written.AsSpan().SequenceEqual(bytes)) { Count(edit + " nothing to change"); return; }
+                    string target = $"i{++number:D5}-{edit}{extension}";
+                    File.WriteAllBytes(Path.Combine(directory, target), written);
+                    manifest.Add(string.Join('\t', Path.GetFullPath(path), target, expected, "="));
+                    Count(edit + " written");
+                }
+                catch (MetadataException refusal)
+                {
+                    Count(edit + " refused " + refusal.Code);
+                    refusals.Add((Path.GetFileName(path), edit, $"{refusal.Code}: {refusal.Message}"));
+                }
+                catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+                {
+                    crashes.Add($"{Path.GetFileName(path)} {edit}: {defect.GetType().Name}: {defect.Message}");
+                }
+            }
+
+            Try("icc", "given.icc", profile);
+            Try("no-icc", "-", null);
+        }
+    }
+    File.WriteAllLines(Path.Combine(directory, "manifest.tsv"), manifest);
+    Console.WriteLine($"::notice title={kind} corpus profile edits::{files} {kind} files opened; "
+        + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
+    string[] reasons = refusals.GroupBy(refusal => (refusal.File, refusal.Reason))
+        .Select(group => $"{group.Key.File} [{string.Join(' ', group.Select(refusal => refusal.Edit))}]: {group.Key.Reason}"
+            .Replace("%", "%25").Replace("\r", " ").Replace("\n", " "))
+        .ToArray();
+    foreach (string[] part in reasons.Chunk(20))
+        Console.WriteLine($"::notice title={kind} corpus profile refusals::" + string.Join("%0A", part));
+    foreach (string crash in crashes.Take(10)) Console.WriteLine($"::error title={kind} profile writer defect::" + crash);
+    return crashes.Count == 0 ? 0 : 1;
 }

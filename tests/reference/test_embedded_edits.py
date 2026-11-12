@@ -75,6 +75,42 @@ class CompareTests(unittest.TestCase):
         none = (253, b"", "No Exif data found in the file")
         self.assertEqual([], self.compare(keys=none, source_keys=none))
 
+    def test_a_key_that_holds_the_profile_is_left_out_of_the_comparison_and_counted(self):
+        key = b"Exif.Image.InterColorProfile  Undefined  200  0 1 2 3\n"
+        named = ("Exif.Image.InterColorProfile",)
+        # Without the option the line is one more than the source has.
+        self.assertEqual(1, len(self.compare(keys=ok(KEYS + key))))
+        self.assertEqual([], e.compare(PROFILE, b"Hi", ok(KEYS), ok(PROFILE), ok(b"Hi\n"), ok(key + KEYS), named))
+        self.assertEqual([], e.compare(PROFILE, b"Hi", ok(key + KEYS), ok(PROFILE), ok(b"Hi\n"), ok(KEYS + key), named))
+        self.assertEqual([], e.compare(b"", b"Hi", ok(KEYS + key), ok(b""), ok(b"Hi\n"), ok(KEYS), named))
+        self.assertEqual(["-pa prints 0 line(s) of Exif.Image.InterColorProfile, expected 1"],
+                         e.compare(PROFILE, b"Hi", ok(KEYS), ok(PROFILE), ok(b"Hi\n"), ok(KEYS), named))
+        self.assertEqual(["-pa prints 1 line(s) of Exif.Image.InterColorProfile, expected 0"],
+                         e.compare(b"", b"Hi", ok(KEYS), ok(b""), ok(b"Hi\n"), ok(KEYS + key), named))
+        self.assertEqual(["-pa prints 2 line(s) of Exif.Image.InterColorProfile, expected 1"],
+                         e.compare(PROFILE, b"Hi", ok(KEYS), ok(PROFILE), ok(b"Hi\n"), ok(key + KEYS + key), named))
+        # Another line is still a difference, and a key that only begins like the named one is another line.
+        other = b"Exif.Image.InterColorProfileX  Undefined  1  0\n"
+        self.assertEqual(1, len(e.compare(PROFILE, b"Hi", ok(KEYS), ok(PROFILE), ok(b"Hi\n"), ok(KEYS + key + other), named)))
+        # Where the tool does not exit with 0, before and after, the lines are not counted.
+        self.assertEqual([], e.compare(PROFILE, b"Hi", (253, KEYS, ""), ok(PROFILE), ok(b"Hi\n"), (253, KEYS, ""), named))
+
+    def test_one_of_several_keys_counts(self):
+        named = ("Exif.Image.InterColorProfile", "Exif.PanasonicRaw.0x8773")
+        key = b"Exif.PanasonicRaw.0x8773  Undefined  200  0 1 2 3\n"
+        self.assertEqual([], e.compare(PROFILE, b"Hi", ok(KEYS), ok(PROFILE), ok(b"Hi\n"), ok(KEYS + key), named))
+        self.assertEqual(["-pa prints 0 line(s) of Exif.Image.InterColorProfile or Exif.PanasonicRaw.0x8773, expected 1"],
+                         e.compare(PROFILE, b"Hi", ok(KEYS), ok(PROFILE), ok(b"Hi\n"), ok(KEYS), named))
+
+    def test_the_line_before_the_profile_of_an_orf_or_rw2_file_is_no_part_of_it(self):
+        self.assertEqual(PROFILE, e.printed_profile("a.orf", b"ORF IMAGE\n" + PROFILE))
+        self.assertEqual(b"", e.printed_profile("a.ORF", b"ORF IMAGE\n"))
+        self.assertEqual(PROFILE, e.printed_profile("a.rw2", b"RW2 IMAGE\n" + PROFILE))
+        # Only of such a file, and only its own line.
+        self.assertEqual(b"ORF IMAGE\n" + PROFILE, e.printed_profile("a.tif", b"ORF IMAGE\n" + PROFILE))
+        self.assertEqual(b"RW2 IMAGE\n" + PROFILE, e.printed_profile("a.orf", b"RW2 IMAGE\n" + PROFILE))
+        self.assertEqual(PROFILE, e.printed_profile("a.orf", PROFILE))
+
     def test_the_same_lines_in_another_order_are_a_difference(self):
         swapped = b"".join(reversed(KEYS.splitlines(keepends=True)))
         self.assertEqual(["-pa prints 0 line(s) fewer and 0 more than for the source: the same lines in another order"],
@@ -131,6 +167,25 @@ class CheckTests(unittest.TestCase):
         problems, checked, skipped = self.run_check(row, {"a.jpg": self.SOURCE, "b.jpg": unread}, True)
         self.assertEqual((2, 1, 0), (len(problems), checked, skipped))
 
+    def test_the_profile_keys_and_the_format_line_reach_every_row(self):
+        key = b"Exif.Image.InterColorProfile  Undefined  200  0 1 2 3\n"
+        outputs = {"a.orf": (ok(b"ORF IMAGE\n"), ok(b"\n"), ok(KEYS)),
+                   "b.orf": (ok(b"ORF IMAGE\n" + PROFILE), ok(b"\n"), ok(KEYS + key)),
+                   "c.orf": (ok(b"ORF IMAGE\n"), ok(b"\n"), ok(KEYS))}
+        asked = []
+
+        def runner(command, path):
+            asked.append(command[1])
+            return outputs[path.name][("-pC", "-pc", "-pa").index(command[1])]
+
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / "manifest.tsv").write_text("a.orf\tb.orf\tp.icc\t=\nb.orf\tc.orf\t-\t=\n", encoding="utf-8")
+            (Path(directory) / "p.icc").write_bytes(PROFILE)
+            self.assertEqual(([], 2, 0), e.check(directory, "tool", runner, profile_keys=("Exif.Image.InterColorProfile",)))
+            problems, _, _ = e.check(directory, "tool", runner)
+        self.assertEqual(["-pC", "-pc", "-pa"], asked[:3])
+        self.assertEqual(["b.orf", "c.orf"], [name for name, _ in problems])
+
     def test_the_source_is_read_once_for_all_its_rows(self):
         calls = []
 
@@ -157,6 +212,17 @@ class CheckTests(unittest.TestCase):
                       printed.getvalue())
         self.assertIn("::error title=Corpus b.jpg::-pC does not read the file (exit 1): damaged", printed.getvalue())
         self.assertIn("3 problem(s) in 1 edited file(s)", printed.getvalue())
+
+    def test_main_names_the_profile_keys_it_was_given(self):
+        with tempfile.TemporaryDirectory() as directory:
+            (Path(directory) / "manifest.tsv").write_text("a.tif\tb.tif\t-\t=\n", encoding="utf-8")
+            printed = io.StringIO()
+            with contextlib.redirect_stdout(printed):
+                passed = e.main([directory, "--exiv2", "tool", "--profile-key", "Exif.Image.InterColorProfile", "--profile-key", "Exif.X.Y"],
+                                lambda command, path: ok(b"\n" if command[1] == "-pc" else b""))
+        self.assertEqual(0, passed)
+        self.assertIn("for the source, but for Exif.Image.InterColorProfile and Exif.X.Y, which it prints where there is a profile "
+                      "and nowhere else", printed.getvalue())
 
 
 if __name__ == "__main__":
