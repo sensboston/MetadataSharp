@@ -57,6 +57,10 @@ def main():
             assert z.read('README.md') == (ROOT / 'README.md').read_bytes()
             dlls = [n for n in names if n.endswith('.dll')]
             assert dlls == sorted(f'lib/{tfm}/{name}.dll' for tfm in TARGETS), dlls
+            # IsAotCompatible reached the packaged build: the SDK that turns on the trim and AOT analyzers
+            # for it also writes this assembly metadata, which a trimming consumer reads.
+            markers = {dll.split('/')[1]: [m for m in ('IsTrimmable', 'IsAotCompatible') if m.encode() in z.read(dll)] for dll in dlls}
+            assert all('IsTrimmable' in found for found in markers.values()), markers
             assert not any(n.endswith(('.exe', '.cs', '.pdb', '.pdf', '.tif', '.jpg', '.png', '.webp')) for n in names), names
             ns = ET.fromstring(z.read(f'{name}.nuspec'))
             local = lambda tag: [e for e in ns.iter() if e.tag.split('}')[-1] == tag]
@@ -91,7 +95,7 @@ def main():
         # Kept out of the feed the offline consumer restores from.
         symbols.replace(SYMBOLS / symbols.name)
         reports.append(dict(package=package.name, sha256=hashlib.sha256(package.read_bytes()).hexdigest(), entries=names,
-                            dependencyGroups=groups, documentedMembers=docs, repository=repository,
+                            dependencyGroups=groups, documentedMembers=docs, repository=repository, assemblyMetadata=markers,
                             symbols=dict(package=symbols.name, entries=symbol_names, sourceLink='verified')))
     consumer = OUT / 'consumer'; consumer.mkdir(exist_ok=True)
     major = TARGET[3:].split('.')[0]
