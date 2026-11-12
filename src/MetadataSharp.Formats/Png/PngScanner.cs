@@ -10,6 +10,10 @@ internal sealed record PngChunk(string Type, long Start, int Size, bool Xmp, boo
 {
     /// <summary>The NAME of a tEXt or zTXt chunk whose keyword is "Raw profile type NAME", else null.</summary>
     internal string? Profile { get; init; }
+    /// <summary>A tEXt, zTXt or iTXt chunk whose keyword is exactly "Comment".</summary>
+    internal bool Comment { get; init; }
+    /// <summary>The checksum the chunk ends with, which the scan found to hold.</summary>
+    internal uint Checksum { get; init; }
     internal long Payload => Start + 8;
     internal long Length => (long)Size + 12;
 }
@@ -85,7 +89,7 @@ internal static class PngScanner
                         if (!idat) insertion = start; idat = true; break;
                     case "IEND":
                         if (!idat || size != 0 || source.Position != length) throw Invalid("Invalid IEND or trailing data.");
-                        chunks.Add(new(type, start, (int)size, false, false)); return new(length, chunks.AsReadOnly(), insertion);
+                        chunks.Add(new(type, start, (int)size, false, false) { Checksum = ~crc }); return new(length, chunks.AsReadOnly(), insertion);
                 }
                 if (type is "cHRM" or "gAMA" or "iCCP" or "sBIT" or "sRGB" or "cICP" or "mDCV" or "cLLI")
                     if (idat || palette != 0) throw Invalid("Color metadata must precede PLTE/IDAT.");
@@ -100,7 +104,8 @@ internal static class PngScanner
                 if (fixedSize >= 0 && size != fixedSize) throw Invalid("Invalid fixed-size ancillary chunk.");
                 bool xmp = type == "iTXt" && prefix.AsSpan().StartsWith("XML:com.adobe.xmp\0"u8);
                 string? profile = type is "tEXt" or "zTXt" ? RawProfileName(prefix) : null;
-                chunks.Add(new(type, start, (int)size, xmp, !Known.Contains(type) && (header[7] & 32) == 0) { Profile = profile });
+                bool comment = type is ("tEXt" or "zTXt" or "iTXt") && prefix.AsSpan().StartsWith("Comment\0"u8);
+                chunks.Add(new(type, start, (int)size, xmp, !Known.Contains(type) && (header[7] & 32) == 0) { Profile = profile, Comment = comment, Checksum = ~crc });
             }
             throw Invalid("Missing IEND.");
         }
