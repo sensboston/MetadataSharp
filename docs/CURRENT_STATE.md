@@ -124,10 +124,16 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   profile, comments and previews; a kind its reader refuses is listed in `Errors`, the others are
   read. The readers per container are unchanged. The Dump tool reads eight formats through it: run
   43152164430, 2,515 tests, all ten parity reports equal to those of the old tool (run 43151606423).
+- Release readiness, no behaviour change: every public member of both libraries has an XML comment
+  and CS1591 is no longer suppressed (the documentation file is written in every build). Both are
+  marked `IsAotCompatible` and built under the trim, AOT and single-file analyzers (no native publish
+  is run). Packages carry description, tags, the repository (`MetadataSharpRepositoryUrl`) and commit;
+  symbols are a `.snupkg` with Source Link, checked by `tools/audit/run.py`. README "Quick start":
+  the regions of `tests/MetadataSharp.Examples/QuickStart.cs`, run by 12 tests that hold the README to them.
 
 ## Next (in order)
 
-1. Release readiness for 1.0 on NuGet (package metadata, documentation); no behaviour change.
+1. Publish 1.0 to NuGet: a version and a release workflow (packages are ready; nothing is published).
 2. Write side: MakerNote-safe rules per vendor; removal of a whole BMFF item.
 3. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.

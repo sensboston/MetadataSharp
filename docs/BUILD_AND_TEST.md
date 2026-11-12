@@ -10,6 +10,7 @@ target `net8.0` and `net10.0`; running the `net8.0` tests needs the .NET 8 runti
 ```sh
 dotnet build MetadataSharp.sln --configuration Release
 dotnet test tests/MetadataSharp.Tests --configuration Release -f net10.0
+dotnet test tests/MetadataSharp.Examples --configuration Release -f net10.0   # the README's "Quick start", run
 python -m unittest discover -s tests/reference     # reference-harness and fixture-generator checks
 python -m unittest discover -s tests/parity        # parity-harness checks (offline)
 ```
