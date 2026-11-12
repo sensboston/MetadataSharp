@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace MetadataSharp.Core;
 
 /// <summary>An immutable metadata snapshot independent of input buffers and source lifetime.</summary>
-public sealed class ExifMetadata
+public sealed partial class ExifMetadata
 {
     private readonly Dictionary<ExifTagKey, ExifEntry> lookup;
 

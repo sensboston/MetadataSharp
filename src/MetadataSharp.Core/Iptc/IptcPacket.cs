@@ -4,7 +4,7 @@ using System.Text;
 namespace MetadataSharp.Core.Iptc;
 
 /// <summary>A bounded raw IIM snapshot preserving occurrences and untouched framing.</summary>
-public sealed class IptcPacket
+public sealed partial class IptcPacket
 {
     private readonly byte[] bytes;
     private readonly IptcLimits limits;
