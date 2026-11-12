@@ -18,14 +18,14 @@ PRINTED = (
     "Exif.Image.Make                              Ascii      12  TestCompany\n"
     "Xmp.xmp.Rating                               XmpText     1  4\n"
     "Xmp.dc.subject                               XmpBag      2  harbour, dawn\n"
-    "Xmp.xmpMM.History                            XmpText     0  type=\"Seq\"\n"
+    "Xmp.xmpMM.History                            XmpText    10  type=\"Seq\"\n"
     "Xmp.xmpMM.History[1]/stEvt:action            XmpText     7  created\n"
     "Xmp.xmpNote.HasExtendedXMP                   XmpText    32  0123456789ABCDEF0123456789ABCDEF\n"
 )
 EXPECTED = [
     "Xmp.xmp.Rating XmpText 1 4",
     "Xmp.dc.subject XmpBag 2 harbour, dawn",
-    "Xmp.xmpMM.History XmpText 0 type=\"Seq\"",
+    "Xmp.xmpMM.History XmpText 10 type=\"Seq\"",
     "Xmp.xmpMM.History[1]/stEvt:action XmpText 7 created",
     "Xmp.xmpNote.HasExtendedXMP XmpText 32 *",
 ]

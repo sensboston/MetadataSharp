@@ -262,7 +262,7 @@ public sealed class XmpEditTests
                 "Xmp.p.kept=Struct*:",
                 "Xmp.p.kept/p:a=Text:1",
                 "Xmp.p.none=Bag:",
-                "Xmp.p.hollow=Struct:",
+                "Xmp.p.hollow=Struct*:",
                 "Xmp.p.holder=Struct*:",
                 "Xmp.p.holder/p:void=Seq:"
             },

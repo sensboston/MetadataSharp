@@ -458,7 +458,8 @@ else if (args.Length == 2 && args[0] == "xmp-edits")
     var manifest = new List<string>();
     string XmpAt(string name) => Path.Combine(args[1], name);
     string TextLine(string key, string value) => $"{key} XmpText {Encoding.UTF8.GetByteCount(value)} {value}";
-    string NodeLine(string key, string form) => $"{key} XmpText 0 type=\"{form}\"";
+    // The tool prints a structure or an array of structures as a text that names its form.
+    string NodeLine(string key, string form) => TextLine(key, $"type=\"{form}\"");
     const string acme = "https://example.com/ns/acme/1.0/";
     const string title = "Harbour at dawn", french = "Le port \u00E0 l'aube", note = "custom & <escaped>";
 
