@@ -266,6 +266,11 @@ public sealed class OperationsTests
         Assert.Equal("SRational:FEFFFFFF03000000", Change(script.Exif, ExifDir, 0x9204));
         Assert.Equal("removed", Change(script.Exif, Ifd0, 0x0131));
 
+        // set replaces the first occurrence and leaves the others, as an Exiv2 command file does.
+        IptcPacket several = Iptc(e => e.SetKeywords(new[] { "one", "two", "three" })).Apply(ModifyScript.Parse("set Iptc.Application2.Keywords first\nadd Iptc.Application2.Headline H").Iptc)!;
+        Assert.Equal(new[] { "first", "two", "three" }, Texts(several, 25));
+        Assert.Equal(new[] { "H" }, Texts(several, 105));
+
         IptcPacket iptc = Iptc(e => { e.SetCaption("old"); e.AddKeyword("land"); }).Apply(script.Iptc)!;
         Assert.Equal(new[] { "  Quoted, with its spaces  " }, Texts(iptc, 105));
         Assert.Equal(new[] { "land", "sea", "sky" }, Texts(iptc, 25));

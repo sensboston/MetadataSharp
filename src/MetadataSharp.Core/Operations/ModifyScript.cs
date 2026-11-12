@@ -69,9 +69,10 @@ public sealed class ModifyScriptException : FormatException
 /// <para>
 /// IPTC. Types <c>String Date Time Short Undefined</c>; without one, the form the dataset is defined
 /// with. A Date is <c>YYYY-MM-DD</c> or <c>YYYYMMDD</c>, a Time <c>HH:MM:SS</c> with an optional
-/// <c>±HH:MM</c> or the eleven characters of the dataset. <c>set</c> replaces every occurrence
-/// with one (Exiv2 replaces the first and leaves the others); <c>add</c> appends; <c>del</c>
-/// removes every occurrence.
+/// <c>±HH:MM</c> or the eleven characters of the dataset. <c>set</c> replaces the first occurrence
+/// and leaves the others, or adds the dataset when there is none; <c>add</c> appends an occurrence
+/// (for a dataset that does not repeat it sets the one); <c>del</c> removes every occurrence. All
+/// as Exiv2 does.
 /// </para>
 /// <para>
 /// XMP. Types <c>XmpText XmpBag XmpSeq XmpAlt LangAlt</c>; without one, the form the property is
@@ -369,8 +370,10 @@ public sealed class ModifyScript
                 break;
             }
         }
-        if (command == ModifyCommandKind.Add) Iptc.Append(key, value);
-        else Iptc.Set(key, value);
+        if (command == ModifyCommandKind.Set) Iptc.SetFirst(key, value);
+        // A dataset that does not repeat is added as it is set: there is one place for it.
+        else if (IptcDatasets.TryGet(key, out IptcDatasetDefinition? definition) && !definition.IsRepeatable) Iptc.SetFirst(key, value);
+        else Iptc.Append(key, value);
     }
 
     // ---- XMP ---------------------------------------------------------------------------------------------
