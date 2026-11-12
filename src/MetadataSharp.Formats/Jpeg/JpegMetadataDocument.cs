@@ -3,8 +3,8 @@ using System.Buffers.Binary;
 using System.Security.Cryptography;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Tiff;
-using MetadataSharp.Core.Tiff.Serialization;
 using MetadataSharp.Formats.Internal;
+using MetadataSharp.Formats.Tiff;
 
 namespace MetadataSharp.Formats.Jpeg;
 
@@ -202,14 +202,21 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         // The block was opened for reading only. Editing it refuses as opening it used to.
         if (exifRefusal is not null) throw new MetadataException(exifRefusal.Code, exifRefusal.Message, exifRefusal.SourceOffset);
         if (edit.RemoveAll) return new(scan.Exif is null, null);
-        Endianness order = tiff?.Metadata.ByteOrder ?? Endianness.LittleEndian;
-        ExifMetadata desired = edit.Apply(tiff, order, limits);
-        if (tiff is null && desired.Entries.Count == 0) return new(true, null);
-        ExifWritePlan plan = ExifLayoutPlanner.Create(tiff, desired, limits);
-        byte[] bytes = new byte[plan.Length];
-        ExifTiffSerializer.Write(plan, bytes);
+        byte[]? bytes;
+        if (scan.Exif is JpegSegment segment)
+        {
+            // The block is edited where it lies: nothing in it moves, and what grows is appended.
+            byte[] block = new byte[segment.PayloadLength - 6];
+            source.Position = segment.PayloadOffset + 6;
+            await ReadExact(source, block, asynchronous, token).ConfigureAwait(false);
+            bytes = ExifBlockEditor.Edit(block, segment.PayloadOffset + 6, edit, limits);
+        }
+        else
+        {
+            bytes = ExifBlockEditor.Create(edit, limits, ExifTiffReader.SegmentCeiling, out _);
+        }
         token.ThrowIfCancellationRequested();
-        return new(false, bytes);
+        return bytes is null ? new(true, null) : new(false, bytes);
     }
 
     private async Task Emit(Stream output, Prepared prepared, bool asynchronous, CancellationToken token)

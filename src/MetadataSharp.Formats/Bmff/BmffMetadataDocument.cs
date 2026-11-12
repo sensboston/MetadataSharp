@@ -1,7 +1,6 @@
 using System.Buffers.Binary;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Tiff;
-using MetadataSharp.Core.Tiff.Serialization;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Internal;
 using MetadataSharp.Formats.Tiff;
@@ -272,14 +271,13 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         {
             // Removing tags from an item that is not there changes nothing.
             if (edit.Changes.Values.All(value => value is null)) return null;
-            desired = edit.Apply(null, Endianness.LittleEndian, limits);
-            if (desired.Entries.Count == 0) return null;
-            ExifWritePlan block = ExifLayoutPlanner.Create(null, desired, limits, ExifTiffReader.NoCeiling);
+            byte[]? block = ExifBlockEditor.Create(edit, limits, ExifTiffReader.NoCeiling, out desired);
+            if (block is null) return null;
             if (block.Length > Array.MaxLength - 4)
                 throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF item exceeds the length of an array.");
             // The item begins with the offset of the TIFF header from the byte after it: zero.
             byte[] created = new byte[4 + block.Length];
-            ExifTiffSerializer.Write(block, created.AsSpan(4));
+            block.CopyTo(created, 4);
             return created;
         }
 
@@ -293,24 +291,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         TiffBasedFileMap directories = TiffBasedFileMap.Read(tiff, limits, MaxAccountedRanges);
         ExifMetadata before = ExifTiffReader.InspectFile(tiff, limits);
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
-        foreach (KeyValuePair<ExifTagKey, ExifValue?> change in edit.Changes)
-        {
-            TiffBasedRole role = change.Key.Directory switch
-            {
-                ExifDirectoryKind.Ifd0 => TiffBasedRole.Primary,
-                ExifDirectoryKind.Exif => TiffBasedRole.Exif,
-                ExifDirectoryKind.Gps => TiffBasedRole.Gps,
-                _ => throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
-                    "Only tags of the primary, Exif and GPS directories are edited.")
-            };
-            if (change.Value is null)
-            {
-                changes[(role, change.Key.TagId)] = null;
-                continue;
-            }
-            ExifValue value = ExifEdit.ConvertOrder(change.Value, directories.Order);
-            changes[(role, change.Key.TagId)] = new((ushort)value.FieldType, value.Count, value.RawBytes.ToArray());
-        }
+        ExifBlockEditor.AddChanges(edit, directories.Order, changes);
         TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(tiff, directories, changes, limits);
         if (plan.IsEmpty) return null;
         byte[] edited = plan.Apply(tiff);

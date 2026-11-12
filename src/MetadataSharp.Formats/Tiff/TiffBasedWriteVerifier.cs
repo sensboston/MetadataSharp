@@ -63,14 +63,16 @@ internal static class TiffBasedWriteVerifier
             throw Refuse("image data or MakerNote ranges are not the ones of the source");
         foreach (TiffBasedDirectory was in before.Directories)
         {
-            bool edited = was.Role is TiffBasedRole.Primary or TiffBasedRole.Exif or TiffBasedRole.Gps;
+            bool edited = was.Role != TiffBasedRole.Other;
             TiffBasedDirectory? now = edited ? after.Find(was.Role) : after.FindAt(was.Offset);
             if (now is null)
             {
                 if (edited && plan.Removed.Contains(was.Role)) continue;
                 throw Refuse("a directory of the source is no longer reached");
             }
-            if (now.Role != was.Role || now.Next != was.Next)
+            // The primary directory names a new successor only when the plan copied that directory.
+            bool relinked = was.Role == TiffBasedRole.Primary && plan.Successor is uint moved && now.Next == moved;
+            if (now.Role != was.Role || (now.Next != was.Next && !relinked))
                 throw Refuse("a directory changed its place in the file's structure");
             foreach (TiffBasedField field in was.Fields)
             {
@@ -127,7 +129,7 @@ internal static class TiffBasedWriteVerifier
     {
         var edited = new Dictionary<ExifTagKey, TiffBasedChange?>();
         foreach (KeyValuePair<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> change in plan.Effective)
-            edited[new ExifTagKey(Kind(change.Key.Role), change.Key.Tag)] = change.Value;
+            edited[new ExifTagKey(TiffBasedWritePlanner.Kind(change.Key.Role), change.Key.Tag)] = change.Value;
         foreach (ExifEntry entry in before.Entries)
         {
             if (edited.ContainsKey(entry.Key)) continue;
@@ -159,14 +161,6 @@ internal static class TiffBasedWriteVerifier
 
     private static bool Same(ExifValue left, ExifValue right) =>
         left.FieldType == right.FieldType && left.Count == right.Count && left.RawBytes.SequenceEqual(right.RawBytes);
-
-    private static ExifDirectoryKind Kind(TiffBasedRole role) => role switch
-    {
-        TiffBasedRole.Primary => ExifDirectoryKind.Ifd0,
-        TiffBasedRole.Exif => ExifDirectoryKind.Exif,
-        TiffBasedRole.Gps => ExifDirectoryKind.Gps,
-        _ => throw new ArgumentOutOfRangeException(nameof(role))
-    };
 
     /// <summary>
     /// An output over a budget is a budget refusal, not a failed check: the edit asked for more than

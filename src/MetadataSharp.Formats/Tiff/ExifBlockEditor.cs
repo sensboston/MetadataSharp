@@ -1,0 +1,126 @@
+using MetadataSharp.Core;
+using MetadataSharp.Core.Tiff;
+using MetadataSharp.Core.Tiff.Serialization;
+
+namespace MetadataSharp.Formats.Tiff;
+
+/// <summary>
+/// Applies an <see cref="ExifEdit"/> to the EXIF block of a container that holds one as a unit: a
+/// JPEG APP1 segment, a PNG eXIf chunk, a WebP EXIF chunk, a BMFF Exif item.
+/// </summary>
+/// <remarks>
+/// <para>A block the file has is edited as the directories of a TIFF file are, by
+/// <see cref="TiffBasedWritePlanner"/>: no byte of it moves, a value that fits is written where the
+/// old one is, and what grows is appended. So a MakerNote, and whatever a tag this library cannot
+/// name may address, stays at its offset. The output is checked before it is returned: by
+/// <see cref="TiffBasedWriteVerifier"/>, and by the reader of the container, which has to return
+/// the source with the named tags changed and the same thumbnail.</para>
+/// <para>A block the file does not have is laid out by <see cref="ExifLayoutPlanner"/> and read
+/// back: it holds the tags that were set and the pointers that reach them.</para>
+/// </remarks>
+internal static class ExifBlockEditor
+{
+    /// <summary>The ranges a block may be accounted in; a block of 64 KiB cannot hold more.</summary>
+    internal const int MaxAccountedRanges = 16_384;
+
+    /// <summary>The changes of an edit as the planner takes them, in the byte order of the structure.</summary>
+    internal static void AddChanges(ExifEdit.EditSnapshot edit, Endianness order,
+        Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes)
+    {
+        foreach (KeyValuePair<ExifTagKey, ExifValue?> change in edit.Changes)
+        {
+            TiffBasedRole role = TiffBasedWritePlanner.Role(change.Key.Directory);
+            if (change.Value is null)
+            {
+                changes[(role, change.Key.TagId)] = null;
+                continue;
+            }
+            ExifValue value = ExifEdit.ConvertOrder(change.Value, order);
+            changes[(role, change.Key.TagId)] = new((ushort)value.FieldType, value.Count, value.RawBytes.ToArray());
+        }
+    }
+
+    /// <summary>
+    /// The block of a file that has none: little-endian, the tags the edit sets and the pointers to
+    /// their directories. Null when the edit sets nothing, since removing a tag from no block is no
+    /// change.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a tag of the thumbnail directory, which
+    /// is not created; <see cref="MetadataErrorCode.ExifTooLarge"/> over the ceiling;
+    /// <see cref="MetadataErrorCode.LimitExceeded"/> over a budget.
+    /// </exception>
+    internal static byte[]? Create(ExifEdit.EditSnapshot edit, MetadataLimits limits, int ceiling, out ExifMetadata? desired)
+    {
+        desired = null;
+        if (edit.Changes.Values.All(value => value is null)) return null;
+        if (edit.Changes.Any(change => change.Value is not null && change.Key.Directory == ExifDirectoryKind.Thumbnail))
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
+                "The file has no thumbnail directory: one is not created by a tag edit.");
+        desired = edit.Apply(null, Endianness.LittleEndian, limits);
+        ExifWritePlan plan = ExifLayoutPlanner.Create(null, desired, limits, ceiling);
+        if (plan.Length > Array.MaxLength)
+            throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF block exceeds the length of an array.");
+        byte[] block = new byte[plan.Length];
+        ExifTiffSerializer.Write(plan, block);
+
+        ExifMetadata written;
+        try { written = ExifTiffReader.Inspect(block, limits, 0, ceiling); }
+        catch (MetadataException failure) { throw Limit(failure) ?? Refuse("the reader refuses the new block"); }
+        if (!written.IsEditable) throw Refuse("the new block is outside the editable profile");
+        foreach (ExifEntry entry in desired.Entries)
+            if (!written.TryGetEntry(entry.Key, out ExifEntry? same) || !Same(entry.Value, same.Value))
+                throw Refuse("the reader does not return a tag as it was set");
+        foreach (ExifEntry entry in written.Entries)
+            if (!desired.TryGetEntry(entry.Key, out _) && !ExifLayoutPlanner.TryLink(entry.Key.Directory, entry.Key.TagId, out _))
+                throw Refuse("the new block holds a tag that was not set");
+        return block;
+    }
+
+    /// <summary>
+    /// The block of a JPEG APP1 segment, or of a chunk held to the same length, with the edit
+    /// applied; null when the edit changes nothing in it. <paramref name="sourceBase"/> is the offset
+    /// of the block in its file, for the offsets of errors.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// What the reader of the block refuses it with; <see cref="MetadataErrorCode.ExifTooLarge"/> when
+    /// the edited block is longer than a segment holds;
+    /// <see cref="MetadataErrorCode.TagNotEditable"/>, <see cref="MetadataErrorCode.UnsupportedFeature"/>
+    /// and <see cref="MetadataErrorCode.UnsafeRelocation"/> as <see cref="TiffBasedWritePlanner"/>
+    /// and <see cref="TiffBasedWriteVerifier"/> give them.
+    /// </exception>
+    internal static byte[]? Edit(byte[] block, long sourceBase, ExifEdit.EditSnapshot edit, MetadataLimits limits)
+    {
+        // The reader of the container first: a block it refuses is not edited.
+        TiffReadResult before = ExifTiffReader.Read(block, limits, sourceBase);
+        TiffBasedFileMap map = TiffBasedFileMap.Read(block, limits, MaxAccountedRanges);
+        ExifMetadata whole = ExifTiffReader.InspectFile(block, limits);
+        var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
+        AddChanges(edit, map.Order, changes);
+        TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(block, map, changes, limits, ExifTiffReader.SegmentCeiling,
+            emptyPrimary: true);
+        if (plan.IsEmpty) return null;
+        byte[] output = plan.Apply(block);
+        TiffBasedWriteVerifier.Verify(block, map, whole, output, plan, limits, MaxAccountedRanges);
+
+        TiffReadResult after;
+        try { after = ExifTiffReader.Read(output, limits); }
+        catch (MetadataException failure) { throw Limit(failure) ?? Refuse("the reader of the block refuses the output"); }
+        TiffBasedWriteVerifier.Reader(before.Metadata, after.Metadata, plan);
+        if ((before.Thumbnail is null) != (after.Thumbnail is null) ||
+            (before.Thumbnail is not null && !before.Thumbnail.AsSpan().SequenceEqual(after.Thumbnail)))
+            throw Refuse("the thumbnail no longer reads as it did");
+        return output;
+    }
+
+    private static bool Same(ExifValue left, ExifValue right) =>
+        left.FieldType == right.FieldType && left.Count == right.Count && left.RawBytes.SequenceEqual(right.RawBytes);
+
+    private static MetadataException? Limit(MetadataException failure) =>
+        failure.Code is MetadataErrorCode.LimitExceeded or MetadataErrorCode.ExifTooLarge
+            ? new MetadataException(failure.Code, failure.Message)
+            : null;
+
+    private static MetadataException Refuse(string what) =>
+        new(MetadataErrorCode.UnsafeRelocation, "The planned output failed verification and was not written: " + what + ".");
+}

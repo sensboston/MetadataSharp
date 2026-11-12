@@ -41,21 +41,26 @@ public sealed class JpegEditingTests
     }
 
     // The read drops a thumbnail whose JPEG stream fails validation and keeps the rest of the file. Inside
-    // the JPEG document that means: the metadata opens, a rebuild that must carry the lost picture refuses,
-    // and the edit that discards the whole payload still works, because removal relocates nothing.
+    // the JPEG document that means: the metadata opens, and an edit changes its tag and leaves every other
+    // byte of the block, the picture that does not read among them, where it is. The edit that discards the
+    // whole payload works as well.
     [Fact]
-    public void AnUnreadableThumbnailLeavesTheMetadataReadableAndTheRebuildRefused()
+    public void AnUnreadableThumbnailLeavesTheMetadataReadableAndStaysWhereItIsUnderAnEdit()
     {
         byte[] bare = JpegFixture.Build();
-        byte[] image = [.. bare[..2], .. JpegFixture.Segment(0xE1, JpegFixture.Exif(BrokenThumbnailTiff())), .. bare[2..]];
+        byte[] tiff = BrokenThumbnailTiff();
+        byte[] image = [.. bare[..2], .. JpegFixture.Segment(0xE1, JpegFixture.Exif(tiff)), .. bare[2..]];
         using var document = JpegMetadataDocument.Open(new MemoryStream(image));
         Assert.NotNull(document.Exif);
         Assert.True(document.Exif!.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x0112), out _));
         var edit = new ExifEdit();
         edit.Set(new(ExifDirectoryKind.Ifd0, 0x0112), ExifValue.FromRaw(TiffFieldType.Short, 1,
             Endianness.LittleEndian, [8, 0]));
-        MetadataException error = Assert.Throws<MetadataException>(() => document.Save(new MemoryStream(), edit));
-        Assert.Equal(MetadataErrorCode.UnsafeRelocation, error.Code);
+        using var edited = new MemoryStream();
+        document.Save(edited, edit);
+        byte[] expected = (byte[])tiff.Clone();
+        expected[18] = 8; // the value of Orientation, in its entry
+        Assert.Equal(expected, ExifBlock(edited.ToArray()));
         var removal = new ExifEdit();
         removal.RemoveAllExif();
         using var removed = new MemoryStream();
@@ -119,23 +124,42 @@ public sealed class JpegEditingTests
         using var result = new MemoryStream(); read.Save(result, removal);
         using var empty = JpegMetadataDocument.Open(new MemoryStream(result.ToArray()));
         Assert.Empty(empty.Exif!.Entries);
+        // The block of a JPEG may be left with no tag at all; it is still a block, with a directory in it.
+        Assert.Equal(new byte[] { 0x49, 0x49, 42, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, ExifBlock(result.ToArray())[..14]);
     }
 
+    // A tag the vocabulary does not list and a MakerNote do not stand in the way of an edit: no byte of
+    // the block moves, so whatever they address is where it was. The directory that gains the new tag is
+    // appended as a copy and the header is pointed at it; everything after the header is as it was.
     [Fact]
-    public void UnknownAndMakerNoteDataAllowCopyOrWholeRemovalButNotRebuild()
+    public void UnknownAndMakerNoteDataStayAtTheirOffsetsUnderAnEditAndAllowCopyOrWholeRemoval()
     {
         byte[] unknown = JpegFixture.OrientationTiff; unknown[10] = 0xFF; unknown[11] = 0xFF;
-        // Change unknown primary entry into an Exif IFD pointer, then use an opaque inline MakerNote.
+        // An Exif IFD pointer in the primary directory, and an opaque inline MakerNote in the Exif directory.
         byte[] maker = [0x49, 0x49, 42, 0, 8, 0, 0, 0, 1, 0, 0x69, 0x87, 4, 0, 1, 0, 0, 0, 26, 0, 0, 0, 0, 0, 0, 0,
             1, 0, 0x7C, 0x92, 7, 0, 4, 0, 0, 0, 1, 2, 3, 4, 0, 0, 0, 0];
-        foreach (byte[] tiff in new[] { unknown, maker })
+        var kept = new ExifTagKey[] { new(ExifDirectoryKind.Ifd0, 0xFFFF), new(ExifDirectoryKind.Exif, 0x927C) };
+        foreach ((byte[] tiff, ExifTagKey key) in new[] { unknown, maker }.Zip(kept))
         {
             byte[] image = JpegFixture.Build(JpegFixture.Segment(0xE1, JpegFixture.Exif(tiff)));
             using var doc = JpegMetadataDocument.Open(new MemoryStream(image));
+            Assert.True(doc.Exif!.TryGetEntry(key, out ExifEntry? before));
             var edit = new ExifEdit(); edit.Set(new(ExifDirectoryKind.Ifd0, 0x013B), Text("A"));
             using var output = new MemoryStream();
-            Assert.Equal(MetadataErrorCode.UnsafeRelocation, Assert.Throws<MetadataException>(() => doc.Save(output, edit)).Code);
-            Assert.Empty(output.ToArray());
+            doc.Save(output, edit);
+            byte[] block = ExifBlock(output.ToArray());
+            Assert.Equal(tiff[..4], block[..4]);
+            Assert.Equal((uint)tiff.Length, BitConverter.ToUInt32(block, 4)); // the copy of the directory
+            Assert.Equal(tiff[8..], block[8..tiff.Length]);
+            using (var read = JpegMetadataDocument.Open(new MemoryStream(output.ToArray())))
+            {
+                Assert.True(read.Exif!.TryGetEntry(key, out ExifEntry? after));
+                Assert.Equal(before.Value.FieldType, after.Value.FieldType);
+                Assert.Equal(before.Value.RawBytes.ToArray(), after.Value.RawBytes.ToArray());
+                Assert.True(read.Exif.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? artist));
+                Assert.Equal("A\0", Encoding.ASCII.GetString(artist.Value.RawBytes));
+            }
+            output.SetLength(0);
             doc.Save(output, new ExifEdit()); Assert.Equal(image, output.ToArray());
             var remove = new ExifEdit(); remove.RemoveAllExif();
             using var removed = new MemoryStream(); doc.Save(removed, remove);
@@ -277,8 +301,8 @@ public sealed class JpegEditingTests
     {
         var edit = new ExifEdit(); Assert.True(edit.IsEmpty);
         var artist = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B);
-        Assert.Throws<ArgumentException>(() => edit.Set(new(ExifDirectoryKind.Ifd0, 0x8769), Text("A")));
-        Assert.Throws<ArgumentException>(() => edit.Remove(new(ExifDirectoryKind.Thumbnail, 0x0103)));
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Assert.Throws<MetadataException>(() => edit.Set(new(ExifDirectoryKind.Ifd0, 0x8769), Text("A"))).Code);
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Assert.Throws<MetadataException>(() => edit.Remove(new(ExifDirectoryKind.Thumbnail, 0x0201))).Code);
         Assert.Throws<ArgumentException>(() => edit.Set(artist, ExifValue.FromRaw(TiffFieldType.Ascii, 1, Endianness.LittleEndian, [0xFF])));
         Assert.True(edit.IsEmpty);
         edit.Set(artist, Text("A")); Assert.Throws<ArgumentException>(() => edit.RemoveAllExif());
@@ -345,6 +369,19 @@ public sealed class JpegEditingTests
 
     private static ExifValue Text(string text)
     { byte[] bytes = Encoding.ASCII.GetBytes(text + "\0"); return ExifValue.FromRaw(TiffFieldType.Ascii, (uint)bytes.Length, Endianness.LittleEndian, bytes); }
+    /// <summary>The TIFF structure of the first APP1 Exif segment of a JPEG.</summary>
+    internal static byte[] ExifBlock(byte[] image)
+    {
+        for (int at = 2; at + 4 <= image.Length && image[at] == 0xFF && image[at + 1] != 0xDA;)
+        {
+            int length = (image[at + 2] << 8) | image[at + 3];
+            if (image[at + 1] == 0xE1 && length >= 8 && image.AsSpan(at + 4, 6).SequenceEqual("Exif\0\0"u8))
+                return image[(at + 10)..(at + 2 + length)];
+            at += 2 + length;
+        }
+        throw new InvalidOperationException("The JPEG has no Exif segment.");
+    }
+
     internal static byte[] WithoutExif(byte[] image)
     {
         JpegSegment? exif = JpegScanner.Scan(new MemoryStream(image), new()).Exif;

@@ -2,10 +2,10 @@ using System.Security.Cryptography;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Tiff;
-using MetadataSharp.Core.Tiff.Serialization;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Internal;
 using MetadataSharp.Formats.Jpeg;
+using MetadataSharp.Formats.Tiff;
 
 namespace MetadataSharp.Formats.Png;
 
@@ -78,6 +78,12 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
         if (chunk.Size > 65527) throw new MetadataException(MetadataErrorCode.ExifTooLarge, "EXIF exceeds the approved classic TIFF profile cap.");
         byte[] bytes = await Payload(chunk, asynchronous, token).ConfigureAwait(false);
         var result = ExifTiffReader.Read(bytes, options.Limits, chunk.Payload); token.ThrowIfCancellationRequested(); return result;
+    }
+    /// <summary>The bytes of the EXIF block and where it begins in the file.</summary>
+    private async Task<(byte[] Block, long At)> ExifBlock(PngChunk chunk, bool asynchronous, CancellationToken token)
+    {
+        if (chunk.Size > 65527) throw new MetadataException(MetadataErrorCode.ExifTooLarge, "EXIF exceeds the approved classic TIFF profile cap.");
+        return (await Payload(chunk, asynchronous, token).ConfigureAwait(false), chunk.Payload);
     }
     private static MetadataException ProfileIsReadOnly(string kind) =>
         new(MetadataErrorCode.UnsupportedFeature, kind + " held in a raw profile text chunk can be read and not edited.");
@@ -235,12 +241,12 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
         }
         else if (!remove)
         {
-            TiffReadResult? original = chunk is null ? null : await Exif(chunk, asynchronous, token).ConfigureAwait(false);
-            if (es!.Changes.All(pair => pair.Value is null && (original is null || !original.Metadata.TryGetEntry(pair.Key, out _)))) return new(true, null, null);
-            var desired = es!.Apply(original, original?.Metadata.ByteOrder ?? Endianness.LittleEndian, options.Limits);
-            if (original is null && desired.Entries.Count == 0) return new(true, null, null);
-            ExifWritePlan plan = ExifLayoutPlanner.Create(original, desired, options.Limits); Budget((long)plan.Length + (chunk?.Size ?? 0) + scan.Chunks.Where(c => c.Xmp).Sum(c => (long)c.Size));
-            bytes = new byte[plan.Length]; ExifTiffSerializer.Write(plan, bytes);
+            // A block the file has is edited where it lies: nothing in it moves, and what grows is appended.
+            (byte[] Block, long At)? original = chunk is null ? null : await ExifBlock(chunk, asynchronous, token).ConfigureAwait(false);
+            bytes = original is null ? ExifBlockEditor.Create(es!, options.Limits, ExifTiffReader.SegmentCeiling, out _)
+                : ExifBlockEditor.Edit(original.Value.Block, original.Value.At, es!, options.Limits);
+            if (bytes is null) return new(true, null, null);
+            Budget((long)bytes.Length + (chunk?.Size ?? 0) + scan.Chunks.Where(c => c.Xmp).Sum(c => (long)c.Size));
         }
         if (scan.Chunks.Any(c => c.UnsafeUnknown)) throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "An unknown unsafe-to-copy PNG chunk prevents editing.");
         byte[]? rebuilt = bytes is null ? null : Crc.Chunk(isXmp ? "iTXt" : "eXIf", bytes);

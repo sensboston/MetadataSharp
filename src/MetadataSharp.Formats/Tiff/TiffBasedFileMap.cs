@@ -15,6 +15,11 @@ internal enum TiffBasedRole
     Gps,
     /// <summary>The target of tag 0xA005 of the Exif directory.</summary>
     Interop,
+    /// <summary>
+    /// The directory the primary one names as its successor: the thumbnail directory of an EXIF
+    /// block, the second image directory of a file.
+    /// </summary>
+    Thumbnail,
     /// <summary>Everything else that is reached: chained directories, SubIFDs and what they point at.</summary>
     Other
 }
@@ -102,6 +107,8 @@ internal sealed class TiffBasedFileMap
     }
 
     internal Endianness Order { get; }
+    /// <summary>The header carries the identifier of a Panasonic RW2 file, whose tag 0x0118 is an address.</summary>
+    internal bool IsRw2 => rw2;
     internal int SourceLength => file.Length;
     internal IReadOnlyList<TiffBasedDirectory> Directories => directories;
     internal IReadOnlyList<TiffBasedRange> Ranges => ranges;
@@ -131,7 +138,7 @@ internal sealed class TiffBasedFileMap
         return map;
     }
 
-    /// <summary>The primary, Exif or GPS directory, or null when the file has none.</summary>
+    /// <summary>The directory of a role other than <see cref="TiffBasedRole.Other"/>, or null when the file has none.</summary>
     internal TiffBasedDirectory? Find(TiffBasedRole role)
     {
         foreach (TiffBasedDirectory directory in directories)
@@ -237,7 +244,7 @@ internal sealed class TiffBasedFileMap
 
         foreach (TiffBasedField field in fields)
             FollowPointer(directory, field);
-        if (role is TiffBasedRole.Primary or TiffBasedRole.Other)
+        if (role is TiffBasedRole.Primary or TiffBasedRole.Thumbnail or TiffBasedRole.Other)
         {
             AddImageData(directory, 0x0111, 0x0117);
             AddImageData(directory, 0x0144, 0x0145);
@@ -247,18 +254,18 @@ internal sealed class TiffBasedFileMap
             // Exif, GPS and Interoperability directories have no successor; some cameras leave
             // noise in that field, so it is kept as it is and not followed.
             if (next != 0)
-                Schedule(next, TiffBasedRole.Other, start + 2 + 12 * count);
+                Schedule(next, role == TiffBasedRole.Primary ? TiffBasedRole.Thumbnail : TiffBasedRole.Other, start + 2 + 12 * count);
         }
     }
 
     private void FollowPointer(TiffBasedDirectory directory, TiffBasedField field)
     {
         TiffBasedRole role = directory.Role;
-        bool image = role is TiffBasedRole.Primary or TiffBasedRole.Other;
+        bool image = role is TiffBasedRole.Primary or TiffBasedRole.Thumbnail or TiffBasedRole.Other;
         TiffBasedRole target;
         if (field.Tag == 0x8769 && image) target = role == TiffBasedRole.Primary ? TiffBasedRole.Exif : TiffBasedRole.Other;
         else if (field.Tag == 0x8825 && image) target = role == TiffBasedRole.Primary ? TiffBasedRole.Gps : TiffBasedRole.Other;
-        else if (field.Tag == 0xA005 && role is TiffBasedRole.Exif or TiffBasedRole.Other)
+        else if (field.Tag == 0xA005 && role is TiffBasedRole.Exif or TiffBasedRole.Thumbnail or TiffBasedRole.Other)
             target = role == TiffBasedRole.Exif ? TiffBasedRole.Interop : TiffBasedRole.Other;
         else if (field.Tag == 0x014A && image) target = TiffBasedRole.Other;
         else return;

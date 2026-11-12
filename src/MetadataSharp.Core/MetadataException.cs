@@ -52,7 +52,12 @@ public enum MetadataErrorCode
     /// <summary>The ICC profile is valid and longer than the container can hold.</summary>
     IccProfileTooLarge,
     /// <summary>The comment is longer than the container can hold.</summary>
-    CommentTooLarge
+    CommentTooLarge,
+    /// <summary>
+    /// The tag is part of the structure of the file and is not edited as a value: a directory pointer,
+    /// an address or length of image or thumbnail data, or the MakerNote. See <see cref="ExifEdit.IsEditable"/>.
+    /// </summary>
+    TagNotEditable
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>

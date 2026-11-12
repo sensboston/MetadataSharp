@@ -523,6 +523,255 @@ else if (args.Length == 2 && args[0] == "bmff-edits")
     }
     File.WriteAllLines(Path.Combine(args[1], "manifest.tsv"), manifest);
 }
+else if (args.Length == 2 && args[0] == "exif-tag-edits")
+{
+    // Files for the pinned tool to read after an edit of any tag: an authored block with all five
+    // directories, a MakerNote, a tag no vocabulary lists and a thumbnail, in a JPEG, a PNG, a WebP,
+    // a TIFF and a HEIC file and in both byte orders; then the same files after tags of every
+    // directory were set, after values were written in place, after the tags were taken out again,
+    // after two directories lost their last tag; a block of one tag after three directories were
+    // added to it; and a file without a block after it was given one. manifest.tsv is that of
+    // tiff-based-edits.
+    Directory.CreateDirectory(args[1]);
+    var manifest = new List<string>();
+    string At(string name) => Path.Combine(args[1], name);
+    const string pointers = "Exif.Image.ExifTag,Exif.Image.GPSTag,Exif.Photo.InteroperabilityTag";
+
+    var tags = new ExifEdit();
+    tags.Set(new(ExifDirectoryKind.Ifd0, 0x013B), "Alice");
+    tags.Set(new(ExifDirectoryKind.Ifd0, 0x0112), (ushort)6);
+    tags.Set(new(ExifDirectoryKind.Ifd0, 0x011A), new UnsignedRational(300, 1));
+    tags.Set(new(ExifDirectoryKind.Ifd0, 0xF1E0), new uint[] { 7, 70_000 });
+    tags.Set(new(ExifDirectoryKind.Exif, 0x829A), new UnsignedRational(1, 250));
+    tags.Set(new(ExifDirectoryKind.Exif, 0x9204), new SignedRational(-1, 3));
+    tags.Set(new(ExifDirectoryKind.Exif, 0x8827), (ushort)400);
+    tags.Set(new(ExifDirectoryKind.Exif, 0xA002), 70_000u);
+    tags.Set(new(ExifDirectoryKind.Exif, 0x9286),
+        ExifValue.FromRaw(TiffFieldType.Undefined, 13, Endianness.LittleEndian, "ASCII\0\0\0Hello"u8));
+    tags.Set(new(ExifDirectoryKind.Exif, 0xF1E1), ExifValue.FromRaw(TiffFieldType.SShort, 2, Endianness.LittleEndian, [0xFE, 0xFF, 5, 0]));
+    tags.Set(new(ExifDirectoryKind.Gps, 0x0001), "S");
+    tags.Set(new(ExifDirectoryKind.Gps, 0x0002), new UnsignedRational[] { new(42, 1), new(22, 1), new(30, 1) });
+    tags.Set(new(ExifDirectoryKind.Gps, 0x0003), "W");
+    tags.Set(new(ExifDirectoryKind.Gps, 0x0004), new UnsignedRational[] { new(71, 1), new(14, 1), new(15, 1) });
+    tags.Set(new(ExifDirectoryKind.Interop, 0x0001), "THM");
+    tags.Set(new(ExifDirectoryKind.Interop, 0x0002), ExifValue.FromRaw(TiffFieldType.Undefined, 4, Endianness.LittleEndian, "0100"u8));
+    tags.Set(new(ExifDirectoryKind.Thumbnail, 0x0112), (ushort)3);
+    tags.Set(new(ExifDirectoryKind.Thumbnail, 0x011A), new UnsignedRational(72, 1));
+    const string tagsChanged = pointers + ",Exif.Image.Orientation,Exif.GPSInfo.GPSLatitudeRef,Exif.Iop.InteroperabilityIndex";
+    const string tagsText = "Exif.Image.Artist|Alice|right, top|Exif.Image.XResolution|Exif.Image.0xf1e0|7 70000|" +
+        "Exif.Photo.ExposureTime|1/250 s|Exif.Photo.ExposureBiasValue|-1/3 EV|Exif.Photo.ISOSpeedRatings|400|" +
+        "Exif.Photo.PixelXDimension|70000|Exif.Photo.UserComment|Hello|Exif.Photo.0xf1e1|-2 5|" +
+        "Exif.GPSInfo.GPSLatitudeRef|South|Exif.GPSInfo.GPSLatitude |Exif.GPSInfo.GPSLongitudeRef|West|Exif.GPSInfo.GPSLongitude |" +
+        "Exif.Iop.InteroperabilityIndex|THM|Exif.Iop.InteroperabilityVersion|1.00|" +
+        "Exif.Thumbnail.Orientation|bottom, right|Exif.Thumbnail.XResolution|72";
+
+    // What the first edit set is taken out again, and what it changed is set back.
+    var back = new ExifEdit();
+    foreach ((ExifDirectoryKind directory, ushort tag) in new (ExifDirectoryKind, ushort)[]
+             {
+                 (ExifDirectoryKind.Ifd0, 0x013B), (ExifDirectoryKind.Ifd0, 0x011A), (ExifDirectoryKind.Ifd0, 0xF1E0),
+                 (ExifDirectoryKind.Exif, 0x829A), (ExifDirectoryKind.Exif, 0x9204), (ExifDirectoryKind.Exif, 0x8827),
+                 (ExifDirectoryKind.Exif, 0xA002), (ExifDirectoryKind.Exif, 0x9286), (ExifDirectoryKind.Exif, 0xF1E1),
+                 (ExifDirectoryKind.Gps, 0x0002), (ExifDirectoryKind.Gps, 0x0003), (ExifDirectoryKind.Gps, 0x0004),
+                 (ExifDirectoryKind.Interop, 0x0002), (ExifDirectoryKind.Thumbnail, 0x0112), (ExifDirectoryKind.Thumbnail, 0x011A)
+             })
+        back.Remove(new(directory, tag));
+    back.Set(new(ExifDirectoryKind.Ifd0, 0x0112), (ushort)1);
+    back.Set(new(ExifDirectoryKind.Gps, 0x0001), "N");
+    back.Set(new(ExifDirectoryKind.Interop, 0x0001), "R98");
+
+    var inPlace = new ExifEdit();
+    inPlace.Set(new(ExifDirectoryKind.Ifd0, 0x0112), (ushort)6);
+    inPlace.Set(new(ExifDirectoryKind.Ifd0, 0x010F), "Shorter");
+    inPlace.Set(new(ExifDirectoryKind.Exif, 0x9003), "2031:12:30 23:59:58");
+    inPlace.Set(new(ExifDirectoryKind.Gps, 0x0001), "S");
+    inPlace.Set(new(ExifDirectoryKind.Interop, 0x0001), "THM");
+    const string inPlaceChanged = "Exif.Image.Orientation,Exif.Image.Make,Exif.Photo.DateTimeOriginal,Exif.GPSInfo.GPSLatitudeRef,Exif.Iop.InteroperabilityIndex";
+    const string inPlaceText = "right, top|Shorter|2031:12:30 23:59:58|South|THM";
+
+    var drop = new ExifEdit();
+    drop.Remove(new(ExifDirectoryKind.Gps, 0x0000));
+    drop.Remove(new(ExifDirectoryKind.Gps, 0x0001));
+    drop.Remove(new(ExifDirectoryKind.Interop, 0x0001));
+    const string dropChanged = "Exif.GPSInfo.*,Exif.Image.GPSTag,Exif.Iop.*,Exif.Photo.InteroperabilityTag";
+
+    var create = new ExifEdit();
+    create.Set(new(ExifDirectoryKind.Ifd0, 0x013B), "Alice");
+    create.Set(new(ExifDirectoryKind.Exif, 0x829A), new UnsignedRational(1, 250));
+    create.Set(new(ExifDirectoryKind.Exif, 0xF1E1), ExifValue.FromRaw(TiffFieldType.SShort, 2, Endianness.LittleEndian, [0xFE, 0xFF, 5, 0]));
+    create.Set(new(ExifDirectoryKind.Gps, 0x0001), "S");
+    create.Set(new(ExifDirectoryKind.Gps, 0x0002), new UnsignedRational[] { new(42, 1), new(22, 1), new(30, 1) });
+    create.Set(new(ExifDirectoryKind.Interop, 0x0001), "R98");
+    const string createText = "Exif.Image.Artist|Alice|Exif.Photo.ExposureTime|1/250 s|Exif.Photo.0xf1e1|-2 5|" +
+        "Exif.GPSInfo.GPSLatitudeRef|South|Exif.GPSInfo.GPSLatitude |Exif.Iop.InteroperabilityIndex|R98";
+
+    void Save(string container, string from, string to, ExifEdit edit)
+    {
+        switch (container)
+        {
+            case "jpeg": { using var document = JpegMetadataDocument.Open(At(from)); document.SaveAs(At(to), edit); break; }
+            case "png": { using var document = PngMetadataDocument.Open(At(from)); document.SaveExifAs(At(to), edit); break; }
+            case "webp": { using var document = WebPMetadataDocument.Open(At(from)); document.SaveExifAs(At(to), edit); break; }
+            case "tiff": { using var document = TiffBasedMetadataDocument.Open(At(from)); document.SaveExifAs(At(to), edit); break; }
+            default: { using var document = BmffMetadataDocument.Open(At(from)); document.SaveExifAs(At(to), edit); break; }
+        }
+    }
+
+    foreach (string container in ExifBlockFixture.Containers)
+    {
+        string extension = container switch { "jpeg" => ".jpg", "tiff" => ".tif", _ => "." + container };
+        foreach (bool big in new[] { false, true })
+        {
+            string stem = container + (big ? "-be" : "-le");
+            string rich = stem + "-rich" + extension, plain = stem + "-plain" + extension;
+            File.WriteAllBytes(At(rich), ExifBlockFixture.Wrap(container, ExifBlockFixture.Rich(big).Bytes, big));
+            File.WriteAllBytes(At(plain), ExifBlockFixture.Wrap(container, ExifBlockFixture.Plain(big).Bytes, big));
+            string Edited(string from, string kind, ExifEdit edit)
+            {
+                string target = stem + "-" + kind + extension;
+                Save(container, from, target, edit);
+                return target;
+            }
+
+            string withTags = Edited(rich, "tags", tags);
+            manifest.Add(string.Join('\t', rich, withTags, tagsChanged, tagsText));
+            // Every line of the source again: the pointers alone name other addresses.
+            manifest.Add(string.Join('\t', rich, Edited(withTags, "back", back), pointers, "Exif.Image.Make|TestCompany"));
+            manifest.Add(string.Join('\t', rich, Edited(rich, "inplace", inPlace), inPlaceChanged, inPlaceText));
+            manifest.Add(string.Join('\t', rich, Edited(rich, "drop", drop), dropChanged, "Exif.Photo.DateTimeOriginal"));
+            manifest.Add(string.Join('\t', plain, Edited(plain, "create", create), "", createText));
+        }
+        if (container == "tiff") continue;
+        string bare = container + "-bare" + extension, given = container + "-bare-new" + extension;
+        File.WriteAllBytes(At(bare), ExifBlockFixture.Bare(container));
+        Save(container, bare, given, create);
+        manifest.Add(string.Join('\t', "-", given, "", createText));
+    }
+    File.WriteAllLines(At("manifest.tsv"), manifest);
+}
+else if (args.Length == 3 && args[0] == "exif-tag-corpus")
+{
+    // The same check on files this repository did not author: every JPEG, PNG and WebP file under
+    // a directory is edited four ways, each from the file as it is. The EXIF block of these three
+    // is edited where it lies, so what the pinned tool prints of a MakerNote has to be what it
+    // printed before. A refusal is counted by its code; a file that was written goes into the
+    // manifest for the pinned tool to read. An exception of another type is a defect of the writer
+    // and fails the run. A file without an EXIF block gains one, and the tool may have printed
+    // nothing of such a source, which the check then leaves out: its edited files are named a
+    // second time with "-" as their source, so that the tool has to read them and print what was set.
+    Directory.CreateDirectory(args[2]);
+    var manifest = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    var refusals = new List<(string File, string Kind, string Reason)>();
+    var crashes = new List<string>();
+    int gained = 0;
+    const string date = "2021:06:07 08:09:10", artist = "An artist whose name is longer than any slot";
+    const string gpsKeys = "Exif.GPSInfo.GPSVersionID,Exif.GPSInfo.GPSLatitudeRef,Exif.GPSInfo.GPSLatitude,Exif.GPSInfo.GPSLongitudeRef,Exif.GPSInfo.GPSLongitude";
+
+    var inPlace = new ExifEdit();
+    inPlace.Set(new(ExifDirectoryKind.Exif, 0x9003), date);
+    var grow = new ExifEdit();
+    grow.Set(new(ExifDirectoryKind.Ifd0, 0x013B), artist);
+    grow.Set(new(ExifDirectoryKind.Exif, 0x9004), date);
+    grow.Set(new(ExifDirectoryKind.Exif, 0xF1E1), ExifValue.FromRaw(TiffFieldType.SShort, 2, Endianness.LittleEndian, [0xFE, 0xFF, 5, 0]));
+    grow.Set(new(ExifDirectoryKind.Gps, 0), ExifValue.FromRaw(TiffFieldType.Byte, 4, Endianness.LittleEndian, [2, 3, 0, 0]));
+    grow.Set(new(ExifDirectoryKind.Gps, 1), "N");
+    grow.Set(new(ExifDirectoryKind.Gps, 2), new UnsignedRational[] { new(42, 1), new(22, 1), new(30, 1) });
+    grow.Set(new(ExifDirectoryKind.Gps, 3), "W");
+    grow.Set(new(ExifDirectoryKind.Gps, 4), new UnsignedRational[] { new(71, 1), new(14, 1), new(15, 1) });
+    grow.Set(new(ExifDirectoryKind.Interop, 0x0001), "R98");
+    var thumbnail = new ExifEdit();
+    thumbnail.Set(new(ExifDirectoryKind.Thumbnail, 0x0112), (ushort)3);
+    thumbnail.Set(new(ExifDirectoryKind.Thumbnail, 0xF1E2), 70_000u);
+    var remove = new ExifEdit();
+    remove.Remove(new(ExifDirectoryKind.Ifd0, 0x0131));
+    remove.Remove(new(ExifDirectoryKind.Exif, 0x9286));
+    remove.Remove(new(ExifDirectoryKind.Gps, 0x0012));
+
+    int files = 0, number = 0;
+    void Count(string outcome) => outcomes[outcome] = outcomes.GetValueOrDefault(outcome) + 1;
+    foreach (string path in Directory.EnumerateFiles(args[1], "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+    {
+        string extension = Path.GetExtension(path).ToLowerInvariant();
+        string container = extension switch { ".jpg" or ".jpeg" => "jpeg", ".png" => "png", ".webp" => "webp", _ => "" };
+        if (container.Length == 0 || new FileInfo(path).Length > 64 * 1024 * 1024) continue;
+        IDisposable document;
+        try
+        {
+            document = container switch
+            {
+                "jpeg" => JpegMetadataDocument.Open(path),
+                "png" => PngMetadataDocument.Open(path),
+                _ => WebPMetadataDocument.Open(path)
+            };
+        }
+        catch (MetadataException) { continue; } // not that container, whatever its name says
+        files++;
+        using (document)
+        {
+            bool bare;
+            try
+            {
+                bare = document switch
+                {
+                    JpegMetadataDocument jpeg => jpeg.Exif,
+                    PngMetadataDocument png => png.ReadExif(),
+                    _ => ((WebPMetadataDocument)document).ReadExif()
+                } is null;
+            }
+            catch (MetadataException) { bare = false; } // a block is there; the edits below say why it is not read
+
+            void Try(string kind, string changed, string expected, ExifEdit edit)
+            {
+                string target = Path.Combine(args[2], $"c{++number:D5}-{kind}{extension}");
+                try
+                {
+                    switch (document)
+                    {
+                        case JpegMetadataDocument jpeg: jpeg.SaveAs(target, edit); break;
+                        case PngMetadataDocument png: png.SaveExifAs(target, edit); break;
+                        case WebPMetadataDocument webp: webp.SaveExifAs(target, edit); break;
+                    }
+                    manifest.Add(string.Join('\t', Path.GetFullPath(path), Path.GetFileName(target), changed, expected));
+                    if (bare && kind != "remove")
+                    {
+                        manifest.Add(string.Join('\t', "-", Path.GetFileName(target), changed, expected));
+                        gained++;
+                    }
+                    Count(container + " " + kind + " written");
+                }
+                catch (MetadataException refusal)
+                {
+                    Count(container + " " + kind + " refused " + refusal.Code);
+                    refusals.Add((Path.GetFileName(path), kind, $"{refusal.Code}: {refusal.Message}"));
+                }
+                catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+                {
+                    crashes.Add($"{Path.GetFileName(path)} {kind}: {defect.GetType().Name}: {defect.Message}");
+                }
+            }
+
+            Try("inplace", "Exif.Image.ExifTag,Exif.Photo.DateTimeOriginal", date, inPlace);
+            Try("grow", "Exif.Image.Artist,Exif.Image.ExifTag,Exif.Image.GPSTag,Exif.Photo.InteroperabilityTag,Exif.Photo.DateTimeDigitized," +
+                "Exif.Photo.0xf1e1,Exif.Iop.InteroperabilityIndex," + gpsKeys, artist + "|Exif.Photo.0xf1e1|Exif.GPSInfo.GPSLongitude ", grow);
+            Try("thumbnail", "Exif.Thumbnail.Orientation,Exif.Thumbnail.0xf1e2", "Exif.Thumbnail.0xf1e2", thumbnail);
+            Try("remove", "Exif.Image.Software,Exif.Photo.UserComment,Exif.GPSInfo.GPSMapDatum,Exif.Image.ExifTag,Exif.Image.GPSTag", "", remove);
+        }
+    }
+    File.WriteAllLines(Path.Combine(args[2], "manifest.tsv"), manifest);
+    Console.WriteLine($"::notice title=Any-tag EXIF corpus edits::{files} JPEG, PNG and WebP files; " + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)) +
+        $"; {gained} written files gained their EXIF block");
+    // Why each file was refused, one line for a reason and the number of files it was given for.
+    string[] reasons = refusals.GroupBy(refusal => refusal.Reason, StringComparer.Ordinal)
+        .OrderByDescending(group => group.Count()).ThenBy(group => group.Key, StringComparer.Ordinal)
+        .Select(group => $"{group.Select(refusal => refusal.File).Distinct().Count()} file(s), first {group.First().File} [{string.Join(' ', group.Select(refusal => refusal.Kind).Distinct())}]: {group.Key}"
+            .Replace("%", "%25").Replace("\r", " ").Replace("\n", " "))
+        .ToArray();
+    foreach (string[] chunk in reasons.Chunk(20))
+        Console.WriteLine("::notice title=Any-tag EXIF corpus refusals::" + string.Join("%0A", chunk));
+    foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=EXIF block writer defect::" + crash);
+    if (crashes.Count != 0) return 1;
+}
 else if (args.Length == 3 && args[0] == "bmff-corpus")
 {
     // The same check on files this repository did not author: every HEIC, HEIF and AVIF file under

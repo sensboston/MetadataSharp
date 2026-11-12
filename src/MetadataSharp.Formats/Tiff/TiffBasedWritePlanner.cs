@@ -1,5 +1,6 @@
 using System.Buffers.Binary;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Tiff;
 
 namespace MetadataSharp.Formats.Tiff;
 
@@ -25,6 +26,11 @@ internal sealed class TiffBasedWritePlan(int sourceLength, List<(int Offset, byt
     internal IReadOnlyDictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> Effective { get; } = effective;
     /// <summary>Directories the edit emptied: their pointer is removed and their bytes stay.</summary>
     internal IReadOnlySet<TiffBasedRole> Removed { get; } = removed;
+    /// <summary>
+    /// Where the copy of the directory after the primary one is, when that directory gained entries:
+    /// the successor link of the primary directory, which no tag holds, then names this address.
+    /// </summary>
+    internal uint? Successor { get; init; }
     internal bool IsEmpty => Patches.Count == 0 && Tail.Length == 0;
     internal int OutputLength => SourceLength + Tail.Length;
 
@@ -40,8 +46,8 @@ internal sealed class TiffBasedWritePlan(int sourceLength, List<(int Offset, byt
 }
 
 /// <summary>
-/// Plans an edit of the primary, Exif and GPS directories of a TIFF-based file without moving a
-/// byte of it.
+/// Plans an edit of the primary, Exif, GPS and Interoperability directories of a TIFF structure, and
+/// of the directory after the primary one, without moving a byte of it.
 /// </summary>
 /// <remarks>
 /// <para>A value that fits where the old one is, is written there: in the entry when it has four
@@ -49,9 +55,14 @@ internal sealed class TiffBasedWritePlan(int sourceLength, List<(int Offset, byt
 /// those bytes. A longer value is appended and the entry is pointed at it.</para>
 /// <para>A directory that keeps or loses entries is rewritten where it is. A directory that gains
 /// entries is appended as a whole, its entries copied as they are, and the one pointer that leads to
-/// it is changed: the header for the primary directory, the pointer tag of the primary directory for
-/// the other two. Offsets in a TIFF count from the start of the file, so a copied entry still
-/// addresses the value it addressed.</para>
+/// it is changed: the header for the primary directory, the pointer tag of its parent for the Exif,
+/// GPS and Interoperability directories, the successor link of the primary directory for the one
+/// after it. Offsets in a TIFF count from the start of the file, so a copied entry still addresses
+/// the value it addressed.</para>
+/// <para>An Exif, GPS or Interoperability directory the file does not have is appended when a tag is
+/// set in it, and its pointer tag is added to its parent; an Interoperability directory brings an
+/// Exif directory with it. One that loses its last tag is dropped: its pointer tag is removed. The
+/// directory after the primary one is neither created nor dropped.</para>
 /// <para>Bytes that are no longer addressed stay in the file. Image data, SubIFDs and the MakerNote
 /// are never written to, and they keep their offsets because nothing before them changes length.</para>
 /// </remarks>
@@ -59,53 +70,94 @@ internal sealed class TiffBasedWritePlanner
 {
     private const ushort ExifPointer = 0x8769;
     private const ushort GpsPointer = 0x8825;
+    private const ushort InteropPointer = 0xA005;
 
     private readonly byte[] source;
     private readonly TiffBasedFileMap map;
     private readonly IReadOnlyDictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes;
     private readonly MetadataLimits limits;
+    private readonly long ceiling;
+    private readonly bool emptyPrimary;
     private readonly List<(int Offset, byte[] Bytes)> patches = [];
     private readonly List<byte> tail = [];
     private readonly Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> effective = [];
     private readonly HashSet<TiffBasedRole> removed = [];
-    /// <summary>New targets of the pointer tags of the primary directory; null removes the tag.</summary>
-    private readonly SortedDictionary<ushort, uint?> pointers = [];
+    /// <summary>New targets of the pointer tags of a parent directory; null removes the tag.</summary>
+    private readonly Dictionary<TiffBasedRole, SortedDictionary<ushort, uint?>> pointers = [];
+    private uint? successor;
 
     private TiffBasedWritePlanner(byte[] source, TiffBasedFileMap map,
-        IReadOnlyDictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, MetadataLimits limits)
+        IReadOnlyDictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, MetadataLimits limits, long ceiling,
+        bool emptyPrimary)
     {
+        this.emptyPrimary = emptyPrimary;
         this.source = source;
         this.map = map;
         this.changes = changes;
         this.limits = limits;
+        this.ceiling = ceiling;
     }
 
+    /// <summary>The directory kind the reader reports for a role the planner edits.</summary>
+    internal static ExifDirectoryKind Kind(TiffBasedRole role) => role switch
+    {
+        TiffBasedRole.Primary => ExifDirectoryKind.Ifd0,
+        TiffBasedRole.Exif => ExifDirectoryKind.Exif,
+        TiffBasedRole.Gps => ExifDirectoryKind.Gps,
+        TiffBasedRole.Interop => ExifDirectoryKind.Interop,
+        TiffBasedRole.Thumbnail => ExifDirectoryKind.Thumbnail,
+        _ => throw new ArgumentOutOfRangeException(nameof(role))
+    };
+
+    /// <summary>The role the planner edits a directory kind under.</summary>
+    internal static TiffBasedRole Role(ExifDirectoryKind kind) => kind switch
+    {
+        ExifDirectoryKind.Ifd0 => TiffBasedRole.Primary,
+        ExifDirectoryKind.Exif => TiffBasedRole.Exif,
+        ExifDirectoryKind.Gps => TiffBasedRole.Gps,
+        ExifDirectoryKind.Interop => TiffBasedRole.Interop,
+        ExifDirectoryKind.Thumbnail => TiffBasedRole.Thumbnail,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
+    };
+
+    /// <summary>
+    /// Plans the changes. An output longer than <paramref name="ceiling"/> is refused with
+    /// <see cref="MetadataErrorCode.ExifTooLarge"/>: the structure is an EXIF block whose container
+    /// sets that length. Without a ceiling the input budget and the reach of a TIFF offset bound it.
+    /// With <paramref name="emptyPrimary"/> the primary directory may lose its last entry, as the one
+    /// of an EXIF block may; that of a file may not, since the file is then no image.
+    /// </summary>
     internal static TiffBasedWritePlan Create(byte[] source, TiffBasedFileMap map,
-        IReadOnlyDictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, MetadataLimits limits)
+        IReadOnlyDictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, MetadataLimits limits,
+        long ceiling = long.MaxValue, bool emptyPrimary = false)
     {
         foreach (KeyValuePair<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> change in changes)
         {
-            if (change.Key.Role is not (TiffBasedRole.Primary or TiffBasedRole.Exif or TiffBasedRole.Gps))
-                throw new ArgumentException("Only the primary, Exif and GPS directories are edited.", nameof(changes));
-            if (change.Key.Tag is ExifPointer or GpsPointer or 0xA005 or 0x927C or 0xC634 or 0x014A or 0x0111 or 0x0117
-                or 0x0144 or 0x0145 or 0x0201 or 0x0202 or 0x0118)
-                throw new MetadataException(MetadataErrorCode.UnsafeRelocation,
-                    "Pointers, image data addresses and the MakerNote are not edited.");
+            if (change.Key.Role == TiffBasedRole.Other || !Enum.IsDefined(change.Key.Role))
+                throw new ArgumentException("Only the primary, Exif, GPS and Interoperability directories and the directory after the primary one are edited.", nameof(changes));
+            var key = new ExifTagKey(Kind(change.Key.Role), change.Key.Tag);
+            if (!ExifEdit.IsEditable(key))
+                throw ExifEdit.NotEditable(key);
+            if (change.Key.Tag == 0x0118 && map.IsRw2 && change.Key.Role == TiffBasedRole.Primary)
+                throw new MetadataException(MetadataErrorCode.TagNotEditable,
+                    "Tag 0x0118 of a Panasonic RW2 file is the address of its raw data: it is not edited as a value.");
             if (change.Value is TiffBasedChange value &&
                 (TiffBasedFileMap.Width(value.Type) == 0 || value.Bytes.Length == 0 ||
                  (long)value.Count * TiffBasedFileMap.Width(value.Type) != value.Bytes.Length))
                 throw new ArgumentException("A value does not have the length of its type and count.", nameof(changes));
         }
-        var planner = new TiffBasedWritePlanner(source, map, changes, limits);
-        // Children first: a directory that is copied or dropped changes a pointer of the primary one.
-        planner.Plan(TiffBasedRole.Gps, GpsPointer);
-        planner.Plan(TiffBasedRole.Exif, ExifPointer);
-        planner.Plan(TiffBasedRole.Primary, 0);
+        var planner = new TiffBasedWritePlanner(source, map, changes, limits, ceiling, emptyPrimary);
+        // Children first: a directory that is copied, created or dropped changes a pointer of its parent.
+        planner.Plan(TiffBasedRole.Interop, TiffBasedRole.Exif, InteropPointer);
+        planner.Plan(TiffBasedRole.Gps, TiffBasedRole.Primary, GpsPointer);
+        planner.Plan(TiffBasedRole.Exif, TiffBasedRole.Primary, ExifPointer);
+        planner.Plan(TiffBasedRole.Thumbnail, TiffBasedRole.Primary, 0);
+        planner.Plan(TiffBasedRole.Primary, TiffBasedRole.Primary, 0);
         return new TiffBasedWritePlan(source.Length, planner.patches, planner.tail.ToArray(), planner.effective,
-            planner.removed);
+            planner.removed) { Successor = planner.successor };
     }
 
-    private void Plan(TiffBasedRole role, ushort pointerTag)
+    private void Plan(TiffBasedRole role, TiffBasedRole parent, ushort pointerTag)
     {
         TiffBasedDirectory? directory = map.Find(role);
         var entries = new SortedDictionary<ushort, byte[]>();
@@ -130,13 +182,15 @@ internal sealed class TiffBasedWritePlanner
             }
             if (field is not null && Same(field, value)) continue; // the file already says so
             RequireSorted(directory);
+            // Before a value is placed: there is no directory to place it in, and none is made.
+            if (directory is null && role == TiffBasedRole.Thumbnail) throw NoSuccessor();
             entries[tag] = Entry(tag, value, field);
             effective[(role, tag)] = value;
             changed = true;
         }
-        if (role == TiffBasedRole.Primary)
+        if (pointers.TryGetValue(role, out SortedDictionary<ushort, uint?>? mine))
         {
-            foreach (KeyValuePair<ushort, uint?> pointer in pointers)
+            foreach (KeyValuePair<ushort, uint?> pointer in mine)
             {
                 TiffBasedField? field = directory?.Find(pointer.Key);
                 RequireSorted(directory);
@@ -155,21 +209,24 @@ internal sealed class TiffBasedWritePlanner
                 changed = true;
             }
         }
+        // The successor link is no tag: the directory is written again for it alone.
+        if (role == TiffBasedRole.Primary && successor is not null) changed = true;
         if (!changed) return;
 
         // The pointer is there and the directory was reached another way first: it is shared, and a
         // new directory in its place would take its tags out of this role.
-        if (directory is null && pointerTag != 0 && map.Find(TiffBasedRole.Primary)?.Find(pointerTag) is not null)
+        if (directory is null && pointerTag != 0 && map.Find(parent)?.Find(pointerTag) is not null)
             throw new MetadataException(MetadataErrorCode.UnsafeRelocation,
                 "A directory that is reached from more than one pointer cannot be replaced by a copy.");
 
-        if (entries.Count == 0)
+        if (entries.Count == 0 && !(role == TiffBasedRole.Primary && emptyPrimary))
         {
-            if (role == TiffBasedRole.Primary)
-                throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
-                    "The edit would leave the primary directory without entries.");
+            if (role is TiffBasedRole.Primary or TiffBasedRole.Thumbnail)
+                throw new MetadataException(MetadataErrorCode.UnsupportedFeature, role == TiffBasedRole.Primary
+                    ? "The edit would leave the primary directory without entries."
+                    : "The edit would leave the directory after the primary one without entries.");
             // The last tag of the directory went: the directory goes with it, by its pointer.
-            pointers[pointerTag] = null;
+            Point(parent, pointerTag, null);
             removed.Add(role);
             return;
         }
@@ -184,7 +241,7 @@ internal sealed class TiffBasedWritePlanner
             entry.CopyTo(image, at);
             at += 12;
         }
-        Put32(image, at, directory?.Next ?? 0);
+        Put32(image, at, role == TiffBasedRole.Primary && successor is uint moved ? moved : directory?.Next ?? 0);
 
         if (directory is not null && entries.Count <= directory.Fields.Count &&
             map.IsExclusive(directory.Offset, directory.Length))
@@ -197,8 +254,26 @@ internal sealed class TiffBasedWritePlanner
                 "A directory that is reached from more than one pointer cannot be replaced by a copy.", directory.Offset);
         uint copy = Append(image);
         if (role == TiffBasedRole.Primary) patches.Add((4, Number(copy)));
-        else pointers[pointerTag] = copy;
+        else if (role == TiffBasedRole.Thumbnail) successor = copy;
+        else Point(parent, pointerTag, copy);
     }
+
+    private void Point(TiffBasedRole parent, ushort pointerTag, uint? target)
+    {
+        if (!pointers.TryGetValue(parent, out SortedDictionary<ushort, uint?>? tags))
+            pointers.Add(parent, tags = []);
+        tags[pointerTag] = target;
+    }
+
+    /// <summary>
+    /// A tag was set in the directory after the primary one and the file has none, or the one it
+    /// has was reached another way first.
+    /// </summary>
+    private MetadataException NoSuccessor() => map.Find(TiffBasedRole.Primary)?.Next is not (null or 0)
+        ? new MetadataException(MetadataErrorCode.UnsafeRelocation,
+            "A directory that is reached from more than one pointer cannot be replaced by a copy.")
+        : new MetadataException(MetadataErrorCode.UnsupportedFeature,
+            "The file has no directory after the primary one: a thumbnail directory is not created by a tag edit.");
 
     private static void RequireSorted(TiffBasedDirectory? directory)
     {
@@ -251,9 +326,13 @@ internal sealed class TiffBasedWritePlanner
             tail.Add(0);
             at++;
         }
-        // The output is read back under the same limits, so it may not be larger than an input may be.
-        long ceiling = Math.Min(Math.Min(limits.MaxInputBytes, uint.MaxValue), Array.MaxLength);
         if (bytes.Length > ceiling - at)
+            throw new MetadataException(MetadataErrorCode.ExifTooLarge, ceiling == ExifTiffReader.SegmentCeiling
+                ? "The edited EXIF block does not fit a single JPEG APP1 segment."
+                : "The edited EXIF block is longer than its container allows.");
+        // The output is read back under the same limits, so it may not be larger than an input may be.
+        long budget = Math.Min(Math.Min(limits.MaxInputBytes, uint.MaxValue), Array.MaxLength);
+        if (bytes.Length > budget - at)
             throw new MetadataException(MetadataErrorCode.LimitExceeded,
                 "The edited file exceeds the input budget or the four gigabytes a TIFF offset can address.");
         tail.AddRange(bytes);

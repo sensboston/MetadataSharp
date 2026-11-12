@@ -9,8 +9,10 @@ namespace MetadataSharp.Core;
 /// <summary>What a publication prescribes for one tag: its name, field types, counts, and value meanings.</summary>
 /// <remarks>
 /// A definition is descriptive knowledge about a format, for naming and printing. It is not a validation
-/// rule: the reader reports what a file contains, the writer accepts a separately reviewed subset, and a
-/// value that disagrees with its definition is still reported as found.
+/// rule for a file: the reader reports what a file contains, and a value that disagrees with its
+/// definition is still reported as found. On the write side <see cref="ExifEdit.Set(ExifTagKey, ExifValue)" />
+/// holds a listed tag to the types and counts stated here, and <see cref="ExifEdit.SetUnchecked" />
+/// writes any value as given.
 /// </remarks>
 public sealed record ExifTagDefinition
 {

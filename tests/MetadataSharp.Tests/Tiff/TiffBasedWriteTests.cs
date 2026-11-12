@@ -827,9 +827,9 @@ public sealed class TiffBasedWriteTests
                  })
         {
             var set = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> { [(role, tag)] = value };
-            Assert.Equal(MetadataErrorCode.UnsafeRelocation, Code(() => TiffBasedWritePlanner.Create(fixture.Bytes, map, set, limits)));
+            Assert.Equal(MetadataErrorCode.TagNotEditable, Code(() => TiffBasedWritePlanner.Create(fixture.Bytes, map, set, limits)));
             var remove = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> { [(role, tag)] = null };
-            Assert.Equal(MetadataErrorCode.UnsafeRelocation, Code(() => TiffBasedWritePlanner.Create(fixture.Bytes, map, remove, limits)));
+            Assert.Equal(MetadataErrorCode.TagNotEditable, Code(() => TiffBasedWritePlanner.Create(fixture.Bytes, map, remove, limits)));
         }
     }
 

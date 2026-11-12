@@ -118,6 +118,13 @@ public sealed class QuickStartTests : IDisposable
         Assert.False(exif.TryGetEntry(Software, out _));
         Assert.Equal("Example 100", Text(exif, Model));
         Assert.Equal("1/250 s", ExifTags.Interpret(exif, ExposureTime));
+        Assert.Equal("top, left", ExifTags.Interpret(exif, Orientation));
+        Assert.True(exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Gps, 0x0006), out ExifEntry? altitude));
+        Assert.Equal(TiffFieldType.Rational, altitude.Value.FieldType);
+        byte[] rational = new byte[8];
+        altitude.Value.CopyRawTo(rational);
+        Assert.Equal(1255u, BitConverter.ToUInt32(rational, 0)); // the block of the sample is little-endian
+        Assert.Equal(10u, BitConverter.ToUInt32(rational, 4));
         // Everything from the first table segment on is the source's, byte for byte.
         byte[] edited = File.ReadAllBytes(destination);
         int tail = original.Length - original.AsSpan().IndexOf(new byte[] { 0xFF, 0xDB });

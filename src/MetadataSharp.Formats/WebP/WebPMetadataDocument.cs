@@ -2,9 +2,9 @@ using System.Security.Cryptography;
 using System.Buffers.Binary;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Tiff;
-using MetadataSharp.Core.Tiff.Serialization;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Internal;
+using MetadataSharp.Formats.Tiff;
 
 namespace MetadataSharp.Formats.WebP;
 
@@ -78,6 +78,15 @@ public sealed partial class WebPMetadataDocument : IDisposable, IAsyncDisposable
         byte[] bytes = await Payload(chunk, asynchronous, token).ConfigureAwait(false);
         var result = ExifTiffReader.Read(bytes.AsSpan(skip), options.Limits, chunk.Payload + skip); token.ThrowIfCancellationRequested(); return result;
     }
+    /// <summary>The bytes of the EXIF block, without the identifier some writers put before it, and where it begins in the file.</summary>
+    private async Task<(byte[] Block, long At)> ExifBlock(WebPChunk chunk, bool asynchronous, CancellationToken token)
+    {
+        if (chunk.Size > 65533) throw new MetadataException(MetadataErrorCode.ExifTooLarge, "EXIF exceeds the approved classic TIFF profile cap.");
+        byte[] bytes = await Payload(chunk, asynchronous, token).ConfigureAwait(false);
+        int skip = bytes.AsSpan().StartsWith("Exif\0\0"u8) ? 6 : 0;
+        if (bytes.Length - skip > 65527) throw new MetadataException(MetadataErrorCode.ExifTooLarge, "EXIF exceeds the approved classic TIFF profile cap.");
+        return (bytes[skip..], chunk.Payload + skip);
+    }
 
     /// <summary>
     /// Reads the EXIF block of the <c>EXIF</c> chunk, or returns null when the file has none. A block
@@ -147,12 +156,12 @@ public sealed partial class WebPMetadataDocument : IDisposable, IAsyncDisposable
         }
         else if (!remove)
         {
-            TiffReadResult? original = chunk is null ? null : await Exif(chunk, asynchronous, token).ConfigureAwait(false);
-            if (es!.Changes.All(pair => pair.Value is null && (original is null || !original.Metadata.TryGetEntry(pair.Key, out _)))) return new(true, null, null);
-            var desired = es!.Apply(original, original?.Metadata.ByteOrder ?? Endianness.LittleEndian, options.Limits);
-            if (original is null && desired.Entries.Count == 0) return new(true, null, null);
-            ExifWritePlan plan = ExifLayoutPlanner.Create(original, desired, options.Limits); Budget((long)plan.Length + (chunk?.Size ?? 0) + scan.Chunks.Where(c => c.Xmp).Sum(c => (long)c.Size));
-            bytes = new byte[plan.Length]; ExifTiffSerializer.Write(plan, bytes);
+            // A block the file has is edited where it lies: nothing in it moves, and what grows is appended.
+            (byte[] Block, long At)? original = chunk is null ? null : await ExifBlock(chunk, asynchronous, token).ConfigureAwait(false);
+            bytes = original is null ? ExifBlockEditor.Create(es!, options.Limits, ExifTiffReader.SegmentCeiling, out _)
+                : ExifBlockEditor.Edit(original.Value.Block, original.Value.At, es!, options.Limits);
+            if (bytes is null) return new(true, null, null);
+            Budget((long)bytes.Length + (chunk?.Size ?? 0) + scan.Chunks.Where(c => c.Xmp).Sum(c => (long)c.Size));
         }
         if (scan.Unknown) throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Unknown WebP chunks prevent effective editing.");
         byte[]? rebuilt = bytes is null ? null : WebPScanner.Chunk(isXmp ? "XMP " : "EXIF", bytes);
