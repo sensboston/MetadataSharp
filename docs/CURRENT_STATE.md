@@ -130,6 +130,14 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   is run). Packages carry description, tags, the repository (`MetadataSharpRepositoryUrl`) and commit;
   symbols are a `.snupkg` with Source Link, checked by `tools/audit/run.py`. README "Quick start":
   the regions of `tests/MetadataSharp.Examples/QuickStart.cs`, run by 12 tests that hold the README to them.
+- Typed reading (nothing throws; absent or unreadable is `false` / null): `ExifValue.TryGet…` for every
+  field type (arrays, single values, strings); `ExifMetadata` `Make`, `Model`, `LensModel`,
+  `DateTimeOriginal` (`…WithOffset`), `Orientation`, `ExposureTime`, `FNumber`, `IsoSpeed`,
+  `FocalLength`, `PixelWidth` / `PixelHeight`, `GpsPosition` (each coordinate the nearest double to
+  its rationals); `IptcPacket` `ObjectName`, `Keywords`, `Bylines`, `Headline`, `Copyright`, `Caption`;
+  `XmpPacket` `Title`, `Description`, `Creators`, `Rights`, `Subjects`, `Rating`. Run 43164879862:
+  2,706 tests. Against the stored rows of the 330 corpus files (one-off local run, not a CI job):
+  2,641 values equal, none different.
 
 ## Next (in order)
 
