@@ -90,10 +90,19 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   codestream gives an empty result. Tests author every layout; the corpus has three files, none with
   a `brob` box: 177 of their 179 stored keys equal (run 43126968305), the other two are the
   multi-line descriptions of `Reagan.jxl`, cut at the line end in the stored text as in `Reagan.jpg`.
+- Write, JPEG ICC profile and comment: `JpegMetadataDocument` `SaveIccProfile` / `SaveComment`
+  (null removes). The profile replaces every APP2 `ICC_PROFILE` segment before the first scan with
+  numbered chunks of at most 65,519 bytes after the leading APP0/APP1 segments (at most 255, else
+  `IccProfileTooLarge`; no chunk under 4 bytes, where exiv2 stops reading a file); the comment
+  replaces every COM there with one (UTF-8, at most 65,533 bytes, else `CommentTooLarge`). All other
+  bytes are copied; the planned output is scanned and compared before it is written. Run
+  43131239557: 2,215 tests; `exiv2 -pC`, `-pc` and `-pa` agree on 16 edited fixtures and on the 266
+  files written from the corpus's 123 JPEG files (no refusal). Six capability rows for JPEG.
 
 ## Next (in order)
 
-1. Write side: MakerNote-safe rules per vendor; removal of a whole BMFF item.
+1. Write side: ICC profile and comment for PNG and WebP, then the profile for TIFF-based and BMFF
+   files; MakerNote-safe rules per vendor; removal of a whole BMFF item.
 2. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
    (1,906 corpus texts), XMP.
 3. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
@@ -102,6 +111,6 @@ Updated 2026-11-11. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 - Writes are restricted and refuse when safety is not established; MakerNotes are never moved.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
-- ICC profiles and comments are read, never written; a BMFF item is edited or added, never
+- ICC profiles and comments are written in JPEG only; a BMFF item is edited or added, never
   removed. Previews are not decoded and not written. CR3 and JPEG XL are read, never written.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.
