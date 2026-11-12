@@ -9,7 +9,14 @@ public sealed partial class JpegMetadataDocument
 {
     /// <summary>Whether any exactly signed Extended XMP segment was found, including truncated headers.</summary>
     public bool HasExtendedXmp => scan.Segments.Any(s => s.IsExtendedXmp);
+    /// <summary>Reads the standard XMP packet, or returns null when the file has none.</summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the file has Extended XMP;
+    /// <see cref="MetadataErrorCode.AmbiguousMetadata"/> when it has two standard packets; otherwise
+    /// as <see cref="XmpPacket.Parse"/> fails.
+    /// </exception>
     public XmpPacket? ReadXmp(XmpReadOptions? options = null) => ReadXmpCore(options, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="ReadXmp"/>
     public Task<XmpPacket?> ReadXmpAsync(XmpReadOptions? options = null, CancellationToken cancellationToken = default) => ReadXmpCore(options, true, cancellationToken);
 
     private async Task VerifyXmpSource(bool asynchronous, CancellationToken token)
@@ -76,7 +83,16 @@ public sealed partial class JpegMetadataDocument
         byte[] bytes = new byte[changed.ByteLength]; changed.CopyRawTo(bytes);
         token.ThrowIfCancellationRequested(); return new(false, segment, bytes);
     }
+    /// <summary>
+    /// Writes the file with the XMP edit applied to a distinct, writable, seekable, empty stream. An edit that changes nothing gives a copy of the source.
+    /// The packet is the standard XMP APP1 segment, created when the file has none; a file with Extended XMP is refused.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
+    /// opened; otherwise the code of the reason the edit is refused.
+    /// </exception>
     public void SaveXmp(Stream destination, XmpEdit edit) => SaveXmpCore(destination, edit, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveXmp(Stream, XmpEdit)"/>
     public Task SaveXmpAsync(Stream destination, XmpEdit edit, CancellationToken cancellationToken = default) => SaveXmpCore(destination, edit, true, cancellationToken);
     private async Task SaveXmpCore(Stream destination, XmpEdit edit, bool asynchronous, CancellationToken token)
     {
@@ -101,7 +117,10 @@ public sealed partial class JpegMetadataDocument
         }
         await CopyRange(destination, end, scan.Length - end, asynchronous, token).ConfigureAwait(false);
     }
+    /// <summary>As <see cref="SaveXmp(Stream, XmpEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <exception cref="IOException">The destination exists or is the source.</exception>
     public void SaveXmpAs(string destinationPath, XmpEdit edit) => SaveXmpPath(destinationPath, edit, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) => SaveXmpPath(destinationPath, edit, true, cancellationToken);
     private async Task SaveXmpPath(string path, XmpEdit edit, bool asynchronous, CancellationToken token)
     {

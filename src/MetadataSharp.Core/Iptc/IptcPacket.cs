@@ -11,6 +11,7 @@ public sealed class IptcPacket
     private readonly MetadataException? refusal;
     private IptcPacket(byte[] bytes, IptcLimits limits, List<IptcDataset> datasets, IptcCharacterSet characterSet, MetadataException? refusal)
     { this.bytes = bytes; this.limits = limits; Datasets = datasets.AsReadOnly(); CharacterSet = characterSet; this.refusal = refusal; }
+    /// <summary>The character set the stream declares in dataset 1:90.</summary>
     public IptcCharacterSet CharacterSet { get; }
     /// <summary>
     /// False when a container returned the stream for reading only: the stream itself, or the
@@ -18,8 +19,11 @@ public sealed class IptcPacket
     /// refuses a change, and so does the container's save, with the error the strict read gave.
     /// </summary>
     public bool IsEditable => refusal is null;
+    /// <summary>The datasets, in the order they occur.</summary>
     public IReadOnlyList<IptcDataset> Datasets { get; }
+    /// <summary>The length of the stream in bytes.</summary>
     public int ByteLength => bytes.Length;
+    /// <summary>Copies the stream to the start of the destination, which has to be at least <see cref="ByteLength"/> long.</summary>
     public void CopyRawTo(Span<byte> destination)
     {
         if (destination.Length < bytes.Length) throw new ArgumentException("The destination is too small.", nameof(destination));
@@ -32,7 +36,13 @@ public sealed class IptcPacket
         IptcLimits limits = options is null ? new() : options.Limits ?? throw new ArgumentException("Limits cannot be null.", nameof(options));
         limits.Validate(); return limits with { };
     }
+    /// <summary>Creates a stream that declares UTF-8 and record version 4 and holds no other dataset.</summary>
     public static IptcPacket CreateEmpty(IptcReadOptions? options = null) => Parse([0x1c, 1, 90, 0, 3, 0x1b, 0x25, 0x47, 0x1c, 2, 0, 0, 2, 0, 4], options);
+    /// <summary>Reads an IPTC stream from a copy of the bytes.</summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.InvalidIptc"/> for malformed or truncated framing;
+    /// <see cref="MetadataErrorCode.LimitExceeded"/> when the stream exceeds a budget.
+    /// </exception>
     public static IptcPacket Parse(ReadOnlySpan<byte> bytes, IptcReadOptions? options = null)
     {
         IptcLimits limits = Settings(options);
@@ -103,6 +113,12 @@ public sealed class IptcPacket
         }
         return new(bytes, limits, datasets, charset, refusal);
     }
+    /// <summary>Decodes the dataset at an index of <see cref="Datasets"/> as text.</summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the dataset is not a text dataset (see
+    /// <see cref="IptcEdit.ReplaceText"/>), or the stream does not declare UTF-8 and the value is not
+    /// ASCII; <see cref="MetadataErrorCode.InvalidIptc"/> when the value is not valid UTF-8.
+    /// </exception>
     public string GetText(int datasetIndex)
     {
         if ((uint)datasetIndex >= (uint)Datasets.Count) throw new ArgumentOutOfRangeException(nameof(datasetIndex));
@@ -116,6 +132,11 @@ public sealed class IptcPacket
     }
     private static bool ContainsHighBit(ReadOnlySpan<byte> value)
     { foreach (byte b in value) if (b >= 0x80) return true; return false; }
+    /// <summary>
+    /// Returns the stream with the edit applied: null when the edit removes all IPTC, this stream
+    /// when the edit changes nothing. Datasets the edit does not name keep their bytes and order.
+    /// </summary>
+    /// <exception cref="MetadataException">The stream is not editable, or the result exceeds a budget.</exception>
     public IptcPacket? Apply(IptcEdit edit)
     {
         ArgumentNullException.ThrowIfNull(edit);

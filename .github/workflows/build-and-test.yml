@@ -92,6 +92,9 @@ jobs:
                     'writing one (check the --check scripts and the step order)')
       - name: Test Release
         run: dotnet test tests/MetadataSharp.Tests/MetadataSharp.Tests.csproj --framework ${{ matrix.tfm }} --configuration Release --no-build --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults/${{ matrix.tfm }}
+      # The README's "Quick start" as code: every snippet is run, and the README has to show them as compiled.
+      - name: Test README examples
+        run: dotnet test tests/MetadataSharp.Examples/MetadataSharp.Examples.csproj --framework ${{ matrix.tfm }} --configuration Release --no-build --no-restore --logger "trx;LogFileName=examples.trx" --results-directory TestResults/${{ matrix.tfm }}
       - name: Report failed test details
         if: failure()
         shell: python

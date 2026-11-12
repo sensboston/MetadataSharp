@@ -21,9 +21,14 @@ public sealed partial class WebPMetadataDocument : IDisposable, IAsyncDisposable
     private bool disposed;
     private WebPMetadataDocument(Stream source, bool owns, string? path, WebPReadOptions options, WebPScan scan, byte[] digest)
     { this.source = source; this.owns = owns; sourcePath = path; this.options = options; this.scan = scan; this.digest = digest; }
+    /// <summary>Opens a WebP from a readable, seekable stream at position zero. The stream stays open, and has to stay unchanged, while the document is in use.</summary>
+    /// <exception cref="MetadataException">The data is not a file this document reads, or it exceeds a budget of the limits.</exception>
     public static WebPMetadataDocument Open(Stream source, WebPReadOptions? options = null) => OpenCore(source, false, null, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
+    /// <summary>Opens a WebP file and keeps it open, shared for reading, until the document is disposed. Fails as <see cref="Open(Stream, WebPReadOptions?)"/> does.</summary>
     public static WebPMetadataDocument Open(string path, WebPReadOptions? options = null) => OpenPath(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Open(Stream, WebPReadOptions?)"/>
     public static Task<WebPMetadataDocument> OpenAsync(Stream source, WebPReadOptions? options = null, CancellationToken cancellationToken = default) => OpenCore(source, false, null, (options ?? new()).Snapshot(), true, cancellationToken);
+    /// <inheritdoc cref="Open(string, WebPReadOptions?)"/>
     public static Task<WebPMetadataDocument> OpenAsync(string path, WebPReadOptions? options = null, CancellationToken cancellationToken = default) => OpenPath(path, (options ?? new()).Snapshot(), true, cancellationToken);
     private static async Task<WebPMetadataDocument> OpenPath(string path, WebPReadOptions options, bool asynchronous, CancellationToken token)
     {
@@ -74,7 +79,13 @@ public sealed partial class WebPMetadataDocument : IDisposable, IAsyncDisposable
         var result = ExifTiffReader.Read(bytes.AsSpan(skip), options.Limits, chunk.Payload + skip); token.ThrowIfCancellationRequested(); return result;
     }
 
+    /// <summary>
+    /// Reads the EXIF block of the <c>EXIF</c> chunk, or returns null when the file has none. A block
+    /// the editable profile refuses for a structure that is valid to read comes back with
+    /// <see cref="ExifMetadata.IsEditable"/> false; <see cref="SaveExif"/> refuses a change to it.
+    /// </summary>
     public ExifMetadata? ReadExif() => ReadExifCore(false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="ReadExif"/>
     public Task<ExifMetadata?> ReadExifAsync(CancellationToken cancellationToken = default) => ReadExifCore(true, cancellationToken);
     private async Task<ExifMetadata?> ReadExifCore(bool asynchronous, CancellationToken token)
     {
@@ -89,7 +100,13 @@ public sealed partial class WebPMetadataDocument : IDisposable, IAsyncDisposable
             ExifMetadata relaxed = ExifTiffReader.ReadRelaxed(bytes.AsSpan(skip), options.Limits, chunk.Payload + skip); token.ThrowIfCancellationRequested(); return relaxed;
         }
     }
+    /// <summary>Reads the packet of the <c>XMP </c> chunk, or returns null when the file has none.</summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.AmbiguousMetadata"/> when the file has two such chunks; otherwise
+    /// as <see cref="XmpPacket.Parse"/> fails.
+    /// </exception>
     public XmpPacket? ReadXmp(XmpReadOptions? options = null) => ReadXmpCore(options, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="ReadXmp"/>
     public Task<XmpPacket?> ReadXmpAsync(XmpReadOptions? options = null, CancellationToken cancellationToken = default) => ReadXmpCore(options, true, cancellationToken);
     private async Task<XmpPacket?> ReadXmpCore(XmpReadOptions? settings, bool asynchronous, CancellationToken token)
     {
@@ -166,18 +183,42 @@ public sealed partial class WebPMetadataDocument : IDisposable, IAsyncDisposable
         }
         if (prepared.Target is null && !inserted && prepared.Chunk is not null) await ContainerIo.Write(output, prepared.Chunk, asynchronous, token).ConfigureAwait(false);
     }
+    /// <summary>
+    /// Writes the file with the EXIF edit applied to a distinct, writable, seekable, empty stream. An edit that changes nothing gives a copy of the source.
+    /// The EXIF block is the <c>EXIF</c> chunk, created when the file has none.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
+    /// opened; otherwise the code of the reason the edit is refused.
+    /// </exception>
     public void SaveExif(Stream destination, ExifEdit edit) { ArgumentNullException.ThrowIfNull(edit); SaveCore(destination, edit, null, false, default).GetAwaiter().GetResult(); }
+    /// <inheritdoc cref="SaveExif(Stream, ExifEdit)"/>
     public Task SaveExifAsync(Stream destination, ExifEdit edit, CancellationToken cancellationToken = default) { ArgumentNullException.ThrowIfNull(edit); return SaveCore(destination, edit, null, true, cancellationToken); }
+    /// <summary>
+    /// Writes the file with the XMP edit applied to a distinct, writable, seekable, empty stream. An edit that changes nothing gives a copy of the source.
+    /// The packet is the <c>XMP </c> chunk, created when the file has none.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
+    /// opened; otherwise the code of the reason the edit is refused.
+    /// </exception>
     public void SaveXmp(Stream destination, XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); SaveCore(destination, null, edit, false, default).GetAwaiter().GetResult(); }
+    /// <inheritdoc cref="SaveXmp(Stream, XmpEdit)"/>
     public Task SaveXmpAsync(Stream destination, XmpEdit edit, CancellationToken cancellationToken = default) { ArgumentNullException.ThrowIfNull(edit); return SaveCore(destination, null, edit, true, cancellationToken); }
     private async Task SaveCore(Stream destination, ExifEdit? exif, XmpEdit? xmp, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ContainerIo.Output(source, destination);
         Prepared prepared = await Prepare(exif, xmp, asynchronous, token).ConfigureAwait(false); await Emit(destination, prepared, asynchronous, token).ConfigureAwait(false);
     }
+    /// <summary>As <see cref="SaveExif(Stream, ExifEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <exception cref="IOException">The destination exists or is the source.</exception>
     public void SaveExifAs(string destinationPath, ExifEdit edit) { ArgumentNullException.ThrowIfNull(edit); SavePath(destinationPath, edit, null, false, default).GetAwaiter().GetResult(); }
+    /// <inheritdoc cref="SaveExifAs(string, ExifEdit)"/>
     public Task SaveExifAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) { ArgumentNullException.ThrowIfNull(edit); return SavePath(destinationPath, edit, null, true, cancellationToken); }
+    /// <summary>As <see cref="SaveXmp(Stream, XmpEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <exception cref="IOException">The destination exists or is the source.</exception>
     public void SaveXmpAs(string destinationPath, XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); SavePath(destinationPath, null, edit, false, default).GetAwaiter().GetResult(); }
+    /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) { ArgumentNullException.ThrowIfNull(edit); return SavePath(destinationPath, null, edit, true, cancellationToken); }
     private async Task SavePath(string path, ExifEdit? exif, XmpEdit? xmp, bool asynchronous, CancellationToken token)
     {
@@ -185,6 +226,8 @@ public sealed partial class WebPMetadataDocument : IDisposable, IAsyncDisposable
         Prepared prepared = await Prepare(exif, xmp, asynchronous, token).ConfigureAwait(false);
         await ContainerIo.Publish(target, options.Limits.CopyBufferBytes, asynchronous, token, output => Emit(output, prepared, asynchronous, token)).ConfigureAwait(false);
     }
+    /// <summary>Closes the file when the document opened it from a path; a stream the caller gave stays open.</summary>
     public void Dispose() { if (disposed) return; disposed = true; if (owns) source.Dispose(); }
+    /// <inheritdoc cref="Dispose"/>
     public async ValueTask DisposeAsync() { if (disposed) return; disposed = true; if (owns) await source.DisposeAsync().ConfigureAwait(false); }
 }

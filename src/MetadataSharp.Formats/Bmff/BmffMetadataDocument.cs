@@ -69,10 +69,12 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     public static BmffMetadataDocument Open(string path, BmffReadOptions? options = null) =>
         OpenPath(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
 
+    /// <inheritdoc cref="Open(Stream, BmffReadOptions?)"/>
     public static Task<BmffMetadataDocument> OpenAsync(Stream source, BmffReadOptions? options = null,
         CancellationToken cancellationToken = default) =>
         OpenCore(source, null, (options ?? new()).Snapshot(), true, cancellationToken);
 
+    /// <inheritdoc cref="Open(string, BmffReadOptions?)"/>
     public static Task<BmffMetadataDocument> OpenAsync(string path, BmffReadOptions? options = null,
         CancellationToken cancellationToken = default) =>
         OpenPath(path, (options ?? new()).Snapshot(), true, cancellationToken);
@@ -161,6 +163,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     /// reader reports for the file.
     /// </exception>
     public void SaveExif(Stream destination, ExifEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveExif(Stream, ExifEdit)"/>
     public Task SaveExifAsync(Stream destination, ExifEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
 
     /// <summary>
@@ -170,12 +173,16 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     /// and for removal of all XMP.
     /// </summary>
     public void SaveXmp(Stream destination, XmpEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveXmp(Stream, XmpEdit)"/>
     public Task SaveXmpAsync(Stream destination, XmpEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
 
     /// <summary>Writes the edited file to a new path; the file appears there complete or not at all.</summary>
     public void SaveExifAs(string destinationPath, ExifEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveExifAs(string, ExifEdit)"/>
     public Task SaveExifAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
+    /// <summary>As <see cref="SaveXmp(Stream, XmpEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
     public void SaveXmpAs(string destinationPath, XmpEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
 
     /// <summary>The changes of one save, captured when the save is called.</summary>
@@ -364,8 +371,10 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         return bytes;
     }
 
+    /// <summary>Marks the document as disposed. It holds a copy of the file in memory and no file or stream.</summary>
     public void Dispose() => disposed = true;
 
+    /// <inheritdoc cref="Dispose"/>
     public ValueTask DisposeAsync()
     {
         disposed = true;

@@ -18,6 +18,8 @@ if TARGET not in TARGETS:
     raise ValueError('Unsupported audit target framework')
 OUT = ROOT / 'artifacts' / 'audit' / TARGET
 FEED = OUT / 'packages'
+SYMBOLS = OUT / 'symbols'
+REPOSITORY = 'https://github.com/sensboston/MetadataSharp'
 
 def run(*args, cwd=ROOT):
     result = subprocess.run(args, cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -41,6 +43,8 @@ def main():
         assert surfaces[tfm]['runtimeMajor'] == int(tfm[3:].split('.')[0])
     assert surfaces['net8.0']['signatures'] == surfaces['net10.0']['signatures'], 'Cross-target public signatures differ'
     signature_hash = hashlib.sha256(json.dumps(surfaces['net8.0']['signatures'], separators=(',', ':')).encode()).hexdigest()
+    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    SYMBOLS.mkdir(exist_ok=True)
     reports = []
     for name in ('MetadataSharp.Core', 'MetadataSharp.Formats'):
         run('dotnet', 'pack', f'src/{name}/{name}.csproj', '-c', 'Release', '-p:MetadataSharpAuditPackage=true', '-o', str(FEED))
@@ -53,11 +57,19 @@ def main():
             assert z.read('README.md') == (ROOT / 'README.md').read_bytes()
             dlls = [n for n in names if n.endswith('.dll')]
             assert dlls == sorted(f'lib/{tfm}/{name}.dll' for tfm in TARGETS), dlls
-            assert not any(n.endswith(('.exe', '.cs', '.pdf', '.tif', '.jpg', '.png', '.webp')) for n in names), names
+            # IsAotCompatible reached the packaged build: the SDK that turns on the trim and AOT analyzers
+            # for it also writes this assembly metadata, which a trimming consumer reads.
+            markers = {dll.split('/')[1]: [m for m in ('IsTrimmable', 'IsAotCompatible') if m.encode() in z.read(dll)] for dll in dlls}
+            assert all('IsTrimmable' in found for found in markers.values()), markers
+            assert not any(n.endswith(('.exe', '.cs', '.pdb', '.pdf', '.tif', '.jpg', '.png', '.webp')) for n in names), names
             ns = ET.fromstring(z.read(f'{name}.nuspec'))
             local = lambda tag: [e for e in ns.iter() if e.tag.split('}')[-1] == tag]
             license_node = local('license')[0]
             assert license_node.text == 'MIT' and license_node.get('type') == 'expression'
+            # The package names the repository and the commit it was built from.
+            repository = dict(local('repository')[0].attrib)
+            assert (repository.get('type'), repository.get('url'), repository.get('commit')) == ('git', REPOSITORY, head), repository
+            assert [e.text for e in local('projectUrl')] == [REPOSITORY] and [e.text for e in local('readme')] == ['README.md']
             groups = {}
             for group in local('group'):
                 declared = group.get('targetFramework')
@@ -68,8 +80,23 @@ def main():
                 groups[tfm] = dependencies
             assert set(groups) == set(TARGETS), groups
             docs = {tfm: len(ET.fromstring(z.read(f'lib/{tfm}/{name}.xml')).findall('./members/member')) for tfm in TARGETS}
-            reports.append(dict(package=package.name, sha256=hashlib.sha256(package.read_bytes()).hexdigest(), entries=names,
-                                dependencyGroups=groups, documentedMembers=docs))
+        # The symbols are a package of their own. Each PDB carries the Source Link map from the build's
+        # source root to this commit of the repository, as plain JSON.
+        symbols = FEED / f'{name}.0.0.0-audit.snupkg'
+        with zipfile.ZipFile(symbols) as z:
+            symbol_names = sorted(z.namelist())
+            pdbs = [n for n in symbol_names if n.startswith('lib/')]
+            assert pdbs == sorted(f'lib/{tfm}/{name}.pdb' for tfm in TARGETS), symbol_names
+            link = f'"https://raw.githubusercontent.com/sensboston/MetadataSharp/{head}/*"'.encode()
+            for pdb in pdbs:
+                data = z.read(pdb)
+                at = data.find(b'{"documents"')
+                assert link in data, (pdb, data[at:at + 300] if at >= 0 else 'no Source Link map')
+        # Kept out of the feed the offline consumer restores from.
+        symbols.replace(SYMBOLS / symbols.name)
+        reports.append(dict(package=package.name, sha256=hashlib.sha256(package.read_bytes()).hexdigest(), entries=names,
+                            dependencyGroups=groups, documentedMembers=docs, repository=repository, assemblyMetadata=markers,
+                            symbols=dict(package=symbols.name, entries=symbol_names, sourceLink='verified')))
     consumer = OUT / 'consumer'; consumer.mkdir(exist_ok=True)
     major = TARGET[3:].split('.')[0]
     (consumer / 'global.json').write_text(json.dumps({'sdk': {'version': major + '.0.100', 'rollForward': 'latestFeature', 'allowPrerelease': False}}))
@@ -92,8 +119,8 @@ if (typeof(ExifValue).Assembly.GetCustomAttribute<TargetFrameworkAttribute>()?.F
 Console.WriteLine("Offline package consumer passed.");'''.replace('EXPECTED_MAJOR', TARGET[3:].split('.')[0]))
     run('dotnet', 'restore', str(consumer / 'consumer.csproj'), '--configfile', str(consumer / 'NuGet.Config'), '--packages', str(OUT / 'isolated-cache'), cwd=consumer)
     run('dotnet', 'run', '--project', str(consumer / 'consumer.csproj'), '-c', 'Release', '--no-restore', '--', str(OUT / 'consumer.tif'), cwd=consumer)
-    report = dict(schema=2, targetFramework=TARGET, consumerSdk=consumer_sdk, publicSignatureSha256=signature_hash, publicSignatureCount=len(surfaces['net8.0']['signatures']), sourceCommit=os.getenv('AUDIT_SOURCE_COMMIT'), sdkInfo=subprocess.check_output(['dotnet', '--info'], text=True), packages=reports, offlineConsumer='passed', offlineConsumerAssets='target-matched',
-                  publication='not attempted', docCaveat='XML member counts are not full API documentation coverage; CS1591 suppressed only for audit candidates')
+    report = dict(schema=3, targetFramework=TARGET, consumerSdk=consumer_sdk, publicSignatureSha256=signature_hash, publicSignatureCount=len(surfaces['net8.0']['signatures']), sourceCommit=os.getenv('AUDIT_SOURCE_COMMIT'), sdkInfo=subprocess.check_output(['dotnet', '--info'], text=True), packages=reports, offlineConsumer='passed', offlineConsumerAssets='target-matched',
+                  publication='not attempted', docCaveat='documentedMembers counts the members of the packaged XML files; CS1591 is not suppressed, so a public member without a comment fails every build of the libraries')
     (OUT / 'packages.json').write_text(json.dumps(report, indent=2))
     # Persist small machine-readable evidence in Actions logs as well as artifacts.
     for file in ('baseline.json', 'packages.json'):

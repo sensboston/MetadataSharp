@@ -20,7 +20,9 @@ public sealed record TiffReadOptions
     /// <see cref="MetadataLimits.MaxRetainedMetadataBytes"/> 67,108,864.
     /// </summary>
     public MetadataLimits Limits { get; init; } = FileLimits;
+    /// <summary>The most pointers between directories followed in one file. Default 4,096.</summary>
     public int MaxDirectoryLinks { get; init; } = 4096;
+    /// <summary>The most byte ranges accounted for in one file. Default 16,384.</summary>
     public int MaxAccountedRanges { get; init; } = 16384;
     internal TiffReadOptions Snapshot()
     {
@@ -36,16 +38,32 @@ public sealed class TiffLayout
     internal TiffLayout(Endianness order, long length, uint first, TiffDirectoryInfo[] directories,
         TiffAccountedRange[] ranges, TiffLayoutIssue[] issues)
     { ByteOrder = order; SourceLength = length; FirstIfdOffset = first; Directories = Array.AsReadOnly(directories); Ranges = Array.AsReadOnly(ranges); Issues = Array.AsReadOnly(issues); }
+    /// <summary>The byte order of the file.</summary>
     public Endianness ByteOrder { get; }
+    /// <summary>The length of the source in bytes.</summary>
     public long SourceLength { get; }
+    /// <summary>The offset of the first directory, from the header.</summary>
     public uint FirstIfdOffset { get; }
+    /// <summary>Every directory reached from the header.</summary>
     public IReadOnlyList<TiffDirectoryInfo> Directories { get; }
+    /// <summary>Every range of the file the directories account for, in file order.</summary>
     public IReadOnlyList<TiffAccountedRange> Ranges { get; }
+    /// <summary>The reasons, if any, the layout is outside the accounting profile.</summary>
     public IReadOnlyList<TiffLayoutIssue> Issues { get; }
+    /// <summary>True when there are no issues, the file has an image, and every image is within the accounting profile.</summary>
     public bool IsSupported => Issues.Count == 0 && Directories.Any(d => d.Image is not null) && Directories.All(d => d.Image?.IsSupported != false);
+    /// <summary>Reads the layout of a classic TIFF from a readable, seekable stream at position zero, and leaves the stream open.</summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.InvalidTiff"/> for a malformed file;
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for BigTIFF, a DNG, or a field type of
+    /// unknown width; <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded.
+    /// </exception>
     public static TiffLayout Read(Stream source, TiffReadOptions? options = null) => TiffLayoutReader.Read(source, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
+    /// <summary>Reads the layout of a file. Fails as <see cref="Read(Stream, TiffReadOptions?)"/> does.</summary>
     public static TiffLayout Read(string path, TiffReadOptions? options = null) => PathRead(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Read(Stream, TiffReadOptions?)"/>
     public static Task<TiffLayout> ReadAsync(Stream source, TiffReadOptions? options = null, CancellationToken cancellationToken = default) => TiffLayoutReader.Read(source, (options ?? new()).Snapshot(), true, cancellationToken);
+    /// <inheritdoc cref="Read(string, TiffReadOptions?)"/>
     public static Task<TiffLayout> ReadAsync(string path, TiffReadOptions? options = null, CancellationToken cancellationToken = default) => PathRead(path, (options ?? new()).Snapshot(), true, cancellationToken);
     private static async Task<TiffLayout> PathRead(string path, TiffReadOptions options, bool asynchronous, CancellationToken token)
     {

@@ -37,12 +37,17 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
     /// </summary>
     public ExifMetadata? Exif => exif;
 
+    /// <summary>Opens a JPEG file and keeps it open, shared for reading, until the document is disposed. Fails as <see cref="Open(Stream, JpegReadOptions?)"/> does.</summary>
     public static JpegMetadataDocument Open(string path, JpegReadOptions? options = null) =>
         OpenPath(path, SnapshotLimits(options), false, default).GetAwaiter().GetResult();
+    /// <summary>Opens a JPEG from a readable, seekable stream at position zero. The stream stays open, and has to stay unchanged, while the document is in use.</summary>
+    /// <exception cref="MetadataException">The data is not a file this document reads, or it exceeds a budget of the limits.</exception>
     public static JpegMetadataDocument Open(Stream source, JpegReadOptions? options = null) =>
         OpenCore(source, false, null, SnapshotLimits(options), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Open(string, JpegReadOptions?)"/>
     public static Task<JpegMetadataDocument> OpenAsync(string path, JpegReadOptions? options = null, CancellationToken cancellationToken = default) =>
         OpenPath(path, SnapshotLimits(options), true, cancellationToken);
+    /// <inheritdoc cref="Open(Stream, JpegReadOptions?)"/>
     public static Task<JpegMetadataDocument> OpenAsync(Stream source, JpegReadOptions? options = null, CancellationToken cancellationToken = default) =>
         OpenCore(source, false, null, SnapshotLimits(options), true, cancellationToken);
 
@@ -121,9 +126,21 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Writes the file with the EXIF edit applied to a distinct, writable, seekable, empty stream. An edit that changes nothing gives a copy of the source.
+    /// The EXIF block is the <c>Exif</c> APP1 segment, created when the file has none.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
+    /// opened; otherwise the code of the reason the edit is refused.
+    /// </exception>
     public void Save(Stream destination, ExifEdit edit) => SaveCore(destination, edit, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Save(Stream, ExifEdit)"/>
     public Task SaveAsync(Stream destination, ExifEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, edit, true, cancellationToken);
+    /// <summary>As <see cref="Save(Stream, ExifEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <exception cref="IOException">The destination exists or is the source.</exception>
     public void SaveAs(string destinationPath, ExifEdit edit) => SavePath(destinationPath, edit, false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="SaveAs(string, ExifEdit)"/>
     public Task SaveAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, edit, true, cancellationToken);
 
     private async Task SaveCore(Stream destination, ExifEdit edit, bool asynchronous, CancellationToken token)
@@ -273,6 +290,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         finally { ArrayPool<byte>.Shared.Return(buffer); }
     }
 
+    /// <summary>Closes the file when the document opened it from a path; a stream the caller gave stays open.</summary>
     public void Dispose()
     {
         if (disposed) return;
@@ -280,6 +298,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         if (ownsSource) source.Dispose();
     }
 
+    /// <inheritdoc cref="Dispose"/>
     public async ValueTask DisposeAsync()
     {
         if (disposed) return;

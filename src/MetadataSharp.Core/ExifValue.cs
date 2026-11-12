@@ -15,9 +15,13 @@ public sealed class ExifValue
         this.bytes = bytes;
     }
 
+    /// <summary>The TIFF field type of the value.</summary>
     public TiffFieldType FieldType { get; }
+    /// <summary>The number of elements of the field type, as the entry states it.</summary>
     public uint Count { get; }
+    /// <summary>The byte order of the raw bytes.</summary>
     public Endianness ByteOrder { get; }
+    /// <summary>The length of the raw value in bytes: the count times the width of the field type.</summary>
     public int ByteLength => bytes.Length;
 
     /// <summary>Validates type/count/length and takes an independent copy of the bytes.</summary>

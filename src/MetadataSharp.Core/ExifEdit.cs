@@ -8,9 +8,21 @@ public sealed class ExifEdit
 {
     private readonly Dictionary<ExifTagKey, ExifValue?> changes = [];
     private bool removeAll;
+    /// <summary>Creates an edit that holds no change.</summary>
     public ExifEdit() { }
+    /// <summary>True when the edit holds no change; a save then copies the source.</summary>
     public bool IsEmpty => !removeAll && changes.Count == 0;
 
+    /// <summary>
+    /// Sets a tag of the writable subset: ImageDescription, Make, Model, Orientation, Software,
+    /// DateTime, Artist and Copyright of the primary directory; ExposureTime, FNumber,
+    /// DateTimeOriginal, DateTimeDigitized and FocalLength of the Exif directory; tags 0 to 6 of the
+    /// GPS directory (version, latitude, longitude and altitude with their references).
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// The key is outside that subset, the value does not have the type and count the tag requires,
+    /// or the edit already removes all EXIF.
+    /// </exception>
     public void Set(ExifTagKey key, ExifValue value)
     {
         CheckKey(key);
@@ -20,12 +32,16 @@ public sealed class ExifEdit
         changes[key] = value;
     }
 
+    /// <summary>Removes a tag of the writable subset; see <see cref="Set"/>. A tag the file does not have is no change.</summary>
+    /// <exception cref="ArgumentException">The key is outside the subset, or the edit already removes all EXIF.</exception>
     public void Remove(ExifTagKey key)
     {
         CheckKey(key);
         changes[key] = null;
     }
 
+    /// <summary>Removes the whole EXIF block.</summary>
+    /// <exception cref="ArgumentException">The edit already holds a tag change.</exception>
     public void RemoveAllExif()
     {
         if (changes.Count != 0) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
