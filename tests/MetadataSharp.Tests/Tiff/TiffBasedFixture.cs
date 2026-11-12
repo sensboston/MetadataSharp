@@ -39,9 +39,17 @@ internal sealed class TiffBasedFixture
 
     internal static readonly string[] Names = ["tiff", "dng", "nef", "cr2", "arw", "pef", "orf"];
 
+    /// <summary>
+    /// The layouts that are plain TIFF files: nothing in them says DNG or raw, and the first
+    /// directory is that of the image itself.
+    /// </summary>
+    internal static readonly string[] Plain = ["tiff", "tiff-pages", "tiff-camera"];
+
     internal static TiffBasedFixture Create(string name, bool big) => name switch
     {
         "tiff" => Tiff(big),
+        "tiff-pages" => Pages(big),
+        "tiff-camera" => Camera(big),
         "dng" => Dng(big),
         "nef" => Nef(big),
         "cr2" => Cr2(big),
@@ -72,6 +80,35 @@ internal sealed class TiffBasedFixture
         return new("tiff", big, layout.Bytes)
         {
             Exif = 170, Image = [(300, 64)], Date = 208, TextTag = 0x010F, Text = (130, 12)
+        };
+    }
+
+    /// <summary>
+    /// A TIFF of two pages with a reduced image. IFD0 at 8 is the first page (NewSubfileType 2,
+    /// Make at 150, a strip at 360 of 40 bytes, DateTime at 162, ExifIFD), chained to the second
+    /// page at 230 (a strip at 400 of 40 bytes), chained to a reduced image at 310 (NewSubfileType
+    /// 1, a strip at 440 of 24 bytes); the Exif IFD at 190 has DateTimeOriginal at 208.
+    /// </summary>
+    internal static TiffBasedFixture Pages(bool big)
+    {
+        var layout = new Layout(470, big).Header()
+            .Directory(8, 230,
+                (0x00FE, 4, 1, 2), (0x0100, 3, 1, 4), (0x0101, 3, 1, 4), (0x0103, 3, 1, 1), (0x010F, 2, 12, 150),
+                (0x0111, 4, 1, 360), (0x0117, 4, 1, 40), (0x0132, 2, 20, 162), (0x8769, 4, 1, 190))
+            .Ascii(150, "TestCompany\0")
+            .Ascii(162, "2020:01:02 03:04:05\0")
+            .Directory(190, 0, (0x9003, 2, 20, 208))
+            .Ascii(208, "2020:01:02 03:04:05\0")
+            .Directory(230, 310,
+                (0x00FE, 4, 1, 2), (0x0100, 3, 1, 4), (0x0101, 3, 1, 4), (0x0103, 3, 1, 1), (0x0111, 4, 1, 400),
+                (0x0117, 4, 1, 40))
+            .Directory(310, 0, (0x00FE, 4, 1, 1), (0x0111, 4, 1, 440), (0x0117, 4, 1, 24))
+            .Pattern(360, 40, 7)
+            .Pattern(400, 40, 11)
+            .Pattern(440, 24, 13);
+        return new("tiff-pages", big, layout.Bytes)
+        {
+            Exif = 190, Image = [(360, 40), (400, 40), (440, 24)], Date = 208, TextTag = 0x010F, Text = (150, 12)
         };
     }
 
@@ -114,17 +151,26 @@ internal sealed class TiffBasedFixture
     /// 350, DateTimeOriginal at 358 and a Nikon type 3 MakerNote at 380 of 56 bytes, whose own
     /// offsets count from the header embedded in it; the GPS IFD at 520 has GPSVersionID.
     /// </summary>
-    internal static TiffBasedFixture Nef(bool big)
+    internal static TiffBasedFixture Nef(bool big) => Nikon(big, raw: true);
+
+    /// <summary>
+    /// A TIFF as a camera writes it: the layout of <see cref="Nef"/> with the same maker, model and
+    /// MakerNote, but the first directory is that of the image itself (NewSubfileType 0) and both
+    /// sub-directories are reduced images.
+    /// </summary>
+    internal static TiffBasedFixture Camera(bool big) => Nikon(big, raw: false);
+
+    private static TiffBasedFixture Nikon(bool big, bool raw)
     {
         var layout = new Layout(760, big).Header()
             .Directory(8, 0,
-                (0x00FE, 4, 1, 1), (0x010F, 2, 18, 120), (0x0110, 2, 10, 138), (0x0111, 4, 1, 600),
+                (0x00FE, 4, 1, raw ? 1 : 0), (0x010F, 2, 18, 120), (0x0110, 2, 10, 138), (0x0111, 4, 1, 600),
                 (0x0117, 4, 1, 32), (0x014A, 4, 2, 150), (0x8769, 4, 1, 300), (0x8825, 4, 1, 520))
             .Ascii(120, "NIKON CORPORATION\0")
             .Ascii(138, "NIKON D70\0")
             .U32(150, 160).U32(154, 230)
             .Directory(160, 0, (0x00FE, 4, 1, 1), (0x0103, 3, 1, 6), (0x0201, 4, 1, 640), (0x0202, 4, 1, 20))
-            .Directory(230, 0, (0x00FE, 4, 1, 0), (0x0103, 3, 1, 1), (0x0111, 4, 1, 660), (0x0117, 4, 1, 100))
+            .Directory(230, 0, (0x00FE, 4, 1, raw ? 0 : 1), (0x0103, 3, 1, 1), (0x0111, 4, 1, 660), (0x0117, 4, 1, 100))
             .Directory(300, 0, (0x829A, 5, 1, 350), (0x9003, 2, 20, 358), (0x927C, 7, 56, 380))
             .U32(350, 1).U32(354, 125)
             .Ascii(358, "2020:01:02 03:04:05\0")
@@ -144,7 +190,7 @@ internal sealed class TiffBasedFixture
             .U16(inner + 22, 0x0004).U16(inner + 24, 2).U32(inner + 26, 8).U32(inner + 30, 38)
             .U32(inner + 34, 0)
             .Ascii(inner + 38, "FINE   \0");
-        return new("nef", big, layout.Bytes)
+        return new(raw ? "nef" : "tiff-camera", big, layout.Bytes)
         {
             Exif = 300, Gps = 520, Image = [(600, 32), (640, 20), (660, 100)], Note = (380, 56), Date = 358,
             TextTag = 0x0110, Text = (138, 10)

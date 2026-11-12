@@ -180,8 +180,8 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
 
     /// <summary>
-    /// Writes the file with <paramref name="profile"/> as its ICC profile, or without one when it
-    /// is null. The profile is the value of tag 0x8773 of the primary directory, which is where
+    /// Writes a plain TIFF with <paramref name="profile"/> as its ICC profile, or without one when
+    /// it is null. The profile is the value of tag 0x8773 of the primary directory, which is where
     /// <see cref="IccProfiles.Read"/> looks for it: the tag is created when the file has none,
     /// written as UNDEFINED unless the file has it as BYTE, and removed for null. As in every save
     /// of this document no byte of the source moves: a profile no longer than the stored one is
@@ -192,9 +192,16 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// method returns.
     /// </summary>
     /// <remarks>
-    /// The tag describes the image of its directory. In a raw file the primary directory is often
-    /// that of a reduced image, and the profile then says how to show that one; the profiles a DNG
-    /// keeps for its raw data (tags 0xC68F and 0xC691) are other tags and are not touched.
+    /// The tag describes the image of its directory. In a DNG and in a raw file the primary
+    /// directory is commonly that of a reduced image, and a profile there would say how to show
+    /// that one. Such a file is refused, for a profile and for null alike, and nothing is written:
+    /// a file with DNGVersion (0xC612) in the primary directory; a file with the header of an ORF
+    /// or an RW2 or the signature of a CR2; a file whose primary directory is that of a reduced
+    /// image (bit 0 of NewSubfileType, as in a NEF or an ARW); and a file with raw sensor data in
+    /// any image directory (a colour filter array, linear raw data or the compression of a raw
+    /// format, as in a PEF). The file is judged by what it holds, not by its name, and the name
+    /// of the maker alone decides nothing. <see cref="IccProfiles.Read"/> still returns what the
+    /// primary directory of such a file holds.
     /// </remarks>
     /// <param name="destination">A writable, seekable, empty stream.</param>
     /// <param name="profile">The whole profile, or null for none.</param>
@@ -203,8 +210,9 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// bytes of a header, its size field is not the number of bytes given, or the <c>acsp</c>
     /// signature is absent; <see cref="MetadataErrorCode.LimitExceeded"/> when it is longer than
     /// <see cref="MetadataLimits.MaxValueBytes"/> or
-    /// <see cref="MetadataLimits.MaxRetainedMetadataBytes"/> of the limits; otherwise as
-    /// <see cref="SaveExif"/> fails.
+    /// <see cref="MetadataLimits.MaxRetainedMetadataBytes"/> of the limits;
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the file is a DNG or a raw file, or
+    /// its primary directory is that of a reduced image; otherwise as <see cref="SaveExif"/> fails.
     /// </exception>
     public void SaveIccProfile(Stream destination, byte[]? profile) => SaveCore(destination, Icc(profile), false, default).GetAwaiter().GetResult();
 
@@ -273,6 +281,9 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
                 throw EmbeddedFile.Limit("The ICC profile exceeds its budget.");
         }
 
+        // Before the refusal of the map: a raw file is refused for what it is, damaged or not.
+        if (icc is not null && TiffBasedIccTarget.Refusal(source, map) is string unsuitable)
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, unsuitable);
         if (refusal is not null) throw new MetadataException(refusal.Code, refusal.Message, refusal.SourceOffset);
         TiffBasedFileMap layout = map!;
         MetadataLimits limits = options.Limits;

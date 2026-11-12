@@ -968,7 +968,8 @@ else if (args.Length == 3 && args[0] == "png-webp-embedded-corpus")
 else if (args.Length == 2 && args[0] == "tiff-based-icc-edits")
 {
     // Files for the pinned tool to read after the TIFF-based writer gave them an ICC profile,
-    // replaced it or took it out: every authored layout in both byte orders. manifest.tsv is that
+    // replaced it or took it out: every authored plain TIFF in both byte orders. The authored DNG
+    // and raw layouts are to be refused, and leave no file for the tool. manifest.tsv is that
     // of the JPEG command: the source, the edited file, the profile the tool has to print for it,
     // and "=" for the comment, which this library does not write into such a file.
     Directory.CreateDirectory(args[1]);
@@ -979,12 +980,37 @@ else if (args.Length == 2 && args[0] == "tiff-based-icc-edits")
     byte[] small = IccProfile(3_144, 1), odd = IccProfile(70_001, 2), brief = IccProfile(560, 3), large = IccProfile(1_000_000, 4);
     string smallIcc = Stored("small.icc", small), oddIcc = Stored("odd.icc", odd), briefIcc = Stored("brief.icc", brief), largeIcc = Stored("large.icc", large);
     const string date = "2021:06:07 08:09:10", longText = "A considerably longer text than the one before";
-    foreach (string name in TiffBasedFixture.Names)
+    const string title = "::error title=TIFF-based profile edits::";
+
+    var raw = new List<(string Name, byte[] Bytes)> { ("rw2-le.rw2", TiffBasedFixture.Rw2().Bytes) };
+    foreach (string layout in TiffBasedFixture.Names.Except(TiffBasedFixture.Plain))
+        foreach (bool big in new[] { false, true })
+            raw.Add((layout + (big ? "-be." : "-le.") + layout, TiffBasedFixture.Create(layout, big).Bytes));
+    foreach ((string file, byte[] bytes) in raw)
+    {
+        using TiffBasedMetadataDocument unsuitable = TiffBasedMetadataDocument.Open(new MemoryStream(bytes));
+        foreach (byte[]? given in new[] { small, null })
+        {
+            using var output = new MemoryStream();
+            try
+            {
+                unsuitable.SaveIccProfile(output, given);
+                Console.WriteLine($"{title}{file} is a DNG or a raw file and its profile was written or removed");
+                return 1;
+            }
+            catch (MetadataException refusal) when (refusal.Code == MetadataErrorCode.UnsupportedFeature && output.Length == 0)
+            {
+            }
+        }
+    }
+    Console.WriteLine($"::notice title=TIFF-based profile refusals::{raw.Count} authored DNG and raw files refused, with a profile and with none");
+
+    foreach (string name in TiffBasedFixture.Plain)
     {
         foreach (bool big in new[] { false, true })
         {
             TiffBasedFixture fixture = TiffBasedFixture.Create(name, big);
-            string stem = name + (big ? "-be" : "-le"), extension = name == "tiff" ? ".tif" : "." + name;
+            string stem = name + (big ? "-be" : "-le"), extension = ".tif";
             string source = stem + extension;
             File.WriteAllBytes(At(source), fixture.Bytes);
             var grow = new ExifEdit();
@@ -1025,7 +1051,7 @@ else if (args.Length == 2 && args[0] == "tiff-based-icc-edits")
             // What the tool cannot say: saving the profile a file has changes no byte.
             if (!Same(same, given) || !Same(kept, then))
             {
-                Console.WriteLine($"::error title=TIFF-based profile edits::saving the profile {source} has changed the file");
+                Console.WriteLine($"{title}saving the profile {source} has changed the file");
                 return 1;
             }
         }
