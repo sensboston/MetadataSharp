@@ -141,6 +141,9 @@ public sealed class ImageMetadata
         // ORF ("IIRO", "MMOR") and RW2 ("IIU\0") are TIFF structures under their own identifier.
         if (At(header, 0, "IIRO"u8) || At(header, 0, "MMOR"u8) || At(header, 0, "IIU\0"u8)) return MetadataFormat.Tiff;
         if (At(header, 0, "8BPS"u8)) return MetadataFormat.Psd;
+        if (Crw.CrwReader.HasSignature(header)) return MetadataFormat.Crw;
+        if (Mrw.MrwMetadata.HasSignature(header)) return MetadataFormat.Mrw;
+        if (Raf.RafMetadata.HasSignature(header)) return MetadataFormat.Raf;
         if (At(header, 0, [0xFF, 0x01, 0x45, 0x78, 0x69, 0x76, 0x32])) return MetadataFormat.Exv;
         if (At(header, 4, "jP  "u8)) return MetadataFormat.Jp2;
         if (IsSidecar(header)) return MetadataFormat.XmpSidecar;
@@ -338,6 +341,7 @@ public sealed class ImageMetadata
         internal ExifMetadata? Exif;
         internal IptcPacket? Iptc;
         internal XmpPacket? Xmp;
+        internal IReadOnlyList<string>? Comments;
         internal readonly List<MetadataReadError> Errors = [];
 
         /// <summary>Lists one refusal under each of the kinds it kept from being read.</summary>
@@ -378,6 +382,9 @@ public sealed class ImageMetadata
             case MetadataFormat.Cr3: ReadCr3(data, limits, parts); break;
             case MetadataFormat.Bmff: ReadBmff(data, limits, parts); break;
             case MetadataFormat.Jxl: ReadJxl(data, limits, parts); break;
+            case MetadataFormat.Crw: ReadCrw(data, limits, parts); break;
+            case MetadataFormat.Mrw: ReadMrw(data, limits, parts); break;
+            case MetadataFormat.Raf: ReadRaf(data, limits, parts); break;
         }
 
         // These three readers tell the container themselves and take any bytes: a format the
@@ -389,6 +396,8 @@ public sealed class ImageMetadata
         IReadOnlyList<string> comments = [];
         try { comments = CommentReader.Read(data, limits); }
         catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Comment); }
+        // A CRW file keeps its comment in a record, and a RAF file has those of its JPEG file.
+        if (parts.Comments is not null) comments = parts.Comments;
         IReadOnlyList<PreviewImage> previews = [];
         try { previews = PreviewReader.List(data, limits); }
         catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Preview); }
@@ -529,6 +538,46 @@ public sealed class ImageMetadata
         parts.Exif = metadata.Exif;
         parts.Xmp = metadata.Xmp;
         parts.Refuse(refusals);
+    }
+
+    private static void ReadCrw(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
+    {
+        try
+        {
+            Crw.CrwMetadata metadata = Crw.CrwMetadata.Read(data, limits);
+            parts.Exif = metadata.Exif;
+            if (metadata.Comment is string comment) parts.Comments = [comment];
+        }
+        catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Exif); }
+    }
+
+    private static void ReadMrw(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
+    {
+        var refusals = new KindRefusals();
+        try
+        {
+            Mrw.MrwMetadata metadata = Mrw.MrwMetadata.Read(data, limits, refusals);
+            parts.Exif = metadata.Exif;
+            parts.Iptc = metadata.Iptc;
+            parts.Xmp = metadata.Xmp;
+            parts.Refuse(refusals);
+        }
+        catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); }
+    }
+
+    private static void ReadRaf(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
+    {
+        var refusals = new KindRefusals();
+        try
+        {
+            Raf.RafMetadata metadata = Raf.RafMetadata.Read(data, limits, refusals);
+            parts.Exif = metadata.Exif;
+            parts.Iptc = metadata.Iptc;
+            parts.Xmp = metadata.Xmp;
+            if (metadata.Comments.Count != 0) parts.Comments = metadata.Comments;
+            parts.Refuse(refusals);
+        }
+        catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); }
     }
 
     private static void ReadJxl(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)

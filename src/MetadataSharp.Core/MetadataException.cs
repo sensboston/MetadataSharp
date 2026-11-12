@@ -69,7 +69,16 @@ public enum MetadataErrorCode
     /// an index to remove at or to insert at that is past the occurrences of the dataset. See
     /// <see cref="Iptc.IptcEdit"/>.
     /// </summary>
-    InvalidIptcEdit
+    InvalidIptcEdit,
+
+    /// <summary>The file is not a Canon CRW file (CIFF), or a directory or a record of its heap lies outside the block that holds it.</summary>
+    InvalidCrw,
+
+    /// <summary>The file is not a Minolta MRW file, or its chain of blocks does not hold or has no TTW block.</summary>
+    InvalidMrw,
+
+    /// <summary>The file is not a Fujifilm RAF file, or its header places the JPEG file or the TIFF structure outside the file.</summary>
+    InvalidRaf
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>

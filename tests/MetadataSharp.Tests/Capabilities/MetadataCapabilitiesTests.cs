@@ -130,6 +130,14 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
         (MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "Cr3Metadata.Read: the CMT1, CMT2 and CMT4 boxes of the Canon box as the IFD0, EXIF and GPS directories of one block, CMT3 as the Canon MakerNote, as raw values; boxes that differ in byte order are refused. Nothing is written."),
         (MetadataContainer.Cr3, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "Cr3Metadata.Read: the packet of the XMP box at the top level of the file; every XMP form within finite packet limits; raw bytes retained for a packet that cannot be rewritten without loss. Nothing is written."),
+        (MetadataContainer.Crw, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "CrwMetadata.Read: the records of the CIFF heap that Exiv2 0.28.9 maps to EXIF tags, as those tags, the Canon ones as a Canon MakerNote; the preview and the thumbnail are reported by where they lie."),
+        (MetadataContainer.Crw, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "CrwMetadataDocument.SaveExif: the tags Exiv2 0.28.9 writes to a CRW file, into their records: make and model together, date, color space, subject distance, thumbnail; a record that is missing is added. Any other tag: TagNotEditable."),
+        (MetadataContainer.Crw, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "CrwMetadataDocument.SaveExif: as Insert, and orientation and pixel dimensions as fields of their record, and the Canon MakerNote tags the file has, by key; the heap is rewritten and read back. FNumber and ExposureTime: TagNotEditable."),
+        (MetadataContainer.Crw, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "CrwMetadataDocument.SaveExif: the record of a tag is removed, and a directory left empty with it; orientation and pixel dimensions are fields and stay; whole-EXIF removal is refused (UnsupportedFeature)."),
+        (MetadataContainer.Crw, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "CrwMetadata.Read: the user comment record, without the zero bytes that end it."),
+        (MetadataContainer.Crw, MetadataFamily.Comment, MetadataOperation.Insert, CapabilityStatus.Supported, "CrwMetadataDocument.SaveComment: the comment as UTF-8 in a user comment record added to the image properties directory; every other record keeps its bytes."),
+        (MetadataContainer.Crw, MetadataFamily.Comment, MetadataOperation.Replace, CapabilityStatus.Supported, "CrwMetadataDocument.SaveComment: the comment as UTF-8 in the record the file has, which keeps its length when the comment is shorter, as Exiv2 0.28.9 keeps it."),
+        (MetadataContainer.Crw, MetadataFamily.Comment, MetadataOperation.Remove, CapabilityStatus.Supported, "CrwMetadataDocument.SaveComment with null: the record stays and is filled with zero bytes, as Exiv2 0.28.9 leaves it, which reads as no comment."),
         (MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks, joined by their numbers as in a JPEG; the bytes the profile declares, not interpreted."),
         (MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment, in file order, as in a JPEG. Nothing is written."),
         (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; a block longer than a JPEG segment holds is read within the budgets. An item built from other items or stored in another file is refused."),
@@ -159,6 +167,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the first colr box of the jp2h header whose method is 2 or 3, not interpreted; a colour space named by number is not a profile."),
         (MetadataContainer.Jxl, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "JxlMetadata.Read: the block of the Exif box, plain or Brotli-compressed in a brob box, with a recognised MakerNote, as raw values; read within the budgets, counted after decompression. Nothing is written."),
         (MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "JxlMetadata.Read: the packet of the xml box, plain or Brotli-compressed in a brob box; every XMP form within finite packet limits; raw bytes retained for a packet that cannot be rewritten without loss. Nothing is written."),
+        (MetadataContainer.Mrw, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "MrwMetadata.Read: the directories of the TTW block and a recognised MakerNote, as raw values, read as a TIFF file is; tested on authored files, not on camera files. Nothing is written."),
+        (MetadataContainer.Mrw, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "MrwMetadata.Read: IIM in tag 0x83BB of the TTW block, or in the Photoshop resources of tag 0x8649; tested on authored files, not on camera files. Nothing is written."),
+        (MetadataContainer.Mrw, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "MrwMetadata.Read: the packet of tag 700 of the primary directory of the TTW block; tested on authored files, not on camera files. Nothing is written."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); new data is appended, image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Nef, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); in place when it fits, appended otherwise; image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -196,6 +207,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; any property by path; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
         (MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: image resource 0x040F, not interpreted; a second one is refused."),
+        (MetadataContainer.Raf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the EXIF block of the embedded JPEG file, and the tags only the primary directory of the TIFF structure has; its Fujifilm directory (tag 0xF000) is not read; tested on authored files. Nothing is written."),
+        (MetadataContainer.Raf, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the IPTC datasets of the embedded JPEG file; tested on authored files, not on camera files. Nothing is written."),
+        (MetadataContainer.Raf, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the packet of the embedded JPEG file; tested on authored files, not on camera files. Nothing is written."),
         (MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "In place only: a value of any editable tag that fits where the old one is. The raw data runs to the end of the file, so nothing is appended and no tag can be added. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-tag removal of any editable tag, the directory rewritten in place; whole-EXIF removal is refused."),
@@ -388,7 +402,8 @@ public sealed class MetadataCapabilitiesTests
         // returned as bytes, which is Extract; of a TIFF only the first directory is looked at.
         MetadataContainer[] profiles = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.WebP, MetadataContainer.Tiff,
             MetadataContainer.Avif, MetadataContainer.Exv, MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Psd];
-        MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Exv];
+        // The comment of a CRW file is a record of its heap: CrwMetadata reads it, and RawContainerTests authors one.
+        MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Crw, MetadataContainer.Exv];
         CapabilityDescriptor[] extracted = MetadataCapabilities.All.Where(row => row.Operation == MetadataOperation.Extract).ToArray();
         CapabilityDescriptor[] listed = MetadataCapabilities.All
             .Where(row => row.Family == MetadataFamily.Comment && row.Operation == MetadataOperation.Read).ToArray();
@@ -407,7 +422,7 @@ public sealed class MetadataCapabilitiesTests
         {
             // Of a PNG only the keyword Comment is read.
             Assert.Equal(row.Container == MetadataContainer.Png ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
-            Assert.StartsWith("Comments.Read: ", row.Note);
+            Assert.StartsWith(row.Container == MetadataContainer.Crw ? "CrwMetadata.Read: " : "Comments.Read: ", row.Note);
         }
     }
 
@@ -433,6 +448,8 @@ public sealed class MetadataCapabilitiesTests
         [
             (MetadataContainer.Jpeg, "JpegMetadataDocument", CapabilityStatus.Supported),
             (MetadataContainer.Png, "PngMetadataDocument", CapabilityStatus.Supported),
+            // CrwWriterTests sets, replaces and clears the comment record.
+            (MetadataContainer.Crw, "CrwMetadataDocument", CapabilityStatus.Supported),
         ];
         (MetadataFamily Family, string Save, (MetadataContainer Container, string Document, CapabilityStatus Status)[] Writers)[] families =
         [

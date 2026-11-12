@@ -233,6 +233,11 @@ using (TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(sourc
     document.SaveExifAs(destination, edit);   // no byte of the source moves; image data is not written to
 ```
 
+Canon CRW files are no TIFF structure: `CrwMetadataDocument` (`MetadataSharp.Formats.Crw`) writes
+the tags and the comment back into the records they were read from, with the same `ExifEdit`.
+Minolta MRW and Fujifilm RAF are read (`ImageMetadata.Read`), not written. Details:
+`docs/usage/CRW_MRW_RAF_USAGE_AND_LIMITS.md`.
+
 ### Read untrusted input
 
 ```csharp

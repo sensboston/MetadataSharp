@@ -153,6 +153,9 @@ internal static class Program
                 Snapshot(path, stdout, length);
                 return;
             case MetadataFormat.Exv: Exv(path, stdout, length); return;
+            case MetadataFormat.Crw: CrwFile(path, stdout, length); return;
+            case MetadataFormat.Mrw: MrwFile(path, stdout, length); return;
+            case MetadataFormat.Raf: RafFile(path, stdout, length); return;
             case MetadataFormat.Jp2: Jp2(path, stdout, length); return;
         }
         // A sidecar is told by the rule of this tool, not by the one of the library: any file that
@@ -220,6 +223,68 @@ internal static class Program
         if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
         if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
         Done(stdout);
+    }
+
+    /// <summary>
+    /// A Canon CRW file. The reference has no rows for where the note starts: there is no note in
+    /// the file, only records it gives the names of Canon tags. Where the preview lies it prints as
+    /// two tags of a group of its own.
+    /// </summary>
+    private static void CrwFile(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        var metadata = MetadataSharp.Formats.Crw.CrwMetadata.Read(File.ReadAllBytes(path));
+        Exif(metadata.Exif, stdout, noteRows: false);
+        if (metadata.PreviewOffset is long preview) Embedded(stdout, preview, metadata.PreviewLength);
+        Done(stdout);
+    }
+
+    /// <summary>A Minolta MRW file: the TIFF structure of its TTW block.</summary>
+    private static void MrwFile(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        Kinds(File.ReadAllBytes(path), stdout, null);
+    }
+
+    /// <summary>A Fujifilm RAF file: its JPEG file, where that lies, and the tags only its TIFF structure has.</summary>
+    private static void RafFile(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        byte[] data = File.ReadAllBytes(path);
+        Kinds(data, stdout, () =>
+        {
+            // The header says where the JPEG file lies: two numbers of four bytes, the high byte first.
+            static long At(byte[] bytes, int at) => ((long)bytes[at] << 24) | ((long)bytes[at + 1] << 16) | ((long)bytes[at + 2] << 8) | bytes[at + 3];
+            Embedded(stdout, At(data, 84), At(data, 88));
+        });
+    }
+
+    /// <summary>
+    /// A file whose reader gives each kind of metadata on its own: a refusal of the EXIF ends the
+    /// file as refused, a refusal of the IPTC or the XMP leaves it ok and travels in the detail.
+    /// </summary>
+    private static void Kinds(byte[] data, StreamWriter stdout, Action? afterExif)
+    {
+        ImageMetadata file = ImageMetadata.Read(data);
+        MetadataException? Refusal(MetadataFamily kind) =>
+            file.Errors.FirstOrDefault(error => error.Family == kind)?.Exception;
+        MetadataException? exif = Refusal(MetadataFamily.Exif), iptc = Refusal(MetadataFamily.IptcIim), xmp = Refusal(MetadataFamily.Xmp);
+        if (exif is not null) throw exif;
+        var refused = new List<string>();
+        Exif(file.Exif, stdout);
+        afterExif?.Invoke();
+        if (iptc is not null) refused.Add("iptc-refused:" + iptc.Code);
+        if (file.Iptc is not null) Iptc(file.Iptc, stdout);
+        if (xmp is not null) refused.Add("xmp-refused:" + xmp.Code);
+        if (file.Xmp is not null) Xmp(file.Xmp, stdout);
+        Done(stdout, refused);
+    }
+
+    /// <summary>Where a JPEG file lies in a raw file, as the reference names it.</summary>
+    private static void Embedded(StreamWriter stdout, long offset, long length)
+    {
+        Tag(stdout, "Exif.Image2.JPEGInterchangeFormat", "Long", 1, offset.ToString(CultureInfo.InvariantCulture));
+        Tag(stdout, "Exif.Image2.JPEGInterchangeFormatLength", "Long", 1, length.ToString(CultureInfo.InvariantCulture));
     }
 
     private static void Jp2(string path, StreamWriter stdout, long length)
