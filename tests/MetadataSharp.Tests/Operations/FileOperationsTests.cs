@@ -105,7 +105,7 @@ public sealed class FileOperationsTests
     [Fact]
     public void AReplacedThumbnailKeepsTheOtherTagsOfItsDirectory()
     {
-        // IFD0 with an orientation; IFD1 with Compression, Orientation 6, and the stream at 62.
+        // IFD0 with an orientation; IFD1 at 26 with Compression, Orientation 6, and the stream at 80.
         byte[] stream = Picture(0x31);
         byte[] tiff = [
             0x49, 0x49, 42, 0, 8, 0, 0, 0,

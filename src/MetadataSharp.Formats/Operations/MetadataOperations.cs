@@ -70,6 +70,12 @@ public static class MetadataOperations
         {
             if (Held(MetadataFamily.Exif, metadata.Exif is not null)) edits.Exif.RemoveAllExif();
         }
+        else if (families.HasFlag(MetadataFamilies.Thumbnail) && metadata.Exif is null &&
+            metadata.Errors.FirstOrDefault(error => error.Family == MetadataFamily.Exif) is { } unread)
+        {
+            // The thumbnail of a block its reader refuses cannot be told from the rest of it.
+            throw unread.Exception;
+        }
         else if (metadata.Exif is not null)
         {
             if (families.HasFlag(MetadataFamilies.Thumbnail))

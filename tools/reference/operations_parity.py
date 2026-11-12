@@ -21,10 +21,13 @@ the print-outs are compared, key by key:
              (the name the tool gives the file against the name returned)
 
 A key is "same" when both print-outs hold the same line for it. Where they
-differ, the print-out of the source says who changed the key: "differs (tool
-changed)" when this library left the line of the source and the tool did not,
-"differs (ours changed)" for the reverse, "differs" when both or neither did.
-Every outcome but "same" (those, "tool only", "ours only") has to be one DOCUMENTED names
+differ, the print-out of what the operation started from (the source file; for
+an insert, the EXV file) says who is responsible: "differs (tool changed)" when
+this library left the line of the source and the tool did not, "differs (ours
+changed)" for the reverse; "ours only (tool removed)", "tool only (ours
+removed)" and "tool only (tool added)" likewise. For a key the operation does
+not address (TARGETS), an outcome that the source proves to be the tool's doing
+is intended as such. Every other outcome but "same" has to be one DOCUMENTED names
 with its reason; an outcome that is not documented fails the check. Keys whose
 value is an offset of the layout are named in LAYOUT and not compared.
 
@@ -36,6 +39,7 @@ Usage: operations_parity.py CORPUS WORK --exiv2 PATH --fixture "COMMAND ..."
 """
 import argparse
 import importlib.util
+import re
 import shlex
 import shutil
 import sys
@@ -79,6 +83,9 @@ LAYOUT = {
     "Exif.Thumbnail.JPEGInterchangeFormat", "Exif.MakerNote.Offset",
 }
 
+# The corpus file behind each copy, for the examples of the report.
+NAMES = {}
+
 # (operation, key, outcome) -> why the difference is intended. A key may end in * for a prefix.
 DOCUMENTED = OrderedDict()
 
@@ -101,24 +108,24 @@ for _operation in ("adjust", "modify", "delete-t", "delete-xc", "extract", "thum
 for _key in ("Iptc.Envelope.CharacterSet", "Iptc.Application2.RecordVersion"):
     document("modify", _key, "ours only",
              "an IPTC stream that is created declares UTF-8 and its record version; the tool writes the datasets it was given only")
-    document("insert", _key, "ours only, differs",
+    document("insert", _key, "ours only, differs, differs (ours changed)",
              "the IPTC stream is written anew and declares UTF-8 and the record version of the writer, not those of the EXV file")
 for _key in ("Exif.Thumbnail.XResolution", "Exif.Thumbnail.YResolution", "Exif.Thumbnail.ResolutionUnit"):
     document("thumbnail", _key, "ours only",
              "a thumbnail directory is created with the resolution Exif requires of a JPEG thumbnail (72 dpi); "
              "the tool creates it with the compression and the stream only")
-document("insert", "Exif.(MakerNote).*", "tool only",
+document("insert", "Exif.(MakerNote).*", "tool only, tool only (ours removed), tool only (tool added)",
          "the MakerNote is not carried by an insert: its offsets belong to the file it was read from "
          "(the tool carries it); InsertExv says so in its notes")
 for _key in ("Exif.Thumbnail.XResolution", "Exif.Thumbnail.YResolution", "Exif.Thumbnail.ResolutionUnit"):
     document("insert", _key, "ours only",
              "a thumbnail directory is created with the resolution Exif requires of a JPEG thumbnail (72 dpi)")
-document("insert", "Exif.Thumbnail.*", "tool only",
+document("insert", "Exif.Thumbnail.*", "tool only (ours removed)",
          "a thumbnail this library does not read as a JPEG stream (see ExtractThumbnail) is not carried, nor the tags of its directory")
-document("insert", "Iptc.*", "tool only",
+document("insert", "Iptc.*", "tool only (ours removed)",
          "a dataset whose text is not UTF-8, from a stream that declares no character set, is not carried into a stream "
          "that declares UTF-8; InsertExv says so in its notes")
-document("insert", "Exif.Photo.MakerNote", "tool only", "the MakerNote is not carried by an insert (see Exif.(MakerNote).*)")
+document("insert", "Exif.Photo.MakerNote", "tool only, tool only (ours removed)", "the MakerNote is not carried by an insert (see Exif.(MakerNote).*)")
 
 STANDARD_GROUPS = ("Image", "Photo", "GPSInfo", "Iop", "Thumbnail")
 
@@ -131,6 +138,31 @@ def grouped_key(operation, key):
     return key
 
 
+DATES = ("Exif.Image.DateTime", "Exif.Photo.DateTimeOriginal", "Exif.Photo.DateTimeDigitized", "Exif.Image.DateTimeOriginal",
+         "Xmp.xmp.ModifyDate", "Xmp.xmp.CreateDate", "Xmp.photoshop.DateCreated", "Xmp.exif.DateTimeOriginal",
+         "Xmp.exif.DateTimeDigitized", "Xmp.tiff.DateTime", "Iptc.Application2.DateCreated",
+         "Iptc.Application2.TimeCreated", "Iptc.Application2.DigitizationDate", "Iptc.Application2.DigitizationTime")
+
+# operation -> the keys it is asked to change (a key that ends in "." is a prefix). Every other key
+# is one the operation has no business with.
+TARGETS = {
+    "adjust": DATES,
+    "modify": ("Exif.Image.Artist", "Exif.Photo.UserComment", "Exif.Image.Software", "Iptc.", "Xmp.dc.subject", "Xmp.photoshop.City"),
+    "delete-a": ("Exif.", "Iptc.", "Xmp."),
+    "delete-t": ("Exif.Thumbnail.",),
+    "delete-xc": ("Xmp.",),
+    "extract": (),
+    "insert": ("Exif.", "Iptc.", "Xmp."),
+    "thumbnail": ("Exif.Thumbnail.",),
+    "fixiso": ("Exif.Photo.ISOSpeedRatings",),
+    "fixcom": ("Exif.Photo.UserComment",),
+}
+
+
+def addressed(operation, key):
+    return any(key == target or (target.endswith(".") and key.startswith(target)) for target in TARGETS.get(operation, ()))
+
+
 def documented(operation, key, outcome):
     """The reason an outcome is intended, or None."""
     reason = DOCUMENTED.get((operation, key, outcome))
@@ -139,6 +171,18 @@ def documented(operation, key, outcome):
     for (op, pattern, kind), text in DOCUMENTED.items():
         if op == operation and kind == outcome and pattern.endswith("*") and key.startswith(pattern[:-1]):
             return text
+    # The source proves these: this library left the key as the source has it (or without it, as the
+    # source is), and the tool, which writes the whole file anew, did not.
+    if outcome in ("differs (tool changed)", "ours only (tool removed)", "tool only (tool added)") and not addressed(operation, key):
+        return ("a key the operation does not address: here it is as the source has it; the tool, writing the "
+                "file anew, changed it, dropped it or added it")
+    if operation == "insert":
+        if outcome == "differs (tool changed)":
+            return "the value here is the value of the EXV file that was inserted; the tool's result differs from its own EXV file"
+        if outcome == "tool only (no elements)":
+            return "a value of no elements is not written by an edit; InsertExv says so in its notes"
+        if outcome == "tool only (undefined type)":
+            return "a value of a field type TIFF does not define is not written by an edit; InsertExv says so in its notes"
     return None
 
 
@@ -159,7 +203,10 @@ def printed(exiv2, path, runner=run):
 
 
 def compare(theirs, ours, source=None):
-    """(key, outcome, the tool's lines, ours) for every key of either side that is no matter of the layout."""
+    """
+    (key, outcome, the tool's lines, ours) for every key of either side that is no matter of the
+    layout. The print-out of what the operation started from says who is responsible for a difference.
+    """
     rows = []
     source = source or {}
     for key in list(theirs) + [key for key in ours if key not in theirs]:
@@ -167,9 +214,18 @@ def compare(theirs, ours, source=None):
             continue
         left, right, before = theirs.get(key), ours.get(key), source.get(key)
         if left is None:
-            kind = "ours only"
+            kind = "ours only (tool removed)" if before is not None and right == before else "ours only"
         elif right is None:
-            kind = "tool only"
+            if all(re.fullmatch(r"\S+ 0", line) for line in left):
+                kind = "tool only (no elements)"
+            elif all(line.startswith("0x") for line in left):
+                kind = "tool only (undefined type)"
+            elif before is None:
+                kind = "tool only (tool added)"
+            elif before == left:
+                kind = "tool only (ours removed)"
+            else:
+                kind = "tool only"
         elif left == right:
             kind = "same"
         elif before is not None and right == before:
@@ -282,7 +338,7 @@ def summarise(rows):
         counted = grouped_key(operation, key)
         count, example = table.get((operation, counted, kind), (0, None))
         if example is None:
-            example = f"{name} {key}: tool {str(theirs)[:70]} ours {str(ours)[:70]}"
+            example = f"{NAMES.get(name, name)} {key}: tool {str(theirs)[:70]} ours {str(ours)[:70]}"
         table[(operation, counted, kind)] = (count + 1, example)
     return table
 
@@ -303,6 +359,7 @@ def main(argv=None, runner=run):
         name = f"s{len(names):05d}"
         shutil.copyfile(path, work / (name + ".jpg"))
         names[name] = str(path)
+        NAMES[name] = path.name
     if not names:
         print("::error title=Operations parity::no JPEG file of the corpus was prepared")
         return 1
@@ -333,8 +390,8 @@ def main(argv=None, runner=run):
              size=2500, limit=8)
     summary = []
     for operation in list(OPERATIONS) + ["rename"]:
-        counts = ", ".join(f"{kind} {totals[(operation, kind)]}" for kind in
-                           ("same", "differs", "differs (tool changed)", "differs (ours changed)", "tool only", "ours only"))
+        kinds = sorted({kind for (op, kind) in totals if op == operation and kind != "same"})
+        counts = ", ".join(f"{kind} {totals[(operation, kind)]}" for kind in ["same"] + kinds)
         tool = sum(count for (op, who, _), count in left_out.items() if op == operation and who == "tool")
         ours = sum(count for (op, who, _), count in left_out.items() if op == operation and who == "ours")
         summary.append(f"{operation}: {files[operation]} files compared (tool failed on {tool}, refused here {ours}); {counts}")
