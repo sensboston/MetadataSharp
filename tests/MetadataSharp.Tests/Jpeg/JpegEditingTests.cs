@@ -277,8 +277,8 @@ public sealed class JpegEditingTests
     {
         var edit = new ExifEdit(); Assert.True(edit.IsEmpty);
         var artist = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B);
-        Assert.Throws<ArgumentException>(() => edit.Set(new(ExifDirectoryKind.Ifd0, 0x8769), Text("A")));
-        Assert.Throws<ArgumentException>(() => edit.Remove(new(ExifDirectoryKind.Thumbnail, 0x0103)));
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Assert.Throws<MetadataException>(() => edit.Set(new(ExifDirectoryKind.Ifd0, 0x8769), Text("A"))).Code);
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Assert.Throws<MetadataException>(() => edit.Remove(new(ExifDirectoryKind.Thumbnail, 0x0201))).Code);
         Assert.Throws<ArgumentException>(() => edit.Set(artist, ExifValue.FromRaw(TiffFieldType.Ascii, 1, Endianness.LittleEndian, [0xFF])));
         Assert.True(edit.IsEmpty);
         edit.Set(artist, Text("A")); Assert.Throws<ArgumentException>(() => edit.RemoveAllExif());

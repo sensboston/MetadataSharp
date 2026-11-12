@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Text.RegularExpressions;
 using MetadataSharp.Core;
 using Xunit;
 
@@ -257,85 +255,47 @@ public sealed class ExifTagsTests
     }
 
     [Fact]
-    public void EveryTagTheWriterReviewsIsNamedAndShapedAsTheVocabularySays()
+    public void TheWriterHoldsEveryListedTagToItsDefinition()
     {
-        // ExifEdit refuses every key outside the tuple patterns in its CheckKey, and ExifLayoutPlanner
-        // restates a type and a count for the keys it is willing to rebuild. Both must agree with the
-        // vocabulary: a tag a caller can write has to be a tag this release can name, and a reviewed shape
-        // that contradicts the standard is a bug in one of the two.
-        string root = FindRepositoryRoot();
-        string edit = File.ReadAllText(Path.Combine(root, "src", "MetadataSharp.Core", "ExifEdit.cs"));
-        var writable = new List<(ExifDirectoryKind Directory, ushort Id)>();
-        foreach (Match arm in Regex.Matches(
-                     edit[edit.IndexOf("private void CheckKey", StringComparison.Ordinal)..],
-                     @"\(ExifDirectoryKind\.(\w+), ([^)]*)\)"))
+        // ExifEdit has no list of its own: a tag the vocabulary shapes is accepted in that shape and
+        // refused in another, so a definition that contradicts the standard shows as a refused write.
+        int held = 0;
+        foreach (ExifDirectoryKind directory in Enum.GetValues<ExifDirectoryKind>())
         {
-            ExifDirectoryKind directory = Enum.Parse<ExifDirectoryKind>(arm.Groups[1].Value);
-            MatchCollection literals = Regex.Matches(arm.Groups[2].Value, @"0x([0-9A-Fa-f]{4})");
-            if (literals.Count > 0)
+            foreach (ExifTagDefinition definition in ExifTags.Definitions(directory))
             {
-                foreach (Match literal in literals)
-                    writable.Add((directory, Convert.ToUInt16(literal.Groups[1].Value, 16)));
-                continue;
-            }
+                var key = new ExifTagKey(directory, definition.Id);
+                if (!ExifEdit.IsEditable(key) || definition.Types.IsEmpty) continue;
+                held++;
+                uint count = definition.Counts.IsEmpty ? 3U : definition.Counts[0];
+                var edit = new ExifEdit();
+                foreach (TiffFieldType type in definition.Types)
+                    edit.Set(key, Value(type, count));
 
-            // A relational arm ("<= 6") covers a leading run of IDs instead of spelling them out.
-            Match bound = Regex.Match(arm.Groups[2].Value, @"<=\s*(\d+)");
-            Assert.True(bound.Success, $"Cannot read the writable tag IDs out of {arm.Groups[2].Value}.");
-            for (int id = 0; id <= int.Parse(bound.Groups[1].Value, CultureInfo.InvariantCulture); id++)
-                writable.Add((directory, (ushort)id));
+                TiffFieldType other = Enum.GetValues<TiffFieldType>().First(type => !definition.Types.Contains(type));
+                Assert.Throws<ArgumentException>(() => edit.Set(key, Value(other, count)));
+                edit.SetUnchecked(key, Value(other, count));
+                if (definition.Counts.IsEmpty) continue;
+                uint wrong = definition.Counts[^1] + 1U;
+                Assert.Throws<ArgumentException>(() => edit.Set(key, Value(definition.Types[0], wrong)));
+                edit.SetUnchecked(key, Value(definition.Types[0], wrong));
+            }
         }
 
-        Assert.True(writable.Count > 0, "ExifEdit's writable subset was not found; update this test with it.");
-
-        string planner = File.ReadAllText(Path.Combine(root, "src", "MetadataSharp.Core", "Tiff",
-            "Serialization", "ExifLayoutPlanner.cs"));
-        string shape = planner[planner.IndexOf("internal static void ValidateShape", StringComparison.Ordinal)..];
-        var reviewed = new Dictionary<(ExifDirectoryKind, ushort), (TiffFieldType Type, uint Count)>();
-        int cursor = shape.IndexOf("switch", StringComparison.Ordinal) + "switch".Length;
-        foreach (Match arm in Regex.Matches(shape, @"=>\s*\(TiffFieldType\.(\w+), (\d+)U\)"))
-        {
-            TiffFieldType type = Enum.Parse<TiffFieldType>(arm.Groups[1].Value);
-            uint count = uint.Parse(arm.Groups[2].Value, CultureInfo.InvariantCulture);
-            foreach (Match group in Regex.Matches(shape[cursor..arm.Index], @"\(ExifDirectoryKind\.(\w+), ([^)]*)\)"))
-            {
-                ExifDirectoryKind directory = Enum.Parse<ExifDirectoryKind>(group.Groups[1].Value);
-                foreach (Match literal in Regex.Matches(group.Groups[2].Value, @"0x([0-9A-Fa-f]{2,4})|\b(\d{1,3})\b"))
-                {
-                    bool hex = literal.Groups[1].Success;
-                    string digits = hex ? literal.Groups[1].Value : literal.Groups[2].Value;
-                    int id = hex ? Convert.ToInt32(digits, 16) : int.Parse(digits, CultureInfo.InvariantCulture);
-                    reviewed[(directory, (ushort)id)] = (type, count);
-                }
-            }
-
-            cursor = arm.Index + arm.Length;
-        }
-
-        Assert.True(reviewed.Count >= writable.Count,
-            "The layout planner states fewer shapes than ExifEdit accepts tags; update this test with them.");
-        foreach ((ExifDirectoryKind directory, ushort id) in writable)
-        {
-            if (!reviewed.TryGetValue((directory, id), out (TiffFieldType Type, uint Count) written))
-            {
-                Assert.Fail($"ExifEdit writes {directory}/0x{id:X4}, which the layout planner does not shape.");
-                return;
-            }
-
-            if (ExifTags.Find(new ExifTagKey(directory, id)) is not ExifTagDefinition definition)
-            {
-                Assert.Fail($"ExifEdit writes {directory}/0x{id:X4}, which this release cannot name.");
-                return;
-            }
-
-            Assert.Contains(definition.Types, field => field == written.Type);
-            if (written.Count != 0U && definition.Counts.Length > 0)
-            {
-                Assert.True(definition.Counts.IndexOf(written.Count) >= 0,
-                    $"{definition.Name} is written with {written.Count} values, which its standard rejects.");
-            }
-        }
+        Assert.True(held > 200, $"Only {held} definitions state a field type; the vocabulary lost its shapes.");
     }
+
+    /// <summary>A value of zero bytes: an ASCII value of that kind ends with NUL and is seven-bit.</summary>
+    private static ExifValue Value(TiffFieldType type, uint count) =>
+        ExifValue.FromRaw(type, count, Endianness.LittleEndian, new byte[checked((int)count * Width(type))]);
+
+    private static int Width(TiffFieldType type) => type switch
+    {
+        TiffFieldType.Short or TiffFieldType.SShort => 2,
+        TiffFieldType.Long or TiffFieldType.SLong or TiffFieldType.Float => 4,
+        TiffFieldType.Rational or TiffFieldType.SRational or TiffFieldType.Double => 8,
+        _ => 1
+    };
 
     [Theory]
     [InlineData(ExifDirectoryKind.Ifd0, ExifTagSource.ExifAndTiff, 76)]
@@ -447,12 +407,4 @@ public sealed class ExifTagsTests
     [Fact]
     public void ADirectoryOutsideTheSupportedSetIsRejected()
         => Assert.Throws<ArgumentOutOfRangeException>(() => ExifTags.Definitions((ExifDirectoryKind)99));
-
-    private static string FindRepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "MetadataSharp.sln")))
-            directory = directory.Parent;
-        return directory?.FullName ?? throw new InvalidOperationException("Repository root was not found.");
-    }
 }
