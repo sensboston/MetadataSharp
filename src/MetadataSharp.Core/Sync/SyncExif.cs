@@ -62,7 +62,7 @@ internal static class SyncExif
                 if (Ascii(value) is not string text || !SyncDate.TryParseExif(text, true, out SyncDate date)) return null;
                 (ushort subSecond, ushort offset) = Companions(mapping.Tag.TagId);
                 if (Ascii(exif, ExifDirectory, subSecond) is { Length: <= 9 } fraction && fraction.All(char.IsAsciiDigit))
-                    date = date with { Fraction = fraction.TrimEnd('0') };
+                    date = date with { Fraction = fraction };
                 if (Ascii(exif, ExifDirectory, offset) is string zone && SyncDate.TryParse("2000-01-01T00:00" + zone, out SyncDate zoned) && zoned.Zone.Length == 6)
                     date = date with { Zone = zoned.Zone };
                 return [date.ToString()];
@@ -202,7 +202,7 @@ internal static class SyncExif
                     date = date with { Year = utc.Year, Month = utc.Month, Day = utc.Day, Hour = utc.Hour, Minute = utc.Minute, Second = utc.Second };
                 }
                 // Seven digits of a second are what a RATIONAL holds beside 59 seconds.
-                string fraction = date.Fraction.Length > 7 ? date.Fraction[..7].TrimEnd('0') : date.Fraction;
+                string fraction = (date.Fraction.Length > 7 ? date.Fraction[..7] : date.Fraction).TrimEnd('0');
                 uint scale = 1;
                 for (int i = 0; i < fraction.Length; i++) scale *= 10;
                 uint seconds = ((uint)date.Second * scale) + (fraction.Length == 0 ? 0 : uint.Parse(fraction, Invariant));

@@ -40,7 +40,7 @@ internal readonly record struct SyncDate(int Year, int Month, int Day, bool HasT
                             int start = at;
                             while (at < text.Length && char.IsAsciiDigit(text[at])) at++;
                             if (at == start || at - start > 9) return false;
-                            fraction = text[start..at].TrimEnd('0');
+                            fraction = text[start..at];
                         }
                     }
                     if (Skip(text, ref at, 'Z')) zone = "Z";

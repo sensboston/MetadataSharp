@@ -268,8 +268,10 @@ public sealed class MetadataSyncTests
         XmpPacket full = Xmp(e => e.Set("Xmp.photoshop.DateCreated", "2026-11-12T09:05:07.250Z"));
         written = Apply(exif, MetadataSync.XmpToExif(full, exif).Exif);
         Assert.Equal("2026:11:12 09:05:07", Text(written, ExifDir, 0x9003));
-        Assert.Equal("25", Text(written, ExifDir, 0x9291));
+        // The digits of the fraction are kept as they are written, both ways.
+        Assert.Equal("250", Text(written, ExifDir, 0x9291));
         Assert.Equal("+00:00", Text(written, ExifDir, 0x9011));
+        Assert.Equal(new[] { "2026-11-12T09:05:07.250+00:00" }, Texts(Apply((XmpPacket?)null, MetadataSync.ExifToXmp(written).Xmp), Photoshop, "DateCreated"));
 
         // EXIF holds a day and a time: a date without a time of day is not written, and says so.
         SyncEdits dayOnly = MetadataSync.XmpToExif(Xmp(e => e.Set("Xmp.photoshop.DateCreated", "2026-11-12")), exif);

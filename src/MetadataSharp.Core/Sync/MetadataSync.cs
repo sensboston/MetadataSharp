@@ -253,7 +253,7 @@ public static class MetadataSync
         {
             return a.Year == b.Year && a.Month == b.Month && a.Day == b.Day && a.HasTime == b.HasTime
                 && a.Hour == b.Hour && a.Minute == b.Minute && a.Second == b.Second
-                && (a.Fraction == b.Fraction || a.Fraction.Length == 0 || b.Fraction.Length == 0)
+                && (a.Fraction.TrimEnd('0') == b.Fraction.TrimEnd('0') || a.Fraction.Length == 0 || b.Fraction.Length == 0)
                 && (a.Offset == b.Offset || a.Offset.Length == 0 || b.Offset.Length == 0);
         }
         return Enumerable.SequenceEqual(held, value);

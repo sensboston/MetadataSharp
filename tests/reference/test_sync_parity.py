@@ -42,6 +42,10 @@ class OutcomeTests(unittest.TestCase):
         self.assertEqual("form", x.outcome(["100 200"], ["100, 200"]))
         self.assertEqual("differs", x.outcome(["100 200"], ["100, 201"]))
         self.assertEqual("tool only", x.outcome(["1"], None))
+        self.assertEqual("tool only (empty)", x.outcome(['lang="x-default"'], None))
+        self.assertEqual("tool only (empty)", x.outcome(["charset=Unicode"], None))
+        self.assertEqual("tool only (empty)", x.outcome([""], None))
+        self.assertEqual("tool only", x.outcome(['lang="x-default" text'], None))
         self.assertEqual("ours only", x.outcome(None, ["1"]))
 
     def test_compare_lists_every_key_of_either_side_once_and_leaves_out_the_ignored(self):
@@ -110,8 +114,9 @@ class RunTests(unittest.TestCase):
     def test_the_same_keys_and_values_pass_and_a_form_is_counted(self):
         code, out = self.main()
         self.assertEqual(0, code, out)
-        self.assertIn("1 files of 1 prepared (1 not rewritten by the tool); values: same 1, form 1, differs 0", out)
-        self.assertIn("XMP to EXIF::1 files of 1 prepared", out)
+        self.assertIn("1 files compared of 1 prepared (1 not rewritten by the tool); left out, not read by this library: none; "
+                      "values: same 1, form 1, differs 0", out)
+        self.assertIn("XMP to EXIF::1 files compared of 1 prepared", out)
         self.assertIn("EXIF to XMP Xmp.exif.ISOSpeedRatings: 1; s00000: tool ['100 200'] ours ['100, 200']", out)
         self.assertFalse((self.work / "s00001.jpg").exists())
 
@@ -124,7 +129,7 @@ class RunTests(unittest.TestCase):
         self.assertIn("FAIL EXIF to XMP Xmp.exif.ISOSpeedRatings tool only: 1", out)
         self.assertIn("FAIL XMP to EXIF Exif.Image.Make tool only: 1", out)
         self.assertIn("FAIL XMP to EXIF Exif.Image.Model ours only: 1", out)
-        self.assertIn("::error title=Sync parity, differences that are not documented::", out)
+        self.assertIn("::error title=Sync parity - differences that are not documented::", out)
 
     def test_a_documented_difference_passes_and_is_reported_with_its_reason(self):
         self.ours_xmp = "Xmp.tiff.Make Nikon\nXmp.exif.ISOSpeedRatings 100 200\n"
@@ -137,6 +142,27 @@ class RunTests(unittest.TestCase):
             x.DOCUMENTED.update(saved)
         self.assertEqual(0, code, out)
         self.assertIn("EXIF to XMP Xmp.tiff.Make differs: 1; an authored reason; s00000", out)
+
+    def test_a_file_this_library_refuses_is_left_out_and_counted(self):
+        inner = self.runner
+
+        def refusing(command, timeout=120):
+            result = inner(command, timeout)
+            if command[0] != "exiv2":
+                (self.work / "s00000.ours.xmp").unlink()
+                (self.work / "ours.tsv").write_text(
+                    "s00000\tto-xmp\trefused InvalidJpeg\ta reason\ns00000\tto-exif\twritten\tExif.A -> Xmp.b: a note | Exif.C -> Xmp.d: another\n",
+                    encoding="utf-8")
+            return result
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = x.main([str(self.corpus), str(self.work), "--exiv2", "exiv2", "--fixture", "fixture --"], refusing)
+        text = out.getvalue()
+        self.assertEqual(0, code, text)
+        self.assertIn("EXIF to XMP::0 files compared of 1 prepared (1 not rewritten by the tool); "
+                      "left out, not read by this library: 1 refused InvalidJpeg; values: same 0", text)
+        self.assertIn("1 file(s), first s00000: to-xmp refused InvalidJpeg: a reason", text)
+        self.assertIn("1 file(s), first s00000: to-exif Exif.C -> Xmp.d: another", text)
 
     def test_a_failing_fixture_generator_fails(self):
         def failing(command, timeout=120):

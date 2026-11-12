@@ -50,6 +50,18 @@ def document(direction, key, outcomes, reason):
         DOCUMENTED[(direction, key, outcome.strip())] = reason
 
 
+for _direction in (TO_XMP, TO_EXIF):
+    document(_direction, "*", "tool only (empty)",
+             "an empty text is not converted: the tool writes the empty value, this library writes nothing")
+for _name in ("CFAPattern", "OECF", "SpatialFrequencyResponse", "DeviceSettingDescription"):
+    document(TO_XMP, f"Xmp.exif.{_name}*", "tool only",
+             "not in the mapping table: the structure is not converted (a difference approved with the API)")
+    document(TO_EXIF, f"Exif.Photo.{_name}", "tool only",
+             "not in the mapping table: the structure is not converted (a difference approved with the API)")
+document(TO_XMP, "Xmp.exif.GPSTimeStamp", "differs",
+         "GPS time is UTC: written with Z and with the fraction the EXIF value has; the tool writes nine zeros and no zone")
+
+
 def documented(direction, key, outcome):
     """The reason an outcome is intended, or None."""
     reason = DOCUMENTED.get((direction, key, outcome))
@@ -77,11 +89,16 @@ def items(values):
     return [item for value in values for item in re.split(r"[,\s]+", value) if item]
 
 
+def empty(values):
+    """Whether the tool printed nothing but the form of a value: an empty text."""
+    return all(re.fullmatch(r'(lang="[^"]*"|charset=\S+)?\s*', value) for value in values)
+
+
 def outcome(theirs, ours):
     if theirs is None:
         return "ours only"
     if ours is None:
-        return "tool only"
+        return "tool only (empty)" if empty(theirs) else "tool only"
     if theirs == ours:
         return "same"
     if items(theirs) == items(ours):
@@ -147,23 +164,67 @@ def printed(exiv2, mode, path, prefix, runner=run):
     return found
 
 
+def statuses(work):
+    """(file, stage) -> (status, text) from the ours.tsv the fixture generator wrote."""
+    found = {}
+    path = Path(work) / "ours.tsv"
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            fields = line.split("\t")
+            if len(fields) >= 3:
+                found[(fields[0], fields[1])] = (fields[2], fields[3] if len(fields) > 3 else "")
+    return found
+
+
 def check(work, names, exiv2, runner=run):
-    """Every row of every file as (direction, file, key, outcome, theirs, ours), and the files compared per direction."""
+    """
+    Every row of every file as (direction, file, key, outcome, theirs, ours), the files compared
+    per direction, and the files left out per (direction, status): a file this library refuses to
+    read has no conversion to compare, which is a matter of the reader and not of the conversion.
+    """
     work = Path(work)
     rows = []
     files = Counter()
+    left_out = Counter()
+    state = statuses(work)
     for name in names:
-        theirs = printed(exiv2, "-PXkv", work / (name + ".xmp"), "Xmp.", runner)
-        ours = printed(exiv2, "-PXkv", work / (name + ".ours.xmp"), "Xmp.", runner)
-        if theirs or ours:
-            files[TO_XMP] += 1
-            rows.extend((TO_XMP, name, *row) for row in compare(theirs or {}, ours or {}))
-        theirs = printed(exiv2, "-PEkv", work / (name + ".xmp"), "Exif.", runner)
-        ours = printed(exiv2, "-PEkv", work / (name + ".back.jpg"), "Exif.", runner)
-        if theirs or ours:
-            files[TO_EXIF] += 1
-            rows.extend((TO_EXIF, name, *row) for row in compare(theirs or {}, ours or {}, STRUCTURE))
-    return rows, files
+        status = state.get((name, "to-xmp"), ("", ""))[0]
+        if status.startswith("refused"):
+            left_out[(TO_XMP, status)] += 1
+        else:
+            theirs = printed(exiv2, "-PXkv", work / (name + ".xmp"), "Xmp.", runner)
+            ours = printed(exiv2, "-PXkv", work / (name + ".ours.xmp"), "Xmp.", runner)
+            if theirs or ours:
+                files[TO_XMP] += 1
+                rows.extend((TO_XMP, name, *row) for row in compare(theirs or {}, ours or {}))
+        status = state.get((name, "to-exif"), ("", ""))[0]
+        if status.startswith("refused"):
+            left_out[(TO_EXIF, status)] += 1
+        else:
+            theirs = printed(exiv2, "-PEkv", work / (name + ".xmp"), "Exif.", runner)
+            ours = printed(exiv2, "-PEkv", work / (name + ".back.jpg"), "Exif.", runner)
+            if theirs or ours:
+                files[TO_EXIF] += 1
+                rows.extend((TO_EXIF, name, *row) for row in compare(theirs or {}, ours or {}, STRUCTURE))
+    return rows, files, left_out
+
+
+def grouped(work):
+    """What the fixture generator said, grouped: refusals by their text, notes by theirs."""
+    refusals, notes = Counter(), Counter()
+    first = {}
+    for (name, stage), (status, text) in statuses(work).items():
+        if status.startswith("refused"):
+            key = f"{stage} {status}: {text}"
+            refusals[key] += 1
+            first.setdefault(key, name)
+        elif text:
+            for note in text.split(" | "):
+                key = f"{stage} {note}"
+                notes[key] += 1
+                first.setdefault(key, name)
+    return ([f"{count} file(s), first {first[key]}: {key}" for key, count in refusals.most_common()],
+            [f"{count} file(s), first {first[key]}: {key}" for key, count in notes.most_common()])
 
 
 def summarise(rows):
@@ -179,7 +240,7 @@ def summarise(rows):
     return table
 
 
-def annotate(level, title, lines, size=5500, limit=9):
+def annotate(level, title, lines, size=3000, limit=9):
     """Prints lines as annotations of at most `size` characters each, `limit` of them."""
     chunk, length, sent = [], 0, 0
     for line in list(lines) + [None]:
@@ -190,7 +251,7 @@ def annotate(level, title, lines, size=5500, limit=9):
                 sent += 1
             chunk, length = [], 0
         if line is not None:
-            chunk.append(line[:600])
+            chunk.append(line[:300])
             length += len(chunk[-1]) + 3
 
 
@@ -213,7 +274,7 @@ def main(argv=None, runner=run):
         print(f"::error title=Sync parity::the fixture generator failed (exit {code})")
         return 1
 
-    rows, files = check(args.work, names, args.exiv2, runner)
+    rows, files, left_out = check(args.work, names, args.exiv2, runner)
     totals = Counter((direction, kind) for direction, _, _, kind, _, _ in rows)
     table = summarise(rows)
     unexplained = [(key, value) for key, value in table.items() if key[2] != "form" and documented(*key) is None]
@@ -223,14 +284,20 @@ def main(argv=None, runner=run):
     for direction in (TO_XMP, TO_EXIF):
         counts = ", ".join(f"{kind} {totals[(direction, kind)]}"
                            for kind in ("same", "form", "differs", "tool only", "ours only"))
-        print(f"::notice title=Sync parity, {direction}::{files[direction]} files of {len(names)} prepared "
-              f"({', '.join(f'{count} {why}' for why, count in skipped.items()) or 'none skipped'}); values: {counts}")
-    annotate("notice", "Sync parity, same items in another form",
-             (f"{direction} {key}: {count}; {example}" for (direction, key, _), (count, example) in forms))
-    annotate("notice", "Sync parity, documented differences",
+        out = ", ".join(f"{count} {status}" for (way, status), count in sorted(left_out.items()) if way == direction)
+        print(f"::notice title=Sync parity - {direction}::{files[direction]} files compared of {len(names)} prepared "
+              f"({', '.join(f'{count} {why}' for why, count in skipped.items()) or 'none skipped'}); "
+              f"left out, not read by this library: {out or 'none'}; values: {counts}")
+    refusals, notes = grouped(args.work)
+    annotate("notice", "Sync parity - files this library did not read", refusals, limit=2)
+    annotate("notice", "Sync parity - values not converted and noted", notes, limit=3)
+    annotate("notice", "Sync parity - same items in another form",
+             (f"{direction} {key}: {count}; {example}" for (direction, key, _), (count, example) in forms), limit=1)
+    annotate("notice", "Sync parity - documented differences",
              (f"{direction} {key} {kind}: {count}; {documented(direction, key, kind)}; {example}"
-              for (direction, key, kind), (count, example) in explained))
-    annotate("error", "Sync parity, differences that are not documented",
+              for (direction, key, kind), (count, example) in explained), limit=2)
+    unexplained.sort(key=lambda item: (item[0][2] != "differs", item[0][0], item[0][1]))
+    annotate("error", "Sync parity - differences that are not documented",
              (f"{direction} {key} {kind}: {count}; {example}" for (direction, key, kind), (count, example) in unexplained))
     for (direction, key, kind), (count, example) in unexplained:
         print(f"FAIL {direction} {key} {kind}: {count}; {example}")

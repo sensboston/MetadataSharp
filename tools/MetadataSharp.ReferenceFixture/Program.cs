@@ -1674,8 +1674,9 @@ else if (args.Length == 2 && args[0] == "sync-parity")
     var crashes = new List<string>();
     var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
     void Count(string outcome) => outcomes[outcome] = outcomes.GetValueOrDefault(outcome) + 1;
+    string Flat(string text) => text.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
     string NotesOf(MetadataSharp.Core.Sync.SyncEdits edits) =>
-        string.Join(" | ", edits.Notes.Select(note => $"{note.Source} -> {note.Target}: {note.Reason}")).Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+        Flat(string.Join(" | ", edits.Notes.Select(note => $"{note.Source} -> {note.Target}: {note.Reason}")));
     byte[] blank = JpegFixture.Build();
     foreach (string path in Directory.EnumerateFiles(directory, "*.jpg").Order(StringComparer.Ordinal))
     {
@@ -1683,8 +1684,13 @@ else if (args.Length == 2 && args[0] == "sync-parity")
         if (name.EndsWith(".back", StringComparison.Ordinal)) continue;
         try
         {
-            using JpegMetadataDocument document = JpegMetadataDocument.Open(path);
-            if (document.Exif is not ExifMetadata exif) { manifest.Add($"{name}\tto-xmp\tno-exif\t"); Count("to-xmp no-exif"); }
+            // The unified reader: what it refuses is listed, and the other kinds are still read.
+            MetadataSharp.Formats.ImageMetadata read = MetadataSharp.Formats.ImageMetadata.Read(path);
+            if (read.Errors.FirstOrDefault(error => error.Family == MetadataFamily.Exif) is { } refused)
+            {
+                manifest.Add($"{name}\tto-xmp\trefused {refused.Exception.Code}\t{Flat(refused.Exception.Message)}"); Count("to-xmp refused " + refused.Exception.Code);
+            }
+            else if (read.Exif is not ExifMetadata exif) { manifest.Add($"{name}\tto-xmp\tno-exif\t"); Count("to-xmp no-exif"); }
             else
             {
                 MetadataSharp.Core.Sync.SyncEdits edits = MetadataSharp.Core.Sync.MetadataSync.ExifToXmp(exif);
@@ -1696,14 +1702,15 @@ else if (args.Length == 2 && args[0] == "sync-parity")
                 }
             }
         }
-        catch (MetadataException refusal) { manifest.Add($"{name}\tto-xmp\trefused {refusal.Code}\t"); Count("to-xmp refused " + refusal.Code); }
+        catch (MetadataException refusal) { manifest.Add($"{name}\tto-xmp\trefused {refusal.Code}\t{Flat(refusal.Message)}"); Count("to-xmp refused " + refusal.Code); }
         catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
         {
             crashes.Add($"{name} to-xmp: {defect.GetType().Name}: {defect.Message}");
         }
 
         string sidecar = Path.Combine(directory, name + ".xmp");
-        if (!File.Exists(sidecar)) continue;
+        // The tool leaves an empty sidecar for a file it found nothing in.
+        if (!File.Exists(sidecar) || new FileInfo(sidecar).Length == 0) continue;
         try
         {
             XmpPacket theirs = XmpPacket.Load(sidecar);
@@ -1712,7 +1719,7 @@ else if (args.Length == 2 && args[0] == "sync-parity")
             target.SaveAs(Path.Combine(directory, name + ".back.jpg"), back.Exif);
             manifest.Add($"{name}\tto-exif\twritten\t{NotesOf(back)}"); Count("to-exif written");
         }
-        catch (MetadataException refusal) { manifest.Add($"{name}\tto-exif\trefused {refusal.Code}\t{refusal.Message.Replace('\t', ' ').Replace('\n', ' ')}"); Count("to-exif refused " + refusal.Code); }
+        catch (MetadataException refusal) { manifest.Add($"{name}\tto-exif\trefused {refusal.Code}\t{Flat(refusal.Message)}"); Count("to-exif refused " + refusal.Code); }
         catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
         {
             crashes.Add($"{name} to-exif: {defect.GetType().Name}: {defect.Message}");
