@@ -380,20 +380,21 @@ jobs:
       # a tag no vocabulary lists and a thumbnail, in a JPEG, a PNG, a WebP, a TIFF and a HEIC file,
       # after tags of every directory and field type were set, written in place, taken out again,
       # after directories were added and dropped, and after a file without a block was given one.
-      - name: Files after an edit of any EXIF tag still read in the pinned tool (exiv2 -pa)
+      # The tool prints a tag it has no name for only with -u, and such tags are among those set.
+      - name: Files after an edit of any EXIF tag still read in the pinned tool (exiv2 -u -pa)
         shell: bash
         run: |
           dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- exif-tag-edits artifacts/parity/edited-tags
           python tools/reference/tiff_based_edits.py artifacts/parity/edited-tags \
-            --title "Any-tag EXIF edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+            --title "Any-tag EXIF edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -u -pa"
       # Then the JPEG, PNG and WebP files of the pinned corpus, whose EXIF block is edited where it
       # lies: what the tool prints of a MakerNote after the edit has to be what it printed before.
-      - name: Corpus JPEG, PNG and WebP files after an edit of any EXIF tag still read in the pinned tool (exiv2 -pa)
+      - name: Corpus JPEG, PNG and WebP files after an edit of any EXIF tag still read in the pinned tool (exiv2 -u -pa)
         shell: bash
         run: |
           dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- exif-tag-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-tags-corpus
           python tools/reference/tiff_based_edits.py artifacts/parity/edited-tags-corpus --skip-unreadable-sources \
-            --title "Any-tag EXIF corpus edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+            --title "Any-tag EXIF corpus edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -u -pa"
       # Not key parity either: the pinned tool has to print, with -pC and -pc, the ICC profile and
       # the comment the JPEG writer gave a file, replaced or took out, and with -pa what it printed
       # for the file the edit started from. Authored files first, then the JPEG files of the pinned
