@@ -10,6 +10,7 @@ using MetadataSharp.Formats.Cr3;
 using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
 using MetadataSharp.Formats.Jpeg;
+using MetadataSharp.Formats.Jxl;
 using MetadataSharp.Formats.Png;
 using MetadataSharp.Formats.Psd;
 using MetadataSharp.Formats.Tiff;
@@ -164,6 +165,9 @@ internal static class Program
         // CR3 is a BMFF file of the major brand "crx " that keeps its metadata outside a meta box.
         if (At(head, 4, 0x66, 0x74, 0x79, 0x70) && At(head, 8, 0x63, 0x72, 0x78, 0x20)) { Cr3(path, stdout, length); return; }
         if (At(head, 4, 0x66, 0x74, 0x79, 0x70)) { Bmff(path, stdout, length); return; }
+        // JPEG XL: the signature box of a container (its file type box comes second), or the two
+        // bytes a bare codestream starts with, which holds no metadata.
+        if (At(head, 0, 0x00, 0x00, 0x00, 0x0C, 0x4A, 0x58, 0x4C, 0x20, 0x0D, 0x0A, 0x87, 0x0A) || At(head, 0, 0xFF, 0x0A)) { Jxl(path, stdout, length); return; }
         if (At(head, 0, 0x1A, 0x45, 0xDF, 0xA3)) { Record(stdout, "STATUS", "not-attempted", "matroska"); return; }
         Record(stdout, "STATUS", "not-attempted", "magic");
     }
@@ -273,6 +277,16 @@ internal static class Program
         // The note is a box of its own here, not the value of a tag: the reference prints no rows
         // for where it starts and how it is ordered.
         Exif(metadata.Exif, stdout, noteRows: false);
+        if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
+        Done(stdout);
+    }
+
+    private static void Jxl(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        // A jumb box is only a fact about the file, and the record grammar has no line for it.
+        JxlMetadata metadata = JxlMetadata.Read(File.ReadAllBytes(path));
+        Exif(metadata.Exif, stdout);
         if (metadata.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
         Done(stdout);
     }
