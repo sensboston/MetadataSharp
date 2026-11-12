@@ -76,10 +76,6 @@ for _name in ("SubSecTime", "SubSecTimeOriginal", "SubSecTimeDigitized"):
              "nanoseconds without leading zeros (.06 gives 60000000) and nothing for a fraction of zero")
 document(TO_EXIF, "Exif.Photo.UserComment", "character code",
          "text that is ASCII is written under the ASCII code; the tool writes every comment under UNICODE")
-for _name in ("GPSProcessingMethod", "GPSAreaInformation"):
-    document(TO_EXIF, f"Exif.GPSInfo.{_name}", "differs",
-             "the tool puts its own marker 'charset=Ascii ' into the XMP text it writes and takes it out when it "
-             "reads; this library takes the XMP text as the text")
 document(TO_XMP, "Xmp.exif.FileSource", "tool only",
          "an EXIF value of a count the tag is not defined with (FileSource of four bytes) is not converted, and noted")
 for _name in ("Exif.Photo.FileSource", "Exif.Image.BitsPerSample"):

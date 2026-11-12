@@ -261,18 +261,40 @@ internal static class SyncExif
             }
             default:
             {
+                // Exiv2 starts the XMP text it writes for these tags with a marker naming the character code
+                // of the EXIF value. The marker is not part of the text: it is taken off and its code is used.
                 string text = One(items);
-                bool ascii = text.All(c => c is >= ' ' and <= '~' or '\n' or '\r' or '\t');
+                string? named = null;
+                foreach (string name in CharsetNames)
+                {
+                    if (!text.StartsWith("charset=" + name + " ", StringComparison.Ordinal)) continue;
+                    named = name;
+                    text = text[(9 + name.Length)..];
+                    break;
+                }
+                bool plain = text.All(c => c is >= ' ' and <= '~' or '\n' or '\r' or '\t');
                 bool big = existing?.ByteOrder == Endianness.BigEndian;
-                byte[] body = ascii ? Encoding.ASCII.GetBytes(text) : new UnicodeEncoding(big, false, true).GetBytes(text);
+                // Without a marker: ASCII for text that is ASCII, else UNICODE. A named code the text does not
+                // fit (Ascii for other characters) and JIS, which this library does not encode, fall back to that.
+                string code = named switch
+                {
+                    "Unicode" => "UNICODE\0",
+                    "Undefined" => "\0\0\0\0\0\0\0\0",
+                    _ => plain ? "ASCII\0\0\0" : "UNICODE\0",
+                };
+                byte[] body = code[0] == 'U' ? new UnicodeEncoding(big, false, true).GetBytes(text)
+                    : code[0] == 'A' ? Encoding.ASCII.GetBytes(text) : Encoding.UTF8.GetBytes(text);
                 byte[] bytes = new byte[8 + body.Length];
-                (ascii ? "ASCII\0\0\0"u8 : "UNICODE\0"u8).CopyTo(bytes);
+                Encoding.ASCII.GetBytes(code).CopyTo(bytes, 0);
                 body.CopyTo(bytes, 8);
                 edit.Set(key, ExifValue.FromRaw(TiffFieldType.Undefined, (uint)bytes.Length, Endianness.LittleEndian, bytes));
                 break;
             }
         }
     }
+
+    /// <summary>The character codes Exiv2 names in the marker "charset=NAME " before a comment.</summary>
+    private static readonly string[] CharsetNames = ["Ascii", "Unicode", "Jis", "Undefined"];
 
     /// <summary>Removes the tag and the companion tags its value was read with.</summary>
     internal static void Erase(ExifEdit edit, ExifXmpMapping mapping)

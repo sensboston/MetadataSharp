@@ -46,6 +46,10 @@ refuses a non-empty edit for it.
 - Fractions of a second keep their digits as written (`SubSecTime` `06` is `.06`).
   GPS coordinates from XMP are kept to a millionth of a second; a round trip is exact only for a
   value that seven decimals of a minute can hold.
-- XMP text is written to `UserComment` under the ASCII code when it is ASCII, else UNICODE.
+- XMP text is written to `UserComment`, `GPSProcessingMethod` and `GPSAreaInformation` under the
+  ASCII code when it is ASCII, else UNICODE. Text that starts with the marker Exiv2 writes
+  (`charset=Ascii `, `charset=Unicode `, `charset=Jis `, `charset=Undefined `, exactly so) loses the
+  marker and is written under the named code; JIS is not encoded, and Ascii named for other
+  characters cannot hold them, so those two follow the first rule.
 - Compared in CI with the conversion of exiv2 0.28.9; every difference is listed with its reason in
   `tools/reference/sync_parity.py`.

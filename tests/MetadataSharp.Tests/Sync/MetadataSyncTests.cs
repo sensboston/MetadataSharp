@@ -631,4 +631,39 @@ public sealed class MetadataSyncTests
         Assert.Equal(string.Empty, Notes(spaced));
         Assert.Equal(Raw(Block((ExifDir, 0x8827, Shorts(100, 200))), new(ExifDir, 0x8827)), Raw(Apply(null, spaced.Exif), new(ExifDir, 0x8827)));
     }
+
+    [Fact]
+    public void TheCharsetMarkerExiv2WritesIsTakenOffAndItsCodeIsUsed()
+    {
+        static byte[] Value(string name, string text)
+        {
+            // UserComment is a language alternative in XMP, the two GPS texts are simple.
+            ExifMetadata exif = Apply(null, MetadataSync.XmpToExif(Xmp(e =>
+            {
+                if (name == "UserComment") e.SetLanguage("Xmp.exif." + name, "x-default", text); else e.Set("Xmp.exif." + name, text);
+            })).Exif);
+            ExifTagKey key = name == "UserComment" ? new(ExifDir, 0x9286) : new(Gps, (ushort)(name == "GPSProcessingMethod" ? 0x1B : 0x1C));
+            return Raw(exif, key);
+        }
+
+        Assert.Equal("ASCII\0\0\0HYBRID-FIX"u8.ToArray(), Value("GPSProcessingMethod", "charset=Ascii HYBRID-FIX"));
+        Assert.Equal("ASCII\0\0\0Harbour"u8.ToArray(), Value("GPSAreaInformation", "charset=Ascii Harbour"));
+        Assert.Equal("\0\0\0\0\0\0\0\0GPS"u8.ToArray(), Value("GPSProcessingMethod", "charset=Undefined GPS"));
+        Assert.Equal(new byte[] { (byte)'U', (byte)'N', (byte)'I', (byte)'C', (byte)'O', (byte)'D', (byte)'E', 0, (byte)'h', 0, (byte)'i', 0 },
+            Value("UserComment", "charset=Unicode hi"));
+        // JIS is not encoded here: the marker goes, the text is written under the code it fits.
+        Assert.Equal("ASCII\0\0\0text"u8.ToArray(), Value("UserComment", "charset=Jis text"));
+        // Ascii named for text that is not ASCII: UNICODE.
+        Assert.Equal(new byte[] { (byte)'U', (byte)'N', (byte)'I', (byte)'C', (byte)'O', (byte)'D', (byte)'E', 0, 0xE9, 0 }, Value("UserComment", "charset=Ascii \u00E9"));
+
+        // Anything else is the text: another spelling, another name, a marker that is not at the start.
+        Assert.Equal("ASCII\0\0\0charset=ascii x"u8.ToArray(), Value("UserComment", "charset=ascii x"));
+        Assert.Equal("ASCII\0\0\0charset=Latin1 x"u8.ToArray(), Value("UserComment", "charset=Latin1 x"));
+        Assert.Equal("ASCII\0\0\0charset=Ascii"u8.ToArray(), Value("UserComment", "charset=Ascii"));
+        Assert.Equal("ASCII\0\0\0a charset=Ascii x"u8.ToArray(), Value("GPSAreaInformation", "a charset=Ascii x"));
+
+        // What was written reads back as the text alone.
+        ExifMetadata written = Apply(null, MetadataSync.XmpToExif(Xmp(e => e.Set("Xmp.exif.GPSProcessingMethod", "charset=Ascii HYBRID-FIX"))).Exif);
+        Assert.Equal(new[] { "HYBRID-FIX" }, Texts(Apply((XmpPacket?)null, MetadataSync.ExifToXmp(written).Xmp), ExifNs, "GPSProcessingMethod"));
+    }
 }
