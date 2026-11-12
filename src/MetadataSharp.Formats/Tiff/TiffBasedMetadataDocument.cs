@@ -1,6 +1,7 @@
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Sync;
+using MetadataSharp.Core.MakerNotes;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Internal;
@@ -344,6 +345,21 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         // refuses cannot be edited.
         ExifMetadata before = ExifTiffReader.InspectFile(source, limits);
 
+        // Tags of the MakerNote first, where they are: the file keeps its length and its layout, and
+        // what follows is planned and verified against the file with those tags changed.
+        byte[] start = source;
+        if (!exifEmpty && exif!.MakerNote.Count != 0)
+        {
+            MakerNoteWriter.Result noted = MakerNoteWriter.Apply(source, exif.MakerNote, limits, wholeFile: true);
+            if (!noted.Output.AsSpan().SequenceEqual(source))
+            {
+                TiffBasedWriteVerifier.MakerNote(source, layout, noted.Output, noted.Ranges, limits, options.MaxAccountedRanges, wholeFile: true);
+                start = noted.Output;
+                layout = TiffBasedFileMap.Read(start, limits, options.MaxAccountedRanges);
+                before = ExifTiffReader.InspectFile(start, limits);
+            }
+        }
+
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
         if (!exifEmpty) AddExif(exif!, layout, changes);
         if (!xmpEmpty) AddXmp(xmp!, layout, changes);
@@ -355,13 +371,13 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
             catch (MetadataException) { }
         }
         if (icc is not null) AddIcc(icc.Profile, layout, changes);
-        if (changes.Count == 0) return source;
+        if (changes.Count == 0) return start;
 
         token.ThrowIfCancellationRequested();
-        TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(source, layout, changes, limits);
-        if (plan.IsEmpty) return source;
-        byte[] output = plan.Apply(source);
-        TiffBasedWriteVerifier.Verify(source, layout, before, output, plan, limits, options.MaxAccountedRanges);
+        TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(start, layout, changes, limits);
+        if (plan.IsEmpty) return start;
+        byte[] output = plan.Apply(start);
+        TiffBasedWriteVerifier.Verify(start, layout, before, output, plan, limits, options.MaxAccountedRanges);
         if (icc is not null) HoldIcc(output, icc.Profile, limits);
         token.ThrowIfCancellationRequested();
         return output;
@@ -411,7 +427,8 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (edit.RemoveAll)
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
                 "The EXIF of a TIFF-based file is part of the directories that describe its image and cannot be removed as a whole.");
-        ExifBlockEditor.AddChanges(edit, layout.Order, changes);
+        // The tags of the MakerNote were changed before the plan.
+        ExifBlockEditor.AddChanges(edit, layout.Order, changes, makerNoteApart: true);
     }
 
     /// <summary>The padding of a packet that is appended, so that the next edit is written over it.</summary>

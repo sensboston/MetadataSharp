@@ -37,6 +37,9 @@ internal static class NikonMakerNoteArrays
             : Split(layout, raw, value.ByteOrder);
     }
 
+    /// <summary>How many bytes at the start of an encrypted array are stored in the clear.</summary>
+    internal static int EncryptedStart(ushort tag, ExifValue value) => SelectEncrypted(tag, value.RawBytes).Item2;
+
     private static bool Major02(ReadOnlySpan<byte> raw) => raw.Length >= 4 && raw[0] == (byte)'0' && raw[1] == (byte)'2';
 
     private static (Layout?, int) SelectEncrypted(ushort tag, ReadOnlySpan<byte> raw) => tag switch
@@ -63,7 +66,7 @@ internal static class NikonMakerNoteArrays
             if (field.Offset + length > raw.Length)
                 break; // Fields are ascending: nothing later fits either.
             fields.Add(new MakerNoteField(field.Offset, field.Name,
-                ExifValue.FromRaw(field.Type, field.Count, order, raw.Slice(field.Offset, length))));
+                ExifValue.FromRaw(field.Type, field.Count, order, raw.Slice(field.Offset, length)), null, field.Offset));
         }
         return fields;
     }

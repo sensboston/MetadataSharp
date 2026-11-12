@@ -38,7 +38,7 @@ internal static class MinoltaMakerNoteArrays
             if (at + width > raw.Length)
                 break; // The table is ascending: nothing later fits either.
             fields.Add(new MakerNoteField(element.Index, element.Name,
-                ExifValue.FromRaw(element.Signed ? signed : unsigned, 1, Endianness.BigEndian, raw.Slice(at, width))));
+                ExifValue.FromRaw(element.Signed ? signed : unsigned, 1, Endianness.BigEndian, raw.Slice(at, width)), null, at));
         }
         return fields;
     }

@@ -31,6 +31,78 @@ internal static class TiffBasedWriteVerifier
         Reader(exifBefore, exifAfter, plan);
     }
 
+    /// <summary>
+    /// Holds an edit of MakerNote tags (<see cref="MetadataSharp.Core.MakerNotes.MakerNoteWriter"/>)
+    /// against the layout of the source. The writer has checked what its reader returns; this checks
+    /// the bytes and the structure around the note, which that reader does not see.
+    /// </summary>
+    /// <remarks>
+    /// <para>Every byte of the source that differs lies in a planned range. In a file
+    /// (<paramref name="wholeFile"/>) every planned range lies inside a MakerNote range of the map,
+    /// so image data and the directories of the file are not written to, and the file keeps its
+    /// length. In an EXIF block a planned range may also be the count of the MakerNote entry (a note
+    /// that grew at its end) or bytes that nothing of the block's map uses (a value a note addresses
+    /// from the TIFF header, appended by an earlier edit); bytes after the source are appended ones.</para>
+    /// <para>The layout is walked again: every directory is where it was with the tags it had, each
+    /// with its type, count and address, and each value but the note itself byte for byte.</para>
+    /// </remarks>
+    internal static void MakerNote(byte[] source, TiffBasedFileMap before, byte[] output,
+        IReadOnlyList<(int Start, int Length)> ranges, MetadataLimits limits, int maxRanges, bool wholeFile)
+    {
+        if (output.Length < source.Length || (wholeFile && output.Length != source.Length))
+            throw Refuse("the output of a MakerNote edit does not have the planned length");
+        List<TiffBasedRange> notes = before.Ranges.Where(range => range.Kind == TiffBasedRangeKind.MakerNote).ToList();
+        TiffBasedField? holder = before.Find(TiffBasedRole.Exif)?.Find(0x927C);
+        foreach ((int start, int length) in ranges)
+        {
+            if (start < 0 || length < 0 || start > source.Length - length)
+                throw Refuse("a planned range of a MakerNote edit leaves the source");
+            long end = (long)start + length;
+            if (notes.Exists(note => start >= note.Start && end <= note.End)) continue;
+            if (wholeFile) throw Refuse("a planned range of a MakerNote edit lies outside the MakerNote");
+            if (holder is not null && start == holder.EntryOffset + 4 && length == 4) continue;
+            if (start < 8) throw Refuse("a planned range of a MakerNote edit lies in the header");
+            foreach (TiffBasedRange range in before.Ranges)
+                if (start < range.End && range.Start < end)
+                    throw Refuse("a value of the MakerNote lies in bytes the block uses for something else");
+        }
+        for (int i = 0; i < source.Length; i++)
+        {
+            if (source[i] == output[i]) continue;
+            bool planned = false;
+            foreach ((int start, int length) in ranges)
+                if (i >= start && i < start + length) { planned = true; break; }
+            if (!planned) throw Refuse("a byte outside the planned ranges of a MakerNote edit differs");
+        }
+
+        TiffBasedFileMap after;
+        try { after = TiffBasedFileMap.Read(output, limits, maxRanges); }
+        catch (MetadataException failure) { throw Limit(failure) ?? Refuse("the layout of the output is not readable"); }
+        if (wholeFile && !Protected(before).SequenceEqual(Protected(after)))
+            throw Refuse("image data or MakerNote ranges are not the ones of the source");
+        if (after.Directories.Count != before.Directories.Count)
+            throw Refuse("the directories of the output are not the ones of the source");
+        foreach (TiffBasedDirectory was in before.Directories)
+        {
+            TiffBasedDirectory? now = after.FindAt(was.Offset);
+            if (now is null || now.Role != was.Role || now.Next != was.Next || now.Fields.Count != was.Fields.Count)
+                throw Refuse("a directory changed with a MakerNote edit");
+            foreach (TiffBasedField field in was.Fields)
+            {
+                TiffBasedField? same = now.Find(field.Tag);
+                bool note = field.Tag is 0x927C or 0xC634;
+                bool grown = !wholeFile && ReferenceEquals(field, holder) && same is not null && same.Count >= field.Count;
+                if (same is null || same.Type != field.Type || (same.Count != field.Count && !grown) ||
+                    same.IsInline != field.IsInline || same.ValueOffset != field.ValueOffset)
+                    throw Refuse("a tag changed its type, count or address with a MakerNote edit");
+                if (!note && field.ValueOffset >= 0 && field.ValueOffset <= source.Length - field.ByteLength &&
+                    !source.AsSpan((int)field.ValueOffset, (int)field.ByteLength)
+                        .SequenceEqual(output.AsSpan((int)same.ValueOffset, (int)same.ByteLength)))
+                    throw Refuse("a tag outside the MakerNote changed its value with a MakerNote edit");
+            }
+        }
+    }
+
     private static void Bytes(byte[] source, TiffBasedFileMap before, byte[] output, TiffBasedWritePlan plan)
     {
         if (plan.SourceLength != source.Length || output.Length != plan.OutputLength)

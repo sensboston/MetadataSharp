@@ -37,7 +37,7 @@ internal static class CanonMakerNoteArrays
             if (start + length > elements * element)
                 break; // Fields are ascending, so nothing later fits either.
             fields.Add(new MakerNoteField(field.Index, field.Name,
-                ExifValue.FromRaw(type, field.Count, value.ByteOrder, raw.Slice(start, length))));
+                ExifValue.FromRaw(type, field.Count, value.ByteOrder, raw.Slice(start, length)), null, start));
             consumedUntil = field.Index + (length + element - 1) / element;
         }
         return fields;
@@ -66,7 +66,7 @@ internal static class CanonMakerNoteArrays
             if (count == 0 || index + count > elements)
                 break;
             fields.Add(new MakerNoteField((ushort)index, name,
-                ExifValue.FromRaw(type, (uint)count, value.ByteOrder, raw.Slice(index * 2, count * 2))));
+                ExifValue.FromRaw(type, (uint)count, value.ByteOrder, raw.Slice(index * 2, count * 2)), null, index * 2));
             index += count;
         }
         return fields;

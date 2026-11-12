@@ -66,16 +66,37 @@ public enum MakerNoteFormat
     Sigma
 }
 
+/// <summary>
+/// Where an entry of a MakerNote directory lies in the TIFF bytes it was read from: what a writer
+/// needs to change the value where it is.
+/// </summary>
+/// <param name="Directory">The offset of the directory (its entry count).</param>
+/// <param name="Entry">The offset of the twelve bytes of the entry.</param>
+/// <param name="Value">The offset of the value: in the entry, or where its offset leads.</param>
+/// <param name="ByteLength">The length of the value.</param>
+/// <param name="Little">True when the directory is little-endian.</param>
+/// <param name="RegionEnd">The end of the MakerNote (of the TIFF bytes for a directory outside it).</param>
+/// <param name="OffsetBase">What the offsets of values count from: 0 for the TIFF header, else an offset inside the MakerNote.</param>
+/// <param name="Delta">The correction the reader adds to a stored offset (Canon's footer).</param>
+internal sealed record MakerNoteSlot(int Directory, int Entry, int Value, int ByteLength, bool Little, int RegionEnd, int OffsetBase, long Delta);
+
 /// <summary>One named field inside an array-valued MakerNote tag, or one entry of a sub-directory.</summary>
 public sealed class MakerNoteField
 {
-    internal MakerNoteField(ushort index, string name, ExifValue value, IReadOnlyList<MakerNoteField>? fields = null)
+    internal MakerNoteField(ushort index, string name, ExifValue value, IReadOnlyList<MakerNoteField>? fields = null, int offset = -1)
     {
         Index = index;
         Name = name;
         Value = value;
         Fields = fields ?? [];
+        Offset = offset;
     }
+
+    /// <summary>Where the field starts in the bytes of the array it was split from, deciphered; -1 for a field that is an entry of a directory.</summary>
+    internal int Offset { get; }
+
+    /// <summary>Where the entry of a field of a sub-directory lies; null for a field of an array.</summary>
+    internal MakerNoteSlot? Slot { get; init; }
 
     /// <summary>The position of the field's first element in the parent array; for an entry of a
     /// sub-directory, its tag number.</summary>
@@ -103,6 +124,19 @@ public sealed class MakerNoteEntry
         Fields = fields;
     }
 
+    /// <summary>Where the entry lies in the bytes it was read from.</summary>
+    internal MakerNoteSlot? Slot { get; init; }
+
+    /// <summary>The stored bytes of an enciphered array made plain, and plain bytes made the stored ones; null for a value stored in the clear.</summary>
+    internal Func<byte[], byte[]>? Decode { get; init; }
+
+    /// <inheritdoc cref="Decode"/>
+    internal Func<byte[], byte[]>? Encode { get; init; }
+
+    /// <summary>The entry with other fields, where it lies and how it is enciphered kept.</summary>
+    internal MakerNoteEntry With(IReadOnlyList<MakerNoteField> fields, Func<byte[], byte[]>? decode = null, Func<byte[], byte[]>? encode = null) =>
+        new(TagId, Name, Value, fields) { Slot = Slot, Decode = decode ?? Decode, Encode = encode ?? Encode };
+
     /// <summary>The tag ID in the MakerNote directory.</summary>
     public ushort TagId { get; }
 
@@ -122,7 +156,8 @@ public sealed class MakerNoteEntry
 
 /// <summary>
 /// A read-only view of a recognised MakerNote. The raw MakerNote bytes remain the authoritative
-/// value of the EXIF entry; this view is never written back and does not make MakerNote editing safe.
+/// value of the EXIF entry; this view is never written back. A tag of the note is changed through
+/// <see cref="ExifEdit.SetByKey(string, ExifValue, bool)"/>, where it lies in the file.
 /// </summary>
 public sealed class MakerNote
 {
@@ -160,6 +195,34 @@ public sealed class MakerNote
     /// <summary>Looks up an entry by tag ID; the first one when the directory repeats a tag.</summary>
     public bool TryGetEntry(ushort tagId, [NotNullWhen(true)] out MakerNoteEntry? entry) =>
         lookup.TryGetValue(tagId, out entry);
+
+    /// <summary>
+    /// The key of one of this note's tags, as Exiv2 names it and <see cref="ExifEdit.SetByKey(string, ExifValue, bool)"/>
+    /// takes it: <c>Exif.Canon.OwnerName</c>; <c>Exif.Fujifilm.0x1234</c> for a tag without a name.
+    /// </summary>
+    /// <exception cref="ArgumentException">The entry is not one of this note.</exception>
+    public string GetKey(MakerNoteEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        foreach (MakerNotes.MakerNoteTarget target in MakerNotes.MakerNoteKeys.Enumerate(this))
+            if (ReferenceEquals(target.Entry, entry) && target.Field is null) return target.Key;
+        throw new ArgumentException("The entry is not one of this MakerNote.", nameof(entry));
+    }
+
+    /// <summary>
+    /// The key of a field of an array-valued tag, or of an entry of the sub-directory a pointer tag
+    /// leads to: <c>Exif.CanonCs.Quality</c>, <c>Exif.OlympusCs.ExposureMode</c>. For one of the
+    /// <see cref="MakerNoteField.Fields"/> of such an entry, pass that element too.
+    /// </summary>
+    /// <exception cref="ArgumentException">The field is not one of the entry, or the entry not one of this note.</exception>
+    public string GetKey(MakerNoteEntry entry, MakerNoteField field, MakerNoteField? element = null)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(field);
+        foreach (MakerNotes.MakerNoteTarget target in MakerNotes.MakerNoteKeys.Enumerate(this))
+            if (ReferenceEquals(target.Entry, entry) && ReferenceEquals(target.Field, field) && ReferenceEquals(target.Element, element)) return target.Key;
+        throw new ArgumentException("The field is not one of this MakerNote.", nameof(field));
+    }
 
     /// <summary>
     /// The human-readable form of the value of one of this note's tags, or null when this release has

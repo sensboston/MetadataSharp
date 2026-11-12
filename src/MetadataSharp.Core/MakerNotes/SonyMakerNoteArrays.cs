@@ -33,6 +33,30 @@ internal static class SonyMakerNoteArrays
         return plain;
     }
 
+    private static readonly byte[] Encipher = BuildEncipher();
+
+    private static byte[] BuildEncipher()
+    {
+        // The substitution is a permutation of the byte values, so it has an inverse.
+        var table = new byte[256];
+        for (int i = 0; i < 256; i++)
+            table[Decipher[i]] = (byte)i;
+        return table;
+    }
+
+    /// <summary>Plain bytes as they are stored: the inverse of <see cref="Plain"/>.</summary>
+    internal static byte[] Stored(ReadOnlySpan<byte> plain)
+    {
+        byte[] stored = new byte[plain.Length];
+        for (int i = 0; i < stored.Length; i++)
+            stored[i] = Encipher[plain[i]];
+        return stored;
+    }
+
+    /// <summary>True when the array of this tag is split from deciphered bytes.</summary>
+    internal static bool IsEnciphered(ushort tag, ExifValue value, ReadOnlySpan<byte> model) =>
+        value.FieldType is TiffFieldType.Undefined or TiffFieldType.Byte && Select(tag, value.RawBytes, model) is { Enciphered: true };
+
     internal static IReadOnlyList<MakerNoteField> Decompose(ushort tag, ExifValue value, ReadOnlySpan<byte> model)
     {
         if (value.FieldType is not (TiffFieldType.Undefined or TiffFieldType.Byte) || Select(tag, value.RawBytes, model) is not Layout layout)
@@ -46,7 +70,7 @@ internal static class SonyMakerNoteArrays
             if (field.Offset + length > raw.Length)
                 break;
             fields.Add(new MakerNoteField(field.Offset, field.Name,
-                ExifValue.FromRaw(field.Type, field.Count, order, raw.AsSpan(field.Offset, length))));
+                ExifValue.FromRaw(field.Type, field.Count, order, raw.AsSpan(field.Offset, length)), null, field.Offset));
         }
         return fields;
     }

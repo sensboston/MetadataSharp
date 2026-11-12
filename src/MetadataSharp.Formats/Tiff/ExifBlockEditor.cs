@@ -1,4 +1,5 @@
 using MetadataSharp.Core;
+using MetadataSharp.Core.MakerNotes;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Tiff.Serialization;
 
@@ -25,9 +26,10 @@ internal static class ExifBlockEditor
 
     /// <summary>The changes of an edit as the planner takes them, in the byte order of the structure.</summary>
     internal static void AddChanges(ExifEdit.EditSnapshot edit, Endianness order,
-        Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, bool thumbnailApart = false)
+        Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, bool thumbnailApart = false, bool makerNoteApart = false)
     {
         if (edit.HasThumbnailChange && !thumbnailApart) throw ThumbnailElsewhere();
+        if (edit.MakerNote.Count != 0 && !makerNoteApart) throw MakerNoteElsewhere();
         foreach (KeyValuePair<ExifTagKey, ExifValue?> change in edit.Changes)
         {
             TiffBasedRole role = TiffBasedWritePlanner.Role(change.Key.Directory);
@@ -55,6 +57,8 @@ internal static class ExifBlockEditor
     {
         desired = null;
         if (edit.HasThumbnailChange && ceiling == ExifTiffReader.NoCeiling) throw ThumbnailElsewhere();
+        if (edit.MakerNote.Count != 0)
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The file has no EXIF block, so no MakerNote: its tags cannot be changed.");
         if (edit.Changes.Values.All(value => value is null))
         {
             if (edit.Thumbnail is null) return null;
@@ -100,10 +104,43 @@ internal static class ExifBlockEditor
     /// </exception>
     internal static byte[]? Edit(byte[] block, long sourceBase, ExifEdit.EditSnapshot edit, MetadataLimits limits)
     {
-        byte[]? output = EditTags(block, sourceBase, edit, limits);
+        // The MakerNote first: nothing of the block moves (a value that grows is appended), and the
+        // tag edit that follows moves nothing either.
+        byte[]? noted = null;
+        if (edit.MakerNote.Count != 0)
+        {
+            MakerNoteWriter.Result result = MakerNoteWriter.Apply(block, edit.MakerNote, limits, wholeFile: false);
+            if (!result.Output.AsSpan().SequenceEqual(block))
+            {
+                if (result.Output.Length > ExifTiffReader.SegmentCeiling)
+                    throw new MetadataException(MetadataErrorCode.ExifTooLarge, "The EXIF block with the grown MakerNote value exceeds the limit of a segment.");
+                TiffBasedWriteVerifier.MakerNote(block, TiffBasedFileMap.Read(block, limits, MaxAccountedRanges), result.Output,
+                    result.Ranges, limits, MaxAccountedRanges, wholeFile: false);
+                noted = result.Output;
+            }
+        }
+        byte[]? output = noted is not null && edit.Changes.Count == 0 ? noted : EditTags(noted ?? block, sourceBase, edit, limits) ?? noted;
+        if (noted is not null) CheckMakerNote(noted, output!, limits);
         if (!edit.HasThumbnailChange) return output;
         // The thumbnail after the tags: its directory is no tag edit, and it is checked on its own.
         return ExifThumbnailWriter.Apply(output ?? block, edit.Thumbnail, limits, ExifTiffReader.SegmentCeiling) ?? output;
+    }
+
+    /// <summary>The MakerNote is changed where the EXIF block is a unit of its own.</summary>
+    internal static MetadataException MakerNoteElsewhere() => new(MetadataErrorCode.UnsupportedFeature,
+        "Tags of the MakerNote are changed in a JPEG, PNG, WebP or TIFF-based file: in this file they are not written.");
+
+    /// <summary>After the tag edit the MakerNote still lies where it did and reads as the change left it.</summary>
+    private static void CheckMakerNote(byte[] noted, byte[] output, MetadataLimits limits)
+    {
+        if (ReferenceEquals(noted, output)) return;
+        MakerNote? before = ExifTiffReader.Read(noted, limits).Metadata.MakerNote, after = ExifTiffReader.Read(output, limits).Metadata.MakerNote;
+        if (before is null || after is null || before.Offset != after.Offset || before.Format != after.Format ||
+            before.Entries.Count != after.Entries.Count)
+            throw Refuse("the MakerNote no longer reads as its change left it");
+        for (int i = 0; i < before.Entries.Count; i++)
+            if (before.Entries[i].TagId != after.Entries[i].TagId || !Same(before.Entries[i].Value, after.Entries[i].Value))
+                throw Refuse("a tag of the MakerNote no longer reads as its change left it");
     }
 
     /// <summary>The thumbnail is written where the EXIF block is a unit of its own.</summary>
@@ -117,7 +154,7 @@ internal static class ExifBlockEditor
         TiffBasedFileMap map = TiffBasedFileMap.Read(block, limits, MaxAccountedRanges);
         ExifMetadata whole = ExifTiffReader.InspectFile(block, limits);
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
-        AddChanges(edit, map.Order, changes, thumbnailApart: true);
+        AddChanges(edit, map.Order, changes, thumbnailApart: true, makerNoteApart: true);
         TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(block, map, changes, limits, ExifTiffReader.SegmentCeiling,
             emptyPrimary: true);
         if (plan.IsEmpty) return null;

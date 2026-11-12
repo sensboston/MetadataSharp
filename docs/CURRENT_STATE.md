@@ -12,7 +12,7 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   XMP read from them (`PsdMetadata.ReadExif/ReadIptc/ReadXmp`). JP2/EPS: narrow inspection.
 - EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0;
   names only, marked by `ExifTagDefinition.Source`, from TIFF/EP, DNG 1.7, DCF, Microsoft, PIM).
-- MakerNotes (`ExifMetadata.MakerNote`, read-only): Canon (incl. arrays and AFInfo), Nikon 1/2/3
+- MakerNotes (`ExifMetadata.MakerNote`; read, and edited tag by tag in place, see below): Canon (incl. arrays and AFInfo), Nikon 1/2/3
   (incl. versioned and encrypted arrays, preview directory), Fujifilm, Pentax (AOC, DNG, DNGPrivateData),
   Sony (incl. enciphered arrays, camera settings, the A100's Minolta directory), Panasonic, Olympus/OM System (incl. sub-directories),
   Minolta/Konica Minolta (incl. the camera-settings arrays), Casio (both layouts), Samsung
@@ -50,8 +50,8 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   of 2,538, Sony 2,300 of 2,330, standard EXIF 7,845 of 8,117; the reference translates no IPTC value.
 - Write, TIFF-based files (TIFF, DNG, CR2, NEF, ARW, PEF, ORF, RW2): `TiffBasedMetadataDocument`
   `SaveExif/SaveXmp/SaveIptc`. A value that fits is written in place; what grows is appended and
-  one pointer changed; no byte moves, old bytes stay. Image data and the MakerNote are never written
-  to; an append is refused when image data runs to the end of the file. The output is read back and
+  one pointer changed; no byte moves, old bytes stay. Image data is never written to, and the
+  MakerNote only where a tag of it is named by key (inside the note, same length); an append is refused when image data runs to the end of the file. The output is read back and
   refused unless only the named tags differ. Parity job (run 43082543288): `exiv2 -pa` reads the 84
   edited fixtures and the 27 files written from the corpus's TIFFs; the corpus has no whole RAW file.
   Capability rows for TIFF, DNG, ARW, CR2, NEF, ORF, PEF (authored layouts) and RW2 (in place only).
@@ -193,6 +193,25 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   difference is documented in the script and an undocumented one fails the job. Table and
   differences: `docs/usage/OPERATIONS_USAGE_AND_LIMITS.md`.
 
+- MakerNote tags are edited in place (`ExifEdit.SetByKey` / `SetTextByKey` / `RemoveByKey`
+  with the keys the dump prints, `Exif.Canon.OwnerName`, `Exif.CanonCs.Quality`; the same keys in
+  `ModifyScript`; `MakerNote.GetKey` gives the key of an entry): JPEG, PNG, WebP and TIFF-based
+  files (CR2, NEF, ARW, PEF, ORF, DNG; there every changed byte lies inside the note and the file
+  keeps its length). Every layout the reader decodes; tags, fields of arrays (Nikon re-encrypted
+  with the file's key, Sony re-enciphered), tags of sub-directories (Olympus), removal by
+  compacting the directory. Nothing moves. A value that grows is appended to the EXIF block of a
+  JPEG, PNG or WebP file for Canon, Nikon1, Nikon2 and Sigma notes (`MakerNoteKeys.Grows`: the
+  layouts the parity job confirmed); elsewhere growth, a tag that is not there and BMFF files are
+  refused (`UnsupportedFeature`). Addresses and the Nikon cipher keys are `TagNotEditable`, and so
+  is a tag without a name of type LONG, SLONG or UNDEFINED unless `allowUnnamed` is passed. The
+  result is re-read and every unnamed tag compared byte for byte (`MakerNoteWriter`), and the
+  layout around the note is compared (`TiffBasedWriteVerifier.MakerNote`). Parity job
+  "MakerNote edit parity" (run 43316787075): `exiv2 -u -PEkv` reads 178 edits of corpus JPEGs back
+  as set with every other key unchanged (text of the same length 85, grown text 42, SHORT 51).
+  Not proven by the tool: TIFF-based files (the corpus has no whole raw file with a decodable
+  note; synthetic tests only) and growth in notes that count offsets from themselves (code
+  present, switched off).
+
 ## Next (in order)
 
 1. Publish 1.0 to NuGet: a version and a release workflow (packages are ready; nothing is published).
@@ -204,7 +223,7 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 ## Known limits
 
-- Writes refuse when safety is not established; MakerNotes are never moved or edited. EXIF takes any
+- Writes refuse when safety is not established; MakerNotes are never moved; their tags are edited in place, and a grown value is appended for four layouts only. EXIF takes any
   tag; the thumbnail (IFD1) is edited in JPEG, PNG and WebP only. IPTC is not written to PSD or sidecars. XMP and
   IPTC agree only when asked (`MetadataSync`); an independent `SaveIptc` leaves the digest stale.
 - Sync: `SaveAll` has no async twin; PSD and sidecars have no `SaveAll`. Not in the mapping table:
