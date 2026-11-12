@@ -603,7 +603,151 @@ else if (args.Length == 3 && args[0] == "bmff-corpus")
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=BMFF writer defect::" + crash);
     if (crashes.Count != 0) return 1;
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
+else if (args.Length == 2 && args[0] == "jpeg-embedded-edits")
+{
+    // Files for the pinned tool to read after the JPEG writer gave them a profile or a comment,
+    // replaced it or took it out. Each row of the manifest names the file an edit started from,
+    // the edited file, the profile the tool has to print for it (a file of the directory, "-" for
+    // none, "=" for what it prints for the source) and its comment (UTF-8 bytes in hexadecimal,
+    // "-" or "=").
+    Directory.CreateDirectory(args[1]);
+    var manifest = new List<string>();
+    string At(string name) => Path.Combine(args[1], name);
+    string Stored(string name, byte[] profile) { File.WriteAllBytes(At(name), profile); return name; }
+    string Edited(string from, string name, Action<JpegMetadataDocument, string> save)
+    {
+        using JpegMetadataDocument document = JpegMetadataDocument.Open(At(from));
+        save(document, At(name));
+        return name;
+    }
+    void Row(string source, string edited, string profile, string comment) => manifest.Add(string.Join('\t', source, edited, profile, comment));
+    static string Hex(string value) => Convert.ToHexString(Encoding.UTF8.GetBytes(value));
+
+    byte[] small = IccProfile(3_144, 1), two = IccProfile(70_000, 2), tail = IccProfile(65_520, 3), large = IccProfile(1_000_000, 4);
+    string smallIcc = Stored("small.icc", small), twoIcc = Stored("two.icc", two), tailIcc = Stored("tail.icc", tail), largeIcc = Stored("large.icc", large);
+    const string text = "A comment", wide = "Комментарий — ü", later = "Written after the profile";
+    string longest = new string('c', 65_533);
+
+    const string plain = "plain.jpg";
+    File.WriteAllBytes(At(plain), JpegFixture.Build(JpegFixture.Segment(0xE0, [74, 70, 73, 70, 0, 1, 2, 0, 0, 1, 0, 1, 0, 0])));
+    Row(plain, Edited(plain, "plain-icc.jpg", (document, path) => document.SaveIccProfileAs(path, small)), smallIcc, "-");
+    Row(plain, Edited(plain, "plain-icc-two.jpg", (document, path) => document.SaveIccProfileAs(path, two)), twoIcc, "-");
+    Row(plain, Edited(plain, "plain-icc-large.jpg", (document, path) => document.SaveIccProfileAs(path, large)), largeIcc, "-");
+    // 65,520 bytes are one more than a chunk holds. The tool stops reading the segments of a file
+    // at a chunk with fewer than four bytes, so the comment after these chunks is the evidence
+    // that the last chunk is not such a one.
+    string tailed = Edited(plain, "plain-icc-tail.jpg", (document, path) => document.SaveIccProfileAs(path, tail));
+    Row(plain, tailed, tailIcc, "-");
+    Row(plain, Edited(tailed, "plain-icc-tail-comment.jpg", (document, path) => document.SaveCommentAs(path, later)), tailIcc, Hex(later));
+    Row(plain, Edited(plain, "plain-comment.jpg", (document, path) => document.SaveCommentAs(path, text)), "-", Hex(text));
+    Row(plain, Edited(plain, "plain-comment-utf8.jpg", (document, path) => document.SaveCommentAs(path, wide)), "-", Hex(wide));
+    Row(plain, Edited(plain, "plain-comment-longest.jpg", (document, path) => document.SaveCommentAs(path, longest)), "-", Hex(longest));
+
+    // A file with EXIF, XMP and IPTC data, then a comment and a profile: what the tool prints of
+    // the three families may not change with any edit of the other two.
+    var exif = new ExifEdit();
+    exif.Set(new(ExifDirectoryKind.Ifd0, 0x0112), ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, [1, 0]));
+    exif.Set(new(ExifDirectoryKind.Ifd0, 0x013B), AsciiValue("Alice"));
+    var tool = new XmpEdit();
+    tool.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("MetadataSharp"));
+    var words = new IptcEdit();
+    words.ReplaceText(new(2, 25), ["alpha", "beta"]);
+    string step = Edited(plain, "rich-1.jpg", (document, path) => document.SaveAs(path, exif));
+    step = Edited(step, "rich-2.jpg", (document, path) => document.SaveXmpAs(path, tool));
+    string bare = Edited(step, "rich-3.jpg", (document, path) => document.SaveIptcAs(path, words));
+    step = Edited(bare, "rich-4.jpg", (document, path) => document.SaveCommentAs(path, text));
+    Row(bare, step, "-", Hex(text));
+    string rich = Edited(step, "rich.jpg", (document, path) => document.SaveIccProfileAs(path, small));
+    Row(bare, rich, smallIcc, Hex(text));
+    Row(rich, Edited(rich, "rich-icc-replaced.jpg", (document, path) => document.SaveIccProfileAs(path, two)), twoIcc, "=");
+    Row(rich, Edited(rich, "rich-icc-removed.jpg", (document, path) => document.SaveIccProfileAs(path, null)), "-", "=");
+    Row(rich, Edited(rich, "rich-comment-replaced.jpg", (document, path) => document.SaveCommentAs(path, wide)), "=", Hex(wide));
+    Row(rich, Edited(rich, "rich-comment-removed.jpg", (document, path) => document.SaveCommentAs(path, null)), "=", "-");
+    string same = Edited(rich, "rich-same.jpg", (document, path) => document.SaveIccProfileAs(path, small));
+    Row(rich, same, "=", "=");
+    string none = Edited(Edited(rich, "rich-none-1.jpg", (document, path) => document.SaveIccProfileAs(path, null)),
+        "rich-none.jpg", (document, path) => document.SaveCommentAs(path, null));
+    Row(rich, none, "-", "-");
+    File.WriteAllLines(At("manifest.tsv"), manifest);
+
+    // Two things the tool cannot say: saving what is there changes no byte, and taking both out
+    // gives back the file they were put into.
+    if (!File.ReadAllBytes(At(same)).AsSpan().SequenceEqual(File.ReadAllBytes(At(rich))))
+    { Console.WriteLine("::error title=JPEG profile and comment edits::saving the profile a file has changed the file"); return 1; }
+    if (!File.ReadAllBytes(At(none)).AsSpan().SequenceEqual(File.ReadAllBytes(At(bare))))
+    { Console.WriteLine("::error title=JPEG profile and comment edits::removing the profile and the comment did not give the source back"); return 1; }
+}
+else if (args.Length == 3 && args[0] == "jpeg-embedded-corpus")
+{
+    // The same check on JPEG files this repository did not author: each is given a comment, given
+    // a profile, and has each taken out, every time from the file as it is. A refusal is counted
+    // by its code; a file that was written and differs from its source goes into the manifest for
+    // the pinned tool to read. An exception of another type is a defect of the writer and fails
+    // the run. The options are the default ones.
+    Directory.CreateDirectory(args[2]);
+    var manifest = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    var refusals = new List<(string File, string Kind, string Reason)>();
+    var crashes = new List<string>();
+    byte[] profile = IccProfile(70_000, 7);
+    File.WriteAllBytes(Path.Combine(args[2], "given.icc"), profile);
+    const string text = "A comment written by MetadataSharp";
+    string hex = Convert.ToHexString(Encoding.UTF8.GetBytes(text));
+    int files = 0, number = 0;
+    void Count(string outcome) => outcomes[outcome] = outcomes.GetValueOrDefault(outcome) + 1;
+    foreach (string path in Directory.EnumerateFiles(args[1], "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+    {
+        string extension = Path.GetExtension(path).ToLowerInvariant();
+        if ((extension != ".jpg" && extension != ".jpeg") || new FileInfo(path).Length > 64 * 1024 * 1024) continue;
+        byte[] bytes = File.ReadAllBytes(path);
+        JpegMetadataDocument document;
+        try { document = JpegMetadataDocument.Open(new MemoryStream(bytes)); }
+        catch (MetadataException) { continue; } // not a JPEG structure, whatever its name says
+        files++;
+        using (document)
+        {
+            void Try(string kind, string expectedProfile, string expectedComment, Action<Stream> save)
+            {
+                try
+                {
+                    using var output = new MemoryStream();
+                    save(output);
+                    byte[] written = output.ToArray();
+                    if (written.AsSpan().SequenceEqual(bytes)) { Count(kind + " nothing to change"); return; }
+                    string target = $"j{++number:D5}-{kind}.jpg";
+                    File.WriteAllBytes(Path.Combine(args[2], target), written);
+                    manifest.Add(string.Join('\t', Path.GetFullPath(path), target, expectedProfile, expectedComment));
+                    Count(kind + " written");
+                }
+                catch (MetadataException refusal)
+                {
+                    Count(kind + " refused " + refusal.Code);
+                    refusals.Add((Path.GetFileName(path), kind, $"{refusal.Code}: {refusal.Message}"));
+                }
+                catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+                {
+                    crashes.Add($"{Path.GetFileName(path)} {kind}: {defect.GetType().Name}: {defect.Message}");
+                }
+            }
+
+            Try("comment", "=", hex, output => document.SaveComment(output, text));
+            Try("icc", "given.icc", "=", output => document.SaveIccProfile(output, profile));
+            Try("no-comment", "=", "-", output => document.SaveComment(output, null));
+            Try("no-icc", "-", "=", output => document.SaveIccProfile(output, null));
+        }
+    }
+    File.WriteAllLines(Path.Combine(args[2], "manifest.tsv"), manifest);
+    Console.WriteLine($"::notice title=JPEG corpus profile and comment edits::{files} JPEG files; " + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
+    string[] reasons = refusals.GroupBy(refusal => (refusal.File, refusal.Reason))
+        .Select(group => $"{group.Key.File} [{string.Join(' ', group.Select(refusal => refusal.Kind))}]: {group.Key.Reason}"
+            .Replace("%", "%25").Replace("\r", " ").Replace("\n", " "))
+        .ToArray();
+    foreach (string[] chunk in reasons.Chunk(20))
+        Console.WriteLine("::notice title=JPEG corpus profile and comment refusals::" + string.Join("%0A", chunk));
+    foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=JPEG writer defect::" + crash);
+    if (crashes.Count != 0) return 1;
+}
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
 
 
@@ -620,4 +764,14 @@ static ExifValue AsciiValue(string text) =>
 static string? RawText(ExifValue? value)
 {
     if (value is null) return null; byte[] bytes = new byte[value.ByteLength]; value.CopyRawTo(bytes); return Encoding.ASCII.GetString(bytes).TrimEnd('\0');
+}
+
+static byte[] IccProfile(int size, int seed)
+{
+    // The header fields every reader checks, and bytes that depend on the seed around them.
+    byte[] profile = new byte[size];
+    for (int index = 0; index < size; index++) profile[index] = (byte)(index * 31 + seed * 17 + (index >> 8));
+    BinaryPrimitives.WriteUInt32BigEndian(profile, (uint)size);
+    "acsp"u8.CopyTo(profile.AsSpan(36));
+    return profile;
 }
