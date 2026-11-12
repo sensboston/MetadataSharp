@@ -388,6 +388,21 @@ jobs:
           dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- jpeg-embedded-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-embedded-corpus
           python tools/reference/embedded_edits.py artifacts/parity/edited-embedded-corpus --skip-unreadable-sources \
             --title "JPEG corpus profile and comment edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      - name: Profiles and comments written into PNG and WebP files are read by the pinned tool (exiv2 -pC, -pS)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- png-webp-embedded-edits artifacts/parity/edited-embedded-png-webp
+          python tools/reference/embedded_edits.py artifacts/parity/edited-embedded-png-webp \
+            --title "PNG and WebP profile and comment edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+          python tools/reference/png_chunk_edits.py artifacts/parity/edited-embedded-png-webp --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      - name: Profiles and comments written into corpus PNG and WebP files are read by the pinned tool (exiv2 -pC, -pS)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- png-webp-embedded-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-embedded-png-webp-corpus
+          python tools/reference/embedded_edits.py artifacts/parity/edited-embedded-png-webp-corpus --skip-unreadable-sources \
+            --title "PNG and WebP corpus profile and comment edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+          python tools/reference/png_chunk_edits.py artifacts/parity/edited-embedded-png-webp-corpus --skip-unreadable-sources \
+            --title "PNG corpus profile and comment chunks" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
       - name: Upload parity reports (measurements only - no corpus bytes, no external source)
         if: always()
         uses: actions/upload-artifact@v4

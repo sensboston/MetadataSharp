@@ -747,7 +747,225 @@ else if (args.Length == 3 && args[0] == "jpeg-embedded-corpus")
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=JPEG writer defect::" + crash);
     if (crashes.Count != 0) return 1;
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
+else if (args.Length == 2 && args[0] == "png-webp-embedded-edits")
+{
+    // Files for the pinned tool to read after the PNG writer gave them a profile or a comment and
+    // the WebP writer a profile, replaced it or took it out. manifest.tsv is that of the JPEG
+    // command: the source, the edited file, the profile the tool has to print for it, and "=" for
+    // the comment, because the tool reads the comment of a PNG from another keyword and a WebP has
+    // none. chunks.tsv names, for the PNG files, the chunk the tool has to list: the kind of the
+    // edit and "iCCP", the type of the comment chunk with its text (UTF-8 in hexadecimal), or "-".
+    Directory.CreateDirectory(args[1]);
+    var manifest = new List<string>();
+    var chunks = new List<string>();
+    string At(string name) => Path.Combine(args[1], name);
+    string Stored(string name, byte[] profile) { File.WriteAllBytes(At(name), profile); return name; }
+    string Authored(string name, byte[] file) { File.WriteAllBytes(At(name), file); return name; }
+    string EditPng(string from, string name, Action<PngMetadataDocument, string> save)
+    {
+        using PngMetadataDocument document = PngMetadataDocument.Open(At(from));
+        save(document, At(name));
+        return name;
+    }
+    string EditWebP(string from, string name, Action<WebPMetadataDocument, string> save)
+    {
+        using WebPMetadataDocument document = WebPMetadataDocument.Open(At(from));
+        save(document, At(name));
+        return name;
+    }
+    string PngIcc(string from, string name, byte[]? profile) => EditPng(from, name, (document, path) => document.SaveIccProfileAs(path, profile));
+    string PngComment(string from, string name, string? comment) => EditPng(from, name, (document, path) => document.SaveCommentAs(path, comment));
+    string WebPIcc(string from, string name, byte[]? profile) => EditWebP(from, name, (document, path) => document.SaveIccProfileAs(path, profile));
+    // A profile row of a PNG goes to both lists; of a WebP, to the first.
+    void Profile(string source, string edited, string profile, string? chunk)
+    {
+        manifest.Add(string.Join('\t', source, edited, profile, "="));
+        if (chunk is not null) chunks.Add(string.Join('\t', source, edited, "profile", chunk));
+    }
+    // A comment edit may change nothing of what the tool prints as profile, comment and keys.
+    void Comment(string source, string edited, string chunk)
+    {
+        manifest.Add(string.Join('\t', source, edited, "=", "="));
+        chunks.Add(string.Join('\t', source, edited, "comment", chunk));
+    }
+    static string Hex(string value) => Convert.ToHexString(Encoding.UTF8.GetBytes(value));
+    bool Same(string one, string other) => File.ReadAllBytes(At(one)).AsSpan().SequenceEqual(File.ReadAllBytes(At(other)));
+
+    byte[] small = IccProfile(3_144, 1), odd = IccProfile(70_001, 2), large = IccProfile(1_000_000, 4), noise = IccProfile(200_000, 5);
+    // A profile that does not compress: the header fields, and bytes without a pattern after them.
+    new Random(5).NextBytes(noise.AsSpan(128));
+    string smallIcc = Stored("small.icc", small), oddIcc = Stored("odd.icc", odd), largeIcc = Stored("large.icc", large), noiseIcc = Stored("noise.icc", noise);
+    // ISO-8859-1; not ISO-8859-1; and ISO-8859-1 whose bytes are well-formed UTF-8 for another text.
+    const string text = "A comment", narrow = "Caf\u00E9 in M\u00FCnchen", wide = "Комментарий — ü", twoWays = "\u00C3\u00A9";
+    byte[] gamma = PngFixture.Chunk("gAMA", [0, 1, 0x86, 0xA0]), srgb = PngFixture.Chunk("sRGB", [0]), palette = PngFixture.Chunk("PLTE", [1, 2, 3, 4, 5, 6]);
+    byte[] time = PngFixture.Chunk("tIME", [7, 0xEA, 11, 11, 10, 9, 8]);
+
+    string plain = Authored("plain.png", PngFixture.Build([.. gamma, .. palette], time));
+    string plainIcc = PngIcc(plain, "plain-icc.png", small);
+    Profile(plain, plainIcc, smallIcc, "iCCP");
+    Profile(plain, PngIcc(plain, "plain-icc-odd.png", odd), oddIcc, "iCCP");
+    Profile(plain, PngIcc(plain, "plain-icc-large.png", large), largeIcc, "iCCP");
+    Profile(plain, PngIcc(plain, "plain-icc-noise.png", noise), noiseIcc, "iCCP");
+    string plainComment = PngComment(plain, "plain-comment.png", text);
+    Comment(plain, plainComment, "tEXt:" + Hex(text));
+    Comment(plain, PngComment(plain, "plain-comment-latin1.png", narrow), "tEXt:" + Hex(narrow));
+    Comment(plain, PngComment(plain, "plain-comment-utf8.png", wide), "iTXt:" + Hex(wide));
+    Comment(plain, PngComment(plain, "plain-comment-two-ways.png", twoWays), "iTXt:" + Hex(twoWays));
+
+    // The chunk of another writer, between other chunks: its name and its compression go, its place stays.
+    string foreign = Authored("foreign.png", PngFixture.Build([.. gamma,
+        .. PngFixture.Chunk("iCCP", [.. "Adobe RGB (1998)\0"u8, 0, .. PngFixture.Compress(IccProfile(560, 6), System.IO.Compression.CompressionLevel.Fastest)]),
+        .. palette], time));
+    Profile(foreign, PngIcc(foreign, "foreign-icc-replaced.png", small), smallIcc, "iCCP");
+    Profile(foreign, PngIcc(foreign, "foreign-icc-removed.png", null), "-", "-");
+    Comment(foreign, PngComment(foreign, "foreign-comment.png", text), "tEXt:" + Hex(text));
+
+    // A file with EXIF and XMP data, a description (which the tool prints as the comment), an sRGB
+    // chunk and two comments, one compressed before the image data and one after it.
+    var exif = new ExifEdit();
+    exif.Set(new(ExifDirectoryKind.Ifd0, 0x0112), ExifValue.FromRaw(TiffFieldType.Short, 1, Endianness.LittleEndian, [1, 0]));
+    exif.Set(new(ExifDirectoryKind.Ifd0, 0x013B), AsciiValue("Alice"));
+    var tool = new XmpEdit();
+    tool.Set(new("http://ns.adobe.com/xap/1.0/", "CreatorTool"), XmpValue.CreateText("MetadataSharp"));
+    string step = Authored("rich-0.png", PngFixture.Build(
+        [.. srgb, .. gamma, .. PngFixture.Chunk("tEXt", [.. "Description\0"u8, .. "A description"u8]),
+            .. PngFixture.Chunk("zTXt", [.. "Comment\0"u8, 0, .. PngFixture.Compress("an old comment"u8.ToArray())])],
+        [.. PngFixture.Chunk("iTXt", [.. "Comment\0"u8, 0, 0, 0, 0, .. "a second one"u8]), .. time]));
+    step = EditPng(step, "rich-1.png", (document, path) => document.SaveExifAs(path, exif));
+    string rich = EditPng(step, "rich.png", (document, path) => document.SaveXmpAs(path, tool));
+    string richIcc = PngIcc(rich, "rich-icc.png", small);
+    Profile(rich, richIcc, smallIcc, "iCCP");
+    Profile(richIcc, PngIcc(richIcc, "rich-icc-replaced.png", odd), oddIcc, "iCCP");
+    Profile(richIcc, PngIcc(richIcc, "rich-icc-removed.png", null), "-", "-");
+    string richSame = PngIcc(richIcc, "rich-icc-same.png", small);
+    Profile(richIcc, richSame, "=", "iCCP");
+    Comment(rich, PngComment(rich, "rich-comment.png", text), "tEXt:" + Hex(text));
+    Comment(rich, PngComment(rich, "rich-comment-utf8.png", wide), "iTXt:" + Hex(wide));
+    Comment(rich, PngComment(rich, "rich-comment-removed.png", null), "-");
+    Comment(richIcc, PngComment(richIcc, "rich-icc-comment.png", narrow), "tEXt:" + Hex(narrow));
+    string plainBack = PngComment(PngIcc(PngComment(plainIcc, "plain-both.png", text), "plain-back-1.png", null), "plain-back.png", null);
+
+    // WebP: each layout of the fixtures, then a file with EXIF and XMP data.
+    var layouts = new (string Name, int Kind)[] { ("lossy", 0), ("lossless", 1), ("extended", 2), ("lossless-alpha", 3) };
+    foreach ((string name, int kind) in layouts)
+    {
+        string source = Authored(name + ".webp", WebPFixture.Image(kind));
+        string given = WebPIcc(source, name + "-icc.webp", small);
+        Profile(source, given, smallIcc, null);
+        Profile(given, WebPIcc(given, name + "-icc-replaced.webp", odd), oddIcc, null);
+        Profile(given, WebPIcc(given, name + "-icc-removed.webp", null), "-", null);
+    }
+    Profile("lossy.webp", WebPIcc("lossy.webp", "lossy-icc-large.webp", large), largeIcc, null);
+    string webp = EditWebP("extended.webp", "rich-1.webp", (document, path) => document.SaveExifAs(path, exif));
+    webp = EditWebP(webp, "rich.webp", (document, path) => document.SaveXmpAs(path, tool));
+    string webpIcc = WebPIcc(webp, "rich-icc.webp", small);
+    Profile(webp, webpIcc, smallIcc, null);
+    Profile(webpIcc, WebPIcc(webpIcc, "rich-icc-replaced.webp", odd), oddIcc, null);
+    string webpBack = WebPIcc(webpIcc, "rich-icc-removed.webp", null);
+    Profile(webpIcc, webpBack, "-", null);
+    string webpSame = WebPIcc(webpIcc, "rich-icc-same.webp", small);
+    Profile(webpIcc, webpSame, "=", null);
+    File.WriteAllLines(At("manifest.tsv"), manifest);
+    File.WriteAllLines(At("chunks.tsv"), chunks);
+
+    // What the tool cannot say: saving the profile a file has changes no byte, and taking out what
+    // was put in gives back the file, once a WebP has its extended header.
+    const string title = "::error title=PNG and WebP profile and comment edits::";
+    if (!Same(richSame, richIcc) || !Same(webpSame, webpIcc))
+    { Console.WriteLine(title + "saving the profile a file has changed the file"); return 1; }
+    if (!Same(plainBack, plain) || !Same(webpBack, webp) || !Same("extended-icc-removed.webp", "extended.webp"))
+    { Console.WriteLine(title + "removing the profile and the comment did not give the source back"); return 1; }
+}
+else if (args.Length == 3 && args[0] == "png-webp-embedded-corpus")
+{
+    // The same check on PNG and WebP files this repository did not author: each PNG is given a
+    // comment, given a profile, and has each taken out; each WebP is given a profile and has it
+    // taken out; every time from the file as it is. A refusal is counted by its code; a file that
+    // was written and differs from its source goes into the lists for the pinned tool. An
+    // exception of another type is a defect of the writer and fails the run. Default options.
+    Directory.CreateDirectory(args[2]);
+    var manifest = new List<string>();
+    var chunks = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    var refusals = new List<(string File, string Kind, string Reason)>();
+    var crashes = new List<string>();
+    byte[] profile = IccProfile(70_001, 7);
+    File.WriteAllBytes(Path.Combine(args[2], "given.icc"), profile);
+    const string text = "A comment written by MetadataSharp";
+    string expectedComment = "tEXt:" + Convert.ToHexString(Encoding.UTF8.GetBytes(text));
+    int pngs = 0, webps = 0, number = 0;
+    void Count(string outcome) => outcomes[outcome] = outcomes.GetValueOrDefault(outcome) + 1;
+    foreach (string path in Directory.EnumerateFiles(args[1], "*", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+    {
+        string extension = Path.GetExtension(path).ToLowerInvariant();
+        if ((extension != ".png" && extension != ".webp") || new FileInfo(path).Length > 64 * 1024 * 1024) continue;
+        byte[] bytes = File.ReadAllBytes(path);
+        void Try(string kind, string expectedProfile, string? chunkKind, string? chunk, Action<Stream> save)
+        {
+            try
+            {
+                using var output = new MemoryStream();
+                save(output);
+                byte[] written = output.ToArray();
+                if (written.AsSpan().SequenceEqual(bytes)) { Count(kind + " nothing to change"); return; }
+                string target = $"e{++number:D5}-{kind}{extension}";
+                File.WriteAllBytes(Path.Combine(args[2], target), written);
+                manifest.Add(string.Join('\t', Path.GetFullPath(path), target, expectedProfile, "="));
+                if (chunkKind is not null) chunks.Add(string.Join('\t', Path.GetFullPath(path), target, chunkKind, chunk));
+                Count(kind + " written");
+            }
+            catch (MetadataException refusal)
+            {
+                Count(kind + " refused " + refusal.Code);
+                refusals.Add((Path.GetFileName(path), kind, $"{refusal.Code}: {refusal.Message}"));
+            }
+            catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+            {
+                crashes.Add($"{Path.GetFileName(path)} {kind}: {defect.GetType().Name}: {defect.Message}");
+            }
+        }
+
+        if (extension == ".png")
+        {
+            PngMetadataDocument document;
+            try { document = PngMetadataDocument.Open(new MemoryStream(bytes)); }
+            catch (MetadataException) { continue; } // not a PNG this library opens, whatever its name says
+            pngs++;
+            using (document)
+            {
+                Try("png-comment", "=", "comment", expectedComment, output => document.SaveComment(output, text));
+                Try("png-icc", "given.icc", "profile", "iCCP", output => document.SaveIccProfile(output, profile));
+                Try("png-no-comment", "=", "comment", "-", output => document.SaveComment(output, null));
+                Try("png-no-icc", "-", "profile", "-", output => document.SaveIccProfile(output, null));
+            }
+        }
+        else
+        {
+            WebPMetadataDocument document;
+            try { document = WebPMetadataDocument.Open(new MemoryStream(bytes)); }
+            catch (MetadataException) { continue; } // not a static WebP this library opens
+            webps++;
+            using (document)
+            {
+                Try("webp-icc", "given.icc", null, null, output => document.SaveIccProfile(output, profile));
+                Try("webp-no-icc", "-", null, null, output => document.SaveIccProfile(output, null));
+            }
+        }
+    }
+    File.WriteAllLines(Path.Combine(args[2], "manifest.tsv"), manifest);
+    File.WriteAllLines(Path.Combine(args[2], "chunks.tsv"), chunks);
+    Console.WriteLine($"::notice title=PNG and WebP corpus profile and comment edits::{pngs} PNG files and {webps} WebP files; "
+        + string.Join("; ", outcomes.Select(pair => pair.Key + " " + pair.Value)));
+    string[] reasons = refusals.GroupBy(refusal => (refusal.File, refusal.Reason))
+        .Select(group => $"{group.Key.File} [{string.Join(' ', group.Select(refusal => refusal.Kind))}]: {group.Key.Reason}"
+            .Replace("%", "%25").Replace("\r", " ").Replace("\n", " "))
+        .ToArray();
+    foreach (string[] part in reasons.Chunk(20))
+        Console.WriteLine("::notice title=PNG and WebP corpus profile and comment refusals::" + string.Join("%0A", part));
+    foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=PNG or WebP writer defect::" + crash);
+    if (crashes.Count != 0) return 1;
+}
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | png-webp-embedded-edits DIRECTORY | png-webp-embedded-corpus CORPUS DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
 return 0;
 
 
