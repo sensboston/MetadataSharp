@@ -308,7 +308,7 @@ public sealed class ExifEdit
     /// </remarks>
     /// <exception cref="ArgumentException">A key that is neither, a value without elements, or what <see cref="Set(ExifTagKey, ExifValue)"/> refuses.</exception>
     /// <exception cref="MetadataException"><see cref="MetadataErrorCode.TagNotEditable"/> for a standard tag <see cref="IsEditable"/> excludes.</exception>
-    public void Set(string key, ExifValue value)
+    public void SetByKey(string key, ExifValue value)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
@@ -323,12 +323,12 @@ public sealed class ExifEdit
     /// is, numbers separated by blanks, rationals as <c>1/3</c>. A tag of a standard directory is read
     /// in the first field type its definition names (ASCII for a tag without one); a tag of the
     /// MakerNote in the field type it has in the file, when the edit is written. Otherwise as
-    /// <see cref="Set(string, ExifValue)"/>.
+    /// <see cref="SetByKey(string, ExifValue)"/>.
     /// </summary>
     /// <exception cref="ArgumentException">A key that is neither, or text that is not a value of the type.</exception>
     /// <exception cref="FormatException">A number that does not read as one of the type.</exception>
     /// <exception cref="OverflowException">A number outside the range of the type.</exception>
-    public void SetText(string key, string text)
+    public void SetTextByKey(string key, string text)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(text);
@@ -348,10 +348,10 @@ public sealed class ExifEdit
     /// it move up, the count drops by one, the offset of the next directory keeps its value, and the
     /// twelve bytes that are freed and the bytes of the value are cleared. A field of an array is not
     /// removed, since the array has no place for fewer; nor is the last tag of a directory. The rest
-    /// is as in <see cref="Set(string, ExifValue)"/>.
+    /// is as in <see cref="SetByKey(string, ExifValue)"/>.
     /// </summary>
     /// <exception cref="ArgumentException">A key that is neither.</exception>
-    public void Remove(string key)
+    public void RemoveByKey(string key)
     {
         ArgumentNullException.ThrowIfNull(key);
         if (Operations.MetadataKeys.TryParseExif(key, out ExifTagKey standard)) { Remove(standard); return; }

@@ -83,9 +83,9 @@ public sealed class MakerNoteWriteTests
         byte[] block = Block(vendor, big);
         byte[] output = Apply(block, edit =>
         {
-            edit.Set(Key(block, Owner), AsciiValue("NEW OWNER!"));
-            edit.SetText(Key(block, Number), "9");
-            edit.Set(Key(block, Triple), LongValue(1, 2, 0x01020304));
+            edit.SetByKey(Key(block, Owner), AsciiValue("NEW OWNER!"));
+            edit.SetTextByKey(Key(block, Number), "9");
+            edit.SetByKey(Key(block, Triple), LongValue(1, 2, 0x01020304));
         });
         bool noteBig = Note(block).ByteOrder == Endianness.BigEndian;
         Assert.Equal(Zero("NEW OWNER!"), Raw(output, Owner));
@@ -101,9 +101,9 @@ public sealed class MakerNoteWriteTests
         byte[] block = Block(vendor, big);
         byte[] output = Apply(block, edit =>
         {
-            edit.SetText(Key(block, Owner), "ME");
-            edit.SetText(Key(block, First), "SHORTER");
-            edit.Set(Key(block, Triple), LongValue(5, 6));
+            edit.SetTextByKey(Key(block, Owner), "ME");
+            edit.SetTextByKey(Key(block, First), "SHORTER");
+            edit.SetByKey(Key(block, Triple), LongValue(5, 6));
         });
         bool noteBig = Note(block).ByteOrder == Endianness.BigEndian;
         Assert.Equal(Zero("ME"), Raw(output, Owner));
@@ -114,7 +114,7 @@ public sealed class MakerNoteWriteTests
         Assert.DoesNotContain("OWNER NAME", Encoding.Latin1.GetString(output), StringComparison.Ordinal);
         Assert.DoesNotContain("FIRST VALUE", Encoding.Latin1.GetString(output), StringComparison.Ordinal);
         // And the result is edited again as any note is.
-        byte[] again = Apply(output, edit => edit.SetText(Key(output, First), "ANOTHER"));
+        byte[] again = Apply(output, edit => edit.SetTextByKey(Key(output, First), "ANOTHER"));
         Assert.Equal(Zero("ANOTHER"), Raw(again, First));
         AssertRestKept(output, again, First);
     }
@@ -124,7 +124,7 @@ public sealed class MakerNoteWriteTests
     public void AValueThatFitsTheEntryIsWrittenThere(string vendor, bool big)
     {
         byte[] block = Block(vendor, big);
-        byte[] output = Apply(block, edit => edit.Set(Key(block, Number), ShortValue(1, 2)));
+        byte[] output = Apply(block, edit => edit.SetByKey(Key(block, Number), ShortValue(1, 2)));
         bool noteBig = Note(block).ByteOrder == Endianness.BigEndian;
         Assert.Equal([.. B16(1, noteBig), .. B16(2, noteBig)], Raw(output, Number));
         AssertRestKept(block, output, Number);
@@ -135,9 +135,9 @@ public sealed class MakerNoteWriteTests
     public void AValueThatGrowsIsRefused(string vendor, bool big)
     {
         byte[] block = Block(vendor, big);
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetText(Key(block, Owner), "OWNER NAME AND MORE"))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.Set(Key(block, Number), ShortValue(1, 2, 3)))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.Set(Key(block, Triple), LongValue(1, 2, 3, 4)))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetTextByKey(Key(block, Owner), "OWNER NAME AND MORE"))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetByKey(Key(block, Number), ShortValue(1, 2, 3)))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetByKey(Key(block, Triple), LongValue(1, 2, 3, 4)))));
     }
 
     [Theory]
@@ -146,13 +146,13 @@ public sealed class MakerNoteWriteTests
     {
         byte[] block = Block(vendor, big);
         string group = MakerNoteKeys.Group(Note(block).Format);
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetText("Exif." + group + ".0x7777", "1"))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.Remove("Exif." + group + ".0x7777"))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetTextByKey("Exif." + group + ".0x7777", "1"))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.RemoveByKey("Exif." + group + ".0x7777"))));
         string other = group == "Canon" ? "Exif.Sigma.0x0009" : "Exif.Canon.OwnerName";
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetText(other, "1"))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.Set(Key(block, Owner), ShortValue(1)))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetText(Key(block, Number), "not a number"))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetText(Key(block, Number), "70000"))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetTextByKey(other, "1"))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetByKey(Key(block, Owner), ShortValue(1)))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetTextByKey(Key(block, Number), "not a number"))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetTextByKey(Key(block, Number), "70000"))));
     }
 
     [Theory]
@@ -160,21 +160,21 @@ public sealed class MakerNoteWriteTests
     public void ATagIsRemovedByMovingTheEntriesAfterItUp(string vendor, bool big)
     {
         byte[] block = Block(vendor, big);
-        byte[] output = Apply(block, edit => edit.Remove(Key(block, Number)));
+        byte[] output = Apply(block, edit => edit.RemoveByKey(Key(block, Number)));
         Assert.Null(Raw(output, Number));
         Assert.Equal(3, Note(output).Entries.Count);
         AssertRestKept(block, output, Number);
 
         // A tag whose value lies outside its entry, and then one more: the directory keeps reading.
-        byte[] second = Apply(output, edit => edit.Remove(Key(output, First)));
+        byte[] second = Apply(output, edit => edit.RemoveByKey(Key(output, First)));
         Assert.Null(Raw(second, First));
         Assert.DoesNotContain("FIRST VALUE", Encoding.Latin1.GetString(second), StringComparison.Ordinal);
         AssertRestKept(output, second, First);
-        byte[] third = Apply(second, edit => { edit.Remove(Key(second, Owner)); edit.SetText(Key(second, Triple), "7 8 9"); });
+        byte[] third = Apply(second, edit => { edit.RemoveByKey(Key(second, Owner)); edit.SetTextByKey(Key(second, Triple), "7 8 9"); });
         Assert.Equal([0x0008], Note(third).Entries.Select(entry => entry.TagId).ToArray());
 
         // The last tag stays: a directory without tags does not read as one.
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(third, edit => edit.Remove(Key(third, Triple)))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(third, edit => edit.RemoveByKey(Key(third, Triple)))));
     }
 
     [Theory]
@@ -191,7 +191,7 @@ public sealed class MakerNoteWriteTests
         int next = directory + 2 + (4 * 12);
         marked[next] = 0xA1; marked[next + 1] = 0xB2; marked[next + 2] = 0xC3; marked[next + 3] = 0xD4;
         if (ExifOrNull(marked) is null) return; // A layout whose reader follows that offset.
-        byte[] output = Apply(marked, edit => edit.Remove(Key(marked, Number)));
+        byte[] output = Apply(marked, edit => edit.RemoveByKey(Key(marked, Number)));
         Assert.Equal(new byte[] { 0xA1, 0xB2, 0xC3, 0xD4 }, output.AsSpan(next - 12, 4).ToArray());
         Assert.Equal(new byte[12], output.AsSpan(next - 8, 12).ToArray());
     }
@@ -225,20 +225,20 @@ public sealed class MakerNoteWriteTests
     {
         var edit = new ExifEdit();
         Assert.True(edit.IsEmpty);
-        edit.SetText("Exif.Image.Artist", "A name");
-        edit.Set("Exif.Canon.OwnerName", AsciiValue("B"));
-        edit.Remove("Exif.Canon.OwnerName");
+        edit.SetTextByKey("Exif.Image.Artist", "A name");
+        edit.SetByKey("Exif.Canon.OwnerName", AsciiValue("B"));
+        edit.RemoveByKey("Exif.Canon.OwnerName");
         ExifEdit.EditSnapshot snapshot = edit.Snapshot();
         Assert.Single(snapshot.Changes);
         // The last change of a key counts.
         ExifEdit.MakerNoteChange change = Assert.Single(snapshot.MakerNote);
         Assert.Null(change.Value);
         Assert.Null(change.Text);
-        Assert.Throws<ArgumentException>(() => edit.Set("Exif.Nowhere.Tag", AsciiValue("B")));
-        Assert.Throws<ArgumentException>(() => edit.SetText("Canon.OwnerName", "B"));
-        Assert.Throws<ArgumentException>(() => edit.Remove("Xmp.dc.title"));
+        Assert.Throws<ArgumentException>(() => edit.SetByKey("Exif.Nowhere.Tag", AsciiValue("B")));
+        Assert.Throws<ArgumentException>(() => edit.SetTextByKey("Canon.OwnerName", "B"));
+        Assert.Throws<ArgumentException>(() => edit.RemoveByKey("Xmp.dc.title"));
         var only = new ExifEdit();
-        only.Remove("Exif.Canon.OwnerName");
+        only.RemoveByKey("Exif.Canon.OwnerName");
         Assert.False(only.IsEmpty);
         Assert.Throws<ArgumentException>(only.RemoveAllExif);
     }
@@ -253,15 +253,15 @@ public sealed class MakerNoteWriteTests
         byte[] block = Build(Find("Canon"), big, order =>
             [Short(0x0001, order, 24, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11), Ascii(0x0009, "OWNER NAME")]);
         Assert.Equal("Exif.CanonCs.Quality", Key(block, "0001/0003"));
-        byte[] output = Apply(block, edit => edit.SetText("Exif.CanonCs.Quality", "500"));
+        byte[] output = Apply(block, edit => edit.SetTextByKey("Exif.CanonCs.Quality", "500"));
         Assert.Equal(B16(500, big), Raw(output, "0001/0003"));
         Assert.Equal(B16(2, big), Raw(output, "0001/0002"));
         AssertRestKept(block, output, "0001/0003");
         // An array has no place for fewer fields or more elements.
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.Remove("Exif.CanonCs.Quality"))));
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetText("Exif.CanonCs.Quality", "1 2"))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.RemoveByKey("Exif.CanonCs.Quality"))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.SetTextByKey("Exif.CanonCs.Quality", "1 2"))));
         // The whole array is a tag like any other.
-        byte[] whole = Apply(block, edit => edit.Set("Exif.Canon.CameraSettings", ShortValue(24, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9)));
+        byte[] whole = Apply(block, edit => edit.SetByKey("Exif.Canon.CameraSettings", ShortValue(24, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9)));
         Assert.Equal(B16(9, big), Raw(whole, "0001/0003"));
         AssertRestKept(block, whole, "0001");
     }
@@ -278,9 +278,9 @@ public sealed class MakerNoteWriteTests
         Assert.Equal(Zero("OWNER NAME"), Raw(block, Owner));
         byte[] output = Apply(block, edit =>
         {
-            edit.Set("Exif.Canon.OwnerName", AsciiValue("NEW OWNER!"));
-            edit.SetText("Exif.Canon.ImageType", "TYPE");
-            edit.Remove("Exif.Canon.FirmwareVersion");
+            edit.SetByKey("Exif.Canon.OwnerName", AsciiValue("NEW OWNER!"));
+            edit.SetTextByKey("Exif.Canon.ImageType", "TYPE");
+            edit.RemoveByKey("Exif.Canon.FirmwareVersion");
         });
         Assert.Equal(Zero("NEW OWNER!"), Raw(output, Owner));
         Assert.Equal(Zero("TYPE"), Raw(output, First));
@@ -303,20 +303,20 @@ public sealed class MakerNoteWriteTests
         Assert.Equal("Exif.NikonLd3.FocalLength", Key(block, "0098/000b"));
         Assert.Equal(new[] { plain[11] }, Raw(block, "0098/000b"));
 
-        byte[] output = Apply(block, edit => edit.SetText("Exif.NikonLd3.FocalLength", "77"));
+        byte[] output = Apply(block, edit => edit.SetTextByKey("Exif.NikonLd3.FocalLength", "77"));
         Assert.Equal(new byte[] { 77 }, Raw(output, "0098/000b"));
         AssertRestKept(block, output, "0098/000b");
         byte[] expected = (byte[])plain.Clone();
         expected[11] = 77;
         Assert.Equal(expected, NikonMakerNoteCipher.Decrypt(Raw(output, "0098")!, 4, shutter, serial));
         // The version, stored in the clear, is written in the clear.
-        byte[] version = Apply(block, edit => edit.Set("Exif.NikonLd3.Version", ExifValue.FromRaw(TiffFieldType.Undefined, 4, Endianness.LittleEndian, "0204"u8)));
+        byte[] version = Apply(block, edit => edit.SetByKey("Exif.NikonLd3.Version", ExifValue.FromRaw(TiffFieldType.Undefined, 4, Endianness.LittleEndian, "0204"u8)));
         Assert.Equal(block, version);
 
         // The two halves of the key are not edited: the arrays would no longer decrypt.
-        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.SetText("Exif.Nikon3.SerialNumber", "7654321"))));
-        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.SetText("Exif.Nikon3.ShutterCount", "1"))));
-        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.Remove("Exif.Nikon3.ShutterCount"))));
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.SetTextByKey("Exif.Nikon3.SerialNumber", "7654321"))));
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.SetTextByKey("Exif.Nikon3.ShutterCount", "1"))));
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.RemoveByKey("Exif.Nikon3.ShutterCount"))));
     }
 
     [Theory]
@@ -331,7 +331,7 @@ public sealed class MakerNoteWriteTests
         Assert.Equal("Exif.SonyMisc1.CameraTemperature", Key(block, "9403/0005"));
         Assert.Equal(new byte[] { 20 }, Raw(block, "9403/0005"));
 
-        byte[] output = Apply(block, edit => edit.SetText("Exif.SonyMisc1.CameraTemperature", "-3"));
+        byte[] output = Apply(block, edit => edit.SetTextByKey("Exif.SonyMisc1.CameraTemperature", "-3"));
         Assert.Equal(new byte[] { 0xFD }, Raw(output, "9403/0005"));
         AssertRestKept(block, output, "9403/0005");
         byte[] expected = (byte[])plain.Clone();
@@ -371,24 +371,24 @@ public sealed class MakerNoteWriteTests
         Assert.Equal("Exif.OlympusCs.0x0999", Key(block, "2020/0999"));
         byte[] output = Apply(block, edit =>
         {
-            edit.SetText("Exif.OlympusCs.ExposureMode", "3");
-            edit.SetText("Exif.OlympusCs.0x0999", "NEW VALUE");
-            edit.SetText(Key(block, "0207"), "E-M1");
+            edit.SetTextByKey("Exif.OlympusCs.ExposureMode", "3");
+            edit.SetTextByKey("Exif.OlympusCs.0x0999", "NEW VALUE");
+            edit.SetTextByKey(Key(block, "0207"), "E-M1");
         });
         Assert.Equal(B16(3, big), Raw(output, "2020/0200"));
         Assert.Equal(Zero("NEW VALUE"), Raw(output, "2020/0999"));
         Assert.Equal(Zero("E-M1"), Raw(output, "0207"));
         AssertRestKept(block, output, "2020/0200", "2020/0999", "0207");
 
-        byte[] removed = Apply(block, edit => edit.Remove("Exif.OlympusCs.AELock"));
+        byte[] removed = Apply(block, edit => edit.RemoveByKey("Exif.OlympusCs.AELock"));
         Assert.Null(Raw(removed, "2020/0201"));
         Assert.Equal(3, Note(removed).Entries.Single(entry => entry.TagId == 0x2020).Fields.Count);
         AssertRestKept(block, removed, "2020/0201");
 
         // What leads to the directory, and what addresses data from inside it, is not a value to set.
-        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.SetText(Key(block, "2020"), "8"))));
-        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.Remove(Key(block, "2020")))));
-        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.SetText("Exif.OlympusCs.PreviewImageStart", "8"))));
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.SetTextByKey(Key(block, "2020"), "8"))));
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.RemoveByKey(Key(block, "2020")))));
+        Assert.Equal(MetadataErrorCode.TagNotEditable, Refusal(() => Apply(block, edit => edit.SetTextByKey("Exif.OlympusCs.PreviewImageStart", "8"))));
     }
 
     [Fact]
@@ -398,9 +398,9 @@ public sealed class MakerNoteWriteTests
         byte[] block = Build(Find("Canon"), false, order =>
             [Ascii(0x0006, "FIRST VALUE"), new E(0x0077, 99, 1, [1, 2, 3, 4]), Short(0x0007, order, 7), Ascii(0x0009, "OWNER NAME")]);
         Assert.Equal(3, Note(block).Entries.Count);
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.Remove("Exif.Canon.FirmwareVersion"))));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Apply(block, edit => edit.RemoveByKey("Exif.Canon.FirmwareVersion"))));
         // Setting moves nothing, so it is done.
-        byte[] output = Apply(block, edit => edit.SetText("Exif.Canon.FirmwareVersion", "8"));
+        byte[] output = Apply(block, edit => edit.SetTextByKey("Exif.Canon.FirmwareVersion", "8"));
         Assert.Equal(B16(8, false), Raw(output, Number));
         AssertRestKept(block, output, Number);
     }
@@ -427,7 +427,7 @@ public sealed class MakerNoteWriteTests
     {
         byte[] block = Block(vendor, big);
         var edit = new ExifEdit();
-        edit.SetText(Key(block, Owner), "IN A FILE!");
+        edit.SetTextByKey(Key(block, Owner), "IN A FILE!");
         byte[] output = Save(Jpeg(block), edit);
         ExifMetadata? exif = ImageMetadata.Read(output).Exif;
         Assert.NotNull(exif);
@@ -447,8 +447,8 @@ public sealed class MakerNoteWriteTests
     {
         byte[] block = Block(vendor, big);
         var edit = new ExifEdit();
-        edit.SetText(Key(block, Owner), "IN A FILE!");
-        edit.SetText("Exif.Image.Artist", "A photographer with a long name");
+        edit.SetTextByKey(Key(block, Owner), "IN A FILE!");
+        edit.SetTextByKey("Exif.Image.Artist", "A photographer with a long name");
         byte[] output = Save(Jpeg(block), edit);
         ExifMetadata exif = ImageMetadata.Read(output).Exif!;
         Assert.True(exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? artist));
@@ -465,7 +465,7 @@ public sealed class MakerNoteWriteTests
     public void AFileWithoutANoteAndAContainerThatIsNotABlockRefuse()
     {
         var edit = new ExifEdit();
-        edit.SetText("Exif.Canon.OwnerName", "NOBODY");
+        edit.SetTextByKey("Exif.Canon.OwnerName", "NOBODY");
         // No EXIF block at all.
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Refusal(() => Save(JpegFixture.Build(), edit)));
         // A block whose note is of a maker this library does not decode.

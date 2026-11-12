@@ -253,13 +253,13 @@ public sealed class ModifyScript
     /// </summary>
     private void MakerNoteLine(int number, ModifyCommandKind command, string key, string? type, string value)
     {
-        if (command == ModifyCommandKind.Delete) { Exif.Remove(key); return; }
-        if (type is null) { Exif.SetText(key, value); return; }
+        if (command == ModifyCommandKind.Delete) { Exif.RemoveByKey(key); return; }
+        if (type is null) { Exif.SetTextByKey(key, value); return; }
         if (Array.IndexOf(ExifTypes, type) < 0 || type == "Comment") throw new ModifyScriptException(number, $"`{type}' is not a type of a MakerNote value.");
         ExifValue parsed;
         try { parsed = ExifValueText.Parse(Enum.Parse<TiffFieldType>(type), value); }
         catch (ArgumentException refusal) { throw new ModifyScriptException(number, refusal.Message); }
-        Exif.Set(key, parsed);
+        Exif.SetByKey(key, parsed);
     }
 
     /// <summary>The bytes of a comment: the eight bytes of the character code and the text. Without a marker the code is undefined, as with Exiv2.</summary>

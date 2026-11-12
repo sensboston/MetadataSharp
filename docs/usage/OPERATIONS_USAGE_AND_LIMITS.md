@@ -61,8 +61,8 @@ byte[] filled = MetadataOperations.InsertExv(other, exv, MetadataFamilies.All, o
   tool writes it again with every save, which changes offsets it holds and sometimes its byte
   order. For the same reason **`InsertExv` and `ExvFile.Create` do not carry the MakerNote** or
   the tags of image data (the tool carries the MakerNote); `InsertExv` says so in its notes.
-- **Tags of the MakerNote are changed where they are** (`ExifEdit.Set(string, ExifValue)`,
-  `SetText`, `Remove(string)`, and the same keys in a modify script), in the EXIF block of a JPEG,
+- **Tags of the MakerNote are changed where they are** (`ExifEdit.SetByKey`,
+  `SetTextByKey`, `RemoveByKey`, and the same keys in a modify script), in the EXIF block of a JPEG,
   PNG or WebP file. The note keeps its offset and its length and nothing in it moves, so no offset
   it holds changes, whatever the maker counts it from. What is done: a value of the stored type
   that is no longer than the stored one (or fits the four bytes of its entry) is written in its

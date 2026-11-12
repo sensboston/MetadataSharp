@@ -193,7 +193,7 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   difference is documented in the script and an undocumented one fails the job. Table and
   differences: `docs/usage/OPERATIONS_USAGE_AND_LIMITS.md`.
 
-- MakerNote tags are edited in place (`ExifEdit.Set(string, ExifValue)` / `SetText` / `Remove(string)`
+- MakerNote tags are edited in place (`ExifEdit.SetByKey` / `SetTextByKey` / `RemoveByKey`
   with the keys the dump prints, `Exif.Canon.OwnerName`, `Exif.CanonCs.Quality`; the same keys in
   `ModifyScript`): JPEG, PNG and WebP. Every layout the reader decodes; tags, fields of arrays
   (Nikon re-encrypted with the file's key, Sony re-enciphered), tags of sub-directories (Olympus),

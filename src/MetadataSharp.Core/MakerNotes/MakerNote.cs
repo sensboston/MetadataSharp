@@ -157,7 +157,7 @@ public sealed class MakerNoteEntry
 /// <summary>
 /// A read-only view of a recognised MakerNote. The raw MakerNote bytes remain the authoritative
 /// value of the EXIF entry; this view is never written back. A tag of the note is changed through
-/// <see cref="ExifEdit.Set(string, ExifValue)"/>, where it lies in the file.
+/// <see cref="ExifEdit.SetByKey(string, ExifValue)"/>, where it lies in the file.
 /// </summary>
 public sealed class MakerNote
 {
