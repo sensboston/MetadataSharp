@@ -6,7 +6,7 @@ namespace MetadataSharp.Formats.Crw;
 /// Read-only metadata of a Canon CRW file (CIFF, the raw format of Canon cameras before CR2). The
 /// file has no EXIF block: its heap of records is walked, and the records the reference tool
 /// (Exiv2) maps to EXIF tags are given as those tags, the Canon ones as a Canon MakerNote. The raw
-/// data is never decoded and nothing is written.
+/// data is never decoded. <see cref="CrwMetadataDocument"/> writes the records back.
 /// </summary>
 public sealed class CrwMetadata
 {
@@ -19,6 +19,12 @@ public sealed class CrwMetadata
         ThumbnailOffset = thumbnailOffset;
         ThumbnailLength = thumbnailLength;
     }
+
+    /// <summary>The records that are tags of the Canon MakerNote, by the tag of the note, as the reader took them.</summary>
+    internal IReadOnlyDictionary<ushort, (TiffFieldType Type, byte[] Bytes)> Canon { get; init; } = new Dictionary<ushort, (TiffFieldType Type, byte[] Bytes)>();
+
+    /// <summary>The byte order of the file.</summary>
+    internal bool Little { get; init; }
 
     /// <summary>
     /// The mapped records as EXIF tags, or null when the file has none of them. Make, Model and

@@ -15,12 +15,12 @@ namespace MetadataSharp.Tests.RawContainers;
 /// <summary>The readers of the RAW containers that are no TIFF file: Canon CRW, Minolta MRW and Fujifilm RAF, on authored files.</summary>
 public sealed class RawContainerTests
 {
-    private static byte[] Le16(int value) => [(byte)value, (byte)(value >> 8)];
+    internal static byte[] Le16(int value) => [(byte)value, (byte)(value >> 8)];
 
-    private static byte[] Le32(uint value) => [(byte)value, (byte)(value >> 8), (byte)(value >> 16), (byte)(value >> 24)];
+    internal static byte[] Le32(uint value) => [(byte)value, (byte)(value >> 8), (byte)(value >> 16), (byte)(value >> 24)];
 
     /// <summary>A CIFF directory: the values, then the entries, then where the entries start.</summary>
-    private static byte[] Heap(params (ushort Tag, byte[] Value)[] records)
+    internal static byte[] Heap(params (ushort Tag, byte[] Value)[] records)
     {
         var values = new List<byte>();
         var entries = new List<byte>();
@@ -37,12 +37,12 @@ public sealed class RawContainerTests
         return [.. values, .. Le16(records.Length), .. entries, .. Le32((uint)values.Count)];
     }
 
-    private static byte[] Crw(params (ushort Tag, byte[] Value)[] root) =>
+    internal static byte[] Crw(params (ushort Tag, byte[] Value)[] root) =>
         [.. "II"u8, .. Le32(14), .. "HEAPCCDR"u8, .. Heap(root)];
 
-    private static byte[] Shorts16(params ushort[] values) => values.SelectMany(value => Le16(value)).ToArray();
+    internal static byte[] Shorts16(params ushort[] values) => values.SelectMany(value => Le16(value)).ToArray();
 
-    private static byte[] ShotInfo()
+    internal static byte[] ShotInfo()
     {
         ushort[] values = new ushort[34];
         values[0] = 68;

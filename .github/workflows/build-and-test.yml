@@ -327,6 +327,17 @@ jobs:
           python tools/parity/run_previews.py --fixtures artifacts/parity/cr3-input \
             --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pp" \
             --dump-command "$DUMP" --out artifacts/parity/cr3-preview --title 'PARITY cr3 preview' --annotate
+      # The pinned tree has no MRW file and two RAF files of 120 bytes. Files are authored here from
+      # files of the tree (tools/reference/raw_container_fixtures.py): a TIFF file as the TTW block of
+      # an MRW file, a JPEG file and a TIFF structure in a RAF file; the CRW files are copied. The
+      # pinned tool reads them in this job. A measurement, no gate.
+      - name: MRW, RAF and CRW files against the pinned tool (exiv2 -Pkycvt)
+        shell: bash
+        run: |
+          python tools/reference/raw_container_fixtures.py artifacts/parity/exiv2/test/data artifacts/parity/raw-input
+          python tools/parity/run_parity.py --fixtures artifacts/parity/raw-input \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
+            --dump-command "$DUMP" --out artifacts/parity/raw --title 'PARITY raw containers' --annotate
       - name: Generate this repository's own fixtures
         shell: bash
         run: |
@@ -591,5 +602,14 @@ jobs:
         shell: bash
         run: |
           python tools/reference/makernote_parity.py artifacts/parity/exiv2/test/data artifacts/parity/makernote \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      # Tags and the comment that this library writes into the records of the CRW files of the pinned
+      # corpus; the pinned tool has to print what was set and every other key as before
+      # (tools/reference/crw_parity.py).
+      - name: CRW tags and comment set by this library, read back by the pinned tool (exiv2 -u -PEkv, exiv2 -pc)
+        shell: bash
+        run: |
+          python tools/reference/crw_parity.py artifacts/parity/exiv2/test/data artifacts/parity/crw \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
             --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"

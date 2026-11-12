@@ -1833,6 +1833,95 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=MakerNote parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
 }
+else if (args.Length == 2 && args[0] == "crw-parity")
+{
+    // Edits of CRW files the comparer (tools/reference/crw_parity.py) prepared in the directory: for
+    // every sNNNNN.crw each tag of the list below that the file has is set in a copy of its own,
+    // NAME.N.ours.crw, and so is the comment. Nothing is compared here. ours.tsv lists NAME, N, the
+    // operation, the key ("Comment" for the comment), the status ("written" or "refused CODE") and
+    // the value the tool has to print (for a refusal, its message). An exception that is no refusal
+    // is a defect.
+    string directory = args[1];
+    var manifest = new List<string>();
+    var crashes = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    string Flat(string text) => text.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+
+    foreach (string path in Directory.EnumerateFiles(directory, "s*.crw").Order(StringComparer.Ordinal))
+    {
+        string name = Path.GetFileNameWithoutExtension(path);
+        if (name.Contains('.')) continue;
+        byte[] source = File.ReadAllBytes(path);
+        MetadataSharp.Formats.Crw.CrwMetadata? read;
+        try { read = MetadataSharp.Formats.Crw.CrwMetadata.Read(source); }
+        catch (MetadataException) { read = null; }
+        if (read is null)
+        {
+            manifest.Add($"{name}\t0\tnone\t\tnot read\t");
+            continue;
+        }
+        MetadataSharp.Formats.Crw.CrwMetadata metadata = read;
+        int number = 0;
+        void Run(string operation, string key, string text, Action<MetadataSharp.Formats.Crw.CrwMetadataDocument, Stream> save)
+        {
+            number++;
+            string status;
+            try
+            {
+                var output = new MemoryStream();
+                using (var document = MetadataSharp.Formats.Crw.CrwMetadataDocument.Open(new MemoryStream(source)))
+                    save(document, output);
+                File.WriteAllBytes(Path.Combine(directory, $"{name}.{number}.ours.crw"), output.ToArray());
+                status = "written";
+            }
+            catch (MetadataException refusal) { status = "refused " + refusal.Code; text = refusal.Message; }
+            catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+            {
+                crashes.Add($"{name} {operation} {key}: {defect.GetType().Name}: {defect.Message}");
+                return;
+            }
+            manifest.Add($"{name}\t{number}\t{operation}\t{key}\t{status}\t{Flat(text)}");
+            string counted = $"{operation} {status}";
+            outcomes[counted] = outcomes.GetValueOrDefault(counted) + 1;
+        }
+        void Tag(string operation, string key, string text, Action<ExifEdit> change) =>
+            Run(operation, key, text, (document, output) =>
+            {
+                var edit = new ExifEdit();
+                change(edit);
+                document.SaveExif(output, edit);
+            });
+        bool Has(ExifDirectoryKind kind, ushort tag) => metadata.Exif is not null && metadata.Exif.TryGetEntry(new ExifTagKey(kind, tag), out _);
+        bool Canon(ushort tag) => metadata.Exif?.MakerNote is MakerNote canon && canon.TryGetEntry(tag, out _);
+
+        if (Has(ExifDirectoryKind.Ifd0, 0x010F) && Has(ExifDirectoryKind.Ifd0, 0x0110))
+        {
+            Tag("exif", "Exif.Image.Make", "Parity Make", edit => edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F), "Parity Make"));
+            Tag("exif", "Exif.Image.Model", "Parity Model 40", edit => edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0110), "Parity Model 40"));
+        }
+        if (Has(ExifDirectoryKind.Ifd0, 0x0112))
+            Tag("exif", "Exif.Image.Orientation", "6", edit => edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), (ushort)6));
+        if (Has(ExifDirectoryKind.Exif, 0xA002))
+            Tag("exif", "Exif.Photo.PixelXDimension", "1234", edit => edit.Set(new ExifTagKey(ExifDirectoryKind.Exif, 0xA002), 1234u));
+        if (Has(ExifDirectoryKind.Exif, 0x9003))
+            Tag("exif", "Exif.Photo.DateTimeOriginal", "2011:12:13 14:15:16", edit => edit.Set(new ExifTagKey(ExifDirectoryKind.Exif, 0x9003), "2011:12:13 14:15:16"));
+        if (Canon(0x0009))
+        {
+            Tag("canon", "Exif.Canon.OwnerName", "Owner", edit => edit.SetTextByKey("Exif.Canon.OwnerName", "Owner"));
+            Tag("canon", "Exif.Canon.OwnerName", "A Parity Owner With A Longer Name", edit => edit.SetTextByKey("Exif.Canon.OwnerName", "A Parity Owner With A Longer Name"));
+        }
+        if (Canon(0x0008))
+            Tag("canon", "Exif.Canon.FileNumber", "1234567", edit => edit.SetTextByKey("Exif.Canon.FileNumber", "1234567"));
+        if (Canon(0x0001))
+            Tag("canon", "Exif.CanonCs.Macro", "1", edit => edit.SetTextByKey("Exif.CanonCs.Macro", "1"));
+        Run("comment", "Comment", "a parity comment", (document, output) => document.SaveComment(output, "a parity comment"));
+    }
+
+    File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
+    foreach (KeyValuePair<string, int> outcome in outcomes) Console.WriteLine($"{outcome.Key}: {outcome.Value}");
+    foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=CRW parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
+    return crashes.Count == 0 ? 0 : 1;
+}
 else if (args.Length == 2 && args[0] == "operations-parity-blank")
 {
     // A JPEG file without metadata, for the comparer to insert into, and to insert as a thumbnail.

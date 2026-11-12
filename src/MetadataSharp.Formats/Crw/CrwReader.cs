@@ -333,56 +333,22 @@ internal ref struct CrwReader
         MakerNote? note = Note();
         ExifMetadata? exif = entries.Count == 0 && note is null ? null : new ExifMetadata(order, entries, note, editable: false);
         return new CrwMetadata(exif, comment, previewOffset < 0 ? null : previewOffset, previewOffset < 0 ? 0 : previewLength,
-            thumbnailOffset < 0 ? null : thumbnailOffset, thumbnailOffset < 0 ? 0 : thumbnailLength);
+            thumbnailOffset < 0 ? null : thumbnailOffset, thumbnailOffset < 0 ? 0 : thumbnailLength) { Canon = canon, Little = little };
     }
 
     /// <summary>
-    /// The records that are tags of the Canon MakerNote, laid out as the directory of such a note
-    /// after a TIFF header and read by the reader of that note, which names the tags and splits the
-    /// arrays as it does in every other file.
+    /// The records that are tags of the Canon MakerNote, laid out as such a note
+    /// (<see cref="CrwCanonNote"/>) and read by the reader of that note, which names the tags and
+    /// splits the arrays as it does in every other file.
     /// </summary>
     private readonly MakerNote? Note()
     {
         if (canon.Count == 0) return null;
-        int values = 8 + 2 + (canon.Count * 12) + 4, total = values;
-        foreach ((TiffFieldType _, byte[] bytes) in canon.Values)
-            if (bytes.Length > 4) total += bytes.Length + (bytes.Length & 1);
-        // Eight bytes of zero end the block, so that its end is never read as the footer of a note that was moved.
-        byte[] block = new byte[total + 8];
-        Span<byte> span = block;
-        (little ? "II*\0"u8 : "MM\0*"u8).CopyTo(span);
-        Put32(span, 4, 8);
-        Put16(span, 8, (ushort)canon.Count);
-        int entry = 10;
-        foreach ((ushort tag, (TiffFieldType type, byte[] bytes)) in canon)
-        {
-            int width = type is TiffFieldType.Short ? 2 : type is TiffFieldType.Long ? 4 : 1;
-            Put16(span, entry, tag);
-            Put16(span, entry + 2, (ushort)type);
-            Put32(span, entry + 4, (uint)(bytes.Length / width));
-            if (bytes.Length <= 4) bytes.CopyTo(span[(entry + 8)..]);
-            else
-            {
-                Put32(span, entry + 8, (uint)values);
-                bytes.CopyTo(span[values..]);
-                values += bytes.Length + (bytes.Length & 1);
-            }
-            entry += 12;
-        }
-        MakerNote? note = CanonMakerNoteReader.TryRead(block, 8, block.Length - 8, order, limits,
+        byte[] block = CrwCanonNote.Block(little, canon);
+        MakerNote? note = CanonMakerNoteReader.TryRead(block, CrwCanonNote.Start, block.Length - CrwCanonNote.Start, order, limits,
             limits.MaxRetainedMetadataBytes - retained);
         // The directory was built here: it lies in no file, so the note has no place to report.
         if (note is not null) note.Offset = 0;
         return note;
-    }
-
-    private readonly void Put16(Span<byte> span, int at, ushort value)
-    {
-        if (little) BinaryPrimitives.WriteUInt16LittleEndian(span[at..], value); else BinaryPrimitives.WriteUInt16BigEndian(span[at..], value);
-    }
-
-    private readonly void Put32(Span<byte> span, int at, uint value)
-    {
-        if (little) BinaryPrimitives.WriteUInt32LittleEndian(span[at..], value); else BinaryPrimitives.WriteUInt32BigEndian(span[at..], value);
     }
 }
