@@ -52,6 +52,16 @@ EXTRA_KEY = "extra-key"
 NOT_READ = "not-read"
 OUTCOMES = (MATCH_VALUE, MATCH_KEY, VALUE_DIFF, MISSING_KEY, EXTRA_KEY, NOT_READ)
 
+#: A format the reference prints no key of is measured by the size it prints instead (`exiv2 -ps`):
+#: the width and height of its "Image size" line and its "MIME type" line. These four verdicts are
+#: counted beside the key outcomes and never among them, so a sum over OUTCOMES stays a statement
+#: about keys.
+SIZE_MATCH_VALUE = "size-match-value"
+SIZE_DIFF = "size-diff"
+SIZE_MISSING = "size-missing"
+SIZE_EXTRA = "size-extra"
+SIZE_OUTCOMES = (SIZE_MATCH_VALUE, SIZE_DIFF, SIZE_MISSING, SIZE_EXTRA)
+
 #: Both sides interpret the value and say the same.
 MATCH_INTERPRETED = "match-interpreted"
 #: Both sides interpret the value and say different things.
@@ -191,19 +201,42 @@ def compare_tags(reference: dict[str, dict], dumped: dict[str, tuple[str, int, s
     return rows
 
 
+def compare_size(theirs: list[tuple[str, str, str]] | None, ours: tuple[int, int, str] | None) -> dict[str, Any] | None:
+    """The size line of a format no reference file gives keys for, against the record we print of it.
+
+    ``theirs`` is what the reference's own summary printed for the file - the width and height as its
+    ``Image size`` line gives them, and the ``MIME type`` line - and ``ours`` is the SIZE record.
+    ``None`` when neither side has anything to say, so that a report keeps the shape it had.
+    """
+    if theirs is None and ours is None:
+        return None
+    if theirs is None:
+        return {"outcome": SIZE_EXTRA, "ours": list(ours)}
+    if ours is None:
+        return {"outcome": SIZE_MISSING, "theirs": list(theirs)}
+    width, height, mime = ours
+    (their_width, their_height, their_mime) = theirs
+    agreed = str(width) == their_width and str(height) == their_height and mime == their_mime
+    return {"outcome": SIZE_MATCH_VALUE if agreed else SIZE_DIFF, "ours": list(ours), "theirs": list(theirs)}
+
+
 def compare_file(label: str, corpus: str, format_name: str, status: str, detail: str,
                  reference: dict[str, dict], dumped: dict[str, tuple[str, int, str]],
-                 notes: list[str], interpreted: dict[str, str] | None = None) -> dict[str, Any]:
+                 notes: list[str], interpreted: dict[str, str] | None = None,
+                 size: tuple[int, int, str] | None = None,
+                 reference_size: list[tuple[str, str, str]] | None = None) -> dict[str, Any]:
     """One file's verdict. Only files we attempted contribute rows to parity.
 
     A refusal is a different kind of answer, not a wrong one: the library refusing a file the
     reference tool could not read either is the expected outcome, so those files are counted apart.
+    A format the reference has no key output for is measured by the size it prints instead, which is
+    a row of a different kind and counted beside the keys, never among them.
     """
     counted = status == "ok"
     rows = compare_tags(reference, dumped, interpreted) if counted else [
         row(key, NOT_READ, ours=None, theirs=theirs) for key, theirs in reference.items()
     ]
-    return {
+    entry: dict[str, Any] = {
         "label": label,
         "corpus": corpus,
         "format": format_name,
@@ -216,6 +249,10 @@ def compare_file(label: str, corpus: str, format_name: str, status: str, detail:
         "reference_repeats": sum(entry.get("repeats", 0) for entry in reference.values()),
         "rows": rows,
     }
+    measured = compare_size(reference_size, size if counted else None)
+    if measured is not None:
+        entry["size"] = measured
+    return entry
 
 
 def kind(line: str) -> str:
@@ -268,8 +305,15 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
     untranslated: Counter[str] = Counter()
     untranslated_texts: dict[str, Counter[str]] = defaultdict(Counter)
 
+    size_outcomes: Counter[str] = Counter()
+    size_by_format: dict[str, Counter[str]] = defaultdict(Counter)
+
     for entry in files:
         statuses[entry["status"]] += 1
+        if "size" in entry:
+            measured = entry["size"]["outcome"]
+            size_outcomes[measured] += 1
+            size_by_format[entry["format"]][measured] += 1
         if entry["status"] != "ok" and entry["detail"]:
             refusals[f"{entry['status']}:{entry['detail']}"] += 1
         # A file that was read, with one kind of its metadata refused: its rows count, and the
@@ -359,6 +403,12 @@ def aggregate(files: list[dict[str, Any]], classifications: dict[str, dict] | No
         "advisory": dict(advisory),
         "reference_repeats": sum(entry["reference_repeats"] for entry in files),
         "reference_notes": dict(notes),
+        # The size line of a format the reference prints no key of, counted apart from the keys: its
+        # four verdicts, and the same per format.
+        "sizes": {
+            "outcomes": dict(size_outcomes),
+            "by_format": {name: dict(counts) for name, counts in sorted(size_by_format.items())},
+        },
         "by_format": {name: dict(counts) for name, counts in sorted(by_format.items())},
         "by_family": {name: dict(counts) for name, counts in sorted(by_family.items())},
         "by_kind_format": {name: {fmt: dict(counts) for fmt, counts in sorted(formats.items())}

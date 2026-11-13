@@ -629,5 +629,95 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual(recovered["problem_count"], 0)
 
 
+class SizeParityTests(unittest.TestCase):
+    """The size line of a format that carries no metadata block: the reference prints no key of it."""
+
+    def test_a_summary_gives_the_size_and_the_type(self):
+        text = ("File name       : owned-gif-lsd.gif\nFile size       : 13 Bytes\n"
+                "MIME type       : image/gif\nImage size      : 64 x 48\n")
+        self.assertEqual(exiv2_print.parse_summary(text), ("64", "48", "image/gif"))
+
+    def test_a_zero_size_is_no_measurement(self):
+        # An EPS file: the tool never learns a pixel size and prints 0 x 0, which is not a fact to compare.
+        text = "MIME type       : application/postscript\nImage size      : 0 x 0\n"
+        self.assertIsNone(exiv2_print.parse_summary(text))
+
+    def test_a_refused_file_gives_no_summary(self):
+        self.assertIsNone(exiv2_print.parse_summary(""))
+
+    def test_a_size_record_reads_back_and_is_unique(self):
+        text = dump_format.record("FILE", "a.gif") + "\n" + dump_format.record("SIZE", "64x48", "image/gif") + "\n" \
+            + dump_format.record("STATUS", "ok") + "\n"
+        block = dump_format.parse_dump(text)["a.gif"]
+        self.assertEqual(block["size"], (64, 48, "image/gif"))
+        self.assertEqual(block["tags"], {})
+
+    def test_a_second_size_record_is_an_error(self):
+        text = dump_format.record("FILE", "a.gif") + "\n" + dump_format.record("SIZE", "1x1", "image/gif") + "\n" \
+            + dump_format.record("SIZE", "2x2", "image/gif") + "\n" + dump_format.record("STATUS", "ok") + "\n"
+        with self.assertRaises(dump_format.DumpFormatError):
+            dump_format.parse_dump(text)
+
+    def test_the_four_verdicts_of_a_size(self):
+        self.assertEqual(compare_mod.compare_size(None, None), None)
+        self.assertEqual(compare_mod.compare_size(("64", "48", "image/gif"), (64, 48, "image/gif"))["outcome"],
+                         compare_mod.SIZE_MATCH_VALUE)
+        self.assertEqual(compare_mod.compare_size(("64", "48", "image/gif"), (64, 49, "image/gif"))["outcome"],
+                         compare_mod.SIZE_DIFF)
+        self.assertEqual(compare_mod.compare_size(("64", "48", "image/gif"), None)["outcome"], compare_mod.SIZE_MISSING)
+        self.assertEqual(compare_mod.compare_size(None, (64, 48, "image/gif"))["outcome"], compare_mod.SIZE_EXTRA)
+
+    def test_a_size_verdict_is_counted_apart_from_the_keys(self):
+        entry = compare_mod.compare_file("a.gif", "generated", "gif", "ok", "", {}, {}, [],
+                                         size=(64, 49, "image/gif"), reference_size=("64", "48", "image/gif"))
+        report = compare_mod.aggregate([entry])
+        self.assertEqual(report["sizes"]["outcomes"], {compare_mod.SIZE_DIFF: 1})
+        self.assertEqual(report["outcomes"], {})
+        self.assertEqual(report["parity"]["expected_keys"], 0)
+
+    def test_a_matching_size_leaves_the_files_parity_untouched(self):
+        entry = compare_mod.compare_file("a.gif", "generated", "gif", "ok", "", {}, {}, [],
+                                         size=(64, 48, "image/gif"), reference_size=("64", "48", "image/gif"))
+        report = compare_mod.aggregate([entry])
+        self.assertEqual(report["sizes"]["outcomes"], {compare_mod.SIZE_MATCH_VALUE: 1})
+        self.assertEqual(run_parity.detail([entry]), {"files": {}, "missing": {}, "differing": {}, "samples": {},
+                                                      "trimmed": 0})
+
+    def test_the_headline_names_the_sizes_apart(self):
+        entry = compare_mod.compare_file("a.gif", "generated", "gif", "ok", "", {}, {}, [],
+                                         size=(64, 48, "image/gif"), reference_size=("64", "48", "image/gif"))
+        line = run_parity.size_headline(compare_mod.aggregate([entry]))
+        self.assertIn("1/1 = 100.0%", line)
+
+    def test_a_targa_file_is_named_by_the_footer_at_its_end(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "owned.targa"
+            path.write_bytes(bytes(18) + b"TRUEVISION-XFILE.\x00")
+            named = run_parity.reference_formats([corpus_mod.Candidate(label="owned.targa", path=path,
+                                                                       corpus="generated", format="targa")])
+            self.assertEqual(named[path], "targa")
+            path.write_bytes(bytes(18))
+            self.assertEqual(run_parity.reference_formats([corpus_mod.Candidate(label="owned.targa", path=path,
+                                                                               corpus="generated", format="targa")]), {})
+
+    def test_only_the_formats_without_a_metadata_block_are_measured(self):
+        with tempfile.TemporaryDirectory() as directory:
+            candidates = []
+            for name in ("a.gif", "b.bmp", "c.targa", "d.pgf", "e.eps", "f.jpg", "g.png"):
+                path = Path(directory) / name
+                path.write_bytes(b"x")
+                candidates.append(corpus_mod.Candidate(label=name, path=path, corpus="generated", format="none"))
+            measured = [candidate.path.name for candidate in candidates
+                        if candidate.path.suffix.lower() in run_parity.SIZE_ONLY_SUFFIXES]
+            self.assertEqual(measured, ["a.gif", "b.bmp", "c.targa", "d.pgf", "e.eps"])
+
+    def test_without_a_summary_command_no_size_is_measured(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "a.gif"
+            path.write_bytes(b"GIF89a")
+            self.assertEqual(run_parity.size_summaries(None, [corpus_mod.Candidate(
+                label="a.gif", path=path, corpus="generated", format="gif")]), {})
+
+
 if __name__ == "__main__":
     unittest.main()

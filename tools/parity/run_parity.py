@@ -126,9 +126,56 @@ def collect(candidates: list[corpus_mod.Candidate], reference_texts: dict[str, s
     return references
 
 
+def reference_formats(candidates: list[corpus_mod.Candidate]) -> dict[Path, str]:
+    """The format a whole-file look at the bytes names, for the formats told by their end.
+
+    The library tells a format by a signature, and a TARGA file has none at its start: it is told by
+    the twenty-six bytes at its end. The corpus names such a file "targa" from its suffix, which is
+    also what the reference does, so this only says the same of a file whose suffix it does not name.
+    Only the format changes here; the reference output does not.
+    """
+    found: dict[Path, str] = {}
+    for candidate in candidates:
+        if candidate.path.suffix.lower() not in (".tga", ".targa"):
+            continue
+        try:
+            tail = candidate.path.read_bytes()[-26:]
+        except OSError:
+            continue
+        if len(tail) == 26 and tail[8:].startswith(b"TRUEVISION-XFILE."):
+            found[candidate.path] = "targa"
+    return found
+
+
+#: The suffixes of the formats whose header states a size but which carry no metadata block. For
+#: these the reference prints no key at all, and the size its summary prints is what is measured.
+SIZE_ONLY_SUFFIXES = (".gif", ".bmp", ".tga", ".targa", ".pgf", ".eps")
+
+
+def size_summaries(command: list[str] | None, candidates: list[corpus_mod.Candidate]) -> dict[str, tuple[str, str, str]]:
+    """What the reference's own summary prints of the size of each file that has only a size.
+
+    The summary option is a mode of its own (``exiv2 -ps``) and cannot be asked for in the same run as
+    the key print, so the files of these formats are measured in a second pass. Its output is parsed in
+    memory and never stored, like every other piece of the reference's output.
+    """
+    found: dict[str, tuple[str, str, str]] = {}
+    if command is None:
+        return found
+    for candidate in candidates:
+        if candidate.path.suffix.lower() not in SIZE_ONLY_SUFFIXES:
+            continue
+        parsed = exiv2_print.parse_summary(run_reference(command, candidate.path))
+        if parsed is not None:
+            found[candidate.uid] = parsed
+    return found
+
+
 def build(dump_command: list[str], candidates: list[corpus_mod.Candidate],
-          references: dict[str, tuple[dict[str, dict], list[str]]], problems: list[str]) -> list[dict[str, Any]]:
+          references: dict[str, tuple[dict[str, dict], list[str]]],
+          summaries: dict[str, tuple[str, str, str]], problems: list[str]) -> list[dict[str, Any]]:
     blocks = run_dump(dump_command, [candidate.path for candidate in candidates])
+    named = reference_formats(candidates)
     files: list[dict[str, Any]] = []
     for candidate in candidates:
         block = blocks.get(str(candidate.path))
@@ -139,9 +186,10 @@ def build(dump_command: list[str], candidates: list[corpus_mod.Candidate],
         if block["status"] == "error":
             problems.append(f"{candidate.uid}: our reader raised instead of refusing"
                             f" ({block['detail'] or 'the tool reported no exception type'})")
-        files.append(compare_mod.compare_file(candidate.uid, candidate.corpus, candidate.format, block["status"],
-                                              block["detail"], tags, block["tags"], notes,
-                                              block.get("interpreted")))
+        files.append(compare_mod.compare_file(candidate.uid, candidate.corpus, named.get(candidate.path, candidate.format),
+                                              block["status"], block["detail"], tags, block["tags"], notes,
+                                              block.get("interpreted"), block.get("size"),
+                                              summaries.get(candidate.uid)))
     return files
 
 
@@ -245,6 +293,19 @@ def gap_table(entries: list[dict[str, Any]], limit: int) -> list[str]:
     return lines
 
 
+def size_headline(report: dict[str, Any]) -> str:
+    """The size line of the formats the reference prints no key of, apart from the key rates."""
+    sizes = report.get("sizes", {})
+    outcomes = sizes.get("outcomes", {})
+    if not outcomes:
+        return "size parity:  none measured (no file of a format without a metadata block)"
+    total = sum(outcomes.get(name, 0) for name in compare_mod.SIZE_OUTCOMES)
+    same = outcomes.get(compare_mod.SIZE_MATCH_VALUE, 0)
+    return (f"size parity:  {same}/{total} = {_percent(same, total)} of the sizes the reference prints"
+            + "".join(f", {name}={outcomes.get(name, 0)}" for name in compare_mod.SIZE_OUTCOMES[1:]
+                      if outcomes.get(name, 0)))
+
+
 def text_report(report: dict[str, Any], problems: list[str]) -> str:
     parity = report["parity"]
     outcomes = report["outcomes"]
@@ -260,6 +321,7 @@ def text_report(report: dict[str, Any], problems: list[str]) -> str:
         interpreted_headline(report),
         "",
         "outcomes: " + ", ".join(f"{name}={outcomes.get(name, 0)}" for name in compare_mod.OUTCOMES),
+        size_headline(report),
         "advisory: " + (", ".join(f"{name}={count}" for name, count in sorted(report["advisory"].items())) or "none"),
         "reference non-tag lines: "
         + (", ".join(f"{name}={count}" for name, count in sorted(report["reference_notes"].items())) or "none")
@@ -346,6 +408,7 @@ def summary(report: dict[str, Any], problems: list[str]) -> dict[str, Any]:
         # both sides interpret with the count of those we do not interpret beside it, the per-kind
         # counters the text report prints beside the raw ones, the groups one by one, and the keys
         # that differ or go uninterpreted most often with a sample.
+        "sizes": report.get("sizes", {}),
         "interpreted": {
             "outcomes": report.get("interpreted", {}).get("outcomes", {}),
             "compared": report.get("interpreted", {}).get("compared", 0),
@@ -396,6 +459,9 @@ def detail(files: list[dict[str, Any]]) -> dict[str, Any]:
                 elif outcome == compare_mod.VALUE_DIFF:
                     differing[r["key"]] = differing.get(r["key"], 0) + 1
                     samples.setdefault(r["key"], [r.get("our_value", "")[:SAMPLE_WIDTH], r.get("their_value", "")[:SAMPLE_WIDTH]])
+        # A size that differs is a disagreement about a fact, and it is named with the keys.
+        if "size" in entry and entry["size"]["outcome"] != compare_mod.SIZE_MATCH_VALUE:
+            groups.setdefault(entry["size"]["outcome"], {})["Size"] = 1
         if entry["status"] == "ok" and not entry["detail"] and not groups:
             continue
         row: dict[str, Any] = {"format": entry["format"], "status": entry["status"]}
@@ -466,6 +532,9 @@ def main(argv: list[str] | None = None) -> int:
                              "write paths with forward slashes, which Python and dotnet both accept)")
     parser.add_argument("--exiv2-command", help="the pinned reference tool, split the same way; used as the "
                                                 "oracle for --fixtures files, and its output is never stored")
+    parser.add_argument("--summary-command", help="the same tool with its summary option (exiv2 -ps), split the same "
+                                                  "way; the size of a file that carries no metadata block is compared "
+                                                  "against what it prints of it")
     parser.add_argument("--classifications", type=Path,
                         help="JSON object mapping a key to {\"class\", \"note\"} for gaps this project has investigated")
     parser.add_argument("--out", type=Path, default=ROOT / "artifacts/parity", help="report directory")
@@ -497,7 +566,8 @@ def main(argv: list[str] | None = None) -> int:
 
     problems: list[str] = []
     references = collect(candidates, reference_texts, problems)
-    files = build(shlex.split(args.dump_command), candidates, references, problems)
+    summaries = size_summaries(shlex.split(args.summary_command) if args.summary_command else None, candidates)
+    files = build(shlex.split(args.dump_command), candidates, references, summaries, problems)
 
     classifications: dict[str, Any] = {}
     if args.classifications is not None:

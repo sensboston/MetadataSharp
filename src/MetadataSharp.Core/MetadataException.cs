@@ -78,7 +78,19 @@ public enum MetadataErrorCode
     InvalidMrw,
 
     /// <summary>The file is not a Fujifilm RAF file, or its header places the JPEG file or the TIFF structure outside the file.</summary>
-    InvalidRaf
+    InvalidRaf,
+
+    /// <summary>The file is not a GIF file. A descriptor the file is too short for states no size and is not a refusal.</summary>
+    InvalidGif,
+
+    /// <summary>The file is not a Windows bitmap. A header the file is too short for states no size and is not a refusal.</summary>
+    InvalidBmp,
+
+    /// <summary>The file does not end with the signature of a TARGA 2.0 file.</summary>
+    InvalidTga,
+
+    /// <summary>The file is not a PGF file, its header does not lie inside it, or the image the header places does not read.</summary>
+    InvalidPgf
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>

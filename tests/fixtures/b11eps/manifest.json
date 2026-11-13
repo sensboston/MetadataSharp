@@ -1,0 +1,123 @@
+[
+  {
+    "file": "dos-eps-xmp.eps",
+    "length": 645,
+    "sha256": "dfca942ffdfecdd42def47774ab44ffc68e6a5aebfedbeddc97818e0d3c63b65",
+    "layout": "dos-eps-xmp",
+    "recipe": "dos-eps-postscript-and-tiff-sections-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "eps-plain.eps",
+    "length": 194,
+    "sha256": "d3134bf34dd77bf7f19ed741004aa39efcf0133351ac6805b0e46bacde22f3f0",
+    "layout": "eps-plain",
+    "recipe": "eps-plain-empty-comment-block-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "none",
+    "xmp": false
+  },
+  {
+    "file": "eps-xmp-31.eps",
+    "length": 571,
+    "sha256": "6173ccd7506e5db712a7d6ff33224ce6828a6c58f0983051fed0525442c7d2cb",
+    "layout": "eps-xmp-31",
+    "recipe": "eps-xmp-illustrator-first-line-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "eps-xmp-crlf.eps",
+    "length": 585,
+    "sha256": "c8d79dd925c41b88223d9988c4f23b7a7d1d9c8959d6e623032cc3c94f2416dc",
+    "layout": "eps-xmp-crlf",
+    "recipe": "eps-xmp-dos-line-endings-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "eps-xmp-nomain.eps",
+    "length": 568,
+    "sha256": "8cf9fd41d74d38e1fa725767e7a09029cbc04bba58ee9f9d6bdd7d2d620c0f19",
+    "layout": "eps-xmp-nomain",
+    "recipe": "eps-xmp-packet-but-header-says-none-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "none",
+    "xmp": false
+  },
+  {
+    "file": "eps-xmp-readonly.eps",
+    "length": 571,
+    "sha256": "a7a576383caee72b6ff0aa02337eea048149bbe3d73a52650454916775d4c009",
+    "layout": "eps-xmp-readonly",
+    "recipe": "eps-xmp-read-only-trailer-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp-refused",
+    "xmp": false
+  },
+  {
+    "file": "eps-xmp-space.eps",
+    "length": 572,
+    "sha256": "cbaacddade15cf910c740a18886e35e6a54d1ee75b96876a97711312d8e2a857",
+    "layout": "eps-xmp-space",
+    "recipe": "eps-xmp-openoffice-first-line-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "eps-xmp.eps",
+    "length": 571,
+    "sha256": "737b8c553738fcb7587d43688a57f0c8797400d79c2b0a04531bb55db4b7cd0c",
+    "layout": "eps-xmp",
+    "recipe": "eps-xmp-packet-in-comment-block-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "pgf-colour-table.pgf",
+    "length": 1310,
+    "sha256": "006afc127070b98f08201576d6418d184d239790c439baa3c6d39d39669afa7b",
+    "layout": "pgf-colour-table",
+    "recipe": "pgf-indexed-mode-colour-table-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "pgf",
+    "carriers": "exif,xmp",
+    "xmp": true
+  },
+  {
+    "file": "pgf-empty-region.pgf",
+    "length": 24,
+    "sha256": "945b879dca304e9460aaf48981aa6663b15c00ccf3703f557f3e20e3cbf2b02d",
+    "layout": "pgf-empty-region",
+    "recipe": "pgf-header-region-of-no-length-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "pgf",
+    "carriers": "none",
+    "xmp": false
+  },
+  {
+    "file": "pgf-png.pgf",
+    "length": 542,
+    "sha256": "ad48808673a2edbf0da70006ba32819b6486218205828dc0a0a82cc2ee1dd00c",
+    "layout": "pgf-png",
+    "recipe": "pgf-header-region-holding-a-png-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "pgf",
+    "carriers": "exif,xmp",
+    "xmp": true
+  }
+]

@@ -347,14 +347,16 @@ jobs:
             python tools/reference/${name}_owned_fixtures.py generate artifacts/parity/generated
           done
           python tools/reference/dng_fixtures.py generate artifacts/parity/generated
+          python tools/reference/eps_pgf_fixtures.py generate artifacts/parity/generated
       - name: Parity against owned fixtures (oracle is the pinned tool, run in this same job)
         shell: bash
         run: |
           python tools/parity/run_parity.py \
             --fixtures artifacts/parity/generated --fixtures tests/fixtures/b7 --fixtures tests/fixtures/b8 \
             --fixtures tests/fixtures/b9 --fixtures tests/fixtures/b10 --fixtures tests/fixtures/b11 \
-            --fixtures tests/fixtures/b11l \
+            --fixtures tests/fixtures/b11l --fixtures tests/fixtures/b11eps \
             --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
+            --summary-command "artifacts/parity/exiv2-bin/bin/exiv2 -ps" \
             --dump-command "$DUMP" --out artifacts/parity/owned --title 'PARITY owned' --annotate
       # Not key parity: nothing here is compared with what this library reads. The pinned tool has
       # to read every file the TIFF-based writer edited, print what the edit wrote, and print

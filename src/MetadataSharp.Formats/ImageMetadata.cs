@@ -153,6 +153,13 @@ public sealed class ImageMetadata
         // bytes a bare codestream starts with.
         if (At(header, 0, [0x00, 0x00, 0x00, 0x0C, 0x4A, 0x58, 0x4C, 0x20, 0x0D, 0x0A, 0x87, 0x0A]) || At(header, 0, [0xFF, 0x0A]))
             return MetadataFormat.Jxl;
+        // GIF, BMP, PGF and EPS are told by their first bytes; a TARGA file has no signature at its
+        // start, so it is told by the footer at its end when the whole file is given.
+        if (SmallFormats.GifMetadata.HasSignature(header)) return MetadataFormat.Gif;
+        if (SmallFormats.BmpMetadata.HasSignature(header)) return MetadataFormat.Bmp;
+        if (SmallFormats.PgfMetadata.HasSignature(header)) return MetadataFormat.Pgf;
+        if (Eps.EpsMetadata.HasSignature(header)) return MetadataFormat.Eps;
+        if (SmallFormats.TgaMetadata.HasSignature(header)) return MetadataFormat.Tga;
         return MetadataFormat.Unknown;
     }
 
@@ -385,6 +392,13 @@ public sealed class ImageMetadata
             case MetadataFormat.Crw: ReadCrw(data, limits, parts); break;
             case MetadataFormat.Mrw: ReadMrw(data, limits, parts); break;
             case MetadataFormat.Raf: ReadRaf(data, limits, parts); break;
+            // A GIF, BMP or TARGA file has no metadata block, so no reader runs for it and the
+            // snapshot is empty rather than refused.
+            case MetadataFormat.Gif:
+            case MetadataFormat.Bmp:
+            case MetadataFormat.Tga: break;
+            case MetadataFormat.Pgf: ReadPgf(data, limits, parts); break;
+            case MetadataFormat.Eps: ReadEps(data, limits, parts); break;
         }
 
         // These three readers tell the container themselves and take any bytes: a format the
@@ -587,6 +601,41 @@ public sealed class ImageMetadata
         try { metadata = JxlReader.Read(data, limits, null, refusals); }
         catch (MetadataException refusal) { parts.Refuse(refusal, ExifXmp); return; }
         parts.Exif = metadata.Exif;
+        parts.Xmp = metadata.Xmp;
+        parts.Refuse(refusals);
+    }
+
+    // ---- the small formats ----
+    //
+    // BMP, GIF and TARGA carry no EXIF, IPTC or XMP block, and the reference reads none of them: there
+    // is nothing here for a reader to refuse, so the snapshot of such a file has no parts and no
+    // errors. What the format does have is the size its header states, which is not metadata; the
+    // readers that give it - BmpMetadata, GifMetadata and TgaMetadata - are called by a consumer that
+    // wants it, as the dump tool of this repository is.
+
+    /// <summary>
+    /// A PGF file: the EXIF, IPTC and XMP of the image file its header region holds. The reference
+    /// hands the region to one reader and takes whatever that reader gives or throws, so a refusal
+    /// anywhere in the region - of the carrier's container or of one kind of its metadata - ends the
+    /// whole file as refused rather than leaving the other kinds behind.
+    /// </summary>
+    private static void ReadPgf(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
+    {
+        Pgf.PgfMetadata metadata;
+        try { metadata = Pgf.PgfMetadata.Read(data, limits); }
+        catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); return; }
+        parts.Exif = metadata.Exif;
+        parts.Iptc = metadata.Iptc;
+        parts.Xmp = metadata.Xmp;
+    }
+
+    /// <summary>An EPS file: the XMP packet of its DSC comments and nothing else.</summary>
+    private static void ReadEps(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
+    {
+        var refusals = new KindRefusals();
+        Eps.EpsMetadata metadata;
+        try { metadata = Eps.EpsMetadata.Read(data, limits, refusals); }
+        catch (MetadataException refusal) { parts.Refuse(refusal, XmpOnly); return; }
         parts.Xmp = metadata.Xmp;
         parts.Refuse(refusals);
     }
