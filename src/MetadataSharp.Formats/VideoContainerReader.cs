@@ -336,7 +336,7 @@ internal static class VideoContainerReader
         private string GuidText(ReadOnlySpan<byte> bytes)
         {
             Guid value = new(bytes);
-            return value.ToString("D", CultureInfo.InvariantCulture);
+            return value.ToString("D", CultureInfo.InvariantCulture).ToUpperInvariant();
         }
         private void ReadAsfContent(int p, int end)
         {
@@ -811,7 +811,7 @@ internal static class VideoContainerReader
                 0x4282 => "Xmp.video.DocType", 0x4287 => "Xmp.video.DocTypeVersion", 0x4285 => "Xmp.video.DocTypeReadVersion",
                 0x2AD7B1 => "Xmp.video.TimecodeScale", 0x4489 => "Xmp.video.Duration", 0x4461 => "Xmp.video.DateUTC",
                 0x4D80 => "Xmp.video.MuxingApp", 0x5741 => "Xmp.video.WritingApp", 0x7BA9 => "Xmp.video.Title",
-                0x83 => null, 0x86 => trackType == 2 ? "Xmp.audio.Compressor" : "Xmp.video.Codec",
+                0x83 => null, 0x86 => null, // Exiv2 0.28.9 skips Matroska CodecID in printed metadata.
                 0x23E383 => trackType == 2 ? "Xmp.audio.DefaultDuration" : "Xmp.video.FrameRate",
                 0xB0 => "Xmp.video.Width", 0xBA => "Xmp.video.Height", 0x54B0 => "Xmp.video.DisplayWidth",
                 0x54BA => "Xmp.video.DisplayHeight", 0x54AA => "Xmp.video.CropBottom", 0x54BB => "Xmp.video.CropTop",

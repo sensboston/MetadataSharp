@@ -41,7 +41,7 @@ public sealed class VideoMetadataTests
     {
         VideoMetadata video = VideoMetadata.Read(Fixture("valid", name));
         Assert.Equal(docType, video["Xmp.video.DocType"]!.Value);
-        Assert.Equal("V_VP8", video["Xmp.video.Codec"]!.Value);
+        Assert.Null(video["Xmp.video.Codec"]); // Exiv2 recognizes CodecID but deliberately does not print it.
         Assert.Equal("320", video["Xmp.video.Width"]!.Value);
         Assert.Equal("240", video["Xmp.video.Height"]!.Value);
     }

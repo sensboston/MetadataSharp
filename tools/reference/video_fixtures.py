@@ -54,7 +54,9 @@ def fixtures() -> dict[str, bytes]:
                   (0).to_bytes(8, "little") + (3000).to_bytes(8, "little") +
                   (2).to_bytes(4, "little") + (1024).to_bytes(4, "little") +
                   (2048).to_bytes(4, "little") + (800000).to_bytes(4, "little"))
-    title = "Video fixture".encode("utf-16le")
+    # Exiv2's ASF helper drops the final UTF-16 code unit, so include a standard
+    # terminator to preserve the authored title in both readers.
+    title = "Video fixture\0".encode("utf-16le")
     content = (len(title).to_bytes(2, "little") + b"\0\0\0\0\0\0\0\0" + title)
     codec_name = "msmpeg4v3\0".encode("utf-16le")
     codec_list = (bytes(16) + (1).to_bytes(4, "little") + (1).to_bytes(2, "little") +
@@ -77,20 +79,23 @@ def fixtures() -> dict[str, bytes]:
     asf = asf_header + asf_data
 
     def matroska_file(doc_type: bytes, title: bytes) -> bytes:
-        ebml_payload = (ebml_element(bytes.fromhex("4286"), b"\x01") +
-                        ebml_element(bytes.fromhex("42f7"), b"\x01") +
+        # Exiv2 0.28.9 reads integer payloads as 64-bit regardless of EBML width;
+        # use valid eight-byte integers so the oracle and the spec value agree.
+        integer = lambda value: value.to_bytes(8, "big")
+        ebml_payload = (ebml_element(bytes.fromhex("4286"), integer(1)) +
+                        ebml_element(bytes.fromhex("42f7"), integer(1)) +
                         ebml_element(bytes.fromhex("4282"), doc_type) +
-                        ebml_element(bytes.fromhex("4287"), b"\x04") +
-                        ebml_element(bytes.fromhex("4285"), b"\x02"))
+                        ebml_element(bytes.fromhex("4287"), integer(4)) +
+                        ebml_element(bytes.fromhex("4285"), integer(2)))
         ebml_header = ebml_element(bytes.fromhex("1a45dfa3"), ebml_payload)
-        info = (ebml_element(bytes.fromhex("2ad7b1"), (1_000_000).to_bytes(3, "big")) +
+        info = (ebml_element(bytes.fromhex("2ad7b1"), integer(1_000_000)) +
                 ebml_element(bytes.fromhex("4489"), __import__("struct").pack(">d", 1200.0)) +
                 ebml_element(bytes.fromhex("7ba9"), title))
         video_track = (ebml_element(bytes.fromhex("83"), b"\x01") +
                        ebml_element(bytes.fromhex("86"), b"V_VP8") +
                        ebml_element(bytes.fromhex("e0"),
-                           ebml_element(bytes.fromhex("b0"), (320).to_bytes(2, "big")) +
-                           ebml_element(bytes.fromhex("ba"), (240).to_bytes(2, "big"))))
+                           ebml_element(bytes.fromhex("b0"), integer(320)) +
+                           ebml_element(bytes.fromhex("ba"), integer(240))))
         tracks = ebml_element(bytes.fromhex("1654ae6b"), ebml_element(bytes.fromhex("ae"), video_track))
         segment = ebml_element(bytes.fromhex("18538067"),
                                 ebml_element(bytes.fromhex("1549a966"), info) + tracks)
