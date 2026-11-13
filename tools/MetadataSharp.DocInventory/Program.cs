@@ -238,7 +238,7 @@ internal static class Inventory
             NonTrivial = nonTrivial,
             PurposeComment = purposeComment,
             Summary = summaryPresent,
-            Parameters = params,
+            Parameters = parameterNames,
             DocumentedParameters = documentedParams,
             MissingParameters = missingParams,
             MissingTypeParameters = missingTypeParams,
