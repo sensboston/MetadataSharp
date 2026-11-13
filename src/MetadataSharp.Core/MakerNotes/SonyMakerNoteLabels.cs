@@ -43,7 +43,7 @@ internal static partial class MakerNoteLabels
         new(Top, "LensID", []),
         new(Top, "Quality2", [], Form.SonyQuality2),
         new(Top, "VariableLowPassFilter", [], Form.SonyVariableLowPass),
-        new(Top, "MultiBurstMode", [(0, "Off")]),
+        new(Top, "MultiBurstMode", [], Form.SonyMultiBurstMode),
         new(Top, "PixelShiftInfo", [], Form.SonyPixelShiftInfo),
         new(Top, "FocusFrameSize", [], Form.SonyFocusFrameSize),
         new(Top, "ReleaseMode", [(0, "Normal"), (2, "Continuous"), (5, "Exposure Bracketing"), (65535, "n/a")]),

@@ -498,6 +498,9 @@ public sealed class MakerNoteInterpretationTests
     public void BothSonyLayoutsShareOneVocabulary(MakerNoteFormat format)
     {
         Assert.Equal("RAW + JPEG/HEIF", Top(format, "Quality", Longs(6)));
+        Assert.Equal("Off", Top(format, "MultiBurstMode", Undefined(0)));
+        Assert.Equal("On", Top(format, "MultiBurstMode", Undefined(1)));
+        Assert.Equal("(1)", Top(format, "MultiBurstMode", Shorts(1)));
         Assert.Equal("Aperture-priority AE", Top(format, "ExposureMode", Shorts(7)));
         Assert.Equal("n/a", Top(format, "DistortionCorrectionSetting", Longs(0xFFFFFFFF)));
         Assert.Equal("-0.3 EV", Top(format, "FlashLevel", SignedShorts(-1)));

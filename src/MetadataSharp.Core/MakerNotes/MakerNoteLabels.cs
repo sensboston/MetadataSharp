@@ -243,6 +243,7 @@ internal static partial class MakerNoteLabels
         SonyMisc3cImageHeight,
         SonyMisc3cReleaseYear,
         SonyMisc2bZoom,
+        SonyMultiBurstMode,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -444,6 +445,8 @@ internal static partial class MakerNoteLabels
                 return SonyMisc3cReleaseYear(value, cameraModel);
             case Form.SonyMisc2bZoom:
                 return SonyMisc2bZoom(value, cameraModel);
+            case Form.SonyMultiBurstMode:
+                return SonyMultiBurstMode(value);
             case Form.SonyAFAreaModeSetting:
                 return SonyAFAreaModeSetting(value, cameraModel);
             case Form.SonyFocusMode2:
@@ -1151,6 +1154,15 @@ internal static partial class MakerNoteLabels
         if (SonyMisc3cNewGeneration(model) || number > 99)
             return SonyMisc3cNewGeneration(model) ? "n/a" : Stored(number);
         return (2000 + number).ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string? SonyMultiBurstMode(ExifValue value)
+    {
+        if (value.Count != 1)
+            return null;
+        if (value.FieldType == TiffFieldType.Undefined)
+            return value.RawBytes[0] switch { 0 => "Off", 1 => "On", _ => Stored(value.RawBytes[0]) };
+        return ExifTags.TryInteger(value, 0, out long number) ? Stored(number) : null;
     }
 
     private static string? SonyMisc2bZoom(ExifValue value, string? model)
