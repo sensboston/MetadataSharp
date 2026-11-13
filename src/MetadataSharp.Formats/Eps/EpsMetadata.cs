@@ -352,7 +352,8 @@ public sealed class EpsMetadata
                 int valueAt = colon + 1;
                 while (valueAt < line.Length && line[valueAt] == (byte)' ') valueAt++;
                 int valueEnd = line.Length;
-                byte[] replacement = Encoding.ASCII.GetBytes(target);
+                string valueText = value == AnnouncementKind.Packet ? "MainFirst" : "NoMain";
+                byte[] replacement = Encoding.ASCII.GetBytes(valueText);
                 return Splice(postScript, at + valueAt, valueEnd - valueAt, replacement);
             }
             if (line.SequenceEqual("%%EndComments"u8) || line.SequenceEqual("%%EOF"u8) ||

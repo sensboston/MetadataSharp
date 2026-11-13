@@ -423,7 +423,7 @@ public sealed class MetadataCapabilitiesTests
         MetadataContainer[] profiles = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.WebP, MetadataContainer.Tiff,
             MetadataContainer.Avif, MetadataContainer.Exv, MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Psd];
         // The comment of a CRW file is a record of its heap: CrwMetadata reads it, and RawContainerTests authors one.
-        MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Crw, MetadataContainer.Exv];
+        MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Crw, MetadataContainer.Exv, MetadataContainer.Pgf];
         CapabilityDescriptor[] extracted = MetadataCapabilities.All.Where(row => row.Operation == MetadataOperation.Extract).ToArray();
         CapabilityDescriptor[] listed = MetadataCapabilities.All
             .Where(row => row.Family == MetadataFamily.Comment && row.Operation == MetadataOperation.Read).ToArray();
@@ -441,7 +441,7 @@ public sealed class MetadataCapabilitiesTests
         foreach (CapabilityDescriptor row in listed)
         {
             // Of a PNG only the keyword Comment is read.
-            Assert.Equal(row.Container == MetadataContainer.Png ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
+            Assert.Equal(row.Container is MetadataContainer.Png or MetadataContainer.Pgf ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
             Assert.StartsWith(row.Container == MetadataContainer.Crw ? "CrwMetadata.Read: " : "Comments.Read: ", row.Note);
         }
     }
@@ -470,6 +470,7 @@ public sealed class MetadataCapabilitiesTests
             (MetadataContainer.Png, "PngMetadataDocument", CapabilityStatus.Supported),
             // CrwWriterTests sets, replaces and clears the comment record.
             (MetadataContainer.Crw, "CrwMetadataDocument", CapabilityStatus.Supported),
+            (MetadataContainer.Pgf, "PgfMetadata", CapabilityStatus.Partial),
         ];
         (MetadataFamily Family, string Save, (MetadataContainer Container, string Document, CapabilityStatus Status)[] Writers)[] families =
         [
@@ -484,7 +485,7 @@ public sealed class MetadataCapabilitiesTests
             foreach ((MetadataContainer container, string document, CapabilityStatus status) in writers)
             {
                 CapabilityDescriptor[] own = rows.Where(row => row.Container == container).ToArray();
-                string api = document + "." + save;
+                string api = container == MetadataContainer.Pgf ? "PgfMetadata.Write" : document + "." + save;
 
                 Assert.Equal(writes, own.Select(row => row.Operation));
                 Assert.All(own, row =>
@@ -492,7 +493,8 @@ public sealed class MetadataCapabilitiesTests
                     Assert.Equal(status, row.Status);
                     Assert.StartsWith(api, row.Note);
                 });
-                Assert.StartsWith(api + " with null: ", own[2].Note);
+                if (container == MetadataContainer.Pgf) Assert.StartsWith(api + " with comment null: ", own[2].Note);
+                else Assert.StartsWith(api + " with null: ", own[2].Note);
             }
         }
     }
