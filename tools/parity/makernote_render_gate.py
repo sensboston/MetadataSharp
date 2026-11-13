@@ -311,9 +311,15 @@ def main(argv: list[str] | None = None) -> int:
         print(f"::error title=MakerNote parity failures::{payload}", flush=True)
     print(message, end="", flush=True)
     details = {group: gaps for group, gaps in gap_details(report, args.require).items() if gaps}
-    if details:
-        payload = base64.b64encode(zlib.compress(json.dumps(details, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
-        print(f"::notice title=MakerNote actionable gaps::{payload}", flush=True)
+    for group, rows in details.items():
+        # GitHub truncates individual workflow-command annotations. Bound long values and keep
+        # each compressed notice comfortably below the limit so the inventory remains decodable.
+        compact = [{key: value[:240] + "…" if isinstance(value, str) and len(value) > 240 else value
+                    for key, value in row.items()} for row in rows]
+        for start in range(0, len(compact), 4):
+            chunk = compact[start:start + 4]
+            payload = base64.b64encode(zlib.compress(json.dumps(chunk, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
+            print(f"::notice title=MakerNote actionable gaps {group} {start // 4 + 1}::{payload}", flush=True)
     return 0 if passed else 1
 
 
