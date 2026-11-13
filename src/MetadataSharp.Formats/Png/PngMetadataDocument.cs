@@ -29,21 +29,27 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     { this.source = source; this.owns = owns; sourcePath = path; this.options = options; this.scan = scan; this.digest = digest; }
     /// <summary>Opens a PNG from a readable, seekable stream at position zero. The stream stays open, and has to stay unchanged, while the document is in use.</summary>
     /// <exception cref="MetadataException">The data is not a file this document reads, or it exceeds a budget of the limits.</exception>
+    /// <param name="source">Readable, seekable PNG input stream positioned at the start; it remains open after the read.</param>
+    /// <param name="options">Settings for PNG parsing; null selects the defaults.</param>
+    /// <returns>An open PngMetadataDocument bound to the source and captured read options.</returns>
     public static PngMetadataDocument Open(Stream source, PngReadOptions? options = null) => OpenCore(source, false, null, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
     /// <summary>Opens a PNG file and keeps it open, shared for reading, until the document is disposed. Fails as <see cref="Open(Stream, PngReadOptions?)"/> does.</summary>
+    /// <param name="path">Path of the PNG file to identify or open.</param>
+    /// <param name="options">Settings for PNG parsing; null selects the defaults.</param>
+    /// <returns>An open PngMetadataDocument bound to the source and captured read options.</returns>
     public static PngMetadataDocument Open(string path, PngReadOptions? options = null) => OpenPath(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="Open(Stream, PngReadOptions?)"/>
     public static Task<PngMetadataDocument> OpenAsync(Stream source, PngReadOptions? options = null, CancellationToken cancellationToken = default) => OpenCore(source, false, null, (options ?? new()).Snapshot(), true, cancellationToken);
     /// <inheritdoc cref="Open(string, PngReadOptions?)"/>
     public static Task<PngMetadataDocument> OpenAsync(string path, PngReadOptions? options = null, CancellationToken cancellationToken = default) => OpenPath(path, (options ?? new()).Snapshot(), true, cancellationToken);
-    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
+    // Open the PNG path and keep the chosen sync or async I/O strategy.
     private static async Task<PngMetadataDocument> OpenPath(string path, PngReadOptions options, bool asynchronous, CancellationToken token)
     {
         ArgumentException.ThrowIfNullOrEmpty(path); token.ThrowIfCancellationRequested(); string full = Path.GetFullPath(path);
         var file = new FileStream(full, FileMode.Open, FileAccess.Read, FileShare.Read, options.Limits.CopyBufferBytes, FileOptions.SequentialScan | (asynchronous ? FileOptions.Asynchronous : FileOptions.None));
         return await OpenCore(file, true, full, options, asynchronous, token).ConfigureAwait(false);
     }
-    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
+    // Parse the PNG stream, retaining its source path and ownership policy.
     private static async Task<PngMetadataDocument> OpenCore(Stream source, bool owns, string? path, PngReadOptions options, bool asynchronous, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -149,6 +155,8 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     /// stream that can be read and not edited comes back with <see cref="IptcPacket.IsEditable"/>
     /// false, and <see cref="SaveIptc(Stream, IptcEdit)"/> refuses a change to it.
     /// </summary>
+    /// <param name="options">IPTC read settings; null selects the defaults.</param>
+    /// <returns>The parsed IPTC packet, or null when the file has no IPTC data.</returns>
     public IptcPacket? ReadIptc(IptcReadOptions? options = null) => ReadIptcCore(options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="ReadIptc"/>
     public Task<IptcPacket?> ReadIptcAsync(IptcReadOptions? options = null, CancellationToken cancellationToken = default) => ReadIptcCore(options, true, cancellationToken);
@@ -166,6 +174,7 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     /// "Raw profile type exif" text chunk, whose block comes back with
     /// <see cref="ExifMetadata.IsEditable"/> false; <see cref="SaveExif"/> refuses a change to it.
     /// </summary>
+    /// <returns>The parsed EXIF metadata, or null when the file has no EXIF block.</returns>
     public ExifMetadata? ReadExif() => ReadExifCore(false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="ReadExif"/>
     public Task<ExifMetadata?> ReadExifAsync(CancellationToken cancellationToken = default) => ReadExifCore(true, cancellationToken);
@@ -187,6 +196,8 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when the packet, compressed or not, exceeds a
     /// budget; otherwise as <see cref="XmpPacket.Parse"/> fails.
     /// </exception>
+    /// <param name="options">Settings for XMP packet parsing; null selects the defaults.</param>
+    /// <returns>The parsed XMP packet, or null when the file has no XMP packet.</returns>
     public XmpPacket? ReadXmp(XmpReadOptions? options = null) => ReadXmpCore(options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="ReadXmp"/>
     public Task<XmpPacket?> ReadXmpAsync(XmpReadOptions? options = null, CancellationToken cancellationToken = default) => ReadXmpCore(options, true, cancellationToken);
@@ -266,7 +277,7 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
         byte[]? rebuilt = bytes is null ? null : Crc.Chunk(isXmp ? "iTXt" : "eXIf", bytes);
         token.ThrowIfCancellationRequested(); return new(false, chunk, rebuilt);
     }
-    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
+    // Stream the planned PNG chunks while copying untouched source ranges.
     private async Task Emit(Stream output, Prepared prepared, bool asynchronous, CancellationToken token)
     {
         if (prepared.Copy) { await ContainerIo.Copy(source, output, 0, scan.Length, options.Limits.CopyBufferBytes, asynchronous, token).ConfigureAwait(false); return; }
@@ -283,6 +294,8 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
     /// opened; otherwise the code of the reason the edit is refused.
     /// </exception>
+    /// <param name="destination">Empty writable, seekable destination stream for the EXIF edit; it must not be the source stream.</param>
+    /// <param name="edit">EXIF changes to apply to this PNG document.</param>
     public void SaveExif(Stream destination, ExifEdit edit) { ArgumentNullException.ThrowIfNull(edit); SaveCore(destination, edit, null, false, default).GetAwaiter().GetResult(); }
     /// <inheritdoc cref="SaveExif(Stream, ExifEdit)"/>
     public Task SaveExifAsync(Stream destination, ExifEdit edit, CancellationToken cancellationToken = default) { ArgumentNullException.ThrowIfNull(edit); return SaveCore(destination, edit, null, true, cancellationToken); }
@@ -294,6 +307,8 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
     /// opened; otherwise the code of the reason the edit is refused.
     /// </exception>
+    /// <param name="destination">Empty writable, seekable destination stream for the XMP edit; it must not be the source stream.</param>
+    /// <param name="edit">XMP changes to apply to this PNG document.</param>
     public void SaveXmp(Stream destination, XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); SaveCore(destination, null, edit, false, default).GetAwaiter().GetResult(); }
     /// <inheritdoc cref="SaveXmp(Stream, XmpEdit)"/>
     public Task SaveXmpAsync(Stream destination, XmpEdit edit, CancellationToken cancellationToken = default) { ArgumentNullException.ThrowIfNull(edit); return SaveCore(destination, null, edit, true, cancellationToken); }
@@ -304,15 +319,19 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     }
     /// <summary>As <see cref="SaveExif(Stream, ExifEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
     /// <exception cref="IOException">The destination exists or is the source.</exception>
+    /// <param name="destinationPath">Path for publishing EXIF edits in PNG format.</param>
+    /// <param name="edit">EXIF changes to apply to this PNG document.</param>
     public void SaveExifAs(string destinationPath, ExifEdit edit) { ArgumentNullException.ThrowIfNull(edit); SavePath(destinationPath, edit, null, false, default).GetAwaiter().GetResult(); }
     /// <inheritdoc cref="SaveExifAs(string, ExifEdit)"/>
     public Task SaveExifAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) { ArgumentNullException.ThrowIfNull(edit); return SavePath(destinationPath, edit, null, true, cancellationToken); }
     /// <summary>As <see cref="SaveXmp(Stream, XmpEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
     /// <exception cref="IOException">The destination exists or is the source.</exception>
+    /// <param name="destinationPath">Path for publishing XMP edits in PNG format.</param>
+    /// <param name="edit">XMP changes to apply to this PNG document.</param>
     public void SaveXmpAs(string destinationPath, XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); SavePath(destinationPath, null, edit, false, default).GetAwaiter().GetResult(); }
     /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) { ArgumentNullException.ThrowIfNull(edit); return SavePath(destinationPath, null, edit, true, cancellationToken); }
-    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
+    // Publish the validated PNG edit atomically at the requested path.
     private async Task SavePath(string path, ExifEdit? exif, XmpEdit? xmp, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); string target = ContainerIo.Target(path, sourcePath);

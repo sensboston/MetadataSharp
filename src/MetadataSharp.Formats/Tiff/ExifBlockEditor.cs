@@ -201,7 +201,7 @@ internal static class ExifBlockEditor
     private static bool Same(ExifValue left, ExifValue right) =>
         left.FieldType == right.FieldType && left.Count == right.Count && left.RawBytes.SequenceEqual(right.RawBytes);
 
-    // Convert budget exhaustion into the format-specific LimitExceeded error.
+    // Preserve a nested TIFF limit failure when translating editor errors.
     private static MetadataException? Limit(MetadataException failure) =>
         failure.Code is MetadataErrorCode.LimitExceeded or MetadataErrorCode.ExifTooLarge
             ? new MetadataException(failure.Code, failure.Message)

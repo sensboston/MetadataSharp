@@ -37,6 +37,9 @@ public static class Previews
     /// stream is not listed; a file of an unknown kind has no previews.
     /// </summary>
     /// <exception cref="MetadataException"><see cref="MetadataErrorCode.LimitExceeded"/> when the file exceeds the input budget.</exception>
+    /// <param name="file">Complete input image file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing image file; null selects the default limits.</param>
+    /// <returns>Preview records sorted from smallest image to largest.</returns>
     public static IReadOnlyList<PreviewImage> List(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
     {
         limits = Checked(file, limits);
@@ -56,6 +59,10 @@ public static class Previews
     /// preview lies outside the file or is not what it claims to be;
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a type that is only listed.
     /// </exception>
+    /// <param name="file">Complete input image file bytes starting at the container signature.</param>
+    /// <param name="preview">Preview record returned by <see cref="List"/> whose byte range is to extract.</param>
+    /// <param name="limits">Resource budgets applied while parsing image file; null selects the default limits.</param>
+    /// <returns>The selected preview bytes, including tolerated zero padding after a JPEG EOI marker.</returns>
     public static byte[] Extract(ReadOnlySpan<byte> file, PreviewImage preview, MetadataLimits? limits = null)
     {
         ArgumentNullException.ThrowIfNull(preview);
@@ -84,7 +91,7 @@ public static class Previews
         return bytes.ToArray();
     }
 
-    // Reject invalid metadata ranges, overlaps, or field shapes before accepting the data.
+    // Validate preview input limits before traversing any container-specific pointers.
     private static MetadataLimits Checked(ReadOnlySpan<byte> file, MetadataLimits? limits)
     {
         limits ??= new MetadataLimits();
@@ -97,7 +104,7 @@ public static class Previews
     private static long Area(PreviewImage preview) =>
         preview.Width is int width && preview.Height is int height ? (long)width * height : 0;
 
-    // Compare the staged result with the source to confirm unrelated metadata data stayed unchanged.
+    // Sort previews by pixel area, then by byte offset for stable ordering.
     private static int Compare(PreviewImage left, PreviewImage right)
     {
         int order = Area(left).CompareTo(Area(right));
@@ -122,7 +129,7 @@ internal ref struct PreviewScanner
     private int directories;
     private int subImages;
 
-    // Capture validated inputs and stable state for this metadata object.
+    // Retain the file span and limits while scanning preview pointers.
     internal PreviewScanner(ReadOnlySpan<byte> data, MetadataLimits limits)
     {
         this.data = data;
@@ -439,7 +446,7 @@ internal ref struct PreviewScanner
         Pointer(frame, entries, 0x0088, 0x0089, "Exif." + group + ".ThumbnailOffset", tableStart, tableEnd);
     }
 
-    // Reject invalid metadata ranges, overlaps, or field shapes before accepting the data.
+    // Resolve a paired TIFF offset/length tag only when its range stays inside the owning table.
     private void Pointer(Frame frame, List<Entry> entries, ushort offsetTag, ushort lengthTag, string source, int tableStart, int tableEnd)
     {
         long offset = Number(frame, entries, offsetTag), length = Number(frame, entries, lengthTag);
@@ -507,7 +514,7 @@ internal ref struct PreviewScanner
         return value < 0 ? missing : value;
     }
 
-    // Extract metadata from the already-validated representation.
+    // Read one TIFF entry value while checking its type, count and byte range.
     private long Element(Frame frame, Entry entry, int index)
     {
         if ((uint)index >= entry.Count) return -1;
@@ -520,7 +527,7 @@ internal ref struct PreviewScanner
         };
     }
 
-    // Extract metadata from the already-validated representation.
+    // Decode a preview text field only when it contains a supported string value.
     private string Text(Entry? field)
     {
         if (field is not Entry entry || entry.Type != 2) return "";
@@ -766,7 +773,7 @@ internal ref struct PreviewScanner
 
     private static bool Sized(int size) => size is 0 or 4 or 8;
 
-    // Extract metadata from the already-validated representation.
+    // Read a little-endian TIFF scalar of the requested byte width.
     private ulong Field(int at, int size) => size switch
     {
         4 => Be32(at),

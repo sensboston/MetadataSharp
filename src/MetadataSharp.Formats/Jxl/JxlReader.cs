@@ -56,7 +56,7 @@ internal ref struct JxlReader
     private JxlBlock xmp;
     private bool hasJumbf;
 
-    // Capture validated inputs and stable state for this metadata object.
+    // Retain the JXL input and limits used for box traversal.
     private JxlReader(ReadOnlySpan<byte> data, MetadataLimits limits)
     {
         this.data = data;
@@ -89,7 +89,7 @@ internal ref struct JxlReader
         return reader.Metadata(layout, xmpOptions, refusals);
     }
 
-    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
+    // Validate the JXL signature and parse boxes under the selected resource limits.
     private static JxlReader Open(ReadOnlySpan<byte> data, MetadataLimits? limits)
     {
         limits ??= BmffReadOptions.DefaultLimits;
@@ -137,7 +137,7 @@ internal ref struct JxlReader
         return new JxlLayout(true, exif, xmp, hasJumbf);
     }
 
-    // Reject invalid metadata ranges, overlaps, or field shapes before accepting the data.
+    // Ensure the JXL block has a valid size and does not claim bytes already owned by another box.
     private readonly void Claim(ref JxlBlock block, BoxSpan box, int start, bool compressed, string twice)
     {
         if (block.Present) throw walk.Fail(twice, box.Start);

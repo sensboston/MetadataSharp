@@ -86,6 +86,9 @@ public sealed class CrwMetadataDocument : IDisposable
     /// As <see cref="CrwMetadata.Read"/>; <see cref="MetadataErrorCode.UnsupportedFeature"/> for a
     /// directory that lies in its own entry.
     /// </exception>
+    /// <param name="source">Readable, seekable CRW/CIFF input stream positioned at the start; it remains open after the read.</param>
+    /// <param name="limits">Resource budgets applied while parsing CRW/CIFF; null selects the default limits.</param>
+    /// <returns>An open CrwMetadataDocument bound to the source and captured read options.</returns>
     public static CrwMetadataDocument Open(Stream source, MetadataLimits? limits = null)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -96,6 +99,9 @@ public sealed class CrwMetadataDocument : IDisposable
 
     /// <summary>Opens a CRW file by its path; the file is read whole and not kept open.</summary>
     /// <exception cref="MetadataException">As <see cref="Open(Stream, MetadataLimits)"/>.</exception>
+    /// <param name="path">Path of the CRW/CIFF file to identify or open.</param>
+    /// <param name="limits">Resource budgets applied while parsing CRW/CIFF; null selects the default limits.</param>
+    /// <returns>An open CrwMetadataDocument bound to the source and captured read options.</returns>
     public static CrwMetadataDocument Open(string path, MetadataLimits? limits = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -130,6 +136,8 @@ public sealed class CrwMetadataDocument : IDisposable
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded;
     /// <see cref="MetadataErrorCode.UnsafeRelocation"/> when the output does not read back as planned.
     /// </exception>
+    /// <param name="destination">Empty writable, seekable destination stream for the EXIF edit; it must not be the source stream.</param>
+    /// <param name="edit">EXIF changes to apply to this CRW/CIFF document.</param>
     public void SaveExif(Stream destination, ExifEdit edit)
     {
         ArgumentNullException.ThrowIfNull(edit);
@@ -140,6 +148,11 @@ public sealed class CrwMetadataDocument : IDisposable
     }
 
     /// <summary>As <see cref="SaveExif"/>, to a new file.</summary>
+    /// <param name="destinationPath">Path for publishing EXIF edits in CRW/CIFF format.</param>
+    /// <param name="edit">EXIF changes to apply to this CRW/CIFF document.</param>
+    /// <exception cref="ArgumentNullException">The edit is null.</exception>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
+    /// <exception cref="IOException">The destination cannot be published safely.</exception>
     public void SaveExifAs(string destinationPath, ExifEdit edit)
     {
         ArgumentNullException.ThrowIfNull(edit);
@@ -160,6 +173,8 @@ public sealed class CrwMetadataDocument : IDisposable
     /// <see cref="MetadataLimits.MaxValueBytes"/>; <see cref="MetadataErrorCode.UnsafeRelocation"/>
     /// when the output does not read back as planned.
     /// </exception>
+    /// <param name="destination">Empty writable, seekable destination stream for the comment edit; it must not be the source stream.</param>
+    /// <param name="comment">Comment text to store, or null to remove the comment.</param>
     public void SaveComment(Stream destination, string? comment)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -169,6 +184,10 @@ public sealed class CrwMetadataDocument : IDisposable
     }
 
     /// <summary>As <see cref="SaveComment"/>, to a new file.</summary>
+    /// <param name="destinationPath">Path for publishing comment changes in CRW/CIFF format.</param>
+    /// <param name="comment">Comment text to store, or null to remove the comment.</param>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
+    /// <exception cref="IOException">The destination cannot be published safely.</exception>
     public void SaveCommentAs(string destinationPath, string? comment)
     {
         ObjectDisposedException.ThrowIf(disposed, this);

@@ -44,7 +44,7 @@ internal static class EmbeddedFile
     /// <summary>The most one embedded block may hold: a value, which is also retained.</summary>
     internal static int Budget(MetadataLimits limits) => Math.Min(limits.MaxValueBytes, limits.MaxRetainedMetadataBytes);
 
-    // Convert budget exhaustion into the format-specific LimitExceeded error.
+    // Create the shared limit error used by bounded embedded-file readers.
     internal static MetadataException Limit(string message, long? offset = null) =>
         new(MetadataErrorCode.LimitExceeded, message, offset);
 

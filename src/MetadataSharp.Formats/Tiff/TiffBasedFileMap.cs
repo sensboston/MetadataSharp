@@ -102,7 +102,7 @@ internal sealed class TiffBasedFileMap
     private readonly bool rw2;
     private int totalEntries;
 
-    // Capture validated inputs and stable state for this TIFF/DNG object.
+    // Retain the TIFF source bytes and accounted ranges used to protect untouched data.
     private TiffBasedFileMap(byte[] file, MetadataLimits limits, int maxRanges)
     {
         this.file = file;

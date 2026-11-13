@@ -58,6 +58,8 @@ public sealed partial class BmffMetadataDocument
         SaveIcc(destination, Clone(profile), true, cancellationToken);
 
     /// <summary>As <see cref="SaveIccProfile(Stream, byte[])"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <param name="destinationPath">Path for publishing ICC profile changes in BMFF format.</param>
+    /// <param name="profile">Complete ICC profile bytes, or null to remove the profile.</param>
     public void SaveIccProfileAs(string destinationPath, byte[]? profile) =>
         SaveIccPath(destinationPath, Clone(profile), false, default).GetAwaiter().GetResult();
 
@@ -67,7 +69,7 @@ public sealed partial class BmffMetadataDocument
 
     private static byte[]? Clone(byte[]? bytes) => bytes is null ? null : (byte[])bytes.Clone();
 
-    // Write the prepared BMFF edit only after validation, preserving unrelated payloads.
+    // Replace the primary item’s ICC property while retaining unrelated BMFF boxes.
     private async Task SaveIcc(Stream destination, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -76,7 +78,7 @@ public sealed partial class BmffMetadataDocument
         await ContainerIo.Write(destination, output, asynchronous, token).ConfigureAwait(false);
     }
 
-    // Write the prepared BMFF edit only after validation, preserving unrelated payloads.
+    // Publish the ICC profile update as a new BMFF file after verification.
     private async Task SaveIccPath(string destinationPath, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);

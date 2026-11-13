@@ -52,6 +52,7 @@ public static class IccProfiles
     /// chunks, boxes, resources, directory entries or property associations, or the profile exceeds
     /// a budget.
     /// </exception>
+    /// <returns>A copy of the embedded ICC profile, or null when the file has no supported profile.</returns>
     public static byte[]? Read(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
     {
         limits = EmbeddedFile.Checked(file, limits);
@@ -69,7 +70,7 @@ public static class IccProfiles
         };
     }
 
-    // Preserve the format-specific error code and source offset for malformed metadata data.
+    // Report an embedded ICC profile that fails validation at its source location.
     internal static MetadataException Invalid(string message, long? offset = null) =>
         new(MetadataErrorCode.InvalidIccProfile, message, offset);
 

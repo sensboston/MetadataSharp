@@ -18,7 +18,7 @@ public sealed class ExvMetadata
     private const int MaxFileBytes = 64 * 1024 * 1024;
     private const int MaxSegments = 4_096;
 
-    // Capture validated inputs and stable state for this metadata object.
+    // Capture the metadata packets extracted from the EXV payload.
     private ExvMetadata(ExifMetadata? exif, XmpPacket? xmp, IptcPacket? iptc)
     {
         Exif = exif;
@@ -36,6 +36,9 @@ public sealed class ExvMetadata
     public IptcPacket? Iptc { get; }
 
     /// <summary>Reads a complete EXV buffer. Segments other than EXIF, XMP and Photoshop are skipped.</summary>
+    /// <param name="data">Complete EXV file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing EXV; null selects the default limits.</param>
+    /// <returns>The parsed ExvMetadata for the complete input file.</returns>
     public static ExvMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
         Read(data, limits, null);
 
@@ -97,7 +100,7 @@ public sealed class ExvMetadata
         return new ExvMetadata(exif, xmp, iptc);
     }
 
-    // Preserve the format-specific error code and source offset for malformed metadata data.
+    // Report invalid EXV framing at the offending input offset.
     private static MetadataException Bad(string message, long offset) =>
         new(MetadataErrorCode.InvalidExv, message, offset);
 }

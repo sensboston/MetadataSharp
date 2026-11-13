@@ -55,6 +55,8 @@ public sealed partial class JpegMetadataDocument
         SaveEmbedded(destination, EmbeddedKind.Comment, comment, null, true, cancellationToken);
 
     /// <summary>As <see cref="SaveComment(Stream, string)"/>, to a new file that is published only when it is complete.</summary>
+    /// <param name="destinationPath">Path for publishing comment changes in JPEG format.</param>
+    /// <param name="comment">Comment text to store, or null to remove the comment.</param>
     public void SaveCommentAs(string destinationPath, string? comment) =>
         SaveEmbeddedPath(destinationPath, EmbeddedKind.Comment, comment, null, false, default).GetAwaiter().GetResult();
 
@@ -99,6 +101,8 @@ public sealed partial class JpegMetadataDocument
         SaveEmbedded(destination, EmbeddedKind.IccProfile, null, Copy(profile), true, cancellationToken);
 
     /// <summary>As <see cref="SaveIccProfile(Stream, byte[])"/>, to a new file that is published only when it is complete.</summary>
+    /// <param name="destinationPath">Path for publishing ICC profile changes in JPEG format.</param>
+    /// <param name="profile">Complete ICC profile bytes, or null to remove the profile.</param>
     public void SaveIccProfileAs(string destinationPath, byte[]? profile) =>
         SaveEmbeddedPath(destinationPath, EmbeddedKind.IccProfile, null, Copy(profile), false, default).GetAwaiter().GetResult();
 
@@ -119,7 +123,7 @@ public sealed partial class JpegMetadataDocument
 
     private static byte[]? Copy(byte[]? bytes) => bytes is null ? null : (byte[])bytes.Clone();
 
-    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
+    // Stage the JPEG comment or ICC edit before writing any output bytes.
     private async Task SaveEmbedded(Stream destination, EmbeddedKind kind, string? comment, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -128,7 +132,7 @@ public sealed partial class JpegMetadataDocument
         await EmitEmbedded(destination, plan, asynchronous, token).ConfigureAwait(false);
     }
 
-    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
+    // Publish an embedded JPEG edit only after the staged output passes verification.
     private async Task SaveEmbeddedPath(string destinationPath, EmbeddedKind kind, string? comment, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -359,7 +363,7 @@ public sealed partial class JpegMetadataDocument
         }
     }
 
-    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
+    // Emit the validated JPEG embedded-data plan to the destination stream.
     private async Task EmitEmbedded(Stream output, EmbeddedPlan? plan, bool asynchronous, CancellationToken token)
     {
         if (plan is null)

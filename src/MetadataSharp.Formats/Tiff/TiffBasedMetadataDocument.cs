@@ -71,10 +71,16 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// <see cref="MetadataErrorCode.InvalidTiff"/> when the data does not begin with a TIFF, ORF or
     /// RW2 header; <see cref="MetadataErrorCode.LimitExceeded"/> when it exceeds the input budget.
     /// </exception>
+    /// <param name="source">Readable, seekable TIFF/DNG input stream positioned at the start; it remains open after the read.</param>
+    /// <param name="options">Settings for TIFF/DNG parsing; null selects the defaults.</param>
+    /// <returns>An open TiffBasedMetadataDocument bound to the source and captured read options.</returns>
     public static TiffBasedMetadataDocument Open(Stream source, TiffReadOptions? options = null) =>
         OpenCore(source, null, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
 
     /// <summary>Reads the whole file and closes it.</summary>
+    /// <param name="path">Path of the TIFF/DNG file to identify or open.</param>
+    /// <param name="options">Settings for TIFF/DNG parsing; null selects the defaults.</param>
+    /// <returns>An open TiffBasedMetadataDocument bound to the source and captured read options.</returns>
     public static TiffBasedMetadataDocument Open(string path, TiffReadOptions? options = null) =>
         OpenPath(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
 
@@ -102,7 +108,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     internal static Task<TiffBasedMetadataDocument> OpenLegacyAsync(string path, TiffEditOptions options, CancellationToken token) =>
         OpenLegacyPath(path, options.Snapshot(), true, token);
 
-    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
+    // Open a legacy TIFF path using edit-oriented read settings.
     private static async Task<TiffBasedMetadataDocument> OpenLegacyPath(string path, TiffEditOptions options,
         bool asynchronous, CancellationToken token)
     {
@@ -119,7 +125,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         TiffEditOptions options, bool asynchronous, CancellationToken token, bool ownsStream = false) =>
         OpenCore(source, path, options.ReadOptions, asynchronous, token, options, ownsStream);
 
-    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
+    // Open a TIFF/DNG path using the configured parser limits.
     private static async Task<TiffBasedMetadataDocument> OpenPath(string path, TiffReadOptions options,
         bool asynchronous, CancellationToken token)
     {
@@ -132,7 +138,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         finally { await file.DisposeAsync().ConfigureAwait(false); }
     }
 
-    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
+    // Parse the TIFF/DNG stream and record the path needed for safe publication.
     private static async Task<TiffBasedMetadataDocument> OpenCore(Stream source, string? path,
         TiffReadOptions options, bool asynchronous, CancellationToken token,
         TiffEditOptions? legacyOptions = null, bool ownsLegacyStream = false)
@@ -186,6 +192,9 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         new(MetadataErrorCode.LimitExceeded, "The TIFF file exceeds the input budget.", 0);
 
     /// <summary>The EXIF metadata of the file, as <see cref="TiffExif.Read"/> returns it.</summary>
+    /// <returns>The parsed EXIF metadata, or null when the file has no EXIF block.</returns>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">The requested legacy TIFF operation is unavailable for this document layout.</exception>
     public ExifMetadata ReadExif()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -193,6 +202,10 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     }
 
     /// <summary>The IPTC of the file, as <see cref="TiffIptc.Read"/> returns it, or null.</summary>
+    /// <param name="options">IPTC read settings; null selects the defaults.</param>
+    /// <returns>The parsed IPTC packet, or null when the file has no IPTC data.</returns>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">The requested legacy TIFF operation is unavailable for this document layout.</exception>
     public IptcPacket? ReadIptc(IptcReadOptions? options = null)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -200,6 +213,10 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     }
 
     /// <summary>The XMP packet stored as the value of tag 700 of the primary directory, or null.</summary>
+    /// <param name="options">Settings for IPTC packet parsing; null selects the defaults.</param>
+    /// <returns>The parsed XMP packet, or null when the file has no XMP packet.</returns>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
+    /// <exception cref="InvalidOperationException">The requested legacy TIFF operation is unavailable for this document layout.</exception>
     public XmpPacket? ReadXmp(XmpReadOptions? options = null)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -240,7 +257,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     internal Task SaveLegacyAsync(Stream destination, TiffMetadataEdit edit, bool asynchronous, CancellationToken token) =>
         SaveLegacyCore(destination, edit, asynchronous, token);
 
-    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
+    // Prepare and verify legacy TIFF append edits before emitting any destination bytes.
     private async Task SaveLegacyCore(Stream destination, TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -253,7 +270,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     internal Task SaveLegacyAsAsync(string path, TiffMetadataEdit edit, bool asynchronous, CancellationToken token) =>
         SaveLegacyPath(path, edit, asynchronous, token);
 
-    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
+    // Publish a legacy TIFF append plan as a new file after read-back validation.
     private async Task SaveLegacyPath(string path, TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -276,7 +293,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
             .Create(changes).ConfigureAwait(false);
     }
 
-    // Compare the staged result with the source to confirm unrelated TIFF/DNG data stayed unchanged.
+    // Re-read the legacy TIFF output and verify the source data outside appended edits.
     private async Task VerifyLegacySource(bool asynchronous, CancellationToken token)
     {
         if (legacyStream is null || legacyDigest is null || legacyOptions is null)
@@ -286,7 +303,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (!CryptographicOperations.FixedTimeEquals(digest, legacyDigest)) throw ContainerIo.Changed();
     }
 
-    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
+    // Emit planned legacy TIFF append ranges and copy the original file remainder.
     private async Task EmitLegacy(Stream destination, TiffAppendPlan? plan, bool asynchronous, CancellationToken token)
     {
         if (legacyStream is null || legacyOptions is null) throw new InvalidOperationException("Legacy TIFF source is not retained.");
@@ -316,6 +333,8 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// output would exceed the input budget of the limits, another of their budgets, or the four
     /// gigabytes a TIFF offset addresses; otherwise the code the reader reports for the file.
     /// </exception>
+    /// <param name="destination">Empty writable, seekable destination stream for the EXIF edit; it must not be the source stream.</param>
+    /// <param name="edit">EXIF changes to apply to this TIFF/DNG document.</param>
     public void SaveExif(Stream destination, ExifEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveExif(Stream, ExifEdit)"/>
     public Task SaveExifAsync(Stream destination, ExifEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
@@ -325,6 +344,8 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// directory, created when the file has none. Fails as <see cref="SaveExif"/> does, and with
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a packet outside the editable profile.
     /// </summary>
+    /// <param name="destination">Empty writable, seekable destination stream for the XMP edit; it must not be the source stream.</param>
+    /// <param name="edit">XMP changes to apply to this TIFF/DNG document.</param>
     public void SaveXmp(Stream destination, XmpEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveXmp(Stream, XmpEdit)"/>
     public Task SaveXmpAsync(Stream destination, XmpEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
@@ -338,10 +359,15 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// it to be recomputed; it is removed with the stream and never added. The resources of a file
     /// whose stream is the value of tag 0x83BB are not touched. Fails as <see cref="SaveExif"/> does.
     /// </summary>
+    /// <param name="destination">Empty writable, seekable destination stream for the IPTC edit; it must not be the source stream.</param>
+    /// <param name="edit">IPTC changes to apply to this TIFF/DNG document.</param>
     public void SaveIptc(Stream destination, IptcEdit edit) => SaveCore(destination, Edit(edit, null), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit)"/>
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit, null), true, cancellationToken);
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, with options; null options are the defaults.</summary>
+    /// <param name="destination">Empty writable, seekable destination stream for the IPTC edit; it must not be the source stream.</param>
+    /// <param name="edit">IPTC changes to apply to this TIFF/DNG document.</param>
+    /// <param name="options">IPTC write settings; null selects the defaults.</param>
     public void SaveIptc(Stream destination, IptcEdit edit, IptcWriteOptions? options) => SaveCore(destination, Edit(edit, options), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit, IptcWriteOptions)"/>
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit, options), true, cancellationToken);
@@ -387,24 +413,35 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     public Task SaveIccProfileAsync(Stream destination, byte[]? profile, CancellationToken cancellationToken = default) => SaveCore(destination, Icc(profile), true, cancellationToken);
 
     /// <summary>As <see cref="SaveIccProfile(Stream, byte[])"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <param name="destinationPath">Path for publishing ICC profile changes in TIFF/DNG format.</param>
+    /// <param name="profile">Complete ICC profile bytes, or null to remove the profile.</param>
     public void SaveIccProfileAs(string destinationPath, byte[]? profile) => SavePath(destinationPath, Icc(profile), false, default).GetAwaiter().GetResult();
 
     /// <inheritdoc cref="SaveIccProfileAs(string, byte[])"/>
     public Task SaveIccProfileAsAsync(string destinationPath, byte[]? profile, CancellationToken cancellationToken = default) => SavePath(destinationPath, Icc(profile), true, cancellationToken);
 
     /// <summary>Writes the edited file to a new path; the file appears there complete or not at all.</summary>
+    /// <param name="destinationPath">Path for publishing EXIF edits in TIFF/DNG format.</param>
+    /// <param name="edit">EXIF changes to apply to this TIFF/DNG document.</param>
     public void SaveExifAs(string destinationPath, ExifEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveExifAs(string, ExifEdit)"/>
     public Task SaveExifAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
     /// <summary>As <see cref="SaveXmp(Stream, XmpEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <param name="destinationPath">Path for publishing XMP edits in TIFF/DNG format.</param>
+    /// <param name="edit">XMP changes to apply to this TIFF/DNG document.</param>
     public void SaveXmpAs(string destinationPath, XmpEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <param name="destinationPath">Path for publishing IPTC edits in TIFF/DNG format.</param>
+    /// <param name="edit">IPTC changes to apply to this TIFF/DNG document.</param>
     public void SaveIptcAs(string destinationPath, IptcEdit edit) => SavePath(destinationPath, Edit(edit, null), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit, null), true, cancellationToken);
     /// <summary>As <see cref="SaveIptcAs(string, IptcEdit)"/>, with options; null options are the defaults.</summary>
+    /// <param name="destinationPath">Path for publishing IPTC edits in TIFF/DNG format.</param>
+    /// <param name="edit">IPTC changes to apply to this TIFF/DNG document.</param>
+    /// <param name="options">IPTC write settings; null selects the defaults.</param>
     public void SaveIptcAs(string destinationPath, IptcEdit edit, IptcWriteOptions? options) => SavePath(destinationPath, Edit(edit, options), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit, IptcWriteOptions)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit, options), true, cancellationToken);
@@ -417,8 +454,12 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// <see cref="SaveXmp(Stream, XmpEdit)"/> and <see cref="SaveIptc(Stream, IptcEdit, IptcWriteOptions?)"/>
     /// do, before anything is written. Edits without a change copy the file.
     /// </summary>
+    /// <param name="destination">Empty writable, seekable destination stream for the combined metadata edit; it must not be the source stream.</param>
+    /// <param name="edits">EXIF, IPTC and XMP changes to apply together to this TIFF/DNG image.</param>
     public void SaveAll(Stream destination, SyncEdits edits) => SaveCore(destination, Edit(edits), false, default).GetAwaiter().GetResult();
     /// <summary>As <see cref="SaveAll(Stream, SyncEdits)"/>, to a new file.</summary>
+    /// <param name="destinationPath">Path for publishing combined metadata edits in TIFF/DNG format.</param>
+    /// <param name="edits">EXIF, IPTC and XMP changes to apply together to this TIFF/DNG image.</param>
     public void SaveAllAs(string destinationPath, SyncEdits edits) => SavePath(destinationPath, Edit(edits), false, default).GetAwaiter().GetResult();
     private static Pending Edit(SyncEdits edits)
     {
@@ -438,7 +479,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     private static Pending Edit(IptcEdit edit, IptcWriteOptions? write) { ArgumentNullException.ThrowIfNull(edit); return new(null, null, edit.Capture(), null, write?.UpdateDigest ?? false); }
     private static Pending Icc(byte[]? profile) => new(null, null, null, new IccChange(profile is null ? null : (byte[])profile.Clone()));
 
-    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
+    // Build and verify the updated TIFF/DNG layout before streaming its write plan.
     private async Task SaveCore(Stream destination, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -447,7 +488,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         await ContainerIo.Write(destination, output, asynchronous, token).ConfigureAwait(false);
     }
 
-    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
+    // Publish a validated TIFF/DNG edit to a separate destination path.
     private async Task SavePath(string destinationPath, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -692,7 +733,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         return left.AsSpan().SequenceEqual(right);
     }
 
-    // Extract TIFF/DNG from the already-validated representation.
+    // Resolve a field value from the TIFF directory selected by its source offset and tag.
     private ReadOnlySpan<byte> Value(TiffBasedField field)
     {
         if (field.ValueOffset > source.Length - field.ByteLength)

@@ -42,6 +42,8 @@ public sealed class GifMetadata
     /// descriptor that does not lie inside the file is not a refusal: the size is then the two zeroes
     /// the reference reports of a file it cannot take a size from.
     /// </exception>
+    /// <param name="data">Complete input file bytes, beginning at the container signature.</param>
+    /// <returns>The parsed GifMetadata for the complete input file.</returns>
     public static GifMetadata Read(ReadOnlySpan<byte> data)
     {
         if (!HasSignature(data)) throw new MetadataException(MetadataErrorCode.InvalidGif, "The file does not begin with the signature of a GIF file.", 0);

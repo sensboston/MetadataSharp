@@ -37,6 +37,9 @@ public sealed class BmffMetadata
     /// <paramref name="limits"/> the budgets are the defaults of <see cref="BmffReadOptions"/>; the
     /// EXIF block of an item may be longer than a JPEG APP1 segment holds.
     /// </summary>
+    /// <param name="data">Complete BMFF file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing BMFF; null selects the default limits.</param>
+    /// <returns>The parsed BmffMetadata for the complete input file.</returns>
     public static BmffMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
         BmffReader.Read(data, limits);
 }
@@ -79,7 +82,7 @@ internal ref struct BmffReader
     private bool hasLocations;
     private bool hasIdat;
 
-    // Capture validated inputs and stable state for this BMFF object.
+    // Retain parsed BMFF properties and metadata extents for the metadata facade.
     private BmffReader(ReadOnlySpan<byte> data, MetadataLimits limits, XmpReadOptions? xmpOptions)
     {
         this.data = data;
@@ -504,11 +507,11 @@ internal ref struct BmffReader
 
     private ulong U64(int at) => BinaryPrimitives.ReadUInt64BigEndian(data.Slice(at, 8));
 
-    // Preserve the format-specific error code and source offset for malformed BMFF data.
+    // Convert a reader-detected BMFF defect into an offset-aware metadata error.
     private MetadataException Fail(string message, long offset) =>
         new(MetadataErrorCode.InvalidBmff, message, offset >= 0 && offset <= data.Length ? offset : null);
 
-    // Convert budget exhaustion into the format-specific LimitExceeded error.
+    // Build the BMFF limit exception while preserving the failing byte offset.
     private MetadataException Limit(string message, long offset) =>
         new(MetadataErrorCode.LimitExceeded, message, offset >= 0 && offset <= data.Length ? offset : null);
 

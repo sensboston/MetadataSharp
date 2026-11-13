@@ -16,7 +16,7 @@ internal sealed class TiffAppendPlanner(TiffLayout layout, TiffEditOptions optio
     private readonly Dictionary<uint, uint> map = [];
     private sealed record Field(ushort Tag, byte[] Entry, byte[]? External);
     private sealed record Node(TiffDirectoryInfo Source, List<Field> Fields);
-    // Convert budget exhaustion into the format-specific LimitExceeded error.
+    // Reject an append plan that exceeds TIFF address space or its write budget.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "TIFF write plan exceeds its finite budget/address space.");
     private static MetadataException Unsupported() => new(MetadataErrorCode.UnsupportedFeature, "TIFF field/layout is outside the closed write schema.");
     // Enforce the configured TIFF/DNG count, depth, or retained-byte budget before keeping more data.

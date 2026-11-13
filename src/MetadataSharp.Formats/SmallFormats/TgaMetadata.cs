@@ -60,6 +60,8 @@ public sealed class TgaMetadata
     /// <see cref="MetadataErrorCode.InvalidTga"/> when the file does not end with the signature of the
     /// 2.0 version.
     /// </exception>
+    /// <param name="data">Complete input file bytes, beginning at the container signature.</param>
+    /// <returns>The parsed TgaMetadata for the complete input file.</returns>
     public static TgaMetadata Read(ReadOnlySpan<byte> data)
     {
         if (!HasSignature(data)) throw new MetadataException(MetadataErrorCode.InvalidTga, "The file does not end with the signature of a TARGA 2.0 file.", Math.Max(0, data.Length - FooterBytes));

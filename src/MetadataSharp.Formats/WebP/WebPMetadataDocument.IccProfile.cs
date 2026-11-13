@@ -44,6 +44,8 @@ public sealed partial class WebPMetadataDocument
         SaveIcc(destination, Clone(profile), true, cancellationToken);
 
     /// <summary>As <see cref="SaveIccProfile(Stream, byte[])"/>, to a new file that is published only when it is complete.</summary>
+    /// <param name="destinationPath">Path for publishing ICC profile changes in WebP format.</param>
+    /// <param name="profile">Complete ICC profile bytes, or null to remove the profile.</param>
     public void SaveIccProfileAs(string destinationPath, byte[]? profile) =>
         SaveIccPath(destinationPath, Clone(profile), false, default).GetAwaiter().GetResult();
 
@@ -56,7 +58,7 @@ public sealed partial class WebPMetadataDocument
 
     private static byte[]? Clone(byte[]? bytes) => bytes is null ? null : (byte[])bytes.Clone();
 
-    // Write the prepared WebP edit only after validation, preserving unrelated payloads.
+    // Replace or remove the WebP ICC chunk in the staged RIFF chunk list.
     private async Task SaveIcc(Stream destination, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -65,7 +67,7 @@ public sealed partial class WebPMetadataDocument
         await EmitIcc(destination, plan, asynchronous, token).ConfigureAwait(false);
     }
 
-    // Write the prepared WebP edit only after validation, preserving unrelated payloads.
+    // Publish the staged WebP profile edit as a separate output file.
     private async Task SaveIccPath(string destinationPath, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);

@@ -6,7 +6,7 @@ namespace MetadataSharp.Formats.Dng;
 /// <summary>An owned immutable DNG inventory snapshot. Not a decoder, renderer or relocation certificate.</summary>
 public sealed class DngLayout
 {
-    // Capture validated inputs and stable state for this TIFF/DNG object.
+    // Keep the validated DNG directory graph and input bounds for later layout queries.
     internal DngLayout(Endianness byteOrder, long sourceLength, uint firstIfdOffset, DngVersion version, DngVersion backwardVersion,
         bool isSupported, DngDirectoryInfo[] directories, TiffAccountedRange[] ranges, DngLayoutIssue[] issues)
     {
@@ -39,8 +39,14 @@ public sealed class DngLayout
     /// DNGVersion in its first directory and for BigTIFF; <see cref="MetadataErrorCode.LimitExceeded"/>
     /// when a budget is exceeded.
     /// </exception>
+    /// <param name="source">Readable, seekable TIFF/DNG input stream positioned at the start; it remains open after the read.</param>
+    /// <param name="options">Settings for DNG layout parsing; null selects the defaults.</param>
+    /// <returns>The parsed DngLayout for the complete input file.</returns>
     public static DngLayout Read(Stream source, DngReadOptions? options = null) => DngReader.Read(source, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
     /// <summary>Reads the inventory of a file. Fails as <see cref="Read(Stream, DngReadOptions?)"/> does.</summary>
+    /// <param name="path">Path of the TIFF/DNG file to identify or open.</param>
+    /// <param name="options">Settings for DNG layout parsing; null selects the defaults.</param>
+    /// <returns>The parsed DngLayout for the complete input file.</returns>
     public static DngLayout Read(string path, DngReadOptions? options = null) => PathRead(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="Read(Stream, DngReadOptions?)"/>
     public static Task<DngLayout> ReadAsync(Stream source, DngReadOptions? options = null, CancellationToken cancellationToken = default) => DngReader.Read(source, (options ?? new()).Snapshot(), true, cancellationToken);

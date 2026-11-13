@@ -176,6 +176,30 @@ internal static class Inventory
         }
     }
 
+    // Treat a short single-operation forwarder as a wrapper, not as a declaration needing a purpose comment.
+    private static bool IsTrivialWrapper(SyntaxNode node)
+    {
+        SyntaxNode? body = node switch
+        {
+            MethodDeclarationSyntax method => (SyntaxNode?)method.Body ?? method.ExpressionBody?.Expression,
+            ConstructorDeclarationSyntax constructor => constructor.Body,
+            PropertyDeclarationSyntax property => property.ExpressionBody?.Expression,
+            _ => null
+        };
+        if (body is null) return false;
+
+        if (body is InvocationExpressionSyntax or ObjectCreationExpressionSyntax or ThrowExpressionSyntax)
+            return true;
+        if (body is not BlockSyntax block || block.Statements.Count != 1) return false;
+        return block.Statements[0] switch
+        {
+            ReturnStatementSyntax { Expression: InvocationExpressionSyntax or ObjectCreationExpressionSyntax } => true,
+            ExpressionStatementSyntax { Expression: InvocationExpressionSyntax } => true,
+            ThrowStatementSyntax { Expression: ObjectCreationExpressionSyntax } => true,
+            _ => false
+        };
+    }
+
     // Compare XML documentation with symbol requirements and record public gaps and purpose-comment status.
     private static void Add(SyntaxNode node, ISymbol symbol, SemanticModel model, string sourceRoot,
         List<DeclarationRecord> records, string name, string kind, bool trivial)
@@ -214,7 +238,7 @@ internal static class Inventory
         bool returnsPresent = returnCount != 0 || inheritsAll;
         bool exceptionsPresent = exceptionCount != 0 || inheritsAll || inheritsExceptions;
         int lineCount = node.GetLocation().GetLineSpan().EndLinePosition.Line - node.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-        bool nonTrivial = !trivial && (lineCount > 5 || HasInvariantSignal(node));
+        bool nonTrivial = !trivial && !IsTrivialWrapper(node) && (lineCount > 5 || HasInvariantSignal(node));
         bool xmlSummary = summaryCount != 0 || doc.Elements("inheritdoc").Any();
         bool purposeComment = xmlSummary || HasPurposeLineComment(node);
         string access = symbol.DeclaredAccessibility.ToString();

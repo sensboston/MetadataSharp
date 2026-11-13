@@ -57,7 +57,7 @@ jobs:
       - name: Report Core documentation inventory
         run: python tools/MetadataSharp.DocInventory/report.py core artifacts/doc-inventory/baseline-core.json
       - name: Inventory Formats documentation (baseline)
-        run: dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- --root src/MetadataSharp.Formats --report artifacts/doc-inventory/baseline-formats.json
+        run: dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- --root src/MetadataSharp.Formats --check-public --report artifacts/doc-inventory/baseline-formats.json
       - name: Report Formats documentation inventory
         run: python tools/MetadataSharp.DocInventory/report.py formats artifacts/doc-inventory/baseline-formats.json
       - name: Inventory tools documentation (baseline)

@@ -38,7 +38,7 @@ internal sealed class BmffProperties
 
     private readonly byte[] file;
 
-    // Capture validated inputs and stable state for this BMFF object.
+    // Store validated item properties and their source associations.
     private BmffProperties(byte[] file, BmffBox box, List<BmffBox> children, BmffBox container, BmffBox associations,
         List<BmffBox> properties, int version, uint flags, List<BmffAssociationEntry> entries)
     {
@@ -221,11 +221,11 @@ internal sealed class BmffProperties
         return found;
     }
 
-    // Preserve the format-specific error code and source offset for malformed BMFF data.
+    // Identify an invalid BMFF item property at its source offset.
     private static MetadataException Fail(string message, long offset) =>
         new(MetadataErrorCode.InvalidBmff, message, offset);
 
-    // Convert budget exhaustion into the format-specific LimitExceeded error.
+    // Report exhaustion of the retained BMFF property budget.
     private static MetadataException Limit(string message, long offset) =>
         new(MetadataErrorCode.LimitExceeded, message, offset);
 }

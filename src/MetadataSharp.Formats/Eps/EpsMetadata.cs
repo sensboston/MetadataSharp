@@ -139,6 +139,7 @@ public sealed class EpsMetadata
     /// does not parse;
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded.
     /// </exception>
+    /// <returns>The parsed EpsMetadata for the complete input file.</returns>
     public static EpsMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) => Read(data, limits, null);
 
     internal static EpsMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, KindRefusals? refusals)
@@ -207,6 +208,10 @@ public sealed class EpsMetadata
     /// cannot be safely changed; <see cref="MetadataErrorCode.UnsafeRelocation"/> when the planned
     /// result does not read back as the requested edit.
     /// </exception>
+    /// <param name="data">Complete EPS file bytes starting at the container signature.</param>
+    /// <param name="edit">XMP changes to apply to this EPS document.</param>
+    /// <param name="limits">Resource budgets applied while parsing EPS; null selects the default limits.</param>
+    /// <returns>The complete EPS file bytes with the edited XMP packet and verified section lengths.</returns>
     public static byte[] WriteXmp(ReadOnlySpan<byte> data, XmpEdit edit, MetadataLimits? limits = null)
     {
         ArgumentNullException.ThrowIfNull(edit);
@@ -429,7 +434,7 @@ public sealed class EpsMetadata
         return -1;
     }
 
-    // Reject invalid metadata ranges, overlaps, or field shapes before accepting the data.
+    // Check EPS section offsets and lengths for overlap and out-of-file ranges.
     private static void ValidateSections(EpsMetadata metadata)
     {
         if (!metadata.IsDosEps) return;
@@ -475,7 +480,7 @@ public sealed class EpsMetadata
         BinaryPrimitives.WriteUInt32LittleEndian(output.AsSpan(field), (uint)adjusted);
     }
 
-    // Compare the staged result with the source to confirm unrelated metadata data stayed unchanged.
+    // Re-read the staged EPS preview region and confirm its XMP edit matches the requested packet.
     private static void VerifyPreview(byte[] source, byte[] output, long? offset, long length, EpsMetadata before, long delta, bool tiff)
     {
         if (offset is null || length == 0) return;
@@ -489,7 +494,7 @@ public sealed class EpsMetadata
                 tiff ? "The TIFF preview changed during EPS rewriting." : "The WMF preview changed during EPS rewriting.");
     }
 
-    // Compare the staged result with the source to confirm unrelated metadata data stayed unchanged.
+    // Compare EPS directory entries by tag, type, count and payload bytes.
     private static bool SameEntries(XmpPacket? expected, XmpPacket? actual)
     {
         if (expected is null) return actual is null;
@@ -697,6 +702,6 @@ public sealed class EpsMetadata
         return at;
     }
 
-    // Preserve the format-specific error code and source offset for malformed metadata data.
+    // Build an EPS parse error at the current DSC section offset.
     private static MetadataException Bad(string message, long offset) => new(MetadataErrorCode.InvalidEps, message, offset);
 }

@@ -33,32 +33,42 @@ public sealed partial class PngMetadataDocument
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the file has an unknown chunk that is
     /// not safe to copy; otherwise the code of the reason the edit is refused.
     /// </exception>
+    /// <param name="destination">Empty writable, seekable destination stream for the IPTC edit; it must not be the source stream.</param>
+    /// <param name="edit">IPTC changes to apply to this PNG document.</param>
     public void SaveIptc(Stream destination, IptcEdit edit) => SaveIptcCore(destination, edit, null, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit)"/>
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcCore(destination, edit, null, true, cancellationToken);
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, with options; null options are the defaults.</summary>
+    /// <param name="destination">Empty writable, seekable destination stream for the IPTC edit; it must not be the source stream.</param>
+    /// <param name="edit">IPTC changes to apply to this PNG document.</param>
+    /// <param name="options">IPTC write settings; null selects the defaults.</param>
     public void SaveIptc(Stream destination, IptcEdit edit, IptcWriteOptions? options) => SaveIptcCore(destination, edit, options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit, IptcWriteOptions)"/>
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SaveIptcCore(destination, edit, options, true, cancellationToken);
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
     /// <exception cref="IOException">The destination exists or is the source.</exception>
+    /// <param name="destinationPath">Path for publishing IPTC edits in PNG format.</param>
+    /// <param name="edit">IPTC changes to apply to this PNG document.</param>
     public void SaveIptcAs(string destinationPath, IptcEdit edit) => SaveIptcPath(destinationPath, edit, null, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcPath(destinationPath, edit, null, true, cancellationToken);
     /// <summary>As <see cref="SaveIptcAs(string, IptcEdit)"/>, with options; null options are the defaults.</summary>
     /// <exception cref="IOException">The destination exists or is the source.</exception>
+    /// <param name="destinationPath">Path for publishing IPTC edits in PNG format.</param>
+    /// <param name="edit">IPTC changes to apply to this PNG document.</param>
+    /// <param name="options">IPTC write settings; null selects the defaults.</param>
     public void SaveIptcAs(string destinationPath, IptcEdit edit, IptcWriteOptions? options) => SaveIptcPath(destinationPath, edit, options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit, IptcWriteOptions)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SaveIptcPath(destinationPath, edit, options, true, cancellationToken);
 
-    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
+    // Replace the PNG IPTC text chunks after validating the edited packet.
     private async Task SaveIptcCore(Stream destination, IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(edit); ContainerIo.Output(source, destination);
         Prepared prepared = await PrepareIptc(edit, write, asynchronous, token).ConfigureAwait(false);
         await Emit(destination, prepared, asynchronous, token).ConfigureAwait(false);
     }
-    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
+    // Write IPTC changes to a new PNG path after the staged chunks are ready.
     private async Task SaveIptcPath(string path, IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(edit);

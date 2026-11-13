@@ -75,7 +75,7 @@ internal sealed class BmffColourPlanner
     /// <summary>What every item addresses, in the widest reading of its extents.</summary>
     private readonly List<(BmffSegment Segment, int Method)> others = [];
 
-    // Capture validated inputs and stable state for this BMFF object.
+    // Hold the BMFF property map and ICC edit used to rebuild colour associations.
     private BmffColourPlanner(byte[] source, BmffFileMap map, BmffProperties properties, uint primary, byte[]? profile,
         MetadataLimits limits)
     {
@@ -401,11 +401,11 @@ internal sealed class BmffColourPlanner
         bytes.Add((byte)value);
     }
 
-    // Preserve the format-specific error code and source offset for malformed BMFF data.
+    // Report colour properties that this BMFF writer cannot encode.
     private static MetadataException Unsupported(string message, long? offset) =>
         new(MetadataErrorCode.UnsupportedFeature, message, offset);
 
-    // Preserve the format-specific error code and source offset for malformed BMFF data.
+    // Reject a colour-property rewrite whose retained BMFF data cannot be relocated safely.
     private static MetadataException Unsafe(string message, long? offset) =>
         new(MetadataErrorCode.UnsafeRelocation, message, offset);
 }

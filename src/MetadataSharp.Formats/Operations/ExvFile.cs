@@ -30,6 +30,12 @@ public static class ExvFile
     /// <see cref="MetadataErrorCode.ExifTooLarge"/> for an EXIF block over one segment;
     /// <see cref="MetadataErrorCode.LimitExceeded"/> for an IPTC stream, a packet or a comment over one segment.
     /// </exception>
+    /// <param name="exif">EXIF metadata whose tags are inspected for a possible correction.</param>
+    /// <param name="iptc">IPTC packet to include in the EXV output, or null to omit it.</param>
+    /// <param name="xmp">XMP packet to include in the EXV output, or null to omit it.</param>
+    /// <param name="comment">Comment text to store, or null to remove the comment.</param>
+    /// <param name="thumbnail">JPEG thumbnail bytes to include in the EXV output; empty omits the thumbnail.</param>
+    /// <returns>A complete EXV file containing each supplied metadata family.</returns>
     public static byte[] Create(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp, string? comment = null, ReadOnlySpan<byte> thumbnail = default)
     {
         var output = new MemoryStream();

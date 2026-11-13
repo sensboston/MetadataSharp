@@ -487,11 +487,11 @@ internal sealed class BmffFileMap
 
     private ulong U64(int at) => BinaryPrimitives.ReadUInt64BigEndian(file.AsSpan(at, 8));
 
-    // Preserve the format-specific error code and source offset for malformed BMFF data.
+    // Create a BMFF map error tied to the byte range that failed validation.
     private MetadataException Fail(string message, long offset) =>
         new(MetadataErrorCode.InvalidBmff, message, offset >= 0 && offset <= file.Length ? offset : null);
 
-    // Convert budget exhaustion into the format-specific LimitExceeded error.
+    // Translate a file-map size violation into the BMFF limit error.
     private MetadataException Limit(string message, long offset) =>
         new(MetadataErrorCode.LimitExceeded, message, offset >= 0 && offset <= file.Length ? offset : null);
 }

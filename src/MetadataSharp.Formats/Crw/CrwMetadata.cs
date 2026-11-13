@@ -66,5 +66,8 @@ public sealed class CrwMetadata
     /// CRW file, or a directory or a record lies outside the block that holds it or over its own
     /// entry; <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded.
     /// </exception>
+    /// <param name="data">Complete CRW/CIFF file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing CRW/CIFF; null selects the default limits.</param>
+    /// <returns>The parsed CrwMetadata for the complete input file.</returns>
     public static CrwMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) => CrwReader.Read(data, limits);
 }

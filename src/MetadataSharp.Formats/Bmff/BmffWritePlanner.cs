@@ -102,7 +102,7 @@ internal sealed class BmffWritePlanner
     /// <summary>What every item but the edited one addresses, in the widest reading of its extents.</summary>
     private readonly List<(BmffSegment Segment, int Method)> others = [];
 
-    // Capture validated inputs and stable state for this BMFF object.
+    // Keep the source box graph and requested metadata edits for output planning.
     private BmffWritePlanner(byte[] source, BmffFileMap map, BmffItemKind kind, BmffItem? target, byte[] payload,
         MetadataLimits limits)
     {
@@ -526,7 +526,7 @@ internal sealed class BmffWritePlanner
     /// <summary>The smallest field size of an item location box that holds the value.</summary>
     private static int Width(ulong value) => value > uint.MaxValue ? 8 : 4;
 
-    // Serialize sized in its defined byte order without disturbing adjacent data.
+    // Append a 0-, 2-, 4-, or 8-byte unsigned integer in BMFF big-endian order.
     private static void PutSized(List<byte> bytes, int size, ulong value)
     {
         if (size == 0) return;
@@ -556,7 +556,7 @@ internal sealed class BmffWritePlanner
         bytes.Add((byte)value);
     }
 
-    // Preserve the format-specific error code and source offset for malformed BMFF data.
+    // Refuse the write plan when BMFF box edits would make source offsets unsafe.
     private static MetadataException Unsafe(string message, long? offset) =>
         new(MetadataErrorCode.UnsafeRelocation, message, offset);
 }

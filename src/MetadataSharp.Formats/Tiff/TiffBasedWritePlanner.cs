@@ -88,7 +88,7 @@ internal sealed class TiffBasedWritePlanner
     private readonly Dictionary<TiffBasedRole, SortedDictionary<ushort, uint?>> pointers = [];
     private uint? successor;
 
-    // Capture validated inputs and stable state for this TIFF/DNG object.
+    // Keep the source layout and edit set used to construct a TIFF/DNG write plan.
     private TiffBasedWritePlanner(byte[] source, TiffBasedFileMap map,
         IReadOnlyDictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, MetadataLimits limits, long ceiling,
         bool emptyPrimary)
@@ -280,7 +280,7 @@ internal sealed class TiffBasedWritePlanner
         : new MetadataException(MetadataErrorCode.UnsupportedFeature,
             "The file has no directory after the primary one: a thumbnail directory is not created by a tag edit.");
 
-    // Reject invalid TIFF/DNG ranges, overlaps, or field shapes before accepting the data.
+    // Require directory edits to follow the stable source-offset order used by the planner.
     private static void RequireSorted(TiffBasedDirectory? directory)
     {
         if (directory is not null && !directory.IsSorted)
@@ -345,7 +345,7 @@ internal sealed class TiffBasedWritePlanner
         return (uint)at;
     }
 
-    // Extract TIFF/DNG from the already-validated representation.
+    // Encode a numeric field in the selected TIFF byte order and value width.
     private byte[] Number(uint value)
     {
         byte[] bytes = new byte[4];

@@ -15,7 +15,7 @@ namespace MetadataSharp.Formats.Mrw;
 /// </summary>
 public sealed class MrwMetadata
 {
-    // Capture validated inputs and stable state for this metadata object.
+    // Store MRW metadata together with the bounded TIFF extent.
     private MrwMetadata(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp, long tiffOffset, long tiffLength)
     {
         Exif = exif;
@@ -50,6 +50,9 @@ public sealed class MrwMetadata
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded; otherwise the code
     /// the TIFF, IPTC or XMP reader reports for what it refused.
     /// </exception>
+    /// <param name="data">Complete MRW file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing MRW; null selects the default limits.</param>
+    /// <returns>The parsed MrwMetadata for the complete input file.</returns>
     public static MrwMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) => Read(data, limits, null);
 
     // Read metadata data only after the input extent and applicable resource budgets are checked.
@@ -101,6 +104,6 @@ public sealed class MrwMetadata
         }
     }
 
-    // Preserve the format-specific error code and source offset for malformed metadata data.
+    // Convert a malformed MRW segment into an offset-aware metadata error.
     private static MetadataException Fail(string message, long offset) => new(MetadataErrorCode.InvalidMrw, message, offset);
 }

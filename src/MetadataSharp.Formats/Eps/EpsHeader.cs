@@ -28,6 +28,9 @@ public sealed class EpsHeader
     public int Top { get; }
 
     /// <summary>Inspect the ASCII DSC header of a complete bounded buffer.</summary>
+    /// <param name="data">Complete EPS file bytes starting at the container signature.</param>
+    /// <returns>The parsed EpsHeader for the complete input file.</returns>
+    /// <exception cref="MetadataException">The EPS header is malformed, unsupported, ambiguous, or exceeds the fixed header budget.</exception>
     public static EpsHeader Read(ReadOnlySpan<byte> data)
     {
         if (data.Length > MaxFileBytes) throw Limit();
@@ -79,6 +82,6 @@ public sealed class EpsHeader
     }
     private static MetadataException Bad(string message) => new(MetadataErrorCode.InvalidEps, message);
     private static MetadataException Unsupported(string message) => new(MetadataErrorCode.UnsupportedFeature, message);
-    // Convert budget exhaustion into the format-specific LimitExceeded error.
+    // Reject EPS headers that exceed the fixed header-size budget.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "EPS exceeds a fixed header budget.");
 }

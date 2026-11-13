@@ -55,7 +55,7 @@ internal ref struct Cr3Reader
     private bool hasMovie;
     private bool hasCanon;
 
-    // Capture validated inputs and stable state for this BMFF object.
+    // Retain the CR3 bytes and parser limits while resolving its metadata item.
     private Cr3Reader(ReadOnlySpan<byte> data, MetadataLimits limits)
     {
         this.data = data;
@@ -92,7 +92,7 @@ internal ref struct Cr3Reader
         return reader.Metadata(layout, xmpOptions, refusals);
     }
 
-    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
+    // Validate the CR3 header and build a reader bounded by the supplied metadata limits.
     private static Cr3Reader Open(ReadOnlySpan<byte> data, MetadataLimits? limits)
     {
         limits ??= BmffReadOptions.DefaultLimits;

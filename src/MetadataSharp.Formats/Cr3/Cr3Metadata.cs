@@ -44,6 +44,9 @@ public sealed class Cr3Metadata
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the directories differ in byte order;
     /// otherwise the code the EXIF directory reader or the XMP reader reports for what it refused.
     /// </exception>
+    /// <param name="data">Complete input file bytes, beginning at the container signature.</param>
+    /// <param name="limits">Resource budgets for parsing; null selects the default limits.</param>
+    /// <returns>The parsed Cr3Metadata for the complete input file.</returns>
     public static Cr3Metadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
         Cr3Reader.Read(data, limits);
 }

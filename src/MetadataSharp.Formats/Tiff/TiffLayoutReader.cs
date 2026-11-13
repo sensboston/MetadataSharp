@@ -18,7 +18,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
     private long retained;
     private int entries, links, segments;
     private static MetadataException Bad(string text = "Malformed standalone TIFF.") => new(MetadataErrorCode.InvalidTiff, text);
-    // Convert budget exhaustion into the format-specific LimitExceeded error.
+    // Report when TIFF layout accounting exceeds the configured budget.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "TIFF accounting exceeds its configured budget.");
     // Enforce the configured TIFF/DNG count, depth, or retained-byte budget before keeping more data.
     private void Charge(long bytes) { if (bytes > options.Limits.MaxRetainedMetadataBytes - retained) throw Limit(); retained += bytes; }
@@ -31,7 +31,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         _ = aligned;
         if (start < 0 || count < 0 || start > length || count > length - start) throw Bad("Invalid TIFF range.");
     }
-    // Extract TIFF/DNG from the already-validated representation.
+    // Read a bounded TIFF directory entry from the source file span.
     private async Task<byte[]> At(long start, int count)
     {
         token.ThrowIfCancellationRequested(); Bounds(start, count); source.Position = start;
@@ -134,7 +134,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
     }
     // Only numeric TIFF6 storage/scalar fields with reviewed nonprivate semantics.
     private static bool Known(ushort tag) => tag is 254 or 255 or 256 or 257 or 258 or 259 or 262 or 266 or 269 or 270 or 271 or 272 or 273 or 274 or 277 or 278 or 279 or 280 or 281 or 282 or 283 or 284 or 285 or 286 or 287 or 296 or 297 or 305 or 306 or 315 or 316 or 317 or 320 or 322 or 323 or 324 or 325 or 338 or 339 or 347 or 513 or 514;
-    // Extract TIFF/DNG from the already-validated representation.
+    // Decode the supported numeric field types from their raw TIFF payload.
     private async Task<uint[]> Numbers(TiffFieldInfo field, bool shorts = true)
     {
         if (field.FieldType != 4 && !(shorts && field.FieldType == 3)) throw Bad("Invalid numeric storage field type.");
@@ -143,13 +143,13 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         for (int i = 0; i < result.Length; i++) { if ((i & 1023) == 0) token.ThrowIfCancellationRequested(); result[i] = width == 2 ? U16(bytes, i * width) : U32(bytes, i * width); }
         return result;
     }
-    // Extract TIFF/DNG from the already-validated representation.
+    // Read a single TIFF integer from inline or out-of-line storage.
     private async Task<uint> Scalar(Dictionary<ushort, TiffFieldInfo> fields, ushort tag, uint? fallback = null, bool shorts = true)
     {
         if (!fields.TryGetValue(tag, out var field)) return fallback ?? throw Bad("Required image scalar missing.");
         if (field.Count != 1 || (tag is 259 or 262 or 277 or 284 && field.FieldType != 3)) throw Bad("Invalid scalar shape."); return (await Numbers(field, shorts).ConfigureAwait(false))[0];
     }
-    // Extract TIFF/DNG from the already-validated representation.
+    // Build image dimensions and strip/tile extents from one TIFF IFD.
     private async Task<TiffImageLayout?> Image(uint owner, Dictionary<ushort, TiffFieldInfo> f)
     {
         bool strips = f.ContainsKey(273) || f.ContainsKey(279) || f.ContainsKey(278);
@@ -218,7 +218,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         else Unsupported(TiffLayoutIssueCode.UnsupportedPointerLayout, null, "Candidate image has no supported strip/tile arrays.");
         return new(w, h, (ushort)compression, tiles ? TiffStorageKind.Tiles : TiffStorageKind.Strips, imageRanges.AsReadOnly(), jpeg, supported);
     }
-    // Extract TIFF/DNG from the already-validated representation.
+    // Build a reduced-image record from its TIFF sub-IFD fields.
     private async Task<TiffByteRange?> Preview(uint owner, Dictionary<ushort, TiffFieldInfo> fields, bool present)
     {
         if (!present) return null;

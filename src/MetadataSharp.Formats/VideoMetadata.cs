@@ -56,6 +56,9 @@ public sealed class VideoMetadata
     /// <see cref="MetadataErrorCode.InvalidVideoContainer"/> for malformed or unsupported container structure;
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when a resource budget is exceeded.
     /// </exception>
+    /// <param name="data">Complete video container file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing video container; null selects the default limits.</param>
+    /// <returns>The parsed VideoMetadata for the complete input file.</returns>
     public static VideoMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null)
     {
         limits ??= new MetadataLimits();

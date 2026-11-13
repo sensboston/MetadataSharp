@@ -54,6 +54,8 @@ public sealed partial class PngMetadataDocument
         SaveEmbedded(destination, EmbeddedKind.Description, comment, null, false, default).GetAwaiter().GetResult();
 
     /// <summary>As <see cref="SaveComment(Stream, string)"/>, to a new file that is published only when it is complete.</summary>
+    /// <param name="destinationPath">Path for publishing comment changes in PNG format.</param>
+    /// <param name="comment">Comment text to store, or null to remove the comment.</param>
     public void SaveCommentAs(string destinationPath, string? comment) =>
         SaveEmbeddedPath(destinationPath, EmbeddedKind.Comment, comment, null, false, default).GetAwaiter().GetResult();
 
@@ -103,6 +105,8 @@ public sealed partial class PngMetadataDocument
         SaveEmbedded(destination, EmbeddedKind.IccProfile, null, Clone(profile), true, cancellationToken);
 
     /// <summary>As <see cref="SaveIccProfile(Stream, byte[])"/>, to a new file that is published only when it is complete.</summary>
+    /// <param name="destinationPath">Path for publishing ICC profile changes in PNG format.</param>
+    /// <param name="profile">Complete ICC profile bytes, or null to remove the profile.</param>
     public void SaveIccProfileAs(string destinationPath, byte[]? profile) =>
         SaveEmbeddedPath(destinationPath, EmbeddedKind.IccProfile, null, Clone(profile), false, default).GetAwaiter().GetResult();
 
@@ -120,7 +124,7 @@ public sealed partial class PngMetadataDocument
 
     private static byte[]? Clone(byte[]? bytes) => bytes is null ? null : (byte[])bytes.Clone();
 
-    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
+    // Apply the requested PNG comment or ICC profile change to the staged chunk list.
     private async Task SaveEmbedded(Stream destination, EmbeddedKind kind, string? comment, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -129,7 +133,7 @@ public sealed partial class PngMetadataDocument
         await EmitEmbedded(destination, plan, asynchronous, token).ConfigureAwait(false);
     }
 
-    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
+    // Publish the staged PNG embedded-data edit to a separate destination path.
     private async Task SaveEmbeddedPath(string destinationPath, EmbeddedKind kind, string? comment, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
