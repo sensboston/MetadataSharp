@@ -12,6 +12,20 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataSharp.ReferenceFixt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataSharp.Examples", "tests\MetadataSharp.Examples\MetadataSharp.Examples.csproj", "{7C0B1F5E-2A64-4E0B-9D3A-5E1C8B7A9F42}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetaTool", "samples\MetaTool\MetaTool.csproj", "{9727D638-339B-47A9-BBA4-6A46D305ABD4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeoTag", "samples\GeoTag\GeoTag.csproj", "{D245DCD7-2082-4109-9F28-44C6440A1B7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchRename", "samples\BatchRename\BatchRename.csproj", "{DF375E21-4F46-4461-989B-49B45CA2BD87}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StripMetadata", "samples\StripMetadata\StripMetadata.csproj", "{8C2FBB86-6A60-426F-9C2A-EABB594D04C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CopyMetadata", "samples\CopyMetadata\CopyMetadata.csproj", "{9AE1F428-E23E-45E6-819F-146AB9B319D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thumbnails", "samples\Thumbnails\Thumbnails.csproj", "{162BFA87-918C-4B21-9B84-B3ADE0583F9B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataViewer", "samples\MetadataViewer\MetadataViewer.csproj", "{A15034F4-6114-4415-BDC5-2187BBDDE158}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,5 +52,35 @@ Global
 		{7C0B1F5E-2A64-4E0B-9D3A-5E1C8B7A9F42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C0B1F5E-2A64-4E0B-9D3A-5E1C8B7A9F42}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C0B1F5E-2A64-4E0B-9D3A-5E1C8B7A9F42}.Release|Any CPU.Build.0 = Release|Any CPU
+
+		{9727D638-339B-47A9-BBA4-6A46D305ABD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9727D638-339B-47A9-BBA4-6A46D305ABD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9727D638-339B-47A9-BBA4-6A46D305ABD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9727D638-339B-47A9-BBA4-6A46D305ABD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D245DCD7-2082-4109-9F28-44C6440A1B7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D245DCD7-2082-4109-9F28-44C6440A1B7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D245DCD7-2082-4109-9F28-44C6440A1B7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D245DCD7-2082-4109-9F28-44C6440A1B7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF375E21-4F46-4461-989B-49B45CA2BD87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF375E21-4F46-4461-989B-49B45CA2BD87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF375E21-4F46-4461-989B-49B45CA2BD87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF375E21-4F46-4461-989B-49B45CA2BD87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C2FBB86-6A60-426F-9C2A-EABB594D04C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C2FBB86-6A60-426F-9C2A-EABB594D04C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C2FBB86-6A60-426F-9C2A-EABB594D04C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C2FBB86-6A60-426F-9C2A-EABB594D04C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AE1F428-E23E-45E6-819F-146AB9B319D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AE1F428-E23E-45E6-819F-146AB9B319D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AE1F428-E23E-45E6-819F-146AB9B319D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AE1F428-E23E-45E6-819F-146AB9B319D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{162BFA87-918C-4B21-9B84-B3ADE0583F9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{162BFA87-918C-4B21-9B84-B3ADE0583F9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{162BFA87-918C-4B21-9B84-B3ADE0583F9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{162BFA87-918C-4B21-9B84-B3ADE0583F9B}.Release|Any CPU.Build.0 = Release|Any CPU
+
+		{A15034F4-6114-4415-BDC5-2187BBDDE158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A15034F4-6114-4415-BDC5-2187BBDDE158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A15034F4-6114-4415-BDC5-2187BBDDE158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A15034F4-6114-4415-BDC5-2187BBDDE158}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

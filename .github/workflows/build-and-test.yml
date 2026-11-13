@@ -141,6 +141,60 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
+  samples:
+    name: Samples / net10.0 / ubuntu-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build every sample (the desktop viewer is build-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for project in MetaTool GeoTag BatchRename StripMetadata CopyMetadata Thumbnails MetadataViewer; do
+            dotnet build "samples/$project/$project.csproj" --configuration Release
+          done
+      - name: Generate small authored image fixtures
+        shell: bash
+        run: |
+          mkdir -p artifacts/samples
+          dotnet run --project tools/MetadataSharp.ReferenceFixture --configuration Release --framework net10.0 -- generate artifacts/samples
+          cp artifacts/samples/ours.jpg artifacts/samples/camera.jpg
+          cp artifacts/samples/base.jpg artifacts/samples/target.jpg
+          cat > artifacts/samples/track.gpx <<'GPX'
+          <?xml version="1.0"?>
+          <gpx version="1.1" creator="MetadataSharp sample"><trk><trkseg>
+            <trkpt lat="51.5007" lon="-0.1246"><time>2024-01-01T10:00:00Z</time></trkpt>
+          </trkseg></trk></gpx>
+          GPX
+      - name: Smoke-test the command-line samples on public API fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet run --project samples/MetaTool -c Release --no-build -- -p a artifacts/samples/camera.jpg
+          dotnet run --project samples/MetaTool -c Release --no-build -- set Exif.Photo.DateTimeOriginal '2024:01:01 10:00:00' artifacts/samples/camera.jpg
+          dotnet run --project samples/MetaTool -c Release --no-build -- -M 'set Exif.Image.Artist "Sample Author"' artifacts/samples/camera.jpg
+          dotnet run --project samples/MetaTool -c Release --no-build -- -p e -K Exif.Image.Artist artifacts/samples/camera.jpg | grep -F 'Sample Author'
+          dotnet run --project samples/MetaTool -c Release --no-build -- extract xmp artifacts/samples/xmp.jpg artifacts/samples/out.xmp
+          cp artifacts/samples/target.jpg artifacts/samples/copy.jpg
+          dotnet run --project samples/MetaTool -c Release --no-build -- insert xmp artifacts/samples/copy.jpg artifacts/samples/xmp-rich.xmp
+          dotnet run --project samples/MetaTool -c Release --no-build -- insert thumbnail artifacts/samples/copy.jpg artifacts/samples/base.jpg
+          dotnet run --project samples/MetaTool -c Release --no-build -- fixiso artifacts/samples/camera.jpg
+          dotnet run --project samples/MetaTool -c Release --no-build -- fixcom artifacts/samples/camera.jpg
+          dotnet run --project samples/GeoTag -c Release --no-build -- --gpx artifacts/samples/track.gpx --max-gap 2m artifacts/samples/camera.jpg
+          dotnet run --project samples/BatchRename -c Release --no-build -- --dry-run artifacts/samples/camera.jpg
+          dotnet run --project samples/StripMetadata -c Release --no-build -- --keep icc,orientation,copyright --dry-run artifacts/samples/camera.jpg
+          dotnet run --project samples/CopyMetadata -c Release --no-build -- --dry-run artifacts/samples/camera.jpg artifacts/samples/target.jpg
+          dotnet run --project samples/Thumbnails -c Release --no-build -- list artifacts/samples/copy.jpg
+          dotnet run --project samples/Thumbnails -c Release --no-build -- extract artifacts/samples/copy.jpg artifacts/samples/previews
+
   external-reference:
     # Depends on Ubuntu's package mirror (exiv2 0.27.6, exiftool, webp from apt), which has failed for
     # hours at a time on the runners. Runs nightly and on demand; parity against the pinned 0.28.9

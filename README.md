@@ -273,6 +273,20 @@ catch (MetadataException e)
 
 What each format keeps and where its limits are: [docs/usage][usage].
 
+## Samples
+
+Small, standalone .NET 10 programs that use the public API (no `InternalsVisibleTo`). Each project has its own run instructions under [`samples/`](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples):
+
+- [MetaTool](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/MetaTool) — metadata print/edit operations in an exiv2-like CLI.
+- [GeoTag](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/GeoTag) — attach the nearest GPX coordinate by capture time.
+- [BatchRename](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/BatchRename) — collision-safe date-based rename plans.
+- [StripMetadata](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/StripMetadata) — remove metadata families or preserve selected fields.
+- [CopyMetadata](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/CopyMetadata) — copy readable metadata and reconcile mapped values (whole MakerNote copying is proposed separately).
+- [Thumbnails](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/Thumbnails) — list and extract embedded previews.
+- [MetadataViewer](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/MetadataViewer) — a read-only Avalonia metadata browser.
+
+Every CLI project is smoke-tested in CI; the viewer is built on .NET 10/Linux without a UI test.
+
 ## Documentation
 
 - [Current state and roadmap][state]
