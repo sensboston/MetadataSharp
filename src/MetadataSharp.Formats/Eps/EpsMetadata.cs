@@ -119,8 +119,8 @@ public sealed class EpsMetadata
     /// <summary>
     /// Whether the bytes begin as an EPS file does, in either framing. A plain file begins with a first
     /// line the reference accepts; the three of them all start with <c>%!PS-Adobe-3.</c>, so that is
-    /// what the first bytes are asked, and the line as a whole is checked by <see cref="Read"/> when the
-    /// whole file is at hand.
+    /// what the first bytes are asked, and the line as a whole is checked by
+    /// the reader of the whole file when the whole file is at hand.
     /// </summary>
     internal static bool HasSignature(ReadOnlySpan<byte> header)
     {
