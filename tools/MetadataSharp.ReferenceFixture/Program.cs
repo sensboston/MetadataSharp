@@ -22,7 +22,6 @@ using MetadataSharp.Tests.WebP;
 using MetadataSharp.Tests.Dng;
 using MetadataSharp.Formats.Bmff;
 using MetadataSharp.Tests.Bmff;
-using MetadataSharp.Tests.MakerNotes;
 
 if (args.Length == 2 && args[0] == "generate")
 {
@@ -1877,8 +1876,35 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
     {
         // A minimal Nikon1 note has one named SHORT value and no offsets into the source image.
         // It is the positive, deterministic relocation case; corpus cases below broaden coverage.
-        byte[] safeNoteTiff = MakerNoteFixture.Build(false, "NIKON CORPORATION", "MetadataSharp fixture",
-            noteAt => MakerNoteFixture.Ifd(false, noteAt, 0, true, MakerNoteFixture.Short(0x0004, false, 1)));
+        byte[] make = Encoding.ASCII.GetBytes("NIKON CORPORATION\0");
+        byte[] model = Encoding.ASCII.GetBytes("MetadataSharp fixture\0");
+        int makeAt = 50, modelAt = makeAt + make.Length, exifAt = modelAt + model.Length, noteAt = exifAt + 18;
+        byte[] safeNoteTiff = new byte[noteAt + 18];
+        safeNoteTiff[0] = safeNoteTiff[1] = 0x49;
+        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(2), 42);
+        BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(4), 8);
+        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(8), 3);
+        void Ifd0Entry(int at, ushort tag, ushort type, uint count, uint value)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(at), tag);
+            BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(at + 2), type);
+            BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(at + 4), count);
+            BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(at + 8), value);
+        }
+        Ifd0Entry(10, 0x010F, 2, (uint)make.Length, (uint)makeAt);
+        Ifd0Entry(22, 0x0110, 2, (uint)model.Length, (uint)modelAt);
+        Ifd0Entry(34, 0x8769, 4, 1, (uint)exifAt);
+        make.CopyTo(safeNoteTiff, makeAt); model.CopyTo(safeNoteTiff, modelAt);
+        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(exifAt), 1);
+        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(exifAt + 2), 0x927C);
+        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(exifAt + 4), 7);
+        BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(exifAt + 6), 18);
+        BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(exifAt + 10), (uint)noteAt);
+        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(noteAt), 1);
+        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(noteAt + 2), 0x0004);
+        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(noteAt + 4), 3);
+        BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(noteAt + 6), 1);
+        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(noteAt + 10), 1);
         byte[] safeSource = JpegFixture.Build(prefix: JpegFixture.Segment(0xE1, JpegFixture.Exif(safeNoteTiff)));
         MetadataSharp.Formats.Operations.MetadataCopyResult safeCopy =
             MetadataSharp.Formats.Operations.MetadataOperations.CopyMetadata(safeSource, JpegFixture.Build(),

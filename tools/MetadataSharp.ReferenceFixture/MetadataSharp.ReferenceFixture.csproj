@@ -14,6 +14,5 @@
     <Compile Include="../../tests/MetadataSharp.Tests/Tiff/TiffBasedFixture.cs" Link="TiffBasedFixture.cs" />
     <Compile Include="../../tests/MetadataSharp.Tests/Bmff/BmffFixture.cs" Link="BmffFixture.cs" />
     <Compile Include="../../tests/MetadataSharp.Tests/Tiff/ExifBlockFixture.cs" Link="ExifBlockFixture.cs" />
-    <Compile Include="../../tests/MetadataSharp.Tests/MakerNotes/MakerNoteFixture.cs" Link="MakerNoteFixture.cs" />
   </ItemGroup>
 </Project>
