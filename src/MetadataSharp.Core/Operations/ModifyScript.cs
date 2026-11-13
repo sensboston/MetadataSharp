@@ -110,6 +110,8 @@ public sealed class ModifyScript
     /// <summary>Reads a script: the text of a command file, or commands with line ends between them.</summary>
     /// <param name="script">The text.</param>
     /// <param name="exifByteOrder">The byte order of the EXIF block the edits are for; it decides the order of the two bytes of a character in a <c>charset=Unicode</c> comment and nothing else.</param>
+    /// <returns>The parsed edit script.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="script"/> is null.</exception>
     /// <exception cref="ModifyScriptException">A line is not a command, names a key that is not one, or gives a value the type cannot hold. The first such line; nothing of the script is to be used.</exception>
     public static ModifyScript Parse(string script, Endianness exifByteOrder = Endianness.LittleEndian)
     {
@@ -118,6 +120,10 @@ public sealed class ModifyScript
     }
 
     /// <summary>Reads a script given as lines; see <see cref="Parse(string, Endianness)"/>.</summary>
+    /// <param name="lines">The command lines in order.</param>
+    /// <param name="exifByteOrder">The byte order used to decode Unicode EXIF comments.</param>
+    /// <returns>The parsed edit script.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="lines"/> is null.</exception>
     /// <exception cref="ModifyScriptException">As <see cref="Parse(string, Endianness)"/>.</exception>
     public static ModifyScript Parse(IEnumerable<string> lines, Endianness exifByteOrder = Endianness.LittleEndian)
     {

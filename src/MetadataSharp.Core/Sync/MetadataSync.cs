@@ -46,6 +46,9 @@ public static class MetadataSync
     /// <param name="exif">The source.</param>
     /// <param name="xmp">The packet the edit is meant for, or null when the file has none.</param>
     /// <param name="options">Overwrite or fill, and whether the converted tags are removed from EXIF (<see cref="SyncEdits.Exif"/>).</param>
+    /// <returns>The XMP edits and any conversions that could not be made.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="exif"/> is null.</exception>
+    /// <exception cref="ArgumentException">A converted value cannot be represented within the XMP edit's value limits.</exception>
     public static SyncEdits ExifToXmp(ExifMetadata exif, XmpPacket? xmp = null, SyncOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(exif);
@@ -72,6 +75,9 @@ public static class MetadataSync
     /// <param name="xmp">The source.</param>
     /// <param name="exif">The block the edit is meant for, or null when the file has none.</param>
     /// <param name="options">Overwrite or fill, and whether the converted properties are removed from XMP (<see cref="SyncEdits.Xmp"/>).</param>
+    /// <returns>The EXIF edits and any conversions that could not be made.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="xmp"/> is null.</exception>
+    /// <exception cref="ArgumentException">A converted value cannot be represented by the EXIF tag definition.</exception>
     public static SyncEdits XmpToExif(XmpPacket xmp, ExifMetadata? exif = null, SyncOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(xmp);
@@ -97,6 +103,9 @@ public static class MetadataSync
     /// <param name="iptc">The source.</param>
     /// <param name="xmp">The packet the edit is meant for, or null when the file has none.</param>
     /// <param name="options">Overwrite or fill, and whether the converted datasets are removed from IPTC (<see cref="SyncEdits.Iptc"/>).</param>
+    /// <returns>The XMP edits and any conversions that could not be made.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="iptc"/> is null.</exception>
+    /// <exception cref="ArgumentException">A converted value cannot be represented within the XMP edit's value limits.</exception>
     public static SyncEdits IptcToXmp(IptcPacket iptc, XmpPacket? xmp = null, SyncOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(iptc);
@@ -122,6 +131,9 @@ public static class MetadataSync
     /// <param name="xmp">The source.</param>
     /// <param name="iptc">The stream the edit is meant for, or null when the file has none.</param>
     /// <param name="options">Overwrite or fill, and whether the converted properties are removed from XMP (<see cref="SyncEdits.Xmp"/>).</param>
+    /// <returns>The IPTC edits and any conversions that could not be made.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="xmp"/> is null.</exception>
+    /// <exception cref="ArgumentException">A converted value violates an IPTC dataset definition or edit budget.</exception>
     public static SyncEdits XmpToIptc(XmpPacket xmp, IptcPacket? iptc = null, SyncOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(xmp);
@@ -177,6 +189,7 @@ public static class MetadataSync
     /// <param name="xmp">The XMP packet of the file, or null.</param>
     /// <param name="digest">What the stored IPTC digest says about the stream; null for what <paramref name="iptc"/> was read with (<see cref="IptcPacket.Digest"/>).</param>
     /// <param name="options">Whether blocks the file lacks are created, and whether all of EXIF is mirrored.</param>
+    /// <returns>The family edits needed to reconcile the shared fields, plus notes for refused conversions or writes.</returns>
     public static SyncEdits Reconcile(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp,
         IptcDigestState? digest = null, ReconcileOptions? options = null)
     {

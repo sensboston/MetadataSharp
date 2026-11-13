@@ -36,6 +36,8 @@ public sealed class ExifEdit
     /// JPEGInterchangeFormat (0x0201) and JPEGInterchangeFormatLength (0x0202); MakerNote (0x927C);
     /// and DNGPrivateData (0xC634), where a DNG file keeps a MakerNote.
     /// </summary>
+    /// <param name="key">The directory and tag ID to test.</param>
+    /// <returns><see langword="true"/> if the tag can be changed by an edit; otherwise, <see langword="false"/>.</returns>
     public static bool IsEditable(ExifTagKey key) => Enum.IsDefined(key.Directory) && key.TagId is not
         (0x8769 or 0x8825 or 0xA005 or 0x014A or 0x0111 or 0x0117 or 0x0144 or 0x0145 or 0x0201 or 0x0202 or 0x927C or 0xC634);
 
@@ -53,6 +55,8 @@ public sealed class ExifEdit
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.TagNotEditable"/> for a tag <see cref="IsEditable"/> excludes.
     /// </exception>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="value">The raw value to store for the tag.</param>
     public void Set(ExifTagKey key, ExifValue value) => Store(key, value, validate: true);
 
     /// <summary>
@@ -67,6 +71,8 @@ public sealed class ExifEdit
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.TagNotEditable"/> for a tag <see cref="IsEditable"/> excludes.
     /// </exception>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="value">The raw value to store without checking its tag definition.</param>
     public void SetUnchecked(ExifTagKey key, ExifValue value) => Store(key, value, validate: false);
 
     /// <summary>
@@ -78,6 +84,8 @@ public sealed class ExifEdit
     /// <see cref="Set(ExifTagKey, ExifValue)"/>.
     /// </exception>
     /// <exception cref="MetadataException"><see cref="MetadataErrorCode.TagNotEditable"/>.</exception>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="text">Seven-bit text without an embedded NUL; the stored ASCII value is terminated with NUL.</param>
     public void Set(ExifTagKey key, string text)
     {
         ArgumentNullException.ThrowIfNull(text);
@@ -101,22 +109,32 @@ public sealed class ExifEdit
 
     /// <summary>Sets a tag to one SHORT; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
     /// <inheritdoc cref="Set(ExifTagKey, ExifValue)" path="/exception"/>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="value">The SHORT value to store.</param>
     public void Set(ExifTagKey key, ushort value) => Set(key, new ReadOnlySpan<ushort>(in value));
 
     /// <summary>Sets a tag to one LONG; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
     /// <inheritdoc cref="Set(ExifTagKey, ExifValue)" path="/exception"/>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="value">The LONG value to store.</param>
     public void Set(ExifTagKey key, uint value) => Set(key, new ReadOnlySpan<uint>(in value));
 
     /// <summary>Sets a tag to one RATIONAL; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
     /// <inheritdoc cref="Set(ExifTagKey, ExifValue)" path="/exception"/>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="value">The unsigned rational value to store.</param>
     public void Set(ExifTagKey key, UnsignedRational value) => Set(key, new ReadOnlySpan<UnsignedRational>(in value));
 
     /// <summary>Sets a tag to one SRATIONAL; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
     /// <inheritdoc cref="Set(ExifTagKey, ExifValue)" path="/exception"/>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="value">The signed rational value to store.</param>
     public void Set(ExifTagKey key, SignedRational value) => Set(key, new ReadOnlySpan<SignedRational>(in value));
 
     /// <summary>Sets a tag to SHORT values; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
     /// <inheritdoc cref="Set(ExifTagKey, ExifValue)" path="/exception"/>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="values">The SHORT values to store in order.</param>
     public void Set(ExifTagKey key, ReadOnlySpan<ushort> values)
     {
         byte[] bytes = new byte[Length(values.Length, 2)];
@@ -126,6 +144,8 @@ public sealed class ExifEdit
 
     /// <summary>Sets a tag to LONG values; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
     /// <inheritdoc cref="Set(ExifTagKey, ExifValue)" path="/exception"/>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="values">The LONG values to store in order.</param>
     public void Set(ExifTagKey key, ReadOnlySpan<uint> values)
     {
         byte[] bytes = new byte[Length(values.Length, 4)];
@@ -135,6 +155,8 @@ public sealed class ExifEdit
 
     /// <summary>Sets a tag to RATIONAL values; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
     /// <inheritdoc cref="Set(ExifTagKey, ExifValue)" path="/exception"/>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="values">The unsigned rational values to store in order.</param>
     public void Set(ExifTagKey key, ReadOnlySpan<UnsignedRational> values)
     {
         byte[] bytes = new byte[Length(values.Length, 8)];
@@ -148,6 +170,8 @@ public sealed class ExifEdit
 
     /// <summary>Sets a tag to SRATIONAL values; validated as <see cref="Set(ExifTagKey, ExifValue)"/> validates.</summary>
     /// <inheritdoc cref="Set(ExifTagKey, ExifValue)" path="/exception"/>
+    /// <param name="key">The directory and tag ID to set.</param>
+    /// <param name="values">The signed rational values to store in order.</param>
     public void Set(ExifTagKey key, ReadOnlySpan<SignedRational> values)
     {
         byte[] bytes = new byte[Length(values.Length, 8)];
@@ -166,6 +190,7 @@ public sealed class ExifEdit
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.TagNotEditable"/> for a tag <see cref="IsEditable"/> excludes.
     /// </exception>
+    /// <param name="key">The directory and tag ID to remove.</param>
     public void Remove(ExifTagKey key)
     {
         CheckKey(key);
@@ -188,8 +213,7 @@ public sealed class ExifEdit
     /// (IFD1), which is created when the block has none, with Compression 6, a resolution of 72 dpi
     /// and the address and length of the stream. A thumbnail the block has is replaced: the other
     /// tags of its directory stay, and the bytes of the old stream are cleared where nothing else
-    /// addresses them. A file without an EXIF
-    /// block gets one. This is <c>exiv2 -it</c>.
+    /// addresses them. A file without an EXIF block gets one. This is <c>exiv2 -it</c>.
     /// </summary>
     /// <remarks>
     /// Written by the documents of JPEG, PNG and WebP, where the EXIF block is a unit of its own.
@@ -201,6 +225,7 @@ public sealed class ExifEdit
     /// the 64 KiB of a JPEG APP1 segment.
     /// </remarks>
     /// <exception cref="ArgumentException">The bytes do not start as a JPEG stream does, or the edit removes the whole block.</exception>
+    /// <param name="jpeg">The JPEG-encoded thumbnail bytes to store.</param>
     public void SetThumbnail(ReadOnlySpan<byte> jpeg)
     {
         if (removeAll) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
@@ -223,12 +248,14 @@ public sealed class ExifEdit
         removeThumbnail = true;
     }
 
+    // Check multiplication before allocating so the byte count cannot overflow or exceed array limits.
     private static int Length(int count, int width)
     {
         if (count > Array.MaxLength / width) throw new ArgumentException("The value is longer than an array can be.");
         return count * width;
     }
 
+    // Centralize key, value and optional vocabulary checks before replacing the pending change for a tag.
     private void Store(ExifTagKey key, ExifValue value, bool validate)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -282,6 +309,8 @@ public sealed class ExifEdit
     /// <c>Exif.NikonLd3.FocalLength</c>, <c>Exif.OlympusCs.WhiteBalance</c>. The groups start with the
     /// name of the maker; whether the file has the tag is known when the edit is written.
     /// </summary>
+    /// <param name="key">The dotted EXIF key to test.</param>
+    /// <returns><see langword="true"/> if the key names a supported MakerNote tag; otherwise, <see langword="false"/>.</returns>
     public static bool IsMakerNoteKey(string? key) => MakerNotes.MakerNoteKeys.IsMakerNoteKey(key);
 
     /// <summary>
@@ -340,6 +369,9 @@ public sealed class ExifEdit
     /// <exception cref="ArgumentException">A key that is neither, or text that is not a value of the type.</exception>
     /// <exception cref="FormatException">A number that does not read as one of the type.</exception>
     /// <exception cref="OverflowException">A number outside the range of the type.</exception>
+    /// <param name="key">The standard EXIF or supported MakerNote key to set.</param>
+    /// <param name="text">The value text to parse using the tag's field type.</param>
+    /// <param name="allowUnnamed">Whether to allow a potentially address-bearing MakerNote tag without a library name.</param>
     public void SetTextByKey(string key, string text, bool allowUnnamed = false)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -363,6 +395,8 @@ public sealed class ExifEdit
     /// is as in <see cref="SetByKey(string, ExifValue, bool)"/>.
     /// </summary>
     /// <exception cref="ArgumentException">A key that is neither.</exception>
+    /// <param name="key">The standard EXIF or supported MakerNote key to remove.</param>
+    /// <param name="allowUnnamed">Whether to allow removal of a potentially address-bearing MakerNote tag without a library name.</param>
     public void RemoveByKey(string key, bool allowUnnamed = false)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -371,6 +405,7 @@ public sealed class ExifEdit
         StoreMakerNote(new(key, null, null, allowUnnamed));
     }
 
+    // Keep textual MakerNote edits out of standard tags and reject every change after whole-block removal.
     private void CheckMakerNoteKey(string key)
     {
         if (removeAll) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
@@ -384,6 +419,7 @@ public sealed class ExifEdit
         makerNote.Add(change);
     }
 
+    // Carry the source note and its raw entry together so copy operations can relocate them as one unit.
     internal void SetMakerNoteForCopy(ExifValue value, MakerNote note)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -394,6 +430,7 @@ public sealed class ExifEdit
 
     internal sealed record MakerNoteCopyPayload(ExifValue Value, MakerNote Note);
 
+    /// <summary>A detached, ordered view of the pending edits used during one save.</summary>
     internal sealed record EditSnapshot(bool RemoveAll, IReadOnlyDictionary<ExifTagKey, ExifValue?> Changes)
     {
         /// <summary>The JPEG stream to set as the thumbnail, or null.</summary>

@@ -43,6 +43,8 @@ public sealed partial class XmpPacket
     /// </summary>
     public IReadOnlyList<XmpEntry> Entries { get; }
     /// <summary>Copies the packet to the start of the destination, which has to be at least <see cref="ByteLength"/> long.</summary>
+    /// <param name="destination">The buffer that receives the complete XMP packet.</param>
+    /// <exception cref="ArgumentException">The destination is shorter than <see cref="ByteLength"/>.</exception>
     public void CopyRawTo(Span<byte> destination)
     {
         if (destination.Length < bytes.Length) throw new ArgumentException("Destination is too small.", nameof(destination));
@@ -54,6 +56,10 @@ public sealed partial class XmpPacket
         value.Validate(); return value with { };
     }
     /// <summary>Creates a packet without properties.</summary>
+    /// <param name="options">The packet limits; null uses the defaults.</param>
+    /// <returns>An editable packet containing no properties.</returns>
+    /// <exception cref="ArgumentException">The options contain null or invalid limits.</exception>
+    /// <exception cref="MetadataException"><see cref="MetadataErrorCode.LimitExceeded"/> if the configured packet limit cannot hold the empty packet.</exception>
     public static XmpPacket CreateEmpty(XmpReadOptions? options = null)
     {
         XmpLimits limits = Settings(options);
@@ -64,6 +70,10 @@ public sealed partial class XmpPacket
     /// <see cref="MetadataErrorCode.InvalidXmp"/> when the bytes are not a packet;
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when the packet exceeds a budget.
     /// </exception>
+    /// <param name="bytes">The UTF-8 encoded XMP packet.</param>
+    /// <param name="options">The packet limits; null uses the defaults.</param>
+    /// <returns>An immutable packet that owns a copy of the bytes.</returns>
+    /// <exception cref="ArgumentException">The options contain null or invalid limits.</exception>
     public static XmpPacket Parse(ReadOnlySpan<byte> bytes, XmpReadOptions? options = null)
     {
         XmpLimits limits = Settings(options);
@@ -77,10 +87,22 @@ public sealed partial class XmpPacket
         return new(bytes, limits, result.Tree, result.Properties, result.HasExtendedReference, result.Entries);
     }
     /// <summary>Reads a packet, for example a sidecar file, from the stream to its end and leaves the stream open. Fails as <see cref="Parse"/> does.</summary>
+    /// <param name="source">The readable stream containing the packet; it remains open.</param>
+    /// <param name="options">The packet limits; null uses the defaults.</param>
+    /// <returns>The parsed packet.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="source"/> is null.</exception>
+    /// <exception cref="ArgumentException">The source cannot be read or the options contain invalid limits.</exception>
+    /// <exception cref="MetadataException">The stream is not a valid packet or exceeds a configured limit.</exception>
     public static XmpPacket Load(Stream source, XmpReadOptions? options = null) => LoadCore(source, Settings(options), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="Load(Stream, XmpReadOptions?)"/>
     public static Task<XmpPacket> LoadAsync(Stream source, XmpReadOptions? options = null, CancellationToken cancellationToken = default) => LoadCore(source, Settings(options), true, cancellationToken);
     /// <summary>Reads a packet from a file, for example an <c>.xmp</c> sidecar. Fails as <see cref="Parse"/> does.</summary>
+    /// <param name="path">The path of the XMP file to read.</param>
+    /// <param name="options">The packet limits; null uses the defaults.</param>
+    /// <returns>The parsed packet.</returns>
+    /// <exception cref="ArgumentException">The path is empty or the options contain invalid limits.</exception>
+    /// <exception cref="IOException">The file cannot be read.</exception>
+    /// <exception cref="MetadataException">The file is not a valid packet or exceeds a configured limit.</exception>
     public static XmpPacket Load(string path, XmpReadOptions? options = null) => LoadPath(path, Settings(options), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="Load(string, XmpReadOptions?)"/>
     public static Task<XmpPacket> LoadAsync(string path, XmpReadOptions? options = null, CancellationToken cancellationToken = default) => LoadPath(path, Settings(options), true, cancellationToken);
@@ -125,6 +147,9 @@ public sealed partial class XmpPacket
     /// <see cref="MetadataErrorCode.InvalidXmpPath"/> when a change does not apply to the packet;
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when the result exceeds a budget.
     /// </exception>
+    /// <param name="edit">The ordered property changes to apply.</param>
+    /// <returns><see langword="null"/> when the edit removes the packet; otherwise, the resulting packet.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="edit"/> is null.</exception>
     public XmpPacket? Apply(XmpEdit edit)
     {
         ArgumentNullException.ThrowIfNull(edit);
@@ -168,7 +193,9 @@ public sealed partial class XmpPacket
         return packet;
     }
     /// <summary>Writes the packet to a writable, seekable, empty stream.</summary>
-    /// <exception cref="ArgumentException">The destination is not such a stream.</exception>
+    /// <param name="destination">The empty seekable stream to receive the packet; it remains open.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="destination"/> is null.</exception>
+    /// <exception cref="ArgumentException">The destination is not writable, seekable, empty, and positioned at zero.</exception>
     public void Save(Stream destination) => SaveCore(destination, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="Save(Stream)"/>
     public Task SaveAsync(Stream destination, CancellationToken cancellationToken = default) => SaveCore(destination, true, cancellationToken);
@@ -188,7 +215,9 @@ public sealed partial class XmpPacket
         }
     }
     /// <summary>Writes the packet to a new file; the file appears there complete or not at all.</summary>
-    /// <exception cref="IOException">The destination exists.</exception>
+    /// <param name="destinationPath">The path of the new file.</param>
+    /// <exception cref="ArgumentException">The path is empty.</exception>
+    /// <exception cref="IOException">The destination exists or cannot be created.</exception>
     public void SaveAs(string destinationPath) => SavePath(destinationPath, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveAs(string)"/>
     public Task SaveAsAsync(string destinationPath, CancellationToken cancellationToken = default) => SavePath(destinationPath, true, cancellationToken);

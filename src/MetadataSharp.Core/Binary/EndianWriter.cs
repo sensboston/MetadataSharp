@@ -6,6 +6,7 @@ namespace MetadataSharp.Core.Binary;
 internal ref struct EndianWriter
 {
     private readonly Span<byte> buffer;
+    // Keep the destination order with the cursor so all multibyte fields match the file header.
     private readonly Endianness byteOrder;
 
     /// <summary>Starts a cursor at the first byte of a destination span.</summary>

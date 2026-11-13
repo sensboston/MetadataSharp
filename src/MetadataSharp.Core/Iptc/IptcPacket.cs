@@ -38,6 +38,8 @@ public sealed partial class IptcPacket
     /// <summary>The length of the stream in bytes.</summary>
     public int ByteLength => bytes.Length;
     /// <summary>Copies the stream to the start of the destination, which has to be at least <see cref="ByteLength"/> long.</summary>
+    /// <param name="destination">The buffer that receives the complete IPTC stream.</param>
+    /// <exception cref="ArgumentException">The destination is shorter than <see cref="ByteLength"/>.</exception>
     public void CopyRawTo(Span<byte> destination)
     {
         if (destination.Length < bytes.Length) throw new ArgumentException("The destination is too small.", nameof(destination));
@@ -51,12 +53,21 @@ public sealed partial class IptcPacket
         limits.Validate(); return limits with { };
     }
     /// <summary>Creates a stream that declares UTF-8 and record version 4 and holds no other dataset.</summary>
+    /// <param name="options">The limits for the new packet; null uses the defaults.</param>
+    /// <returns>An empty packet with the required character-set and record-version declarations.</returns>
+    /// <exception cref="ArgumentException">The options contain null or invalid limits.</exception>
+    /// <exception cref="MetadataException"><see cref="MetadataErrorCode.LimitExceeded"/> if the configured packet limit is smaller than the required declarations.</exception>
     public static IptcPacket CreateEmpty(IptcReadOptions? options = null) => Parse([0x1c, 1, 90, 0, 3, 0x1b, 0x25, 0x47, 0x1c, 2, 0, 0, 2, 0, 4], options);
     /// <summary>Reads an IPTC stream from a copy of the bytes.</summary>
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.InvalidIptc"/> for malformed or truncated framing;
-    /// <see cref="MetadataErrorCode.LimitExceeded"/> when the stream exceeds a budget.
+    /// <see cref="MetadataErrorCode.LimitExceeded"/> when the stream exceeds a budget;
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a length descriptor wider than four bytes.
     /// </exception>
+    /// <param name="bytes">The encoded IPTC IIM stream.</param>
+    /// <param name="options">The parsing limits; null uses the defaults.</param>
+    /// <returns>An immutable packet that owns a copy of the stream.</returns>
+    /// <exception cref="ArgumentException">The options contain null or invalid limits.</exception>
     public static IptcPacket Parse(ReadOnlySpan<byte> bytes, IptcReadOptions? options = null)
     {
         IptcLimits limits = Settings(options);
@@ -136,6 +147,9 @@ public sealed partial class IptcPacket
     /// UTF-8 and the value is not ASCII; <see cref="MetadataErrorCode.InvalidIptc"/> when the value is
     /// not valid UTF-8.
     /// </exception>
+    /// <param name="datasetIndex">The zero-based index in <see cref="Datasets"/>.</param>
+    /// <returns>The dataset decoded as UTF-8 text.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="datasetIndex"/> is outside the dataset list.</exception>
     public string GetText(int datasetIndex)
     {
         if ((uint)datasetIndex >= (uint)Datasets.Count) throw new ArgumentOutOfRangeException(nameof(datasetIndex));
@@ -179,6 +193,8 @@ public sealed partial class IptcPacket
     /// the occurrences of a dataset; <see cref="MetadataErrorCode.UnsupportedFeature"/> for the
     /// character set refusals; <see cref="MetadataErrorCode.LimitExceeded"/> when the result exceeds a budget.
     /// </exception>
+    /// <param name="edit">The ordered dataset operations to apply.</param>
+    /// <returns><see langword="null"/> when the edit removes the stream; otherwise, the resulting packet.</returns>
     public IptcPacket? Apply(IptcEdit edit)
     {
         ArgumentNullException.ThrowIfNull(edit);

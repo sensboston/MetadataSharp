@@ -54,6 +54,9 @@ public static class IptcDatasets
         Array.AsReadOnly(Lookup.Values.OrderBy(d => (d.Key.Record << 8) | d.Key.Dataset).ToArray());
 
     /// <summary>Looks up the definition of a dataset; false for one IIM 4.2 does not define in records 1 and 2.</summary>
+    /// <param name="key">The IIM record and dataset number.</param>
+    /// <param name="definition">Receives the definition when found; otherwise receives <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> when the dataset is defined in record 1 or 2; otherwise, <see langword="false"/>.</returns>
     public static bool TryGet(IptcDatasetKey key, [NotNullWhen(true)] out IptcDatasetDefinition? definition) =>
         Lookup.TryGetValue(key, out definition);
 

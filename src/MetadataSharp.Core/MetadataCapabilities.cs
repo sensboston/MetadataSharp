@@ -132,6 +132,11 @@ public enum CapabilityStatus
 /// <summary>Immutable description of one (container, family, operation) row.
 /// Note is a bounded, compile-time constant explaining partiality or scope;
 /// null when nothing needs qualifying.</summary>
+/// <param name="Container">The file container.</param>
+/// <param name="Family">The metadata family.</param>
+/// <param name="Operation">The requested operation.</param>
+/// <param name="Status">The support status for this combination.</param>
+/// <param name="Note">The bounded qualification for partial support, or null when no qualification is needed.</param>
 public readonly record struct CapabilityDescriptor(
     MetadataContainer Container,
     MetadataFamily Family,
@@ -418,6 +423,11 @@ public static class MetadataCapabilities
 
     /// <summary>Fail-closed lookup; false when the row is absent. Undefined enum
     /// values are reported as not supported rather than rejected.</summary>
+    /// <param name="container">The container to look up.</param>
+    /// <param name="family">The metadata family to look up.</param>
+    /// <param name="operation">The operation to look up.</param>
+    /// <param name="descriptor">Receives the declared row, or the default descriptor when no row exists.</param>
+    /// <returns><see langword="true"/> when the manifest declares the combination; otherwise, <see langword="false"/>.</returns>
     public static bool TryGet(MetadataContainer container, MetadataFamily family,
         MetadataOperation operation, out CapabilityDescriptor descriptor)
     {
@@ -432,6 +442,10 @@ public static class MetadataCapabilities
 
     /// <summary>Convenience; returns NotSupported when the row is absent. Undefined
     /// enum values are reported as NotSupported rather than rejected.</summary>
+    /// <param name="container">The container to look up.</param>
+    /// <param name="family">The metadata family to look up.</param>
+    /// <param name="operation">The operation to look up.</param>
+    /// <returns>The row's status, or <see cref="CapabilityStatus.NotSupported"/> when no row exists.</returns>
     public static CapabilityStatus GetStatus(MetadataContainer container,
         MetadataFamily family, MetadataOperation operation) =>
         index.TryGetValue((container, family, operation), out CapabilityDescriptor descriptor)

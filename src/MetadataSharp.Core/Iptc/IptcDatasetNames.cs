@@ -57,6 +57,8 @@ public static class IptcDatasetNames
     /// The form the specification gives the value of a record 1 or record 2 dataset. It describes the
     /// definition, not the bytes: a value may be present in another form, and a reader has to check.
     /// </summary>
+    /// <param name="key">The record and dataset number.</param>
+    /// <returns>The value form specified for the dataset, or <see cref="IptcValueFormat.Text"/> when no typed form is listed.</returns>
     public static IptcValueFormat FormatOf(IptcDatasetKey key) => (key.Record, key.Dataset) switch
     {
         (1, 0) or (1, 20) or (1, 22) or (1, 120) or (1, 122) or (2, 0) or (2, 200) or (2, 201) => IptcValueFormat.UInt16,
@@ -83,6 +85,9 @@ public static class IptcDatasetNames
     /// content of a value.
     /// </para>
     /// </remarks>
+    /// <param name="key">The record and dataset number of the value.</param>
+    /// <param name="value">The raw dataset value.</param>
+    /// <returns>The value's typed representation, or <see langword="null"/> when the data is not in the specified form.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="value" /> is null.</exception>
     public static string? Interpret(IptcDatasetKey key, IptcValue value)
     {
@@ -128,6 +133,9 @@ public static class IptcDatasetNames
     /// Looks up the name of a record 1 or record 2 dataset. Returns false, with a null name, for a
     /// dataset the specification does not define in those records and for every other record.
     /// </summary>
+    /// <param name="key">The record and dataset number to look up.</param>
+    /// <param name="name">Receives the dataset name on success; otherwise receives <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> when the dataset has a name in records 1 or 2; otherwise, <see langword="false"/>.</returns>
     public static bool TryGetName(IptcDatasetKey key, [NotNullWhen(true)] out string? name)
     {
         int wanted = (key.Record << 8) | key.Dataset;

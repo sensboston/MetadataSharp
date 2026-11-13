@@ -16,4 +16,6 @@ public enum ExifDirectoryKind
 }
 
 /// <summary>Identifies a tag by directory role and numeric ID, including unknown IDs.</summary>
+/// <param name="Directory">The directory role containing the tag.</param>
+/// <param name="TagId">The numeric tag identifier.</param>
 public readonly record struct ExifTagKey(ExifDirectoryKind Directory, ushort TagId);

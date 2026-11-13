@@ -42,6 +42,8 @@ public sealed class IptcEdit
 
     /// <summary>Replaces every occurrence of a dataset with one text value.</summary>
     /// <exception cref="ArgumentException">The dataset is not defined, is managed, or the value breaks its definition.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void Set(IptcDatasetKey key, string value) { ArgumentNullException.ThrowIfNull(value); ReplaceText(key, [value]); }
     /// <summary>
     /// Replaces every occurrence of a dataset with the given text values, in order; no values removes
@@ -51,6 +53,8 @@ public sealed class IptcEdit
     /// The dataset is not one IIM 4.2 defines in records 1 and 2, is managed or holds binary data; a
     /// value breaks its definition; or a dataset that does not repeat is given more than one value.
     /// </exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="values">The text values to encode in order; an empty sequence removes all occurrences.</param>
     public void ReplaceText(IptcDatasetKey key, IEnumerable<string> values)
     {
         Check(key); ArgumentNullException.ThrowIfNull(values);
@@ -69,6 +73,8 @@ public sealed class IptcEdit
     /// the stream does not have is added. This is what <c>set</c> does in an Exiv2 command file.
     /// </summary>
     /// <exception cref="ArgumentException">The dataset is not defined, is managed or holds binary data, or the value breaks its definition.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetFirst(IptcDatasetKey key, string value)
     {
         Check(key); ArgumentNullException.ThrowIfNull(value);
@@ -76,6 +82,8 @@ public sealed class IptcEdit
     }
     /// <summary>Adds an occurrence of a repeatable dataset after its last one.</summary>
     /// <exception cref="ArgumentException">The dataset is not defined, is managed, does not repeat, or the value breaks its definition.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void Append(IptcDatasetKey key, string value) =>
         Commit(new(key, OperationKind.Append, 0, [Repeated(key, value)], true));
     /// <summary>
@@ -84,6 +92,9 @@ public sealed class IptcEdit
     /// edit is applied, with <see cref="MetadataErrorCode.InvalidIptcEdit"/>.
     /// </summary>
     /// <exception cref="ArgumentException">As <see cref="Append"/>.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="index">The zero-based occurrence index within this dataset.</param>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void Insert(IptcDatasetKey key, int index, string value)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index);
@@ -94,16 +105,22 @@ public sealed class IptcEdit
     /// dataset does not have is refused when the edit is applied, with
     /// <see cref="MetadataErrorCode.InvalidIptcEdit"/>.
     /// </summary>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="index">The zero-based occurrence index within this dataset.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is negative.</exception>
     public void RemoveAt(IptcDatasetKey key, int index)
     {
         Check(key); ArgumentOutOfRangeException.ThrowIfNegative(index);
         Commit(new(key, OperationKind.RemoveAt, index, [], false));
     }
     /// <summary>Removes every occurrence of a dataset of record 1 or 2; nothing happens when it has none.</summary>
+    /// <param name="key">The IIM record and dataset number to change.</param>
     public void Remove(IptcDatasetKey key) { Check(key); Commit(new(key, OperationKind.ReplaceAll, 0, [], false)); }
 
     /// <summary>Replaces every occurrence of a two-octet binary number dataset, such as FileFormat (1:20).</summary>
     /// <exception cref="ArgumentException">The dataset is not a two-octet number, or is managed.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetUInt16(IptcDatasetKey key, ushort value)
     {
         Check(key);
@@ -112,6 +129,8 @@ public sealed class IptcEdit
     }
     /// <summary>Replaces every occurrence of a date dataset, such as DateCreated (2:55).</summary>
     /// <exception cref="ArgumentException">The dataset is not a date.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="date">The calendar date to write as CCYYMMDD.</param>
     public void SetDate(IptcDatasetKey key, DateOnly date)
     {
         Check(key);
@@ -121,6 +140,9 @@ public sealed class IptcEdit
     /// <summary>Replaces every occurrence of a time dataset, such as TimeCreated (2:60), with a time and its offset from UTC.</summary>
     /// <exception cref="ArgumentException">The dataset is not a time.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The offset is not whole minutes, or is fifteen hours or more.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="time">The time of day to write.</param>
+    /// <param name="utcOffset">The offset of <paramref name="time"/> from UTC; it must be a whole number of minutes and less than fifteen hours.</param>
     public void SetTime(IptcDatasetKey key, TimeOnly time, TimeSpan utcOffset)
     {
         Check(key);
@@ -136,6 +158,8 @@ public sealed class IptcEdit
     /// character set rules.
     /// </summary>
     /// <exception cref="ArgumentException">The key is outside records 1 and 2 or is managed, the edit already removes all IPTC, or the values exceed the default budget.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="values">The raw dataset values to write, in order.</param>
     public void ReplaceRaw(IptcDatasetKey key, IEnumerable<IptcValue> values)
     {
         Check(key); ArgumentNullException.ThrowIfNull(values);
@@ -149,12 +173,22 @@ public sealed class IptcEdit
         Commit(new(key, OperationKind.ReplaceAll, 0, copy.ToArray(), false));
     }
     /// <summary>Adds a raw occurrence of a dataset of record 1 or 2 after its last one.</summary>
+    /// <exception cref="ArgumentException">The key is outside records 1 and 2 or is managed, the edit removes all IPTC, or the operation budget is exceeded.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="value">The raw dataset value to write.</param>
     public void AppendRaw(IptcDatasetKey key, IptcValue value)
     {
         Check(key); ArgumentNullException.ThrowIfNull(value);
         Commit(new(key, OperationKind.Append, 0, [value], false));
     }
     /// <summary>Adds a raw occurrence before the occurrence at <paramref name="index"/>; see <see cref="Insert"/>.</summary>
+    /// <exception cref="ArgumentException">The key is outside records 1 and 2 or is managed, the edit removes all IPTC, or the operation budget is exceeded.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is negative.</exception>
+    /// <param name="key">The IIM record and dataset number to change.</param>
+    /// <param name="index">The zero-based occurrence index within this dataset.</param>
+    /// <param name="value">The raw dataset value to write.</param>
     public void InsertRaw(IptcDatasetKey key, int index, IptcValue value)
     {
         Check(key); ArgumentOutOfRangeException.ThrowIfNegative(index); ArgumentNullException.ThrowIfNull(value);
@@ -172,39 +206,55 @@ public sealed class IptcEdit
     // ---- Typed convenience: null (or no values) removes the dataset ----
 
     /// <summary>Sets or removes ObjectName (2:5), the title.</summary>
+    /// <param name="value">The title to store, or null to remove ObjectName.</param>
     public void SetObjectName(string? value) => One(new(2, 5), value);
     /// <summary>Replaces every Keywords dataset (2:25).</summary>
+    /// <param name="values">The text values to encode in order; an empty sequence removes all occurrences.</param>
     public void SetKeywords(IEnumerable<string> values) => ReplaceText(new(2, 25), values);
     /// <summary>Adds one Keywords dataset (2:25) after the last.</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void AddKeyword(string value) => Append(new(2, 25), value);
     /// <summary>Replaces every Byline dataset (2:80), the creators.</summary>
+    /// <param name="values">The text values to encode in order; an empty sequence removes all occurrences.</param>
     public void SetBylines(IEnumerable<string> values) => ReplaceText(new(2, 80), values);
     /// <summary>Replaces every BylineTitle dataset (2:85).</summary>
+    /// <param name="values">The text values to encode in order; an empty sequence removes all occurrences.</param>
     public void SetBylineTitles(IEnumerable<string> values) => ReplaceText(new(2, 85), values);
     /// <summary>Sets or removes Headline (2:105).</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetHeadline(string? value) => One(new(2, 105), value);
     /// <summary>Sets or removes Caption (2:120), the description; it may hold line breaks.</summary>
+    /// <param name="value">The caption text to store, or null to remove Caption.</param>
     public void SetCaption(string? value) => One(new(2, 120), value);
     /// <summary>Sets or removes Copyright (2:116).</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetCopyright(string? value) => One(new(2, 116), value);
     /// <summary>Sets or removes Credit (2:110).</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetCredit(string? value) => One(new(2, 110), value);
     /// <summary>Sets or removes Source (2:115).</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetSource(string? value) => One(new(2, 115), value);
     /// <summary>Sets or removes City (2:90).</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetCity(string? value) => One(new(2, 90), value);
     /// <summary>Sets or removes SubLocation (2:92).</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetSubLocation(string? value) => One(new(2, 92), value);
     /// <summary>Sets or removes ProvinceState (2:95).</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetProvinceState(string? value) => One(new(2, 95), value);
     /// <summary>Sets or removes CountryCode (2:100): three letters.</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetCountryCode(string? value) => One(new(2, 100), value);
     /// <summary>Sets or removes CountryName (2:101).</summary>
+    /// <param name="value">The text value to encode according to the dataset definition.</param>
     public void SetCountryName(string? value) => One(new(2, 101), value);
     /// <summary>
     /// Sets DateCreated (2:55) and TimeCreated (2:60) from one moment: the date and time of day as
     /// written, with the offset from UTC, which has to be whole minutes.
     /// </summary>
+    /// <param name="value">The moment whose local date, time of day, and UTC offset are written.</param>
     public void SetDateCreated(DateTimeOffset value)
     {
         string time = IptcDatasets.Format(TimeOnly.FromTimeSpan(new TimeSpan(value.Hour, value.Minute, value.Second)), value.Offset);
@@ -215,6 +265,7 @@ public sealed class IptcEdit
     /// Sets DateCreated (2:55) to a date alone and removes TimeCreated (2:60): a time kept from
     /// before would read as the time of the new date.
     /// </summary>
+    /// <param name="date">The calendar date to write as CCYYMMDD.</param>
     public void SetDateCreated(DateOnly date)
     {
         ReplaceText(new(2, 55), [IptcDatasets.Format(date)]);

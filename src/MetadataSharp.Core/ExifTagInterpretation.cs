@@ -45,6 +45,7 @@ public static partial class ExifTags
     /// </remarks>
     /// <param name="key">The directory and tag the value was read from.</param>
     /// <param name="value">The raw value.</param>
+    /// <returns>The display form of the value, or <see langword="null"/> when this tag has no interpretation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="value" /> is null.</exception>
     public static string? Interpret(ExifTagKey key, ExifValue value)
     {
@@ -73,6 +74,7 @@ public static partial class ExifTags
     /// </remarks>
     /// <param name="metadata">The snapshot the tag belongs to.</param>
     /// <param name="key">The directory and tag to interpret.</param>
+    /// <returns>The display form of the tag, or <see langword="null"/> when it is absent or has no interpretation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="metadata" /> is null.</exception>
     public static string? Interpret(ExifMetadata metadata, ExifTagKey key)
     {

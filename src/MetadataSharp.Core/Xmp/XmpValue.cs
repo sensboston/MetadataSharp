@@ -34,6 +34,9 @@ public sealed class XmpValue
     public IReadOnlyDictionary<string, string> Languages { get; }
 
     /// <summary>Creates a simple text value.</summary>
+    /// <param name="text">The XML-valid text to store.</param>
+    /// <returns>An immutable text value.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="text"/> is null.</exception>
     /// <exception cref="ArgumentException">The text holds characters XML does not allow or exceeds the default budget.</exception>
     public static XmpValue CreateText(string text)
     {
@@ -42,6 +45,10 @@ public sealed class XmpValue
         return new(XmpValueKind.Text, text, [], new());
     }
     /// <summary>Creates a bag, a sequence or an array of alternatives of texts.</summary>
+    /// <param name="kind">The array form to create.</param>
+    /// <param name="items">The text values in array order.</param>
+    /// <returns>An immutable array value.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="items"/> or an item is null.</exception>
     /// <exception cref="ArgumentException">The kind is not <see cref="XmpValueKind.Bag"/>, <see cref="XmpValueKind.Sequence"/> or <see cref="XmpValueKind.Alternative"/>, or the items are not valid or exceed the default budget.</exception>
     public static XmpValue CreateArray(XmpValueKind kind, IEnumerable<string> items)
     {
@@ -56,6 +63,9 @@ public sealed class XmpValue
         return new(kind, null, copy.ToArray(), new());
     }
     /// <summary>Creates a language alternative from pairs of a language tag (<c>x-default</c>, <c>en-US</c>) and a text.</summary>
+    /// <param name="values">The language-tag and text pairs; tags are unique without regard to case.</param>
+    /// <returns>An immutable language-alternative value.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="values"/> or a language or text is null.</exception>
     /// <exception cref="ArgumentException">A language tag is not valid or occurs twice, or the texts are not valid or exceed the default budget.</exception>
     public static XmpValue CreateLanguageAlternative(IEnumerable<KeyValuePair<string, string>> values)
     {
