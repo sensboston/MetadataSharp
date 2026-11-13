@@ -78,7 +78,7 @@ public sealed class VideoMetadata
             format = MetadataFormat.Asf;
             return true;
         }
-        if (data.Length >= 4 && data[..4].SequenceEqual("\x1A\x45\xDF\xA3"u8))
+        if (data.Length >= 4 && data[0] == 0x1A && data[1] == 0x45 && data[2] == 0xDF && data[3] == 0xA3)
         {
             format = MetadataFormat.Matroska;
             return true;
@@ -88,7 +88,8 @@ public sealed class VideoMetadata
             format = MetadataFormat.QuickTime;
             return true;
         }
-        if (data.Length >= 4 && data[..4].SequenceEqual("RIFF"u8))
+        if (data.Length >= 12 && data[..4].SequenceEqual("RIFF"u8) &&
+            (data.Slice(8, 4).SequenceEqual("AVI "u8) || data.Slice(8, 4).SequenceEqual("WAVE"u8)))
         {
             format = MetadataFormat.Riff;
             return true;

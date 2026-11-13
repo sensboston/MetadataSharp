@@ -66,7 +66,7 @@ def fixtures() -> dict[str, bytes]:
     segment = ebml_element(bytes.fromhex("18538067"), ebml_element(bytes.fromhex("1549a966"), info))
     webm = ebml_header + segment
 
-    ftyp = atom(b"ftyp", b"isom" + (512).to_bytes(4, "big") + b"isommp42", extended=True)
+    ftyp = atom(b"ftyp", b"isom" + (512).to_bytes(4, "big") + b"isommp42")
     mvhd = bytearray(100)
     mvhd[0] = 0
     mvhd[12:16] = (1000).to_bytes(4, "big")
