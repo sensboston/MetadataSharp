@@ -41,7 +41,7 @@ internal static class SampleSupport
             case MetadataFormat.WebP: using (var d = WebPMetadataDocument.Open(input)) d.SaveExif(output, edit); break;
             case MetadataFormat.Tiff: using (var d = TiffBasedMetadataDocument.Open(input)) d.SaveExif(output, edit); break;
             case MetadataFormat.Bmff or MetadataFormat.Cr3: using (var d = BmffMetadataDocument.Open(input)) d.SaveExif(output, edit); break;
-            default: throw new MetadataException(MetadataErrorCode.UnsupportedFeature, $"EXIF edits are not supported for {format}.");
+            default: throw new NotSupportedException($"EXIF edits are not supported for {format}.");
         }
         return output.ToArray();
     }
@@ -56,7 +56,7 @@ internal static class SampleSupport
             case MetadataFormat.Jpeg: using (var d = JpegMetadataDocument.Open(input)) d.SaveIptc(output, edit); break;
             case MetadataFormat.Png: using (var d = PngMetadataDocument.Open(input)) d.SaveIptc(output, edit); break;
             case MetadataFormat.Tiff: using (var d = TiffBasedMetadataDocument.Open(input)) d.SaveIptc(output, edit); break;
-            default: throw new MetadataException(MetadataErrorCode.UnsupportedFeature, $"IPTC edits are not supported for {format}.");
+            default: throw new NotSupportedException($"IPTC edits are not supported for {format}.");
         }
         return output.ToArray();
     }
@@ -73,7 +73,7 @@ internal static class SampleSupport
             case MetadataFormat.WebP: using (var d = WebPMetadataDocument.Open(input)) d.SaveXmp(output, edit); break;
             case MetadataFormat.Tiff: using (var d = TiffBasedMetadataDocument.Open(input)) d.SaveXmp(output, edit); break;
             case MetadataFormat.Bmff or MetadataFormat.Cr3: using (var d = BmffMetadataDocument.Open(input)) d.SaveXmp(output, edit); break;
-            default: throw new MetadataException(MetadataErrorCode.UnsupportedFeature, $"XMP edits are not supported for {format}.");
+            default: throw new NotSupportedException($"XMP edits are not supported for {format}.");
         }
         return output.ToArray();
     }
@@ -90,7 +90,7 @@ internal static class SampleSupport
             case MetadataFormat.WebP: using (var d = WebPMetadataDocument.Open(input)) d.SaveAll(output, edits); break;
             case MetadataFormat.Tiff: using (var d = TiffBasedMetadataDocument.Open(input)) d.SaveAll(output, edits); break;
             case MetadataFormat.Bmff or MetadataFormat.Cr3: using (var d = BmffMetadataDocument.Open(input)) d.SaveAll(output, edits); break;
-            default: throw new MetadataException(MetadataErrorCode.UnsupportedFeature, $"Combined metadata edits are not supported for {format}.");
+            default: throw new NotSupportedException($"Combined metadata edits are not supported for {format}.");
         }
         return output.ToArray();
     }
@@ -107,7 +107,7 @@ internal static class SampleSupport
             case MetadataFormat.WebP: using (var d = WebPMetadataDocument.Open(input)) d.SaveIccProfile(output, icc); break;
             case MetadataFormat.Tiff: using (var d = TiffBasedMetadataDocument.Open(input)) d.SaveIccProfile(output, icc); break;
             case MetadataFormat.Bmff or MetadataFormat.Cr3: using (var d = BmffMetadataDocument.Open(input)) d.SaveIccProfile(output, icc); break;
-            default: throw new MetadataException(MetadataErrorCode.UnsupportedFeature, $"ICC edits are not supported for {format}.");
+            default: throw new NotSupportedException($"ICC edits are not supported for {format}.");
         }
         return output.ToArray();
     }

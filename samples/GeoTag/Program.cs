@@ -47,7 +47,7 @@ try
 
     string? Value(string key) { int i = Array.IndexOf(args, key); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
 }
-catch (Exception e) when (e is IOException or MetadataException or ArgumentException or FormatException or OverflowException)
+catch (Exception e) when (e is IOException or MetadataException or ArgumentException or FormatException or OverflowException or NotSupportedException)
 {
     Console.Error.WriteLine($"geotag: {e.Message}"); return 1;
 }

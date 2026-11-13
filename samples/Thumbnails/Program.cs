@@ -48,7 +48,7 @@ try
     Console.Error.WriteLine("Use --help for usage.");
     return 2;
 }
-catch (Exception e) when (e is IOException or MetadataException or ArgumentException)
+catch (Exception e) when (e is IOException or MetadataException or ArgumentException or NotSupportedException)
 {
     Console.Error.WriteLine($"thumbnails: {e.Message}");
     return 1;

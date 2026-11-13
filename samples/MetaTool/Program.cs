@@ -26,7 +26,7 @@ static int Run(string[] args)
         Console.Error.WriteLine("Unknown or incomplete command. Use --help.");
         return 2;
     }
-    catch (Exception ex) when (ex is IOException or MetadataException or ArgumentException or FormatException or OverflowException)
+    catch (Exception ex) when (ex is IOException or MetadataException or ArgumentException or FormatException or OverflowException or NotSupportedException)
     {
         Console.Error.WriteLine($"metatool: {ex.Message}");
         return 1;

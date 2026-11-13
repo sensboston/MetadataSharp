@@ -56,7 +56,7 @@ try
 
     string? Value(string key) { int i = Array.IndexOf(args, key); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
 }
-catch (Exception e) when (e is IOException or MetadataException or ArgumentException)
+catch (Exception e) when (e is IOException or MetadataException or ArgumentException or NotSupportedException)
 {
     Console.Error.WriteLine($"batchrename: {e.Message}"); return 1;
 }

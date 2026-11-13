@@ -26,7 +26,7 @@ try
     if (!dryRun) SampleSupport.WriteAtomic(paths[1], result);
     return 0;
 }
-catch (Exception e) when (e is IOException or MetadataException or ArgumentException or InvalidOperationException)
+catch (Exception e) when (e is IOException or MetadataException or ArgumentException or InvalidOperationException or NotSupportedException)
 {
     Console.Error.WriteLine($"copymetadata: {e.Message}"); return 1;
 }
