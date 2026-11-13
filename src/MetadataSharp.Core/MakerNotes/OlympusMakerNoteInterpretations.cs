@@ -52,7 +52,7 @@ internal static class OlympusMakerNoteInterpretations
         if (name == "FocusMode") return CameraFocusMode(value);
         if (name == "Gradation") return Gradation(value);
         if (name == "NoiseFilter") return NoiseFilter(value);
-        if (name == "ArtFilter" or "MagicFilter") return ArtFilter(value);
+        if (name is "ArtFilter" or "MagicFilter") return ArtFilter(value);
         if (!ExifTags.TryInteger(value, 0, out long number)) return null;
         return name switch
         {
