@@ -218,6 +218,7 @@ internal static partial class MakerNoteLabels
         NikonIiIso,
         NikonFlashInfo,
         NikonSensorPixelSize,
+        NikonAFPointsInFocus,
         SonyExposureBias,
         SonyExposureStandardAdjustment,
         SonyAmbientTemperature,
@@ -421,6 +422,8 @@ internal static partial class MakerNoteLabels
                 return NikonFlashInfo(rule.Name, value, note);
             case Form.NikonSensorPixelSize:
                 return NikonSensorPixelSize(value);
+            case Form.NikonAFPointsInFocus:
+                return NikonAFPointsInFocus(rule, value, cameraModel);
             case Form.SonyExposureBias:
                 return SonyExposureBias(value);
             case Form.SonyExposureStandardAdjustment:
@@ -1488,6 +1491,26 @@ internal static partial class MakerNoteLabels
             sizes[i] = size.ToString("G6", CultureInfo.InvariantCulture).Replace('E', 'e');
         }
         return sizes[0] + " x " + sizes[1] + " um";
+    }
+
+    private static string? NikonAFPointsInFocus(Rule rule, ExifValue value, string? cameraModel)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long raw) || raw is < 0 or > 65535)
+            return null;
+        ushort mask = (ushort)raw;
+        if (cameraModel?.StartsWith("NIKON D", StringComparison.OrdinalIgnoreCase) == true)
+            mask = (ushort)((mask >> 8) | (mask << 8));
+        if (mask == 0x07FF)
+            return "All 11 Points";
+        var labels = new List<string>();
+        ushort known = 0;
+        foreach ((long flag, string label) in rule.Labels)
+        {
+            known |= (ushort)flag;
+            if ((mask & flag) != 0)
+                labels.Add(label);
+        }
+        return mask != 0 && (mask & ~known) == 0 ? string.Join(", ", labels) : null;
     }
 
     private static string? NikonFlashInfo(string name, ExifValue value, MakerNote? note)

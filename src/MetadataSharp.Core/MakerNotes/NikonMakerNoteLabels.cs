@@ -136,7 +136,7 @@ internal static partial class MakerNoteLabels
             (0x0001, "Center"), (0x0002, "Top"), (0x0004, "Bottom"), (0x0008, "Mid-left"),
             (0x0010, "Mid-right"), (0x0020, "Upper-left"), (0x0040, "Upper-right"), (0x0080, "Lower-left"),
             (0x0100, "Lower-right"), (0x0200, "Far Left"), (0x0400, "Far Right"),
-        ], Form.BitMask),
+        ], Form.NikonAFPointsInFocus),
 
         // ShotInfo (0x0091).
         new(0x0091, "VibrationReduction", [(0, "Off"), (1, "On (1)")]),
