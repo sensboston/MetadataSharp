@@ -404,7 +404,12 @@ internal static class Program
         if (metadata.MakerNote is MakerNote makerNote)
         {
             string? cameraModel = metadata.Model;
-            string group = makerNote.Format switch { MakerNoteFormat.Canon => "Canon", _ => makerNote.Format.ToString() };
+            string group = makerNote.Format switch
+            {
+                MakerNoteFormat.Canon => "Canon",
+                MakerNoteFormat.OMSystem => "Olympus2",
+                _ => makerNote.Format.ToString(),
+            };
             // The reference reports where a note it recognises starts and which byte order it is read in
             // as two rows of a group of their own.
             if (noteRows)

@@ -2,6 +2,7 @@
 import importlib.util
 import tempfile
 import unittest
+from unittest.mock import patch
 from collections import OrderedDict
 from pathlib import Path
 
@@ -62,7 +63,10 @@ class RunTests(unittest.TestCase):
                 value = "New" if path.endswith(".1.ours.jpg") else "Old"
                 return 0, f"Exif.Canon.OwnerName   {value}\n", f"Warning: {path} odd\n"
 
-            self.assertEqual(1, x.main([str(corpus), str(work), "--exiv2", "exiv2", "--fixture", "fixture"], runner))
+            # This test deliberately constructs a failing parity result. Keep its simulated GitHub
+            # annotations from becoming real errors on the workflow run that executes the test suite.
+            with patch.object(x, "annotate"):
+                self.assertEqual(1, x.main([str(corpus), str(work), "--exiv2", "exiv2", "--fixture", "fixture"], runner))
             self.assertFalse((work / "s00000.1.ours.jpg").exists())
 
     def test_the_print_out_keeps_values_with_spaces_and_drops_the_path_from_warnings(self):

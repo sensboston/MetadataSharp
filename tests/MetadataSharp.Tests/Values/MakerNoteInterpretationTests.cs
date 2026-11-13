@@ -292,6 +292,216 @@ public sealed class MakerNoteInterpretationTests
         Assert.Null(Field(MakerNoteFormat.Canon, 0x0026, "AFPointsInFocus", Bytes(1, 2)));
     }
 
+    // ---- Panasonic -------------------------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("Quality", 2, "High")]
+    [InlineData("WhiteBalance", 1, "Auto")]
+    [InlineData("FocusMode", 1, "Auto")]
+    [InlineData("ImageStabilization", 4, "On, Mode 2")]
+    [InlineData("Macro", 2, "Off")]
+    [InlineData("ShootingMode", 6, "Program")]
+    [InlineData("Audio", 2, "No")]
+    [InlineData("ColorEffect", 1, "Off")]
+    [InlineData("BurstMode", 0, "Off")]
+    [InlineData("Contrast", 2, "High")]
+    [InlineData("NoiseReduction", 0, "Standard")]
+    [InlineData("Rotation", 1, "Horizontal (normal)")]
+    [InlineData("AFAssistLamp", 2, "Enabled but Not Used")]
+    [InlineData("ColorMode", 0, "Normal")]
+    [InlineData("OpticalZoomMode", 1, "Standard")]
+    [InlineData("ConversionLens", 1, "Off")]
+    [InlineData("WorldTimeLocation", 1, "Home")]
+    [InlineData("TextStamp1", 1, "Off")]
+    [InlineData("ProgramISO", 65534, "Intelligent ISO")]
+    [InlineData("IntelligentExposure", 2, "Standard")]
+    [InlineData("FlashWarning", 0, "No")]
+    [InlineData("IntelligentResolution", 3, "High")]
+    [InlineData("ManometerPressure", 65535, "infinite")]
+    [InlineData("SceneMode", 29, "Underwater")]
+    [InlineData("FlashFired", 1, "No")]
+    [InlineData("FilmMode", 10, "Nostalgic")]
+    [InlineData("BracketSettings", 1, "3 images, Sequence 0/-/+")]
+    [InlineData("FlashCurtain", 2, "2nd")]
+    public void APanasonicTagReadsAsItsReferenceRendering(string name, int number, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Panasonic, name, Longs(number)));
+
+    [Theory]
+    [InlineData(0, 16, "Spot mode off or 3-area (high speed)")]
+    [InlineData(16, 0, "1-area")]
+    [InlineData(16, 16, "1-area (high speed)")]
+    public void APanasonicAfModeReadsAsItsReferenceRendering(int first, int second, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Panasonic, "AFMode", Bytes((byte)first, (byte)second)));
+
+    [Fact]
+    public void APanasonicMakerNoteDecodesTextTimesAndAngles()
+    {
+        Assert.Equal("S000501110223", Top(MakerNoteFormat.Panasonic, "InternalSerialNumber",
+            Undefined(Encoding.ASCII.GetBytes("S000501110223\0"))));
+        Assert.Equal("3.90", Top(MakerNoteFormat.Panasonic, "ExifVersion", Undefined(Encoding.ASCII.GetBytes("0390"))));
+        Assert.Equal("1.40", Top(MakerNoteFormat.Panasonic, "MakerNoteVersion", Undefined(Encoding.ASCII.GetBytes("0140"))));
+        Assert.Equal("---", Top(MakerNoteFormat.Panasonic, "Landmark", Undefined(Encoding.ASCII.GetBytes("---\0"))));
+        Assert.Equal("00:00:17.62", Top(MakerNoteFormat.Panasonic, "TimeSincePowerOn", Longs(1762)));
+        Assert.Equal("1.0", Top(MakerNoteFormat.Panasonic, "RollAngle", Shorts(10)));
+        Assert.Equal("-1.0", Top(MakerNoteFormat.Panasonic, "PitchAngle", Shorts(10)));
+        Assert.Equal("-224", Top(MakerNoteFormat.Panasonic, "AccelerometerY", SignedLongs(-2147418336)));
+    }
+
+    // ---- Olympus / OM System ---------------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("Quality", 2, "High Quality (HQ)")]
+    [InlineData("Quality", 7, "(7)")]
+    [InlineData("Macro", 0, "Off")]
+    [InlineData("BWMode", 0, "Off")]
+    [InlineData("FlashMode", 0, "Off")]
+    [InlineData("FlashDevice", 0, "None")]
+    [InlineData("FocusRange", 0, "Normal")]
+    [InlineData("FocusMode", 0, "Auto")]
+    [InlineData("SharpnessFactor", 0, "Normal")]
+    [InlineData("ExternalFlashBounce", 0, "Off")]
+    [InlineData("Contrast", 1, "Normal")]
+    [InlineData("OneTouchWB", 1, "On")]
+    public void AnOlympusTagReadsAsItsReferenceRendering(string name, int number, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Olympus, name, Shorts(number)));
+
+    [Fact]
+    public void AnOlympusMakerNoteReadsItsCompositeAndTextValues()
+    {
+        Assert.Equal("Normal", Top(MakerNoteFormat.Olympus, "SpecialMode", Longs(0, 0, 0)));
+        Assert.Equal("Fast, Sequence number 1", Top(MakerNoteFormat.Olympus2, "SpecialMode", Longs(2, 1, 0)));
+        Assert.Equal("Panorama, Sequence number 3, Top to bottom", Top(MakerNoteFormat.Olympus, "SpecialMode", Longs(3, 3, 4)));
+        Assert.Equal("1.7x", Top(MakerNoteFormat.Olympus, "DigitalZoom", Rationals((17, 10))));
+        Assert.Equal("None", Top(MakerNoteFormat.Olympus, "DigitalZoom", Rationals((1, 1))));
+        Assert.Equal("Auto", Top(MakerNoteFormat.Olympus, "WhiteBalance", Shorts(1, 0)));
+        Assert.Equal("5500 Kelvin", Top(MakerNoteFormat.Olympus, "WhiteBalance", Shorts(2, 6)));
+        Assert.Equal("OLYMPUS DIGITAL CAMERA", Top(MakerNoteFormat.Olympus2, "CameraID",
+            Undefined(Encoding.ASCII.GetBytes("OLYMPUS DIGITAL CAMERA\0"))));
+    }
+
+    [Fact]
+    public void AnOlympusCameraSettingsArrayReadsItsCorpusRenderings()
+    {
+        Assert.Equal("1.00", Field(MakerNoteFormat.Olympus2, 0x2020, "CameraSettingsVersion",
+            Undefined(Encoding.ASCII.GetBytes("0100"))));
+        Assert.Equal("No", Field(MakerNoteFormat.Olympus2, 0x2020, "PreviewImageValid", Longs(0)));
+        Assert.Equal("Aperture-priority AE", Field(MakerNoteFormat.Olympus2, 0x2020, "ExposureMode", Shorts(3)));
+        Assert.Equal("Center-weighted average", Field(MakerNoteFormat.Olympus2, 0x2020, "MeteringMode", Shorts(2)));
+        Assert.Equal("MF16", Field(MakerNoteFormat.Olympus2, 0x2020, "FocusMode", Shorts(10, 16)));
+        Assert.Equal("AF Used", Field(MakerNoteFormat.Olympus2, 0x2020, "FocusProcess", Shorts(1)));
+        Assert.Equal("Ready", Field(MakerNoteFormat.Olympus2, 0x2020, "AFSearch", Shorts(1)));
+        Assert.Equal("Fill-in", Field(MakerNoteFormat.Olympus2, 0x2020, "FlashMode", Shorts(2)));
+        Assert.Equal("Auto (Keep Warm Color Off)", Field(MakerNoteFormat.Olympus2, 0x2020, "WhiteBalance", Shorts(1)));
+        Assert.Equal("Natural", Field(MakerNoteFormat.Olympus2, 0x2020, "PictureMode", Shorts(2, 2)));
+        Assert.Equal("Normal, User-Selected", Field(MakerNoteFormat.Olympus2, 0x2020, "Gradation", SignedShorts(0, -1, 1, 0)));
+        Assert.Equal("Off", Field(MakerNoteFormat.Olympus2, 0x2020, "NoiseFilter", SignedShorts(-2, -2, 1)));
+        Assert.Equal("Partial Color (position 6)", Field(MakerNoteFormat.Olympus2, 0x2020, "ArtFilter", Shorts(39, 4352, 0, 5)));
+        Assert.Equal("S-IS AUTO", Field(MakerNoteFormat.Olympus2, 0x2020, "ImageStabilization", Longs(4)));
+    }
+
+    [Fact]
+    public void AnOlympusEquipmentAndProcessingDirectoryReadsItsReferenceValues()
+    {
+        Assert.Equal("Olympus M.Zuiko Digital ED 14-42mm F3.5-5.6 EZ",
+            Field(MakerNoteFormat.Olympus2, 0x2010, "LensType", Bytes(0, 0, 33, 16, 0, 0)));
+        Assert.Equal("None", Field(MakerNoteFormat.Olympus2, 0x2010, "Extender", Bytes(0, 0, 0, 0, 0, 0)));
+        Assert.Equal("None", Field(MakerNoteFormat.Olympus2, 0x2010, "FlashType", Shorts(0)));
+        Assert.Equal("Advanced High Function", Field(MakerNoteFormat.Olympus2, 0x2030, "Engine", Shorts(3)));
+        Assert.Equal("Edited (Landscape)", Field(MakerNoteFormat.Olympus2, 0x2030, "EditStatus", Shorts(1)));
+        Assert.Equal("Gray Point", Field(MakerNoteFormat.Olympus2, 0x2031, "WhiteBalance", Shorts(2)));
+        Assert.Equal("4:3", Field(MakerNoteFormat.Olympus2, 0x2040, "AspectRatio", Bytes(1, 1)));
+        Assert.Equal("Off", Field(MakerNoteFormat.Olympus2, 0x2040, "MultipleExposureMode", Shorts(0, 1)));
+        Assert.Equal("0.15 m", Field(MakerNoteFormat.Olympus2, 0x2050, "FocusDistance", Rationals((150, 10))));
+        Assert.Equal("0.23 m", Field(MakerNoteFormat.Olympus2, 0x2050, "FocusDistance", Rationals((235, 10))));
+        Assert.Equal("0.70 m", Field(MakerNoteFormat.Olympus2, 0x2050, "FocusDistance", Rationals((705, 10))));
+        Assert.Equal("Left (or n/a)", Field(MakerNoteFormat.Olympus2, 0x2050, "AFPoint", Shorts(0)));
+        Assert.Equal("Bounce or Off", Field(MakerNoteFormat.Olympus2, 0x2050, "ExternalFlashBounce", Shorts(0)));
+    }
+
+    [Fact]
+    public void AnOmSystemNoteUsesTheExiv2Olympus2GroupName()
+    {
+        var entry = new MakerNoteEntry(0x0209, "CameraID", Undefined(Encoding.ASCII.GetBytes("OM SYSTEM CAMERA\0")), []);
+        var note = new MakerNote(MakerNoteFormat.OMSystem, Little, [entry]);
+        Assert.Equal("Exif.Olympus2.CameraID", note.GetKey(entry));
+        Assert.Equal("OM SYSTEM CAMERA", note.Interpret(entry));
+    }
+
+    [Fact]
+    public void ASigmaMakerNoteReadsItsReferenceRenderings()
+    {
+        Assert.Equal("Manual", Top(MakerNoteFormat.Sigma, "ExposureMode", Ascii("M")));
+        Assert.Equal("8-Segment", Top(MakerNoteFormat.Sigma, "MeteringMode", Ascii("8")));
+        Assert.Equal("+0.0", Top(MakerNoteFormat.Sigma, "Exposure", Ascii("Expo:+0.0")));
+        Assert.Equal("+0.0", Top(MakerNoteFormat.Sigma, "FillLight", Ascii("Fill:+0.0")));
+        Assert.Equal("0", Top(MakerNoteFormat.Sigma, "ColorAdjustment", Ascii("CC:0")));
+        Assert.Equal("12", Top(MakerNoteFormat.Sigma, "Quality", Ascii("Qual:12")));
+        Assert.Equal("(X)", Top(MakerNoteFormat.Sigma, "ExposureMode", Ascii("X")));
+    }
+
+    // ---- Minolta ----------------------------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("SceneMode", 0, "Standard")]
+    [InlineData("ColorMode", 14, "Natural+ sRGB")]
+    [InlineData("Quality", 5, "Extra Fine")]
+    [InlineData("Teleconverter", 0, "None")]
+    [InlineData("ImageStabilization", 5, "On")]
+    [InlineData("RawAndJpgRecording", 0, "Off")]
+    [InlineData("ZoneMatching", 0, "ISO Setting Used")]
+    [InlineData("ImageStabilizationA100", 0, "Off")]
+    [InlineData("WhiteBalance", 0, "Auto")]
+    public void AMinoltaMakerNoteTagReadsAsItsLabel(string name, int number, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Minolta, name, Longs(number)));
+
+    [Theory]
+    [InlineData("ExposureMode", 1, "Aperture priority")]
+    [InlineData("ImageSize", 0, "Large")]
+    [InlineData("Quality", 16, "Fine")]
+    [InlineData("WhiteBalance", 0, "Auto")]
+    [InlineData("FocusPosition", 0, "Wide")]
+    [InlineData("FocusArea", 0, "Wide")]
+    [InlineData("FlashFired", 0, "Did not fire")]
+    [InlineData("MeteringMode", 0, "Multi-segment")]
+    [InlineData("ISOSpeed", 1, "100")]
+    [InlineData("ColorSpace", 0, "sRGB (Natural)")]
+    [InlineData("FocusMode", 0, "Auto focus")]
+    [InlineData("Rotation", 72, "Horizontal (normal)")]
+    [InlineData("ExposureCompensation", 300, "0.00")]
+    [InlineData("Rotation2", 0, "Horizontal (normal)")]
+    [InlineData("PictureFinish", 0, "Natural")]
+    [InlineData("ExposureManualBias", 128, "0.00")]
+    [InlineData("AFMode", 1, "AF-S")]
+    [InlineData("NoiseReduction", 0, "Off")]
+    [InlineData("ImageStabilization", 0, "Off")]
+    public void AMinolta5DSettingsFieldReadsAsItsLabel(string name, int number, string expected) =>
+        Assert.Equal(expected, Field(MakerNoteFormat.Minolta, 0x0114, name, Shorts(number)));
+
+    [Theory]
+    [InlineData("ExposureMode", 0, "Program")]
+    [InlineData("ImageSize", 1, "Medium")]
+    [InlineData("Quality", 34, "Raw+Jpeg")]
+    [InlineData("WhiteBalance", 0, "Auto")]
+    [InlineData("FocusMode", 4, "Automatic AF")]
+    [InlineData("AFPoints", 1, "Center")]
+    [InlineData("FlashFired", 0, "Did not fire")]
+    [InlineData("ISOSpeed", 0, "Auto")]
+    [InlineData("ColorSpace", 1, "sRGB (Natural+)")]
+    [InlineData("Rotation", 72, "Horizontal (normal)")]
+    [InlineData("NoiseReduction", 1, "On")]
+    [InlineData("ImageStabilization", 1, "On")]
+    [InlineData("ZoneMatchingOn", 0, "Off")]
+    public void AMinolta7DSettingsFieldReadsAsItsLabel(string name, int number, string expected) =>
+        Assert.Equal(expected, Field(MakerNoteFormat.Minolta, 0x0004, name, Shorts(number)));
+
+    [Fact]
+    public void AMinoltaFlashCompensationRendersInEv()
+    {
+        Assert.Equal("0 EV", Top(MakerNoteFormat.Minolta, "FlashExposureComp", SignedRational(0, 10)));
+        Assert.Equal("+1/3 EV", Top(MakerNoteFormat.Minolta, "FlashExposureComp", SignedRational(2, 6)));
+        Assert.Equal("(-1/0)", Top(MakerNoteFormat.Minolta, "FlashExposureComp", SignedRational(-1, 0)));
+    }
+
     // ---- Nikon -------------------------------------------------------------------------------------------
 
     [Fact]

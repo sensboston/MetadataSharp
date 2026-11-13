@@ -67,6 +67,10 @@ DOCUMENTED_EXCEPTIONS: dict[str, str] = {
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."
     ),
+    "Exif.Minolta.LensID": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
 }
 
 # The parser deliberately refuses these two damaged/over-budget inputs. These are exact pinned corpus
@@ -82,6 +86,8 @@ DOCUMENTED_RAW_EXTRA_KEYS: dict[str, str] = {
 }
 
 DOCUMENTED_FILE_REFUSALS: dict[str, tuple[str, str]] = {
+    "exiv2:issue_2006_poc.tiff": ("InvalidExif", "the EXIF structure is malformed"),
+    "exiv2:poc_2542.exv": ("AmbiguousMetadata", "the file has ambiguous EXIF metadata"),
     "exiv2:issue_1706_poc.exv": ("LimitExceeded", "the EXIF directory exceeds configured reader limits"),
     "exiv2:issue_1920_poc.tiff": ("InvalidExif", "the EXIF structure is malformed"),
     "exiv2:issue_ghsa_h9x9_4f77_336w_poc.exv": ("InvalidExif", "the EXIF structure is malformed"),
@@ -95,6 +101,20 @@ DOCUMENTED_FILE_REFUSALS: dict[str, tuple[str, str]] = {
 # The reader exposes unnamed raw tags as 0xNNNN keys. Exiv2 has no corresponding named key, so these
 # are informative extras, not discrepancies in a key that both tools print.
 OPAQUE_NUMERIC_KEY = re.compile(r"^Exif\.[A-Za-z0-9]+\.0x[0-9a-fA-F]{4,8}$")
+STANDARD_EXIF_GROUPS = {"Exif.Image", "Exif.Photo", "Exif.Thumbnail", "Exif.GPSInfo", "Exif.Iop"}
+SUBIMAGE_GROUP = re.compile(r"^Exif\.SubImage[0-9]+$")
+
+
+def maker_note_groups(report: dict[str, Any]) -> list[str]:
+    """Every non-standard EXIF family printed by the dump is a vendor MakerNote group.
+
+    This discovers groups from raw and interpreted outcomes alike, including vendors with no
+    translated fields yet, so adding a corpus MakerNote cannot silently leave it outside the gate.
+    """
+    groups = set(report.get("by_family", {})) | set(report.get("interpreted", {}).get("by_family", {}))
+    return sorted(group for group in groups
+                  if group.startswith("Exif.") and group not in STANDARD_EXIF_GROUPS
+                  and not SUBIMAGE_GROUP.fullmatch(group))
 
 
 def group_metrics(report: dict[str, Any], group: str) -> dict[str, int]:
@@ -120,7 +140,8 @@ def group_metrics(report: dict[str, Any], group: str) -> dict[str, int]:
 def inventory(report: dict[str, Any]) -> list[tuple[str, dict[str, int]]]:
     groups = set(report.get("by_family", {})) | set(report.get("interpreted", {}).get("by_family", {}))
     rows = [(group, group_metrics(report, group)) for group in groups if group.startswith("Exif.")]
-    return sorted((row for row in rows if row[1]["interpreted_keys_found"] or row[1]["missing_keys"]),
+    return sorted((row for row in rows if row[1]["interpreted_keys_found"] or row[1]["keys_found"] or
+                   row[1]["missing_keys"] or row[1]["not_read"]),
                   key=lambda row: (-row[1]["unrendered"] - row[1]["interpreted_different"], row[0]))
 
 
@@ -138,8 +159,6 @@ def evaluate(report: dict[str, Any], groups: list[str],
             f"{metrics['interpreted_keys_found']}/{metrics['interpreted_values_equal']}; "
             f"raw keys found/equal={metrics['keys_found']}/{metrics['raw_values_equal']}"
         )
-        if metrics["interpreted_keys_found"] == 0:
-            failures.append(f"{group}: no reference-translated corpus values were measured")
         if metrics["missing_keys"] or metrics["raw_value_different"]:
             failures.append(
                 f"{group}: raw parity has missing={metrics['missing_keys']}, "
@@ -219,9 +238,9 @@ def encode_inventory(rows: list[tuple[str, dict[str, int]]]) -> str:
 
 
 def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> dict[str, list[dict[str, Any]]]:
-    """Compact actionable samples, split by group so CI annotations stay readable."""
-    gaps: dict[str, Counter[tuple[str, str, str, str, str, str]]] = {group: Counter() for group in groups}
-    examples: dict[tuple[str, str, str, str, str, str], list[str]] = {}
+    """Compact, per-key raw and interpreted gap samples suitable for one CI annotation."""
+    gaps: dict[str, Counter[tuple[str, ...]]] = {group: Counter() for group in groups}
+    examples: dict[tuple[str, ...], list[str]] = {}
     for file in report.get("per_file", []):
         label = file.get("label", "")
         for row in file.get("rows", []):
@@ -231,13 +250,16 @@ def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> d
                 continue
             outcome = str(row.get("outcome", ""))
             translated_gap = row.get("translated") is True and row.get("interpreted") != MATCH_INTERPRETED
-            raw_gap = outcome in (MISSING_KEY, VALUE_DIFF, MATCH_KEY, NOT_READ)
+            raw_gap = outcome in (MISSING_KEY, VALUE_DIFF, MATCH_KEY, NOT_READ) or (
+                outcome == EXTRA_KEY and not OPAQUE_NUMERIC_KEY.fullmatch(key))
             if not translated_gap and not raw_gap:
                 continue
-            interpretation = str(row.get("interpreted", ""))
-            signature = (group, key, outcome, interpretation,
-                         str(row.get("our_interpreted", row.get("our_value", ""))),
-                         str(row.get("their_interpreted", row.get("their_value", ""))))
+            signature = (
+                group, key, outcome, str(row.get("interpreted", "")),
+                str(row.get("our_interpreted", "")), str(row.get("their_interpreted", "")),
+                str(row.get("our_type", "")), str(row.get("our_count", "")), str(row.get("our_value", "")),
+                str(row.get("their_type", "")), str(row.get("their_count", "")), str(row.get("their_value", "")),
+            )
             gaps[group][signature] += 1
             examples.setdefault(signature, [])
             if label and len(examples[signature]) < 3 and label not in examples[signature]:
@@ -247,8 +269,12 @@ def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> d
         rows = [
             {"key": key, "outcome": outcome, "interpretation": interpretation,
              "count": count, "ours": ours, "exiv2": theirs,
-             "files": examples[(vendor_group, key, outcome, interpretation, ours, theirs)]}
-            for (vendor_group, key, outcome, interpretation, ours, theirs), count in counter.items()
+             "our_type": our_type, "our_count": our_count, "our_value": our_value,
+             "exiv2_type": their_type, "exiv2_count": their_count, "exiv2_value": their_value,
+             "files": examples[signature]}
+            for signature, count in counter.items()
+            for (vendor_group, key, outcome, interpretation, ours, theirs,
+                 our_type, our_count, our_value, their_type, their_count, their_value) in [signature]
         ]
         rows.sort(key=lambda row: (row["interpretation"] != INTERPRETED_DIFF, -row["count"], row["key"]))
         result[group] = rows[:limit]
@@ -260,6 +286,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("report", type=Path)
     parser.add_argument("--require", action="append", default=[], metavar="EXIF.GROUP",
                         help="require interpreted and raw parity for a completed group; repeatable")
+    parser.add_argument("--require-all-maker-notes", action="store_true",
+                        help="also require raw and interpreted parity for every non-standard EXIF group present in the report")
     parser.add_argument("--inventory", action="store_true", help="emit the corpus group inventory as one notice")
     args = parser.parse_args(argv)
     try:
@@ -276,19 +304,33 @@ def main(argv: list[str] | None = None) -> int:
                   f"{metrics['interpreted_keys_found']}/{metrics['interpreted_values_equal']}; "
                   f"gap={gap}; raw keys found/equal={metrics['keys_found']}/{metrics['raw_values_equal']}")
         print(f"::notice title=MakerNote interpreter inventory::{encode_inventory(rows)}")
+    if args.require_all_maker_notes:
+        args.require = list(dict.fromkeys([*args.require, *maker_note_groups(report)]))
     if not args.require:
         return 0
     passed, message = evaluate(report, args.require, DOCUMENTED_EXCEPTIONS)
     if not passed:
         failure_lines = message.split("FAIL\n", 1)[-1].splitlines()
-        payload = base64.b64encode(zlib.compress(json.dumps(failure_lines, separators=(",", ":")).encode(), 9)).decode()
-        print(f"::error title=MakerNote parity failures::{payload}", flush=True)
+        failures_by_group: dict[str, list[str]] = {}
+        for line in failure_lines:
+            group = line.strip().split(":", 1)[0]
+            failures_by_group.setdefault(group, []).append(line.strip())
+        for group, failures in failures_by_group.items():
+            for start in range(0, len(failures), 4):
+                chunk = failures[start:start + 4]
+                payload = base64.b64encode(zlib.compress(json.dumps(chunk, separators=(",", ":")).encode(), 9)).decode()
+                print(f"::error title=MakerNote parity failures {group} {start // 4 + 1}::{payload}", flush=True)
     print(message, end="", flush=True)
-    for group, gaps in gap_details(report, args.require).items():
-        if not gaps:
-            continue
-        payload = base64.b64encode(zlib.compress(json.dumps(gaps, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
-        print(f"::notice title=MakerNote gaps {group}::{payload}", flush=True)
+    details = {group: gaps for group, gaps in gap_details(report, args.require).items() if gaps}
+    for group, rows in details.items():
+        # GitHub truncates individual workflow-command annotations. Bound long values and keep
+        # each compressed notice comfortably below the limit so the inventory remains decodable.
+        compact = [{key: value[:240] + "…" if isinstance(value, str) and len(value) > 240 else value
+                    for key, value in row.items()} for row in rows]
+        for start in range(0, len(compact), 4):
+            chunk = compact[start:start + 4]
+            payload = base64.b64encode(zlib.compress(json.dumps(chunk, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
+            print(f"::notice title=MakerNote actionable gaps {group} {start // 4 + 1}::{payload}", flush=True)
     return 0 if passed else 1
 
 
