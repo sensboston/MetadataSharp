@@ -173,8 +173,8 @@ def encode_inventory(rows: list[tuple[str, dict[str, int]]]) -> str:
 
 def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> dict[str, list[dict[str, Any]]]:
     """Compact actionable samples, split by group so CI annotations stay readable."""
-    gaps: dict[str, Counter[tuple[str, str, str, str, str]]] = {group: Counter() for group in groups}
-    examples: dict[tuple[str, str, str, str, str], list[str]] = {}
+    gaps: dict[str, Counter[tuple[str, str, str, str, str, str]]] = {group: Counter() for group in groups}
+    examples: dict[tuple[str, str, str, str, str, str], list[str]] = {}
     for file in report.get("per_file", []):
         label = file.get("label", "")
         for row in file.get("rows", []):
@@ -187,7 +187,9 @@ def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> d
             raw_gap = outcome in (MISSING_KEY, VALUE_DIFF, MATCH_KEY, NOT_READ)
             if not translated_gap and not raw_gap:
                 continue
-            signature = (group, key, outcome, str(row.get("our_interpreted", row.get("our_value", ""))),
+            interpretation = str(row.get("interpreted", ""))
+            signature = (group, key, outcome, interpretation,
+                         str(row.get("our_interpreted", row.get("our_value", ""))),
                          str(row.get("their_interpreted", row.get("their_value", ""))))
             gaps[group][signature] += 1
             examples.setdefault(signature, [])
@@ -195,11 +197,14 @@ def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> d
                 examples[signature].append(label)
     result: dict[str, list[dict[str, Any]]] = {}
     for group, counter in gaps.items():
-        result[group] = [
-            {"key": key, "outcome": outcome, "count": count, "ours": ours, "exiv2": theirs,
-             "files": examples[(vendor_group, key, outcome, ours, theirs)]}
-            for (vendor_group, key, outcome, ours, theirs), count in counter.most_common(limit)
+        rows = [
+            {"key": key, "outcome": outcome, "interpretation": interpretation,
+             "count": count, "ours": ours, "exiv2": theirs,
+             "files": examples[(vendor_group, key, outcome, interpretation, ours, theirs)]}
+            for (vendor_group, key, outcome, interpretation, ours, theirs), count in counter.items()
         ]
+        rows.sort(key=lambda row: (row["interpretation"] != INTERPRETED_DIFF, -row["count"], row["key"]))
+        result[group] = rows[:limit]
     return result
 
 

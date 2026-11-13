@@ -291,6 +291,9 @@ jobs:
             --inventory --require Exif.PentaxDng --require Exif.Pentax \
             --require Exif.Canon --require Exif.CanonSi --require Exif.CanonCs \
             --require Exif.CanonFi --require Exif.CanonAfC --require Exif.CanonPi --require Exif.CanonPa \
+            --require Exif.CanonAfMiAdj --require Exif.CanonAm --require Exif.CanonHdr \
+            --require Exif.CanonLe --require Exif.CanonLiOp --require Exif.CanonMe \
+            --require Exif.CanonPr --require Exif.CanonTi --require Exif.CanonVigCor2 \
             --require Exif.Fujifilm
       - name: Preview parity against upstream expectations (kind "Preview"; exiv2 -pp output read as text)
         shell: bash
