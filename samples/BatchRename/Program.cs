@@ -1,3 +1,4 @@
+using MetadataSharp.Core;
 using MetadataSharp.Core.Operations;
 using MetadataSharp.Formats;
 
