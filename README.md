@@ -9,8 +9,11 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
 
 ## Highlights
 
-- JPEG, PNG, WebP, TIFF, EXV, DNG (read), XMP sidecars; restricted, safety-first editing for
-  JPEG, PNG, WebP and TIFF: an edit whose safety cannot be established is refused, never guessed.
+- Reads JPEG, PNG, WebP, TIFF-based files (including DNG and camera raw formats), CRW, MRW, RAF,
+  CR3, HEIC/HEIF/AVIF, PSD, JP2, JXL, EXV, EPS, PGF, XMP sidecars and selected video containers.
+  BMP, GIF and TGA recognition is limited to image dimensions. Editing is container-, family- and
+  operation-specific; the [capability table][audit] and [usage limits][usage] describe the safe subset.
+  An edit whose safety cannot be established is refused, never guessed.
 - Typed EXIF vocabulary from the CIPA and TIFF specifications.
 - MakerNotes for Canon, Nikon (including encrypted arrays), Fujifilm, Pentax, Sony, Panasonic and
   Olympus/OM System: read, and edited tag by tag where the note lies (`ExifEdit.SetByKey`); the
@@ -281,7 +284,7 @@ Small, standalone .NET 10 programs that use the public API (no `InternalsVisible
 - [GeoTag](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/GeoTag) — attach the nearest GPX coordinate by capture time.
 - [BatchRename](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/BatchRename) — collision-safe date-based rename plans.
 - [StripMetadata](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/StripMetadata) — remove metadata families or preserve selected fields.
-- [CopyMetadata](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/CopyMetadata) — copy readable metadata and reconcile mapped values (whole MakerNote copying is proposed separately).
+- [CopyMetadata](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/CopyMetadata) — copy supported metadata, including the MakerNote when its offsets can be preserved, and reconcile mapped values.
 - [Thumbnails](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/Thumbnails) — list and extract embedded previews.
 - [MetadataViewer](https://github.com/sensboston/MetadataSharp/tree/HEAD/samples/MetadataViewer) — a read-only Avalonia metadata browser.
 
@@ -293,6 +296,7 @@ Every CLI project is smoke-tested in CI; the viewer is built on .NET 10/Linux wi
 - [Build and test][build]
 - [Development policy][development]
 - Usage and preservation limits: [docs/usage][usage]
+- [Release-readiness audit against pinned Exiv2 0.28.9][audit] (format, family, CLI and library gaps)
 - Contributor and agent rules: [METADATASHARP_PROMPT.md][rules]
 - Design history: [docs/archive][archive] (read-only)
 
@@ -306,6 +310,7 @@ MIT, see [LICENSE][license].
 [state]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/CURRENT_STATE.md
 [examples]: https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Examples/QuickStart.cs
 [usage]: https://github.com/sensboston/MetadataSharp/tree/HEAD/docs/usage
+[audit]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/RELEASE_READINESS_AUDIT.md
 [build]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/BUILD_AND_TEST.md
 [development]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/DEVELOPMENT.md
 [rules]: https://github.com/sensboston/MetadataSharp/blob/HEAD/METADATASHARP_PROMPT.md

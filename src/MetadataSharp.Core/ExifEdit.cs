@@ -256,6 +256,7 @@ public sealed class ExifEdit
         return null;
     }
 
+    /// <summary>Refuses edits after whole-block removal and keys whose values are structural addresses.</summary>
     private void CheckKey(ExifTagKey key)
     {
         if (removeAll) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");

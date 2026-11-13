@@ -1,7 +1,10 @@
 # Operations of the exiv2 command line: usage and limits
 
-What `exiv2` does from the command line (pinned 0.28.9) is library API here. The functional
-reference is the tool's help and its behaviour; no code was taken.
+This document maps selected Exiv2 0.28.9 operations to MetadataSharp APIs; it is not a claim of
+command-line compatibility. The complete pinned-source inventory—including unimplemented flags,
+print modes and targets, plus estimates for remaining gaps—is in the
+[release-readiness audit](../RELEASE_READINESS_AUDIT.md). MetadataSharp's `MetaTool` is a small
+sample, not a drop-in `exiv2` executable.
 
 | exiv2 | Here |
 | --- | --- |

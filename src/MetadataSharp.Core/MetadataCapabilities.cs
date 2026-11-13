@@ -95,9 +95,9 @@ public enum MetadataFamily
     Icc,
     /// <summary>Free-text comment (a JPEG COM segment or a PNG text chunk with the keyword Comment): listed by <c>Comments.Read</c>; written by the JPEG and PNG documents, and through a PNG carrier in PGF.</summary>
     Comment,
-    /// <summary>Embedded thumbnail; no general public API in this build.</summary>
+    /// <summary>EXIF thumbnail directory or thumbnail bytes addressed by a supported container.</summary>
     Thumbnail,
-    /// <summary>Embedded preview; no general public API in this build.</summary>
+    /// <summary>Embedded preview range listed by <c>Previews.List</c>; extraction depends on the preview's media type.</summary>
     Preview,
     /// <summary>Properties decoded from a read-only video container.</summary>
     Video
