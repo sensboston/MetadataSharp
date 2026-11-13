@@ -18,7 +18,7 @@ internal static class ExifLayoutPlanner
     /// <see cref="ExifTiffReader.NoCeiling"/> leaves its length to the budgets.
     /// </summary>
     internal static ExifWritePlan Create(TiffReadResult? original, ExifMetadata desired,
-        MetadataLimits? limits = null, int ceiling = ExifTiffReader.SegmentCeiling)
+        MetadataLimits? limits = null, int ceiling = ExifTiffReader.SegmentCeiling, bool allowMakerNoteCopy = false)
     {
         ArgumentNullException.ThrowIfNull(desired);
         if (ceiling < 14) throw new ArgumentOutOfRangeException(nameof(ceiling));
@@ -39,12 +39,12 @@ internal static class ExifLayoutPlanner
         if (original is not null)
             foreach (ExifEntry entry in original.Metadata.Entries)
             {
-                ValidateShape(entry);
+                ValidateShape(entry, allowMakerNoteCopy);
                 if (!Generated(entry.Key) && ExifTags.Find(entry.Key) is null)
                     throw Failure(MetadataErrorCode.UnsafeRelocation, "An unknown tag of the source prevents rebuilding EXIF.");
             }
         foreach (ExifEntry entry in desired.Entries)
-            ValidateShape(entry);
+            ValidateShape(entry, allowMakerNoteCopy);
         ValidateProtectedEntries(original, desired);
 
         var groups = new Dictionary<ExifDirectoryKind, SortedDictionary<ushort, ExifValue?>>();
@@ -210,9 +210,11 @@ internal static class ExifLayoutPlanner
     /// carried thumbnail one SHORT, and any other tag is one an edit takes, with at least one element.
     /// The content of a value is the business of the edit that set it.
     /// </summary>
-    internal static void ValidateShape(ExifEntry entry)
+    internal static void ValidateShape(ExifEntry entry, bool allowMakerNoteCopy = false)
     {
         ExifValue value = entry.Value;
+        if (allowMakerNoteCopy && entry.Key == new ExifTagKey(ExifDirectoryKind.Exif, 0x927C) && value.FieldType == TiffFieldType.Undefined)
+            return;
         if (Generated(entry.Key))
         {
             if (value.FieldType != TiffFieldType.Long || value.Count != 1)

@@ -112,6 +112,14 @@ def group_of(key):
     return parts[1] if len(parts) > 2 else "?"
 
 
+def maker_note_printed(exiv2, path, runner=run):
+    """The decoded MakerNote keys and values, excluding standard EXIF directories."""
+    values, code, warnings = printed(exiv2, path, runner)
+    standard = {"Image", "Photo", "GPSInfo", "Iop", "Thumbnail", "MakerNote"}
+    return OrderedDict((key, value) for key, value in values.items()
+                       if len(key.split(".")) > 2 and key.split(".")[1] not in standard), code, warnings
+
+
 def check(work, names, exiv2, runner=run):
     """Counter of (group, operation, verdict or refusal), and an example for each."""
     work = Path(work)
@@ -165,6 +173,25 @@ def main(argv=None, runner=run):
 
     counts, examples = check(work, names, args.exiv2, runner)
     failures, accepted, summary = [], [], []
+    copied_name = (work / "copy.tsv").read_text(encoding="utf-8").strip() if (work / "copy.tsv").exists() else ""
+    if not copied_name or copied_name not in names:
+        failures.append("no decoded MakerNote was safely copied into a JPEG for Exiv2 parity")
+    else:
+        source_path = work / f"{copied_name}.{names[copied_name][1]}"
+        copied_path = work / f"{copied_name}.copy.ours.jpg"
+        if not copied_path.is_file():
+            failures.append(f"{copied_name}: the fixture generator did not produce the copied JPEG")
+        else:
+            source_note, source_code, _ = maker_note_printed(args.exiv2, source_path, runner)
+            copied_note, copied_code, _ = maker_note_printed(args.exiv2, copied_path, runner)
+            if source_code != copied_code:
+                failures.append(f"{copied_name}: Exiv2 exit code changed from {source_code} to {copied_code}")
+            elif source_note != copied_note:
+                missing = [key for key in source_note if copied_note.get(key) != source_note[key]]
+                extra = [key for key in copied_note if key not in source_note]
+                failures.append(f"{copied_name}: MakerNote Exiv2 key/value mismatch; missing/changed={missing[:4]}, extra={extra[:4]}")
+            else:
+                summary.append(f"{copied_name}: {len(source_note)} MakerNote keys and values preserved by Exiv2 after relocation")
     for (group, operation, outcome), count in sorted(counts.items()):
         line = f"{group} {operation}: {outcome} {count}"
         if operation == "files":

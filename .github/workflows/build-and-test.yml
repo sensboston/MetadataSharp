@@ -771,7 +771,7 @@ jobs:
           tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
           echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
           artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
-      - name: MakerNote tags set by this library, read back by the pinned tool (exiv2 -u -PEkv)
+      - name: MakerNote edit and copy relocation parity against pinned Exiv2 (exiv2 -u -PEkv)
         shell: bash
         run: |
           python tools/reference/makernote_parity.py artifacts/parity/exiv2/test/data artifacts/parity/makernote \

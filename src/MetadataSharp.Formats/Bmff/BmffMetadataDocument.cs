@@ -250,7 +250,8 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         BmffWritePlan plan = BmffWritePlanner.Create(source, layout, kind, item, payload, limits);
         if (plan.IsEmpty) return source;
         byte[] output = plan.Apply(source);
-        BmffWriteVerifier.Verify(source, layout, before, output, plan, limits, tiffPlan, desired);
+        BmffWriteVerifier.Verify(source, layout, before, output, plan, limits, tiffPlan, desired,
+            allowMakerNoteCopy: exif?.MakerNoteCopy is not null);
         token.ThrowIfCancellationRequested();
         return output;
     }
@@ -272,7 +273,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         if (item is null)
         {
             // Removing tags from an item that is not there changes nothing.
-            if (edit.Changes.Values.All(value => value is null)) return null;
+            if (edit.Changes.Values.All(value => value is null) && edit.MakerNoteCopy is null) return null;
             byte[]? block = ExifBlockEditor.Create(edit, limits, ExifTiffReader.NoCeiling, out desired);
             if (block is null) return null;
             if (block.Length > Array.MaxLength - 4)
@@ -294,10 +295,14 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         ExifMetadata before = ExifTiffReader.InspectFile(tiff, limits);
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
         ExifBlockEditor.AddChanges(edit, directories.Order, changes);
-        TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(tiff, directories, changes, limits);
+        bool makerNoteCopy = edit.MakerNoteCopy is not null;
+        TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(tiff, directories, changes, limits,
+            allowMakerNoteCopy: makerNoteCopy);
         if (plan.IsEmpty) return null;
         byte[] edited = plan.Apply(tiff);
-        TiffBasedWriteVerifier.Verify(tiff, directories, before, edited, plan, limits, MaxAccountedRanges);
+        TiffBasedWriteVerifier.Verify(tiff, directories, before, edited, plan, limits, MaxAccountedRanges,
+            allowMakerNoteCopy: makerNoteCopy);
+        if (makerNoteCopy) edited = ExifBlockEditor.RelocateMakerNote(edited, edit.MakerNoteCopy!, limits);
         if (edited.Length > Array.MaxLength - start)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF item exceeds the length of an array.");
         tiffPlan = plan;

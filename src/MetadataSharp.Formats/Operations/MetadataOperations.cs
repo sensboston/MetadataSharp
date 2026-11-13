@@ -17,7 +17,7 @@ namespace MetadataSharp.Formats.Operations;
 
 /// <summary>
 /// The file operations of the exiv2 command-line tool: delete (<c>rm</c>), extract (<c>ex</c>),
-/// insert (<c>in</c>), <c>fixiso</c> and <c>fixcom</c>. The file is detected by its content.
+/// insert (<c>in</c>), metadata copy, <c>fixiso</c> and <c>fixcom</c>. The file is detected by its content.
 /// </summary>
 /// <remarks>
 /// <para>Operations that write take the file whole into memory, run their passes there, and write
@@ -94,6 +94,214 @@ public static class MetadataOperations
         if (families.HasFlag(MetadataFamilies.IccProfile) && metadata.IccProfile.Length != 0) bytes = SaveIcc(bytes, format, null);
         return bytes;
     }
+
+    // ---- copy ----
+
+    /// <summary>
+    /// Copies selected metadata families from one image to another. The source is read before the
+    /// destination is touched; a refusal returns the original destination bytes and writes nothing.
+    /// </summary>
+    public static MetadataCopyResult CopyMetadata(string sourcePath, string destinationPath, MetadataCopyOptions? options = null)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(sourcePath);
+        ArgumentException.ThrowIfNullOrEmpty(destinationPath);
+        byte[] source = File.ReadAllBytes(sourcePath);
+        byte[] destination = File.ReadAllBytes(destinationPath);
+        MetadataCopyResult result = CopyMetadata(source, destination, options);
+        if (!result.WasRefused) Write(destinationPath, result.DestinationBytes);
+        return result;
+    }
+
+    /// <summary>As the path overload, returning the complete new destination bytes instead of writing a file.</summary>
+    public static MetadataCopyResult CopyMetadata(ReadOnlySpan<byte> source, ReadOnlySpan<byte> destination,
+        MetadataCopyOptions? options = null)
+    {
+        options ??= new MetadataCopyOptions();
+        ArgumentNullException.ThrowIfNull(options.Limits);
+        options.Limits.Validate();
+        if ((options.Families & ~MetadataCopyFamilies.All) != 0) throw new ArgumentOutOfRangeException(nameof(options.Families));
+        if (!Enum.IsDefined(options.MakerNote)) throw new ArgumentOutOfRangeException(nameof(options.MakerNote));
+        if (!Enum.IsDefined(options.Sync)) throw new ArgumentOutOfRangeException(nameof(options.Sync));
+        byte[] unchanged = destination.ToArray();
+        var notes = new List<MetadataCopyNote>();
+        try
+        {
+            ImageMetadata from = ImageMetadata.Read(source, options.Limits);
+            ImageMetadata into = ImageMetadata.Read(destination, options.Limits);
+            MetadataFormat format = Writable(into.Format);
+            MetadataCopyFamilies requestedFamilies = options.Families;
+            MetadataReadError? sourceFailure = from.Errors.FirstOrDefault(error =>
+                Requested(requestedFamilies, error.Family) && SupportsCopy(format, FamilyOf(error.Family)));
+            if (sourceFailure is not null)
+                return Refused(unchanged, notes, MetadataCopyReason.MalformedSourceFamily,
+                    "The source has unread requested metadata; no destination bytes were changed: " + sourceFailure.Code + ".");
+            MetadataReadError? destinationFailure = into.Errors.FirstOrDefault(error =>
+                SupportsCopy(format, FamilyOf(error.Family)) && requestedFamilies.HasFlag(FamilyOf(error.Family)));
+            if (destinationFailure is not null)
+                return Refused(unchanged, notes, MetadataCopyReason.DestinationRefused,
+                    "The destination has unread selected metadata; no destination bytes were changed: " + destinationFailure.Code + ".");
+            MetadataCopyFamilies requested = options.Families;
+            MetadataCopyFamilies supported = MetadataCopyFamilies.None;
+            foreach (MetadataCopyFamilies family in new[] { MetadataCopyFamilies.Exif, MetadataCopyFamilies.Iptc,
+                         MetadataCopyFamilies.Xmp, MetadataCopyFamilies.Icc, MetadataCopyFamilies.Comment })
+            {
+                if (!requested.HasFlag(family)) continue;
+                if (SupportsCopy(format, family)) supported |= family;
+                else notes.Add(new(MetadataCopyReason.DestinationDoesNotSupportFamily,
+                    $"The destination format {format} has no writer for this metadata family.", family));
+                if (supported.HasFlag(family) && !SourceHasFamily(from, family))
+                    notes.Add(new(MetadataCopyReason.SourceFamilyAbsent,
+                        "The source has no metadata in this family; destination metadata was left unchanged.", family));
+            }
+
+            // Match Exiv2's -ea / -ia operation: source entries overwrite matching destination
+            // entries, while destination-only metadata is retained. A family absent at the source
+            // is therefore a no-op, not a request to erase the destination's family.
+            byte[] output = unchanged;
+
+            bool copyExif = supported.HasFlag(MetadataCopyFamilies.Exif) && from.Exif is not null;
+            bool copyIptc = supported.HasFlag(MetadataCopyFamilies.Iptc) && from.Iptc is not null;
+            bool copyXmp = supported.HasFlag(MetadataCopyFamilies.Xmp) && from.Xmp is not null;
+            bool copyComment = supported.HasFlag(MetadataCopyFamilies.Comment) && from.Comments.Count != 0;
+            if (copyExif || copyIptc || copyXmp || copyComment)
+            {
+                byte[] exv = ExvFile.Create(copyExif ? from.Exif : null, copyIptc ? from.Iptc : null,
+                    copyXmp ? from.Xmp : null, copyComment ? from.Comments[0] : null,
+                    copyExif ? Thumbnail(source, from) : default);
+                MetadataFamilies insertFamilies = MetadataFamilies.None;
+                if (copyExif) insertFamilies |= MetadataFamilies.Exif;
+                if (copyIptc) insertFamilies |= MetadataFamilies.Iptc;
+                if (copyXmp) insertFamilies |= MetadataFamilies.Xmp;
+                if (copyComment) insertFamilies |= MetadataFamilies.Comment;
+                output = InsertExvCore(output, exv, insertFamilies, out IReadOnlyList<string> insertNotes, preserveExisting: true);
+                foreach (string note in insertNotes)
+                    notes.Add(new(MetadataCopyReason.ValueNotRepresentable, note));
+            }
+
+            MetadataCopyFamilies copied = MetadataCopyFamilies.None;
+            if (copyExif) copied |= MetadataCopyFamilies.Exif;
+            if (copyIptc) copied |= MetadataCopyFamilies.Iptc;
+            if (copyXmp) copied |= MetadataCopyFamilies.Xmp;
+            if (copyComment) copied |= MetadataCopyFamilies.Comment;
+            if (supported.HasFlag(MetadataCopyFamilies.Icc) && from.IccProfile.Length != 0)
+            {
+                output = SaveIcc(output, format, from.IccProfile.ToArray());
+                copied |= MetadataCopyFamilies.Icc;
+            }
+
+            if (copyExif && options.MakerNote == MetadataMakerNoteMode.Copy)
+            {
+                if (from.Exif!.MakerNote is not { } note || !TryMakerNoteValue(from.Exif, out ExifValue? raw))
+                {
+                    if (HasRawMakerNote(from.Exif))
+                        notes.Add(new(MetadataCopyReason.MakerNoteNotDecoded,
+                            "The source MakerNote is not decoded well enough to prove safe relocation.", MetadataCopyFamilies.Exif));
+                }
+                else if (!MakerNoteRelocator.CanRelocate(note, raw!, from.Exif, out string refusal))
+                {
+                    MetadataCopyReason reason = note.Format == MakerNoteFormat.Nikon3 &&
+                        (refusal.Contains("cipher", StringComparison.OrdinalIgnoreCase) || refusal.Contains("shutter-count key", StringComparison.OrdinalIgnoreCase) || refusal.Contains("serial-number", StringComparison.OrdinalIgnoreCase))
+                        ? MetadataCopyReason.MakerNoteCipherKeysUnavailable : MetadataCopyReason.UnsafeMakerNoteRelocation;
+                    notes.Add(new(reason, refusal, MetadataCopyFamilies.Exif));
+                }
+                else
+                {
+                    var maker = new SyncEdits();
+                    maker.Exif.SetMakerNoteForCopy(raw!, note);
+                    try { output = Save(output, format, maker); }
+                    catch (MetadataException refusal)
+                    {
+                        notes.Add(new(MetadataCopyReason.UnsafeMakerNoteRelocation,
+                            "The destination writer could not relocate and verify the MakerNote; it was skipped: " + refusal.Message,
+                            MetadataCopyFamilies.Exif));
+                    }
+                }
+            }
+            else if (copyExif && options.MakerNote == MetadataMakerNoteMode.Skip &&
+                     (from.Exif!.MakerNote is not null || HasRawMakerNote(from.Exif)))
+            {
+                notes.Add(new(MetadataCopyReason.MakerNoteCopyDisabled, "MakerNote copying was disabled by the options.", MetadataCopyFamilies.Exif));
+            }
+
+            if (options.Sync == MetadataCopySync.ExistingRules)
+            {
+                ImageMetadata copiedMetadata = ImageMetadata.Read(output, options.Limits);
+                SyncEdits reconciliation = MetadataSync.Reconcile(copiedMetadata.Exif, copiedMetadata.Iptc,
+                    copiedMetadata.Xmp, copiedMetadata.Iptc?.Digest);
+                foreach (SyncNote note in reconciliation.Notes)
+                    notes.Add(new(MetadataCopyReason.SyncValueNotRepresentable, note.Source + " → " + note.Target + ": " + note.Reason));
+                if (!reconciliation.IsEmpty) output = Save(output, format, reconciliation);
+            }
+            return new(output, copied, notes.AsReadOnly(), refused: false);
+        }
+        catch (MetadataException refusal)
+        {
+            return Refused(unchanged, notes, MetadataCopyReason.CopyRefused,
+                "The planned copy was refused and no destination bytes were written: " + refusal.Message);
+        }
+    }
+
+    private static MetadataCopyResult Refused(byte[] unchanged, List<MetadataCopyNote> notes,
+        MetadataCopyReason reason, string message)
+    {
+        notes.Add(new(reason, message));
+        return new(unchanged, MetadataCopyFamilies.None, notes.AsReadOnly(), refused: true);
+    }
+
+    private static bool Requested(MetadataCopyFamilies requested, MetadataFamily family)
+    {
+        MetadataCopyFamilies mapped = FamilyOf(family);
+        return mapped != MetadataCopyFamilies.None && requested.HasFlag(mapped);
+    }
+
+    private static MetadataCopyFamilies FamilyOf(MetadataFamily family) => family switch
+    {
+        MetadataFamily.Exif => MetadataCopyFamilies.Exif,
+        MetadataFamily.IptcIim => MetadataCopyFamilies.Iptc,
+        MetadataFamily.Xmp => MetadataCopyFamilies.Xmp,
+        MetadataFamily.Icc => MetadataCopyFamilies.Icc,
+        MetadataFamily.Comment => MetadataCopyFamilies.Comment,
+        _ => MetadataCopyFamilies.None
+    };
+
+    private static bool SourceHasFamily(ImageMetadata metadata, MetadataCopyFamilies family) => family switch
+    {
+        MetadataCopyFamilies.Exif => metadata.Exif is not null,
+        MetadataCopyFamilies.Iptc => metadata.Iptc is not null,
+        MetadataCopyFamilies.Xmp => metadata.Xmp is not null,
+        MetadataCopyFamilies.Icc => metadata.IccProfile.Length != 0,
+        MetadataCopyFamilies.Comment => metadata.Comments.Count != 0,
+        _ => false
+    };
+
+    private static bool SupportsCopy(MetadataFormat format, MetadataCopyFamilies family) => family switch
+    {
+        MetadataCopyFamilies.Exif => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Bmff,
+        MetadataCopyFamilies.Iptc => HoldsIptc(format),
+        MetadataCopyFamilies.Xmp => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Bmff or MetadataFormat.Pgf or MetadataFormat.Eps,
+        MetadataCopyFamilies.Icc => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Bmff,
+        MetadataCopyFamilies.Comment => HoldsComment(format),
+        _ => false
+    };
+
+    private static bool TryMakerNoteValue(ExifMetadata exif, out ExifValue? value)
+    {
+        ExifTagKey makerNote = new(ExifDirectoryKind.Exif, 0x927C);
+        if (exif.TryGetEntry(makerNote, out ExifEntry? standard)) { value = standard.Value; return true; }
+        ExifTagKey privateData = new(ExifDirectoryKind.Ifd0, 0xC634);
+        if (exif.TryGetEntry(privateData, out ExifEntry? pentax))
+        {
+            byte[] bytes = pentax.Value.RawBytes.ToArray();
+            value = ExifValue.FromRaw(TiffFieldType.Undefined, (uint)bytes.Length, pentax.Value.ByteOrder, bytes);
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    private static bool HasRawMakerNote(ExifMetadata exif) =>
+        exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Exif, 0x927C), out _) ||
+        exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0xC634), out _);
 
     // ---- extract ----
 
@@ -199,7 +407,11 @@ public static class MetadataOperations
     /// over the ones the file has, since the tags that describe its image cannot be removed.
     /// </remarks>
     /// <exception cref="MetadataException">What the readers and the documents refuse; <see cref="MetadataErrorCode.UnsupportedFeature"/> for a container no document writes.</exception>
-    public static byte[] InsertExv(ReadOnlySpan<byte> file, ReadOnlySpan<byte> exv, MetadataFamilies families, out IReadOnlyList<string> notes)
+    public static byte[] InsertExv(ReadOnlySpan<byte> file, ReadOnlySpan<byte> exv, MetadataFamilies families, out IReadOnlyList<string> notes) =>
+        InsertExvCore(file, exv, families, out notes, preserveExisting: false);
+
+    private static byte[] InsertExvCore(ReadOnlySpan<byte> file, ReadOnlySpan<byte> exv, MetadataFamilies families,
+        out IReadOnlyList<string> notes, bool preserveExisting)
     {
         ImageMetadata from = ImageMetadata.Read(exv);
         if (from.Format != MetadataFormat.Exv)
@@ -217,9 +429,9 @@ public static class MetadataOperations
         bool carryThumbnailTags = false;
         if (families.HasFlag(MetadataFamilies.Exif) && from.Exif is not null)
         {
-            if (into.Exif is not null && format != MetadataFormat.Tiff) clear.Exif.RemoveAllExif();
+            if (!preserveExisting && into.Exif is not null && format != MetadataFormat.Tiff) clear.Exif.RemoveAllExif();
             ExvFile.CopyTags(from.Exif, set.Exif, said);
-            if (from.Exif.MakerNote is not null) said.Add("The MakerNote is not carried.");
+            if (!preserveExisting && from.Exif.MakerNote is not null) said.Add("The MakerNote is not carried.");
             ReadOnlySpan<byte> thumbnail = Thumbnail(exv, from);
             if (thumbnail.Length != 0)
             {
@@ -240,7 +452,7 @@ public static class MetadataOperations
             if (!HoldsIptc(format)) said.Add("The IPTC stream is not carried: the container has no place for it.");
             else
             {
-                if (into.Iptc is not null) clear.Iptc.RemoveAllIptc();
+                if (!preserveExisting && into.Iptc is not null) clear.Iptc.RemoveAllIptc();
                 bool declared = from.Iptc.CharacterSet == IptcCharacterSet.Utf8;
                 foreach (IGrouping<IptcDatasetKey, IptcDataset> group in from.Iptc.Datasets.GroupBy(dataset => dataset.Key))
                 {
@@ -264,7 +476,7 @@ public static class MetadataOperations
         }
         if (families.HasFlag(MetadataFamilies.Xmp) && from.Xmp is not null)
         {
-            if (into.Xmp is not null) clear.Xmp.RemoveAllXmp();
+            if (!preserveExisting && into.Xmp is not null) clear.Xmp.RemoveAllXmp();
             set.Xmp.ReplaceWith(from.Xmp);
         }
         if (!clear.IsEmpty) bytes = Save(bytes, format, clear);

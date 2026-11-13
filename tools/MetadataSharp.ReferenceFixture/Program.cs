@@ -1867,6 +1867,33 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
     }
 
     File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
+
+    // Also copy one decoded source MakerNote into an authored JPEG through the public transactional
+    // API. The comparer checks every MakerNote key/value that pinned Exiv2 prints on both files.
+    string copiedName = string.Empty;
+    foreach (string path in Directory.EnumerateFiles(directory, "s*.*").Order(StringComparer.Ordinal))
+    {
+        string name = Path.GetFileNameWithoutExtension(path);
+        if (name.Contains('.')) continue;
+        byte[] sourceBytes = File.ReadAllBytes(path);
+        try
+        {
+            ImageMetadata sourceMetadata = ImageMetadata.Read(sourceBytes);
+            if (sourceMetadata.Exif?.MakerNote is null) continue;
+            MetadataSharp.Formats.Operations.MetadataCopyResult copy =
+                MetadataSharp.Formats.Operations.MetadataOperations.CopyMetadata(sourceBytes, JpegFixture.Build(),
+                    new MetadataSharp.Formats.Operations.MetadataCopyOptions
+                    {
+                        Families = MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif
+                    });
+            if (copy.WasRefused || ImageMetadata.Read(copy.DestinationBytes).Exif?.MakerNote is null) continue;
+            File.WriteAllBytes(Path.Combine(directory, $"{name}.copy.ours.jpg"), copy.DestinationBytes);
+            copiedName = name;
+            break;
+        }
+        catch (MetadataException) { }
+    }
+    File.WriteAllText(Path.Combine(directory, "copy.tsv"), copiedName);
     foreach (KeyValuePair<string, int> outcome in outcomes) Console.WriteLine($"{outcome.Key}: {outcome.Value}");
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=MakerNote parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
@@ -1956,6 +1983,33 @@ else if (args.Length == 2 && args[0] == "crw-parity")
     }
 
     File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
+
+    // Also copy one decoded source MakerNote into an authored JPEG through the public transactional
+    // API. The comparer checks every MakerNote key/value that pinned Exiv2 prints on both files.
+    string copiedName = string.Empty;
+    foreach (string path in Directory.EnumerateFiles(directory, "s*.*").Order(StringComparer.Ordinal))
+    {
+        string name = Path.GetFileNameWithoutExtension(path), extension = Path.GetExtension(path).TrimStart('.');
+        if (name.Contains('.') || extension is "tsv" or "txt") continue;
+        byte[] sourceBytes = File.ReadAllBytes(path);
+        try
+        {
+            ImageMetadata sourceMetadata = ImageMetadata.Read(sourceBytes);
+            if (sourceMetadata.Exif?.MakerNote is null) continue;
+            MetadataSharp.Formats.Operations.MetadataCopyResult copy =
+                MetadataSharp.Formats.Operations.MetadataOperations.CopyMetadata(sourceBytes, JpegFixture.Build(),
+                    new MetadataSharp.Formats.Operations.MetadataCopyOptions
+                    {
+                        Families = MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif
+                    });
+            if (copy.WasRefused || ImageMetadata.Read(copy.DestinationBytes).Exif?.MakerNote is null) continue;
+            File.WriteAllBytes(Path.Combine(directory, $"{name}.copy.ours.jpg"), copy.DestinationBytes);
+            copiedName = name;
+            break;
+        }
+        catch (MetadataException) { }
+    }
+    File.WriteAllText(Path.Combine(directory, "copy.tsv"), copiedName);
     foreach (KeyValuePair<string, int> outcome in outcomes) Console.WriteLine($"{outcome.Key}: {outcome.Value}");
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=CRW parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;

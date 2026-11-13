@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using MetadataSharp.Core.MakerNotes;
 using MetadataSharp.Core.Tiff;
 
 namespace MetadataSharp.Core;
@@ -20,11 +21,12 @@ public sealed class ExifEdit
 {
     private readonly Dictionary<ExifTagKey, ExifValue?> changes = [];
     private readonly List<MakerNoteChange> makerNote = [];
+    private MakerNoteCopyPayload? makerNoteCopy;
     private bool removeAll;
     /// <summary>Creates an edit that holds no change.</summary>
     public ExifEdit() { }
     /// <summary>True when the edit holds no change; a save then copies the source.</summary>
-    public bool IsEmpty => !removeAll && changes.Count == 0 && thumbnail is null && !removeThumbnail && makerNote.Count == 0;
+    public bool IsEmpty => !removeAll && changes.Count == 0 && thumbnail is null && !removeThumbnail && makerNote.Count == 0 && makerNoteCopy is null;
 
     /// <summary>
     /// Whether a tag can be set and removed through an edit. The tags that cannot are, in any
@@ -174,7 +176,7 @@ public sealed class ExifEdit
     /// <exception cref="ArgumentException">The edit already holds a tag change.</exception>
     public void RemoveAllExif()
     {
-        if (changes.Count != 0 || thumbnail is not null || removeThumbnail || makerNote.Count != 0) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
+        if (changes.Count != 0 || thumbnail is not null || removeThumbnail || makerNote.Count != 0 || makerNoteCopy is not null) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
         removeAll = true;
     }
 
@@ -265,7 +267,7 @@ public sealed class ExifEdit
     internal static MetadataException NotEditable(ExifTagKey key) => new(MetadataErrorCode.TagNotEditable,
         $"Tag 0x{key.TagId:X4} of the {key.Directory} directory is a pointer, an address or length of image data, or the MakerNote: it is not edited as a value.");
 
-    internal EditSnapshot Snapshot() => new(removeAll, new Dictionary<ExifTagKey, ExifValue?>(changes)) { Thumbnail = thumbnail, ThumbnailRemoved = removeThumbnail, MakerNote = makerNote.ToArray() };
+    internal EditSnapshot Snapshot() => new(removeAll, new Dictionary<ExifTagKey, ExifValue?>(changes)) { Thumbnail = thumbnail, ThumbnailRemoved = removeThumbnail, MakerNote = makerNote.ToArray(), MakerNoteCopy = makerNoteCopy };
 
     /// <summary>One change of a tag of the MakerNote: a value, or text to read in the type the tag has in the file, or neither to remove the tag.</summary>
     internal sealed record MakerNoteChange(string Key, ExifValue? Value, string? Text, bool Unchecked = false);
@@ -381,6 +383,16 @@ public sealed class ExifEdit
         makerNote.Add(change);
     }
 
+    internal void SetMakerNoteForCopy(ExifValue value, MakerNote note)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(note);
+        if (removeAll) throw new ArgumentException("Complete EXIF removal cannot be combined with tag edits.");
+        makerNoteCopy = new(value, note);
+    }
+
+    internal sealed record MakerNoteCopyPayload(ExifValue Value, MakerNote Note);
+
     internal sealed record EditSnapshot(bool RemoveAll, IReadOnlyDictionary<ExifTagKey, ExifValue?> Changes)
     {
         /// <summary>The JPEG stream to set as the thumbnail, or null.</summary>
@@ -390,7 +402,8 @@ public sealed class ExifEdit
         internal bool HasThumbnailChange => Thumbnail is not null || ThumbnailRemoved;
         /// <summary>The changes of the MakerNote, in the order they were made.</summary>
         internal IReadOnlyList<MakerNoteChange> MakerNote { get; init; } = [];
-        internal bool IsEmpty => !RemoveAll && Changes.Count == 0 && !HasThumbnailChange && MakerNote.Count == 0;
+        internal MakerNoteCopyPayload? MakerNoteCopy { get; init; }
+        internal bool IsEmpty => !RemoveAll && Changes.Count == 0 && !HasThumbnailChange && MakerNote.Count == 0 && MakerNoteCopy is null;
         internal ExifMetadata Apply(TiffReadResult? source, Endianness order, MetadataLimits limits)
         {
             var entries = source?.Metadata.Entries.ToDictionary(e => e.Key, e => e.Value) ?? [];
@@ -399,6 +412,8 @@ public sealed class ExifEdit
                 if (change.Value is null) entries.Remove(change.Key);
                 else entries[change.Key] = change.Value;
             }
+            if (MakerNoteCopy is { } maker)
+                entries[new ExifTagKey(ExifDirectoryKind.Exif, 0x927C)] = ConvertOrder(maker.Value, order);
             if (entries.Count > limits.MaxTotalEntries)
                 throw new MetadataException(MetadataErrorCode.LimitExceeded, "The edited entry count exceeds its budget.");
             long bytes = source?.Metadata.Entries.Sum(e => (long)e.Value.ByteLength) ?? 0;

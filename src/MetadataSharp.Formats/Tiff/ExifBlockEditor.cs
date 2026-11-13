@@ -41,6 +41,11 @@ internal static class ExifBlockEditor
             ExifValue value = ExifEdit.ConvertOrder(change.Value, order);
             changes[(role, change.Key.TagId)] = new((ushort)value.FieldType, value.Count, value.RawBytes.ToArray());
         }
+        if (edit.MakerNoteCopy is { } copy)
+        {
+            ExifValue value = ExifEdit.ConvertOrder(copy.Value, order);
+            changes[(TiffBasedRole.Exif, 0x927C)] = new((ushort)value.FieldType, value.Count, value.RawBytes.ToArray());
+        }
     }
 
     /// <summary>
@@ -59,7 +64,7 @@ internal static class ExifBlockEditor
         if (edit.HasThumbnailChange && ceiling == ExifTiffReader.NoCeiling) throw ThumbnailElsewhere();
         if (edit.MakerNote.Count != 0)
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The file has no EXIF block, so no MakerNote: its tags cannot be changed.");
-        if (edit.Changes.Values.All(value => value is null))
+        if (edit.Changes.Values.All(value => value is null) && edit.MakerNoteCopy is null)
         {
             if (edit.Thumbnail is null) return null;
             // A block of nothing but the thumbnail: a primary directory without entries leads to it.
@@ -70,7 +75,7 @@ internal static class ExifBlockEditor
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
                 "The file has no thumbnail directory: one is not created by a tag edit.");
         desired = edit.Apply(null, Endianness.LittleEndian, limits);
-        ExifWritePlan plan = ExifLayoutPlanner.Create(null, desired, limits, ceiling);
+        ExifWritePlan plan = ExifLayoutPlanner.Create(null, desired, limits, ceiling, allowMakerNoteCopy: edit.MakerNoteCopy is not null);
         if (plan.Length > Array.MaxLength)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EXIF block exceeds the length of an array.");
         byte[] block = new byte[plan.Length];
@@ -87,6 +92,7 @@ internal static class ExifBlockEditor
             if (!desired.TryGetEntry(entry.Key, out _) && !ExifLayoutPlanner.TryLink(entry.Key.Directory, entry.Key.TagId, out _))
                 throw Refuse("the new block holds a tag that was not set");
         if (edit.Thumbnail is not null) block = ExifThumbnailWriter.Apply(block, edit.Thumbnail, limits, ceiling) ?? block;
+        if (edit.MakerNoteCopy is { } copy) block = RelocateMakerNote(block, copy, limits);
         return block;
     }
 
@@ -119,8 +125,10 @@ internal static class ExifBlockEditor
                 noted = result.Output;
             }
         }
-        byte[]? output = noted is not null && edit.Changes.Count == 0 ? noted : EditTags(noted ?? block, sourceBase, edit, limits) ?? noted;
+        byte[]? output = noted is not null && edit.Changes.Count == 0 && edit.MakerNoteCopy is null
+            ? noted : EditTags(noted ?? block, sourceBase, edit, limits) ?? noted;
         if (noted is not null) CheckMakerNote(noted, output!, limits);
+        if (edit.MakerNoteCopy is { } copy && output is not null) output = RelocateMakerNote(output, copy, limits);
         if (!edit.HasThumbnailChange) return output;
         // The thumbnail after the tags: its directory is no tag edit, and it is checked on its own.
         return ExifThumbnailWriter.Apply(output ?? block, edit.Thumbnail, limits, ExifTiffReader.SegmentCeiling) ?? output;
@@ -156,10 +164,11 @@ internal static class ExifBlockEditor
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
         AddChanges(edit, map.Order, changes, thumbnailApart: true, makerNoteApart: true);
         TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(block, map, changes, limits, ExifTiffReader.SegmentCeiling,
-            emptyPrimary: true);
+            emptyPrimary: true, allowMakerNoteCopy: edit.MakerNoteCopy is not null);
         if (plan.IsEmpty) return null;
         byte[] output = plan.Apply(block);
-        TiffBasedWriteVerifier.Verify(block, map, whole, output, plan, limits, MaxAccountedRanges);
+        TiffBasedWriteVerifier.Verify(block, map, whole, output, plan, limits, MaxAccountedRanges,
+            allowMakerNoteCopy: edit.MakerNoteCopy is not null);
 
         TiffReadResult after;
         try { after = ExifTiffReader.Read(output, limits); }
@@ -169,6 +178,22 @@ internal static class ExifBlockEditor
             (before.Thumbnail is not null && !before.Thumbnail.AsSpan().SequenceEqual(after.Thumbnail)))
             throw Refuse("the thumbnail no longer reads as it did");
         return output;
+    }
+
+    internal static byte[] RelocateMakerNote(byte[] block, ExifEdit.MakerNoteCopyPayload copy, MetadataLimits limits)
+    {
+        TiffBasedFileMap map = TiffBasedFileMap.Read(block, limits, MaxAccountedRanges);
+        TiffBasedRange? targetRange = map.Ranges
+            .Where(range => range.Kind == TiffBasedRangeKind.MakerNote)
+            .Select(range => (TiffBasedRange?)range).FirstOrDefault();
+        if (targetRange is not TiffBasedRange target || target.Start < 0 || target.Start > block.Length - copy.Value.ByteLength)
+            throw Refuse("the copied MakerNote has no safe value range at its new position");
+        byte[] moved = MakerNoteRelocator.Relocate(copy.Note, copy.Value, checked((int)target.Start));
+        moved.CopyTo(block, (int)target.Start);
+        ExifMetadata after = ExifTiffReader.Inspect(block, limits);
+        if (after.MakerNote is not MakerNote verified || !MakerNoteRelocator.Same(copy.Note, verified))
+            throw Refuse("the MakerNote does not read with the same keys and values after relocation");
+        return block;
     }
 
     private static bool Same(ExifValue left, ExifValue right) =>
