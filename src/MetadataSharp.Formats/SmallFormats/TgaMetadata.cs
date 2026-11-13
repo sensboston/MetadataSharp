@@ -1,3 +1,5 @@
+using MetadataSharp.Core;
+
 namespace MetadataSharp.Formats.SmallFormats;
 
 /// <summary>

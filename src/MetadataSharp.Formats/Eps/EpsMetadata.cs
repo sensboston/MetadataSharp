@@ -124,7 +124,7 @@ public sealed class EpsMetadata
     /// </summary>
     internal static bool HasSignature(ReadOnlySpan<byte> header)
     {
-        if (header.Length >= 4 && header[..4].SequenceEqual([0xC5, 0xD0, 0xD3, 0xC6])) return true;
+        if (header.Length >= 4 && header[0] == 0xC5 && header[1] == 0xD0 && header[2] == 0xD3 && header[3] == 0xC6) return true;
         return header.StartsWith("%!PS-Adobe-3."u8);
     }
 
@@ -144,7 +144,7 @@ public sealed class EpsMetadata
         limits?.Validate();
         if (limits is not null && data.Length > limits.MaxInputBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EPS file exceeds the input budget.", 0);
-        bool dos = data.Length >= 4 && data[..4].SequenceEqual([0xC5, 0xD0, 0xD3, 0xC6]);
+        bool dos = data.Length >= 4 && data[0] == 0xC5 && data[1] == 0xD0 && data[2] == 0xD3 && data[3] == 0xC6;
         long start = 0;
         long end = data.Length;
         long? wmfOffset = null, tiffOffset = null;
@@ -264,7 +264,7 @@ public sealed class EpsMetadata
                     // A trailer marked r states a packet its writer means to be read only. The
                     // reference refuses such a file rather than report a packet it may not keep.
                     if (PacketTrailers[t].ReadOnly) throw Bad("The XMP trailer states a read-only packet.", trailerAt);
-                    int close = postScript[(trailerAt + trailer.Length)..].IndexOf("?>"u8);
+                    int close = IndexOf(postScript[(trailerAt + trailer.Length)..], "?>"u8);
                     if (close < 0) throw Bad("The XMP trailer of the file is not closed.", trailerAt);
                     start = at;
                     length = trailerAt + trailer.Length + close + 2 - at;
@@ -276,17 +276,33 @@ public sealed class EpsMetadata
         return false;
     }
 
+    /// <summary>Where <paramref name="needle"/> first stands in <paramref name="data"/>, or -1.</summary>
+    private static int IndexOf(ReadOnlySpan<byte> data, ReadOnlySpan<byte> needle) =>
+        data.IndexOf(needle);
+
     /// <summary>The header that begins at <paramref name="at"/>, or null when none does.</summary>
-    private static string? Match(ReadOnlySpan<byte> data, int at, string[] headers) =>
-        headers.FirstOrDefault(text => data[at..].StartsWith(Encoding.ASCII.GetBytes(text)));
+    private static string? Match(ReadOnlySpan<byte> data, int at, string[] headers)
+    {
+        foreach (string text in headers)
+        {
+            if (data[at..].StartsWith(Encoding.ASCII.GetBytes(text))) return text;
+        }
+        return null;
+    }
 
     /// <summary>
     /// The first line as a whole: one of the three the reference accepts and nothing after it but its
     /// line ending. The reference compares the line, so a longer first line is not an EPS file to it.
     /// </summary>
-    private static bool StartsAsEps(ReadOnlySpan<byte> postScript) =>
-        FirstLines.Any(line => postScript.StartsWith(Encoding.ASCII.GetBytes(line)) &&
-            (postScript.Length == line.Length || postScript[line.Length] is (byte)'\r' or (byte)'\n'));
+    private static bool StartsAsEps(ReadOnlySpan<byte> postScript)
+    {
+        foreach (string line in FirstLines)
+        {
+            if (!postScript.StartsWith(Encoding.ASCII.GetBytes(line))) continue;
+            if (postScript.Length == line.Length || postScript[line.Length] is (byte)'\r' or (byte)'\n') return true;
+        }
+        return false;
+    }
 
     /// <summary>The end of the line that starts at <paramref name="at"/>: where its line ending begins, or the end of the data.</summary>
     private static int EndOfLine(ReadOnlySpan<byte> data, int at)

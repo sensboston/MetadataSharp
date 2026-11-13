@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using MetadataSharp.Core;
 
 namespace MetadataSharp.Formats.SmallFormats;
 

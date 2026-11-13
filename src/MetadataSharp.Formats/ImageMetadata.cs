@@ -157,7 +157,7 @@ public sealed class ImageMetadata
         // start, so it is told by the footer at its end when the whole file is given.
         if (SmallFormats.GifMetadata.HasSignature(header)) return MetadataFormat.Gif;
         if (SmallFormats.BmpMetadata.HasSignature(header)) return MetadataFormat.Bmp;
-        if (SmallFormats.PgfMetadata.HasSignature(header)) return MetadataFormat.Pgf;
+        if (Pgf.PgfMetadata.HasSignature(header)) return MetadataFormat.Pgf;
         if (Eps.EpsMetadata.HasSignature(header)) return MetadataFormat.Eps;
         if (SmallFormats.TgaMetadata.HasSignature(header)) return MetadataFormat.Tga;
         return MetadataFormat.Unknown;
