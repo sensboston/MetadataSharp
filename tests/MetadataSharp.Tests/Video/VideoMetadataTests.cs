@@ -55,11 +55,11 @@ public sealed class VideoMetadataTests
     }
 
     [Fact]
-    public void AuthoredAviRetainsPinnedBitmapInfoCursorValues()
+    public void AuthoredAviReadsBitmapInfoColorDefaults()
     {
         VideoMetadata video = VideoMetadata.Read(Fixture("valid", "authored-avi.avi"));
-        Assert.Equal("1816", video["Xmp.video.NumIfImpColours"]!.Value);
-        Assert.Equal("1263424842", video["Xmp.video.NumOfColours"]!.Value);
+        Assert.Equal("Unspecified", video["Xmp.video.NumOfColours"]!.Value);
+        Assert.Equal("All", video["Xmp.video.NumIfImpColours"]!.Value);
     }
 
     [Fact]

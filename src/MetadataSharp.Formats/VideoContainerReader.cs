@@ -214,16 +214,17 @@ internal static class VideoContainerReader
                 Add("Xmp.audio.BitsPerSample", U32LE(p + 18).ToString(CultureInfo.InvariantCulture));
                 return;
             }
-            // Preserve Exiv2 0.28.9's observed reader cursor behavior: its two pixel-per-meter
-            // reads are QWORDs, so the following color counts begin at offsets 40 and 44.
-            Need(p, 48, end, "AVI bitmap format header");
+            Need(p, 40, end, "AVI bitmap format header");
             Add("Xmp.video.Planes", U16LE(p + 12).ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.PixelDepth", U16LE(p + 14).ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.Compressor", FourCC(p + 16));
             Add("Xmp.video.ImageLength", U32LE(p + 20).ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.PixelPerMeterX", U64LE(p + 24).ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.PixelPerMeterY", U64LE(p + 32).ToString(CultureInfo.InvariantCulture));
-            uint colours = U32LE(p + 40), important = U32LE(p + 44);
+            // BITMAPINFOHEADER stores pixels-per-meter and color counts as DWORDs. The pinned
+            // Exiv2 reader consumes the first two as QWORDs, shifting its final two values; keep
+            // our reads within the declared chunk and follow the field layout instead.
+            Add("Xmp.video.PixelPerMeterX", U32LE(p + 24).ToString(CultureInfo.InvariantCulture));
+            Add("Xmp.video.PixelPerMeterY", U32LE(p + 28).ToString(CultureInfo.InvariantCulture));
+            uint colours = U32LE(p + 32), important = U32LE(p + 36);
             Add("Xmp.video.NumOfColours", colours == 0 ? "Unspecified" : colours.ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.NumIfImpColours", important == 0 ? "All" : important.ToString(CultureInfo.InvariantCulture));
         }

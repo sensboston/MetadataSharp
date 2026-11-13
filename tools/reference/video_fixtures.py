@@ -115,8 +115,7 @@ def fixtures() -> dict[str, bytes]:
     strh += bytes(16)
     strf = (40).to_bytes(4, "little") + (320).to_bytes(4, "little", signed=True) + (240).to_bytes(4, "little", signed=True)
     strf += (1).to_bytes(2, "little") + (24).to_bytes(2, "little") + b"DIB " + (320 * 240 * 3).to_bytes(4, "little") + bytes(16)
-    # Exiv2 0.28.9 consumes pixel-per-meter fields as QWORDs, placing the two color reads at +40/+44.
-    strf += (1263424842).to_bytes(4, "little") + (1816).to_bytes(4, "little")
+
     hdrl = chunk(b"avih", avih) + chunk(b"LIST", b"strl" + chunk(b"strh", strh) + chunk(b"strf", strf))
     avi = riff(b"AVI ", chunk(b"LIST", b"hdrl" + hdrl) + chunk(b"LIST", b"movi"))
 
