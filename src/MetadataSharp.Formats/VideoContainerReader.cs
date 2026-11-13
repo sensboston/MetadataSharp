@@ -359,14 +359,6 @@ internal static class VideoContainerReader
             uint typeLength = U32LE(p + 40), correctionLength = U32LE(p + 44);
             long skip = p + 54L + typeLength + correctionLength;
             if (skip > end) throw Invalid("ASF stream type data exceeds its object.", p);
-            if (video && typeLength >= 11)
-            {
-                int v = p + 54;
-                uint w = U32LE(v + 4), h = U32LE(v + 8);
-                width = (int)Math.Min(w, int.MaxValue); height = (int)Math.Min(h, int.MaxValue);
-                Add("Xmp.video.Width", w.ToString(CultureInfo.InvariantCulture));
-                Add("Xmp.video.Height", h.ToString(CultureInfo.InvariantCulture));
-            }
         }
         // GUIDs are compared in their on-disk little-endian field order.
         private static readonly byte[] AsfVideoMedia = [0xC0,0xEF,0x19,0xBC,0x4D,0x5B,0xCF,0x11,0xA8,0xFD,0,0x80,0x5F,0x5C,0x44,0x2B];

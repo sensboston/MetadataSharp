@@ -101,6 +101,9 @@ def run_reference(reference_command: list[str], path: Path) -> str:
     """
     finished = subprocess.run(reference_command + [str(path)], capture_output=True, text=True,
                               encoding="utf-8", errors="replace", timeout=300, check=False)
+    if finished.returncode != 0:
+        detail = (finished.stderr or finished.stdout or "").strip().replace("\n", " ")[:400]
+        raise StructuralError(f"the pinned reference failed on {path.name} with {finished.returncode}: {detail}")
     return finished.stdout or ""
 
 
