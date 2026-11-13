@@ -17,20 +17,20 @@ internal static class MakerNoteRelocator
             throw new MetadataException(MetadataErrorCode.UnsafeRelocation, "The embedded Canon MakerNote TIFF has no in-range IFD.");
         int origin = checked((int)note.Offset);
         byte[] raw = embeddedTiff[origin..].ToArray();
-        MakerNoteEntry[] entries = note.Entries.Select(Clone).ToArray();
+        MakerNoteEntry[] entries = note.Entries.Select(CloneEntry).ToArray();
         normalized = new MakerNote(note.Format, note.ByteOrder, entries);
         return ExifValue.FromRaw(TiffFieldType.Undefined, (uint)raw.Length, note.ByteOrder, raw);
 
-        MakerNoteEntry Clone(MakerNoteEntry entry) => new(entry.TagId, entry.Name, entry.Value,
-            entry.Fields.Select(Clone).ToArray())
+        MakerNoteEntry CloneEntry(MakerNoteEntry entry) => new(entry.TagId, entry.Name, entry.Value,
+            entry.Fields.Select(CloneField).ToArray())
         {
             Slot = Shift(entry.Slot),
             Decode = entry.Decode,
             Encode = entry.Encode
         };
 
-        MakerNoteField Clone(MakerNoteField field) => new(field.Index, field.Name, field.Value,
-            field.Fields.Select(Clone).ToArray(), field.Offset)
+        MakerNoteField CloneField(MakerNoteField field) => new(field.Index, field.Name, field.Value,
+            field.Fields.Select(CloneField).ToArray(), field.Offset)
         {
             Slot = Shift(field.Slot)
         };
