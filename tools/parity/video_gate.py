@@ -37,7 +37,14 @@ def evaluate(report: dict[str, Any]) -> tuple[bool, str]:
     ids = {f"{entry.get('corpus')}:{entry.get('label')}" for entry in selected}
     absent = sorted(REQUIRED_GENERATED - ids)
     if absent:
-        return False, "required authored video fixtures missing from report: " + ", ".join(absent)
+        generated = sorted(
+            f"{entry.get('corpus')}:{entry.get('label')} [format={entry.get('format')}]"
+            for entry in files if entry.get("corpus") == "generated"
+        )
+        return False, (
+            "required authored video fixtures missing from video selection: " + ", ".join(absent)
+            + "; generated report entries: " + (", ".join(generated) or "none")
+        )
 
     ours_only: set[str] = set()
     reference_only: set[str] = set()

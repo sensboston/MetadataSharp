@@ -70,6 +70,8 @@ class VideoGateTests(unittest.TestCase):
         passed, message = video_gate.evaluate(report)
         self.assertFalse(passed)
         self.assertIn("generated:authored-matroska.mkv", message)
+        self.assertIn("generated report entries:", message)
+        self.assertIn("generated:authored-webm.webm [format=webm]", message)
 
     def test_main_writes_failure_reason_to_github_step_summary(self):
         report = self.report(rows=[{"key": "Xmp.video.Extra", "outcome": "extra-key"}])
