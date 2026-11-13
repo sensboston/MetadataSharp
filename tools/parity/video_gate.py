@@ -102,8 +102,7 @@ def main(argv: list[str] | None = None) -> int:
     print(message, end="")
     if not passed:
         diagnostic = base64.b64encode(message.encode("utf-8")).decode("ascii")
-        print(f"::notice title=VideoGate::{diagnostic}")
-        print("::error::Video-container parity gate failed; see the VideoGate diagnostic annotation.")
+        print("::error::VideoGate diagnostic (base64): " + diagnostic)
     return 0 if passed else 1
 
 
