@@ -292,6 +292,69 @@ public sealed class MakerNoteInterpretationTests
         Assert.Null(Field(MakerNoteFormat.Canon, 0x0026, "AFPointsInFocus", Bytes(1, 2)));
     }
 
+    // ---- Minolta ----------------------------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("SceneMode", 0, "Standard")]
+    [InlineData("ColorMode", 14, "Natural+ sRGB")]
+    [InlineData("Quality", 5, "Extra Fine")]
+    [InlineData("Teleconverter", 0, "None")]
+    [InlineData("ImageStabilization", 5, "On")]
+    [InlineData("RawAndJpgRecording", 0, "Off")]
+    [InlineData("ZoneMatching", 0, "ISO Setting Used")]
+    [InlineData("ImageStabilizationA100", 0, "Off")]
+    [InlineData("WhiteBalance", 0, "Auto")]
+    public void AMinoltaMakerNoteTagReadsAsItsLabel(string name, int number, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Minolta, name, Longs(number)));
+
+    [Theory]
+    [InlineData("ExposureMode", 1, "Aperture priority")]
+    [InlineData("ImageSize", 0, "Large")]
+    [InlineData("Quality", 16, "Fine")]
+    [InlineData("WhiteBalance", 0, "Auto")]
+    [InlineData("FocusPosition", 0, "Wide")]
+    [InlineData("FocusArea", 0, "Wide")]
+    [InlineData("FlashFired", 0, "Did not fire")]
+    [InlineData("MeteringMode", 0, "Multi-segment")]
+    [InlineData("ISOSpeed", 1, "100")]
+    [InlineData("ColorSpace", 0, "sRGB (Natural)")]
+    [InlineData("FocusMode", 0, "Auto focus")]
+    [InlineData("Rotation", 72, "Horizontal (normal)")]
+    [InlineData("ExposureCompensation", 300, "0.00")]
+    [InlineData("Rotation2", 0, "Horizontal (normal)")]
+    [InlineData("PictureFinish", 0, "Natural")]
+    [InlineData("ExposureManualBias", 128, "0.00")]
+    [InlineData("AFMode", 1, "AF-S")]
+    [InlineData("NoiseReduction", 0, "Off")]
+    [InlineData("ImageStabilization", 0, "Off")]
+    public void AMinolta5DSettingsFieldReadsAsItsLabel(string name, int number, string expected) =>
+        Assert.Equal(expected, Field(MakerNoteFormat.Minolta, 0x0114, name, Shorts(number)));
+
+    [Theory]
+    [InlineData("ExposureMode", 0, "Program")]
+    [InlineData("ImageSize", 1, "Medium")]
+    [InlineData("Quality", 34, "Raw+Jpeg")]
+    [InlineData("WhiteBalance", 0, "Auto")]
+    [InlineData("FocusMode", 4, "Automatic AF")]
+    [InlineData("AFPoints", 1, "Center")]
+    [InlineData("FlashFired", 0, "Did not fire")]
+    [InlineData("ISOSpeed", 0, "Auto")]
+    [InlineData("ColorSpace", 1, "sRGB (Natural+)")]
+    [InlineData("Rotation", 72, "Horizontal (normal)")]
+    [InlineData("NoiseReduction", 1, "On")]
+    [InlineData("ImageStabilization", 1, "On")]
+    [InlineData("ZoneMatchingOn", 0, "Off")]
+    public void AMinolta7DSettingsFieldReadsAsItsLabel(string name, int number, string expected) =>
+        Assert.Equal(expected, Field(MakerNoteFormat.Minolta, 0x0004, name, Shorts(number)));
+
+    [Fact]
+    public void AMinoltaFlashCompensationRendersInEv()
+    {
+        Assert.Equal("0 EV", Top(MakerNoteFormat.Minolta, "FlashExposureComp", SignedRational(0, 10)));
+        Assert.Equal("+1/3 EV", Top(MakerNoteFormat.Minolta, "FlashExposureComp", SignedRational(2, 6)));
+        Assert.Equal("(-1/0)", Top(MakerNoteFormat.Minolta, "FlashExposureComp", SignedRational(-1, 0)));
+    }
+
     // ---- Nikon -------------------------------------------------------------------------------------------
 
     [Fact]
