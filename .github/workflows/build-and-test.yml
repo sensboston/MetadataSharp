@@ -294,7 +294,17 @@ jobs:
             --require Exif.CanonAfMiAdj --require Exif.CanonAm --require Exif.CanonHdr \
             --require Exif.CanonLe --require Exif.CanonLiOp --require Exif.CanonMe \
             --require Exif.CanonPr --require Exif.CanonTi --require Exif.CanonVigCor2 \
-            --require Exif.Fujifilm
+            --require Exif.Fujifilm \
+            --require Exif.Nikon3 --require Exif.Nikon1 --require Exif.Nikon2 \
+            --require Exif.NikonLd2 --require Exif.NikonLd3 --require Exif.NikonLd4 \
+            --require Exif.NikonFl1 --require Exif.NikonFl3 --require Exif.NikonFl6 --require Exif.NikonFl7 \
+            --require Exif.NikonIi --require Exif.NikonSi01xx --require Exif.NikonSi02xx \
+            --require Exif.NikonAf --require Exif.NikonAf2 --require Exif.NikonAf22 --require Exif.NikonAFT \
+            --require Exif.NikonCb2b --require Exif.NikonCb3 --require Exif.NikonCb4 \
+            --require Exif.NikonFi --require Exif.NikonMe --require Exif.NikonPc --require Exif.NikonPreview \
+            --require Exif.NikonVr --require Exif.NikonWt \
+            --require Exif.Sony1 --require Exif.Sony2 --require Exif.Sony2Fp --require Exif.SonyMisc1 \
+            --require Exif.Sony1Cs --require Exif.SonyMisc3c --require Exif.SonyMisc2b --require Exif.SonyMinolta
       - name: Preview parity against upstream expectations (kind "Preview"; exiv2 -pp output read as text)
         shell: bash
         run: |
