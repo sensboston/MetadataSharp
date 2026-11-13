@@ -31,6 +31,9 @@ internal static class VideoContainerReader
         private int retained;
         private int width = 1;
         private int height = 1;
+        private uint movieTimeScale = 1;
+        private uint mediaTimeScale = 1;
+        private double timeCodeScale = 1.0;
 
         private IReadOnlyList<VideoProperty> Result() => values.Values.OrderBy(value => value.Key, StringComparer.Ordinal).ToArray();
 
@@ -58,7 +61,7 @@ internal static class VideoContainerReader
             if (ratio) Add("Xmp.video.AspectRatio", Ratio(width, height));
         }
 
-        private string Number(double value) => value.ToString("G7", CultureInfo.InvariantCulture);
+        private string Number(double value) => value.ToString("G6", CultureInfo.InvariantCulture).Replace('E', 'e');
         private void Count(ref int count, long offset)
         {
             if (++count > limits.MaxSegments) throw Limit("The video structure count budget was exceeded.", offset);
@@ -361,15 +364,22 @@ internal static class VideoContainerReader
         private void ReadAsfCodec(int p, int end)
         {
             Need(p, 20, end, "ASF codec list");
-            ushort n = U16LE(p + 16); p += 20;
-            for (int i = 0; i < n; i++)
+            uint count = U32LE(p + 16);
+            if (count > limits.MaxEntriesPerDirectory || count > limits.MaxSegments - structures)
+                throw Limit("The ASF codec count exceeds its budget.", p);
+            p += 20;
+            for (uint i = 0; i < count; i++)
             {
+                Count(ref structures, p);
                 Need(p, 6, end, "ASF codec entry");
-                ushort type = U16LE(p); ushort nameLength = U16LE(p + 2); p += 4;
-                Need(p, nameLength + 2, end, "ASF codec name");
+                ushort type = U16LE(p);
+                ushort nameChars = U16LE(p + 2);
+                p += 4;
+                int nameBytes = checked(nameChars * 2);
+                Need(p, nameBytes + 2, end, "ASF codec name");
                 string prefix = type == 1 ? "Xmp.video." : "Xmp.audio.";
-                if (nameLength != 0) Add(prefix + "CodecName", Text(p, nameLength, Encoding.Unicode));
-                p += nameLength;
+                if (nameBytes != 0) Add(prefix + "CodecName", Text(p, nameBytes, Encoding.Unicode));
+                p += nameBytes;
                 ushort descriptionLength = U16LE(p); p += 2;
                 Need(p, descriptionLength + 2, end, "ASF codec description");
                 if (descriptionLength != 0) Add(prefix + "CodecDescription", Text(p, descriptionLength, Encoding.Unicode));
@@ -404,22 +414,22 @@ internal static class VideoContainerReader
         }
         private void ReadAsfExtendedStream(int p, int end)
         {
-            Need(p, 64, end, "ASF extended stream properties");
+            Need(p, 52, end, "ASF extended stream properties");
             Add("Xmp.video.StartTimecode", U64LE(p).ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.EndTimecode", U16LE(p + 8).ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.FrameRate", U16LE(p + 56).ToString(CultureInfo.InvariantCulture));
+            Add("Xmp.video.FrameRate", U16LE(p + 50).ToString(CultureInfo.InvariantCulture));
         }
 
         internal IReadOnlyList<VideoProperty> QuickTime()
         {
             if (data.Length < 12) throw Invalid("The QuickTime header is truncated.", 0);
             Common(true, false);
-            WalkAtoms(0, data.Length, 0, string.Empty);
+            WalkAtoms(0, data.Length, 0, string.Empty, "Xmp.video");
             Add("Xmp.video.AspectRatio", Ratio(width, height));
             return Result();
         }
 
-        private void WalkAtoms(int start, int end, int depth, string parent)
+        private void WalkAtoms(int start, int end, int depth, string parent, string streamPrefix)
         {
             Depth(depth, start); int p = start;
             while (p < end)
@@ -437,19 +447,73 @@ internal static class VideoContainerReader
                 int payload = p + header, atomEnd = p + (int)size;
                 if (type == "ftyp") ReadFileType(payload, atomEnd);
                 else if (type == "mvhd") ReadMovieHeader(payload, atomEnd);
-                else if (type == "tkhd") ReadTrackHeader(payload, atomEnd);
-                else if (type == "mdhd") ReadMediaHeader(payload, atomEnd);
-                else if (type == "hdlr") ReadHandler(payload, atomEnd, parent);
-                else if (type == "stsd") ReadSampleDescription(payload, atomEnd);
+                else if (type == "tkhd") ReadTrackHeader(payload, atomEnd, streamPrefix);
+                else if (type == "mdhd") ReadMediaHeader(payload, atomEnd, streamPrefix);
+                else if (type == "hdlr") ReadHandler(payload, atomEnd, streamPrefix);
+                else if (type == "stsd") ReadSampleDescription(payload, atomEnd, streamPrefix);
                 else if (type == "vmhd") ReadVideoHeader(payload, atomEnd);
+                else if (type == "stts") ReadTimeToSample(payload, atomEnd, streamPrefix);
+                else if (type == "url ") Add(streamPrefix + ".URL", Text(payload, atomEnd - payload, Encoding.Latin1, false));
+                else if (type == "urn ") Add(streamPrefix + ".URN", Text(payload, atomEnd - payload, Encoding.Latin1, false));
+                else if (type == "dcom") Add("Xmp.video.Compressor", Text(payload, atomEnd - payload, Encoding.Latin1, false));
+                else if (type == "smhd")
+                {
+                    Need(payload, 8, atomEnd, "QuickTime sound media header");
+                    Add("Xmp.audio.Balance", U16BE(payload + 6).ToString(CultureInfo.InvariantCulture));
+                }
                 else if (type is "moov" or "trak" or "mdia" or "minf" or "stbl" or "dinf" or "edts" or "udta" or "tapt" or "ilst" or "meta" or "moof" or "traf")
                 {
                     int childStart = payload + (type == "meta" ? 4 : 0);
                     if (childStart > atomEnd) throw Invalid("A QuickTime meta prefix exceeds its atom.", payload);
-                    WalkAtoms(childStart, atomEnd, depth + 1, type);
+                    string childStream = type == "trak" ? FindTrackStream(childStart, atomEnd, depth + 1) : streamPrefix;
+                    WalkAtoms(childStart, atomEnd, depth + 1, type, childStream);
                 }
                 p = atomEnd;
             }
+        }
+
+        private string FindTrackStream(int start, int end, int depth)
+        {
+            Depth(depth, start);
+            int p = start;
+            while (p < end)
+            {
+                Count(ref structures, p);
+                if (end - p < 8) throw Invalid("A QuickTime track atom header is truncated.", p);
+                uint size32 = U32BE(p);
+                string type = FourCC(p + 4);
+                int header = 8;
+                ulong size = size32;
+                if (size32 == 1)
+                {
+                    Need(p, 16, end, "extended QuickTime track atom header");
+                    size = U64BE(p + 8); header = 16;
+                }
+                else if (size32 == 0) size = (ulong)(end - p);
+                if (size < (ulong)header || size > (ulong)(end - p))
+                    throw Invalid("A QuickTime track atom size exceeds its enclosing extent.", p);
+                int payload = p + header, atomEnd = p + (int)size;
+                if (type == "hdlr")
+                {
+                    Need(payload, 12, atomEnd, "QuickTime media handler");
+                    return FourCC(payload + 8) switch
+                    {
+                        "soun" => "Xmp.audio",
+                        "vide" => "Xmp.video",
+                        _ => "Xmp.video"
+                    };
+                }
+                if (type is "mdia" or "minf" or "stbl" or "dinf" or "edts" or "meta")
+                {
+                    int childStart = payload + (type == "meta" ? 4 : 0);
+                    if (childStart > atomEnd) throw Invalid("A QuickTime meta prefix exceeds its atom.", payload);
+                    string selected = FindTrackStream(childStart, atomEnd, depth + 1);
+                    if (selected == "Xmp.audio") return selected;
+                    if (selected == "Xmp.video") return selected;
+                }
+                p = atomEnd;
+            }
+            return "Xmp.video";
         }
 
         private void ReadFileType(int p, int end)
@@ -466,56 +530,93 @@ internal static class VideoContainerReader
         }
         private static string BrandName(string brand) => brand switch
         {
-            "qt  " => "Apple QuickTime (.MOV/QT)", "isom" => "MP4 Base Media v1 [IS0 14496-12:2003]",
-            "iso2" => "MP4 Base Media v2 [ISO 14496-12:2005]", "mp41" => "MP4 v1 [ISO 14496-1:ch13]",
-            "avc1" => "MP4 Base w/ AVC ext [ISO 14496-12:2005]", _ => brand
+            "qt  " => "Apple QuickTime (.MOV/QT)",
+            "isom" => "MP4 Base Media v1 [IS0 14496-12:2003]",
+            "iso2" => "MP4 Base Media v2 [ISO 14496-12:2005]",
+            "mp41" => "MP4 v1 [ISO 14496-1:ch13]",
+            "mp42" => "MP4 v2 [ISO 14496-14]",
+            "avc1" => "MP4 Base w/ AVC ext [ISO 14496-12:2005]",
+            "M4A " => "Apple iTunes AAC-LC (.M4A) Audio",
+            "M4V " => "Apple iTunes Video (.M4V) Video",
+            "3gp4" => "3GPP Media (.3GP) Release 4",
+            "3gp5" => "3GPP Media (.3GP) Release 5",
+            _ => brand
         };
+        private static string? VendorName(string vendor) => vendor switch
+        {
+            "FFMP" => "FFmpeg", "appl" => "Apple", "olym" => "Olympus", "GIC " => "General Imaging Co.",
+            "fe20" => "Olympus (fe20)", "pana" => "Panasonic", "KMPI" => "Konica-Minolta", "kdak" => "Kodak",
+            "pent" => "Pentax", "NIKO" or "niko" => "Nikon", "leic" => "Leica", "SMI " => "Sorenson Media Inc.",
+            "mino" => "Minolta", "sany" => "Sanyo", _ => null
+        };
+
         private void ReadMovieHeader(int p, int end)
         {
-            Need(p, 20, end, "QuickTime movie header"); byte version = data[p];
-            Add("Xmp.video.MovieHeaderVersion", version.ToString(CultureInfo.InvariantCulture));
-            int scaleAt = p + (version == 1 ? 20 : 12), durationAt = scaleAt + 4;
-            Need(scaleAt, version == 1 ? 12 : 8, end, "QuickTime movie time values");
-            uint scale = U32BE(scaleAt), duration = U32BE(durationAt);
+            Need(p, 100, end, "QuickTime movie header");
+            Add("Xmp.video.MovieHeaderVersion", data[p].ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.DateUTC", U32BE(p + 4).ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.ModificationDate", U32BE(p + 8).ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.TimeScale", scale.ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.Duration", (scale == 0 ? 0 : duration * 1000UL / scale).ToString(CultureInfo.InvariantCulture));
+            movieTimeScale = Math.Max(1U, U32BE(p + 12));
+            Add("Xmp.video.TimeScale", U32BE(p + 12).ToString(CultureInfo.InvariantCulture));
+            Add("Xmp.video.Duration", ((ulong)U32BE(p + 16) * 1000UL / movieTimeScale).ToString(CultureInfo.InvariantCulture));
+            Add("Xmp.video.PreferredRate", Number(U16BE(p + 20) + U16BE(p + 22) / 100.0));
+            Add("Xmp.video.PreferredVolume", Number((U16BE(p + 24) + U16BE(p + 26) / 1000.0) * 100));
+            string[] tailKeys = ["PreviewTime", "PreviewDuration", "PosterTime", "SelectionTime", "SelectionDuration", "CurrentTime", "NextTrackID"];
+            for (int i = 0; i < tailKeys.Length; i++)
+                Add("Xmp.video." + tailKeys[i], U32BE(p + 72 + i * 4).ToString(CultureInfo.InvariantCulture));
         }
-        private void ReadTrackHeader(int p, int end)
+        private void ReadTrackHeader(int p, int end, string prefix)
         {
-            Need(p, 84, end, "QuickTime track header"); byte version = data[p];
+            Need(p, 84, end, "QuickTime track header");
+            byte version = data[p];
             int baseAt = p + (version == 1 ? 20 : 12);
             Need(baseAt, 72, end, "QuickTime track header fields");
-            Add("Xmp.video.TrackHeaderVersion", version.ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.TrackCreateDate", U32BE(p + 4).ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.TrackModifyDate", U32BE(p + 8).ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.TrackID", U32BE(baseAt).ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.TrackDuration", U32BE(baseAt + 8).ToString(CultureInfo.InvariantCulture));
-            uint w = U32BE(baseAt + 64) >> 16, h = U32BE(baseAt + 68) >> 16;
-            if (w != 0) width = (int)w;
-            if (h != 0) height = (int)h;
-            if (w != 0) Add("Xmp.video.Width", w.ToString(CultureInfo.InvariantCulture));
-            if (h != 0) Add("Xmp.video.Height", h.ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".TrackHeaderVersion", version.ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".TrackCreateDate", U32BE(p + 4).ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".TrackModifyDate", U32BE(p + 8).ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".TrackID", U32BE(baseAt).ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".TrackDuration", (U32BE(baseAt + 8) / movieTimeScale).ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".TrackLayer", U16BE(baseAt + 20).ToString(CultureInfo.InvariantCulture));
+            ushort volume = U16BE(baseAt + 24);
+            Add("Xmp.video.TrackVolume", Number(((volume >> 8) + (volume & 0xFF) * 0.1) * 100));
+            if (prefix == "Xmp.video")
+            {
+                uint w = U32BE(baseAt + 64) >> 16, h = U32BE(baseAt + 68) >> 16;
+                if (w != 0) { width = (int)w; Add("Xmp.video.Width", w.ToString(CultureInfo.InvariantCulture)); }
+                if (h != 0) { height = (int)h; Add("Xmp.video.Height", h.ToString(CultureInfo.InvariantCulture)); }
+            }
         }
-        private void ReadMediaHeader(int p, int end)
+        private void ReadMediaHeader(int p, int end, string prefix)
         {
-            Need(p, 24, end, "QuickTime media header"); byte version = data[p];
-            Add("Xmp.video.MediaHeaderVersion", version.ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.MediaCreateDate", U32BE(p + 4).ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.MediaModifyDate", U32BE(p + 8).ToString(CultureInfo.InvariantCulture));
-            uint scale = U32BE(p + 12), duration = U32BE(p + 16);
-            Add("Xmp.video.MediaTimeScale", scale.ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.MediaDuration", (scale == 0 ? 0 : duration / scale).ToString(CultureInfo.InvariantCulture));
-            Add("Xmp.video.MediaLangCode", U16BE(p + 20).ToString(CultureInfo.InvariantCulture));
+            Need(p, 24, end, "QuickTime media header");
+            Add(prefix + ".MediaHeaderVersion", data[p].ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".MediaCreateDate", U32BE(p + 4).ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".MediaModifyDate", U32BE(p + 8).ToString(CultureInfo.InvariantCulture));
+            mediaTimeScale = Math.Max(1U, U32BE(p + 12));
+            Add(prefix + ".MediaTimeScale", U32BE(p + 12).ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".MediaDuration", (U32BE(p + 16) / mediaTimeScale).ToString(CultureInfo.InvariantCulture));
+            Add(prefix + ".MediaLangCode", U16BE(p + 20).ToString(CultureInfo.InvariantCulture));
         }
-        private void ReadHandler(int p, int end, string parent)
+        private void ReadHandler(int p, int end, string prefix)
         {
-            Need(p, 24, end, "QuickTime handler");
+            Need(p, 20, end, "QuickTime handler");
+            string handlerClass = FourCC(p + 4);
             string handler = FourCC(p + 8);
-            Add("Xmp.video.HandlerType", handler);
+            string vendor = FourCC(p + 12);
+            string? className = handlerClass switch { "dhlr" => "Data Handler", "mhlr" => "Media Handler", _ => null };
+            string? handlerName = handler switch
+            {
+                "alis" => "Alias Data", "crsm" => "Clock Reference", "hint" => "Hint Track", "ipsm" => "IPMP",
+                "m7sm" => "MPEG-7 Stream", "mdir" => "Metadata", "mdta" => "Metadata Tags", "mjsm" => "MPEG-J",
+                "ocsm" => "Object Content", "odsm" => "Object Descriptor", "sdsm" => "Scene Description",
+                "soun" => "Audio Track", "text" => "Text", "tmcd" => "Time Code", "url " => "URL", "vide" => "Video Track", _ => null
+            };
+            string? vendorName = vendor switch { "FFMP" => "FFmpeg", "appl" => "Apple", "olym" => "Olympus", "GIC " => "General Imaging Co.", "pana" => "Panasonic", "pent" => "Pentax", "NIKO" or "niko" => "Nikon", "leic" => "Leica", _ => null };
+            if (className is not null) Add(prefix + ".HandlerClass", className);
+            if (handlerName is not null) Add(prefix + ".HandlerType", handlerName);
+            if (vendorName is not null) Add(prefix + ".HandlerVendorID", vendorName);
         }
-        private void ReadSampleDescription(int p, int end)
+        private void ReadSampleDescription(int p, int end, string prefix)
         {
             Need(p, 8, end, "QuickTime sample description");
             uint count = U32BE(p + 4);
@@ -526,20 +627,67 @@ internal static class VideoContainerReader
                 Need(q, 8, end, "QuickTime sample entry");
                 uint size = U32BE(q); string codec = FourCC(q + 4);
                 if (size < 8 || size > end - q) throw Invalid("A QuickTime sample entry exceeds its atom.", q);
-                Add("Xmp.video.Codec", codec);
-                if (size >= 36)
+                if (prefix == "Xmp.audio")
                 {
-                    ushort w = U16BE(q + 32), h = U16BE(q + 34);
-                    if (w != 0) { width = w; Add("Xmp.video.SourceImageWidth", w.ToString(CultureInfo.InvariantCulture)); }
-                    if (h != 0) { height = h; Add("Xmp.video.SourceImageHeight", h.ToString(CultureInfo.InvariantCulture)); }
+                    if (size >= 36)
+                    {
+                        Add("Xmp.audio.Compressor", codec);
+                        Add("Xmp.audio.ChannelType", U16BE(q + 24).ToString(CultureInfo.InvariantCulture));
+                        Add("Xmp.audio.BitsPerSample", U16BE(q + 26).ToString(CultureInfo.InvariantCulture));
+                        Add("Xmp.audio.SampleRate", Number(U32BE(q + 32) / 65536.0));
+                        string? vendor = VendorName(FourCC(q + 20));
+                        if (vendor is not null) Add("Xmp.audio.VendorID", vendor);
+                    }
+                }
+                else
+                {
+                    Add("Xmp.video.Codec", BrandName(codec));
+                    string? vendor = size >= 24 ? VendorName(FourCC(q + 20)) : null;
+                    if (vendor is not null) Add("Xmp.video.VendorID", vendor);
+                    if (size >= 36)
+                    {
+                        ushort w = U16BE(q + 32), h = U16BE(q + 34);
+                        if (w != 0) { width = w; Add("Xmp.video.SourceImageWidth", w.ToString(CultureInfo.InvariantCulture)); }
+                        if (h != 0) { height = h; Add("Xmp.video.SourceImageHeight", h.ToString(CultureInfo.InvariantCulture)); }
+                    }
+                    if (size >= 86)
+                    {
+                        Add("Xmp.video.XResolution", Number(U32BE(q + 40) / 65536.0));
+                        Add("Xmp.video.YResolution", Number(U32BE(q + 44) / 65536.0));
+                        int compressorLength = Math.Min(data[q + 50], (byte)31);
+                        Add("Xmp.video.Compressor", Text(q + 51, compressorLength, Encoding.Latin1));
+                        Add("Xmp.video.BitDepth", U16BE(q + 82).ToString(CultureInfo.InvariantCulture));
+                    }
                 }
                 q += (int)size;
             }
         }
+        private void ReadTimeToSample(int p, int end, string prefix)
+        {
+            Need(p, 8, end, "QuickTime time-to-sample table");
+            uint entries = U32BE(p + 4);
+            if (entries > limits.MaxEntriesPerDirectory) throw Limit("The QuickTime sample timing count exceeds its budget.", p);
+            Need(p + 8, checked((int)entries * 8), end, "QuickTime sample timing entries");
+            ulong samples = 0, ticks = 0;
+            int q = p + 8;
+            for (uint i = 0; i < entries; i++, q += 8)
+            {
+                uint count = U32BE(q), delta = U32BE(q + 4);
+                samples += count;
+                ticks += (ulong)count * delta;
+            }
+            if (prefix == "Xmp.video" && ticks != 0)
+                Add("Xmp.video.FrameRate", Number((double)samples * mediaTimeScale / ticks));
+        }
         private void ReadVideoHeader(int p, int end)
         {
             Need(p, 12, end, "QuickTime video media header");
-            Add("Xmp.video.GraphicsMode", U16BE(p + 4).ToString(CultureInfo.InvariantCulture));
+            ushort mode = U16BE(p + 4);
+            Add("Xmp.video.GraphicsMode", mode switch
+            {
+                0 => "srcCopy", 1 => "srcOr", 2 => "srcXor", 3 => "srcBic", 4 => "notSrcCopy", 5 => "notSrcOr",
+                6 => "notSrcXor", 7 => "notSrcBic", 8 => "blend", 9 => "transparent", _ => mode.ToString(CultureInfo.InvariantCulture)
+            });
             Add("Xmp.video.OpColor", U16BE(p + 6).ToString(CultureInfo.InvariantCulture));
         }
 
@@ -594,7 +742,7 @@ internal static class VideoContainerReader
                 }
                 if (EbmlMasters.Contains(id.Id))
                 {
-                    int nextTrackType = id.Id == 0xAE ? 0 : trackType;
+                    int nextTrackType = id.Id == 0xAE ? FindEbmlTrackType(payload, payloadEnd) : trackType;
                     ParseEbml(payload, payloadEnd, depth + 1, nextTrackType, path);
                 }
                 else ReadEbmlValue(id.Id, payload, payloadEnd, trackType);
@@ -602,30 +750,81 @@ internal static class VideoContainerReader
                 if (size.Unknown) break;
             }
         }
+        private int FindEbmlTrackType(int start, int end)
+        {
+            int p = start;
+            while (p < end)
+            {
+                EbmlHeader id = EbmlNext(p, end, true);
+                int sizeAt = p + id.HeaderLength;
+                EbmlHeader size = EbmlNext(sizeAt, end, false);
+                int payload = sizeAt + size.HeaderLength;
+                if (size.Unknown || size.PayloadLength > end - payload)
+                    throw Invalid("An EBML TrackEntry child exceeds its parent extent.", p);
+                int payloadEnd = payload + size.PayloadLength;
+                if (id.Id == 0x83 && size.PayloadLength is >= 1 and <= 8)
+                    return (int)Math.Min(ReadUnsigned(payload, size.PayloadLength), int.MaxValue);
+                p = payloadEnd;
+            }
+            return 0;
+        }
+
         private void ReadEbmlValue(ulong id, int p, int end, int trackType)
         {
             int n = end - p; if (n > limits.MaxValueBytes) throw Limit("An EBML value exceeds the value budget.", p);
             string? key = id switch
             {
+                0x4286 => "Xmp.video.EBMLVersion", 0x42F7 => "Xmp.video.EBMLReadVersion",
+                0x4282 => "Xmp.video.DocType", 0x4287 => "Xmp.video.DocTypeVersion", 0x4285 => "Xmp.video.DocTypeReadVersion",
                 0x2AD7B1 => "Xmp.video.TimecodeScale", 0x4489 => "Xmp.video.Duration", 0x4461 => "Xmp.video.DateUTC",
                 0x4D80 => "Xmp.video.MuxingApp", 0x5741 => "Xmp.video.WritingApp", 0x7BA9 => "Xmp.video.Title",
-                0x83 => trackType == 2 ? "Xmp.audio.ChannelType" : "Xmp.video.TrackType",
-                0x86 => trackType == 2 ? "Xmp.audio.Compressor" : "Xmp.video.Codec",
+                0x83 => null, 0x86 => trackType == 2 ? "Xmp.audio.Compressor" : "Xmp.video.Codec",
                 0x23E383 => trackType == 2 ? "Xmp.audio.DefaultDuration" : "Xmp.video.FrameRate",
                 0xB0 => "Xmp.video.Width", 0xBA => "Xmp.video.Height", 0x54B0 => "Xmp.video.DisplayWidth",
-                0x54BA => "Xmp.video.DisplayHeight", 0xB5 => "Xmp.audio.SampleRate", 0x9F => "Xmp.audio.ChannelType",
-                0x6264 => "Xmp.audio.BitsPerSample", 0x22B59C => "Xmp.audio.CodecName", _ => null
+                0x54BA => "Xmp.video.DisplayHeight", 0x54AA => "Xmp.video.CropBottom", 0x54BB => "Xmp.video.CropTop",
+                0x54CC => "Xmp.video.CropLeft", 0x54DD => "Xmp.video.CropRight", 0xB5 => "Xmp.audio.SampleRate",
+                0x9F => "Xmp.audio.ChannelType", 0x6264 => "Xmp.audio.BitsPerSample", 0x22B59C => "Xmp.audio.CodecName",
+                0x536E => "Xmp.video.TrackName", 0x9A => "Xmp.video.VideoScanTpye", _ => null
             };
             if (key is null) return;
-            if (id == 0xB0 && n <= 8) width = (int)Math.Min(ReadUnsigned(p, n), int.MaxValue);
-            if (id == 0xBA && n <= 8) height = (int)Math.Min(ReadUnsigned(p, n), int.MaxValue);
+            if (id == 0xB0 && n is >= 1 and <= 8) width = (int)Math.Min(ReadUnsigned(p, n), int.MaxValue);
+            if (id == 0xBA && n is >= 1 and <= 8) height = (int)Math.Min(ReadUnsigned(p, n), int.MaxValue);
+            if ((n is < 1 or > 8) && id is not (0x86 or 0x4D80 or 0x5741 or 0x7BA9 or 0x22B59C or 0x536E)) return;
             string value;
-            if (id is 0x86 or 0x4D80 or 0x5741 or 0x7BA9 or 0x22B59C) value = Text(p, n, Encoding.UTF8);
+            if (id is 0x86 or 0x4D80 or 0x5741 or 0x7BA9 or 0x22B59C or 0x536E)
+                value = Text(p, n, Encoding.UTF8);
+            else if (id == 0x2AD7B1)
+            {
+                timeCodeScale = ReadUnsigned(p, n) / 1_000_000_000d;
+                value = Number(timeCodeScale);
+            }
+            else if (id == 0x4489 && (n is 4 or 8))
+            {
+                double duration = n == 4 ? BitConverter.Int32BitsToSingle(unchecked((int)U32BE(p))) : BitConverter.Int64BitsToDouble(unchecked((long)U64BE(p)));
+                value = Math.Truncate(duration * timeCodeScale * 1000).ToString(CultureInfo.InvariantCulture);
+            }
+            else if (id == 0x4461 && n is >= 1 and <= 8)
+                value = (ReadUnsigned(p, n) / 1_000_000UL).ToString(CultureInfo.InvariantCulture);
+            else if (id == 0x23E383 && n is >= 1 and <= 8)
+            {
+                ulong duration = ReadUnsigned(p, n);
+                value = trackType == 2 ? Number(duration / 1000d) : (duration == 0 ? "Variable Bit Rate" : Number(1_000_000_000d / duration));
+            }
+            else if (id == 0x9F && n is >= 1 and <= 8) value = EbmlChannelType(ReadUnsigned(p, n));
+            else if (id == 0x9A && n is >= 1 and <= 8) value = ReadUnsigned(p, n) switch { 0 => "Progressive", 1 => "Interlaced", _ => ReadUnsigned(p, n).ToString(CultureInfo.InvariantCulture) };
+            else if (id == 0xB5 && (n is 4 or 8))
+                value = Number(n == 4 ? BitConverter.Int32BitsToSingle(unchecked((int)U32BE(p))) : BitConverter.Int64BitsToDouble(unchecked((long)U64BE(p))));
             else if (n is >= 1 and <= 8) value = ReadUnsigned(p, n).ToString(CultureInfo.InvariantCulture);
-            else if (n is 4 or 8) value = Number(n == 4 ? BitConverter.Int32BitsToSingle(unchecked((int)U32BE(p))) : BitConverter.Int64BitsToDouble(unchecked((long)U64BE(p))));
             else return;
+            if (id == 0x83) return;
             Add(key, value);
         }
+        private static string EbmlChannelType(ulong channels) => channels switch
+        {
+            1 => "Mono", 2 => "Stereo", 5 => "5.1 Surround Sound", 7 => "7.1 Surround Sound",
+            _ => channels.ToString(CultureInfo.InvariantCulture)
+        };
+
         private ulong ReadUnsigned(int p, int n)
         {
             ulong value = 0; for (int i = 0; i < n; i++) value = (value << 8) | data[p + i]; return value;

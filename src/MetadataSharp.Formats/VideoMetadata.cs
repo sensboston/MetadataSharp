@@ -117,8 +117,7 @@ public sealed class VideoMetadata
         "NDXP", "NDXS", "NIKO", "ROSS", "avc1", "caqv", "da0a", "da0b", "da1a", "da1b", "da2a", "da2b", "da3a",
         "da3b", "dmb1", "dmpf", "drc1", "dv1a", "dv1b", "dv2a", "dv2b", "dv3a", "dv3b", "dvr1", "dvt1", "isc2",
         "iso2", "isom", "jpm ", "jpx ", "mj2s", "mjp2", "mmp4", "mp21", "mp41", "mp42", "mp71", "mqt ", "niko",
-        "odcf", "opf2", "opx2", "pana", "qt  ", "sdv ", "ssc1", "ssc2", "dhlr", "mhlr", "alis", "crsm", "hint",
-        "ipsm", "m7sm", "mdir", "mdta", "mjsm", "ocsm", "odsm", "sdsm", "soun", "text", "tmcd", "url ", "vide",
+        "odcf", "opf2", "opx2", "pana", "qt  ", "sdv ", "ssc1", "ssc2",
         "FFMP", "appl", "olym", "GIC ", "fe20", "KMPI", "kdak", "pent", "leic", "pr01", "SMI ", "mino", "sany"
     };
 }
