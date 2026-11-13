@@ -58,6 +58,14 @@ public sealed class MakerNoteInterpretationTests
         return ExifValue.FromRaw(TiffFieldType.SLong, (uint)numbers.Length, Little, bytes);
     }
 
+    private static ExifValue SignedRational(int numerator, int denominator)
+    {
+        var bytes = new byte[8];
+        BinaryPrimitives.WriteInt32LittleEndian(bytes, numerator);
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(4), denominator);
+        return ExifValue.FromRaw(TiffFieldType.SRational, 1, Little, bytes);
+    }
+
     private static ExifValue Rationals(params (uint Numerator, uint Denominator)[] numbers)
     {
         var bytes = new byte[numbers.Length * 8];
@@ -557,6 +565,8 @@ public sealed class MakerNoteInterpretationTests
     {
         Assert.Equal("24-70mm F1.8-2.8", Top(MakerNoteFormat.Sony1, "LensSpec", Bytes(0, 0, 0x24, 0, 0x70, 0x18, 0x28, 0)));
         Assert.Equal("Unknown", Top(MakerNoteFormat.Sony2, "LensSpec", Bytes(0, 0, 0, 0, 0, 0, 0, 0)));
+        Assert.Equal("1.5", Top(MakerNoteFormat.Sony1, "ExposureStandardAdjustment", SignedRational(3, 2)));
+        Assert.Equal("+3/2 EV", Top(MakerNoteFormat.Sony1, "FlashExposureComp", SignedRational(3, 2)));
     }
 
     [Fact]

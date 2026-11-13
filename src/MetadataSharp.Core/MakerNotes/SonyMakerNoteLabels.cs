@@ -27,7 +27,7 @@ internal static partial class MakerNoteLabels
         },
         new(Top, "FlashLevel", [(0, "Normal"), (-1, "-0.3 EV")]),
         new(Top, "FlashExposureComp", [], Form.SonyExposureBias),
-        new(Top, "ExposureStandardAdjustment", [], Form.SonyExposureBias),
+        new(Top, "ExposureStandardAdjustment", [], Form.SonyExposureStandardAdjustment),
         new(Top, "FlexibleSpotPosition", [], Form.SonyFlexibleSpotPosition),
         new(Top, "FocusMode2", [], Form.SonyFocusMode2),
         new(Top, "AFAreaModeSetting", [], Form.SonyAFAreaModeSetting),

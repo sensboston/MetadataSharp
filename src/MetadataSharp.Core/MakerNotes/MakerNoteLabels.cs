@@ -216,6 +216,7 @@ internal static partial class MakerNoteLabels
         NikonLd4FocalLength,
         NikonLd4FocusDistance,
         SonyExposureBias,
+        SonyExposureStandardAdjustment,
         SonyAmbientTemperature,
         SonyMisc1Temperature,
         SonyFocusPosition,
@@ -399,6 +400,8 @@ internal static partial class MakerNoteLabels
                 return NikonLd4FocusDistance(value);
             case Form.SonyExposureBias:
                 return SonyExposureBias(value);
+            case Form.SonyExposureStandardAdjustment:
+                return SonyExposureStandardAdjustment(value);
             case Form.SonyAmbientTemperature:
                 return SonyAmbientTemperature(value, note);
             case Form.SonyMisc1Temperature:
@@ -670,6 +673,14 @@ internal static partial class MakerNoteLabels
                (reducedDenominator == 1 ? "" : "/" + Whole(reducedDenominator)) + " EV";
     }
 
+    private static string? SonyExposureStandardAdjustment(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.SRational ||
+            !ExifTags.TryRational(value, 0, out long numerator, out long denominator) || denominator == 0)
+            return null;
+        return ((decimal)numerator / denominator).ToString("0.0", CultureInfo.InvariantCulture);
+    }
+
     private static long Gcd(long left, long right)
     {
         while (right != 0)
@@ -859,7 +870,15 @@ internal static partial class MakerNoteLabels
     {
         0 => "Auto", 93 => "A5", 94 => "A6", 95 => "A7", 106 => "B2", 107 => "B3", 108 => "B4", 110 => "B5",
         111 => "B6", 112 => "B7", 114 => "B8", 115 => "B9", 116 => "B10", 122 => "C1", 123 => "C2", 124 => "C3",
-        215 => "C4", 127 => "C5", _ => Stored(number),
+        215 => "C4", 127 => "C5", 128 => "C6", 129 => "C7", 131 => "C8", 132 => "C9", 133 => "C10", 134 => "C11",
+        139 => "D1", 140 => "D2", 141 => "D3", 142 => "D4", 144 => "D5", 145 => "D6", 146 => "D7", 148 => "D8",
+        149 => "D9", 150 => "D10", 151 => "D11", 156 => "E1", 157 => "E2", 158 => "E3", 159 => "E4", 161 => "E5",
+        162 => "E6 (Center", 163 => "E7", 165 => "E8", 166 => "E9", 167 => "E10", 168 => "E11", 173 => "F1",
+        174 => "F2", 175 => "F3", 176 => "F4", 178 => "F5", 179 => "F6", 180 => "F7", 182 => "F8", 183 => "F9",
+        184 => "F10", 185 => "F11", 190 => "G1", 191 => "G2", 192 => "G3", 193 => "G4", 195 => "G5", 196 => "G6",
+        197 => "G7", 199 => "G8", 200 => "G9", 201 => "G10", 202 => "G11", 208 => "H2", 209 => "H3", 210 => "H4",
+        212 => "H5", 213 => "H6", 214 => "H7", 216 => "H8", 217 => "H9", 218 => "H10", 229 => "I5", 230 => "I6",
+        231 => "I7", _ => Stored(number),
     };
 
     private static string SonyAfPointSet4(long number) => number switch
