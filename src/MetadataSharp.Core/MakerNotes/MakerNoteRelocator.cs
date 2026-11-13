@@ -100,7 +100,7 @@ internal static class MakerNoteRelocator
         {
             if (tag == 0x1003 && value.FieldType == TiffFieldType.Long && value.Count > 1) return true;
             if (note.Format == MakerNoteFormat.Sony1 && tag == 0x2000 &&
-                value.FieldType == TiffFieldType.Undefined && value.Count == 1 && bytes.SequenceEqual([0])) return true;
+                value.FieldType == TiffFieldType.Undefined && value.Count == 1 && bytes.SequenceEqual(new byte[] { 0 })) return true;
         }
         if (note.Format == MakerNoteFormat.Nikon3)
         {
@@ -118,7 +118,7 @@ internal static class MakerNoteRelocator
         if (note.Format == MakerNoteFormat.Canon && tag == 0x0032 &&
             value.FieldType == TiffFieldType.Long && value.Count > 1 && bytes.IndexOfAnyExcept((byte)0) < 0) return true;
         if (note.Format == MakerNoteFormat.Canon && tag == 0x002D &&
-            value.FieldType == TiffFieldType.Long && value.Count == 1 && bytes.SequenceEqual([0, 0, 0, 0])) return true;
+            value.FieldType == TiffFieldType.Long && value.Count == 1 && bytes.SequenceEqual(new byte[] { 0, 0, 0, 0 })) return true;
         return false;
     }
 
