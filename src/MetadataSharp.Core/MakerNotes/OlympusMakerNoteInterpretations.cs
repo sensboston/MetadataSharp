@@ -18,8 +18,12 @@ internal static class OlympusMakerNoteInterpretations
         }
         if (name == "SpecialMode")
             return SpecialMode(value);
-        if (scope == 0x2020)
-            return CameraSettings(name, value);
+        if (scope == 0x2010) return Equipment(name, value);
+        if (scope == 0x2020) return CameraSettings(name, value);
+        if (scope == 0x2030) return RawDevelopment(name, value);
+        if (scope == 0x2031) return RawDevelopment2(name, value);
+        if (scope == 0x2040) return ImageProcessing(name, value);
+        if (scope == 0x2050) return FocusInfo(name, value);
         if (name == "DigitalZoom")
             return DigitalZoom(value);
 
@@ -40,6 +44,132 @@ internal static class OlympusMakerNoteInterpretations
             "Contrast" => LookupOrStored(number, (0, "High"), (1, "Normal"), (2, "Low")),
             _ => name == "WhiteBalance" ? WhiteBalance(value) : null,
         };
+    }
+
+    private static string? Equipment(string name, ExifValue value)
+    {
+        if (name is "EquipmentVersion") return Version(value);
+        if (name == "LensType" && value.Count == 6 && value.RawBytes.Length >= 6)
+        {
+            ReadOnlySpan<byte> b = value.RawBytes;
+            return (b[0], b[2], b[3]) switch
+            {
+                (0, 19, 16) => "Olympus M.Zuiko Digital 14-42mm F3.5-5.6 II R",
+                (0, 33, 16) => "Olympus M.Zuiko Digital ED 14-42mm F3.5-5.6 EZ",
+                (0, 38, 16) => "Olympus M.Zuiko Digital ED 12-100mm F4.0 IS Pro",
+                (0, 41, 16) => "Olympus M.Zuiko Digital ED 17mm F1.2 Pro",
+                (0, 52, 16) => "Olympus M.Zuiko Digital ED 12-45mm F4.0 Pro",
+                _ => null,
+            };
+        }
+        if (name == "Extender" && value.Count == 6 && value.RawBytes.Length >= 3)
+            return value.RawBytes[0] == 0 ? value.RawBytes[2] switch
+            {
+                0 => "None", 4 => "Olympus Zuiko Digital EC-14 1.4x Teleconverter",
+                8 => "Olympus EX-25 Extension Tube", 16 => "Olympus Zuiko Digital EC-20 2.0x Teleconverter", _ => null,
+            } : null;
+        if (!ExifTags.TryInteger(value, 0, out long number)) return null;
+        return name switch
+        {
+            "FlashType" => LookupOrStored(number, (0, "None"), (2, "Simple E-System"), (3, "E-System")),
+            "FlashModel" => LookupOrStored(number, (0, "None"), (1, "FL-20"), (2, "FL-50"), (3, "RF-11"),
+                (4, "TF-22"), (5, "FL-36"), (6, "FL-50R"), (7, "FL-36R"), (9, "FL-14"), (11, "FL-600R")),
+            _ => null,
+        };
+    }
+
+    private static string? RawDevelopment(string name, ExifValue value)
+    {
+        if (name == "RawDevVersion") return Version(value);
+        if (!ExifTags.TryInteger(value, 0, out long number)) return null;
+        return name switch
+        {
+            "ColorSpace" => LookupOrStored(number, (0, "sRGB"), (1, "Adobe RGB"), (2, "Pro Photo RGB")),
+            "Engine" => LookupOrStored(number, (0, "High Speed"), (1, "High Function"),
+                (2, "Advanced High Speed"), (3, "Advanced High Function")),
+            "EditStatus" => LookupOrStored(number, (0, "Original"), (1, "Edited (Landscape)"),
+                (6, "Edited (Portrait)"), (8, "Edited (Portrait)")),
+            "NoiseReduction" => BitMask(number, (1, "Noise Reduction"), (2, "Noise Filter"), (4, "Noise Filter (ISO Boost)"), (8, "Auto")),
+            "Settings" => BitMask(number, (1, "WB Color Temp"), (4, "WB Gray Point"), (8, "Saturation"),
+                (16, "Contrast"), (32, "Sharpness"), (64, "Color Space"), (128, "High Function"), (256, "Noise Reduction")),
+            _ => null,
+        };
+    }
+
+    private static string? RawDevelopment2(string name, ExifValue value)
+    {
+        if (name == "RawDev2Version") return Version(value);
+        if (!ExifTags.TryInteger(value, 0, out long number)) return null;
+        return name switch
+        {
+            "WhiteBalance" => LookupOrStored(number, (1, "Color Temperature"), (2, "Gray Point")),
+            "ColorSpace" => LookupOrStored(number, (0, "sRGB"), (1, "Adobe RGB"), (2, "Pro Photo RGB")),
+            "Engine" => LookupOrStored(number, (0, "High Speed"), (1, "High Function")),
+            "PictureMode" => LookupOrStored(number, (1, "Vivid"), (2, "Natural"), (3, "Muted"), (256, "Monotone"), (512, "Sepia")),
+            "PM_BWFilter" => LookupOrStored(number, (1, "Neutral"), (2, "Yellow"), (3, "Orange"), (4, "Red"), (5, "Green")),
+            "PMPictureTone" => LookupOrStored(number, (1, "Neutral"), (2, "Sepia"), (3, "Blue"), (4, "Purple"), (5, "Green")),
+            "NoiseReduction" => BitMask(number, (1, "Noise Reduction"), (2, "Noise Filter"), (4, "Noise Filter (ISO Boost)"), (8, "Auto")),
+            "AutoGradation" => LookupOrStored(number, (0, "Off"), (1, "On")),
+            _ => null,
+        };
+    }
+
+    private static string? ImageProcessing(string name, ExifValue value)
+    {
+        if (name == "ImageProcessingVersion") return Version(value);
+        if (name == "MultipleExposureMode" && ExifTags.TryInteger(value, 0, out long exposure))
+            return LookupOrStored(exposure, (0, "Off"), (2, "On (2 frames)"), (3, "On (3 frames)"));
+        if (!ExifTags.TryInteger(value, 0, out long number)) return null;
+        return name switch
+        {
+            "DistortionCorrection" or "ShadingCompensation" => LookupOrStored(number, (0, "Off"), (1, "On")),
+            "AspectRatio" => LookupOrStored(number, (1, "4:3"), (2, "3:2"), (3, "16:9"), (4, "6:6"),
+                (5, "5:4"), (6, "7:6"), (7, "6:5"), (8, "7:5"), (9, "3:4")),
+            "FaceDetect" => LookupOrStored(number, (0, "Off"), (1, "On")),
+            "NoiseReduction" => BitMask(number, (1, "Noise Reduction"), (2, "Noise Filter"),
+                (4, "Noise Filter (ISO Boost)"), (8, "Auto")),
+            _ => null,
+        };
+    }
+
+    private static string? FocusInfo(string name, ExifValue value)
+    {
+        if (name == "FocusInfoVersion") return Version(value);
+        if (name == "FocusDistance") return FocusDistance(value);
+        if (name == "AFPoint" && ExifTags.TryInteger(value, 0, out long point))
+            return LookupOrStored(point, (0, "Left (or n/a)"), (1, "Center (horizontal)"), (2, "Right"),
+                (3, "Center (vertical)"), (255, "None"));
+        if (name == "ExternalFlashBounce" && ExifTags.TryInteger(value, 0, out long bounce))
+            return LookupOrStored(bounce, (0, "Bounce or Off"), (1, "Direct"));
+        if (name == "ManualFlash" && value.Count == 2 && ExifTags.TryInteger(value, 0, out long flash) &&
+            ExifTags.TryInteger(value, 1, out long power))
+            return (flash == 0 ? "Off" : flash == 1 ? "On" : flash.ToString(CultureInfo.InvariantCulture)) + " " +
+                power.ToString(CultureInfo.InvariantCulture);
+        if (!ExifTags.TryInteger(value, 0, out long number)) return null;
+        return name switch
+        {
+            "AutoFocus" or "ExternalFlash" or "InternalFlash" => LookupOrStored(number, (0, "Off"), (1, "On")),
+            _ => null,
+        };
+    }
+
+    private static string? Version(ExifValue value)
+    {
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        if (bytes.Length != 4) return null;
+        string version = Encoding.ASCII.GetString(bytes);
+        return version.All(char.IsAsciiDigit) ? version[..2] + "." + version[2..] : null;
+    }
+
+    private static string? FocusDistance(ExifValue value)
+    {
+        if (value.FieldType != TiffFieldType.Rational || value.Count != 1 || value.RawBytes.Length < 8) return null;
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        bool little = value.ByteOrder == Endianness.LittleEndian;
+        uint numerator = little ? BinaryPrimitives.ReadUInt32LittleEndian(bytes) : BinaryPrimitives.ReadUInt32BigEndian(bytes);
+        uint denominator = little ? BinaryPrimitives.ReadUInt32LittleEndian(bytes[4..]) : BinaryPrimitives.ReadUInt32BigEndian(bytes[4..]);
+        if (numerator == uint.MaxValue) return "Infinity";
+        return ((float)numerator / 1000).ToString("0.00", CultureInfo.InvariantCulture) + " m";
     }
 
     private static string? CameraSettings(string name, ExifValue value)

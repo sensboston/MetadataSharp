@@ -398,6 +398,23 @@ public sealed class MakerNoteInterpretationTests
     }
 
     [Fact]
+    public void AnOlympusEquipmentAndProcessingDirectoryReadsItsReferenceValues()
+    {
+        Assert.Equal("Olympus M.Zuiko Digital ED 14-42mm F3.5-5.6 EZ",
+            Field(MakerNoteFormat.Olympus2, 0x2010, "LensType", Bytes(0, 0, 33, 16, 0, 0)));
+        Assert.Equal("None", Field(MakerNoteFormat.Olympus2, 0x2010, "Extender", Bytes(0, 0, 0, 0, 0, 0)));
+        Assert.Equal("None", Field(MakerNoteFormat.Olympus2, 0x2010, "FlashType", Shorts(0)));
+        Assert.Equal("Advanced High Function", Field(MakerNoteFormat.Olympus2, 0x2030, "Engine", Shorts(3)));
+        Assert.Equal("Edited (Landscape)", Field(MakerNoteFormat.Olympus2, 0x2030, "EditStatus", Shorts(1)));
+        Assert.Equal("Gray Point", Field(MakerNoteFormat.Olympus2, 0x2031, "WhiteBalance", Shorts(2)));
+        Assert.Equal("4:3", Field(MakerNoteFormat.Olympus2, 0x2040, "AspectRatio", Bytes(1, 1)));
+        Assert.Equal("Off", Field(MakerNoteFormat.Olympus2, 0x2040, "MultipleExposureMode", Shorts(0, 1)));
+        Assert.Equal("0.15 m", Field(MakerNoteFormat.Olympus2, 0x2050, "FocusDistance", Rationals((150, 10))));
+        Assert.Equal("Left (or n/a)", Field(MakerNoteFormat.Olympus2, 0x2050, "AFPoint", Shorts(0)));
+        Assert.Equal("Bounce or Off", Field(MakerNoteFormat.Olympus2, 0x2050, "ExternalFlashBounce", Shorts(0)));
+    }
+
+    [Fact]
     public void AnOmSystemNoteUsesTheExiv2Olympus2GroupName()
     {
         var entry = new MakerNoteEntry(0x0209, "CameraID", Undefined(Encoding.ASCII.GetBytes("OM SYSTEM CAMERA\0")), []);
