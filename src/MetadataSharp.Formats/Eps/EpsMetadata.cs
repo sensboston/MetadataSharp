@@ -317,6 +317,8 @@ public sealed class EpsMetadata
         return Splice(postScript, trailerEnd, 0, close);
     }
 
+    // The reference treats ordinary percent comments after EndComments as page content. Move an
+    // existing explicit page marker ahead of such content so its XMP scanner does not see two pages.
     private static byte[] MovePageBeforeImplicitContent(byte[] postScript)
     {
         int at = 0;
@@ -363,7 +365,7 @@ public sealed class EpsMetadata
     private static bool OnlyWhitespace(ReadOnlySpan<byte> line)
     {
         foreach (byte value in line)
-            if (value is not ((byte)' ' or (byte)'\\t' or (byte)'\\r' or (byte)'\\n')) return false;
+            if (value != (byte)' ' && value != (byte)'\t' && value != (byte)'\r' && value != (byte)'\n') return false;
         return true;
     }
 
