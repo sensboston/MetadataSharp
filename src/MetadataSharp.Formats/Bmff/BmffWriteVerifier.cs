@@ -36,6 +36,7 @@ internal static class BmffWriteVerifier
     /// <param name="limits">The budgets the output is read with.</param>
     /// <param name="tiffPlan">The plan of the EXIF block of an item that was edited, or null.</param>
     /// <param name="desired">The EXIF of an item that was added, or null.</param>
+    /// <param name="allowMakerNoteCopy">Whether the plan explicitly adds a MakerNote and its relocation is verified separately.</param>
     internal static void Verify(byte[] source, BmffFileMap before, BmffMetadata readBefore, byte[] output,
         BmffWritePlan plan, MetadataLimits limits, TiffBasedWritePlan? tiffPlan, ExifMetadata? desired,
         bool allowMakerNoteCopy = false)
