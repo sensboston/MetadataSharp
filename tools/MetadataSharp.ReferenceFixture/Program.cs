@@ -2242,17 +2242,19 @@ else if (args.Length == 2 && args[0] == "psd-jp2-exv-write-parity")
         "<rdf:Description rdf:about='' xmlns:xmp='http://ns.adobe.com/xap/1.0/'>" +
         "<xmp:CreatorTool>MSParity</xmp:CreatorTool></rdf:Description></rdf:RDF></x:xmpmeta>"));
     string At(string name) => Path.Combine(args[1], name);
-    File.WriteAllBytes(At("base-psd.psd"), psd);
-    File.WriteAllBytes(At("base-jp2.jp2"), jp2);
-    File.WriteAllBytes(At("base-exv.exv"), MetadataSharp.Formats.Operations.ExvFile.Create(null, null, null));
     File.WriteAllBytes(At("profile.icc"), profile);
     File.WriteAllBytes(At("ours-psd.psd"), MetadataSharp.Formats.Psd.PsdMetadata.Write(psd, exif, iptc, xmp, profile));
     File.WriteAllBytes(At("ours-jp2.jp2"), MetadataSharp.Formats.Jp2.Jp2Metadata.Write(jp2, exif, iptc, xmp, profile));
     File.WriteAllBytes(At("ours-exv.exv"), MetadataSharp.Formats.Operations.ExvFile.Create(exif, iptc, xmp, iccProfile: profile));
+    // Seed the opposite-direction edits with metadata-bearing files that both readers already accept;
+    // the Exiv2 script replaces each value with a distinct value below.
+    File.Copy(At("ours-psd.psd"), At("base-psd.psd"));
+    File.Copy(At("ours-jp2.jp2"), At("base-jp2.jp2"));
+    File.Copy(At("ours-exv.exv"), At("base-exv.exv"));
     File.WriteAllText(At("modify.txt"),
-        "set Exif.Image.Make TestCompany\n" +
-        "set Iptc.Application2.Headline MSParity\n" +
-        "set Xmp.xmp.CreatorTool MSParity\n", new UTF8Encoding(false));
+        "set Exif.Image.Make Exiv2Make\n" +
+        "set Iptc.Application2.Headline Exiv2Headline\n" +
+        "set Xmp.xmp.CreatorTool Exiv2Creator\n", new UTF8Encoding(false));
 }
 else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | bmff-edits DIRECTORY | jpeg-embedded-edits DIRECTORY | png-webp-embedded-edits DIRECTORY | tiff-based-icc-edits DIRECTORY | bmff-icc-edits DIRECTORY | psd-jp2-exv-write-parity DIRECTORY | sync-parity DIRECTORY | operations-parity DIRECTORY | inspect[-xmp|-iptc] FILE"); return 2; }
 return 0;

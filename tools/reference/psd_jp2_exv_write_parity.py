@@ -19,10 +19,15 @@ import tempfile
 from pathlib import Path
 
 
-EXPECTED = {
+OUR_EXPECTED = {
     "Exif.Image.Make": "TestCompany",
     "Iptc.Application2.Headline": "MSParity",
     "Xmp.xmp.CreatorTool": "MSParity",
+}
+EXIV2_EXPECTED = {
+    "Exif.Image.Make": "Exiv2Make",
+    "Iptc.Application2.Headline": "Exiv2Headline",
+    "Xmp.xmp.CreatorTool": "Exiv2Creator",
 }
 FORMATS = (
     ("psd", ".psd", False),
@@ -46,7 +51,7 @@ def run(argv: list[str], *, cwd: Path | None = None, input_text: str | None = No
 
 def check_exiv2_read(exiv2: list[str], image: Path, *, icc: bool, profile: bytes | None) -> None:
     printed = run(exiv2 + ["-Pkycvt", str(image)]).decode("utf-8", errors="replace")
-    for key, value in EXPECTED.items():
+    for key, value in OUR_EXPECTED.items():
         if not any(key in line and value in line for line in printed.splitlines()):
             raise ParityError(f"Exiv2 did not report the expected {key}={value} in {image.name}:\n{printed}")
     if icc:
@@ -58,7 +63,7 @@ def check_exiv2_read(exiv2: list[str], image: Path, *, icc: bool, profile: bytes
 
 def check_dump(dump: list[str], image: Path, *, icc: bool, profile: bytes | None) -> None:
     printed = run(dump + [str(image)]).decode("utf-8", errors="replace")
-    for key, value in EXPECTED.items():
+    for key, value in EXIV2_EXPECTED.items():
         if not any(f"\t{key}\t" in line and value in line for line in printed.splitlines()):
             raise ParityError(f"MetadataSharp did not report the expected {key}={value} in {image.name}:\n{printed}")
     if icc:
@@ -81,7 +86,6 @@ def main() -> int:
     if not exiv2 or not dump:
         raise ParityError("both tool commands must be nonempty")
     profile = (root / "profile.icc").read_bytes()
-    modify = (root / "modify.txt").read_text(encoding="utf-8")
     passed = 0
 
     # MetadataSharp-authored outputs must be consumable by Exiv2. The binary ICC assertion is kept
