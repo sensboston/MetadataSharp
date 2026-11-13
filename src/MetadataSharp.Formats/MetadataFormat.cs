@@ -98,5 +98,17 @@ public enum MetadataFormat
     /// Encapsulated PostScript: a first line of DSC 3.0, or the DOS EPS signature. XMP is what the
     /// format carries, and the only thing read of it.
     /// </summary>
-    Eps
+    Eps,
+
+    /// <summary>ASF: the 16-byte ASF Header GUID.</summary>
+    Asf,
+
+    /// <summary>Matroska or WebM: the four-byte EBML header ID.</summary>
+    Matroska,
+
+    /// <summary>QuickTime-family: an accepted first atom type and major brand.</summary>
+    QuickTime,
+
+    /// <summary>RIFF AVI/WAVE family: the four-byte <c>RIFF</c> marker; the form is validated by the reader.</summary>
+    Riff
 }

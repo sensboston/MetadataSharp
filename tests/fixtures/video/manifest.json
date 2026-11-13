@@ -1,0 +1,45 @@
+{
+  "provenance": "Authored by tools/reference/video_fixtures.py; no media, copied files, or copied parser code.",
+  "files": {
+    "malformed/asf.asf": {
+      "bytes": 420,
+      "sha256": "f70bf0b366f6f8aca18c5621f2f14f47b7ecc576e29cf1391c1eebb60ba95a84"
+    },
+    "malformed/ebml.webm": {
+      "bytes": 12,
+      "sha256": "a49f887428ff42c32952805b377a78fb8ad2d8ed2e295d4408061c6c1d71c769"
+    },
+    "malformed/quicktime.mov": {
+      "bytes": 32,
+      "sha256": "a5b55869f8cbf15d3e154096b8ec94d1fe6413069a52e98fe0304f6a16ba9b5b"
+    },
+    "malformed/riff.wav": {
+      "bytes": 20,
+      "sha256": "4225b32c53458b166263c4aac4a0524e57a571c15ac0c0be265b812f7adf6026"
+    },
+    "valid/authored-asf.asf": {
+      "bytes": 420,
+      "sha256": "ddef8fce935aad2255ae2b347dd5993ab775480bf9ef7f164106349c47af61d1"
+    },
+    "valid/authored-avi.avi": {
+      "bytes": 232,
+      "sha256": "1c3103726005650dfc04aa71fa0982b0067196a4dfeaec186cd2804a04b3940a"
+    },
+    "valid/authored-matroska.mkv": {
+      "bytes": 151,
+      "sha256": "e787e1b74751b189eb6be6440818c72d00321ff58626d1e1026c9c83fb6e7dd0"
+    },
+    "valid/authored-quicktime.mp4": {
+      "bytes": 294,
+      "sha256": "9dbaf326449d86e69263cf0e2e978c5bbbb17361bfdfd5e356c670856926c35e"
+    },
+    "valid/authored-wave.wav": {
+      "bytes": 76,
+      "sha256": "a8883abd5a2fff6a2abead79a4279b903ee0dab2c833c76c9686df7c1e5c32e0"
+    },
+    "valid/authored-webm.webm": {
+      "bytes": 143,
+      "sha256": "c1af7d1099bc3ff48ee77ae96b17b783e629bf4cd0c7f48a4c8ab849e02cf5ad"
+    }
+  }
+}

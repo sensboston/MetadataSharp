@@ -63,6 +63,7 @@ public sealed class ImageMetadata
         IccProfile = iccProfile;
         Comments = Array.AsReadOnly(comments.ToArray());
         Previews = Array.AsReadOnly(previews.ToArray());
+        Video = parts.Video;
         // A stable sort: the errors of one kind keep the order they were met in.
         Errors = Array.AsReadOnly(parts.Errors.OrderBy(error => error.Family).ToArray());
     }
@@ -96,6 +97,9 @@ public sealed class ImageMetadata
     /// file: <c>Previews.Extract</c> returns its bytes from the same file.
     /// </summary>
     public IReadOnlyList<PreviewImage> Previews { get; }
+
+    /// <summary>Container-derived video and audio properties, or null for a non-video format.</summary>
+    public VideoMetadata? Video { get; }
 
     /// <summary>
     /// The kinds of metadata that were not read, in the order of <see cref="MetadataFamily"/>; empty
@@ -137,6 +141,7 @@ public sealed class ImageMetadata
         if (At(header, 0, [0xFF, 0xD8])) return MetadataFormat.Jpeg;
         if (At(header, 0, [0x89, 0x50, 0x4E, 0x47])) return MetadataFormat.Png;
         if (At(header, 0, "RIFF"u8) && At(header, 8, "WEBP"u8)) return MetadataFormat.WebP;
+        if (VideoMetadata.TryDetect(header, out MetadataFormat videoFormat)) return videoFormat;
         if (At(header, 0, "II*\0"u8) || At(header, 0, "MM\0*"u8)) return MetadataFormat.Tiff;
         // ORF ("IIRO", "MMOR") and RW2 ("IIU\0") are TIFF structures under their own identifier.
         if (At(header, 0, "IIRO"u8) || At(header, 0, "MMOR"u8) || At(header, 0, "IIU\0"u8)) return MetadataFormat.Tiff;
@@ -385,6 +390,7 @@ public sealed class ImageMetadata
         internal IptcPacket? Iptc;
         internal XmpPacket? Xmp;
         internal IReadOnlyList<string>? Comments;
+        internal VideoMetadata? Video;
         internal readonly List<MetadataReadError> Errors = [];
 
         /// <summary>Lists one refusal under each of the kinds it kept from being read.</summary>
@@ -436,6 +442,10 @@ public sealed class ImageMetadata
             case MetadataFormat.Tga: break;
             case MetadataFormat.Pgf: ReadPgf(data, limits, parts); break;
             case MetadataFormat.Eps: ReadEps(data, limits, parts); break;
+            case MetadataFormat.Asf:
+            case MetadataFormat.Matroska:
+            case MetadataFormat.QuickTime:
+            case MetadataFormat.Riff: ReadVideo(data, format, limits, parts); break;
         }
 
         // These three readers tell the container themselves and take any bytes: a format the
@@ -640,6 +650,12 @@ public sealed class ImageMetadata
         parts.Exif = metadata.Exif;
         parts.Xmp = metadata.Xmp;
         parts.Refuse(refusals);
+    }
+
+    private static void ReadVideo(ReadOnlySpan<byte> data, MetadataFormat format, MetadataLimits? limits, Parts parts)
+    {
+        try { parts.Video = VideoMetadata.ReadKnown(data, format, limits ?? new MetadataLimits()); }
+        catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Video); }
     }
 
     // ---- the small formats ----

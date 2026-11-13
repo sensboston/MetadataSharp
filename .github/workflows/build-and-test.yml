@@ -54,6 +54,8 @@ jobs:
         run: dotnet restore MetadataSharp.sln
       - name: Build Release
         run: dotnet build MetadataSharp.sln --configuration Release --no-restore
+      - name: Verify authored video fixtures
+        run: python tools/reference/video_fixtures.py verify tests/fixtures/video
       - name: Test offline reference-harness policy
         shell: bash
         run: python -m unittest discover -s tests/reference -v 2>&1 | tee reference.log
@@ -257,7 +259,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: Exiv2 0.28.9 / differential parity
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 20
     env:
       LC_ALL: C
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
@@ -314,6 +316,48 @@ jobs:
           tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
           echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
           artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      # The packaged release binary omits the optional video readers. Build only the pinned 0.28.9
+      # CLI from the checkout above with video enabled, and keep the release binary for other jobs.
+      - name: Build pinned Exiv2 video-enabled oracle
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          cmake -S artifacts/parity/exiv2 -B artifacts/parity/exiv2-video-build \
+            -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
+            -DEXIV2_ENABLE_VIDEO=ON -DEXIV2_ENABLE_XMP=ON -DEXIV2_ENABLE_EXTERNAL_XMP=OFF \
+            -DEXIV2_ENABLE_PNG=OFF -DEXIV2_ENABLE_BMFF=OFF -DEXIV2_ENABLE_BROTLI=OFF \
+            -DEXIV2_ENABLE_INIH=OFF -DEXIV2_ENABLE_LENSDATA=OFF -DEXIV2_ENABLE_NLS=OFF \
+            -DEXIV2_BUILD_SAMPLES=OFF -DEXIV2_BUILD_UNIT_TESTS=OFF -DEXIV2_BUILD_DOC=OFF
+          cmake --build artifacts/parity/exiv2-video-build --parallel 2 --target exiv2
+          artifacts/parity/exiv2-video-build/bin/exiv2 -V
+          echo "VIDEO_EXIV2=$PWD/artifacts/parity/exiv2-video-build/bin/exiv2" >> "$GITHUB_ENV"
+      # Exiv2 0.28.9's video-enabled build still rejects RIFF/WAVE as unknown image type. Assert
+      # that exact known limitation; WAV remains covered by MetadataSharp reader tests. If the oracle
+      # starts supporting it, fail here so it can be added to parity rather than silently skipped.
+      # Every other authored video fixture is read by the pinned tool; the gate enforces exact
+      # key-set parity plus the two explicitly documented AVI value exceptions.
+      - name: Video-container key and value parity (required gate)
+        shell: bash
+        run: |
+          python tools/reference/video_fixtures.py verify tests/fixtures/video
+          if "$VIDEO_EXIV2" -Pkycvt tests/fixtures/video/valid/authored-wave.wav > artifacts/parity/wave-oracle.txt 2>&1; then
+            echo "Pinned Exiv2 now reads the authored WAV; add it to the required video key/value parity set."
+            cat artifacts/parity/wave-oracle.txt
+            exit 1
+          fi
+          grep -F "unknown image type" artifacts/parity/wave-oracle.txt
+          mkdir -p artifacts/parity/video-corpus artifacts/parity/video-generated
+          ln -s "$PWD/artifacts/parity/exiv2/test/data/sample_960x540.asf" artifacts/parity/video-corpus/sample_960x540.asf
+          for fixture in authored-asf.asf authored-avi.avi authored-matroska.mkv authored-quicktime.mp4 authored-webm.webm; do
+            ln -s "$PWD/tests/fixtures/video/valid/$fixture" "artifacts/parity/video-generated/$fixture"
+          done
+          VIDEO_REPORT_DIR="$PWD/artifacts/parity/video"
+          python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
+            --fixtures artifacts/parity/video-corpus --fixtures artifacts/parity/video-generated \
+            --exiv2-command "$VIDEO_EXIV2 -Pkycvt" --require-reference-tags --rows-per-file 1000 \
+            --dump-command "$DUMP" --out "$VIDEO_REPORT_DIR" --title 'PARITY video containers' --annotate
+          test -s "$VIDEO_REPORT_DIR/parity-report.json"
+          python tools/parity/video_gate.py "$VIDEO_REPORT_DIR/parity-report.json"
       # The pinned tree holds one CR3 file and no expectation for it, so the pinned tool reads it here.
       # Two measurements, no gate: key parity of the CMT boxes and the XMP box, and the preview list.
       - name: The CR3 file of the pinned corpus against the pinned tool (exiv2 -Pkycvt, exiv2 -pp)
@@ -488,6 +532,8 @@ jobs:
           path: |
             artifacts/parity/upstream/parity-report.txt
             artifacts/parity/upstream/parity-report.json
+            artifacts/parity/video/parity-report.txt
+            artifacts/parity/video/parity-report.json
             artifacts/parity/preview/preview-report.txt
             artifacts/parity/preview/preview-report.json
             artifacts/parity/icc/icc-report.txt

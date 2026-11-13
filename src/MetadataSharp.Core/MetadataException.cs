@@ -90,7 +90,10 @@ public enum MetadataErrorCode
     InvalidTga,
 
     /// <summary>The file is not a PGF file, its header does not lie inside it, or the image the header places does not read.</summary>
-    InvalidPgf
+    InvalidPgf,
+
+    /// <summary>A video container is malformed or truncated.</summary>
+    InvalidVideoContainer
 }
 
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>
