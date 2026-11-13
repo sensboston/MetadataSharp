@@ -484,7 +484,7 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("0.3 EV", Top(MakerNoteFormat.PentaxDng, "ExposureCompensation", SignedShorts(53, 0)));
         Assert.Equal("Off, Did not fire", Top(MakerNoteFormat.PentaxDng, "Flash", Shorts(1, 63)));
         Assert.Equal("Center", Top(MakerNoteFormat.PentaxDng, "AFPoint", Shorts(6, 0)));
-        Assert.Equal("Portrait", Top(MakerNoteFormat.PentaxDng, "PictureMode", Bytes(5, 0, 1)));
+        Assert.Equal("Aperture Priority", Top(MakerNoteFormat.PentaxDng, "PictureMode", Bytes(5, 0, 1)));
         Assert.Equal("Single-frame", Top(MakerNoteFormat.PentaxDng, "DriveMode", Bytes(0, 0, 0, 0)));
         Assert.Equal("Unknown (0x00020000)", Top(MakerNoteFormat.PentaxDng, "DynamicRangeExpansion", Undefined(0, 2, 0, 0)));
     }

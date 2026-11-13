@@ -9,7 +9,9 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import re
 import zlib
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -23,14 +25,24 @@ MATCH_INTERPRETED = "match-interpreted"
 INTERPRETED_DIFF = "interpreted-diff"
 NOT_INTERPRETED_TRANSLATED = "not-interpreted-translated"
 
-# Each exception is an exact key and a rationale, not a family-wide exemption.  Keep this empty
-# until a corpus-measured limitation has been investigated and described in the PR.
+# Interpretation exception: Exiv2 obtains this name from its separately maintained lens-ID database.
 DOCUMENTED_EXCEPTIONS: dict[str, str] = {
     "Exif.PentaxDng.LensType": (
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."
     ),
 }
+
+# The parser deliberately refuses these two damaged/over-budget inputs. These are exact pinned corpus
+# files and exact refusal codes, not an exemption for the MakerNote family or for similar future files.
+DOCUMENTED_FILE_REFUSALS: dict[str, tuple[str, str]] = {
+    "exiv2:issue_1706_poc.exv": ("LimitExceeded", "the EXIF directory exceeds configured reader limits"),
+    "exiv2:issue_1920_poc.tiff": ("InvalidExif", "the EXIF structure is malformed"),
+}
+
+# The reader exposes unnamed raw tags as 0xNNNN keys. Exiv2 has no corresponding named key, so these
+# are informative extras, not discrepancies in a key that both tools print.
+OPAQUE_NUMERIC_KEY = re.compile(r"^Exif\.[A-Za-z0-9]+\.0x[0-9a-fA-F]{4,8}$")
 
 
 def group_metrics(report: dict[str, Any], group: str) -> dict[str, int]:
@@ -76,39 +88,65 @@ def evaluate(report: dict[str, Any], groups: list[str],
         )
         if metrics["interpreted_keys_found"] == 0:
             failures.append(f"{group}: no reference-translated corpus values were measured")
-        if metrics["missing_keys"] or metrics["extra_keys"] or metrics["not_read"] or metrics["raw_value_different"]:
+        if metrics["missing_keys"] or metrics["raw_value_different"]:
             failures.append(
-                f"{group}: raw parity has missing={metrics['missing_keys']}, extra={metrics['extra_keys']}, "
-                f"not-read={metrics['not_read']}, value-diff={metrics['raw_value_different']}"
+                f"{group}: raw parity has missing={metrics['missing_keys']}, "
+                f"value-diff={metrics['raw_value_different']}"
             )
 
         rows_seen = 0
+        opaque_extras = 0
+        refused_rows: Counter[str] = Counter()
+        key_exception_rows: Counter[str] = Counter()
         for file in report["per_file"]:
             if file.get("rows_dropped", 0):
                 # The caller requests a high row limit for the corpus; fail closed if any rows were cut.
                 failures.append(f"{group}: {file.get('label')}: report dropped rows")
                 continue
+            label = file.get("label", "")
             for row in file.get("rows", []):
                 key = row.get("key", "")
                 if not key.startswith(group + "."):
                     continue
                 rows_seen += 1
-                if key in exceptions:
-                    continue
                 outcome = row.get("outcome")
-                if outcome in (MISSING_KEY, EXTRA_KEY, VALUE_DIFF, NOT_READ):
-                    failures.append(f"{group}: {file.get('label')} {key}: raw outcome {outcome}")
+                if outcome == EXTRA_KEY:
+                    if OPAQUE_NUMERIC_KEY.fullmatch(key):
+                        opaque_extras += 1
+                    else:
+                        failures.append(f"{group}: {label} {key}: raw outcome {outcome}")
+                    continue
+                if outcome == NOT_READ:
+                    refusal = DOCUMENTED_FILE_REFUSALS.get(label)
+                    if refusal is not None and file.get("detail") == refusal[0] and file.get("status") == "refused":
+                        refused_rows[label] += 1
+                        continue
+                    failures.append(f"{group}: {label} {key}: raw outcome {outcome} ({file.get('detail', '')})")
+                    continue
+                if key in exceptions:
+                    if row.get("translated") is True:
+                        key_exception_rows[key] += 1
+                    continue
+                if outcome in (MISSING_KEY, VALUE_DIFF, MATCH_KEY):
+                    failures.append(f"{group}: {label} {key}: raw outcome {outcome}")
                 if row.get("translated") is True and row.get("interpreted") != MATCH_INTERPRETED:
                     failures.append(
-                        f"{group}: {file.get('label')} {key}: interpreted={row.get('interpreted')!r}, "
+                        f"{group}: {label} {key}: interpreted={row.get('interpreted')!r}, "
                         f"ours={row.get('our_interpreted', row.get('our_value', ''))!r}, "
                         f"Exiv2={row.get('their_interpreted', '')!r}"
                     )
         if rows_seen == 0:
             failures.append(f"{group}: no report rows were available (check row limit and group spelling)")
+        if opaque_extras:
+            output.append(f"    retained numeric unknown-tag rows: {opaque_extras} (no Exiv2 named key exists)")
+        for label, count in sorted(refused_rows.items()):
+            output.append(f"    documented reader refusal: {label}: {count} MakerNote rows; {DOCUMENTED_FILE_REFUSALS[label][1]}")
         for key, reason in exceptions.items():
             if key.startswith(group + "."):
-                output.append(f"    documented exception: {key}: {reason}")
+                output.append(
+                    f"    documented interpretation exception: {key}: "
+                    f"{key_exception_rows[key]} translated rows; {reason}"
+                )
 
     if failures:
         output.append("FAIL")

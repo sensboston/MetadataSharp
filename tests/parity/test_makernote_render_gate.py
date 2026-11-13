@@ -51,6 +51,41 @@ class MakerNoteRenderGateTests(unittest.TestCase):
                 self.assertFalse(passed)
                 self.assertIn("value-diff=1", message)
 
+    def test_unknown_numeric_tag_fallback_is_counted_but_does_not_fail_raw_parity(self):
+        report = self.report()
+        report["by_family"][self.GROUP]["extra-key"] = 1
+        report["per_file"][0]["rows"].append({
+            "key": self.GROUP + ".0x006b", "outcome": "extra-key",
+        })
+        passed, message = gate.evaluate(report, [self.GROUP])
+        self.assertTrue(passed, message)
+        self.assertIn("retained numeric unknown-tag rows: 1", message)
+
+    def test_named_extra_key_still_fails(self):
+        report = self.report()
+        report["by_family"][self.GROUP]["extra-key"] = 1
+        report["per_file"][0]["rows"].append({
+            "key": self.GROUP + ".UnexpectedNamedTag", "outcome": "extra-key",
+        })
+        passed, message = gate.evaluate(report, [self.GROUP])
+        self.assertFalse(passed)
+        self.assertIn("raw outcome extra-key", message)
+
+    def test_exact_documented_file_refusal_is_scoped_by_name_and_reason(self):
+        report = self.report()
+        report["by_family"][self.GROUP] = {"not-read": 1}
+        report["per_file"] = [{
+            "label": "exiv2:issue_1706_poc.exv", "detail": "LimitExceeded", "status": "refused",
+            "rows_dropped": 0, "rows": [{"key": self.GROUP + ".Quality", "outcome": "not-read"}],
+        }]
+        passed, message = gate.evaluate(report, [self.GROUP])
+        self.assertTrue(passed, message)
+        self.assertIn("documented reader refusal", message)
+        report["per_file"][0]["detail"] = "InvalidExif"
+        passed, message = gate.evaluate(report, [self.GROUP])
+        self.assertFalse(passed)
+        self.assertIn("raw outcome not-read", message)
+
     def test_truncated_rows_fail_closed(self):
         passed, message = gate.evaluate(self.report(rows_dropped=1), [self.GROUP])
         self.assertFalse(passed)
