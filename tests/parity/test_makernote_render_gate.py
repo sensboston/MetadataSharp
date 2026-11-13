@@ -137,6 +137,39 @@ class MakerNoteRenderGateTests(unittest.TestCase):
         self.assertFalse(passed)
         self.assertIn("raw parity has missing=0, value-diff=1", message)
 
+    def test_all_maker_note_group_discovery_includes_raw_only_vendors(self):
+        report = {
+            "by_family": {
+                "Exif.Image": {"match-value": 1},
+                "Exif.Photo": {"match-value": 1},
+                "Exif.Iop": {"match-value": 1},
+                "Exif.SubImage1": {"match-value": 1},
+                "Exif.Panasonic": {"match-value": 1},
+                "Exif.OlympusCs": {"extra-key": 1},
+                "Exif.Casio": {"match-value": 1},
+            },
+            "interpreted": {"by_family": {"Exif.OlympusCs": {"not-interpreted-translated": 2}}},
+        }
+        self.assertEqual(gate.maker_note_groups(report), ["Exif.Casio", "Exif.OlympusCs", "Exif.Panasonic"])
+
+    def test_raw_only_maker_note_family_is_still_gated(self):
+        group = "Exif.Kodak"
+        report = {
+            "by_family": {group: {"match-value": 1}},
+            "interpreted": {"by_family": {}},
+            "per_file": [{"label": "exiv2:sample.jpg", "rows_dropped": 0, "rows": [
+                {"key": group + ".0x0001", "outcome": "match-value"},
+            ]}],
+        }
+        passed, message = gate.evaluate(report, [group])
+        self.assertTrue(passed, message)
+        self.assertIn("interpreted keys found/equal=0/0", message)
+        report["by_family"][group] = {"missing-key": 1}
+        report["per_file"][0]["rows"][0]["outcome"] = "missing-key"
+        passed, message = gate.evaluate(report, [group])
+        self.assertFalse(passed)
+        self.assertIn("raw parity has missing=1", message)
+
     def test_inventory_orders_largest_unrendered_gap_first(self):
         report = {
             "by_family": {},

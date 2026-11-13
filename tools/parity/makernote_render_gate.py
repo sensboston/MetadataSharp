@@ -95,6 +95,20 @@ DOCUMENTED_FILE_REFUSALS: dict[str, tuple[str, str]] = {
 # The reader exposes unnamed raw tags as 0xNNNN keys. Exiv2 has no corresponding named key, so these
 # are informative extras, not discrepancies in a key that both tools print.
 OPAQUE_NUMERIC_KEY = re.compile(r"^Exif\.[A-Za-z0-9]+\.0x[0-9a-fA-F]{4,8}$")
+STANDARD_EXIF_GROUPS = {"Exif.Image", "Exif.Photo", "Exif.Thumbnail", "Exif.GPSInfo", "Exif.Iop"}
+SUBIMAGE_GROUP = re.compile(r"^Exif\.SubImage[0-9]+$")
+
+
+def maker_note_groups(report: dict[str, Any]) -> list[str]:
+    """Every non-standard EXIF family printed by the dump is a vendor MakerNote group.
+
+    This discovers groups from raw and interpreted outcomes alike, including vendors with no
+    translated fields yet, so adding a corpus MakerNote cannot silently leave it outside the gate.
+    """
+    groups = set(report.get("by_family", {})) | set(report.get("interpreted", {}).get("by_family", {}))
+    return sorted(group for group in groups
+                  if group.startswith("Exif.") and group not in STANDARD_EXIF_GROUPS
+                  and not SUBIMAGE_GROUP.fullmatch(group))
 
 
 def group_metrics(report: dict[str, Any], group: str) -> dict[str, int]:
@@ -120,7 +134,8 @@ def group_metrics(report: dict[str, Any], group: str) -> dict[str, int]:
 def inventory(report: dict[str, Any]) -> list[tuple[str, dict[str, int]]]:
     groups = set(report.get("by_family", {})) | set(report.get("interpreted", {}).get("by_family", {}))
     rows = [(group, group_metrics(report, group)) for group in groups if group.startswith("Exif.")]
-    return sorted((row for row in rows if row[1]["interpreted_keys_found"] or row[1]["missing_keys"]),
+    return sorted((row for row in rows if row[1]["interpreted_keys_found"] or row[1]["keys_found"] or
+                   row[1]["missing_keys"] or row[1]["not_read"]),
                   key=lambda row: (-row[1]["unrendered"] - row[1]["interpreted_different"], row[0]))
 
 
@@ -138,8 +153,8 @@ def evaluate(report: dict[str, Any], groups: list[str],
             f"{metrics['interpreted_keys_found']}/{metrics['interpreted_values_equal']}; "
             f"raw keys found/equal={metrics['keys_found']}/{metrics['raw_values_equal']}"
         )
-        if metrics["interpreted_keys_found"] == 0:
-            failures.append(f"{group}: no reference-translated corpus values were measured")
+        if metrics["interpreted_keys_found"] == 0 and metrics["keys_found"] == 0 and metrics["missing_keys"] == 0:
+            failures.append(f"{group}: no comparable MakerNote rows were measured")
         if metrics["missing_keys"] or metrics["raw_value_different"]:
             failures.append(
                 f"{group}: raw parity has missing={metrics['missing_keys']}, "
@@ -260,6 +275,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("report", type=Path)
     parser.add_argument("--require", action="append", default=[], metavar="EXIF.GROUP",
                         help="require interpreted and raw parity for a completed group; repeatable")
+    parser.add_argument("--require-all-maker-notes", action="store_true",
+                        help="also require raw and interpreted parity for every non-standard EXIF group present in the report")
     parser.add_argument("--inventory", action="store_true", help="emit the corpus group inventory as one notice")
     args = parser.parse_args(argv)
     try:
@@ -276,6 +293,8 @@ def main(argv: list[str] | None = None) -> int:
                   f"{metrics['interpreted_keys_found']}/{metrics['interpreted_values_equal']}; "
                   f"gap={gap}; raw keys found/equal={metrics['keys_found']}/{metrics['raw_values_equal']}")
         print(f"::notice title=MakerNote interpreter inventory::{encode_inventory(rows)}")
+    if args.require_all_maker_notes:
+        args.require = list(dict.fromkeys([*args.require, *maker_note_groups(report)]))
     if not args.require:
         return 0
     passed, message = evaluate(report, args.require, DOCUMENTED_EXCEPTIONS)
