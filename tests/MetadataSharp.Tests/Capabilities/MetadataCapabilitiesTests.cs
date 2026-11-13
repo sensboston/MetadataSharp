@@ -405,6 +405,7 @@ public sealed class MetadataCapabilitiesTests
     public void TheTiffBasedWriterHasTheSameRowsForEveryFormatItsLayoutTestsCover()
     {
         // TiffBasedWriteTests runs on a layout of each of these kinds; RW2 is edited in place only.
+        // The separate ICC writer contract adds three rows (read, replace, remove) to each TIFF-based RAW.
         MetadataContainer[] appendable = [MetadataContainer.Tiff, MetadataContainer.Dng, MetadataContainer.Arw, MetadataContainer.Cr2,
             MetadataContainer.Nef, MetadataContainer.Orf, MetadataContainer.Pef];
         foreach (MetadataContainer container in appendable)
@@ -415,7 +416,7 @@ public sealed class MetadataCapabilitiesTests
                 foreach (MetadataOperation write in new[] { MetadataOperation.Insert, MetadataOperation.Replace, MetadataOperation.Remove })
                     Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(container, family, write));
             }
-        Assert.Equal(3, MetadataCapabilities.All.Count(row => row.Container == MetadataContainer.Rw2));
+        Assert.Equal(6, MetadataCapabilities.All.Count(row => row.Container == MetadataContainer.Rw2));
         Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Replace));
         Assert.Equal(CapabilityStatus.NotSupported, MetadataCapabilities.GetStatus(MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Insert));
     }
@@ -480,9 +481,11 @@ public sealed class MetadataCapabilitiesTests
     public void TheIccAndCommentReadersHaveARowForEveryKindTheirTestsCover()
     {
         // IccProfileTests and CommentTests author a file of each of these kinds. The profile is
-        // returned as bytes, which is Extract; of a TIFF only the first directory is looked at.
+        // returned as bytes, which is Extract; of TIFF-based files only the primary directory is looked at.
         MetadataContainer[] profiles = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.WebP, MetadataContainer.Tiff,
-            MetadataContainer.Avif, MetadataContainer.Exv, MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Psd];
+            MetadataContainer.Dng, MetadataContainer.Arw, MetadataContainer.Avif, MetadataContainer.Cr2, MetadataContainer.Exv,
+            MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Nef, MetadataContainer.Orf,
+            MetadataContainer.Pef, MetadataContainer.Psd, MetadataContainer.Rw2, MetadataContainer.Sr2, MetadataContainer.Srw];
         // The comment of a CRW file is a record of its heap: CrwMetadata reads it, and RawContainerTests authors one.
         MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Crw, MetadataContainer.Exv, MetadataContainer.Pgf];
         CapabilityDescriptor[] extracted = MetadataCapabilities.All.Where(row => row.Operation == MetadataOperation.Extract).ToArray();
@@ -495,7 +498,10 @@ public sealed class MetadataCapabilitiesTests
         {
             // Nothing but the profile is extracted through this table.
             Assert.Equal(MetadataFamily.Icc, row.Family);
-            Assert.Equal(row.Container == MetadataContainer.Tiff ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
+            Assert.Equal(row.Container is MetadataContainer.Tiff or MetadataContainer.Dng or MetadataContainer.Arw or
+                MetadataContainer.Cr2 or MetadataContainer.Nef or MetadataContainer.Orf or MetadataContainer.Pef or
+                MetadataContainer.Rw2 or MetadataContainer.Sr2 or MetadataContainer.Srw
+                    ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
             Assert.StartsWith("IccProfiles.Read: ", row.Note);
             Assert.Contains("not interpreted", row.Note);
         }

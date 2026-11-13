@@ -113,5 +113,7 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except ParityError as error:
+        message = str(error).replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
         print(f"write parity failed: {error}", file=sys.stderr)
+        print(f"::error title=PSD JP2 EXV write parity::{message}", file=sys.stderr)
         raise SystemExit(1)
