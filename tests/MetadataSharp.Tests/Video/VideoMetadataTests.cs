@@ -45,6 +45,24 @@ public sealed class VideoMetadataTests
     }
 
     [Fact]
+    public void QuickTimeUuidXmpRemainsOpaqueLikeThePinnedReader()
+    {
+        ImageMetadata image = ImageMetadata.Read(Fixture("valid", "authored-quicktime.mp4"));
+        Assert.NotNull(image.Video);
+        Assert.Null(image.Xmp);
+        Assert.Null(image.Exif);
+        Assert.Null(image.Iptc);
+    }
+
+    [Fact]
+    public void AuthoredAviRetainsPinnedBitmapInfoCursorValues()
+    {
+        VideoMetadata video = VideoMetadata.Read(Fixture("valid", "authored-avi.avi"));
+        Assert.Equal("1816", video["Xmp.video.NumIfImpColours"]!.Value);
+        Assert.Equal("1263424842", video["Xmp.video.NumOfColours"]!.Value);
+    }
+
+    [Fact]
     public void AuthoredAsfExposesStreamTimingAndPinnedCodecRouting()
     {
         VideoMetadata video = VideoMetadata.Read(Fixture("valid", "authored-asf.asf"));

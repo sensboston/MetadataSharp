@@ -98,7 +98,10 @@ def fixtures() -> dict[str, bytes]:
     mvhd[20:24] = (1 << 16).to_bytes(4, "big")
     mvhd[24:26] = (1 << 8).to_bytes(2, "big")
     mvhd_atom = atom(b"mvhd", bytes(mvhd))
-    qt = ftyp + atom(b"moov", mvhd_atom + atom(b"free", b"authored"))
+    xmp_uuid = bytes.fromhex("be7acfcb97a942e89c71999491e3afac")
+    xmp_packet = b'<x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/></x:xmpmeta>'
+    qt = (ftyp + atom(b"moov", mvhd_atom + atom(b"free", b"authored")) +
+          atom(b"uuid", xmp_uuid + xmp_packet))
 
     fmt = ((1).to_bytes(2, "little") + (2).to_bytes(2, "little") + (44100).to_bytes(4, "little") +
            (176400).to_bytes(4, "little") + (4).to_bytes(2, "little") + (16).to_bytes(2, "little"))
@@ -112,6 +115,8 @@ def fixtures() -> dict[str, bytes]:
     strh += bytes(16)
     strf = (40).to_bytes(4, "little") + (320).to_bytes(4, "little", signed=True) + (240).to_bytes(4, "little", signed=True)
     strf += (1).to_bytes(2, "little") + (24).to_bytes(2, "little") + b"DIB " + (320 * 240 * 3).to_bytes(4, "little") + bytes(16)
+    # Exiv2 0.28.9 consumes pixel-per-meter fields as QWORDs, placing the two color reads at +40/+44.
+    strf += (1263424842).to_bytes(4, "little") + (1816).to_bytes(4, "little")
     hdrl = chunk(b"avih", avih) + chunk(b"LIST", b"strl" + chunk(b"strh", strh) + chunk(b"strf", strf))
     avi = riff(b"AVI ", chunk(b"LIST", b"hdrl" + hdrl) + chunk(b"LIST", b"movi"))
 
