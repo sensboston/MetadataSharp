@@ -79,6 +79,24 @@ public sealed class VendorMakerNoteTests
     private static byte[] Header(string signature, params byte[] tail) =>
         [.. Encoding.ASCII.GetBytes(signature), .. tail];
 
+    private static byte[] WrapLongMake(string make, byte[] note)
+    {
+        byte[] makeBytes = Encoding.ASCII.GetBytes(make + "\0");
+        int exifIfd = (38 + makeBytes.Length + 1) & ~1;
+        int makerNoteStart = exifIfd + 18;
+        var bytes = new byte[makerNoteStart + note.Length + (note.Length & 1)];
+        bytes[0] = bytes[1] = (byte)'I';
+        U16(bytes, 2, 42, false); U32(bytes, 4, 8, false);
+        U16(bytes, 8, 2, false);
+        Entry(bytes, 10, 0x010F, 2, makeBytes.Length, 38, false);
+        Entry(bytes, 22, 0x8769, 4, 1, exifIfd, false);
+        makeBytes.CopyTo(bytes, 38);
+        U16(bytes, exifIfd, 1, false);
+        Entry(bytes, exifIfd + 2, 0x927C, 7, note.Length, makerNoteStart, false);
+        note.CopyTo(bytes, makerNoteStart);
+        return bytes;
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -87,6 +105,16 @@ public sealed class VendorMakerNoteTests
         byte[] note = Note(Header("FUJIFILM", 12, 0, 0, 0), false, 0x1000, text => text);
         MakerNoteEntry entry = Single(Wrap(outerBig, "FUJIFILM", note), MakerNoteFormat.Fujifilm, Endianness.LittleEndian);
         Assert.Equal("Quality", entry.Name);
+    }
+
+    [Fact]
+    public void FujifilmRecognizesTheLegacyFujiPhotoFilmMake()
+    {
+        byte[] note = Note(Header("FUJIFILM", 12, 0, 0, 0), false, 0x8002, text => text);
+        var metadata = ExifTiffReader.Read(WrapLongMake("FUJI PHOTO FILM CO., LTD.", note)).Metadata;
+        MakerNote makerNote = Assert.IsType<MakerNote>(metadata.MakerNote);
+        Assert.Equal(MakerNoteFormat.Fujifilm, makerNote.Format);
+        Assert.Equal("OrderNumber", Assert.Single(makerNote.Entries).Name);
     }
 
     [Fact]

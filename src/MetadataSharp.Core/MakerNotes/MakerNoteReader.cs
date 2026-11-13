@@ -20,7 +20,7 @@ internal static class MakerNoteReader
         if (make.StartsWith("Canon"u8))
             return CanonMakerNoteReader.TryRead(tiff, start, length, order, limits, retainedBudget);
         int end = start + length;
-        if (make.StartsWith("FUJIFILM"u8))
+        if (make.StartsWith("FUJIFILM"u8) || make.StartsWith("FUJI PHOTO FILM"u8))
         {
             // "FUJIFILM", then a little-endian offset of the IFD; all offsets count from the MakerNote.
             if (!note.StartsWith("FUJIFILM"u8) || length < 12)
