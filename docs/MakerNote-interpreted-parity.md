@@ -5,7 +5,7 @@ Reference: Exiv2 0.28.9, commit `b0859fc61fea5dedfc898aece6b15893ddf4314e`. Coun
 | Order | Vendor group | Baseline found / equal | After found / equal | Baseline gap |
 |---:|---|---:|---:|---:|
 | 1 | `Exif.CanonSi` | 976 / 491 | pending | 485 |
-| 2 | `Exif.Fujifilm` | 466 / 0 | pending | 466 |
+| 2 | `Exif.Fujifilm` | 466 / 0 | 466 / 466 | 466 |
 | 3 | `Exif.CanonCs` | 1495 / 1286 | pending | 209 |
 | 4 | `Exif.Canon` | 355 / 269 | pending | 86 |
 | 5 | `Exif.CanonFi` | 519 / 442 | pending | 77 |
