@@ -46,6 +46,8 @@ def evaluate(report: dict[str, Any]) -> tuple[bool, str]:
         label = f"{entry.get('corpus')}:{entry.get('label')}"
         if entry.get("status") != "ok":
             failures.append(f"{label}: reader status {entry.get('status')} ({entry.get('detail', '')})")
+        if entry.get("rows_dropped", 0):
+            failures.append(f"{label}: parity report dropped {entry['rows_dropped']} rows; key/value gate requires complete rows")
         for row in entry.get("rows", []):
             outcome, key = row.get("outcome"), row.get("key", "")
             if outcome == "extra-key":

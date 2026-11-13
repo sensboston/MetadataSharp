@@ -47,6 +47,13 @@ class VideoGateTests(unittest.TestCase):
         self.assertIn("ours-only keys (must be removed): Xmp.video.Extra", message)
         self.assertIn("reference-only keys (must be implemented): Xmp.video.Missing", message)
 
+    def test_truncated_rows_fail_closed_instead_of_claiming_key_set_parity(self):
+        report = self.report()
+        report["per_file"][0]["rows_dropped"] = 1
+        passed, message = video_gate.evaluate(report)
+        self.assertFalse(passed)
+        self.assertIn("key/value gate requires complete rows", message)
+
     def test_missing_authored_mkv_fails_the_gate(self):
         report = self.report()
         report["per_file"] = [entry for entry in report["per_file"] if entry["label"] != "authored-matroska.mkv"]
