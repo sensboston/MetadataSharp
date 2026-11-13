@@ -299,6 +299,9 @@ internal static partial class MakerNoteLabels
             return null;
         if (format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2)
             cameraModel ??= SonyModelFromNote(note);
+        // Nikon's ISOInfo stores the same expansion vocabulary in two fields.
+        if (format == MakerNoteFormat.Nikon3 && scope == 0x0025 && name == "ISOExpansion2")
+            name = "ISOExpansion";
         // Every Nikon array that has a version starts with it, and the note has one of its own.
         if (format == MakerNoteFormat.Nikon3 && name == "Version")
             return Version(value);
