@@ -203,9 +203,11 @@ public sealed class SmallFormatTests
         // The reference tells a version 1 file by its name alone, which the library never has.
         Assert.False(TgaMetadata.HasSignature(Tga(320, 240, footer: false)));
         Assert.Equal(MetadataErrorCode.InvalidTga, Assert.Throws<MetadataException>(() => TgaMetadata.Read(Tga(320, 240, footer: false))).Code);
-        // The smallest file that can carry the footer: the header is the twelve bytes before it, and the
-        // reference reads the size out of them without looking at what they mean.
+        // The smallest file that can carry the footer: the twelve bytes before it are read as the
+        // header, and the reference takes the size out of them without looking at what they mean.
         Assert.Equal(0, TgaMetadata.Read([.. new byte[8], .. Encoding.ASCII.GetBytes("TRUEVISION-XFILE"), 0, 0]).Width);
+        // The footer is what tells the format, and it is the last twenty-six bytes and nothing earlier.
+        Assert.False(TgaMetadata.HasSignature([.. Encoding.ASCII.GetBytes("TRUEVISION-XFILE"), .. new byte[10]]));
     }
 
     [Fact]
@@ -281,9 +283,11 @@ public sealed class SmallFormatTests
         string newline = "\n", string header = "%%BoundingBox: 0 0 100 100", bool announce = true) =>
         Encoding.Latin1.GetBytes(
             firstLine + newline + header + newline +
-            (announce ? "%%ADO_ContainsXMP: MainFirst" + newline : "") +
+            (announce ? "%ADO_ContainsXMP: MainFirst" + newline : "") +
             "%%EndComments" + newline +
-            packet + newline + trailer + newline +
+            (packet.Length == 0 ? "" : packet + newline) +
+            (trailer.Length == 0 ? "" : trailer + newline) +
+            "% padding so that no file here ends in the bytes of a TARGA footer" + newline +
             "%%BeginProlog" + newline + "%%EndProlog" + newline +
             "%%PageTrailer" + newline + "%%EOF" + newline);
 
@@ -309,7 +313,8 @@ public sealed class SmallFormatTests
     [Fact]
     public void EpsWithNoPacketHasNoXmp()
     {
-        EpsMetadata eps = EpsMetadata.Read(Eps("", announce: false, trailer: ""));
+        // A file of the comment block and a program, with no packet and nothing announcing one.
+        EpsMetadata eps = EpsMetadata.Read(Eps("", announce: false));
         Assert.Null(eps.Xmp);
         Assert.Null(eps.Packet);
     }
@@ -319,7 +324,7 @@ public sealed class SmallFormatTests
     {
         // The header says there is no packet, so a packet below it is not the metadata of the file.
         byte[] file = Encoding.Latin1.GetBytes(
-            "%!PS-Adobe-3.0 EPSF-3.0\n%%ADO_ContainsXMP: NoMain\n%%EndComments\n" + PacketText + "\n<?xpacket end=\"w\"?>\n%%EOF\n");
+            "%!PS-Adobe-3.0 EPSF-3.0\n%ADO_ContainsXMP: NoMain\n%%EndComments\n" + PacketText + "\n<?xpacket end=\"w\"?>\n%%EOF\n");
         Assert.Null(EpsMetadata.Read(file).Xmp);
     }
 

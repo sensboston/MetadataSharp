@@ -49,19 +49,25 @@ def xmp_packet():
 
 
 def eps_file(packet=None, first=EPS_FIRST, newline=b'\n', trailer=b'<?xpacket end="w"?>',
-             announce=b'%%ADO_ContainsXMP: MainFirst', extra_comments=b'', body=b''):
+             announce=None, extra_comments=b'', body=b''):
+    """announce: the %ADO_ContainsXMP line, which defaults to the truth about ``packet``."""
+    if announce is None:
+        announce = b'%ADO_ContainsXMP: MainFirst' if packet is not None else None
     """A plain EPS file: first line, comment block, %%EndComments, then a program."""
     comment = first + newline + b'%%BoundingBox: 0 0 100 100' + newline
     if announce is not None:
         comment += announce + newline
     comment += extra_comments + b'%%EndComments' + newline
-    program = b'%%BeginProlog' + newline + b'%%EndProlog' + newline
+    # The program is padded so that no EPS file of this catalogue is as long as the twenty-six bytes a
+    # TARGA footer occupies: a file that short would end in bytes a TARGA reader is told by.
+    program = b'% padding for a length no TARGA footer can be read into' + newline
+    program += b'%%BeginProlog' + newline + b'%%EndProlog' + newline
     program += b'%%Page: 1 1' + newline + b'%%BeginPageSetup' + newline + b'%%EndPageSetup' + newline
     program += body
     program += b'%%PageTrailer' + newline + b'%%Trailer' + newline + b'%%EOF' + newline
     if packet is None:
         return comment + program
-    return comment + packet + newline + trailer + newline + program
+    return comment + packet + newline + (trailer + newline if trailer else b'') + program
 
 
 def dos_eps_file(postscript, tiff=None):
@@ -120,7 +126,7 @@ def _build_catalog():
               'eps-xmp-illustrator-first-line-v1', dispatch='eps', carriers='xmp', xmp=True)
     _register('eps-xmp-crlf.eps', eps_file(packet, newline=b'\r\n'), 'eps-xmp-crlf',
               'eps-xmp-dos-line-endings-v1', dispatch='eps', carriers='xmp', xmp=True)
-    _register('eps-xmp-nomain.eps', eps_file(packet, announce=b'%%ADO_ContainsXMP: NoMain'),
+    _register('eps-xmp-nomain.eps', eps_file(packet, announce=b'%ADO_ContainsXMP: NoMain'),
               'eps-xmp-nomain', 'eps-xmp-packet-but-header-says-none-v1',
               dispatch='eps', carriers='none', xmp=False)
     _register('eps-xmp-readonly.eps', eps_file(packet, trailer=b'<?xpacket end="r"?>'),
