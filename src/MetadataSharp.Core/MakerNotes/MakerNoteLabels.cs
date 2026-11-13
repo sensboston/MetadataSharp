@@ -218,6 +218,8 @@ internal static partial class MakerNoteLabels
         NikonIiIso,
         NikonFlashInfo,
         NikonSensorPixelSize,
+        NikonBarometerInfo,
+        NikonRawNumeric,
         NikonAFPointsInFocus,
         SonyExposureBias,
         SonyExposureStandardAdjustment,
@@ -424,6 +426,10 @@ internal static partial class MakerNoteLabels
                 return NikonSensorPixelSize(value);
             case Form.NikonAFPointsInFocus:
                 return NikonAFPointsInFocus(rule, value, cameraModel);
+            case Form.NikonBarometerInfo:
+                return NikonBarometerInfo(value);
+            case Form.NikonRawNumeric:
+                return NikonRawNumeric(value);
             case Form.SonyExposureBias:
                 return SonyExposureBias(value);
             case Form.SonyExposureStandardAdjustment:
@@ -1493,6 +1499,24 @@ internal static partial class MakerNoteLabels
         return sizes[0] + " x " + sizes[1] + " um";
     }
 
+    private static string? NikonBarometerInfo(ExifValue value)
+    {
+        if (value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined) || value.Count < 10 || value.RawBytes.Length < 10)
+            return null;
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        uint reading = value.ByteOrder == Endianness.LittleEndian
+            ? (uint)(bytes[6] | (bytes[7] << 8) | (bytes[8] << 16) | (bytes[9] << 24))
+            : (uint)((bytes[6] << 24) | (bytes[7] << 16) | (bytes[8] << 8) | bytes[9]);
+        return reading.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string? NikonRawNumeric(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        return Whole(number);
+    }
+
     private static string? NikonAFPointsInFocus(Rule rule, ExifValue value, string? cameraModel)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long raw) || raw is < 0 or > 65535)
@@ -1926,6 +1950,8 @@ internal static partial class MakerNoteLabels
     /// </summary>
     private static string? Version(ExifValue value)
     {
+        if (value.Count == 0)
+            return "()";
         if (value.Count != 4 || value.FieldType is not (TiffFieldType.Undefined or TiffFieldType.Byte))
             return null;
         ReadOnlySpan<byte> bytes = value.RawBytes;

@@ -70,6 +70,7 @@ internal static partial class MakerNoteLabels
         new(Top, "Lens", [], Form.LensRange),
         new(Top, "LensFStops", [], Form.Nikon3LensFStops),
         new(Top, "SensorPixelSize", [], Form.NikonSensorPixelSize),
+        new(Top, "BarometerInfo", [], Form.NikonBarometerInfo),
         new(Top, "ProgramShift", [], Form.NikonFlashComp),
         new(Top, "ExposureDiff", [], Form.NikonFlashComp),
         new(Top, "FlashExposureComp", [], Form.NikonFlashComp),
@@ -202,5 +203,6 @@ internal static partial class MakerNoteLabels
 
         // AFTune (0x00B9).
         new(0x00B9, "AFFineTune", [(0, "Off"), (1, "On"), (2, "On")]),
+        new(0x00B9, "AFFineTuneAdj", [], Form.NikonRawNumeric),
     ];
 }
