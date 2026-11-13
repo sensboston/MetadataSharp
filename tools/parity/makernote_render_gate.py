@@ -166,6 +166,29 @@ def encode_inventory(rows: list[tuple[str, dict[str, int]]]) -> str:
     return base64.b64encode(zlib.compress(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
 
 
+def gap_details(report: dict[str, Any], groups: list[str]) -> list[dict[str, Any]]:
+    """Compact actionable samples for translated values not yet rendered exactly."""
+    gaps: Counter[tuple[str, str, str, str]] = Counter()
+    examples: dict[tuple[str, str, str, str], list[str]] = {}
+    for file in report.get("per_file", []):
+        label = file.get("label", "")
+        for row in file.get("rows", []):
+            key = row.get("key", "")
+            group = next((candidate for candidate in groups if key.startswith(candidate + ".")), None)
+            if group is None or row.get("translated") is not True or row.get("interpreted") == MATCH_INTERPRETED:
+                continue
+            signature = (group, key, str(row.get("our_interpreted", "")), str(row.get("their_interpreted", "")))
+            gaps[signature] += 1
+            examples.setdefault(signature, [])
+            if label and len(examples[signature]) < 3 and label not in examples[signature]:
+                examples[signature].append(label)
+    return [
+        {"group": group, "key": key, "count": count, "ours": ours, "exiv2": theirs,
+         "files": examples[(group, key, ours, theirs)]}
+        for (group, key, ours, theirs), count in sorted(gaps.items())
+    ]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("report", type=Path)
@@ -191,6 +214,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     passed, message = evaluate(report, args.require, DOCUMENTED_EXCEPTIONS)
     print(message, end="", flush=True)
+    gaps = gap_details(report, args.require)
+    if gaps:
+        payload = base64.b64encode(zlib.compress(json.dumps(gaps, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
+        print(f"::notice title=MakerNote parity gaps::{payload}", flush=True)
     if not passed:
         for line in message.splitlines():
             if line.strip() not in {"FAIL", ""}:
