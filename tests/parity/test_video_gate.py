@@ -16,7 +16,7 @@ import video_gate  # noqa: E402
 class VideoGateTests(unittest.TestCase):
     def report(self, *, rows=None):
         return {"per_file": [
-            {"corpus": "generated", "label": name.removeprefix("generated:"), "format": fmt,
+            {"corpus": "generated", "label": name, "format": fmt,
              "status": "ok", "rows": []}
             for name, fmt in (
                 ("generated:authored-asf.asf", "asf"),
@@ -26,7 +26,7 @@ class VideoGateTests(unittest.TestCase):
                 ("generated:authored-webm.webm", "webm"),
             )
         ] + [
-            {"corpus": "exiv2", "label": "flame.avi", "format": "avi", "status": "ok",
+            {"corpus": "exiv2", "label": "exiv2:flame.avi", "format": "avi", "status": "ok",
              "rows": rows or []}
         ]}
 
@@ -66,7 +66,8 @@ class VideoGateTests(unittest.TestCase):
 
     def test_missing_authored_mkv_fails_the_gate(self):
         report = self.report()
-        report["per_file"] = [entry for entry in report["per_file"] if entry["label"] != "authored-matroska.mkv"]
+        report["per_file"] = [entry for entry in report["per_file"]
+                              if entry["label"] != "generated:authored-matroska.mkv"]
         passed, message = video_gate.evaluate(report)
         self.assertFalse(passed)
         self.assertIn("generated:authored-matroska.mkv", message)

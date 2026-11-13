@@ -34,11 +34,12 @@ def evaluate(report: dict[str, Any]) -> tuple[bool, str]:
     if not isinstance(files, list):
         return False, "parity report has no per_file rows"
     selected = [entry for entry in files if entry.get("format") in VIDEO_FORMATS]
-    ids = {f"{entry.get('corpus')}:{entry.get('label')}" for entry in selected}
+    # run_parity stores Candidate.uid (already ``corpus:label``) in the label field.
+    ids = {str(entry.get("label")) for entry in selected}
     absent = sorted(REQUIRED_GENERATED - ids)
     if absent:
         generated = sorted(
-            f"{entry.get('corpus')}:{entry.get('label')} [format={entry.get('format')}]"
+            f"{entry.get('label')} [format={entry.get('format')}]"
             for entry in files if entry.get("corpus") == "generated"
         )
         return False, (
@@ -52,7 +53,7 @@ def evaluate(report: dict[str, Any]) -> tuple[bool, str]:
     failures: list[str] = []
     allowed_seen: set[tuple[str, str]] = set()
     for entry in selected:
-        label = f"{entry.get('corpus')}:{entry.get('label')}"
+        label = str(entry.get("label"))
         if entry.get("status") != "ok":
             failures.append(f"{label}: reader status {entry.get('status')} ({entry.get('detail', '')})")
         if entry.get("rows_dropped", 0):
