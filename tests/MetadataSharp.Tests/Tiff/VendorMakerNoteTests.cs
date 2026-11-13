@@ -253,8 +253,8 @@ public sealed class SonyMakerNoteArrayTests
     }
 
     [Theory]
-    [InlineData("ILCE-7M3", 5)]
-    [InlineData("", 5)]            // A file without a Model is read like the models that are not excluded.
+    [InlineData("ILCE-7M3", 4)]
+    [InlineData("", 4)]            // A file without a Model is read like the models that are not excluded.
     [InlineData("SLT-A77", 0)]
     [InlineData("ILCA-77M2", 0)]
     public void FocusPositionDependsOnTheModel(string model, int expected)

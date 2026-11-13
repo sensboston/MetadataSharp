@@ -553,6 +553,13 @@ public sealed class MakerNoteInterpretationTests
     }
 
     [Fact]
+    public void SonyLensSpecificationSeparatesApertureNibbles()
+    {
+        Assert.Equal("24-70mm F1.8-2.8", Top(MakerNoteFormat.Sony1, "LensSpec", Bytes(0, 0, 0x24, 0, 0x70, 0x18, 0x28, 0)));
+        Assert.Equal("Unknown", Top(MakerNoteFormat.Sony2, "LensSpec", Bytes(0, 0, 0, 0, 0, 0, 0, 0)));
+    }
+
+    [Fact]
     public void SonyColourShiftsNameTheirDirection()
     {
         Assert.Equal("G/M: 0", Top(MakerNoteFormat.Sony1, "ColorCompensationFilter", Longs(0)));

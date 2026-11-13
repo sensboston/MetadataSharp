@@ -677,9 +677,23 @@ internal static partial class MakerNoteLabels
         return left;
     }
 
+    private static byte? SonyArrayByte(MakerNote? note, ushort tag, int offset)
+    {
+        if (note is null)
+            return null;
+        foreach (MakerNoteEntry entry in note.Entries)
+        {
+            if (entry.TagId != tag || entry.Value.RawBytes.Length <= offset)
+                continue;
+            byte[] plain = SonyMakerNoteArrays.Plain(entry.Value.RawBytes);
+            return plain[offset];
+        }
+        return null;
+    }
+
     private static string? SonyAmbientTemperature(ExifValue value, MakerNote? note)
     {
-        long? marker = SonyInteger(SonyField(note, 0x9402, "0x0002"));
+        byte? marker = SonyArrayByte(note, 0x9402, 2);
         if (value.Count != 1 || value.FieldType != TiffFieldType.SByte || !ExifTags.TryInteger(value, 0, out long temperature))
             return null;
         return marker == 255 ? Whole(temperature) + " \u00B0C" : "n/a";
@@ -687,7 +701,7 @@ internal static partial class MakerNoteLabels
 
     private static string? SonyMisc1Temperature(ExifValue value, MakerNote? note)
     {
-        long? marker = SonyInteger(SonyField(note, 0x9403, "0x0004"));
+        byte? marker = SonyArrayByte(note, 0x9403, 4);
         if (value.Count != 1 || value.FieldType != TiffFieldType.SByte || !ExifTags.TryInteger(value, 0, out long temperature))
             return null;
         return marker is > 0 and < 100 ? Whole(temperature) + " \u00B0C" : "n/a";
@@ -1000,14 +1014,17 @@ internal static partial class MakerNoteLabels
         if ((joined & 0x0800) != 0) AddEnd("II");
         string focal = NibblePair(b[2]);
         string maxFocal = b[3] == 0 && b[4] == 0 ? "" : "-" + (b[3] == 0 ? "" : NibblePair(b[3])) + NibblePair(b[4]);
-        string result = (start.Length == 0 ? "" : start + " ") + focal + maxFocal + "mm F" + NibblePair(b[5]);
-        if (b[6] != 0) result += "-" + (b[6] >> 4) + "." + (b[6] & 15);
+        string result = (start.Length == 0 ? "" : start + " ") + focal + maxFocal + "mm F" + Aperture(b[5]);
+        if (b[6] != 0) result += "-" + Aperture(b[6]);
         return result + (end.Length == 0 ? "" : " " + end);
     }
 
     private static string NibblePair(byte value) =>
         (value >> 4 == 0 ? "" : (value >> 4).ToString(CultureInfo.InvariantCulture)) +
         (value & 15).ToString(CultureInfo.InvariantCulture);
+
+    private static string Aperture(byte value) =>
+        ((value >> 4) & 15).ToString(CultureInfo.InvariantCulture) + "." + (value & 15).ToString(CultureInfo.InvariantCulture);
 
     private static string? NikonFocusDistance(ExifValue value)
     {
