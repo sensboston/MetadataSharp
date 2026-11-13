@@ -307,8 +307,15 @@ def main(argv: list[str] | None = None) -> int:
     passed, message = evaluate(report, args.require, DOCUMENTED_EXCEPTIONS)
     if not passed:
         failure_lines = message.split("FAIL\n", 1)[-1].splitlines()
-        payload = base64.b64encode(zlib.compress(json.dumps(failure_lines, separators=(",", ":")).encode(), 9)).decode()
-        print(f"::error title=MakerNote parity failures::{payload}", flush=True)
+        failures_by_group: dict[str, list[str]] = {}
+        for line in failure_lines:
+            group = line.strip().split(":", 1)[0]
+            failures_by_group.setdefault(group, []).append(line.strip())
+        for group, failures in failures_by_group.items():
+            for start in range(0, len(failures), 4):
+                chunk = failures[start:start + 4]
+                payload = base64.b64encode(zlib.compress(json.dumps(chunk, separators=(",", ":")).encode(), 9)).decode()
+                print(f"::error title=MakerNote parity failures {group} {start // 4 + 1}::{payload}", flush=True)
     print(message, end="", flush=True)
     details = {group: gaps for group, gaps in gap_details(report, args.require).items() if gaps}
     for group, rows in details.items():
