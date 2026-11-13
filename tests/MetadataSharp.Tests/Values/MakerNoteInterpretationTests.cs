@@ -7,8 +7,8 @@ using Xunit;
 namespace MetadataSharp.Tests.Values;
 
 /// <summary>
-/// The interpreted form of a MakerNote value for the three vendors that have a vocabulary: a short label
-/// for an enumerated number, a unit for a counted one, the stored number in parentheses where the
+/// The interpreted form of a MakerNote value for the vendors whose checked fields have a vocabulary:
+/// a short label for an enumerated number, a unit for a counted one, the stored number in parentheses where the
 /// vocabulary has no label for it, and null wherever there is nothing to add to the raw value.
 /// </summary>
 public sealed class MakerNoteInterpretationTests
@@ -457,6 +457,59 @@ public sealed class MakerNoteInterpretationTests
         Assert.Throws<ArgumentNullException>(() => note.Interpret(null!));
         Assert.Throws<ArgumentNullException>(() => note.Interpret(null!, part));
         Assert.Throws<ArgumentNullException>(() => note.Interpret(entry, null!));
+    }
+
+    // ---- Pentax DNG --------------------------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("Quality", "RAW")]
+    [InlineData("Focus", "Manual")]
+    [InlineData("MeteringMode", "Multi Segment")]
+    [InlineData("WhiteBalance", "Auto")]
+    [InlineData("ColorSpace", "sRGB")]
+    [InlineData("ImageTone", "Bright")]
+    public void PentaxDngEnumerationsUseThePrintedLabels(string name, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.PentaxDng, name, Shorts(name == "Quality" ? 4 : name == "Focus" ? 3 : name == "MeteringMode" ? 0 : name == "WhiteBalance" || name == "ColorSpace" ? 0 : 1)));
+
+    [Fact]
+    public void PentaxDngFormatsTheDocumentedNumericAndCompositeFields()
+    {
+        Assert.Equal("12.1.3.0", Top(MakerNoteFormat.PentaxDng, "Version", Bytes(12, 1, 3, 0)));
+        Assert.Equal("K-70", Top(MakerNoteFormat.PentaxDng, "ModelID", Longs(78370)));
+        Assert.Equal("K-3", Top(MakerNoteFormat.PentaxDng, "ModelID", Longs(77760)));
+        Assert.Equal("K-30", Top(MakerNoteFormat.PentaxDng, "ModelID", Longs(77650)));
+        Assert.Equal("640x480", Top(MakerNoteFormat.PentaxDng, "PreviewResolution", Shorts(640, 480)));
+        Assert.Equal("2020:01:10", Top(MakerNoteFormat.PentaxDng, "Date", Undefined(7, 228, 1, 10)));
+        Assert.Equal("15:08:38", Top(MakerNoteFormat.PentaxDng, "Time", Undefined(15, 8, 38)));
+        Assert.Equal("25 ms", Top(MakerNoteFormat.PentaxDng, "ExposureTime", Longs(2500)));
+        Assert.Equal("F5", Top(MakerNoteFormat.PentaxDng, "FNumber", Shorts(50)));
+        Assert.Equal("18.0 mm", Top(MakerNoteFormat.PentaxDng, "FocalLength", Longs(1800)));
+        Assert.Equal("0.3 EV", Top(MakerNoteFormat.PentaxDng, "ExposureCompensation", SignedShorts(53, 0)));
+        Assert.Equal("0 EV", Top(MakerNoteFormat.Pentax, "AutoBracketing", Longs(0)));
+        Assert.Equal("Off, Did not fire", Top(MakerNoteFormat.PentaxDng, "Flash", Shorts(1, 63)));
+        Assert.Equal("Center", Top(MakerNoteFormat.PentaxDng, "AFPoint", Shorts(6, 0)));
+        Assert.Equal("Aperture Priority", Top(MakerNoteFormat.PentaxDng, "PictureMode", Bytes(5, 0, 1)));
+        Assert.Equal("Flash X-Sync Speed AE (1)", Top(MakerNoteFormat.PentaxDng, "PictureMode", Bytes(0x10, 0, 1)));
+        Assert.Equal("Single-frame", Top(MakerNoteFormat.PentaxDng, "DriveMode", Bytes(0, 0, 0, 0)));
+        Assert.Equal("Unknown (0x00020000)", Top(MakerNoteFormat.PentaxDng, "DynamicRangeExpansion", Undefined(0, 2, 0, 0)));
+    }
+
+    [Fact]
+    public void PentaxDngShutterCountUsesItsDateAndTimeSiblings()
+    {
+        var date = new MakerNoteEntry(0x0006, "Date", Undefined(7, 228, 1, 10), []);
+        var time = new MakerNoteEntry(0x0007, "Time", Undefined(15, 8, 38), []);
+        var shutter = new MakerNoteEntry(0x005d, "ShutterCount", Undefined(247, 19, 211, 249), []);
+        var note = new MakerNote(MakerNoteFormat.PentaxDng, Little, [date, time, shutter]);
+        Assert.Equal("2828", note.Interpret(shutter));
+    }
+
+    [Fact]
+    public void PentaxAndPentaxDngKeepTheirInterpretationScopesSeparate()
+    {
+        Assert.Equal("RAW", Top(MakerNoteFormat.Pentax, "Quality", Shorts(4)));
+        Assert.Equal("RAW", Top(MakerNoteFormat.PentaxDng, "Quality", Shorts(4)));
+        Assert.Null(Top(MakerNoteFormat.PentaxDng, "LensType", Bytes(8, 196, 0, 0)));
     }
 
     // ---- The tables themselves ---------------------------------------------------------------------------
