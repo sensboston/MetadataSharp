@@ -97,7 +97,12 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, json.JSONDecodeError) as error:
         print(f"video parity gate could not read report: {error}")
         return 1
-    passed, message = evaluate(report)
+    print("::notice title=VideoGate::started")
+    try:
+        passed, message = evaluate(report)
+    except Exception as error:
+        print("::error::Video gate evaluation crashed: " + repr(error))
+        raise
     print(message, end="")
     if not passed:
         for line in message.splitlines():
