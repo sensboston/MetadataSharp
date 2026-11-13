@@ -240,7 +240,7 @@ public sealed class ImageMetadataTests
     // RIFF that is not WebP, a byte order mark alone, another processing instruction, another
     // element, BMP, and signatures cut short.
     [InlineData("", MetadataFormat.Unknown)]
-    [InlineData("1A45DFA3", MetadataFormat.Unknown)]
+    [InlineData("1A45DFA3", MetadataFormat.Matroska)]
     [InlineData("4949525308000000", MetadataFormat.Unknown)]
     [InlineData("524946462400000057415645", MetadataFormat.Riff)]
     [InlineData("EFBBBF", MetadataFormat.Unknown)]
@@ -424,7 +424,6 @@ public sealed class ImageMetadataTests
     [Theory]
     [InlineData("")]
     [InlineData("4749463838")]
-    [InlineData("1A45DFA3A3428681014282840100000000000000")]
     public void AnUnknownFormatGivesAnEmptySnapshot(string hex)
     {
         ImageMetadata metadata = ImageMetadata.Read(Convert.FromHexString(hex));

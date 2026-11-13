@@ -545,7 +545,8 @@ internal static class VideoContainerReader
 
         internal IReadOnlyList<VideoProperty> Matroska()
         {
-            if (data.Length < 4 || !data[..4].SequenceEqual("\x1A\x45\xDF\xA3"u8)) throw Invalid("The EBML header ID is absent.", 0);
+            if (data.Length < 4 || data[0] != 0x1A || data[1] != 0x45 || data[2] != 0xDF || data[3] != 0xA3)
+                throw Invalid("The EBML header ID is absent.", 0);
             Common(true, false);
             ParseEbml(0, data.Length, 0, 0, "");
             Add("Xmp.video.AspectRatio", Ratio(width, height));
