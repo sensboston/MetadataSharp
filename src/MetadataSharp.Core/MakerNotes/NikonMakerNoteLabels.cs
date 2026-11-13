@@ -10,6 +10,31 @@ internal static partial class MakerNoteLabels
 {
     private static (long Number, string Label)[] NotAvailableAtEnds => [(0, "n/a"), (255, "n/a")];
 
+    private static readonly Rule[] Nikon1 =
+    [
+        new(Top, "Focus", [], Form.Abbreviation)
+        {
+            Texts = [("AF-C", "Continuous autofocus"), ("AF-S", "Single autofocus"), ("AF-A", "Automatic")],
+        },
+        new(Top, "DigitalZoom", [], Form.NikonDigitalZoom),
+        new(Top, "FocusDistance", [], Form.NikonFocusDistance),
+        new(Top, "AFFocusPos", [], Form.NikonAfFocusPosition),
+    ];
+
+    private static readonly Rule[] Nikon2 =
+    [
+        new(Top, "Quality", []),
+        new(Top, "ColorMode", [(1, "Color"), (2, "Monochrome")]),
+        new(Top, "ImageAdjustment", [(0, "Normal"), (1, "Bright+"), (2, "Bright-"), (3, "Contrast+"), (4, "Contrast-")]),
+        new(Top, "ISOSpeed", [(0, "80"), (2, "160"), (4, "320"), (5, "100")]),
+        new(Top, "WhiteBalance",
+        [
+            (0, "Auto"), (1, "Preset"), (2, "Daylight"), (3, "Incandescent"), (4, "Fluorescent"),
+            (5, "Cloudy"), (6, "Speedlight"),
+        ]),
+        new(Top, "DigitalZoom", [], Form.NikonDigitalZoom),
+    ];
+
     private static readonly Rule[] Nikon =
     [
         // The note's own directory.
@@ -24,6 +49,7 @@ internal static partial class MakerNoteLabels
         new(Top, "ShootingMode",
         [
             (0, "Single-frame"), (1, "Continuous"), (32, "Single-frame, Auto ISO"), (33, "Continuous, Auto ISO"),
+            (48, "Single-frame, Exposure bracketing, Unused LE-NR slowdown"),
             (49, "Continuous, Exposure Bracketing, Auto ISO"), (128, "IR Control"),
         ]),
         new(Top, "LensType", [(2, "D"), (6, "D G"), (14, "D G VR"), (70, "D G"), (78, "D G VR")]),
@@ -43,7 +69,6 @@ internal static partial class MakerNoteLabels
         // Ten places for the retouches applied in the camera; the corpus has none applied.
         new(Top, "RetouchHistory", [(0, "None")], Form.CodeList),
         new(Top, "Lens", [], Form.LensRange),
-        new(Top, "ExposureDiff", [], Form.StopFraction),
         new(Top, "ProgramShift", [], Form.StopFraction),
         new(Top, "FlashExposureComp", [], Form.StopFraction),
         new(Top, "FlashBracketComp", [], Form.StopFraction),

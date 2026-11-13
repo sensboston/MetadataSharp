@@ -200,6 +200,10 @@ internal static partial class MakerNoteLabels
 
         /// <summary>Fujifilm face-element type codes stored as ASCII digits.</summary>
         FujifilmFaceElementTypes,
+
+        NikonFocusDistance,
+        NikonDigitalZoom,
+        NikonAfFocusPosition,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -212,7 +216,7 @@ internal static partial class MakerNoteLabels
     /// <summary>Every rule, for the tests that check the tables against themselves.</summary>
     internal static IEnumerable<(string Vendor, int Scope, string Name, IReadOnlyList<long> Numbers, IReadOnlyList<string> Labels)> RulesForTests()
     {
-        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Sony", Sony), ("Pentax", PentaxDng), ("PentaxDng", PentaxDng), ("Fujifilm", Fujifilm) })
+        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Nikon1", Nikon1), ("Nikon2", Nikon2), ("Sony", Sony), ("Pentax", PentaxDng), ("PentaxDng", PentaxDng), ("Fujifilm", Fujifilm) })
         {
             foreach (Rule rule in rules)
             {
@@ -243,6 +247,8 @@ internal static partial class MakerNoteLabels
         {
             MakerNoteFormat.Canon => Canon,
             MakerNoteFormat.Fujifilm => Fujifilm,
+            MakerNoteFormat.Nikon1 => Nikon1,
+            MakerNoteFormat.Nikon2 => Nikon2,
             MakerNoteFormat.Nikon3 => Nikon,
             MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 => Sony,
             MakerNoteFormat.Pentax or MakerNoteFormat.PentaxDng => PentaxDng,
@@ -335,6 +341,12 @@ internal static partial class MakerNoteLabels
                 return FujifilmDriveSetting(value);
             case Form.FujifilmFaceElementTypes:
                 return FujifilmFaceElementTypes(value);
+            case Form.NikonFocusDistance:
+                return NikonFocusDistance(value);
+            case Form.NikonDigitalZoom:
+                return NikonDigitalZoom(value);
+            case Form.NikonAfFocusPosition:
+                return NikonAfFocusPosition(value);
         }
 
         if (value.Count != 1 || value.FieldType == TiffFieldType.Undefined ||
@@ -533,6 +545,38 @@ internal static partial class MakerNoteLabels
                 return label;
         }
         return null;
+    }
+
+    private static string? NikonFocusDistance(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Rational ||
+            !ExifTags.TryRational(value, 0, out long numerator, out long denominator) || denominator == 0)
+            return null;
+        if (numerator == 0)
+            return "Unknown";
+        return ((double)numerator / denominator).ToString("F2", CultureInfo.InvariantCulture) + " m";
+    }
+
+    private static string? NikonDigitalZoom(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Rational ||
+            !ExifTags.TryRational(value, 0, out long numerator, out long denominator) || denominator == 0)
+            return null;
+        if (numerator == 0)
+            return "Not used";
+        return ((double)numerator / denominator).ToString("F1", CultureInfo.InvariantCulture) + "x";
+    }
+
+    private static string? NikonAfFocusPosition(ExifValue value)
+    {
+        if (value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined) || value.Count < 2)
+            return null;
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        string[] areas = ["Single area", "Dynamic area", "Dynamic area, closest subject", "Group dynamic", "Single area (wide)", "Dynamic area (wide)"];
+        string[] points = ["Center", "Top", "Bottom", "Left", "Right", "Upper-left", "Upper-right", "Lower-left", "Lower-right", "Left-most", "Right-most"];
+        if (bytes[0] >= areas.Length || bytes[1] >= points.Length)
+            return null;
+        return areas[bytes[0]] + "; " + points[bytes[1]];
     }
 
     /// <summary>

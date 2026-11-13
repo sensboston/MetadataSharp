@@ -354,11 +354,41 @@ public sealed class MakerNoteInterpretationTests
     }
 
     [Fact]
-    public void TheNikonExposureDifferenceIsAStopFractionToo()
+    public void TheNikonExposureDifferenceKeepsItsEncodedValue()
     {
-        Assert.Equal("0.0 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(0, 1, 12, 0)));
-        Assert.Equal("+0.1 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(1, 1, 12, 0)));
-        Assert.Equal("-1.1 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(243, 1, 12, 0)));
+        // Exiv2 prints this field through the one-byte flash-compensation enumeration. The
+        // multi-byte payload is not a stop fraction, so do not invent a converted exposure value.
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(0, 1, 12, 0)));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(1, 1, 12, 0)));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(243, 1, 12, 0)));
+    }
+
+    [Theory]
+    [InlineData("ColorMode", 1, "Color")]
+    [InlineData("ColorMode", 2, "Monochrome")]
+    [InlineData("ImageAdjustment", 3, "Contrast+")]
+    [InlineData("ISOSpeed", 0, "80")]
+    [InlineData("ISOSpeed", 5, "100")]
+    [InlineData("WhiteBalance", 6, "Speedlight")]
+    public void NikonTwoEnumsAreNamed(string name, int number, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Nikon2, name, Shorts(number)));
+
+    [Fact]
+    public void NikonTwoUnknownQualityRemainsRaw()
+    {
+        Assert.Equal("(12)", Top(MakerNoteFormat.Nikon2, "Quality", Shorts(12)));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "Quality", Shorts(12)));
+    }
+
+    [Fact]
+    public void NikonOneFocusAndDistanceFieldsAreRead()
+    {
+        Assert.Equal("Continuous autofocus", Top(MakerNoteFormat.Nikon1, "Focus", Ascii("AF-C  ")));
+        Assert.Equal("Unknown", Top(MakerNoteFormat.Nikon1, "FocusDistance", Rationals((0, 1))));
+        Assert.Equal("1.50 m", Top(MakerNoteFormat.Nikon1, "FocusDistance", Rationals((3, 2))));
+        Assert.Equal("Not used", Top(MakerNoteFormat.Nikon1, "DigitalZoom", Rationals((0, 1))));
+        Assert.Equal("1.0x", Top(MakerNoteFormat.Nikon1, "DigitalZoom", Rationals((1, 1))));
+        Assert.Equal("Dynamic area; Center", Top(MakerNoteFormat.Nikon1, "AFFocusPos", Undefined(1, 0, 0, 0)));
     }
 
     [Fact]
