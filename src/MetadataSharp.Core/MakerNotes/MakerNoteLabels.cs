@@ -1393,9 +1393,13 @@ internal static partial class MakerNoteLabels
 
     private static string? NikonLd3ExitPupil(ExifValue value)
     {
-        if (!NikonLd3Byte(value, out long number) || number == 0)
+        if (value.Count != 1)
             return null;
-        return (2048.0 / number).ToString("F1", CultureInfo.InvariantCulture) + " mm";
+        if (value.FieldType != TiffFieldType.Byte)
+            return ExifTags.TryInteger(value, 0, out long other) ? Stored(other) : null;
+        if (!ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        return number == 0 ? Stored(number) : (2048.0 / number).ToString("F1", CultureInfo.InvariantCulture) + " mm";
     }
 
     private static string? NikonFlashComp(ExifValue value)
@@ -1441,7 +1445,7 @@ internal static partial class MakerNoteLabels
     {
         if (!NikonLd4Short(value, out long number))
             return null;
-        return number == 0 ? "n/a" : number.ToString("F1", CultureInfo.InvariantCulture) + " mm";
+        return number == 0 ? "n/a" : Whole(number) + " mm";
     }
 
     private static string? NikonLd4FocusDistance(ExifValue value)

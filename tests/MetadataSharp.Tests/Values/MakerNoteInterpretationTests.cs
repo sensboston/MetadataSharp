@@ -422,7 +422,10 @@ public sealed class MakerNoteInterpretationTests
     public void NikonLensDataFourAddsItsHighResolutionValues()
     {
         Assert.Equal("F2.0", Field(MakerNoteFormat.Nikon3, 0x0098, "FNumber", Shorts(768)));
-        Assert.Equal("50.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength2", Shorts(50)));
+        Assert.Equal("32.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "ExitPupilPosition", Bytes(64)));
+        Assert.Equal("(0)", Field(MakerNoteFormat.Nikon3, 0x0098, "ExitPupilPosition", Bytes(0)));
+        Assert.Equal("(64)", Field(MakerNoteFormat.Nikon3, 0x0098, "ExitPupilPosition", Shorts(64)));
+        Assert.Equal("50 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength2", Shorts(50)));
         Assert.Equal("1.00 m", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance2", Shorts(20480)));
         Assert.Equal("n/a", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance2", Shorts(0)));
     }
