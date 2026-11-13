@@ -211,6 +211,10 @@ internal static partial class MakerNoteLabels
         NikonLd3ExitPupil,
         NikonShootingMode,
         NikonFlashComp,
+        Nikon3LensFStops,
+        NikonLd4Aperture,
+        NikonLd4FocalLength,
+        NikonLd4FocusDistance,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -366,6 +370,14 @@ internal static partial class MakerNoteLabels
                 return NikonLd3ExitPupil(value);
             case Form.NikonFlashComp:
                 return NikonFlashComp(value);
+            case Form.Nikon3LensFStops:
+                return Nikon3LensFStops(value);
+            case Form.NikonLd4Aperture:
+                return NikonLd4Aperture(value);
+            case Form.NikonLd4FocalLength:
+                return NikonLd4FocalLength(value);
+            case Form.NikonLd4FocusDistance:
+                return NikonLd4FocusDistance(value);
         }
 
         if (value.Count != 1 || value.FieldType == TiffFieldType.Undefined ||
@@ -656,6 +668,44 @@ internal static partial class MakerNoteLabels
             0xF4 => "-2.0 EV", 0xF2 => "-2.3 EV", 0xF1 => "-2.5 EV", 0xF0 => "-2.7 EV",
             0xEE => "-3.0 EV", _ => Stored(number),
         };
+    }
+
+    private static string? Nikon3LensFStops(ExifValue value)
+    {
+        if (value.FieldType != TiffFieldType.Undefined || value.Count != 4 || value.RawBytes.Length != 4)
+            return null;
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        if (bytes[2] == 0)
+            return null;
+        float fstops = (float)bytes[0] * bytes[1] / bytes[2];
+        return fstops.ToString("G6", CultureInfo.InvariantCulture);
+    }
+
+    private static bool NikonLd4Short(ExifValue value, out long number)
+    {
+        number = 0;
+        return value.Count == 1 && value.FieldType == TiffFieldType.Short && ExifTags.TryInteger(value, 0, out number);
+    }
+
+    private static string? NikonLd4Aperture(ExifValue value)
+    {
+        if (!NikonLd4Short(value, out long number))
+            return null;
+        return number == 0 ? "n/a" : "F" + Math.Pow(2, number / 384.0 - 1).ToString("F1", CultureInfo.InvariantCulture);
+    }
+
+    private static string? NikonLd4FocalLength(ExifValue value)
+    {
+        if (!NikonLd4Short(value, out long number))
+            return null;
+        return number == 0 ? "n/a" : number.ToString("F1", CultureInfo.InvariantCulture) + " mm";
+    }
+
+    private static string? NikonLd4FocusDistance(ExifValue value)
+    {
+        if (!NikonLd4Short(value, out long number))
+            return null;
+        return number == 0 ? "n/a" : (0.01 * Math.Pow(10, number / 10240.0)).ToString("F2", CultureInfo.InvariantCulture) + " m";
     }
 
     /// <summary>

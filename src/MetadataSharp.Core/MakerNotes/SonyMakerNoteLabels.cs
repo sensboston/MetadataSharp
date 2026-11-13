@@ -16,6 +16,18 @@ internal static partial class MakerNoteLabels
     [
         // The note's own directory.
         new(Top, "Quality", [(2, "Fine"), (6, "RAW + JPEG/HEIF")]),
+        new(Top, "CreativeStyle", [], Form.Abbreviation)
+        {
+            Texts =
+            [
+                ("AdobeRGB", "Adobe RGB"), ("Autumnleaves", "Autumn leaves"), ("BW", "Black and White"),
+                ("Clear", "Clear"), ("Deep", "Deep"), ("FL", "FL"), ("IN", "IN"),
+                ("Landscape", "Landscape"), ("Light", "Light"), ("Neutral", "Neutral"),
+                ("None", "None"), ("Portrait", "Portrait"), ("Real", "Real"), ("SH", "SH"),
+                ("Sepia", "Sepia"), ("Standard", "Standard"), ("Sunset", "Sunset"),
+                ("Vivid", "Vivid"), ("VV2", "VV2"),
+            ],
+        },
         new(Top, "FlashLevel", [(0, "Normal"), (-1, "-0.3 EV")]),
         new(Top, "ReleaseMode", [(0, "Normal"), (2, "Continuous"), (5, "Exposure Bracketing"), (65535, "n/a")]),
         new(Top, "SequenceNumber", [(0, "Single"), (65535, "n/a")]),

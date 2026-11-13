@@ -69,6 +69,7 @@ internal static partial class MakerNoteLabels
         // Ten places for the retouches applied in the camera; the corpus has none applied.
         new(Top, "RetouchHistory", [(0, "None")], Form.CodeList),
         new(Top, "Lens", [], Form.LensRange),
+        new(Top, "LensFStops", [], Form.Nikon3LensFStops),
         new(Top, "ProgramShift", [], Form.NikonFlashComp),
         new(Top, "ExposureDiff", [], Form.NikonFlashComp),
         new(Top, "FlashExposureComp", [], Form.NikonFlashComp),
@@ -87,6 +88,10 @@ internal static partial class MakerNoteLabels
         new(0x0098, "MaxApertureAtMinFocal", [], Form.NikonLd3Aperture),
         new(0x0098, "MaxApertureAtMaxFocal", [], Form.NikonLd3Aperture),
         new(0x0098, "EffectiveMaxAperture", [], Form.NikonLd3Aperture),
+        new(0x0098, "MaxAperture", [], Form.NikonLd4Aperture),
+        new(0x0098, "FNumber", [], Form.NikonLd4Aperture),
+        new(0x0098, "FocalLength2", [], Form.NikonLd4FocalLength),
+        new(0x0098, "FocusDistance2", [], Form.NikonLd4FocusDistance),
 
         // The preview directory (0x0011) holds TIFF fields and is read with the EXIF vocabulary.
 

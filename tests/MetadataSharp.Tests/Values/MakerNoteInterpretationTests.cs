@@ -404,6 +404,16 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("F5.0", Field(MakerNoteFormat.Nikon3, 0x0098, "LensFStops", Bytes(60)));
         Assert.Equal("32.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "ExitPupilPosition", Bytes(64)));
         Assert.Null(Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength", Shorts(24)));
+        Assert.Equal("6", Top(MakerNoteFormat.Nikon3, "LensFStops", Undefined(72, 1, 12, 0)));
+    }
+
+    [Fact]
+    public void NikonLensDataFourAddsItsHighResolutionValues()
+    {
+        Assert.Equal("F2.0", Field(MakerNoteFormat.Nikon3, 0x0098, "FNumber", Shorts(384)));
+        Assert.Equal("50.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength2", Shorts(50)));
+        Assert.Equal("1.00 m", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance2", Shorts(10240)));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance2", Shorts(0)));
     }
 
     [Fact]
@@ -550,6 +560,16 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("A/B: B2, G/M: M3", Top(MakerNoteFormat.Sony1, "WBShiftABGM", SignedLongs(2, 3)));
         Assert.Null(Top(MakerNoteFormat.Sony1, "WBShiftABGM", SignedLongs(0)));
     }
+
+    [Theory]
+    [InlineData("AdobeRGB", "Adobe RGB")]
+    [InlineData("Autumnleaves", "Autumn leaves")]
+    [InlineData("BW", "Black and White")]
+    [InlineData("Standard", "Standard")]
+    [InlineData("Unlisted", "(Unlisted)")]
+    [InlineData("", "()")]
+    public void SonyCreativeStyleUsesItsStringLabels(string text, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Sony1, "CreativeStyle", Ascii(text)));
 
     [Fact]
     public void TheSonyFileFormatIsReadFromItsFourBytes()
