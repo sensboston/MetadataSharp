@@ -53,7 +53,25 @@ jobs:
       - name: Restore
         run: dotnet restore MetadataSharp.sln
       - name: Inventory source documentation (baseline)
-        run: dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- --root src --report artifacts/doc-inventory/baseline.json
+        shell: bash
+        run: |
+          for spec in "core src/MetadataSharp.Core" "formats src/MetadataSharp.Formats" "tools tools" "samples samples"; do
+            read -r name root <<< "$spec"
+            dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- \
+              --root "$root" --report "artifacts/doc-inventory/baseline-$name.json"
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          for path in sorted(Path('artifacts/doc-inventory').glob('baseline-*.json')):
+              report = json.loads(path.read_text(encoding='utf-8'))
+              summary = report['Summary']
+              message = (f"{path.stem}: {summary['Total']} declarations; "
+                         f"{summary['PublicDeclarations']} public; {summary['PublicGaps']} public doc gaps; "
+                         f"{summary['NonTrivialInternalPrivate']} non-trivial non-public; "
+                         f"{summary['NonPublicPurposeGaps']} without purpose comment")
+              print(f"::notice title=Roslyn documentation baseline::{message}")
+          PY
       - name: Build Release
         run: dotnet build MetadataSharp.sln --configuration Release --no-restore
       - name: Verify authored video fixtures
@@ -139,7 +157,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: documentation-inventory-${{ matrix.os }}-${{ matrix.tfm }}
-          path: artifacts/doc-inventory/baseline.json
+          path: artifacts/doc-inventory/baseline-*.json
           if-no-files-found: warn
           retention-days: 30
       - name: Upload test results

@@ -177,6 +177,7 @@ internal static class Inventory
     {
         string xml = symbol.GetDocumentationCommentXml(expandIncludes: false, cancellationToken: default) ?? string.Empty;
         XElement doc = ParseDocumentation(xml);
+        bool inheritsAll = doc.Descendants("inheritdoc").Any(element => string.IsNullOrWhiteSpace((string?)element.Attribute("path")));
         IMethodSymbol? callable = symbol as IMethodSymbol ?? (symbol as INamedTypeSymbol)?.DelegateInvokeMethod;
         string[] parameterNames = callable is not null
             ? callable.Parameters.Select(parameter => parameter.Name).ToArray()
@@ -185,7 +186,7 @@ internal static class Inventory
                 : [];
         string[] documentedParams = doc.Descendants("param").Select(element => (string?)element.Attribute("name"))
             .Where(value => value is not null).Cast<string>().ToArray();
-        string[] missingParams = parameterNames.Except(documentedParams, StringComparer.Ordinal).ToArray();
+        string[] missingParams = inheritsAll ? [] : parameterNames.Except(documentedParams, StringComparer.Ordinal).ToArray();
         string[] extraParams = documentedParams.Except(parameterNames, StringComparer.Ordinal).ToArray();
         string[] typeParameterNames = symbol switch
         {
@@ -195,14 +196,13 @@ internal static class Inventory
         };
         string[] documentedTypeParams = doc.Descendants("typeparam").Select(element => (string?)element.Attribute("name"))
             .Where(value => value is not null).Cast<string>().ToArray();
-        string[] missingTypeParams = typeParameterNames.Except(documentedTypeParams, StringComparer.Ordinal).ToArray();
+        string[] missingTypeParams = inheritsAll ? [] : typeParameterNames.Except(documentedTypeParams, StringComparer.Ordinal).ToArray();
         bool isMethod = symbol is IMethodSymbol { MethodKind: not MethodKind.PropertyGet and not MethodKind.PropertySet };
         bool hasReturn = callable is not null && !callable.ReturnsVoid && callable.MethodKind is not MethodKind.Constructor and not MethodKind.StaticConstructor;
         bool requiresException = isMethod && HasDirectThrow(node);
         int summaryCount = doc.Descendants("summary").Count();
         int returnCount = doc.Descendants("returns").Count();
         int exceptionCount = doc.Descendants("exception").Count();
-        bool inheritsAll = doc.Descendants("inheritdoc").Any(element => string.IsNullOrWhiteSpace((string?)element.Attribute("path")));
         bool inheritsExceptions = doc.Descendants("inheritdoc").Any(element =>
             ((string?)element.Attribute("path"))?.Contains("exception", StringComparison.OrdinalIgnoreCase) == true);
         bool summaryPresent = summaryCount != 0 || inheritsAll;
