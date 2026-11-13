@@ -181,7 +181,7 @@ internal static partial class MakerNoteLabels
     /// <summary>Every rule, for the tests that check the tables against themselves.</summary>
     internal static IEnumerable<(string Vendor, int Scope, string Name, IReadOnlyList<long> Numbers, IReadOnlyList<string> Labels)> RulesForTests()
     {
-        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Sony", Sony), ("PentaxDng", PentaxDng) })
+        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Sony", Sony), ("Pentax", PentaxDng), ("PentaxDng", PentaxDng) })
         {
             foreach (Rule rule in rules)
             {
@@ -212,7 +212,7 @@ internal static partial class MakerNoteLabels
             MakerNoteFormat.Canon => Canon,
             MakerNoteFormat.Nikon3 => Nikon,
             MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 => Sony,
-            MakerNoteFormat.PentaxDng => PentaxDng,
+            MakerNoteFormat.Pentax or MakerNoteFormat.PentaxDng => PentaxDng,
             _ => null,
         };
         if (rules is null)

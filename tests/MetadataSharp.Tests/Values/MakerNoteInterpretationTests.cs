@@ -506,7 +506,7 @@ public sealed class MakerNoteInterpretationTests
     [Fact]
     public void PentaxAndPentaxDngKeepTheirInterpretationScopesSeparate()
     {
-        Assert.Null(Top(MakerNoteFormat.Pentax, "Quality", Shorts(4)));
+        Assert.Equal("RAW", Top(MakerNoteFormat.Pentax, "Quality", Shorts(4)));
         Assert.Equal("RAW", Top(MakerNoteFormat.PentaxDng, "Quality", Shorts(4)));
         Assert.Null(Top(MakerNoteFormat.PentaxDng, "LensType", Bytes(8, 196, 0, 0)));
     }

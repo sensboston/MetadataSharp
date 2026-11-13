@@ -27,6 +27,10 @@ NOT_INTERPRETED_TRANSLATED = "not-interpreted-translated"
 
 # Interpretation exception: Exiv2 obtains this name from its separately maintained lens-ID database.
 DOCUMENTED_EXCEPTIONS: dict[str, str] = {
+    "Exif.Pentax.LensType": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
     "Exif.PentaxDng.LensType": (
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."

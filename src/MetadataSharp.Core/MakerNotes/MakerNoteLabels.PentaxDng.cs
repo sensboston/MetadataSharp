@@ -6,10 +6,9 @@ namespace MetadataSharp.Core.MakerNotes;
 
 internal static partial class MakerNoteLabels
 {
-    // Hand-authored display rules for the Pentax DNG layout. The scope/name pairs follow this
-    // library's PentaxDng entries; numbers and concise labels are recorded as project rules, not
-    // generated from a vendor table. LensType deliberately has no rule: Exiv2 resolves it through
-    // an external lens-name database, which this project does not reproduce.
+    // Hand-authored display rules for Pentax's AOC and DNG layouts. Their shared fields use the same
+    // renderings; LensType deliberately has no rule because Exiv2 resolves it through an external
+    // lens-name database that this project does not reproduce.
     private static readonly Rule[] PentaxDng =
     [
         new(Top, "Mode", [(0, "Auto"), (1, "Night-Scene"), (2, "Manual")], Form.PentaxFirst),
