@@ -692,11 +692,11 @@ internal static class Program
         public string? TheirType { get; init; }
         public int? TheirCount { get; init; }
         public string? TheirValue { get; init; }
-        public string? Interpreted { get; init; }
-        public string? InterpretedSkipped { get; init; }
-        public bool Translated { get; init; }
-        public string? OurInterpreted { get; init; }
-        public string? TheirInterpreted { get; init; }
+        public string? Interpreted { get; set; }
+        public string? InterpretedSkipped { get; set; }
+        public bool Translated { get; set; }
+        public string? OurInterpreted { get; set; }
+        public string? TheirInterpreted { get; set; }
     }
 
     private sealed class FileReport(string label, string corpus, string format, string status, string detail, int referenceTags, int ourTags, List<ParityRow> rows)
