@@ -134,6 +134,7 @@ public sealed class MakerNoteEntry
     internal Func<byte[], byte[]>? Encode { get; init; }
 
     /// <summary>The entry with other fields, where it lies and how it is enciphered kept.</summary>
+    // Replace decoded fields while preserving slot and codec metadata needed by a later copy operation.
     internal MakerNoteEntry With(IReadOnlyList<MakerNoteField> fields, Func<byte[], byte[]>? decode = null, Func<byte[], byte[]>? encode = null) =>
         new(TagId, Name, Value, fields) { Slot = Slot, Decode = decode ?? Decode, Encode = encode ?? Encode };
 
@@ -163,6 +164,7 @@ public sealed class MakerNote
 {
     private readonly Dictionary<ushort, MakerNoteEntry> lookup;
 
+    // Snapshot directory order and retain the first duplicate tag for deterministic lookup.
     internal MakerNote(MakerNoteFormat format, Endianness byteOrder, IReadOnlyList<MakerNoteEntry> entries)
     {
         Format = format;

@@ -929,6 +929,7 @@ internal static partial class MakerNoteLabels
         return marker is > 0 and < 100 ? Whole(temperature) + " \u00B0C" : "n/a";
     }
 
+    // Use ordinal prefix matching because camera model strings are identifiers, not localized text.
     private static bool SonyModelIs(string? model, params string[] prefixes) =>
         model is not null && prefixes.Any(prefix => model.StartsWith(prefix, StringComparison.Ordinal));
 
@@ -954,6 +955,7 @@ internal static partial class MakerNoteLabels
         return SonyModelIs(model, "SLT-", "HV", "ILCA-") ? "n/a" : Whole(number);
     }
 
+    // Resolve AF-area codes only against the vocabulary for the exact supported Sony model family.
     private static string? SonyAFAreaModeSetting(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
@@ -981,6 +983,7 @@ internal static partial class MakerNoteLabels
         return "n/a";
     }
 
+    // Compact Sony models repurpose focus-mode codes; unknown models retain the raw stored number.
     private static string? SonyFocusMode2(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
@@ -993,6 +996,7 @@ internal static partial class MakerNoteLabels
         return number switch { 0 => "Manual", 2 => "AF-S", 3 => "AF-C", 4 => "AF-A", 6 => "DMF", 7 => "AF-D", _ => Stored(number) };
     }
 
+    // The two SHORT coordinates are exposed only for camera families with a verified position layout.
     private static string? SonyFlexibleSpotPosition(ExifValue value, string? model)
     {
         if (value.Count != 2 || value.FieldType != TiffFieldType.Short ||
@@ -1005,6 +1009,7 @@ internal static partial class MakerNoteLabels
         return "n/a";
     }
 
+    // Apply this legacy ISO-noise vocabulary only to compact models that define the field.
     private static string? SonyHighIso2(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
@@ -1016,6 +1021,7 @@ internal static partial class MakerNoteLabels
         return number switch { 0 => "Normal", 1 => "High", 2 => "Low", 3 => "Off", 65535 => "n/a", _ => Stored(number) };
     }
 
+    // Gate AF-tracking labels on the camera families that use these tracking-mode codes.
     private static string? SonyAFTracking(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
@@ -1039,6 +1045,7 @@ internal static partial class MakerNoteLabels
         return null;
     }
 
+    // Select an AF-point numbering scheme from both camera family and the companion area-mode field.
     private static string? SonyAFPointSelected(ExifValue value, string? model, MakerNote? note)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
@@ -1061,6 +1068,7 @@ internal static partial class MakerNoteLabels
         return "n/a";
     }
 
+    // Set 1 uses Sony’s named 20-position grid; unknown codes remain stored numeric values.
     private static string SonyAfPointSet1(long number) => number switch
     {
         0 => "Auto", 1 => "Center", 2 => "Top", 3 => "Upper-right", 4 => "Right", 5 => "Lower-right",
@@ -1069,6 +1077,7 @@ internal static partial class MakerNoteLabels
         17 => "Lower Far Right", 18 => "Lower Far Left", 19 => "Upper Far Left", _ => Stored(number),
     };
 
+    // Set 2 is a sparse AF grid, so array indexes outside its table are not mapped to nearby labels.
     private static string SonyAfPointSet2(long number)
     {
         string[] labels = ["Auto", "A6", "A7", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10",
@@ -1080,6 +1089,7 @@ internal static partial class MakerNoteLabels
         return number == 128 ? "Auto" : number >= 0 && number < labels.Length ? labels[number] : Stored(number);
     }
 
+    // Set 3 uses noncontiguous numeric codes for the larger ILCA autofocus grid.
     private static string SonyAfPointSet3(long number) => number switch
     {
         0 => "Auto", 93 => "A5", 94 => "A6", 95 => "A7", 106 => "B2", 107 => "B3", 108 => "B4", 110 => "B5",
@@ -1172,6 +1182,7 @@ internal static partial class MakerNoteLabels
         return valid.Contains(model, StringComparer.Ordinal) ? Whole(number) : "n/a";
     }
 
+    // Quality codes changed with Sony’s newer Misc3c layout, so choose the table by generation.
     private static string? SonyMisc3cQuality2(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
@@ -1183,6 +1194,7 @@ internal static partial class MakerNoteLabels
         return number switch { 0 => "JPEG", 1 => "Raw", 2 => "Raw + JPEG", 3 => "Raw + MPO", _ => Stored(number) };
     }
 
+    // Older Sony records store image height in eighths; newer generation values are not compatible.
     private static string? SonyMisc3cImageHeight(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
@@ -1194,6 +1206,7 @@ internal static partial class MakerNoteLabels
         return number > 0 ? Whole(8 * number) : "n/a";
     }
 
+    // Expand two-digit release years only for the older layout and keep invalid sentinels unguessed.
     private static string? SonyMisc3cReleaseYear(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
@@ -1205,6 +1218,7 @@ internal static partial class MakerNoteLabels
         return (2000 + number).ToString(CultureInfo.InvariantCulture);
     }
 
+    // Interpret only the one-byte Undefined form as a burst flag; other integer forms stay raw.
     private static string? SonyMultiBurstMode(ExifValue value)
     {
         if (value.Count != 1)
@@ -1214,6 +1228,7 @@ internal static partial class MakerNoteLabels
         return ExifTags.TryInteger(value, 0, out long number) ? Stored(number) : null;
     }
 
+    // Convert the stored zoom percentage only for camera families that assign this field that meaning.
     private static string? SonyMisc2bZoom(ExifValue value, string? model)
     {
         if (value.Count != 1 || !ExifTags.TryInteger(value, 0, out long number))
@@ -1225,6 +1240,7 @@ internal static partial class MakerNoteLabels
         return Whole((long)Math.Round(number / 10.24, MidpointRounding.AwayFromZero)) + "%";
     }
 
+    // Decode the paired Sony image-format/quality codes together; either component alone is ambiguous.
     private static string? SonyQuality2(ExifValue value)
     {
         if (value.Count != 2 || value.FieldType != TiffFieldType.Short ||
@@ -1245,6 +1261,7 @@ internal static partial class MakerNoteLabels
         return "(" + Whole(first) + " " + Whole(second) + ")";
     }
 
+    // Treat the paired enable and level sentinels as a unit, preserving unrecognized combinations.
     private static string? SonyVariableLowPass(ExifValue value)
     {
         if (value.Count != 2 || value.FieldType != TiffFieldType.Short ||
@@ -1257,6 +1274,7 @@ internal static partial class MakerNoteLabels
         };
     }
 
+    // Use the maker-note version as a gate because identical Sony focus codes changed meaning by generation.
     private static string? SonyFocusMode(ExifValue value, MakerNote? note)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
@@ -1271,6 +1289,7 @@ internal static partial class MakerNoteLabels
         return number switch { 1 => "AF-S", 2 => "AF-C", 4 => "Permanent-AF", 65535 => "n/a", _ => Stored(number) };
     }
 
+    // Resolve AF mode with both metadata version and companion focus mode for the newer Sony encoding.
     private static string? SonyAFMode(ExifValue value, MakerNote? note, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
@@ -1294,6 +1313,7 @@ internal static partial class MakerNoteLabels
         return number switch { 0 => "Manual", 2 => "AF-S", 3 => "AF-C", 4 => "AF-A", 6 => "DMF", 7 => "AF-D", _ => Stored(number) };
     }
 
+    // This focus-mode encoding is valid only for the matching Sony metadata version.
     private static string? SonyFocusMode3(ExifValue value, MakerNote? note)
     {
         string? version = SonyMetaVersion(note);
@@ -1304,6 +1324,7 @@ internal static partial class MakerNoteLabels
         return number switch { 0 => "Manual", 2 => "AF-S", 3 => "AF-C", 5 => "Semi-manual", 6 => "DMF", _ => Stored(number) };
     }
 
+    // Decode the six-byte pixel-shift group only when its exact length and nonzero sentinel are present.
     private static string? SonyPixelShiftInfo(ExifValue value)
     {
         if (value.Count != 6 || value.FieldType != TiffFieldType.Undefined)
@@ -1321,6 +1342,7 @@ internal static partial class MakerNoteLabels
             Whole(bytes[5]) + " (0x" + (group >> 22).ToString("x", CultureInfo.InvariantCulture) + ")";
     }
 
+    // The six-byte geometry stores little-endian dimensions and uses the final pair as an absence marker.
     private static string? SonyFocusFrameSize(ExifValue value)
     {
         if (value.Count != 6 || value.FieldType != TiffFieldType.Undefined)
@@ -1335,6 +1357,7 @@ internal static partial class MakerNoteLabels
         return Whole(width) + "x" + Whole(height);
     }
 
+    // Decode Sony lens flags and packed BCD focal/aperture bytes only from the eight-byte signature.
     private static string? SonyLensSpec(ExifValue value)
     {
         if (value.Count != 8 || value.FieldType != TiffFieldType.Byte)
@@ -1372,6 +1395,7 @@ internal static partial class MakerNoteLabels
     private static string Aperture(byte value) =>
         ((value >> 4) & 15).ToString(CultureInfo.InvariantCulture) + "." + (value & 15).ToString(CultureInfo.InvariantCulture);
 
+    // Keep zero Nikon distance as its documented unknown sentinel and reject an unbounded denominator.
     private static string? NikonFocusDistance(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Rational ||
@@ -1384,6 +1408,7 @@ internal static partial class MakerNoteLabels
         return ((double)numerator / denominator).ToString("F2", CultureInfo.InvariantCulture) + " m";
     }
 
+    // Nikon uses zero as “not used”; other valid rational ratios remain explicit magnifications.
     private static string? NikonDigitalZoom(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Rational ||
@@ -1394,6 +1419,7 @@ internal static partial class MakerNoteLabels
         return ((double)numerator / denominator).ToString("F1", CultureInfo.InvariantCulture) + "x";
     }
 
+    // Resolve the two-byte AF area/point pair only when both codes fit their published vocabularies.
     private static string? NikonAfFocusPosition(ExifValue value)
     {
         if (value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined) || value.Count < 2)
@@ -1412,6 +1438,7 @@ internal static partial class MakerNoteLabels
         return value.Count == 1 && value.FieldType == TiffFieldType.Byte && ExifTags.TryInteger(value, 0, out number);
     }
 
+    // Decode Nikon LensData 3 byte units with its logarithmic aperture scale and zero sentinel.
     private static string? NikonLd3Aperture(ExifValue value)
     {
         if (!NikonLd3Byte(value, out long number))
@@ -1419,6 +1446,7 @@ internal static partial class MakerNoteLabels
         return number == 0 ? "n/a" : "F" + Math.Pow(2, number / 24.0).ToString("F1", CultureInfo.InvariantCulture);
     }
 
+    // Convert Nikon LensData 3 focus distance using its encoded logarithmic scale.
     private static string? NikonLd3FocusDistance(ExifValue value)
     {
         if (!NikonLd3Byte(value, out long number))
@@ -1426,6 +1454,7 @@ internal static partial class MakerNoteLabels
         return number == 0 ? "n/a" : (0.01 * Math.Pow(10, number / 40.0)).ToString("F2", CultureInfo.InvariantCulture) + " m";
     }
 
+    // Convert the Nikon LensData 3 focal-length code with the vendor’s five-millimetre base.
     private static string? NikonLd3FocalLength(ExifValue value)
     {
         if (!NikonLd3Byte(value, out long number))
@@ -1433,6 +1462,7 @@ internal static partial class MakerNoteLabels
         return number == 0 ? "n/a" : (5 * Math.Pow(2, number / 24.0)).ToString("F1", CultureInfo.InvariantCulture) + " mm";
     }
 
+    // LensData 3 stores F-stops in twelfths; require the version’s one-byte scalar first.
     private static string? NikonLd3LensFStops(ExifValue value)
     {
         if (!NikonLd3Byte(value, out long number))
@@ -1440,6 +1470,7 @@ internal static partial class MakerNoteLabels
         return "F" + (number / 12.0).ToString("F1", CultureInfo.InvariantCulture);
     }
 
+    // Preserve non-byte representations; only a valid nonzero byte has the reciprocal exit-pupil scale.
     private static string? NikonLd3ExitPupil(ExifValue value)
     {
         if (value.Count != 1)
@@ -1451,6 +1482,7 @@ internal static partial class MakerNoteLabels
         return number == 0 ? Stored(number) : (2048.0 / number).ToString("F1", CultureInfo.InvariantCulture) + " mm";
     }
 
+    // Map Nikon’s signed-byte compensation codes without treating arbitrary values as EV fractions.
     private static string? NikonFlashComp(ExifValue value)
     {
         if (value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined) || value.Count == 0 || value.RawBytes.IsEmpty)
@@ -1466,6 +1498,7 @@ internal static partial class MakerNoteLabels
         };
     }
 
+    // Decode the four-byte numerator/product/denominator form only when its divisor is nonzero.
     private static string? Nikon3LensFStops(ExifValue value)
     {
         if (value.FieldType != TiffFieldType.Undefined || value.Count != 4 || value.RawBytes.Length != 4)
@@ -1477,12 +1510,14 @@ internal static partial class MakerNoteLabels
         return fstops.ToString("G6", CultureInfo.InvariantCulture);
     }
 
+    // LensData 4 values are valid only as one unsigned SHORT; keep this gate shared by its decoders.
     private static bool NikonLd4Short(ExifValue value, out long number)
     {
         number = 0;
         return value.Count == 1 && value.FieldType == TiffFieldType.Short && ExifTags.TryInteger(value, 0, out number);
     }
 
+    // LensData 4 uses a different SHORT-based logarithmic aperture scale from LensData 3.
     private static string? NikonLd4Aperture(ExifValue value)
     {
         if (!NikonLd4Short(value, out long number))
@@ -1490,6 +1525,7 @@ internal static partial class MakerNoteLabels
         return number == 0 ? "n/a" : "F" + Math.Pow(2, number / 384.0 - 1).ToString("F1", CultureInfo.InvariantCulture);
     }
 
+    // In LensData 4 the nonzero SHORT is already expressed in millimetres.
     private static string? NikonLd4FocalLength(ExifValue value)
     {
         if (!NikonLd4Short(value, out long number))
@@ -1497,6 +1533,7 @@ internal static partial class MakerNoteLabels
         return number == 0 ? "n/a" : Whole(number) + " mm";
     }
 
+    // Apply the LensData 4 logarithmic distance scale only to a single SHORT component.
     private static string? NikonLd4FocusDistance(ExifValue value)
     {
         if (!NikonLd4Short(value, out long number))
@@ -1504,6 +1541,7 @@ internal static partial class MakerNoteLabels
         return number == 0 ? "n/a" : (0.01 * Math.Pow(10, number / 10240.0)).ToString("F2", CultureInfo.InvariantCulture) + " m";
     }
 
+    // Convert Nikon’s one-byte logarithmic ISO code to the nearest whole sensitivity.
     private static string? NikonIiIso(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number) || number is < 0 or > 255)
@@ -1512,6 +1550,7 @@ internal static partial class MakerNoteLabels
         return Whole((long)Math.Round(iso, MidpointRounding.AwayFromZero));
     }
 
+    // Require two positive-denominator rationals and report their source order as sensor dimensions.
     private static string? NikonSensorPixelSize(ExifValue value)
     {
         if (value.Count != 2 || value.FieldType != TiffFieldType.Rational)
@@ -1527,6 +1566,7 @@ internal static partial class MakerNoteLabels
         return sizes[0] + " x " + sizes[1] + " um";
     }
 
+    // Read the embedded barometer word from bytes 6–9 using the value’s declared byte order.
     private static string? NikonBarometerInfo(ExifValue value)
     {
         if (value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined) || value.Count < 10 || value.RawBytes.Length < 10)
@@ -1545,6 +1585,7 @@ internal static partial class MakerNoteLabels
         return Whole(number);
     }
 
+    // Normalize Nikon D-series byte order, then require every set bit to have a known AF-point label.
     private static string? NikonAFPointsInFocus(Rule rule, ExifValue value, string? cameraModel)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long raw) || raw is < 0 or > 65535)
@@ -1565,6 +1606,7 @@ internal static partial class MakerNoteLabels
         return mask != 0 && (mask & ~known) == 0 ? string.Join(", ", labels) : null;
     }
 
+    // Interpret Nikon flash fields only with a supported Info version and the companion control-mode bytes.
     private static string? NikonFlashInfo(string name, ExifValue value, MakerNote? note)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long raw) || raw is < 0 or > 255 ||
@@ -1628,6 +1670,7 @@ internal static partial class MakerNoteLabels
         return NikonFlashCompensation(number, mode is 6 or 7);
     }
 
+    // Require the flash entry’s exact four-byte Undefined version before applying versioned field meanings.
     private static bool NikonFlashInfoVersion(MakerNote? note, out string? version)
     {
         version = null;
@@ -1638,6 +1681,7 @@ internal static partial class MakerNoteLabels
         return true;
     }
 
+    // Accept a companion flash-control field only as one byte in range.
     private static bool NikonFlashInfoByte(MakerNote? note, string name, out int number)
     {
         number = 0;
@@ -1648,6 +1692,7 @@ internal static partial class MakerNoteLabels
         return true;
     }
 
+    // Resolve named fields from Nikon’s flash-info array rather than similarly named top-level tags.
     private static bool NikonFlashInfoValue(MakerNote? note, string name, out ExifValue? value)
     {
         value = null;
@@ -1660,6 +1705,7 @@ internal static partial class MakerNoteLabels
         return true;
     }
 
+    // Append every adapter bit present; multiple Nikon flash accessories can be attached at once.
     private static void AddNikonFlashAdaptors(List<string> parts, int value)
     {
         if ((value & 0x04) != 0) parts.Add("Bounce Flash adaptor");
@@ -1673,6 +1719,7 @@ internal static partial class MakerNoteLabels
         5 => "GN (distance priority)", 6 => "Manual", 7 => "Repeating Flash", _ => Stored(mode),
     };
 
+    // Normal flash uses sixth-stop codes; manual modes encode a reciprocal power and optional fraction.
     private static string NikonFlashCompensation(int value, bool manualScale)
     {
         if (!manualScale)
@@ -1706,6 +1753,7 @@ internal static partial class MakerNoteLabels
                (numbers[2] == numbers[3] ? numbers[2] : numbers[2] + "-" + numbers[3]);
     }
 
+    // Canon stores this dimension pair height-first; expose the conventional width-by-height order.
     private static string? HeightThenWidth(ExifValue value)
     {
         if (value.Count != 2 || value.FieldType is not (TiffFieldType.Long or TiffFieldType.Short) ||
@@ -1714,6 +1762,7 @@ internal static partial class MakerNoteLabels
         return Whole(width) + " x " + Whole(height);
     }
 
+    // Decode packed Canon directory/file numbers only for the camera generations with known bit layouts.
     private static string? CanonFileNumber(ExifValue value, string? cameraModel)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Long || !ExifTags.TryInteger(value, 0, out long stored))
@@ -1744,6 +1793,7 @@ internal static partial class MakerNoteLabels
         return secondDirectory.ToString(CultureInfo.InvariantCulture) + "-" + secondFile.ToString("D4", CultureInfo.InvariantCulture);
     }
 
+    // Canon encodes bulb duration in tenths; preserve the integral seconds reported by the tag.
     private static string? CanonBulbDuration(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
@@ -1751,6 +1801,7 @@ internal static partial class MakerNoteLabels
         return (stored / 10).ToString(CultureInfo.InvariantCulture);
     }
 
+    // Preserve unknown Canon picture-style codes instead of mapping them to a neighboring style.
     private static string? CanonPictureStyle(Rule rule, ExifValue value)
     {
         if (value.Count == 0 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort) || !ExifTags.TryInteger(value, 0, out long code))
@@ -1759,6 +1810,7 @@ internal static partial class MakerNoteLabels
         return label ?? $"({code.ToString(CultureInfo.InvariantCulture)})";
     }
 
+    // Decode this serial only for the model ID whose packed high/low words have a verified format.
     private static string? CanonSerialNumber(ExifValue value, MakerNote? note)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Long || note is null ||
@@ -1771,11 +1823,13 @@ internal static partial class MakerNoteLabels
                (number & 0xffff).ToString("D5", CultureInfo.InvariantCulture);
     }
 
+    // Raw fallback explicitly marks the unconverted code so it cannot be confused with a labeled value.
     private static string? CanonRaw(ExifValue value) =>
         value.Count == 1 && ExifTags.TryInteger(value, 0, out long number)
             ? $"({number.ToString(CultureInfo.InvariantCulture)})"
             : null;
 
+    // Auto ISO uses Canon’s one-thirty-second EV code and a base sensitivity of ISO 100.
     private static string? CanonAutoIso(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long code))
@@ -1784,6 +1838,7 @@ internal static partial class MakerNoteLabels
         return CanonNumber(100.0 * Math.Pow(2.0, ev / 32.0));
     }
 
+    // Convert Canon’s encoded ISO correction through its EV scale, distinct from AutoISO.
     private static string? CanonIso(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long code))
@@ -1791,6 +1846,7 @@ internal static partial class MakerNoteLabels
         return CanonNumber(100.0 * Math.Pow(2.0, CanonEv(code)) / 32.0);
     }
 
+    // Sign-extend Canon’s 16-bit EV value before applying the five-EV offset.
     private static string? CanonMeasuredEv(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort) ||
@@ -1800,6 +1856,7 @@ internal static partial class MakerNoteLabels
         return (Math.Round(ev * 100.0, MidpointRounding.AwayFromZero) / 100.0).ToString("F2", CultureInfo.InvariantCulture);
     }
 
+    // Decode the second Canon measured-EV field using its separate eighth-stop scale.
     private static string? CanonMeasuredEv2(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
@@ -1807,6 +1864,7 @@ internal static partial class MakerNoteLabels
         return (stored / 8.0 - 6.0).ToString("F2", CultureInfo.InvariantCulture);
     }
 
+    // Convert Canon’s signed EV aperture code and normalize the known floating-point F3.5 rounding case.
     private static string? CanonAperture(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort) ||
@@ -1817,6 +1875,7 @@ internal static partial class MakerNoteLabels
         return "F" + CanonNumber(fNumber, "G2");
     }
 
+    // Bound Canon shutter formatting to TIFF-rational range and use 1 s when the ratio is not representable.
     private static string? CanonShutter(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
@@ -1836,6 +1895,7 @@ internal static partial class MakerNoteLabels
         return numerator > maxRationalPart ? "1 s" : numerator.ToString(CultureInfo.InvariantCulture) + " s";
     }
 
+    // Treat the all-ones SHORT as the absent guide-number sentinel.
     private static string? CanonFlashGuideNumber(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
@@ -1843,6 +1903,7 @@ internal static partial class MakerNoteLabels
         return stored == ushort.MaxValue ? "--" : (stored / 32).ToString(CultureInfo.InvariantCulture);
     }
 
+    // Split the Canon packed AF-point count and mask, reporting only the three defined focus positions.
     private static string? CanonAfPointUsed(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
@@ -1859,6 +1920,7 @@ internal static partial class MakerNoteLabels
         return focusPoints.ToString(CultureInfo.InvariantCulture) + " focus points; " + string.Join(", ", labels) + " used";
     }
 
+    // Require a nonzero lens unit scale before converting Canon’s max/min focal-length pair.
     private static string? CanonLens(ExifValue value)
     {
         if (value.Count < 3 || value.FieldType != TiffFieldType.Short ||
@@ -1872,6 +1934,7 @@ internal static partial class MakerNoteLabels
             : second.ToString("F1", CultureInfo.InvariantCulture) + " - " + first.ToString("F1", CultureInfo.InvariantCulture) + " mm";
     }
 
+    // Use the lens-info unit field from the companion array; absent or zero units make the ratio unsafe.
     private static string? CanonFocalLength(ExifValue value, MakerNote? note)
     {
         if (value.Count < 4 || value.FieldType != TiffFieldType.Short || note is null ||
@@ -1888,6 +1951,7 @@ internal static partial class MakerNoteLabels
         : double.IsNaN(value) ? "nan"
         : value.ToString(format, CultureInfo.InvariantCulture).Replace('E', 'e');
 
+    // Preserve Canon’s fractional EV encodings, including the documented nonuniform 1/3-stop codes.
     private static double CanonEv(long value)
     {
         long sign = value < 0 ? -1 : 1;
@@ -1904,6 +1968,7 @@ internal static partial class MakerNoteLabels
         return sign * (whole + fraction) / 32.0;
     }
 
+    // Return a label list only when every set bit is known; partial masks would hide unsupported flags.
     private static string? BitMask(Rule rule, ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short ||
@@ -1920,6 +1985,7 @@ internal static partial class MakerNoteLabels
         return (mask & ~known) == 0 && labels.Count != 0 ? string.Join(", ", labels) : null;
     }
 
+    // Enumerate set bit positions only from a complete supported SHORT sequence.
     private static string? BitPositions(ExifValue value)
     {
         if (value.Count == 0 || value.FieldType != TiffFieldType.Short)

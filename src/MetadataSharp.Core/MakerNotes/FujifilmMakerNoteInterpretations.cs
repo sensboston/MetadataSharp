@@ -2,8 +2,10 @@ using System.Globalization;
 
 namespace MetadataSharp.Core.MakerNotes;
 
+// Fujifilm encodings include packed drive modes and byte-order-sensitive face-element arrays.
 internal static partial class MakerNoteLabels
 {
+    // Report the raw pair when either channel is not on Fujifilm’s twenty-unit adjustment step.
     private static string? FujifilmWhiteBalanceFineTune(ExifValue value)
     {
         if (value.FieldType != TiffFieldType.SLong || value.Count != 2 || value.RawBytes.Length != 8 ||
@@ -13,6 +15,7 @@ internal static partial class MakerNoteLabels
         return "R: " + Whole(red / 20) + " B: " + Whole(blue / 20);
     }
 
+    // Fujifilm stores an eighth-step zoom ratio in a 32-bit unsigned value.
     private static string? FujifilmDigitalZoom(ExifValue value)
     {
         if (value.FieldType != TiffFieldType.Long || value.Count != 1 || !ExifTags.TryInteger(value, 0, out long raw))
@@ -21,6 +24,7 @@ internal static partial class MakerNoteLabels
         return zoom + "(" + Whole((uint)raw) + ")";
     }
 
+    // Decode the packed drive mode and its three companion bytes without treating them as separate tags.
     private static string? FujifilmDriveSetting(ExifValue value)
     {
         if (value.FieldType != TiffFieldType.Long || value.Count != 1 || !ExifTags.TryInteger(value, 0, out long raw))
@@ -38,6 +42,7 @@ internal static partial class MakerNoteLabels
         return result;
     }
 
+    // Read face-element codes as ASCII digits or byte-order-aware SHORTs and preserve unknown codes.
     private static string? FujifilmFaceElementTypes(ExifValue value)
     {
         if (value.FieldType is not (TiffFieldType.Ascii or TiffFieldType.Short))
