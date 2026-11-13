@@ -39,6 +39,10 @@ DOCUMENTED_EXCEPTIONS: dict[str, str] = {
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."
     ),
+    "Exif.CanonFi.FileNumber": (
+        "Exiv2 selects one of several Canon file-number bit layouts from Exif.Image.Model; the "
+        "MakerNote interpreter does not have that enclosing EXIF model context, so it keeps the raw value."
+    ),
 }
 
 # The parser deliberately refuses these two damaged/over-budget inputs. These are exact pinned corpus

@@ -552,14 +552,14 @@ internal static partial class MakerNoteLabels
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long code))
             return null;
         double ev = CanonEv(code);
-        return (100.0 * Math.Pow(2.0, ev / 32.0)).ToString("G6", CultureInfo.InvariantCulture);
+        return CanonNumber(100.0 * Math.Pow(2.0, ev / 32.0));
     }
 
     private static string? CanonIso(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long code))
             return null;
-        return (100.0 * Math.Pow(2.0, CanonEv(code)) / 32.0).ToString("G6", CultureInfo.InvariantCulture);
+        return CanonNumber(100.0 * Math.Pow(2.0, CanonEv(code)) / 32.0);
     }
 
     private static string? CanonMeasuredEv(ExifValue value)
@@ -585,18 +585,25 @@ internal static partial class MakerNoteLabels
             return null;
         double fNumber = Math.Pow(2.0, CanonEv(unchecked((short)stored)) / 2.0);
         if (Math.Abs(fNumber - 3.5) < 0.1) fNumber = 3.5;
-        return "F" + fNumber.ToString("G2", CultureInfo.InvariantCulture);
+        return "F" + CanonNumber(fNumber, "G2");
     }
 
     private static string? CanonShutter(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
             return null;
-        double exposure = Math.Pow(2.0, CanonEv(stored));
-        if (!double.IsFinite(exposure) || exposure <= 0) return null;
-        if (exposure > 1)
-            return "1/" + Math.Round(exposure, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) + " s";
-        return Math.Round(1.0 / exposure, MidpointRounding.AwayFromZero) + " s";
+        double exposureDenominator = Math.Pow(2.0, CanonEv(stored));
+        if (!double.IsFinite(exposureDenominator) || exposureDenominator <= 0) return null;
+        const double maxRationalPart = uint.MaxValue;
+        if (exposureDenominator > 1)
+        {
+            double denominator = Math.Round(exposureDenominator, MidpointRounding.AwayFromZero);
+            return denominator > maxRationalPart
+                ? "1 s"
+                : "1/" + denominator.ToString(CultureInfo.InvariantCulture) + " s";
+        }
+        double numerator = Math.Round(1.0 / exposureDenominator, MidpointRounding.AwayFromZero);
+        return numerator > maxRationalPart ? "1 s" : numerator.ToString(CultureInfo.InvariantCulture) + " s";
     }
 
     private static string? CanonFlashGuideNumber(ExifValue value)
@@ -644,6 +651,12 @@ internal static partial class MakerNoteLabels
             return null;
         return ((double)focal / units).ToString("F1", CultureInfo.InvariantCulture) + " mm";
     }
+
+    private static string CanonNumber(double value, string format = "G6") =>
+        double.IsPositiveInfinity(value) ? "inf"
+        : double.IsNegativeInfinity(value) ? "-inf"
+        : double.IsNaN(value) ? "nan"
+        : value.ToString(format, CultureInfo.InvariantCulture).Replace('E', 'e');
 
     private static double CanonEv(long value)
     {
