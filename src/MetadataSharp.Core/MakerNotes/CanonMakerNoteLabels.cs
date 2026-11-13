@@ -62,7 +62,6 @@ internal static partial class MakerNoteLabels
         new(0x0001, "Macro", [(2, "Off")]),
         new(0x0001, "Selftimer", [(0, "Off")], Form.TenthsOfSecond),
         new(0x0001, "Quality", [(2, "Normal"), (3, "Fine"), (4, "RAW"), (5, "Superfine"), (7, "CRAW")]),
-        new(0x0001, "ISOSpeed", [(16484, "100")]),
         new(0x0001, "FlashMode", [(0, "Off"), (1, "Auto"), (6, "On + red-eye"), (16, "External")]),
         new(0x0001, "DriveMode",
         [
@@ -83,7 +82,7 @@ internal static partial class MakerNoteLabels
         new(0x0001, "Saturation", NormalHigh),
         new(0x0001, "Sharpness", NormalHigh),
         // 16 to 19 name a sensitivity; a number with bit 14 set carries one and is not read here.
-        new(0x0001, "ISOSpeed", [(0, "n/a"), (15, "Auto"), (17, "100")]),
+        new(0x0001, "ISOSpeed", [(0, "n/a"), (15, "Auto"), (17, "100"), (16484, "100")]),
         new(0x0001, "MeteringMode", [(1, "Spot"), (3, "Evaluative"), (4, "Partial"), (5, "Center-weighted average")]),
         new(0x0001, "FocusType", [(1, "Auto"), (2, "Not known")]),
         new(0x0001, "AFPoint",
