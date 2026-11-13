@@ -71,6 +71,23 @@ class MakerNoteRenderGateTests(unittest.TestCase):
         self.assertFalse(passed)
         self.assertIn("raw outcome extra-key", message)
 
+    def test_exact_documented_canon_raw_extras_are_retained(self):
+        for key in gate.DOCUMENTED_RAW_EXTRA_KEYS:
+            with self.subTest(key=key):
+                group = key.rsplit(".", 1)[0]
+                report = {
+                    "by_family": {group: {"match-value": 1, "extra-key": 1}},
+                    "interpreted": {"by_family": {group: {"match-interpreted": 1}}},
+                    "per_file": [{"label": "exiv2:sample.exv", "rows_dropped": 0, "rows": [
+                        {"key": group + ".Known", "outcome": "match-value", "translated": True,
+                         "interpreted": "match-interpreted", "our_interpreted": "x", "their_interpreted": "x"},
+                        {"key": key, "outcome": "extra-key"},
+                    ]}],
+                }
+                passed, message = gate.evaluate(report, [group])
+                self.assertTrue(passed, message)
+                self.assertIn("retained documented raw extra", message)
+
     def test_exact_documented_file_refusal_is_scoped_by_name_and_reason(self):
         report = self.report()
         report["by_family"][self.GROUP] = {"not-read": 1}

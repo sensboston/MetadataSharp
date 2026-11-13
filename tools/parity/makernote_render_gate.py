@@ -47,6 +47,16 @@ DOCUMENTED_EXCEPTIONS: dict[str, str] = {
 
 # The parser deliberately refuses these two damaged/over-budget inputs. These are exact pinned corpus
 # files and exact refusal codes, not an exemption for the MakerNote family or for similar future files.
+# The raw Canon decoder retains these named fields, but the pinned Exiv2 corpus output does not
+# publish them as keys. Categories (0x0023) and PictureStylePC (0x4009) are explicitly disabled in
+# Exiv2's Canon tag table; FilterInfo (0x4024) is not surfaced for the pinned records. Keep their
+# original raw bytes available rather than silently dropping keys to mimic that omission.
+DOCUMENTED_RAW_EXTRA_KEYS: dict[str, str] = {
+    "Exif.Canon.Categories": "Exiv2 0.28.9 disables Canon tag 0x0023 in canonmn_int.cpp",
+    "Exif.Canon.PictureStylePC": "Exiv2 0.28.9 disables Canon tag 0x4009 in canonmn_int.cpp",
+    "Exif.Canon.FilterInfo": "Exiv2 0.28.9 does not surface Canon tag 0x4024 in these pinned records",
+}
+
 DOCUMENTED_FILE_REFUSALS: dict[str, tuple[str, str]] = {
     "exiv2:issue_1706_poc.exv": ("LimitExceeded", "the EXIF directory exceeds configured reader limits"),
     "exiv2:issue_1920_poc.tiff": ("InvalidExif", "the EXIF structure is malformed"),
@@ -112,6 +122,7 @@ def evaluate(report: dict[str, Any], groups: list[str],
         opaque_extras = 0
         refused_rows: Counter[str] = Counter()
         key_exception_rows: Counter[str] = Counter()
+        raw_extra_rows: Counter[str] = Counter()
         for file in report["per_file"]:
             if file.get("rows_dropped", 0):
                 # The caller requests a high row limit for the corpus; fail closed if any rows were cut.
@@ -127,6 +138,8 @@ def evaluate(report: dict[str, Any], groups: list[str],
                 if outcome == EXTRA_KEY:
                     if OPAQUE_NUMERIC_KEY.fullmatch(key):
                         opaque_extras += 1
+                    elif key in DOCUMENTED_RAW_EXTRA_KEYS:
+                        raw_extra_rows[key] += 1
                     else:
                         failures.append(f"{group}: {label} {key}: raw outcome {outcome}")
                     continue
@@ -155,6 +168,8 @@ def evaluate(report: dict[str, Any], groups: list[str],
             output.append(f"    retained numeric unknown-tag rows: {opaque_extras} (no Exiv2 named key exists)")
         for label, count in sorted(refused_rows.items()):
             output.append(f"    documented reader refusal: {label}: {count} MakerNote rows; {DOCUMENTED_FILE_REFUSALS[label][1]}")
+        for key, count in sorted(raw_extra_rows.items()):
+            output.append(f"    retained documented raw extra: {key}: {count} rows; {DOCUMENTED_RAW_EXTRA_KEYS[key]}")
         for key, reason in exceptions.items():
             if key.startswith(group + "."):
                 output.append(
