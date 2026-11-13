@@ -88,6 +88,7 @@ public sealed class MakerNoteInterpretationTests
 
     [Theory]
     [InlineData(0x0001, "Quality", 4, "RAW")]
+    [InlineData(0x0001, "ISOSpeed", 16484, "100")]
     [InlineData(0x0001, "DriveMode", 5, "Continuous, high")]
     [InlineData(0x0001, "AESetting", 65535, "n/a")]
     [InlineData(0x0001, "AFPoint", 0x3003, "Center")]
@@ -96,11 +97,16 @@ public sealed class MakerNoteInterpretationTests
     [InlineData(0x0004, "WhiteBalance", 9, "Manual Temperature (Kelvin)")]
     [InlineData(0x0004, "CameraType", 248, "EOS High-end")]
     [InlineData(0x0004, "SelfTimer2", 65535, "n/a")]
+    [InlineData(0x0004, "SelfTimer2", 0, "Selftimer 2s")]
+    [InlineData(0x0004, "SelfTimer2", 1, "Selftimer 10s")]
     public void ACanonArrayFieldReadsAsItsLabel(int tag, string name, int number, string expected) =>
         Assert.Equal(expected, Field(MakerNoteFormat.Canon, tag, name, Shorts(number)));
 
     [Theory]
     [InlineData(0x0093, "RawJpgSize", -1, "n/a")]
+    [InlineData(0x0093, "RawJpgQuality", 0, "unkown")]
+    [InlineData(0x0093, "RFLensType", 0, "n/a")]
+    [InlineData(0x0093, "RFLensType", 274, "Canon RF 24-105mm F4-7.1 IS STM")]
     [InlineData(0x0093, "NoiseReduction", 4, "Auto")]
     [InlineData(0x0093, "FilterEffect", -1, "(-1)")]
     [InlineData(0x00A0, "PictureStyle", 131, "Landscape")]
@@ -142,6 +148,10 @@ public sealed class MakerNoteInterpretationTests
     [InlineData("FocusDistanceLower", -1, "(-1)")]
     public void ACanonFocusDistanceIsMetresWithTwoDecimals(string name, int number, string expected) =>
         Assert.Equal(expected, Field(MakerNoteFormat.Canon, 0x0093, name, SignedShorts(number)));
+
+    [Fact]
+    public void CanonLensSerialNumberIsRenderedAsTwoHexDigitsPerByte() =>
+        Assert.Equal("1c00000000", Field(MakerNoteFormat.Canon, 0x4019, "LensSerialNumber", Bytes(0x1C, 0, 0, 0, 0), index: 0));
 
     [Fact]
     public void CanonTagsOfTheNotesOwnDirectoryAreRead()

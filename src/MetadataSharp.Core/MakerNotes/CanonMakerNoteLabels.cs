@@ -62,6 +62,7 @@ internal static partial class MakerNoteLabels
         new(0x0001, "Macro", [(2, "Off")]),
         new(0x0001, "Selftimer", [(0, "Off")], Form.TenthsOfSecond),
         new(0x0001, "Quality", [(2, "Normal"), (3, "Fine"), (4, "RAW"), (5, "Superfine"), (7, "CRAW")]),
+        new(0x0001, "ISOSpeed", [(16484, "100")]),
         new(0x0001, "FlashMode", [(0, "Off"), (1, "Auto"), (6, "On + red-eye"), (16, "External")]),
         new(0x0001, "DriveMode",
         [
@@ -114,11 +115,13 @@ internal static partial class MakerNoteLabels
         new(0x0004, "CameraType", [(0, "n/a"), (248, "EOS High-end"), (250, "Compact"), (252, "EOS Mid-range")]),
         new(0x0004, "AutoRotate", [(0, "None"), (1, "Rotate 90 CW"), (3, "Rotate 270 CW")]),
         new(0x0004, "NDFilter", [(0, "Off"), (65535, "n/a")]),
-        new(0x0004, "SelfTimer2", [(65535, "n/a")]),
+        new(0x0004, "SelfTimer2", [(65535, "n/a"), (0, "Selftimer 2s"), (1, "Selftimer 10s")]),
 
         // FileInfo (0x0093).
         new(0x0093, "BracketMode", [(0, "Off"), (1, "AEB")]),
-        new(0x0093, "RawJpgQuality", [(3, "Fine"), (-1, "n/a")]),
+        new(0x0093, "RawJpgQuality", [(-1, "n/a"), (0, "unkown"), (1, "Economy"), (2, "Normal"),
+            (3, "Fine"), (4, "RAW"), (5, "Superfine"), (7, "CRAW")]),
+        new(0x0093, "RFLensType", [(0, "n/a"), (274, "Canon RF 24-105mm F4-7.1 IS STM")]),
         new(0x0093, "RawJpgSize", [(0, "Large"), (-1, "n/a")]),
         new(0x0093, "NoiseReduction", [(0, "Off"), (3, "On"), (4, "Auto")]),
         new(0x0093, "WBBracketMode", [(0, "Off")]),

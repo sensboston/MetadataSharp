@@ -13,6 +13,16 @@ internal static class CanonMakerNoteArrays
 
     internal static IReadOnlyList<MakerNoteField> Decompose(ushort tag, ExifValue value)
     {
+        // Canon LensInfo is commonly stored as SLong[7], but Exiv2 exposes its first five raw bytes
+        // as CanonLe.LensSerialNumber. Preserve that byte view rather than requiring a TIFF BYTE type.
+        if (tag == 0x4019)
+        {
+            ReadOnlySpan<byte> lensInfo = value.RawBytes;
+            if (lensInfo.Length < 5)
+                return [];
+            return [new MakerNoteField(0, "LensSerialNumber",
+                ExifValue.FromRaw(TiffFieldType.Byte, 5, value.ByteOrder, lensInfo[..5]), null, 0)];
+        }
         if (tag == 0x0026)
             return value.FieldType is TiffFieldType.Short or TiffFieldType.SShort ? AFInfo(value) : [];
         if (Find(tag) is not Layout layout)
@@ -98,7 +108,6 @@ internal static class CanonMakerNoteArrays
         0x4013 => AFMicroAdj,
         0x4016 => VignettingCorr2,
         0x4018 => LightingOpt,
-        0x4019 => LensInfo,
         0x4020 => AmbienceInfo,
         0x4021 => MultiExp,
         0x4025 => HDRInfo,
@@ -160,6 +169,7 @@ internal static class CanonMakerNoteArrays
         new(14, "FilterEffect"), new(15, "ToningEffect"), new(16, "MacroMagnification"),
         new(19, "LiveViewShooting"), new(20, "FocusDistanceUpper"), new(21, "FocusDistanceLower"),
         new(23, "ShutterMode"), new(25, "FlashExposureLock"), new(32, "AntiFlicker"),
+        new(61, "RFLensType", TiffFieldType.Short),
     ]);
 
     private static readonly Layout TimeInfo = new(TiffFieldType.SLong,
@@ -177,8 +187,6 @@ internal static class CanonMakerNoteArrays
         new(4, "LongExposureNoiseReduction"), new(5, "HighISONoiseReduction"), new(10, "DigitalLensOptimizer"),
         new(11, "DualPixelRaw"),
     ]);
-
-    private static readonly Layout LensInfo = new(TiffFieldType.Byte, [new(0, "LensSerialNumber", TiffFieldType.Byte, 5)]);
 
     private static readonly Layout AmbienceInfo = new(TiffFieldType.SLong, [new(1, "AmbienceSelection")]);
 
@@ -208,7 +216,7 @@ internal static class CanonMakerNoteArrays
 
     internal static IEnumerable<(ushort Tag, IReadOnlyList<ushort> Indexes)> LayoutsForTests()
     {
-        foreach (ushort tag in new ushort[] { 0x0001, 0x0004, 0x0005, 0x000F, 0x0012, 0x0093, 0x00A0, 0x0035, 0x4013, 0x4016, 0x4018, 0x4019, 0x4020, 0x4021, 0x4025, 0x4028 })
+        foreach (ushort tag in new ushort[] { 0x0001, 0x0004, 0x0005, 0x000F, 0x0012, 0x0093, 0x00A0, 0x0035, 0x4013, 0x4016, 0x4018, 0x4020, 0x4021, 0x4025, 0x4028 })
             yield return (tag, Find(tag)!.Fields.Select(f => f.Index).ToArray());
     }
 }
