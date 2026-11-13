@@ -112,8 +112,8 @@ class MakerNoteRenderGateTests(unittest.TestCase):
     def test_gap_details_keep_actionable_examples(self):
         report = self.report(interpreted="not-interpreted")
         details = gate.gap_details(report, [self.GROUP])
-        self.assertEqual(details[0]["key"], self.GROUP + ".Quality")
-        self.assertEqual(details[0]["files"], ["exiv2:sample.dng"])
+        self.assertEqual(details[self.GROUP][0]["key"], self.GROUP + ".Quality")
+        self.assertEqual(details[self.GROUP][0]["files"], ["exiv2:sample.dng"])
 
 
 if __name__ == "__main__":
