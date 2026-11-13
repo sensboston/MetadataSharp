@@ -251,6 +251,16 @@ public sealed class MakerNote
         return MakerNotes.MakerNoteLabels.Interpret(this, entry);
     }
 
+    /// <summary>Reads an entry, supplying the enclosing image model when a vendor needs it.</summary>
+    /// <param name="entry">A tag of this note's own directory.</param>
+    /// <param name="cameraModel">The enclosing EXIF image model, if known.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry" /> is null.</exception>
+    public string? InterpretForModel(MakerNoteEntry entry, string? cameraModel)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        return MakerNotes.MakerNoteLabels.Interpret(this, entry, cameraModel);
+    }
+
     /// <summary>
     /// The human-readable form of one field of an array-valued tag, or of one entry of the
     /// sub-directory a pointer tag leads to; null when this release has none for it. The rules are those
@@ -263,6 +273,18 @@ public sealed class MakerNote
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(field);
-        return MakerNotes.MakerNoteLabels.Interpret(Format, entry, field);
+        return MakerNotes.MakerNoteLabels.Interpret(this, entry, field);
+    }
+
+    /// <summary>Reads a field, supplying the enclosing image model when a vendor needs it.</summary>
+    /// <param name="entry">The tag the field belongs to.</param>
+    /// <param name="field">One of the tag's <see cref="MakerNoteEntry.Fields" />.</param>
+    /// <param name="cameraModel">The enclosing EXIF image model, if known.</param>
+    /// <exception cref="ArgumentNullException">An argument is null.</exception>
+    public string? InterpretFieldForModel(MakerNoteEntry entry, MakerNoteField field, string? cameraModel)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(field);
+        return MakerNotes.MakerNoteLabels.Interpret(this, entry, field, cameraModel);
     }
 }

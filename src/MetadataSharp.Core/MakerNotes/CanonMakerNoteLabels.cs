@@ -20,7 +20,23 @@ internal static partial class MakerNoteLabels
     [
         // The note's own directory.
         new(Top, "FileNumber", [], Form.DirectoryAndFile),
-        new(Top, "ColorSpace", [(1, "sRGB"), (2, "Adobe RGB")]),
+        new(Top, "FocalLength", [], Form.CanonFocalLength),
+        new(Top, "PictureStyleUserDef",
+            [(0x00, "None"), (0x01, "Standard"), (0x02, "Portrait"), (0x03, "High Saturation"),
+             (0x04, "Adobe RGB"), (0x05, "Low Saturation"), (0x06, "CM Set 1"), (0x07, "CM Set 2"),
+             (0x21, "User Def. 1"), (0x22, "User Def. 2"), (0x23, "User Def. 3"),
+             (0x41, "PC 1"), (0x42, "PC 2"), (0x43, "PC 3"), (0x81, "Standard"),
+             (0x82, "Portrait"), (0x83, "Landscape"), (0x84, "Neutral"), (0x85, "Faithful"),
+             (0x86, "Monochrome"), (0x87, "Auto"), (0x88, "Fine Detail")], Form.CanonPictureStyle),
+        new(Top, "PictureStylePC",
+            [(0x00, "None"), (0x01, "Standard"), (0x02, "Portrait"), (0x03, "High Saturation"),
+             (0x04, "Adobe RGB"), (0x05, "Low Saturation"), (0x06, "CM Set 1"), (0x07, "CM Set 2"),
+             (0x21, "User Def. 1"), (0x22, "User Def. 2"), (0x23, "User Def. 3"),
+             (0x41, "PC 1"), (0x42, "PC 2"), (0x43, "PC 3"), (0x81, "Standard"),
+             (0x82, "Portrait"), (0x83, "Landscape"), (0x84, "Neutral"), (0x85, "Faithful"),
+             (0x86, "Monochrome"), (0x87, "Auto"), (0x88, "Fine Detail")], Form.CanonPictureStyle),
+        new(Top, "SerialNumber", [], Form.CanonSerialNumber),
+        new(Top, "ColorSpace",  [(1, "sRGB"), (2, "Adobe RGB")]),
         new(Top, "DateStampMode", [(0, "Off")]),
         new(Top, "SerialNumberFormat", [(0x90000000, "Format 1"), (0xA0000000, "Format 2")]),
         new(Top, "ModelID",
@@ -58,7 +74,38 @@ internal static partial class MakerNoteLabels
         new(0x0026, "AFPointsSelected", [], Form.BitPositions),
         new(0x0026, "AFPointsUnusable", [], Form.BitPositions),
 
-        // CameraSettings (0x0001).
+        // PictureInfo AF-point masks and Panorama direction.
+        new(0x0012, "AFPointsUsed",
+            [(0x01, "right"), (0x02, "mid-right"), (0x04, "bottom"), (0x08, "center"),
+             (0x10, "top"), (0x20, "mid-left"), (0x40, "left")], Form.BitMask),
+        new(0x0012, "AFPointsUsed20D",
+            [(0x001, "top"), (0x002, "upper-left"), (0x004, "upper-right"), (0x008, "left"),
+             (0x010, "center"), (0x020, "right"), (0x040, "lower-left"), (0x080, "lower-right"),
+             (0x100, "bottom")], Form.BitMask),
+        new(0x0005, "PanoramaDirection",
+            [(0, "Left to right"), (1, "Right to left"), (2, "Bottom to top"), (3, "Top to bottom"),
+             (4, "2x2 matrix (Clockwise)")]),
+
+        // CameraSettings (0x0001) and ShotInfo (0x0004).
+        new(0x0001, "Lens", [], Form.CanonLens),
+        new(0x0001, "MaxAperture", [], Form.CanonAperture),
+        new(0x0001, "MinAperture", [], Form.CanonAperture),
+        new(0x0001, "FlashDetails",
+            [(0x4000, "External flash"), (0x2000, "Internal flash"), (0x0001, "Manual"), (0x0002, "TTL"),
+             (0x0004, "A-TTL"), (0x0008, "E-TTL"), (0x0010, "FP sync enabled"),
+             (0x0080, "2nd-curtain sync used"), (0x0800, "FP sync used")], Form.BitMask),
+        new(0x0004, "AutoISO", [], Form.CanonAutoIso),
+        new(0x0004, "ISOSpeed", [], Form.CanonIso),
+        new(0x0004, "MeasuredEV", [], Form.CanonMeasuredEv),
+        new(0x0004, "MeasuredEV2", [], Form.CanonMeasuredEv2),
+        new(0x0004, "TargetAperture", [], Form.CanonAperture),
+        new(0x0004, "ApertureValue", [], Form.CanonAperture),
+        new(0x0004, "TargetShutterSpeed", [], Form.CanonShutter),
+        new(0x0004, "BulbDuration", [], Form.CanonBulbDuration),
+        new(0x0004, "ShutterSpeedValue", [], Form.CanonShutter),
+        new(0x0004, "FlashGuideNumber", [], Form.CanonFlashGuideNumber),
+        new(0x0004, "AFPointUsed", [], Form.CanonAfPointUsed),
+        new(0x0093, "FileNumber", [], Form.CanonFileNumber),
         new(0x0001, "Macro", [(2, "Off")]),
         new(0x0001, "Selftimer", [(0, "Off")], Form.TenthsOfSecond),
         new(0x0001, "Quality", [(2, "Normal"), (3, "Fine"), (4, "RAW"), (5, "Superfine"), (7, "CRAW")]),
@@ -82,7 +129,7 @@ internal static partial class MakerNoteLabels
         new(0x0001, "Saturation", NormalHigh),
         new(0x0001, "Sharpness", NormalHigh),
         // 16 to 19 name a sensitivity; a number with bit 14 set carries one and is not read here.
-        new(0x0001, "ISOSpeed", [(0, "n/a"), (15, "Auto"), (17, "100")]),
+        new(0x0001, "ISOSpeed", [(0, "n/a"), (15, "Auto"), (17, "100"), (16484, "100")]),
         new(0x0001, "MeteringMode", [(1, "Spot"), (3, "Evaluative"), (4, "Partial"), (5, "Center-weighted average")]),
         new(0x0001, "FocusType", [(1, "Auto"), (2, "Not known")]),
         new(0x0001, "AFPoint",
@@ -114,11 +161,13 @@ internal static partial class MakerNoteLabels
         new(0x0004, "CameraType", [(0, "n/a"), (248, "EOS High-end"), (250, "Compact"), (252, "EOS Mid-range")]),
         new(0x0004, "AutoRotate", [(0, "None"), (1, "Rotate 90 CW"), (3, "Rotate 270 CW")]),
         new(0x0004, "NDFilter", [(0, "Off"), (65535, "n/a")]),
-        new(0x0004, "SelfTimer2", [(65535, "n/a")]),
+        new(0x0004, "SelfTimer2", [(65535, "n/a"), (0, "Selftimer 2s"), (1, "Selftimer 10s")]),
 
         // FileInfo (0x0093).
         new(0x0093, "BracketMode", [(0, "Off"), (1, "AEB")]),
-        new(0x0093, "RawJpgQuality", [(3, "Fine"), (-1, "n/a")]),
+        new(0x0093, "RawJpgQuality", [(-1, "n/a"), (0, "unkown"), (1, "Economy"), (2, "Normal"),
+            (3, "Fine"), (4, "RAW"), (5, "Superfine"), (7, "CRAW")]),
+        new(0x0093, "RFLensType", [(0, "n/a"), (274, "Canon RF 24-105mm F4-7.1 IS STM")]),
         new(0x0093, "RawJpgSize", [(0, "Large"), (-1, "n/a")]),
         new(0x0093, "NoiseReduction", [(0, "Off"), (3, "On"), (4, "Auto")]),
         new(0x0093, "WBBracketMode", [(0, "Off")]),
@@ -140,7 +189,7 @@ internal static partial class MakerNoteLabels
         [
             (0, "None"), (33, "User Def. 1"), (34, "User Def. 2"), (129, "Standard"), (131, "Landscape"),
             (132, "Neutral"), (133, "Faithful"), (135, "Auto"),
-        ]),
+        ], Form.CanonPictureStyle),
 
         // TimeInfo (0x0035).
         new(0x0035, "TimeZoneCity", [(0, "n/a"), (19, "Paris"), (20, "London"), (30, "Los Angeles"), (32766, "(not set)")]),
@@ -152,6 +201,9 @@ internal static partial class MakerNoteLabels
         new(0x4016, "PeripheralLightingSetting", OffOn),
         new(0x4016, "ChromaticAberrationSetting", OffOn),
         new(0x4016, "DistortionCorrectionSetting", OffOn),
+
+        // AFConfig (0x4028).
+        new(0x4028, "SelectAFAreaSelectionMode", [], Form.CanonRaw),
 
         // LightingOpt (0x4018).
         new(0x4018, "PeripheralIlluminationCorr", OffOn),

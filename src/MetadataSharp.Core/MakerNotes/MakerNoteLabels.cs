@@ -86,6 +86,25 @@ internal static partial class MakerNoteLabels
         /// <summary>SHORT bit masks: the positions of the set bits, counted across the elements.</summary>
         BitPositions,
 
+        /// <summary>A SHORT bit mask rendered as the vendor's labels for its set flags.</summary>
+        BitMask,
+
+        CanonAutoIso,
+        CanonBulbDuration,
+        CanonFileNumber,
+        CanonPictureStyle,
+        CanonSerialNumber,
+        CanonRaw,
+        CanonIso,
+        CanonMeasuredEv,
+        CanonMeasuredEv2,
+        CanonAperture,
+        CanonShutter,
+        CanonFlashGuideNumber,
+        CanonAfPointUsed,
+        CanonLens,
+        CanonFocalLength,
+
         /// <summary>Four bytes read as one number, most significant first, and looked up as such.</summary>
         FourBytes,
 
@@ -169,6 +188,18 @@ internal static partial class MakerNoteLabels
 
         /// <summary>A four-byte Pentax DNG dynamic-range status.</summary>
         PentaxDynamicRange,
+
+        /// <summary>Fujifilm white-balance fine tune, two signed shifts in twentieths.</summary>
+        FujifilmWhiteBalanceFineTune,
+
+        /// <summary>Fujifilm digital zoom, stored in eighths.</summary>
+        FujifilmDigitalZoom,
+
+        /// <summary>Fujifilm packed drive setting.</summary>
+        FujifilmDriveSetting,
+
+        /// <summary>Fujifilm face-element type codes stored as ASCII digits.</summary>
+        FujifilmFaceElementTypes,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -181,7 +212,7 @@ internal static partial class MakerNoteLabels
     /// <summary>Every rule, for the tests that check the tables against themselves.</summary>
     internal static IEnumerable<(string Vendor, int Scope, string Name, IReadOnlyList<long> Numbers, IReadOnlyList<string> Labels)> RulesForTests()
     {
-        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Sony", Sony), ("Pentax", PentaxDng), ("PentaxDng", PentaxDng) })
+        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Sony", Sony), ("Pentax", PentaxDng), ("PentaxDng", PentaxDng), ("Fujifilm", Fujifilm) })
         {
             foreach (Rule rule in rules)
             {
@@ -192,24 +223,26 @@ internal static partial class MakerNoteLabels
         }
     }
 
-    internal static string? Interpret(MakerNote note, MakerNoteEntry entry) =>
-        Interpret(note.Format, Top, entry.Name, entry.Value, note);
+    internal static string? Interpret(MakerNote note, MakerNoteEntry entry, string? cameraModel = null) =>
+        Interpret(note.Format, Top, entry.Name, entry.Value, note, cameraModel);
 
-    internal static string? Interpret(MakerNoteFormat format, MakerNoteEntry entry, MakerNoteField field)
+    internal static string? Interpret(MakerNote note, MakerNoteEntry entry, MakerNoteField field, string? cameraModel = null)
     {
         // Nikon's preview directory holds ordinary TIFF fields, and they read as they do anywhere else.
-        if (format == MakerNoteFormat.Nikon3 && entry.TagId == 0x0011)
+        if (note.Format == MakerNoteFormat.Nikon3 && entry.TagId == 0x0011)
             return ExifTags.Interpret(new ExifTagKey(ExifDirectoryKind.Ifd0, field.Index), field.Value);
-        return Interpret(format, entry.TagId, field.Name, field.Value);
+        return Interpret(note.Format, entry.TagId, field.Name, field.Value, note, cameraModel);
     }
 
-    private static string? Interpret(MakerNoteFormat format, int scope, string? name, ExifValue value, MakerNote? note = null)
+    private static string? Interpret(MakerNoteFormat format, int scope, string? name, ExifValue value,
+        MakerNote? note = null, string? cameraModel = null)
     {
         if (name is null)
             return null;
         Rule[]? rules = format switch
         {
             MakerNoteFormat.Canon => Canon,
+            MakerNoteFormat.Fujifilm => Fujifilm,
             MakerNoteFormat.Nikon3 => Nikon,
             MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 => Sony,
             MakerNoteFormat.Pentax or MakerNoteFormat.PentaxDng => PentaxDng,
@@ -223,12 +256,12 @@ internal static partial class MakerNoteLabels
         foreach (Rule rule in rules)
         {
             if (rule.Scope == scope && rule.Name == name)
-                return Apply(rule, value, note);
+                return Apply(rule, value, note, cameraModel);
         }
         return null;
     }
 
-    private static string? Apply(Rule rule, ExifValue value, MakerNote? note = null)
+    private static string? Apply(Rule rule, ExifValue value, MakerNote? note = null, string? cameraModel = null)
     {
         if (rule.Reading is Form.PentaxFirst or Form.PentaxVersion or Form.PentaxResolution or Form.PentaxDate or Form.PentaxTime or
             Form.PentaxExposure or Form.PentaxFNumber or Form.PentaxFocalLength or Form.PentaxExposureCompensation or
@@ -240,6 +273,38 @@ internal static partial class MakerNoteLabels
         {
             case Form.BitPositions:
                 return BitPositions(value);
+            case Form.BitMask:
+                return BitMask(rule, value);
+            case Form.CanonAutoIso:
+                return CanonAutoIso(value);
+            case Form.CanonBulbDuration:
+                return CanonBulbDuration(value);
+            case Form.CanonFileNumber:
+                return CanonFileNumber(value, cameraModel);
+            case Form.CanonPictureStyle:
+                return CanonPictureStyle(rule, value);
+            case Form.CanonSerialNumber:
+                return CanonSerialNumber(value, note);
+            case Form.CanonRaw:
+                return CanonRaw(value);
+            case Form.CanonIso:
+                return CanonIso(value);
+            case Form.CanonMeasuredEv:
+                return CanonMeasuredEv(value);
+            case Form.CanonMeasuredEv2:
+                return CanonMeasuredEv2(value);
+            case Form.CanonAperture:
+                return CanonAperture(value);
+            case Form.CanonShutter:
+                return CanonShutter(value);
+            case Form.CanonFlashGuideNumber:
+                return CanonFlashGuideNumber(value);
+            case Form.CanonAfPointUsed:
+                return CanonAfPointUsed(value);
+            case Form.CanonLens:
+                return CanonLens(value);
+            case Form.CanonFocalLength:
+                return CanonFocalLength(value, note);
             case Form.HeightThenWidth:
                 return HeightThenWidth(value);
             case Form.AmberBlueGreenMagenta:
@@ -262,6 +327,14 @@ internal static partial class MakerNoteLabels
                 return StopFraction(value);
             case Form.Abbreviation:
                 return Abbreviation(rule, value);
+            case Form.FujifilmWhiteBalanceFineTune:
+                return FujifilmWhiteBalanceFineTune(value);
+            case Form.FujifilmDigitalZoom:
+                return FujifilmDigitalZoom(value);
+            case Form.FujifilmDriveSetting:
+                return FujifilmDriveSetting(value);
+            case Form.FujifilmFaceElementTypes:
+                return FujifilmFaceElementTypes(value);
         }
 
         if (value.Count != 1 || value.FieldType == TiffFieldType.Undefined ||
@@ -488,6 +561,212 @@ internal static partial class MakerNoteLabels
             !ExifTags.TryInteger(value, 0, out long height) || !ExifTags.TryInteger(value, 1, out long width))
             return null;
         return Whole(width) + " x " + Whole(height);
+    }
+
+    private static string? CanonFileNumber(ExifValue value, string? cameraModel)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Long || !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        uint number = unchecked((uint)stored);
+        if (cameraModel is null)
+            return $"({number.ToString(CultureInfo.InvariantCulture)})";
+
+        bool firstLayout = cameraModel.Contains("20D", StringComparison.Ordinal) ||
+            cameraModel.Contains("350D", StringComparison.Ordinal) || cameraModel.EndsWith("REBEL XT", StringComparison.Ordinal) ||
+            cameraModel.Contains("Kiss Digital N", StringComparison.Ordinal);
+        if (firstLayout)
+        {
+            uint directory = (number & 0x0000ffc0) >> 6;
+            uint file = ((number >> 16) & 0xff) + ((number & 0x3f) << 8);
+            return directory.ToString(CultureInfo.InvariantCulture) + "-" + file.ToString("D4", CultureInfo.InvariantCulture);
+        }
+
+        bool secondLayout = cameraModel.Contains("30D", StringComparison.Ordinal) ||
+            cameraModel.Contains("400D", StringComparison.Ordinal) || cameraModel.Contains("REBEL XTi", StringComparison.Ordinal) ||
+            cameraModel.Contains("Kiss Digital X", StringComparison.Ordinal) || cameraModel.Contains("K236", StringComparison.Ordinal);
+        if (!secondLayout)
+            return $"({number.ToString(CultureInfo.InvariantCulture)})";
+        uint secondDirectory = (number & 0x000ffc00) >> 10;
+        while (secondDirectory < 100)
+            secondDirectory += 0x40;
+        uint secondFile = ((number & 0x3ff) << 4) + ((number >> 20) & 0x0f);
+        return secondDirectory.ToString(CultureInfo.InvariantCulture) + "-" + secondFile.ToString("D4", CultureInfo.InvariantCulture);
+    }
+
+    private static string? CanonBulbDuration(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        return (stored / 10).ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string? CanonPictureStyle(Rule rule, ExifValue value)
+    {
+        if (value.Count == 0 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort) || !ExifTags.TryInteger(value, 0, out long code))
+            return null;
+        string? label = rule.Labels.FirstOrDefault(label => label.Number == code).Label;
+        return label ?? $"({code.ToString(CultureInfo.InvariantCulture)})";
+    }
+
+    private static string? CanonSerialNumber(ExifValue value, MakerNote? note)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Long || note is null ||
+            note.Entries.FirstOrDefault(entry => entry.Name == "ModelID") is not MakerNoteEntry model ||
+            !ExifTags.TryInteger(model.Value, 0, out long modelId) || modelId != 0x01140000 ||
+            !ExifTags.TryInteger(value, 0, out long serial))
+            return null;
+        uint number = unchecked((uint)serial);
+        return ((number >> 16) & 0xffff).ToString("X4", CultureInfo.InvariantCulture) +
+               (number & 0xffff).ToString("D5", CultureInfo.InvariantCulture);
+    }
+
+    private static string? CanonRaw(ExifValue value) =>
+        value.Count == 1 && ExifTags.TryInteger(value, 0, out long number)
+            ? $"({number.ToString(CultureInfo.InvariantCulture)})"
+            : null;
+
+    private static string? CanonAutoIso(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long code))
+            return null;
+        double ev = CanonEv(code);
+        return CanonNumber(100.0 * Math.Pow(2.0, ev / 32.0));
+    }
+
+    private static string? CanonIso(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long code))
+            return null;
+        return CanonNumber(100.0 * Math.Pow(2.0, CanonEv(code)) / 32.0);
+    }
+
+    private static string? CanonMeasuredEv(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort) ||
+            !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        double ev = (unchecked((short)stored) / 32.0) + 5.0;
+        return (Math.Round(ev * 100.0, MidpointRounding.AwayFromZero) / 100.0).ToString("F2", CultureInfo.InvariantCulture);
+    }
+
+    private static string? CanonMeasuredEv2(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        return (stored / 8.0 - 6.0).ToString("F2", CultureInfo.InvariantCulture);
+    }
+
+    private static string? CanonAperture(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort) ||
+            !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        double fNumber = Math.Pow(2.0, CanonEv(unchecked((short)stored)) / 2.0);
+        if (Math.Abs(fNumber - 3.5) < 0.1) fNumber = 3.5;
+        return "F" + CanonNumber(fNumber, "G2");
+    }
+
+    private static string? CanonShutter(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        double exposureDenominator = Math.Pow(2.0, CanonEv(stored));
+        if (double.IsNaN(exposureDenominator)) return null;
+        if (double.IsInfinity(exposureDenominator) || exposureDenominator <= 0) return "1 s";
+        const double maxRationalPart = uint.MaxValue;
+        if (exposureDenominator > 1)
+        {
+            double denominator = Math.Round(exposureDenominator, MidpointRounding.AwayFromZero);
+            return denominator > maxRationalPart
+                ? "1 s"
+                : "1/" + denominator.ToString(CultureInfo.InvariantCulture) + " s";
+        }
+        double numerator = Math.Round(1.0 / exposureDenominator, MidpointRounding.AwayFromZero);
+        return numerator > maxRationalPart ? "1 s" : numerator.ToString(CultureInfo.InvariantCulture) + " s";
+    }
+
+    private static string? CanonFlashGuideNumber(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        return stored == ushort.MaxValue ? "--" : (stored / 32).ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string? CanonAfPointUsed(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        long packed = (ushort)stored;
+        int focusPoints = (int)((packed & 0xF000) >> 12);
+        long mask = packed & 0x0FFF;
+        if (mask == 0)
+            return focusPoints.ToString(CultureInfo.InvariantCulture) + " focus points; none used";
+        var labels = new List<string>();
+        if ((mask & 0x0004) != 0) labels.Add("left");
+        if ((mask & 0x0002) != 0) labels.Add("center");
+        if ((mask & 0x0001) != 0) labels.Add("right");
+        return focusPoints.ToString(CultureInfo.InvariantCulture) + " focus points; " + string.Join(", ", labels) + " used";
+    }
+
+    private static string? CanonLens(ExifValue value)
+    {
+        if (value.Count < 3 || value.FieldType != TiffFieldType.Short ||
+            !ExifTags.TryInteger(value, 0, out long max) || !ExifTags.TryInteger(value, 1, out long min) ||
+            !ExifTags.TryInteger(value, 2, out long units) || units == 0)
+            return null;
+        double first = (double)max / units;
+        double second = (double)min / units;
+        return first == second
+            ? first.ToString("F1", CultureInfo.InvariantCulture) + " mm"
+            : second.ToString("F1", CultureInfo.InvariantCulture) + " - " + first.ToString("F1", CultureInfo.InvariantCulture) + " mm";
+    }
+
+    private static string? CanonFocalLength(ExifValue value, MakerNote? note)
+    {
+        if (value.Count < 4 || value.FieldType != TiffFieldType.Short || note is null ||
+            !ExifTags.TryInteger(value, 1, out long focal) ||
+            note.Entries.FirstOrDefault(entry => entry.TagId == 0x0001)?.Fields.FirstOrDefault(field => field.Name == "Lens") is not MakerNoteField lens ||
+            !ExifTags.TryInteger(lens.Value, 2, out long units) || units == 0)
+            return null;
+        return ((double)focal / units).ToString("F1", CultureInfo.InvariantCulture) + " mm";
+    }
+
+    private static string CanonNumber(double value, string format = "G6") =>
+        double.IsPositiveInfinity(value) ? "inf"
+        : double.IsNegativeInfinity(value) ? "-inf"
+        : double.IsNaN(value) ? "nan"
+        : value.ToString(format, CultureInfo.InvariantCulture).Replace('E', 'e');
+
+    private static double CanonEv(long value)
+    {
+        long sign = value < 0 ? -1 : 1;
+        long absolute = Math.Abs(value);
+        long whole = absolute & ~31L;
+        long remainder = absolute & 31;
+        double fraction = remainder switch
+        {
+            12 => 32.0 / 3.0,
+            20 => 64.0 / 3.0,
+            8 when whole == 160 => 10.0,
+            _ => remainder,
+        };
+        return sign * (whole + fraction) / 32.0;
+    }
+
+    private static string? BitMask(Rule rule, ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short ||
+            !ExifTags.TryInteger(value, 0, out long mask) || mask == 0)
+            return null;
+        var labels = new List<string>();
+        long known = 0;
+        foreach ((long flag, string label) in rule.Labels)
+        {
+            known |= flag;
+            if ((mask & flag) != 0)
+                labels.Add(label);
+        }
+        return (mask & ~known) == 0 && labels.Count != 0 ? string.Join(", ", labels) : null;
     }
 
     private static string? BitPositions(ExifValue value)

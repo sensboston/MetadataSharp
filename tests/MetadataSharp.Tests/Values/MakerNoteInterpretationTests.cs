@@ -88,6 +88,7 @@ public sealed class MakerNoteInterpretationTests
 
     [Theory]
     [InlineData(0x0001, "Quality", 4, "RAW")]
+    [InlineData(0x0001, "ISOSpeed", 16484, "100")]
     [InlineData(0x0001, "DriveMode", 5, "Continuous, high")]
     [InlineData(0x0001, "AESetting", 65535, "n/a")]
     [InlineData(0x0001, "AFPoint", 0x3003, "Center")]
@@ -96,11 +97,16 @@ public sealed class MakerNoteInterpretationTests
     [InlineData(0x0004, "WhiteBalance", 9, "Manual Temperature (Kelvin)")]
     [InlineData(0x0004, "CameraType", 248, "EOS High-end")]
     [InlineData(0x0004, "SelfTimer2", 65535, "n/a")]
+    [InlineData(0x0004, "SelfTimer2", 0, "Selftimer 2s")]
+    [InlineData(0x0004, "SelfTimer2", 1, "Selftimer 10s")]
     public void ACanonArrayFieldReadsAsItsLabel(int tag, string name, int number, string expected) =>
         Assert.Equal(expected, Field(MakerNoteFormat.Canon, tag, name, Shorts(number)));
 
     [Theory]
     [InlineData(0x0093, "RawJpgSize", -1, "n/a")]
+    [InlineData(0x0093, "RawJpgQuality", 0, "unkown")]
+    [InlineData(0x0093, "RFLensType", 0, "n/a")]
+    [InlineData(0x0093, "RFLensType", 274, "Canon RF 24-105mm F4-7.1 IS STM")]
     [InlineData(0x0093, "NoiseReduction", 4, "Auto")]
     [InlineData(0x0093, "FilterEffect", -1, "(-1)")]
     [InlineData(0x00A0, "PictureStyle", 131, "Landscape")]
@@ -142,6 +148,88 @@ public sealed class MakerNoteInterpretationTests
     [InlineData("FocusDistanceLower", -1, "(-1)")]
     public void ACanonFocusDistanceIsMetresWithTwoDecimals(string name, int number, string expected) =>
         Assert.Equal(expected, Field(MakerNoteFormat.Canon, 0x0093, name, SignedShorts(number)));
+
+    [Theory]
+    [InlineData(0, "Left to right")]
+    [InlineData(1, "Right to left")]
+    [InlineData(2, "Bottom to top")]
+    [InlineData(3, "Top to bottom")]
+    [InlineData(4, "2x2 matrix (Clockwise)")]
+    public void CanonPanoramaDirectionUsesTheReferenceLabels(int value, string expected) =>
+        Assert.Equal(expected, Field(MakerNoteFormat.Canon, 0x0005, "PanoramaDirection", Shorts(value), index: 5));
+
+    [Fact]
+    public void CanonShotInfoUsesExiv2Conversions()
+    {
+        Assert.Equal("100", Field(MakerNoteFormat.Canon, 0x0004, "AutoISO", Shorts(0), index: 1));
+        Assert.Equal("100", Field(MakerNoteFormat.Canon, 0x0004, "ISOSpeed", Shorts(160), index: 2));
+        Assert.Equal("5.00", Field(MakerNoteFormat.Canon, 0x0004, "MeasuredEV", Shorts(0), index: 3));
+        Assert.Equal("0.00", Field(MakerNoteFormat.Canon, 0x0004, "MeasuredEV2", Shorts(48), index: 23));
+        Assert.Equal("F1", Field(MakerNoteFormat.Canon, 0x0004, "TargetAperture", Shorts(0), index: 4));
+        Assert.Equal("1 s", Field(MakerNoteFormat.Canon, 0x0004, "TargetShutterSpeed", Shorts(0), index: 5));
+        Assert.Equal("--", Field(MakerNoteFormat.Canon, 0x0004, "FlashGuideNumber", Shorts(65535), index: 13));
+        Assert.Equal("inf", Field(MakerNoteFormat.Canon, 0x0004, "ISOSpeed", Shorts(65535), index: 2));
+        Assert.Equal("1 s", Field(MakerNoteFormat.Canon, 0x0004, "TargetShutterSpeed", Shorts(65535), index: 5));
+        Assert.Equal("2075", Field(MakerNoteFormat.Canon, 0x0004, "BulbDuration", Shorts(20755), index: 24));
+        Assert.Equal("3 focus points; center used",
+            Field(MakerNoteFormat.Canon, 0x0004, "AFPointUsed", Shorts(0x3002), index: 14));
+    }
+
+    [Fact]
+    public void CanonSettingsAndFileInfoUseReferenceFormatting()
+    {
+        Assert.Equal("35.0 - 80.0 mm", Field(MakerNoteFormat.Canon, 0x0001, "Lens", Shorts(80, 35, 1), index: 23));
+        Assert.Equal("F2.8", Field(MakerNoteFormat.Canon, 0x0001, "MaxAperture", Shorts(96), index: 26));
+        Assert.Equal("Internal flash, E-TTL",
+            Field(MakerNoteFormat.Canon, 0x0001, "FlashDetails", Shorts(0x2008), index: 29));
+        Assert.Equal("(0)", Field(MakerNoteFormat.Canon, 0x0093, "FileNumber", Longs(0), index: 1));
+        Assert.Equal("Standard", Field(MakerNoteFormat.Canon, 0x00A0, "PictureStyle", Shorts(129, 129, 129), index: 5));
+        Assert.Equal("Auto", Top(MakerNoteFormat.Canon, "PictureStyleUserDef", Shorts(135, 135, 135)));
+        Assert.Equal("(16191)", Field(MakerNoteFormat.Canon, 0x4028, "SelectAFAreaSelectionMode", SignedLongs(16191), index: 12));
+    }
+
+    [Theory]
+    [InlineData(4231518, "Canon EOS 30D", "100-5604")]
+    [InlineData(2146202, "Canon EOS 20D", "766-6688")]
+    public void CanonFileNumberUsesTheEnclosingModelLayout(uint raw, string modelName, string expected)
+    {
+        var field = new MakerNoteField(1, "FileNumber", Longs(raw));
+        var entry = new MakerNoteEntry(0x0093, "CanonFileInfo", Undefined(0), [field]);
+        var note = new MakerNote(MakerNoteFormat.Canon, Little, [entry]);
+        Assert.Equal(expected, note.InterpretFieldForModel(entry, field, modelName));
+    }
+
+    [Fact]
+    public void CanonD30SerialNumberUsesTheModelSpecificReferenceFormat()
+    {
+        var model = new MakerNoteEntry(0x0010, "ModelID", Longs(0x01140000), []);
+        var serial = new MakerNoteEntry(0x000C, "SerialNumber", Longs(154213267), []);
+        var note = new MakerNote(MakerNoteFormat.Canon, Little, [model, serial]);
+        Assert.Equal("093107059", note.Interpret(serial));
+    }
+
+    [Fact]
+    public void CanonFocalLengthUsesItsLensUnitSibling()
+    {
+        var lensField = new MakerNoteField(23, "Lens", Shorts(80, 35, 1));
+        var settings = new MakerNoteEntry(0x0001, "CameraSettings", Undefined(0), [lensField]);
+        var focal = new MakerNoteEntry(0x0002, "FocalLength", Shorts(0, 95, 0, 0), []);
+        var note = new MakerNote(MakerNoteFormat.Canon, Little, [settings, focal]);
+        Assert.Equal("95.0 mm", note.Interpret(focal));
+    }
+
+    [Fact]
+    public void CanonPictureInfoBitmasksUseTheReferenceLabels()
+    {
+        Assert.Equal("bottom", Field(MakerNoteFormat.Canon, 0x0012, "AFPointsUsed", Shorts(4), index: 22));
+        Assert.Equal("upper-right, center, lower-right",
+            Field(MakerNoteFormat.Canon, 0x0012, "AFPointsUsed20D", Shorts(148), index: 26));
+        Assert.Null(Field(MakerNoteFormat.Canon, 0x0012, "AFPointsUsed", Shorts(0), index: 22));
+    }
+
+    [Fact]
+    public void CanonLensSerialNumberIsRenderedAsTwoHexDigitsPerByte() =>
+        Assert.Equal("1c00000000", Field(MakerNoteFormat.Canon, 0x4019, "LensSerialNumber", Bytes(0x1C, 0, 0, 0, 0), index: 0));
 
     [Fact]
     public void CanonTagsOfTheNotesOwnDirectoryAreRead()
@@ -428,13 +516,27 @@ public sealed class MakerNoteInterpretationTests
         Assert.Null(Top(MakerNoteFormat.Sony2, "FileFormat", Bytes(3, 3, 1)));
     }
 
+    [Fact]
+    public void FujifilmSettingsReadAsTheirLabels()
+    {
+        Assert.Equal("Daylight", Top(MakerNoteFormat.Fujifilm, "WhiteBalance", Shorts(256)));
+        Assert.Equal("CLASSIC CHROME", Top(MakerNoteFormat.Fujifilm, "FilmMode", Shorts(1536)));
+        Assert.Equal("(999)", Top(MakerNoteFormat.Fujifilm, "WhiteBalance", Shorts(999)));
+        Assert.Equal("On", Top(MakerNoteFormat.Fujifilm, "Macro", Shorts(1)));
+        Assert.Null(Top(MakerNoteFormat.Fujifilm, "ColorSpace", Shorts(4)));
+        Assert.Equal("R: 1 B: -2", Top(MakerNoteFormat.Fujifilm, "WhiteBalanceFineTune", SignedLongs(20, -40)));
+        Assert.Equal("1.5(12)", Top(MakerNoteFormat.Fujifilm, "DigitalZoom", Longs(12)));
+        Assert.Equal("Continuous High, 8 fps, (3, 4)", Top(MakerNoteFormat.Fujifilm, "DriveSetting", Longs(0x08040302)));
+        Assert.Equal("Face Left Eye Right Eye", Top(MakerNoteFormat.Fujifilm, "FaceElementTypes", Ascii("123")));
+    }
+
     // ---- What has no interpretation ----------------------------------------------------------------------
 
     [Fact]
     public void ThereIsNothingToAddOutsideTheVocabulary()
     {
         // Another vendor.
-        Assert.Null(Top(MakerNoteFormat.Fujifilm, "ColorSpace", Shorts(1)));
+        Assert.Null(Top(MakerNoteFormat.Nikon1, "ColorSpace", Shorts(1)));
         Assert.Null(Top(MakerNoteFormat.Nikon1, "ColorSpace", Shorts(1)));
         // A tag the vocabulary does not have, and one this release cannot name.
         Assert.Null(Top(MakerNoteFormat.Canon, "OwnerName", Ascii("someone")));

@@ -27,6 +27,10 @@ NOT_INTERPRETED_TRANSLATED = "not-interpreted-translated"
 
 # Interpretation exception: Exiv2 obtains this name from its separately maintained lens-ID database.
 DOCUMENTED_EXCEPTIONS: dict[str, str] = {
+    "Exif.CanonCs.LensType": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
     "Exif.Pentax.LensType": (
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."
@@ -39,6 +43,16 @@ DOCUMENTED_EXCEPTIONS: dict[str, str] = {
 
 # The parser deliberately refuses these two damaged/over-budget inputs. These are exact pinned corpus
 # files and exact refusal codes, not an exemption for the MakerNote family or for similar future files.
+# The raw Canon decoder retains these named fields, but the pinned Exiv2 corpus output does not
+# publish them as keys. Categories (0x0023) and PictureStylePC (0x4009) are explicitly disabled in
+# Exiv2's Canon tag table; FilterInfo (0x4024) is not surfaced for the pinned records. Keep their
+# original raw bytes available rather than silently dropping keys to mimic that omission.
+DOCUMENTED_RAW_EXTRA_KEYS: dict[str, str] = {
+    "Exif.Canon.Categories": "Exiv2 0.28.9 disables Canon tag 0x0023 in canonmn_int.cpp",
+    "Exif.Canon.PictureStylePC": "Exiv2 0.28.9 disables Canon tag 0x4009 in canonmn_int.cpp",
+    "Exif.Canon.FilterInfo": "Exiv2 0.28.9 does not surface Canon tag 0x4024 in these pinned records",
+}
+
 DOCUMENTED_FILE_REFUSALS: dict[str, tuple[str, str]] = {
     "exiv2:issue_1706_poc.exv": ("LimitExceeded", "the EXIF directory exceeds configured reader limits"),
     "exiv2:issue_1920_poc.tiff": ("InvalidExif", "the EXIF structure is malformed"),
@@ -104,6 +118,7 @@ def evaluate(report: dict[str, Any], groups: list[str],
         opaque_extras = 0
         refused_rows: Counter[str] = Counter()
         key_exception_rows: Counter[str] = Counter()
+        raw_extra_rows: Counter[str] = Counter()
         for file in report["per_file"]:
             if file.get("rows_dropped", 0):
                 # The caller requests a high row limit for the corpus; fail closed if any rows were cut.
@@ -119,6 +134,8 @@ def evaluate(report: dict[str, Any], groups: list[str],
                 if outcome == EXTRA_KEY:
                     if OPAQUE_NUMERIC_KEY.fullmatch(key):
                         opaque_extras += 1
+                    elif key in DOCUMENTED_RAW_EXTRA_KEYS:
+                        raw_extra_rows[key] += 1
                     else:
                         failures.append(f"{group}: {label} {key}: raw outcome {outcome}")
                     continue
@@ -147,6 +164,8 @@ def evaluate(report: dict[str, Any], groups: list[str],
             output.append(f"    retained numeric unknown-tag rows: {opaque_extras} (no Exiv2 named key exists)")
         for label, count in sorted(refused_rows.items()):
             output.append(f"    documented reader refusal: {label}: {count} MakerNote rows; {DOCUMENTED_FILE_REFUSALS[label][1]}")
+        for key, count in sorted(raw_extra_rows.items()):
+            output.append(f"    retained documented raw extra: {key}: {count} rows; {DOCUMENTED_RAW_EXTRA_KEYS[key]}")
         for key, reason in exceptions.items():
             if key.startswith(group + "."):
                 output.append(
@@ -167,27 +186,41 @@ def encode_inventory(rows: list[tuple[str, dict[str, int]]]) -> str:
     return base64.b64encode(zlib.compress(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
 
 
-def gap_details(report: dict[str, Any], groups: list[str]) -> list[dict[str, Any]]:
-    """Compact actionable samples for translated values not yet rendered exactly."""
-    gaps: Counter[tuple[str, str, str, str]] = Counter()
-    examples: dict[tuple[str, str, str, str], list[str]] = {}
+def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> dict[str, list[dict[str, Any]]]:
+    """Compact actionable samples, split by group so CI annotations stay readable."""
+    gaps: dict[str, Counter[tuple[str, str, str, str, str, str]]] = {group: Counter() for group in groups}
+    examples: dict[tuple[str, str, str, str, str, str], list[str]] = {}
     for file in report.get("per_file", []):
         label = file.get("label", "")
         for row in file.get("rows", []):
             key = row.get("key", "")
             group = next((candidate for candidate in groups if key.startswith(candidate + ".")), None)
-            if group is None or row.get("translated") is not True or row.get("interpreted") == MATCH_INTERPRETED:
+            if group is None:
                 continue
-            signature = (group, key, str(row.get("our_interpreted", "")), str(row.get("their_interpreted", "")))
-            gaps[signature] += 1
+            outcome = str(row.get("outcome", ""))
+            translated_gap = row.get("translated") is True and row.get("interpreted") != MATCH_INTERPRETED
+            raw_gap = outcome in (MISSING_KEY, VALUE_DIFF, MATCH_KEY, NOT_READ)
+            if not translated_gap and not raw_gap:
+                continue
+            interpretation = str(row.get("interpreted", ""))
+            signature = (group, key, outcome, interpretation,
+                         str(row.get("our_interpreted", row.get("our_value", ""))),
+                         str(row.get("their_interpreted", row.get("their_value", ""))))
+            gaps[group][signature] += 1
             examples.setdefault(signature, [])
             if label and len(examples[signature]) < 3 and label not in examples[signature]:
                 examples[signature].append(label)
-    return [
-        {"group": group, "key": key, "count": count, "ours": ours, "exiv2": theirs,
-         "files": examples[(group, key, ours, theirs)]}
-        for (group, key, ours, theirs), count in sorted(gaps.items())
-    ]
+    result: dict[str, list[dict[str, Any]]] = {}
+    for group, counter in gaps.items():
+        rows = [
+            {"key": key, "outcome": outcome, "interpretation": interpretation,
+             "count": count, "ours": ours, "exiv2": theirs,
+             "files": examples[(vendor_group, key, outcome, interpretation, ours, theirs)]}
+            for (vendor_group, key, outcome, interpretation, ours, theirs), count in counter.items()
+        ]
+        rows.sort(key=lambda row: (row["interpretation"] != INTERPRETED_DIFF, -row["count"], row["key"]))
+        result[group] = rows[:limit]
+    return result
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -219,10 +252,11 @@ def main(argv: list[str] | None = None) -> int:
         payload = base64.b64encode(zlib.compress(json.dumps(failure_lines, separators=(",", ":")).encode(), 9)).decode()
         print(f"::error title=MakerNote parity failures::{payload}", flush=True)
     print(message, end="", flush=True)
-    gaps = gap_details(report, args.require)
-    if gaps:
+    for group, gaps in gap_details(report, args.require).items():
+        if not gaps:
+            continue
         payload = base64.b64encode(zlib.compress(json.dumps(gaps, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
-        print(f"::notice title=MakerNote parity gaps::{payload}", flush=True)
+        print(f"::notice title=MakerNote gaps {group}::{payload}", flush=True)
     return 0 if passed else 1
 
 

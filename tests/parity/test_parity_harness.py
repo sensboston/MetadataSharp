@@ -197,6 +197,10 @@ class ValueComparisonTests(unittest.TestCase):
         self.assertTrue(compare_mod.values_agree("2", "2  2"))
         self.assertTrue(compare_mod.values_agree("72/1", "72/1  72"))
 
+    def test_repeated_text_columns_preserve_embedded_runs_of_spaces(self):
+        serial = "FC  A8202308     592D36323831110129E6031024033A"
+        self.assertTrue(compare_mod.values_agree(serial, serial + "  " + serial))
+
     def test_a_quoted_array_agrees_with_our_joined_items(self):
         self.assertTrue(compare_mod.values_agree("Sky, Sun", '"Sky", "Sun"'))
 

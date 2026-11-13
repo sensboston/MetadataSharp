@@ -93,6 +93,14 @@ def normalize(value: str) -> str:
 
 
 def columns(value: str) -> list[str]:
+    gaps = list(COLUMN_GAP.finditer(value))
+    # Exiv2 repeats an untranslated string in the interpreted column. If the string itself contains
+    # runs of spaces, only the gap between identical columns is the actual delimiter; splitting on
+    # every run corrupts the raw value (notably Fujifilm serial numbers).
+    for gap in gaps:
+        left, right = value[:gap.start()], value[gap.end():]
+        if left.strip() == right.strip():
+            return [left.strip(), right.strip()]
     return [part.strip() for part in COLUMN_GAP.split(value) if part.strip() != ""]
 
 

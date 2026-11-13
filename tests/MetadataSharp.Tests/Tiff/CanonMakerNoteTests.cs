@@ -254,6 +254,33 @@ public sealed class CanonMakerNoteArrayTests
     }
 
     [Fact]
+    public void LensInfoReadsItsLeadingFiveSerialNumberBytesFromLongWords()
+    {
+        byte[] raw = new byte[28];
+        raw[0] = 0x1C;
+        ExifValue value = ExifValue.FromRaw(TiffFieldType.SLong, 7, Endianness.LittleEndian, raw);
+        MakerNoteField serial = Assert.Single(Split(0x4019, value));
+        Assert.Equal("LensSerialNumber", serial.Name);
+        Assert.Equal(TiffFieldType.Byte, serial.Value.FieldType);
+        Assert.Equal(5u, serial.Value.Count);
+        byte[] serialBytes = new byte[5];
+        serial.Value.CopyRawTo(serialBytes);
+        Assert.Equal(new byte[] { 0x1C, 0, 0, 0, 0 }, serialBytes);
+    }
+
+    [Fact]
+    public void FileInfoIncludesTheRFUsedLensField()
+    {
+        var values = new ushort[62];
+        values[61] = 274;
+        MakerNoteField lens = Split(0x0093, Shorts(false, values)).Single(field => field.Name == "RFLensType");
+        Assert.Equal(TiffFieldType.Short, lens.Value.FieldType);
+        byte[] raw = new byte[2];
+        lens.Value.CopyRawTo(raw);
+        Assert.Equal((ushort)274, BinaryPrimitives.ReadUInt16LittleEndian(raw));
+    }
+
+    [Fact]
     public void LayoutIndexesAscendAndAreUnique()
     {
         foreach (var (_, indexes) in Core.MakerNotes.CanonMakerNoteArrays.LayoutsForTests())
