@@ -18,7 +18,7 @@ internal static class OlympusMakerNoteInterpretations
         }
         if (name == "SpecialMode")
             return SpecialMode(value);
-        if (scope == 0x0204 && name == "DigitalZoom")
+        if (name == "DigitalZoom")
             return DigitalZoom(value);
 
         if (!ExifTags.TryInteger(value, 0, out long number))
@@ -35,7 +35,7 @@ internal static class OlympusMakerNoteInterpretations
             "FocusRange" => LookupOrStored(number, (0, "Normal"), (1, "Macro")),
             "FocusMode" => LookupOrStored(number, (0, "Auto"), (1, "Manual")),
             "SharpnessFactor" => LookupOrStored(number, (0, "Normal"), (1, "Hard"), (2, "Soft")),
-            "Contrast" => LookupOrStored(number, (0, "High"), (1, "Normal"), (2, "Low")), 
+            "Contrast" => LookupOrStored(number, (0, "High"), (1, "Normal"), (2, "Low")),
             _ => name == "WhiteBalance" ? WhiteBalance(value) : null,
         };
     }
