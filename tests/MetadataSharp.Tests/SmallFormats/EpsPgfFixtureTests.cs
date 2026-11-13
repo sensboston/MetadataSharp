@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Sync;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Core.Iptc;
 using MetadataSharp.Formats;
 using MetadataSharp.Formats.Eps;
 using MetadataSharp.Formats.Pgf;

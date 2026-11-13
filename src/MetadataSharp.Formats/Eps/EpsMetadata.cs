@@ -253,6 +253,7 @@ public sealed class EpsMetadata
 
         if (desired is null) newPs = SetAnnouncement(newPs, AnnouncementKind.NoPacket);
         else newPs = SetAnnouncement(newPs, AnnouncementKind.Packet);
+        newPs = MovePageBeforeImplicitContent(newPs);
 
         long delta = newPs.Length - ps.Length;
         byte[] output = Reframe(source, before, newPs, delta);
@@ -273,7 +274,6 @@ public sealed class EpsMetadata
     {
         (int announcementAt, _) = DscInsertPoints(original);
         byte[] postScript = SetAnnouncement(original.ToArray(), AnnouncementKind.Packet, announcementAt);
-        postScript = MovePageBeforeImplicitContent(postScript);
         byte[] ending = LineEnding(original, EndOfLine(original, 0));
 
         int endSetup = FindLine(postScript, "%%EndPageSetup");
