@@ -105,7 +105,8 @@ def main():
     (consumer / 'NuGet.Config').write_text(f'<configuration><packageSources><clear/><add key="audit" value="{FEED.as_posix()}"/></packageSources></configuration>')
     # A unique cache and cleared sources ensure the smoke cannot use project references or an internet feed.
     (consumer / 'consumer.csproj').write_text('''<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>AUDIT_TARGET</TargetFramework><ImplicitUsings>enable</ImplicitUsings><IsPackable>false</IsPackable></PropertyGroup><ItemGroup><PackageReference Include="MetadataSharp.Formats" Version="[0.0.0-audit]"/></ItemGroup></Project>'''.replace('AUDIT_TARGET', TARGET))
-    (consumer / 'Program.cs').write_text('''using MetadataSharp.Formats.Tiff; using MetadataSharp.Core; using System.Reflection; using System.Runtime.Versioning;
+    (consumer / 'Program.cs').write_text('''#pragma warning disable CS0618 // Exercise the intentionally retained compatibility facade.
+using MetadataSharp.Formats.Tiff; using MetadataSharp.Core; using System.Reflection; using System.Runtime.Versioning;
 using var doc = TiffMetadataDocument.Open(args[0]);
 var edit = new TiffMetadataEdit(); edit.Set(new(doc.Layout.FirstIfdOffset, 305), ExifValue.FromRaw(TiffFieldType.Ascii, 6, Endianness.LittleEndian, "audit\\0"u8));
 using var output = new MemoryStream(); doc.Save(output, edit); output.Position = 0;

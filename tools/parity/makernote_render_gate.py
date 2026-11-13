@@ -237,6 +237,38 @@ def encode_inventory(rows: list[tuple[str, dict[str, int]]]) -> str:
     return base64.b64encode(zlib.compress(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
 
 
+def unread_attribution(report: dict[str, Any]) -> list[dict[str, Any]]:
+    """Attribute every MakerNote ``not-read`` row to its exact file refusal and reason.
+
+    ``not-read`` is not a decode verdict: it is a reference key for a file our reader refused as a
+    whole. Keep this roll-up separate from the key inventory, and retain unexplained rows as
+    explicitly unexplained instead of silently classifying them as an allowed refusal.
+    """
+    counts: Counter[tuple[str, str, str, str, str]] = Counter()
+    for file in report.get("per_file", []):
+        label = file.get("label", "")
+        status = file.get("status", "")
+        detail = file.get("detail", "")
+        documented = DOCUMENTED_FILE_REFUSALS.get(label)
+        reason = documented[1] if documented and documented[0] == detail and status == "refused" else "UNDOCUMENTED refusal or partial-read outcome"
+        for row in file.get("rows", []):
+            if row.get("outcome") != NOT_READ:
+                continue
+            key = row.get("key", "")
+            group = ".".join(key.split(".")[:2]) if key.startswith("Exif.") else ""
+            if group and group not in STANDARD_EXIF_GROUPS and not SUBIMAGE_GROUP.fullmatch(group):
+                counts[(group, label, status, detail, reason)] += 1
+    return [
+        {"group": group, "file": label, "status": status, "code": detail,
+         "reason": reason, "rows": count}
+        for (group, label, status, detail, reason), count in sorted(counts.items())
+    ]
+
+
+def encode_unread_attribution(rows: list[dict[str, Any]]) -> str:
+    return base64.b64encode(zlib.compress(json.dumps(rows, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
+
+
 def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> dict[str, list[dict[str, Any]]]:
     """Compact, per-key raw and interpreted gap samples suitable for one CI annotation."""
     gaps: dict[str, Counter[tuple[str, ...]]] = {group: Counter() for group in groups}
@@ -304,6 +336,12 @@ def main(argv: list[str] | None = None) -> int:
                   f"{metrics['interpreted_keys_found']}/{metrics['interpreted_values_equal']}; "
                   f"gap={gap}; raw keys found/equal={metrics['keys_found']}/{metrics['raw_values_equal']}")
         print(f"::notice title=MakerNote interpreter inventory::{encode_inventory(rows)}")
+        unread = unread_attribution(report)
+        print("MakerNote not-read attribution (reference rows on refused files; not missing decodes):")
+        for entry in unread:
+            print(f"  {entry['group']}: {entry['rows']} rows in {entry['file']} "
+                  f"[{entry['status']}/{entry['code']}]: {entry['reason']}")
+        print(f"::notice title=MakerNote not-read attribution::{encode_unread_attribution(unread)}")
     if args.require_all_maker_notes:
         args.require = list(dict.fromkeys([*args.require, *maker_note_groups(report)]))
     if not args.require:

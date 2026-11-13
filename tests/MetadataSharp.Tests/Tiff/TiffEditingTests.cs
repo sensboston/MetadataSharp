@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // Exercise the retained obsolete compatibility facade.
 using System.Text;
 using MetadataSharp.Core;
 using MetadataSharp.Formats.Tiff;

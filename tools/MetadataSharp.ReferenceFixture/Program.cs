@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // Reference fixtures exercise the retained compatibility editor.
 using System.Buffers.Binary;
 using System.Text;
 using System.Text.Json;

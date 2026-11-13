@@ -34,7 +34,7 @@ def evaluate(report: dict[str, Any]) -> tuple[bool, str]:
     if not isinstance(files, list):
         return False, "parity report has no per_file rows"
     selected = [entry for entry in files if entry.get("format") in VIDEO_FORMATS]
-    # run_parity stores Candidate.uid (already ``corpus:label``) in the label field.
+    # The C# parity report preserves corpus-qualified labels for each input file.
     ids = {str(entry.get("label")) for entry in selected}
     absent = sorted(REQUIRED_GENERATED - ids)
     if absent:
@@ -100,7 +100,7 @@ def evaluate(report: dict[str, Any]) -> tuple[bool, str]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("report", type=Path, help="parity-report.json written by run_parity.py")
+    parser.add_argument("report", type=Path, help="parity-report.json written by the C# parity tool")
     args = parser.parse_args(argv)
     try:
         report = json.loads(args.report.read_text(encoding="utf-8"))

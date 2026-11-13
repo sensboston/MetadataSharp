@@ -12,7 +12,7 @@ The pinned exiv2 tree keeps the output of its own preview test in
 
 followed by the block of the extraction command, which says nothing about the list. That file is
 read as text; no external code is configured, built or run. The comparison is of a different kind
-from the key-by-key one in ``run_parity.py`` and shares none of its rules: a preview is the triple
+from the key-by-key one in ``the C# key-parity report`` and shares none of its rules: a preview is the triple
 (MIME type, width x height, byte count), and a file's previews are compared as a multiset.
 
     match    a reference preview we list with the same type, dimensions and length
@@ -23,7 +23,7 @@ The order is judged separately: a file is ``ordered`` when the previews both sid
 the same order on both.
 
 With ``--fixtures`` and ``--exiv2-command`` the expectation is not that text: the pinned tool lists
-each file of the given directories in the same run, as ``run_parity.py`` does for key parity. This
+each file of the given directories in the same run, as ``the C# key-parity report`` does for key parity. This
 is how a file is measured that the pinned tree holds but its preview test does not name.
 """
 from __future__ import annotations
@@ -43,7 +43,7 @@ ROOT = HERE.parents[1]
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-import run_parity  # noqa: E402
+import parity_support as run_parity  # noqa: E402
 
 KIND = "Preview"
 TITLE = "PARITY preview"

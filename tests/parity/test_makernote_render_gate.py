@@ -116,6 +116,31 @@ class MakerNoteRenderGateTests(unittest.TestCase):
         passed, message = gate.evaluate(report, [group])
         self.assertTrue(passed, message)
 
+    def test_not_read_attribution_explains_each_row_by_exact_file_refusal(self):
+        report = {
+            "per_file": [
+                {"label": "exiv2:poc_2542.exv", "status": "refused", "detail": "AmbiguousMetadata", "rows": [
+                    {"key": "Exif.OlympusCs.A", "outcome": "not-read"},
+                    {"key": "Exif.OlympusEq.B", "outcome": "not-read"},
+                ]},
+                {"label": "exiv2:issue_1706_poc.exv", "status": "refused", "detail": "LimitExceeded", "rows": [
+                    {"key": "Exif.PentaxDng.C", "outcome": "not-read"},
+                ]},
+                {"label": "exiv2:surprise.exv", "status": "refused", "detail": "InvalidExif", "rows": [
+                    {"key": "Exif.PentaxDng.D", "outcome": "not-read"},
+                ]},
+            ],
+        }
+        rows = gate.unread_attribution(report)
+        self.assertEqual([(r["group"], r["rows"]) for r in rows], [
+            ("Exif.OlympusCs", 1), ("Exif.OlympusEq", 1), ("Exif.PentaxDng", 1), ("Exif.PentaxDng", 1),
+        ])
+        self.assertEqual(rows[0]["reason"], "the file has ambiguous EXIF metadata")
+        self.assertEqual(rows[1]["reason"], "the file has ambiguous EXIF metadata")
+        self.assertEqual(rows[2]["reason"], "the EXIF directory exceeds configured reader limits")
+        self.assertTrue(rows[3]["reason"].startswith("UNDOCUMENTED"))
+        self.assertEqual(rows[3]["status"], "refused")
+
     def test_truncated_rows_fail_closed(self):
         passed, message = gate.evaluate(self.report(rows_dropped=1), [self.GROUP])
         self.assertFalse(passed)

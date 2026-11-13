@@ -49,7 +49,7 @@ ROOT = HERE.parents[1]
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-import run_parity  # noqa: E402
+import parity_support as run_parity  # noqa: E402
 
 KIND = "Icc"
 TITLE = "PARITY icc"

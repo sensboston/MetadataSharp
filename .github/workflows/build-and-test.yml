@@ -59,10 +59,7 @@ jobs:
       - name: Test offline reference-harness policy
         shell: bash
         run: python -m unittest discover -s tests/reference -v 2>&1 | tee reference.log
-      # The differential parity harness is checked the same offline way: its rules are string
-      # transformations over a grammar both sides of the comparison agree on, so they are testable
-      # without a corpus, a build, or the external tool being present.
-      - name: Test offline parity-harness policy
+      - name: Test offline supporting parity reports
         shell: bash
         run: python -m unittest discover -s tests/parity -v 2>&1 | tee parity.log
       # Python-suite detail is published the same way the .NET trx failures below are. The
@@ -259,7 +256,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: Exiv2 0.28.9 / differential parity
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 60
     env:
       LC_ALL: C
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
@@ -280,30 +277,30 @@ jobs:
           ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
           path: artifacts/parity/exiv2
           persist-credentials: false
-      - name: Parity against upstream expectations (no external code configured, built or run)
+      - name: C# parity against upstream expectations and dynamic MakerNote gate
         shell: bash
         run: |
-          python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
-            --dump-command "$DUMP" --out artifacts/parity/upstream --title 'PARITY upstream' \
-            --rows-per-file 20000 --annotate
-          # Append each completed MakerNote family here; this gate requires full per-file detail.
-          python tools/parity/makernote_render_gate.py artifacts/parity/upstream/parity-report.json \
-            --inventory --require-all-maker-notes --require Exif.PentaxDng --require Exif.Pentax \
-            --require Exif.Canon --require Exif.CanonSi --require Exif.CanonCs \
-            --require Exif.CanonFi --require Exif.CanonAfC --require Exif.CanonPi --require Exif.CanonPa \
-            --require Exif.CanonAfMiAdj --require Exif.CanonAm --require Exif.CanonHdr \
-            --require Exif.CanonLe --require Exif.CanonLiOp --require Exif.CanonMe \
-            --require Exif.CanonPr --require Exif.CanonTi --require Exif.CanonVigCor2 \
-            --require Exif.Sony1 --require Exif.Sony2 --require Exif.Sony2Fp --require Exif.SonyMisc1 \
-            --require Exif.Sony1Cs --require Exif.SonyMisc3c --require Exif.SonyMisc2b --require Exif.SonyMinolta \
-            --require Exif.NikonLd3 --require Exif.NikonLd4 --require Exif.NikonFl7 --require Exif.NikonFl6 \
-            --require Exif.NikonIi --require Exif.Nikon3 --require Exif.NikonSi02xx --require Exif.Nikon1 \
-            --require Exif.Nikon2 --require Exif.NikonLd2 --require Exif.NikonAf --require Exif.NikonFl1 \
-            --require Exif.NikonFl3 --require Exif.NikonAFT \
+          dotnet build tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj --configuration Release
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj --configuration Release --no-build -- \
+            --tree artifacts/parity/exiv2 --dump-command "$DUMP" --out artifacts/parity/upstream \
+            --title 'PARITY upstream' --rows-per-file 20000 --annotate --inventory --require-all-maker-notes \
+            --require Exif.PentaxDng --require Exif.Pentax --require Exif.Canon --require Exif.CanonSi \
+            --require Exif.CanonCs --require Exif.CanonFi --require Exif.CanonAfC --require Exif.CanonPi \
+            --require Exif.CanonPa --require Exif.CanonAfMiAdj --require Exif.CanonAm --require Exif.CanonHdr \
+            --require Exif.CanonLe --require Exif.CanonLiOp --require Exif.CanonMe --require Exif.CanonPr \
+            --require Exif.CanonTi --require Exif.CanonVigCor2 --require Exif.Sony1 --require Exif.Sony2 \
+            --require Exif.Sony2Fp --require Exif.SonyMisc1 --require Exif.Sony1Cs --require Exif.SonyMisc3c \
+            --require Exif.SonyMisc2b --require Exif.SonyMinolta --require Exif.NikonLd3 --require Exif.NikonLd4 \
+            --require Exif.NikonFl7 --require Exif.NikonFl6 --require Exif.NikonIi --require Exif.Nikon3 \
+            --require Exif.NikonSi02xx --require Exif.Nikon1 --require Exif.Nikon2 --require Exif.NikonLd2 \
+            --require Exif.NikonAf --require Exif.NikonFl1 --require Exif.NikonFl3 --require Exif.NikonAFT \
             --require Exif.NikonAf2 --require Exif.NikonAf22 --require Exif.NikonCb2b --require Exif.NikonCb3 \
             --require Exif.NikonCb4 --require Exif.NikonFi --require Exif.NikonMe --require Exif.NikonPc \
             --require Exif.NikonPreview --require Exif.NikonSi01xx --require Exif.NikonVr --require Exif.NikonWt \
-            --require Exif.Fujifilm
+            --require Exif.Fujifilm --require Exif.Panasonic --require Exif.Olympus --require Exif.Olympus2 \
+            --require Exif.OlympusCs --require Exif.OlympusEq --require Exif.OlympusFi --require Exif.OlympusIp \
+            --require Exif.OlympusRd --require Exif.Sigma --require Exif.Minolta --require Exif.MinoltaCs5D \
+            --require Exif.MinoltaCs7D
       - name: Preview parity against upstream expectations (kind "Preview"; exiv2 -pp output read as text)
         shell: bash
         run: |
@@ -371,7 +368,7 @@ jobs:
             ln -s "$PWD/tests/fixtures/video/valid/$fixture" "artifacts/parity/video-generated/$fixture"
           done
           VIDEO_REPORT_DIR="$PWD/artifacts/parity/video"
-          python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj -c Release --no-build -- --tree artifacts/parity/exiv2 \
             --fixtures artifacts/parity/video-corpus --fixtures artifacts/parity/video-generated \
             --exiv2-command "$VIDEO_EXIV2 -Pkycvt" --require-reference-tags --rows-per-file 1000 \
             --dump-command "$DUMP" --out "$VIDEO_REPORT_DIR" --title 'PARITY video containers' --annotate
@@ -384,7 +381,7 @@ jobs:
         run: |
           mkdir -p artifacts/parity/cr3-input
           cp artifacts/parity/exiv2/test/data/Canon-R6-pruned.CR3 artifacts/parity/cr3-input/
-          python tools/parity/run_parity.py --fixtures artifacts/parity/cr3-input \
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj -c Release --no-build -- --fixtures artifacts/parity/cr3-input \
             --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
             --dump-command "$DUMP" --out artifacts/parity/cr3 --title 'PARITY cr3' --annotate
           python tools/parity/run_previews.py --fixtures artifacts/parity/cr3-input \
@@ -398,7 +395,7 @@ jobs:
         shell: bash
         run: |
           python tools/reference/raw_container_fixtures.py artifacts/parity/exiv2/test/data artifacts/parity/raw-input
-          python tools/parity/run_parity.py --fixtures artifacts/parity/raw-input \
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj -c Release --no-build -- --fixtures artifacts/parity/raw-input \
             --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
             --dump-command "$DUMP" --out artifacts/parity/raw --title 'PARITY raw containers' --annotate
       - name: Generate this repository's own fixtures
@@ -414,7 +411,7 @@ jobs:
       - name: Parity against owned fixtures (oracle is the pinned tool, run in this same job)
         shell: bash
         run: |
-          python tools/parity/run_parity.py \
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj -c Release --no-build -- \
             --fixtures artifacts/parity/generated --fixtures tests/fixtures/b7 --fixtures tests/fixtures/b8 \
             --fixtures tests/fixtures/b9 --fixtures tests/fixtures/b10 --fixtures tests/fixtures/b11 \
             --fixtures tests/fixtures/b11l --fixtures tests/fixtures/b11eps \
