@@ -67,7 +67,7 @@ internal static class VideoContainerReader
         {
             if (depth > limits.MaxDirectoryDepth) throw Limit("The video nesting budget was exceeded.", offset);
         }
-        private MetadataException Invalid(string message, long offset) =>
+        internal MetadataException Invalid(string message, long offset) =>
             new(MetadataErrorCode.InvalidVideoContainer, message, offset >= 0 && offset <= data.Length ? offset : null);
         private MetadataException Limit(string message, long offset) =>
             new(MetadataErrorCode.LimitExceeded, message, offset >= 0 && offset <= data.Length ? offset : null);
