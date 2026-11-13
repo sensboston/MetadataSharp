@@ -380,7 +380,7 @@ public sealed class MakerNoteInterpretationTests
     [Fact]
     public void AnOlympusCameraSettingsArrayReadsItsCorpusRenderings()
     {
-        Assert.Equal("1.00", Field(MakerNoteFormat.Olympus2, 0x2020, "CameraSettingsVersion",
+        Assert.Equal("01.00", Field(MakerNoteFormat.Olympus2, 0x2020, "CameraSettingsVersion",
             Undefined(Encoding.ASCII.GetBytes("0100"))));
         Assert.Equal("No", Field(MakerNoteFormat.Olympus2, 0x2020, "PreviewImageValid", Longs(0)));
         Assert.Equal("Aperture-priority AE", Field(MakerNoteFormat.Olympus2, 0x2020, "ExposureMode", Shorts(3)));
