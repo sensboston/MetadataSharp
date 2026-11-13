@@ -50,7 +50,7 @@ def xmp_packet():
 
 
 def eps_file(packet=None, first=EPS_FIRST, newline=b'\n', trailer=b'<?xpacket end="w"?>',
-             announce=None, extra_comments=b'', body=b''):
+             announce=None, extra_comments=b'', body=b'', padding=True):
     """announce: the %ADO_ContainsXMP line, which defaults to the truth about ``packet``."""
     if announce is None:
         announce = b'%ADO_ContainsXMP: MainFirst' if packet is not None else None
@@ -66,7 +66,7 @@ def eps_file(packet=None, first=EPS_FIRST, newline=b'\n', trailer=b'<?xpacket en
     comment += extra_comments + b'%%EndComments' + newline
     # The program is padded so that no EPS file of this catalogue is as long as the twenty-six bytes a
     # TARGA footer occupies: a file that short would end in bytes a TARGA reader is told by.
-    program = b'% padding for a length no TARGA footer can be read into' + newline
+    program = (b'% padding for a length no TARGA footer can be read into' + newline) if padding else b''
     program += b'%%BeginProlog' + newline + b'%%EndProlog' + newline
     program += b'%%Page: 1 1' + newline + b'%%BeginPageSetup' + newline + b'%%EndPageSetup' + newline
     program += body
@@ -128,6 +128,8 @@ def _build_catalog():
 
     _register('eps-plain.eps', eps_file(), 'eps-plain', 'eps-plain-empty-comment-block-v1',
               dispatch='eps', carriers='none', xmp=False)
+    _register('eps-reference-write.eps', eps_file(padding=False), 'eps-reference-write',
+              'eps-dsc-page-without-preceding-implicit-content-v1', dispatch='eps', carriers='none', xmp=False)
     _register('eps-xmp.eps', eps_file(packet), 'eps-xmp', 'eps-xmp-packet-in-comment-block-v1',
               dispatch='eps', carriers='xmp', xmp=True)
     _register('eps-xmp-space.eps', eps_file(packet, first=EPS_FIRST_SPACE), 'eps-xmp-space',

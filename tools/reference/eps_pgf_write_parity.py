@@ -70,10 +70,12 @@ def main():
         "expected divergence: pinned Exiv2 does not expose PGF comments" if not comment_result.stdout.strip()
         else f"differs from pinned no-comment behavior: {comment_result.stdout!r}")
 
-    # Exiv2 writes a new XMP packet in plain EPS, and all four PGF metadata families in its PNG carrier.
+    # Exiv2's page scanner refuses the padded EPS reader fixture because its ordinary comment creates
+    # an implicit page before the explicit DSC page. Use the authored no-padding DSC fixture for writes.
+    # Exiv2 writes a new XMP packet there and all four PGF metadata families in the PNG carrier.
     (args.work / "eps-modify.txt").write_text("set Xmp.xmp.CreatorTool Reference writer\n", encoding="utf-8")
     eps_written = args.work / "reference.eps"
-    eps_written.write_bytes((args.fixtures / "eps-plain.eps").read_bytes())
+    eps_written.write_bytes((args.fixtures / "eps-reference-write.eps").read_bytes())
     run([args.exiv2, "-m", str(args.work / "eps-modify.txt"), "mo", str(eps_written)])
 
     (args.work / "pgf-modify.txt").write_text(

@@ -22,6 +22,17 @@
     "xmp": false
   },
   {
+    "file": "eps-reference-write.eps",
+    "length": 165,
+    "sha256": "9fc44ac33a0177f03bda0fee8797572a6759d8bb93b1705e8310030f11eae5f5",
+    "layout": "eps-reference-write",
+    "recipe": "eps-dsc-page-without-preceding-implicit-content-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "none",
+    "xmp": false
+  },
+  {
     "file": "eps-xmp-31.eps",
     "length": 607,
     "sha256": "162f460f3fb8f156f4e564455c0fbbced34338c3b16edae8b00e9ec299ce4e93",
