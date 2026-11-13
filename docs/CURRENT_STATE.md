@@ -4,12 +4,19 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 ## Done (read side unless noted)
 
+- Format coverage and per-family read/write limits change as source-backed capability rows are
+  added. The maintained matrix is the [release-readiness audit](RELEASE_READINESS_AUDIT.md); the
+  executable operation contract is `MetadataCapabilities` and the format readers/writers.
+- JPEG, PNG, WebP, TIFF-based files (including DNG and supported camera raw structures), CRW, MRW,
+  RAF, CR3, BMFF still images, PSD, JP2, JXL, EXV, EPS, PGF, XMP sidecars and selected video
+  containers have read paths, with different family coverage. GIF, BMP and TGA recognition is
+  limited to dimensions. Editing is deliberately narrower and varies by container and operation;
+  a missing or partial capability row is not an assertion of full Exiv2 parity.
 - JPEG: all frame types; EXIF/IPTC/XMP read and restricted editing; stray bytes, bytes after EOI and
   IPTC split across several APP13 segments are read (edits copy unknown bytes verbatim).
-- PNG, WebP: EXIF/XMP read and restricted editing. Standalone TIFF: layout accounting and
-  restricted descriptive editing. XMP packets and sidecars (bounded profile). EXV: read.
-  DNG: narrow read-only inventory. PSD: header and resources of any v1 file, with EXIF, IPTC and
-  XMP read from them (`PsdMetadata.ReadExif/ReadIptc/ReadXmp`). JP2/EPS: narrow inspection.
+- PNG, WebP: format-specific metadata reads and restricted editing. Standalone TIFF and TIFF-based
+  raw files: layout accounting and restricted editing. XMP packets and sidecars use a bounded
+  profile. PSD, JP2, EPS and other readers expose only the families listed in the audit.
 - EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0;
   names only, marked by `ExifTagDefinition.Source`, from TIFF/EP, DNG 1.7, DCF, Microsoft, PIM).
 - MakerNotes (`ExifMetadata.MakerNote`; read, and edited tag by tag in place, see below): Canon (incl. arrays and AFInfo), Nikon 1/2/3

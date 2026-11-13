@@ -16,6 +16,7 @@ internal static class CheckedRange
         return true;
     }
 
+    /// <summary>Multiplies a count by an element width, returning false rather than overflowing.</summary>
     internal static bool TryMultiply(uint count, int width, out int length)
     {
         length = 0;
