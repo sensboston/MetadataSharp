@@ -583,7 +583,8 @@ public sealed class ImageMetadata
                 {
                     byte[] box = boxes.GetXmlBox(i);
                     if (!At(box, 0, "<?xpacket"u8) && !At(box, 0, "<?xml"u8)) continue;
-                    parts.Xmp = XmpPacket.Parse(box);
+                    try { parts.Xmp = XmpPacket.Parse(box); }
+                    catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Xmp); }
                     break;
                 }
         }

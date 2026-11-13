@@ -351,7 +351,7 @@ public sealed class MetadataCapabilitiesTests
     [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Gif, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Insert)]
-    [InlineData(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Replace)]
+    [InlineData(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Read)]
     [InlineData(MetadataContainer.WebP, MetadataFamily.Comment, MetadataOperation.Insert)]
     [InlineData(MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Remove)]
     [InlineData(MetadataContainer.WebP, MetadataFamily.Comment, MetadataOperation.Read)]
@@ -484,7 +484,7 @@ public sealed class MetadataCapabilitiesTests
     [Fact]
     public void TheProfileAndTheCommentAreWrittenOnlyWhereAWriterAndItsTestsExist()
     {
-        // The tests named <Format>IccProfileTests and <Format>CommentTests insert, replace and remove; no other container has a writer.
+        // The format-specific profile tests and PSD/JP2 complete-set writer tests provide evidence for every listed writer.
         // A TIFF and the BMFF brands are written by the documents that edit their EXIF, which refuse the layouts they cannot
         // account for: their rows are partial, as the other rows of those documents are. DNG and the raw formats have no row:
         // the primary directory of such a file is commonly that of a reduced image.
@@ -498,6 +498,8 @@ public sealed class MetadataCapabilitiesTests
             (MetadataContainer.Avif, "BmffMetadataDocument", CapabilityStatus.Partial),
             (MetadataContainer.Heic, "BmffMetadataDocument", CapabilityStatus.Partial),
             (MetadataContainer.Heif, "BmffMetadataDocument", CapabilityStatus.Partial),
+            (MetadataContainer.Jp2, "Jp2Metadata", CapabilityStatus.Partial),
+            (MetadataContainer.Psd, "PsdMetadata", CapabilityStatus.Partial),
         ];
         (MetadataContainer Container, string Document, CapabilityStatus Status)[] comments =
         [
@@ -514,13 +516,19 @@ public sealed class MetadataCapabilitiesTests
         ];
         foreach ((MetadataFamily family, string save, (MetadataContainer Container, string Document, CapabilityStatus Status)[] writers) in families)
         {
-            CapabilityDescriptor[] rows = MetadataCapabilities.All.Where(row => row.Family == family && writes.Contains(row.Operation)).ToArray();
+            CapabilityDescriptor[] rows = MetadataCapabilities.All.Where(row => row.Family == family && writes.Contains(row.Operation) &&
+                !(family == MetadataFamily.Icc && row.Container == MetadataContainer.Exv)).ToArray();
 
             Assert.Equal(writers.Select(writer => writer.Container), rows.Select(row => row.Container).Distinct());
             foreach ((MetadataContainer container, string document, CapabilityStatus status) in writers)
             {
                 CapabilityDescriptor[] own = rows.Where(row => row.Container == container).ToArray();
-                string api = container == MetadataContainer.Pgf ? "PgfMetadata.Write" : document + "." + save;
+                string api = container switch
+                {
+                    MetadataContainer.Pgf => "PgfMetadata.Write",
+                    MetadataContainer.Jp2 or MetadataContainer.Psd => document + ".Write",
+                    _ => document + "." + save,
+                };
 
                 Assert.Equal(writes, own.Select(row => row.Operation));
                 Assert.All(own, row =>
@@ -529,9 +537,18 @@ public sealed class MetadataCapabilitiesTests
                     Assert.StartsWith(api, row.Note);
                 });
                 if (container == MetadataContainer.Pgf) Assert.StartsWith(api + " with comment null: ", own[2].Note);
+                else if (container is MetadataContainer.Jp2 or MetadataContainer.Psd)
+                    Assert.StartsWith(api + " with null ICC", own[2].Note);
                 else Assert.StartsWith(api + " with null: ", own[2].Note);
             }
         }
+
+        Assert.True(MetadataCapabilities.TryGet(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Insert,
+            out CapabilityDescriptor exvIcc));
+        Assert.Equal(CapabilityStatus.Supported, exvIcc.Status);
+        Assert.StartsWith("ExvFile.Create", exvIcc.Note);
+        Assert.False(MetadataCapabilities.TryGet(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Replace, out _));
+        Assert.False(MetadataCapabilities.TryGet(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Remove, out _));
     }
 
     [Fact]

@@ -398,7 +398,7 @@ public static class MetadataOperations
             families.HasFlag(MetadataFamilies.Xmp) ? metadata.Xmp : null,
             families.HasFlag(MetadataFamilies.Comment) && metadata.Comments.Count != 0 ? metadata.Comments[0] : null,
             exif || families.HasFlag(MetadataFamilies.Thumbnail) ? Thumbnail(file, metadata) : default,
-            families.HasFlag(MetadataFamilies.IccProfile) ? metadata.IccProfile.ToArray() : null);
+            families.HasFlag(MetadataFamilies.IccProfile) && !metadata.IccProfile.IsEmpty ? metadata.IccProfile.ToArray() : null);
     }
 
     /// <summary>
