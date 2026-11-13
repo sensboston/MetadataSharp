@@ -259,7 +259,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: Exiv2 0.28.9 / differential parity
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 60
     env:
       LC_ALL: C
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
@@ -286,6 +286,14 @@ jobs:
           python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
             --dump-command "$DUMP" --out artifacts/parity/upstream --title 'PARITY upstream' \
             --rows-per-file 20000 --annotate
+      - name: Run the C# parity port side by side and compare every outcome
+        shell: bash
+        run: |
+          dotnet build tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj --configuration Release
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj --configuration Release --no-build -- \
+            --tree artifacts/parity/exiv2 --dump-command "$DUMP" --out artifacts/parity/csharp-upstream \
+            --compare-report artifacts/parity/upstream/parity-report.json --rows-per-file 20000 \
+            --inventory --require-all-maker-notes
           # Append each completed MakerNote family here; this gate requires full per-file detail.
           python tools/parity/makernote_render_gate.py artifacts/parity/upstream/parity-report.json \
             --inventory --require-all-maker-notes --require Exif.PentaxDng --require Exif.Pentax \
@@ -551,6 +559,8 @@ jobs:
           path: |
             artifacts/parity/upstream/parity-report.txt
             artifacts/parity/upstream/parity-report.json
+            artifacts/parity/csharp-upstream/parity-report.txt
+            artifacts/parity/csharp-upstream/parity-report.json
             artifacts/parity/video/parity-report.txt
             artifacts/parity/video/parity-report.json
             artifacts/parity/preview/preview-report.txt

@@ -279,14 +279,16 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
 
     private async Task EmitLegacy(Stream destination, TiffAppendPlan? plan, bool asynchronous, CancellationToken token)
     {
+        if (legacyStream is null || legacyOptions is null) throw new InvalidOperationException("Legacy TIFF source is not retained.");
+        int buffer = legacyOptions.ReadOptions.Limits.CopyBufferBytes;
         if (plan is null)
         {
-            await ContainerIo.Write(destination, source, asynchronous, token).ConfigureAwait(false);
+            await ContainerIo.Copy(legacyStream, destination, 0, LegacyLayout.SourceLength, buffer, asynchronous, token).ConfigureAwait(false);
             return;
         }
-        await ContainerIo.Write(destination, source.AsMemory(0, 4), asynchronous, token).ConfigureAwait(false);
+        await ContainerIo.Copy(legacyStream, destination, 0, 4, buffer, asynchronous, token).ConfigureAwait(false);
         await ContainerIo.Write(destination, plan.Root, asynchronous, token).ConfigureAwait(false);
-        await ContainerIo.Write(destination, source.AsMemory(8), asynchronous, token).ConfigureAwait(false);
+        await ContainerIo.Copy(legacyStream, destination, 8, LegacyLayout.SourceLength - 8, buffer, asynchronous, token).ConfigureAwait(false);
         await ContainerIo.Write(destination, plan.Tail, asynchronous, token).ConfigureAwait(false);
     }
 
