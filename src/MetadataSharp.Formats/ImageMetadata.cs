@@ -43,7 +43,7 @@ namespace MetadataSharp.Formats;
 public sealed class ImageMetadata
 {
     /// <summary>
-    /// How many bytes from the start of a file <see cref="Detect"/> looks at, at most. A shorter
+    /// How many bytes from the start of a file <see cref="Detect(ReadOnlySpan{byte})"/> looks at, at most. A shorter
     /// header is not an error: it gives <see cref="MetadataFormat.Unknown"/> where the signature
     /// does not fit in it.
     /// </summary>

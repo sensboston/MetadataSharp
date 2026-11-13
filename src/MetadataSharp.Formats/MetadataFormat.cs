@@ -1,7 +1,7 @@
 namespace MetadataSharp.Formats;
 
 /// <summary>
-/// What the first bytes of a file say it is, as <see cref="ImageMetadata.Detect"/> tells it. A
+/// What the first bytes of a file say it is, as <see cref="ImageMetadata.Detect(ReadOnlySpan{byte})"/> tells it. A
 /// member names a signature and so a reader, not a camera or a file extension: where several kinds
 /// of file share one signature they share one member.
 /// </summary>
@@ -83,7 +83,7 @@ public enum MetadataFormat
 
     /// <summary>
     /// Truevision TARGA: no signature stands at the start of the file, so the 2.0 footer at its end is
-    /// what tells it, and <see cref="ImageMetadata.Detect"/> needs the whole file. The version 1 file
+    /// what tells it; byte detection needs the whole file, and the path overload also accepts a <c>.tga</c> name. The version 1 file
     /// the reference tells by its name alone is not recognised.
     /// </summary>
     Tga,
