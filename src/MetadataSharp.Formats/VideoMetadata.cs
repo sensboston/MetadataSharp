@@ -88,8 +88,7 @@ public sealed class VideoMetadata
             format = MetadataFormat.QuickTime;
             return true;
         }
-        if (data.Length >= 12 && data[..4].SequenceEqual("RIFF"u8) &&
-            (data.Slice(8, 4).SequenceEqual("AVI "u8) || data.Slice(8, 4).SequenceEqual("WAVE"u8)))
+        if (data.Length >= 4 && data[..4].SequenceEqual("RIFF"u8))
         {
             format = MetadataFormat.Riff;
             return true;

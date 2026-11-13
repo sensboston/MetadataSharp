@@ -109,6 +109,6 @@ public enum MetadataFormat
     /// <summary>QuickTime-family: an accepted first atom type and major brand.</summary>
     QuickTime,
 
-    /// <summary>RIFF: the four-byte RIFF marker; the form is read separately.</summary>
+    /// <summary>RIFF AVI/WAVE family: the four-byte <c>RIFF</c> marker; the form is validated by the reader.</summary>
     Riff
 }
