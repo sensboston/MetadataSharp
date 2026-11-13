@@ -136,6 +136,10 @@ internal static class MakerNoteRelocator
         ushort tag = target.Entry.TagId;
         ExifValue value = target.Value;
         ReadOnlySpan<byte> bytes = value.RawBytes;
+        // A zero-valued offset is the TIFF null sentinel, not a location to rebase. Keeping an all-zero
+        // address-like scalar/array unchanged is therefore safe even when its vendor tag is unnamed.
+        if ((value.FieldType is TiffFieldType.Long or TiffFieldType.SLong or TiffFieldType.Undefined) &&
+            bytes.Length != 0 && bytes.IndexOfAnyExcept((byte)0) < 0) return true;
         if (note.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2)
         {
             if (tag == 0x1003 && value.FieldType == TiffFieldType.Long && value.Count > 1) return true;
