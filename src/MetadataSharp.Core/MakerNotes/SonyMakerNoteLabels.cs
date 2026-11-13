@@ -94,13 +94,7 @@ internal static partial class MakerNoteLabels
             (0x00000002, "JPEG"), (0x03020000, "ARW 2.2"), (0x03030000, "ARW 2.3"), (0x03030100, "ARW 2.3.1"),
             (0x03030200, "ARW 2.3.2"), (0x03030300, "ARW 2.3.3"), (0x03030500, "ARW 2.3.5"), (0x04000000, "ARW 4.0"),
         ], Form.FourBytes),
-        new(Top, "SonyModelID",
-        [
-            (0, "Multiple camera models"), (2, "DSC-R1"), (256, "DSLR-A100"), (286, "SLT-A65 / SLT-A65V"),
-            (287, "SLT-A77 / SLT-A77V"), (288, "NEX-5N"), (295, "NEX-6"), (297, "DSC-RX100"), (302, "ILCE-3000 / ILCE-3500"),
-            (303, "SLT-A58"), (312, "ILCE-6000"), (353, "ILCA-68"), (354, "ILCA-99M2"), (363, "ILCE-7M3"),
-            (369, "DSC-RX100M5A"), (383, "ILCE-7SM3"),
-        ]),
+        new(Top, "SonyModelID", [], Form.SonyModelId),
 
         // The array of tag 0x9400.
         new(0x9400, "ReleaseMode2", [(0, "Normal"), (2, "Continuous - Exposure Bracketing")]),

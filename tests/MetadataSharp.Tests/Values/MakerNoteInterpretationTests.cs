@@ -511,6 +511,18 @@ public sealed class MakerNoteInterpretationTests
     }
 
     [Fact]
+    public void SonyModelIdSuppliesContextForModelSpecificLabels()
+    {
+        var model = new MakerNoteEntry(0x7001, "SonyModelID", Shorts(312), []);
+        var area = new MakerNoteEntry(0x7002, "AFAreaModeSetting", Bytes(11), []);
+        var point = new MakerNoteEntry(0x7003, "AFPointSelected", Bytes(1), []);
+        var note = new MakerNote(MakerNoteFormat.Sony2, Little, [model, area, point]);
+        Assert.Equal("ILCE-6000", note.InterpretForModel(model, null));
+        Assert.Equal("Center Zone", note.InterpretForModel(point, null));
+        Assert.Equal("n/a", Top(MakerNoteFormat.Sony2, "AFPointsUsed", Bytes(0), "DSC-RX100M5A"));
+    }
+
+    [Fact]
     public void TheSonyFocusModeIsInTheLowSevenBitsOfItsByte()
     {
         Assert.Equal("AF-A", Field(MakerNoteFormat.Sony2, 0x9402, "FocusMode", Bytes(132)));

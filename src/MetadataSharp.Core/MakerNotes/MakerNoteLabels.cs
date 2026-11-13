@@ -234,6 +234,7 @@ internal static partial class MakerNoteLabels
         SonyAFMode,
         SonyFocusMode,
         SonyQuality2,
+        SonyModelId,
         SonyVariableLowPass,
     }
 
@@ -287,6 +288,8 @@ internal static partial class MakerNoteLabels
         };
         if (rules is null)
             return null;
+        if (format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2)
+            cameraModel ??= SonyModelFromNote(note);
         // Every Nikon array that has a version starts with it, and the note has one of its own.
         if (format == MakerNoteFormat.Nikon3 && name == "Version")
             return Version(value);
@@ -411,11 +414,13 @@ internal static partial class MakerNoteLabels
             case Form.SonyMisc2bFocusPosition:
                 return SonyMisc2bFocusPosition(value, cameraModel);
             case Form.SonyAFMode:
-                return SonyAFMode(value, note);
+                return SonyAFMode(value, note, cameraModel);
             case Form.SonyFocusMode:
                 return SonyFocusMode(value, note);
             case Form.SonyQuality2:
                 return SonyQuality2(value);
+            case Form.SonyModelId:
+                return SonyModelId(value);
             case Form.SonyVariableLowPass:
                 return SonyVariableLowPass(value);
             case Form.SonyAFAreaModeSetting:
@@ -640,6 +645,142 @@ internal static partial class MakerNoteLabels
         return null;
     }
 
+    private static readonly (long Number, string Label)[] SonyModels =
+    [
+        (0, "Multiple camera models"),
+        (2, "DSC-R1"),
+        (256, "DSLR-A100"),
+        (257, "DSLR-A900"),
+        (258, "DSLR-A700"),
+        (259, "DSLR-A200"),
+        (260, "DSLR-A350"),
+        (261, "DSLR-A300"),
+        (262, "DSLR-A900 (APS-C mode)"),
+        (263, "DSLR-A380 / DSLR-A390"),
+        (264, "DSLR-A330"),
+        (265, "DSLR-A230"),
+        (266, "DSLR-A290"),
+        (269, "DSLR-A850"),
+        (270, "DSLR-A850 (APS-C mode)"),
+        (273, "DSLR-A550"),
+        (274, "DSLR-A500"),
+        (275, "DSLR-A450"),
+        (278, "NEX-5"),
+        (279, "NEX-3"),
+        (280, "SLT-A33"),
+        (281, "SLT-A55 / SLT-A55V"),
+        (282, "DSLR-A560"),
+        (283, "DSLR-A580"),
+        (284, "NEX-C3"),
+        (285, "SLT-A35"),
+        (286, "SLT-A65 / SLT-A65V"),
+        (287, "SLT-A77 / SLT-A77V"),
+        (288, "NEX-5N"),
+        (289, "NEX-7"),
+        (290, "NEX-VG20E"),
+        (291, "SLT-A37"),
+        (292, "SLT-A57"),
+        (293, "NEX-F3"),
+        (294, "SLT-A99 / SLT-A99V"),
+        (295, "NEX-6"),
+        (296, "NEX-5R"),
+        (297, "DSC-RX100"),
+        (298, "DSC-RX1"),
+        (299, "NEX-VG900"),
+        (300, "NEX-VG30E"),
+        (302, "ILCE-3000 / ILCE-3500"),
+        (303, "SLT-A58"),
+        (305, "NEX-3N"),
+        (306, "ILCE-7"),
+        (307, "NEX-5T"),
+        (308, "DSC-RX100M2"),
+        (309, "DSC-RX10"),
+        (310, "DSC-RX1R"),
+        (311, "ILCE-7R"),
+        (312, "ILCE-6000"),
+        (313, "ILCE-5000"),
+        (317, "DSC-RX100M3"),
+        (318, "ILCE-7S"),
+        (319, "ILCA-77M2"),
+        (339, "ILCE-5100"),
+        (340, "ILCE-7M2"),
+        (341, "DSC-RX100M4"),
+        (342, "DSC-RX10M2"),
+        (344, "DSC-RX1RM2"),
+        (346, "ILCE-QX1"),
+        (347, "ILCE-7RM2"),
+        (350, "ILCE-7SM2"),
+        (353, "ILCA-68"),
+        (354, "ILCA-99M2"),
+        (355, "DSC-RX10M3"),
+        (356, "DSC-RX100M5"),
+        (357, "ILCE-6300"),
+        (358, "ILCE-9"),
+        (360, "ILCE-6500"),
+        (362, "ILCE-7RM3"),
+        (363, "ILCE-7M3"),
+        (364, "DSC-RX0"),
+        (365, "DSC-RX10M4"),
+        (366, "DSC-RX100M6"),
+        (367, "DSC-HX99"),
+        (369, "DSC-RX100M5A"),
+        (371, "ILCE-6400"),
+        (372, "DSC-RX0M2"),
+        (373, "DSC-HX95"),
+        (374, "DSC-RX100M7"),
+        (375, "ILCE-7RM4"),
+        (376, "ILCE-9M2"),
+        (378, "ILCE-6600"),
+        (379, "ILCE-6100"),
+        (380, "ZV-1"),
+        (381, "ILCE-7C"),
+        (382, "ZV-E10"),
+        (383, "ILCE-7SM3"),
+        (384, "ILCE-1"),
+        (385, "ILME-FX3"),
+        (386, "ILCE-7RM3A"),
+        (387, "ILCE-7RM4A"),
+        (388, "ILCE-7M4"),
+        (389, "ZV-1F"),
+        (390, "ILCE-7RM5"),
+        (391, "ILME-FX30"),
+        (392, "ILCE-9M3"),
+        (393, "ZV-E1"),
+        (394, "ILCE-6700"),
+        (395, "ZV-1M2"),
+        (396, "ILCE-7CR"),
+        (397, "ILCE-7CM2"),
+        (398, "ILX-LR1"),
+        (399, "ZV-E10M2"),
+        (400, "ILCE-1M2"),
+        (401, "DSC-RX1RM3"),
+        (402, "ILCE-6400A"),
+        (403, "ILCE-6100A"),
+        (404, "DSC-RX100M7A"),
+        (406, "ILME-FX2"),
+        (407, "ILCE-7M5"),
+        (408, "ZV-1A"),
+        (410, "ILCE-7RM6"),
+        (411, "DSC-RX10M5"),
+    ];
+
+    private static string? SonyModelId(ExifValue value)
+    {
+        long? number = SonyInteger(value);
+        if (number is null || value.FieldType != TiffFieldType.Short)
+            return null;
+        return SonyModels.FirstOrDefault(model => model.Number == number).Label ?? Stored(number.Value);
+    }
+
+    private static string? SonyModelFromNote(MakerNote? note)
+    {
+        long? number = SonyTopInteger(note, "SonyModelID");
+        if (number is null)
+            return null;
+        string? label = SonyModels.FirstOrDefault(model => model.Number == number).Label;
+        return label is not null && !label.Contains(' ') ? label : null;
+    }
+
     private static ExifValue? SonyField(MakerNote? note, ushort entryTag, string fieldName)
     {
         if (note is null || !note.TryGetEntry(entryTag, out MakerNoteEntry? entry))
@@ -707,7 +848,7 @@ internal static partial class MakerNoteLabels
         byte? marker = SonyArrayByte(note, 0x9402, 2);
         if (value.Count != 1 || value.FieldType != TiffFieldType.SByte || !ExifTags.TryInteger(value, 0, out long temperature))
             return null;
-        return marker == 255 ? Whole(temperature) + " \u00B0C" : "n/a";
+        return marker == 255 ? Whole(unchecked((byte)temperature)) + " \u00B0C" : "n/a";
     }
 
     private static string? SonyMisc1Temperature(ExifValue value, MakerNote? note)
@@ -899,9 +1040,8 @@ internal static partial class MakerNoteLabels
             return null;
         if (model is null)
             return "(" + string.Join(" ", value.RawBytes.ToArray().Select(item => Whole(item))) + ")";
-        bool ilca = SonyModelIs(model, "ILCA-");
         bool set2 = SonyModelIs(model, "ILCA-68", "ILCA-77M2");
-        if (ilca && !set2)
+        if (!set2 && SonyModelIs(model, "ILCA-", "DSC-"))
             return "n/a";
         string[] names1 = ["Center", "Top", "Upper-right", "Right", "Lower-right", "Bottom", "Lower-left", "Left", "Upper-left", "Far right", "Far left", "Upper-middle", "Near right", "Lower-middle", "Near left", "Upper far right", "Lower far right", "Lower far left", "Upper far left"];
         string[] names2 = ["A5", "A6", "A7", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "H10", "I5", "I6", "I7"];
@@ -918,6 +1058,8 @@ internal static partial class MakerNoteLabels
                     found.Add(names2[index]);
                 else if (!set2 && index < names1.Length)
                     found.Add(names1[index]);
+                else
+                    found.Add("[" + Whole(index) + "]");
             }
         }
         return found.Count == 0 ? "None" : string.Join(", ", found);
@@ -974,6 +1116,8 @@ internal static partial class MakerNoteLabels
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
             return null;
         string? version = SonyMetaVersion(note);
+        if (number == 65535)
+            return "n/a";
         if (version is null)
             return Stored(number);
         if (version == "DC7303320222000")
@@ -981,29 +1125,32 @@ internal static partial class MakerNoteLabels
         return number switch { 1 => "AF-S", 2 => "AF-C", 4 => "Permanent-AF", 65535 => "n/a", _ => Stored(number) };
     }
 
-    private static string? SonyAFMode(ExifValue value, MakerNote? note)
+    private static string? SonyAFMode(ExifValue value, MakerNote? note, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
             return null;
         string? version = SonyMetaVersion(note);
         if (version is null)
-            return Stored(number);
+            return number switch { 0 => "Default", 1 => "Multi", 2 => "Center", 3 => "Spot", 4 => "Flexible Spot", 6 => "Touch", 14 => "Tracking", 15 => "Face Detected", 65535 => "n/a", _ => Stored(number) };
         if (version != "DC7303320222000")
             return number switch { 0 => "Default", 1 => "Multi", 2 => "Center", 3 => "Spot", 4 => "Flexible Spot", 6 => "Touch", 14 => "Tracking", 15 => "Face Detected", 65535 => "n/a", _ => Stored(number) };
-        long? focusMode = null;
-        if (note is not null)
-            foreach (MakerNoteEntry entry in note.Entries)
-                if (entry.Name == "FocusMode2") { focusMode = SonyInteger(entry.Value); break; }
-        if (focusMode is null || focusMode == 0)
+        long? focusMode = SonyTopInteger(note, "FocusMode2");
+        if (focusMode is null || focusMode == 0 || SonyFocusMode2Value(focusMode.Value, model) == "n/a")
             return "n/a";
         return number switch { 0 => "Multi", 1 => "Center", 2 => "Spot", 3 => "Flexible spot", 10 => "Selective (for miniature effect)", 14 => "Tracking", 15 => "Face tracking", 255 => "Manual", _ => Stored(number) };
+    }
+
+    private static string SonyFocusMode2Value(long number, string? model)
+    {
+        if (model is null || model.StartsWith("DSC-", StringComparison.Ordinal) &&
+            !SonyModelIs(model, "DSC-RX10M4", "DSC-RX100M6", "DSC-RX100M7", "DSC-RX100M5A", "DSC-HX99", "DSC-RX0M2"))
+            return "n/a";
+        return number switch { 0 => "Manual", 2 => "AF-S", 3 => "AF-C", 4 => "AF-A", 6 => "DMF", 7 => "AF-D", _ => Stored(number) };
     }
 
     private static string? SonyFocusMode3(ExifValue value, MakerNote? note)
     {
         string? version = SonyMetaVersion(note);
-        if (version is null)
-            return null;
         if (version != "DC7303320222000")
             return "n/a";
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
@@ -1032,7 +1179,7 @@ internal static partial class MakerNoteLabels
         if ((joined & 0x2000) != 0) AddEnd("LE");
         if ((joined & 0x0800) != 0) AddEnd("II");
         string focal = NibblePair(b[2]);
-        string maxFocal = b[3] == 0 && b[4] == 0 ? "" : "-" + (b[3] == 0 ? "" : NibblePair(b[3])) + NibblePair(b[4]);
+        string maxFocal = b[3] == 0 && b[4] == 0 ? "" : "-" + (b[3] == 0 ? "" : NibblePair(b[3])) + NibblePairPadded(b[4]);
         string result = (start.Length == 0 ? "" : start + " ") + focal + maxFocal + "mm F" + Aperture(b[5]);
         if (b[6] != 0) result += "-" + Aperture(b[6]);
         return result + (end.Length == 0 ? "" : " " + end);
@@ -1041,6 +1188,9 @@ internal static partial class MakerNoteLabels
     private static string NibblePair(byte value) =>
         (value >> 4 == 0 ? "" : (value >> 4).ToString(CultureInfo.InvariantCulture)) +
         (value & 15).ToString(CultureInfo.InvariantCulture);
+
+    private static string NibblePairPadded(byte value) =>
+        ((value >> 4) & 15).ToString(CultureInfo.InvariantCulture) + (value & 15).ToString(CultureInfo.InvariantCulture);
 
     private static string Aperture(byte value) =>
         ((value >> 4) & 15).ToString(CultureInfo.InvariantCulture) + "." + (value & 15).ToString(CultureInfo.InvariantCulture);
