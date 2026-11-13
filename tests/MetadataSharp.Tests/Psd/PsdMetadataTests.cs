@@ -3,6 +3,7 @@ using System.Text;
 using MetadataSharp.Core;
 using MetadataSharp.Formats;
 using MetadataSharp.Formats.Psd;
+using MetadataSharp.Formats.Operations;
 using Xunit;
 
 namespace MetadataSharp.Tests.Psd;
