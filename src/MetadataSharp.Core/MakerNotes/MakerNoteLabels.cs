@@ -92,6 +92,8 @@ internal static partial class MakerNoteLabels
         CanonAutoIso,
         CanonBulbDuration,
         CanonPictureStyle,
+        CanonSerialNumber,
+        CanonRaw,
         CanonIso,
         CanonMeasuredEv,
         CanonMeasuredEv2,
@@ -277,6 +279,10 @@ internal static partial class MakerNoteLabels
                 return CanonBulbDuration(value);
             case Form.CanonPictureStyle:
                 return CanonPictureStyle(rule, value);
+            case Form.CanonSerialNumber:
+                return CanonSerialNumber(value, note);
+            case Form.CanonRaw:
+                return CanonRaw(value);
             case Form.CanonIso:
                 return CanonIso(value);
             case Form.CanonMeasuredEv:
@@ -564,8 +570,26 @@ internal static partial class MakerNoteLabels
     {
         if (value.Count == 0 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort) || !ExifTags.TryInteger(value, 0, out long code))
             return null;
-        return rule.Labels.FirstOrDefault(label => label.Number == code).Label;
+        string? label = rule.Labels.FirstOrDefault(label => label.Number == code).Label;
+        return label ?? $"({code.ToString(CultureInfo.InvariantCulture)})";
     }
+
+    private static string? CanonSerialNumber(ExifValue value, MakerNote? note)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Long || note is null ||
+            note.Entries.FirstOrDefault(entry => entry.Name == "ModelID") is not MakerNoteEntry model ||
+            !ExifTags.TryInteger(model.Value, 0, out long modelId) || modelId != 0x01140000 ||
+            !ExifTags.TryInteger(value, 0, out long serial))
+            return null;
+        uint number = unchecked((uint)serial);
+        return ((number >> 16) & 0xffff).ToString("X4", CultureInfo.InvariantCulture) +
+               (number & 0xffff).ToString("D5", CultureInfo.InvariantCulture);
+    }
+
+    private static string? CanonRaw(ExifValue value) =>
+        value.Count == 1 && ExifTags.TryInteger(value, 0, out long number)
+            ? $"({number.ToString(CultureInfo.InvariantCulture)})"
+            : null;
 
     private static string? CanonAutoIso(ExifValue value)
     {

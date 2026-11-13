@@ -27,8 +27,16 @@ internal static partial class MakerNoteLabels
              (0x21, "User Def. 1"), (0x22, "User Def. 2"), (0x23, "User Def. 3"),
              (0x41, "PC 1"), (0x42, "PC 2"), (0x43, "PC 3"), (0x81, "Standard"),
              (0x82, "Portrait"), (0x83, "Landscape"), (0x84, "Neutral"), (0x85, "Faithful"),
-             (0x86, "Monochrome"), (0x87, "Auto"), (0x88, "Fine Detail")]),
-        new(Top, "ColorSpace", [(1, "sRGB"), (2, "Adobe RGB")]),
+             (0x86, "Monochrome"), (0x87, "Auto"), (0x88, "Fine Detail")], Form.CanonPictureStyle),
+        new(Top, "PictureStylePC",
+            [(0x00, "None"), (0x01, "Standard"), (0x02, "Portrait"), (0x03, "High Saturation"),
+             (0x04, "Adobe RGB"), (0x05, "Low Saturation"), (0x06, "CM Set 1"), (0x07, "CM Set 2"),
+             (0x21, "User Def. 1"), (0x22, "User Def. 2"), (0x23, "User Def. 3"),
+             (0x41, "PC 1"), (0x42, "PC 2"), (0x43, "PC 3"), (0x81, "Standard"),
+             (0x82, "Portrait"), (0x83, "Landscape"), (0x84, "Neutral"), (0x85, "Faithful"),
+             (0x86, "Monochrome"), (0x87, "Auto"), (0x88, "Fine Detail")], Form.CanonPictureStyle),
+        new(Top, "SerialNumber", [], Form.CanonSerialNumber),
+        new(Top, "ColorSpace",  [(1, "sRGB"), (2, "Adobe RGB")]),
         new(Top, "DateStampMode", [(0, "Off")]),
         new(Top, "SerialNumberFormat", [(0x90000000, "Format 1"), (0xA0000000, "Format 2")]),
         new(Top, "ModelID",
@@ -193,6 +201,9 @@ internal static partial class MakerNoteLabels
         new(0x4016, "PeripheralLightingSetting", OffOn),
         new(0x4016, "ChromaticAberrationSetting", OffOn),
         new(0x4016, "DistortionCorrectionSetting", OffOn),
+
+        // AFConfig (0x4028).
+        new(0x4028, "SelectAFAreaSelectionMode", [], Form.CanonRaw),
 
         // LightingOpt (0x4018).
         new(0x4018, "PeripheralIlluminationCorr", OffOn),

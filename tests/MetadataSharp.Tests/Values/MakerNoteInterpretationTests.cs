@@ -184,6 +184,17 @@ public sealed class MakerNoteInterpretationTests
             Field(MakerNoteFormat.Canon, 0x0001, "FlashDetails", Shorts(0x2008), index: 29));
         Assert.Equal("(0)", Field(MakerNoteFormat.Canon, 0x0093, "FileNumber", Longs(0), index: 1));
         Assert.Equal("Standard", Field(MakerNoteFormat.Canon, 0x00A0, "PictureStyle", Shorts(129, 129, 129), index: 5));
+        Assert.Equal("Auto", Top(MakerNoteFormat.Canon, "PictureStyleUserDef", Shorts(135, 135, 135)));
+        Assert.Equal("(16191)", Field(MakerNoteFormat.Canon, 0x4028, "SelectAFAreaSelectionMode", SignedLongs(16191), index: 12));
+    }
+
+    [Fact]
+    public void CanonD30SerialNumberUsesTheModelSpecificReferenceFormat()
+    {
+        var model = new MakerNoteEntry(0x0010, "ModelID", Longs(0x01140000), []);
+        var serial = new MakerNoteEntry(0x000C, "SerialNumber", Longs(154213267), []);
+        var note = new MakerNote(MakerNoteFormat.Canon, Little, [model, serial]);
+        Assert.Equal("093107059", note.Interpret(serial));
     }
 
     [Fact]
