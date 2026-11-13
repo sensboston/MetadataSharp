@@ -49,6 +49,10 @@ public sealed partial class PngMetadataDocument
     public Task SaveCommentAsync(Stream destination, string? comment, CancellationToken cancellationToken = default) =>
         SaveEmbedded(destination, EmbeddedKind.Comment, comment, null, true, cancellationToken);
 
+    /// <summary>Writes Exiv2's PNG comment keyword while retaining the public Comment-chunk behavior.</summary>
+    internal void SaveReferenceComment(Stream destination, string? comment) =>
+        SaveEmbedded(destination, EmbeddedKind.Description, comment, null, false, default).GetAwaiter().GetResult();
+
     /// <summary>As <see cref="SaveComment(Stream, string)"/>, to a new file that is published only when it is complete.</summary>
     public void SaveCommentAs(string destinationPath, string? comment) =>
         SaveEmbeddedPath(destinationPath, EmbeddedKind.Comment, comment, null, false, default).GetAwaiter().GetResult();
@@ -106,7 +110,7 @@ public sealed partial class PngMetadataDocument
     public Task SaveIccProfileAsAsync(string destinationPath, byte[]? profile, CancellationToken cancellationToken = default) =>
         SaveEmbeddedPath(destinationPath, EmbeddedKind.IccProfile, null, Clone(profile), true, cancellationToken);
 
-    private enum EmbeddedKind { Comment, IccProfile }
+    private enum EmbeddedKind { Comment, Description, IccProfile }
 
     /// <summary>
     /// The planned output and what it is to hold: the type and the data of the one chunk written,
@@ -146,7 +150,8 @@ public sealed partial class PngMetadataDocument
     {
         string? type = null;
         byte[]? data = null;
-        if (kind == EmbeddedKind.Comment && comment is not null) (type, data) = CommentChunk(comment);
+        if ((kind is EmbeddedKind.Comment or EmbeddedKind.Description) && comment is not null)
+            (type, data) = CommentChunk(comment, kind == EmbeddedKind.Description ? "Description" : "Comment");
         if (kind == EmbeddedKind.IccProfile && profile is not null)
         {
             IccProfiles.Exact(profile);
@@ -154,9 +159,12 @@ public sealed partial class PngMetadataDocument
         }
         await Verify(asynchronous, token).ConfigureAwait(false);
         // A written profile and an sRGB chunk are two statements about one thing: the chunk goes.
-        PngChunk[] removed = scan.Chunks.Where(chunk => kind == EmbeddedKind.Comment
-            ? chunk.Comment
-            : chunk.Type == "iCCP" || (profile is not null && chunk.Type == "sRGB")).ToArray();
+        PngChunk[] removed = scan.Chunks.Where(chunk => kind switch
+        {
+            EmbeddedKind.Comment => chunk.Comment,
+            EmbeddedKind.Description => chunk.Description || chunk.Comment,
+            _ => chunk.Type == "iCCP" || (profile is not null && chunk.Type == "sRGB"),
+        }).ToArray();
         // Nothing to take out and nothing to put in: the file is copied as it is.
         if (removed.Length == 0 && comment is null && profile is null) return null;
         if (profile is not null)
@@ -179,7 +187,7 @@ public sealed partial class PngMetadataDocument
     /// UTF-8 otherwise. A reader that tries UTF-8 first takes the ISO-8859-1 bytes C3 A9 for one
     /// character, so a text of those two characters is written as iTXt.
     /// </summary>
-    private (string Type, byte[] Data) CommentChunk(string comment)
+    private (string Type, byte[] Data) CommentChunk(string comment, string keyword)
     {
         // A reader drops the zero bytes a comment ends with and lists no empty comment.
         if (comment.Length == 0)
@@ -192,7 +200,7 @@ public sealed partial class PngMetadataDocument
         if (narrow is not null && Comments.Decode(narrow) == comment)
         {
             type = "tEXt";
-            data = [.. "Comment\0"u8, .. narrow];
+            data = [.. Encoding.ASCII.GetBytes(keyword), 0, .. narrow];
         }
         else
         {
@@ -201,7 +209,7 @@ public sealed partial class PngMetadataDocument
             catch (EncoderFallbackException) { throw new ArgumentException("The comment is not well-formed UTF-16.", nameof(comment)); }
             type = "iTXt";
             // The keyword, not compressed, the method, no language, no translated keyword.
-            data = [.. "Comment\0"u8, 0, 0, 0, 0, .. wide];
+            data = [.. Encoding.ASCII.GetBytes(keyword), 0, 0, 0, 0, 0, .. wide];
         }
         Budget(data.Length);
         return (type, data);
@@ -240,7 +248,7 @@ public sealed partial class PngMetadataDocument
     {
         byte[]? written = data is null ? null : Crc.Chunk(type!, data);
         PngChunk? first = removed.FirstOrDefault(chunk => chunk.Type != "sRGB");
-        long at = first?.Start ?? (kind == EmbeddedKind.Comment ? scan.Insertion : scan.Chunks[0].Start + scan.Chunks[0].Length);
+        long at = first?.Start ?? (kind != EmbeddedKind.IccProfile ? scan.Insertion : scan.Chunks[0].Start + scan.Chunks[0].Length);
         var output = new PlannedOutput();
         long cursor = 0;
         bool placed = written is null;
@@ -291,7 +299,12 @@ public sealed partial class PngMetadataDocument
             throw Refuse("the output does not scan as a PNG");
         }
         if (after.Length != plan.Output.Length) throw Refuse("the output does not have the planned length");
-        bool Edited(PngChunk chunk) => plan.Kind == EmbeddedKind.Comment ? chunk.Comment : chunk.Type == "iCCP";
+        bool Edited(PngChunk chunk) => plan.Kind switch
+        {
+            EmbeddedKind.Comment => chunk.Comment,
+            EmbeddedKind.Description => chunk.Description || chunk.Comment,
+            _ => chunk.Type == "iCCP",
+        };
         PngChunk[] kept = scan.Chunks.Where(chunk => Array.IndexOf(plan.Removed, chunk) < 0).ToArray();
         PngChunk[] same = after.Chunks.Where(chunk => !Edited(chunk)).ToArray();
         if (kept.Length != same.Length) throw Refuse("a chunk the edit did not name is missing or new");
@@ -299,7 +312,8 @@ public sealed partial class PngMetadataDocument
         {
             PngChunk was = kept[index], now = same[index];
             if (was.Type != now.Type || was.Size != now.Size || was.Checksum != now.Checksum || was.Xmp != now.Xmp ||
-                was.UnsafeUnknown != now.UnsafeUnknown || was.Profile != now.Profile || was.Comment != now.Comment)
+                was.UnsafeUnknown != now.UnsafeUnknown || was.Profile != now.Profile || was.Comment != now.Comment ||
+                was.Description != now.Description)
                 throw Refuse("a chunk the edit did not name changed");
         }
         PngChunk[] written = after.Chunks.Where(Edited).ToArray();
@@ -318,8 +332,9 @@ public sealed partial class PngMetadataDocument
         }
         else
         {
-            // After the keyword: nothing for tEXt; the two compression bytes and two empty fields for iTXt.
-            int text = added.Type == "tEXt" ? 8 : 12;
+            // After the keyword: nothing for tEXt; iTXt adds compression, language, and translation fields.
+            int text = Encoding.ASCII.GetByteCount(plan.Kind == EmbeddedKind.Description ? "Description" : "Comment") +
+                1 + (added.Type == "tEXt" ? 0 : 4);
             if (read.Length <= text || Comments.Decode(read.AsSpan(text)) != plan.Comment)
                 throw Refuse("the new chunk does not read back as the comment");
         }

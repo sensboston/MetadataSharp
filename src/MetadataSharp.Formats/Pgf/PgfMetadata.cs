@@ -165,11 +165,12 @@ public sealed class PgfMetadata
         }
         if (replaceComment)
         {
+            // Exiv2 reads a PNG comment from Description, while the public PNG comment API uses Comment.
             using var input = new MemoryStream(changedRegion, writable: false);
             using PngMetadataDocument document = PngMetadataDocument.Open(input,
                 limits is null ? null : new PngReadOptions { Limits = limits });
             using var changed = new MemoryStream();
-            document.SaveComment(changed, comment);
+            document.SaveReferenceComment(changed, comment);
             changedRegion = changed.ToArray();
         }
 
@@ -188,8 +189,70 @@ public sealed class PgfMetadata
         if (before.Width != after.Width || before.Height != after.Height ||
             !source.AsSpan(regionEnd).SequenceEqual(output.AsSpan(regionStart + changedRegion.Length)))
             throw new MetadataException(MetadataErrorCode.UnsafeRelocation, "The PGF rewrite changed image data or header dimensions.");
+        VerifyEdits(before, after, edits, output, comment, replaceComment, limits);
         return output;
     }
+
+    private static void VerifyEdits(PgfMetadata before, PgfMetadata after, SyncEdits edits, byte[] output,
+        string? comment, bool replaceComment, MetadataLimits? limits)
+    {
+        ExifEdit.EditSnapshot exif = edits.Exif.Snapshot();
+        if (exif.RemoveAll && after.Exif is not null)
+            throw Unsafe("The PGF rewrite retained EXIF after whole-block removal.");
+        foreach ((ExifTagKey key, ExifValue? value) in exif.Changes)
+        {
+            ExifEntry? entry = null;
+            bool found = after.Exif is ExifMetadata actualExif && actualExif.TryGetEntry(key, out entry);
+            if (value is null ? found : !found || !SameValue(value, entry!.Value))
+                throw Unsafe("The PGF EXIF edit did not read back as planned.");
+        }
+
+        XmpPacket? expectedXmp = edits.Xmp.IsEmpty ? before.Xmp :
+            (before.Xmp ?? XmpPacket.CreateEmpty()).Apply(edits.Xmp);
+        if (!SamePacket(expectedXmp, after.Xmp))
+            throw Unsafe("The PGF XMP edit did not read back as planned.");
+
+        IptcPacket? expectedIptc = edits.Iptc.IsEmpty ? before.Iptc :
+            (before.Iptc ?? IptcPacket.CreateEmpty()).Apply(edits.Iptc);
+        if (!SamePacket(expectedIptc, after.Iptc))
+            throw Unsafe("The PGF IPTC edit did not read back as planned.");
+
+        if (replaceComment)
+        {
+            IReadOnlyList<string> comments = Comments.Read(output, limits);
+            if (comment is null ? comments.Count != 0 : comments.Count != 1 || comments[0] != comment)
+                throw Unsafe("The PGF comment edit did not read back as planned.");
+        }
+    }
+
+    private static bool SameValue(ExifValue expected, ExifValue actual) =>
+        expected.FieldType == actual.FieldType && expected.Count == actual.Count && expected.RawBytes.SequenceEqual(actual.RawBytes);
+
+    private static bool SamePacket(XmpPacket? expected, XmpPacket? actual)
+    {
+        if (expected is null) return actual is null;
+        if (actual is null || expected.Entries.Count != actual.Entries.Count) return false;
+        for (int i = 0; i < expected.Entries.Count; i++)
+        {
+            XmpEntry left = expected.Entries[i], right = actual.Entries[i];
+            if (left.Path != right.Path || left.NamespaceUri != right.NamespaceUri || left.Kind != right.Kind ||
+                left.HasChildEntries != right.HasChildEntries || !left.Values.SequenceEqual(right.Values) ||
+                !left.Languages.SequenceEqual(right.Languages)) return false;
+        }
+        return true;
+    }
+
+    private static bool SamePacket(IptcPacket? expected, IptcPacket? actual)
+    {
+        if (expected is null) return actual is null;
+        if (actual is null || expected.Datasets.Count != actual.Datasets.Count) return false;
+        for (int i = 0; i < expected.Datasets.Count; i++)
+            if (expected.Datasets[i].Key != actual.Datasets[i].Key ||
+                !expected.Datasets[i].Value.Span.SequenceEqual(actual.Datasets[i].Value.Span)) return false;
+        return true;
+    }
+
+    private static MetadataException Unsafe(string message) => new(MetadataErrorCode.UnsafeRelocation, message);
 
     private static MetadataException Bad(string message, long offset) => new(MetadataErrorCode.InvalidPgf, message, offset);
 }

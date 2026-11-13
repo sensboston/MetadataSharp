@@ -8,7 +8,8 @@ namespace MetadataSharp.Formats;
 /// <summary>
 /// Read-only access to the free-text comments a file carries outside its EXIF, IPTC and XMP
 /// metadata: the COM segments of a JPEG and the text chunks of a PNG whose keyword is
-/// <c>Comment</c>, including through a PGF header region that holds a PNG. Nothing is written.
+/// <c>Comment</c>. In a PGF header region holding a PNG, the reference tool's <c>Description</c>
+/// keyword is also read as its comment. Nothing is written.
 /// </summary>
 public static class Comments
 {
@@ -20,7 +21,9 @@ public static class Comments
     /// <list type="bullet">
     /// <item>JPEG, and EXV, which is framed the same way: every COM segment before the first scan.</item>
     /// <item>PNG: every <c>tEXt</c>, <c>zTXt</c> and <c>iTXt</c> chunk whose keyword is exactly
-    /// <c>Comment</c>, before or after the image data; compressed text is inflated within the budget.</item>
+    /// <c>Comment</c>, before or after the image data; compressed text is inflated within the budget.
+    /// Within a PGF header region, the <c>Description</c> keyword the reference tool reads as a
+    /// comment is included too.</item>
     /// </list>
     /// The zero bytes that end a comment are dropped, and a comment that is empty without them is
     /// not listed. The bytes are read as UTF-8 when they are well-formed UTF-8 and as ISO-8859-1
@@ -45,7 +48,10 @@ public static class Comments
         {
             Pgf.PgfMetadata pgf = Pgf.PgfMetadata.Read(file, limits);
             int regionStart = file.Length > 20 && file[20] == 2 ? 24 + 256 * 3 : 24;
-            return Read(file.Slice(regionStart, checked((int)pgf.ImageOffset) - regionStart), limits);
+            var embeddedComments = new List<string>();
+            Png(file.Slice(regionStart, checked((int)pgf.ImageOffset) - regionStart), limits, embeddedComments,
+                includeReferenceDescription: true);
+            return embeddedComments.AsReadOnly();
         }
         var found = new List<string>();
         switch (EmbeddedFile.Detect(file))
@@ -108,7 +114,8 @@ public static class Comments
 
     private static MetadataException Bad(string message, long offset) => new(MetadataErrorCode.InvalidPng, message, offset);
 
-    private static void Png(ReadOnlySpan<byte> data, MetadataLimits limits, List<string> found)
+    private static void Png(ReadOnlySpan<byte> data, MetadataLimits limits, List<string> found,
+        bool includeReferenceDescription = false)
     {
         int at = 8;
         long retained = 0;
@@ -119,11 +126,14 @@ public static class Comments
             if (type == EmbeddedFile.PngEnd) break;
             if (type is not (TextChunk or CompressedTextChunk or InternationalTextChunk)) continue;
             ReadOnlySpan<byte> chunk = data.Slice(payload, length);
-            if (!chunk.StartsWith("Comment\0"u8)) continue;
+            int keywordLength;
+            if (chunk.StartsWith("Comment\0"u8)) keywordLength = 8;
+            else if (includeReferenceDescription && chunk.StartsWith("Description\0"u8)) keywordLength = 12;
+            else continue;
             if (!EmbeddedFile.ChecksumHolds(data, payload, length))
                 throw Bad("A comment chunk fails its checksum.", payload - 8);
-            ReadOnlySpan<byte> rest = chunk[8..];
-            int textAt = payload + 8;
+            ReadOnlySpan<byte> rest = chunk[keywordLength..];
+            int textAt = payload + keywordLength;
             if (type == TextChunk)
             {
                 Add(rest, limits, ref retained, textAt, found);
