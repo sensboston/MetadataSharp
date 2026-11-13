@@ -562,7 +562,7 @@ internal static partial class MakerNoteLabels
 
     private static string? CanonPictureStyle(Rule rule, ExifValue value)
     {
-        if (value.Count == 0 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long code))
+        if (value.Count == 0 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.SShort) || !ExifTags.TryInteger(value, 0, out long code))
             return null;
         return rule.Labels.FirstOrDefault(label => label.Number == code).Label;
     }
