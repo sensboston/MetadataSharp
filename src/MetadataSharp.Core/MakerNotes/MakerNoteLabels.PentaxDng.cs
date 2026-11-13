@@ -223,10 +223,12 @@ internal static partial class MakerNoteLabels
 
     private static string? Bracketing(ExifValue value)
     {
-        if (value.Count != 2 || value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Short or TiffFieldType.Long) ||
-            Number(value, 0) is not long first || Number(value, 1) is not long second) return null;
+        if (value.Count is < 1 or > 2 || value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Short or TiffFieldType.Long) ||
+            Number(value, 0) is not long first) return null;
         double ev = first < 10 ? first / 3d : first - 9.5d;
         string text = ev.ToString("G2", CultureInfo.InvariantCulture) + " EV";
+        if (value.Count == 1) return text;
+        if (Number(value, 1) is not long second) return null;
         if (second == 0) return text + " (No extended bracketing)";
         long kind = second >> 8, range = second & 0xff;
         string label = kind switch { 1 => "WB-BA", 2 => "WB-GM", 3 => "Saturation", 4 => "Sharpness", 5 => "Contrast", _ => "Unknown " + kind };
