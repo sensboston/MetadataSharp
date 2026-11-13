@@ -85,7 +85,7 @@ public enum MetadataFamily
     Xmp,
     /// <summary>ICC colour profile: returned as its bytes by <c>IccProfiles.Read</c> (operation <see cref="MetadataOperation.Extract"/>) and written by <c>SaveIccProfile</c> of the JPEG, PNG, WebP, TIFF-based and BMFF documents; not interpreted.</summary>
     Icc,
-    /// <summary>Free-text comment (a JPEG COM segment, a PNG text chunk with the keyword Comment): listed by <c>Comments.Read</c>; written by <c>SaveComment</c> of the JPEG and PNG documents.</summary>
+    /// <summary>Free-text comment (a JPEG COM segment or a PNG text chunk with the keyword Comment): listed by <c>Comments.Read</c>; written by the JPEG and PNG documents, and through a PNG carrier in PGF.</summary>
     Comment,
     /// <summary>Embedded thumbnail; no general public API in this build.</summary>
     Thumbnail,
@@ -286,7 +286,10 @@ public static class MetadataCapabilities
         // EXV, JPEG 2000 and PSD have no document type: what the static readers return is all that is claimed.
         // EPS keeps an XMP packet in its DSC comments and nothing else; Exiv2 0.28.9 reads and writes
         // that packet, and reads or writes no EXIF, IPTC or comment of the format.
-        new(MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "EpsMetadata.Read: the packet after BeginPageSetup and before PageTrailer of the DSC comments, in a plain or a DOS EPS file; a read-only trailer, a second packet or a PostScript section with no packet is refused. Nothing is written."),
+        new(MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "EpsMetadata.Read: an announced XMP packet in plain or DOS EPS; read-only trailers are refused."),
+        new(MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: inserts an announced packet in plain or DOS EPS; the rewritten packet is parsed before output."),
+        new(MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: replaces the packet range; DOS section lengths and offsets are updated and previews verified byte-identical."),
+        new(MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: removes the packet and marks NoMain; malformed framing and unsafe DOS layouts are refused."),
         new(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks, joined by their numbers as in a JPEG; the bytes the profile declares, not interpreted."),
         new(MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment, in file order, as in a JPEG. Nothing is written."),
         // HEIC and HEIF: as AVIF above.
@@ -361,9 +364,22 @@ public static class MetadataCapabilities
         new(MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
         // PGF puts a whole image file in its header region, and Exiv2 0.28.9 reads that file: these rows
         // are the ones the region's own container gives. Nothing is written.
-        new(MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the EXIF of the image file the header region holds, read by that file's own reader and with its MakerNote, as raw values; and the width and height the header states. Nothing is written."),
-        new(MetadataContainer.Pgf, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the IPTC of the image file the header region holds, read by that file's own reader. Nothing is written."),
-        new(MetadataContainer.Pgf, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the XMP packet of the image file the header region holds, read by that file's own reader. Nothing is written."),
+        new(MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the EXIF of the image file held in the header region; width and height from the PGF header."),
+        new(MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer for a PNG carrier; EXIF tags retain the PNG writer's edit restrictions."),
+        new(MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer for a PNG carrier; EXIF tags retain the PNG writer's edit restrictions."),
+        new(MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer for a PNG carrier; whole EXIF removal and per-tag removals are supported."),
+        new(MetadataContainer.Pgf, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the IPTC of the image file held in the header region."),
+        new(MetadataContainer.Pgf, MetadataFamily.IptcIim, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer's Raw profile type iptc stream and IPTC edit restrictions."),
+        new(MetadataContainer.Pgf, MetadataFamily.IptcIim, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer's Raw profile type iptc stream and IPTC edit restrictions."),
+        new(MetadataContainer.Pgf, MetadataFamily.IptcIim, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer's Raw profile type iptc stream; whole and per-dataset removal are supported."),
+        new(MetadataContainer.Pgf, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the XMP packet of the image file held in the header region."),
+        new(MetadataContainer.Pgf, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer to insert XMP in a PNG carrier."),
+        new(MetadataContainer.Pgf, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer to replace XMP in a PNG carrier."),
+        new(MetadataContainer.Pgf, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer to remove XMP in a PNG carrier."),
+        new(MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Partial, "Comments.Read: reads Comment text chunks of an embedded PNG carrier."),
+        new(MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG comment writer; the PGF region length is updated and its image suffix retained."),
+        new(MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG comment writer; the PGF region length is updated and its image suffix retained."),
+        new(MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write: removes Comment text chunks through the PNG writer; the PGF region length is updated."),
         new(MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: image resource 0x040F, not interpreted; a second one is refused."),
         // RAF has no document type: RafMetadata reads the embedded JPEG file and the TIFF structure.
         new(MetadataContainer.Raf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the EXIF block of the embedded JPEG file, and the tags only the primary directory of the TIFF structure has; its Fujifilm directory (tag 0xF000) is not read; tested on authored files. Nothing is written."),

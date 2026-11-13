@@ -164,6 +164,8 @@ internal static class Program
             _ = probe.Read(tail, 0, tail.Length);
             format = ImageMetadata.Detect(tail);
         }
+        if (format == MetadataFormat.Unknown && string.Equals(Path.GetExtension(path), ".tga", StringComparison.OrdinalIgnoreCase))
+            format = MetadataFormat.Tga;
         switch (format)
         {
             case MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Psd:

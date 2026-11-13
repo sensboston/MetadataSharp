@@ -8,7 +8,7 @@ namespace MetadataSharp.Formats;
 /// <summary>
 /// Read-only access to the free-text comments a file carries outside its EXIF, IPTC and XMP
 /// metadata: the COM segments of a JPEG and the text chunks of a PNG whose keyword is
-/// <c>Comment</c>. Nothing is written.
+/// <c>Comment</c>, including through a PGF header region that holds a PNG. Nothing is written.
 /// </summary>
 public static class Comments
 {
@@ -41,6 +41,12 @@ public static class Comments
     public static IReadOnlyList<string> Read(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
     {
         limits = EmbeddedFile.Checked(file, limits);
+        if (ImageMetadata.Detect(file) == MetadataFormat.Pgf)
+        {
+            Pgf.PgfMetadata pgf = Pgf.PgfMetadata.Read(file, limits);
+            int regionStart = file.Length > 20 && file[20] == 2 ? 24 + 256 * 3 : 24;
+            return Read(file.Slice(regionStart, checked((int)pgf.ImageOffset) - regionStart), limits);
+        }
         var found = new List<string>();
         switch (EmbeddedFile.Detect(file))
         {

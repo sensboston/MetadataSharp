@@ -1,4 +1,7 @@
+using System.Buffers.Binary;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Sync;
+using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats;
 using MetadataSharp.Formats.Eps;
 using MetadataSharp.Formats.Pgf;
@@ -72,6 +75,16 @@ public sealed class EpsPgfFixtureTests
     }
 
     [Fact]
+    public void EpsWriteRefusesReadOnlyPacketsBeforeReturningOutput()
+    {
+        var edit = new XmpEdit();
+        edit.Set("Xmp.xmp.CreatorTool", "not safe to overwrite");
+        MetadataException error = Assert.Throws<MetadataException>(() =>
+            EpsMetadata.WriteXmp(Fixture("eps-xmp-readonly.eps"), edit));
+        Assert.Equal(MetadataErrorCode.InvalidEps, error.Code);
+    }
+
+    [Fact]
     public void TheDosFramingPlacesBothSections()
     {
         byte[] file = Fixture("dos-eps-xmp.eps");
@@ -82,6 +95,17 @@ public sealed class EpsPgfFixtureTests
         Assert.Equal(30 + eps.PostScriptLength, eps.TiffOffset);
         Assert.True(eps.TiffLength > 0);
         Assert.Null(eps.WmfOffset);
+    }
+
+    [Fact]
+    public void EpsWriteRefusesOverlappingDosSections()
+    {
+        byte[] source = Fixture("dos-eps-xmp.eps");
+        BinaryPrimitives.WriteUInt32LittleEndian(source.AsSpan(20), 31);
+        var edit = new XmpEdit();
+        edit.Set("Xmp.xmp.CreatorTool", "not safe to relocate");
+        MetadataException error = Assert.Throws<MetadataException>(() => EpsMetadata.WriteXmp(source, edit));
+        Assert.Equal(MetadataErrorCode.InvalidEps, error.Code);
     }
 
     [Theory]
@@ -105,6 +129,61 @@ public sealed class EpsPgfFixtureTests
         PgfMetadata pgf = PgfMetadata.Read(Fixture(name));
         Assert.Equal(width, pgf.Width);
         Assert.Equal(height, pgf.Height);
+    }
+
+    [Fact]
+    public void EpsXmpWritesInsertReplaceAndRemoveWithReadback()
+    {
+        byte[] plain = Fixture("eps-plain.eps");
+        var add = new XmpEdit();
+        add.Set("Xmp.xmp.CreatorTool", "first");
+        byte[] inserted = EpsMetadata.WriteXmp(plain, add);
+        Assert.Contains(EpsMetadata.Read(inserted).Xmp!.Entries, entry => entry.Values.Contains("first"));
+
+        var replace = new XmpEdit();
+        replace.Set("Xmp.xmp.CreatorTool", "second");
+        byte[] changed = EpsMetadata.WriteXmp(inserted, replace);
+        Assert.Contains(EpsMetadata.Read(changed).Xmp!.Entries, entry => entry.Values.Contains("second"));
+
+        var remove = new XmpEdit();
+        remove.RemoveAllXmp();
+        byte[] removed = EpsMetadata.WriteXmp(changed, remove);
+        Assert.Null(EpsMetadata.Read(removed).Xmp);
+        Assert.Equal("%ADO_ContainsXMP: NoMain", System.Text.Encoding.ASCII.GetString(removed).Split('\n').Single(line => line.StartsWith("%ADO_ContainsXMP:")));
+    }
+
+    [Fact]
+    public void DosEpsXmpWriteKeepsThePreviewAndReframesItsOffset()
+    {
+        byte[] source = Fixture("dos-eps-xmp.eps");
+        EpsMetadata before = EpsMetadata.Read(source);
+        byte[] preview = source.AsSpan((int)before.TiffOffset!.Value, (int)before.TiffLength).ToArray();
+        var edit = new XmpEdit();
+        edit.Set("Xmp.xmp.CreatorTool", "a longer writer value");
+        byte[] output = EpsMetadata.WriteXmp(source, edit);
+        EpsMetadata after = EpsMetadata.Read(output);
+        Assert.Equal((long)output.Length, after.TiffOffset!.Value + after.TiffLength);
+        Assert.Equal(preview, output.AsSpan((int)after.TiffOffset.Value, (int)after.TiffLength).ToArray());
+        Assert.Contains(after.Xmp!.Entries, entry => entry.Values.Contains("a longer writer value"));
+    }
+
+    [Fact]
+    public void PgfWriteReusesPngWriterAndLeavesThePgfImageSuffixUntouched()
+    {
+        byte[] source = [.. Fixture("pgf-png.pgf"), 0xA5, 0x5A];
+        PgfMetadata before = PgfMetadata.Read(source);
+        byte[] suffix = source.AsSpan((int)before.ImageOffset).ToArray();
+        var edits = new SyncEdits();
+        edits.Xmp.Set("Xmp.xmp.CreatorTool", "PGF writer");
+        byte[] output = PgfMetadata.Write(source, edits);
+        PgfMetadata after = PgfMetadata.Read(output);
+        Assert.Equal(before.Width, after.Width);
+        Assert.Equal(before.Height, after.Height);
+        Assert.Equal(suffix, output.AsSpan((int)after.ImageOffset).ToArray());
+        Assert.Contains(after.Xmp!.Entries, entry => entry.Values.Contains("PGF writer"));
+
+        byte[] commented = PgfMetadata.Write(output, new SyncEdits(), "inside PGF", replaceComment: true);
+        Assert.Equal(new[] { "inside PGF" }, Comments.Read(commented));
     }
 
     [Fact]

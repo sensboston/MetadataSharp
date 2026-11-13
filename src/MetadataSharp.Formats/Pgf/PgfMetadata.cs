@@ -2,11 +2,13 @@ using System.Buffers.Binary;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
+using MetadataSharp.Core.Sync;
+using MetadataSharp.Formats.Png;
 
 namespace MetadataSharp.Formats.Pgf;
 
 /// <summary>
-/// Read-only metadata of a PGF file. The file starts with the three bytes <c>PGF</c>, a version byte
+/// Metadata of a PGF file. The file starts with the three bytes <c>PGF</c>, a version byte
 /// and the length of its header as a 32-bit word; after the sixteen bytes of the header structure -
 /// and the colour table, for an indexed image - the rest of the header region up to the length the
 /// word gives is <em>one whole image file</em> that carries the metadata, and the image data of the
@@ -121,6 +123,72 @@ public sealed class PgfMetadata
                 throw error.Exception;
         }
         return new PgfMetadata(width, height, regionStart + regionLength, embedded.Exif, embedded.Iptc, embedded.Xmp);
+    }
+
+    /// <summary>
+    /// Writes metadata edits through the PNG image held in the PGF header region. The existing PNG
+    /// writer plans and verifies its output; this method then updates the PGF header length, copies
+    /// the PGF image-data suffix unchanged, and reads the complete result back before returning it.
+    /// </summary>
+    /// <param name="data">The complete PGF file.</param>
+    /// <param name="edits">EXIF, IPTC and XMP edits to apply to the embedded PNG.</param>
+    /// <param name="comment">When <paramref name="replaceComment"/> is true, the embedded PNG comment to write, or null to remove.</param>
+    /// <param name="replaceComment">Whether to apply <paramref name="comment"/>.</param>
+    /// <param name="limits">The budgets, or null for the defaults.</param>
+    public static byte[] Write(ReadOnlySpan<byte> data, SyncEdits edits, string? comment = null,
+        bool replaceComment = false, MetadataLimits? limits = null)
+    {
+        ArgumentNullException.ThrowIfNull(edits);
+        limits?.Validate();
+        if (limits is not null && data.Length > limits.MaxInputBytes)
+            throw new MetadataException(MetadataErrorCode.LimitExceeded, "The PGF file exceeds the input budget.", 0);
+        byte[] source = data.ToArray();
+        PgfMetadata before = Read(source, limits);
+        if (edits.IsEmpty && !replaceComment) return source;
+
+        int regionStart = source[ColourModeOffset] == IndexedColourMode ? StructureEnd + ColourTableBytes : StructureEnd;
+        int regionEnd = checked((int)before.ImageOffset);
+        if (regionEnd == regionStart)
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The PGF header region has no image to edit.");
+        byte[] originalRegion = source.AsSpan(regionStart, regionEnd - regionStart).ToArray();
+        if (ImageMetadata.Detect(originalRegion) != MetadataFormat.Png)
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "PGF writes are supported when the header region contains a PNG image.");
+
+        byte[] changedRegion;
+        using (var input = new MemoryStream(originalRegion, writable: false))
+        using (PngMetadataDocument document = PngMetadataDocument.Open(input,
+            limits is null ? null : new PngReadOptions { Limits = limits }))
+        {
+            using var changed = new MemoryStream();
+            document.SaveAll(changed, edits);
+            changedRegion = changed.ToArray();
+        }
+        if (replaceComment)
+        {
+            using var input = new MemoryStream(changedRegion, writable: false);
+            using PngMetadataDocument document = PngMetadataDocument.Open(input,
+                limits is null ? null : new PngReadOptions { Limits = limits });
+            using var changed = new MemoryStream();
+            document.SaveComment(changed, comment);
+            changedRegion = changed.ToArray();
+        }
+
+        long newHeaderSize = (long)regionStart + changedRegion.Length - 8;
+        long newLength = (long)source.Length - originalRegion.Length + changedRegion.Length;
+        if (newHeaderSize < 0 || newHeaderSize > uint.MaxValue || newLength > int.MaxValue ||
+            limits is not null && newLength > limits.MaxInputBytes)
+            throw new MetadataException(MetadataErrorCode.LimitExceeded, "The rewritten PGF file exceeds its size budget.");
+        byte[] output = new byte[(int)newLength];
+        source.AsSpan(0, regionStart).CopyTo(output);
+        BinaryPrimitives.WriteUInt32LittleEndian(output.AsSpan(4), (uint)newHeaderSize);
+        changedRegion.CopyTo(output, regionStart);
+        source.AsSpan(regionEnd).CopyTo(output.AsSpan(regionStart + changedRegion.Length));
+
+        PgfMetadata after = Read(output, limits);
+        if (before.Width != after.Width || before.Height != after.Height ||
+            !source.AsSpan(regionEnd).SequenceEqual(output.AsSpan(regionStart + changedRegion.Length)))
+            throw new MetadataException(MetadataErrorCode.UnsafeRelocation, "The PGF rewrite changed image data or header dimensions.");
+        return output;
     }
 
     private static MetadataException Bad(string message, long offset) => new(MetadataErrorCode.InvalidPgf, message, offset);

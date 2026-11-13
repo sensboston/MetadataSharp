@@ -190,7 +190,8 @@ public sealed class SyncEdits
     private readonly List<SyncNote> notes = [];
     private readonly List<SyncChoice> choices = [];
 
-    internal SyncEdits()
+    /// <summary>Creates an empty set of edits for a document's combined save operation.</summary>
+    public SyncEdits()
     {
         Notes = new ReadOnlyCollection<SyncNote>(notes);
         Choices = new ReadOnlyCollection<SyncChoice>(choices);

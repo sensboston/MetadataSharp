@@ -7,10 +7,10 @@ using MetadataSharp.Formats.Internal;
 namespace MetadataSharp.Formats.Eps;
 
 /// <summary>
-/// Read-only metadata of an Encapsulated PostScript file. EPS has a place for metadata in the
-/// document itself: the reference tool (Exiv2) reads XMP that is embedded as a DSC comment block and
-/// nothing else of it - no EXIF, no IPTC and no comment - and this reader does the same. The
-/// PostScript program is never interpreted or executed.
+/// Metadata of an Encapsulated PostScript file. EPS has a place for metadata in the document itself:
+/// the reference tool (Exiv2) reads and writes XMP embedded as a DSC comment block and nothing else
+/// of it - no EXIF, no IPTC and no comment - and this reader and writer do the same. The PostScript
+/// program is never interpreted or executed.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -194,6 +194,189 @@ public sealed class EpsMetadata
             catch (MetadataException refusal) when (refusals is not null) { refusals.Xmp = refusal; }
         }
         return new EpsMetadata(dos, start, end - start, wmfOffset, wmfLength, tiffOffset, tiffLength, xmp, packet);
+    }
+
+    /// <summary>
+    /// Writes an XMP edit to a plain or DOS-framed EPS file, returning a verified copy. Packet
+    /// replacement changes only the packet range; when a DOS wrapper is present its section offsets
+    /// and lengths are adjusted and its WMF and TIFF preview bytes are retained exactly.
+    /// </summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.InvalidEps"/> when framing or section bounds are invalid;
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when a read-only or uneditable packet
+    /// cannot be safely changed; <see cref="MetadataErrorCode.UnsafeRelocation"/> when the planned
+    /// result does not read back as the requested edit.
+    /// </exception>
+    public static byte[] WriteXmp(ReadOnlySpan<byte> data, XmpEdit edit, MetadataLimits? limits = null)
+    {
+        ArgumentNullException.ThrowIfNull(edit);
+        limits?.Validate();
+        if (limits is not null && data.Length > limits.MaxInputBytes)
+            throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EPS file exceeds the input budget.", 0);
+        byte[] source = data.ToArray();
+        EpsMetadata before = Read(source, limits);
+        ValidateSections(before);
+        if (edit.IsEmpty) return source;
+
+        long psStart = before.PostScriptOffset;
+        ReadOnlySpan<byte> ps = source.AsSpan((int)psStart, (int)before.PostScriptLength);
+        AnnouncementKind announcement = Announcement(ps);
+        int packetStart = 0, packetLength = 0;
+        bool hasPacket = announcement == AnnouncementKind.Packet && FindPacket(ps, out packetStart, out packetLength, out _);
+        XmpPacket? desired = edit.RemovesAll ? null : (before.Xmp ?? XmpPacket.CreateEmpty()).Apply(edit);
+        if (!hasPacket && desired is null) return source;
+
+        byte[] replacement;
+        if (desired is not null)
+        {
+            replacement = new byte[desired.ByteLength];
+            desired.CopyRawTo(replacement);
+        }
+        else replacement = [];
+
+        byte[] newPs;
+        if (hasPacket)
+        {
+            int beforePacket = packetStart;
+            int afterPacket = packetStart + packetLength;
+            newPs = Splice(ps, beforePacket, afterPacket - beforePacket, replacement);
+        }
+        else if (desired is not null)
+        {
+            int lineEnd = EndOfLine(ps, 0);
+            int afterFirstLine = AfterLine(ps, lineEnd);
+            byte[] ending = LineEnding(ps, lineEnd);
+            byte[] announcementLine = Encoding.ASCII.GetBytes("%ADO_ContainsXMP: MainFirst");
+            byte[] prefix = afterFirstLine == 0 ? [] : lineEnd == ps.Length ? ending : [];
+            newPs = Splice(ps, afterFirstLine, 0,
+                [.. prefix, .. announcementLine, .. ending, .. replacement, .. ending]);
+        }
+        else newPs = ps.ToArray();
+
+        if (desired is null) newPs = SetAnnouncement(newPs, AnnouncementKind.NoPacket);
+        else newPs = SetAnnouncement(newPs, AnnouncementKind.Packet);
+
+        long delta = newPs.Length - ps.Length;
+        byte[] output = Reframe(source, before, newPs, delta);
+        if (limits is not null && output.Length > limits.MaxInputBytes)
+            throw new MetadataException(MetadataErrorCode.LimitExceeded, "The EPS output exceeds the input budget.");
+        EpsMetadata after = Read(output, limits);
+        if (!SameEntries(desired, after.Xmp))
+            throw new MetadataException(MetadataErrorCode.UnsafeRelocation, "The EPS XMP edit did not read back as planned.");
+        VerifyPreview(source, output, before.WmfOffset, before.WmfLength, before, delta, tiff: false);
+        VerifyPreview(source, output, before.TiffOffset, before.TiffLength, before, delta, tiff: true);
+        return output;
+    }
+
+    private static void ValidateSections(EpsMetadata metadata)
+    {
+        if (!metadata.IsDosEps) return;
+        (long Start, long End, string Name)[] sections =
+        [
+            (metadata.PostScriptOffset, metadata.PostScriptOffset + metadata.PostScriptLength, "PostScript"),
+            (metadata.WmfOffset ?? 0, (metadata.WmfOffset ?? 0) + metadata.WmfLength, "WMF"),
+            (metadata.TiffOffset ?? 0, (metadata.TiffOffset ?? 0) + metadata.TiffLength, "TIFF"),
+        ];
+        for (int i = 0; i < sections.Length; i++)
+        for (int j = i + 1; j < sections.Length; j++)
+        {
+            if (sections[i].End > sections[i].Start && sections[j].End > sections[j].Start &&
+                sections[i].Start < sections[j].End && sections[j].Start < sections[i].End)
+                throw Bad("The " + sections[i].Name + " and " + sections[j].Name + " sections overlap.", sections[j].Start);
+        }
+    }
+
+    private static byte[] Reframe(byte[] source, EpsMetadata before, byte[] newPs, long delta)
+    {
+        int start = checked((int)before.PostScriptOffset);
+        int oldLength = checked((int)before.PostScriptLength);
+        byte[] output = Splice(source, start, oldLength, newPs);
+        if (!before.IsDosEps) return output;
+        long psLength = before.PostScriptLength + delta;
+        if (psLength < 0 || psLength > uint.MaxValue) throw Bad("The rewritten PostScript section does not fit the DOS EPS header.", 8);
+        BinaryPrimitives.WriteUInt32LittleEndian(output.AsSpan(8), (uint)psLength);
+        AdjustSectionOffset(output, 12, before.WmfOffset, before.WmfLength, before, delta);
+        AdjustSectionOffset(output, 20, before.TiffOffset, before.TiffLength, before, delta);
+        return output;
+    }
+
+    private static void AdjustSectionOffset(byte[] output, int field, long? offset, long length, EpsMetadata before, long delta)
+    {
+        if (offset is null || length == 0) return;
+        long psEnd = before.PostScriptOffset + before.PostScriptLength;
+        if (offset.Value < psEnd && offset.Value + length > before.PostScriptOffset)
+            throw Bad("A DOS EPS preview overlaps the PostScript section.", field);
+        long adjusted = offset.Value >= psEnd ? offset.Value + delta : offset.Value;
+        if (adjusted < 30 || adjusted > uint.MaxValue) throw Bad("A rewritten DOS EPS section offset does not fit the header.", field);
+        BinaryPrimitives.WriteUInt32LittleEndian(output.AsSpan(field), (uint)adjusted);
+    }
+
+    private static void VerifyPreview(byte[] source, byte[] output, long? offset, long length, EpsMetadata before, long delta, bool tiff)
+    {
+        if (offset is null || length == 0) return;
+        long psEnd = before.PostScriptOffset + before.PostScriptLength;
+        if (offset.Value < psEnd && offset.Value + length > before.PostScriptOffset)
+            throw Bad("A DOS EPS preview overlaps the PostScript section.", offset.Value);
+        long target = before.IsDosEps && offset.Value >= psEnd ? offset.Value + delta : offset.Value;
+        if (offset.Value < 0 || target < 0 || length > source.Length - offset.Value || length > output.Length - target ||
+            !source.AsSpan((int)offset.Value, (int)length).SequenceEqual(output.AsSpan((int)target, (int)length)))
+            throw new MetadataException(MetadataErrorCode.UnsafeRelocation,
+                tiff ? "The TIFF preview changed during EPS rewriting." : "The WMF preview changed during EPS rewriting.");
+    }
+
+    private static bool SameEntries(XmpPacket? expected, XmpPacket? actual)
+    {
+        if (expected is null) return actual is null;
+        if (actual is null || expected.Entries.Count != actual.Entries.Count) return false;
+        for (int i = 0; i < expected.Entries.Count; i++)
+        {
+            XmpEntry left = expected.Entries[i], right = actual.Entries[i];
+            if (left.Path != right.Path || left.NamespaceUri != right.NamespaceUri || left.Kind != right.Kind ||
+                left.HasChildEntries != right.HasChildEntries || !left.Values.SequenceEqual(right.Values) ||
+                !left.Languages.SequenceEqual(right.Languages)) return false;
+        }
+        return true;
+    }
+
+    private static byte[] SetAnnouncement(byte[] postScript, AnnouncementKind value)
+    {
+        string target = value == AnnouncementKind.Packet ? "%ADO_ContainsXMP: MainFirst" : "%ADO_ContainsXMP: NoMain";
+        int at = 0;
+        while (at < postScript.Length)
+        {
+            int end = EndOfLine(postScript, at);
+            ReadOnlySpan<byte> line = postScript.AsSpan(at, end - at);
+            if (line.StartsWith("%ADO_ContainsXMP:"u8))
+            {
+                int colon = line.IndexOf((byte)':');
+                int valueAt = colon + 1;
+                while (valueAt < line.Length && line[valueAt] == (byte)' ') valueAt++;
+                int valueEnd = line.Length;
+                byte[] replacement = Encoding.ASCII.GetBytes(target);
+                return Splice(postScript, at + valueAt, valueEnd - valueAt, replacement);
+            }
+            if (line.SequenceEqual("%%EndComments"u8) || line.SequenceEqual("%%EOF"u8) ||
+                line.Length == 0 || line[0] != (byte)'%') break;
+            at = AfterLine(postScript, end);
+        }
+        if (value != AnnouncementKind.Packet) return postScript;
+        int firstEnd = EndOfLine(postScript, 0);
+        int insertion = AfterLine(postScript, firstEnd);
+        return Splice(postScript, insertion, 0, [.. Encoding.ASCII.GetBytes(target), .. LineEnding(postScript, firstEnd)]);
+    }
+
+    private static byte[] LineEnding(ReadOnlySpan<byte> data, int lineEnd) =>
+        lineEnd < data.Length && data[lineEnd] == (byte)'\r' && lineEnd + 1 < data.Length && data[lineEnd + 1] == (byte)'\n'
+            ? [0x0D, 0x0A]
+            : lineEnd < data.Length ? [data[lineEnd]] : [0x0A];
+
+    private static byte[] Splice(ReadOnlySpan<byte> source, int start, int remove, ReadOnlySpan<byte> inserted)
+    {
+        byte[] result = new byte[checked(source.Length - remove + inserted.Length)];
+        source[..start].CopyTo(result);
+        inserted.CopyTo(result.AsSpan(start));
+        source[(start + remove)..].CopyTo(result.AsSpan(start + inserted.Length));
+        return result;
     }
 
     /// <summary>What the file says about a packet in its header comments.</summary>

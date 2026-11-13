@@ -163,6 +163,42 @@ public sealed class ImageMetadata
         return MetadataFormat.Unknown;
     }
 
+    /// <summary>
+    /// Tells the format of a file at a path. Signatures take precedence; when none identifies the
+    /// file, a <c>.tga</c> or <c>.TGA</c> suffix tells TARGA as it does for the reference tool.
+    /// </summary>
+    public static MetadataFormat Detect(string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        using var file = new FileStream(Path.GetFullPath(path), FileMode.Open, FileAccess.Read, FileShare.Read);
+        byte[] head = new byte[HeaderLength];
+        int read = 0;
+        while (read < head.Length)
+        {
+            int count = file.Read(head.AsSpan(read));
+            if (count == 0) break;
+            read += count;
+        }
+        MetadataFormat format = Detect(head.AsSpan(0, read));
+        if (format == MetadataFormat.Unknown && file.Length >= 26)
+        {
+            byte[] tail = new byte[26];
+            file.Position = file.Length - tail.Length;
+            int tailRead = 0;
+            while (tailRead < tail.Length)
+            {
+                int count = file.Read(tail.AsSpan(tailRead));
+                if (count == 0) break;
+                tailRead += count;
+            }
+            format = Detect(tail.AsSpan(0, tailRead));
+        }
+        return format == MetadataFormat.Unknown && HasTgaName(path) ? MetadataFormat.Tga : format;
+    }
+
+    private static bool HasTgaName(string path) =>
+        string.Equals(Path.GetExtension(path), ".tga", StringComparison.OrdinalIgnoreCase);
+
     /// <summary>Reads every kind of metadata of one complete file held in memory.</summary>
     /// <param name="data">The whole file.</param>
     /// <param name="limits">The budgets handed to the readers, or null for the defaults of each reader.</param>
@@ -224,7 +260,7 @@ public sealed class ImageMetadata
         Compose(await Drain(source, limits, true, token).ConfigureAwait(false), limits);
 
     /// <summary>Reads every kind of metadata of the file at a path. The file is read into memory and closed.</summary>
-    /// <param name="path">The path of the file. Its name plays no part: the format is told by the signature.</param>
+    /// <param name="path">The path of the file. A <c>.tga</c> or <c>.TGA</c> suffix identifies TARGA when no signature identifies a format.</param>
     /// <param name="limits">The budgets handed to the readers, or null for the defaults of each reader.</param>
     /// <returns>The snapshot, as for the read of a file held in memory.</returns>
     /// <exception cref="MetadataException">
@@ -237,14 +273,14 @@ public sealed class ImageMetadata
         limits?.Validate();
         using var file = new FileStream(Path.GetFullPath(path), FileMode.Open, FileAccess.Read, FileShare.Read,
             (limits ?? new MetadataLimits()).CopyBufferBytes, FileOptions.SequentialScan);
-        return Compose(Drain(file, limits, false, default).GetAwaiter().GetResult(), limits);
+        return Compose(Drain(file, limits, false, default).GetAwaiter().GetResult(), limits, path);
     }
 
     /// <summary>
     /// Reads every kind of metadata of the file at a path without blocking on it. The file is read
     /// into memory and closed.
     /// </summary>
-    /// <param name="path">The path of the file. Its name plays no part: the format is told by the signature.</param>
+    /// <param name="path">The path of the file. A <c>.tga</c> or <c>.TGA</c> suffix identifies TARGA when no signature identifies a format.</param>
     /// <param name="limits">The budgets handed to the readers, or null for the defaults of each reader.</param>
     /// <param name="cancellationToken">Ends the read of the file.</param>
     /// <returns>The snapshot, as for the read of a file held in memory.</returns>
@@ -267,7 +303,7 @@ public sealed class ImageMetadata
         token.ThrowIfCancellationRequested();
         var file = new FileStream(Path.GetFullPath(path), FileMode.Open, FileAccess.Read, FileShare.Read,
             (limits ?? new MetadataLimits()).CopyBufferBytes, FileOptions.SequentialScan | FileOptions.Asynchronous);
-        try { return Compose(await Drain(file, limits, true, token).ConfigureAwait(false), limits); }
+        try { return Compose(await Drain(file, limits, true, token).ConfigureAwait(false), limits, path); }
         finally { await file.DisposeAsync().ConfigureAwait(false); }
     }
 
@@ -366,15 +402,16 @@ public sealed class ImageMetadata
         }
     }
 
-    private static ImageMetadata Compose(byte[] file, MetadataLimits? limits) => Compose(file, file, limits);
+    private static ImageMetadata Compose(byte[] file, MetadataLimits? limits, string? path = null) => Compose(file, file, limits, path);
 
     /// <summary>
     /// Reads the kinds one by one. <paramref name="owned"/> is the same file as an array when the
     /// caller has one, for the readers that take a stream; they get a copy otherwise.
     /// </summary>
-    private static ImageMetadata Compose(ReadOnlySpan<byte> data, byte[]? owned, MetadataLimits? limits)
+    private static ImageMetadata Compose(ReadOnlySpan<byte> data, byte[]? owned, MetadataLimits? limits, string? path = null)
     {
         MetadataFormat format = Detect(data);
+        if (format == MetadataFormat.Unknown && path is not null && HasTgaName(path)) format = MetadataFormat.Tga;
         var parts = new Parts();
         switch (format)
         {

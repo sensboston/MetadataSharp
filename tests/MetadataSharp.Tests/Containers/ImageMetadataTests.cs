@@ -288,9 +288,9 @@ public sealed class ImageMetadataTests
     }
 
     [Fact]
-    public void TheNameOfAFilePlaysNoPart()
+    public void ANameDoesNotOverrideARecognizedSignature()
     {
-        string path = Path.Combine(Path.GetTempPath(), "image-metadata-" + Guid.NewGuid().ToString("N") + ".png");
+        string path = Path.Combine(Path.GetTempPath(), "image-metadata-" + Guid.NewGuid().ToString("N") + ".tga");
         File.WriteAllBytes(path, Sample("jpeg"));
         try
         {
@@ -302,6 +302,24 @@ public sealed class ImageMetadataTests
         // The file was closed: on Windows an open file cannot be deleted.
         finally { File.Delete(path); }
         Assert.False(File.Exists(path));
+    }
+
+    [Fact]
+    public async Task ANameTellsTargaWhenNoSignatureDoes()
+    {
+        byte[] file = new byte[18];
+        file[12] = 37;
+        file[14] = 19;
+        string path = Path.Combine(Path.GetTempPath(), "image-metadata-" + Guid.NewGuid().ToString("N") + ".TGA");
+        File.WriteAllBytes(path, file);
+        try
+        {
+            Assert.Equal(MetadataFormat.Unknown, ImageMetadata.Detect(file));
+            Assert.Equal(MetadataFormat.Tga, ImageMetadata.Detect(path));
+            Assert.Equal(MetadataFormat.Tga, ImageMetadata.Read(path).Format);
+            Assert.Equal(MetadataFormat.Tga, (await ImageMetadata.ReadAsync(path)).Format);
+        }
+        finally { File.Delete(path); }
     }
 
     // ---- every format ----

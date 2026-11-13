@@ -8,6 +8,8 @@ using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
 using MetadataSharp.Formats.Jpeg;
 using MetadataSharp.Formats.Png;
+using MetadataSharp.Formats.Pgf;
+using MetadataSharp.Formats.Eps;
 using MetadataSharp.Formats.Tiff;
 using MetadataSharp.Formats.WebP;
 
@@ -19,9 +21,9 @@ namespace MetadataSharp.Formats.Operations;
 /// </summary>
 /// <remarks>
 /// <para>Operations that write take the file whole into memory, run their passes there, and write
-/// the destination once, after every pass succeeded; the source is never modified. Files are written
-/// by the documents of JPEG, PNG, WebP, TIFF-based files and BMFF files; any other container is
-/// refused with <see cref="MetadataErrorCode.UnsupportedFeature"/>.</para>
+/// the destination once, after every pass succeeded; the source is never modified. JPEG, PNG, WebP,
+/// TIFF-based files, BMFF files, EPS XMP and PGF files with an embedded PNG are written; other
+/// containers are refused with <see cref="MetadataErrorCode.UnsupportedFeature"/>.</para>
 /// <para>A kind of metadata the container has no place for (IPTC in a WebP file, a comment in a
 /// TIFF) is passed over. One it holds and its document cannot write is refused by that document.</para>
 /// </remarks>
@@ -419,13 +421,13 @@ public static class MetadataOperations
 
     private static MetadataFormat Writable(MetadataFormat format) => format switch
     {
-        MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Bmff => format,
+        MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Bmff or MetadataFormat.Pgf or MetadataFormat.Eps => format,
         _ => throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Files of the format " + format + " are not written."),
     };
 
-    private static bool HoldsIptc(MetadataFormat format) => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.Tiff;
+    private static bool HoldsIptc(MetadataFormat format) => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.Tiff or MetadataFormat.Pgf;
 
-    private static bool HoldsComment(MetadataFormat format) => format is MetadataFormat.Jpeg or MetadataFormat.Png;
+    private static bool HoldsComment(MetadataFormat format) => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.Pgf;
 
     private static byte[] Save(byte[] file, MetadataFormat format, SyncEdits edits)
     {
@@ -437,6 +439,8 @@ public static class MetadataOperations
             case MetadataFormat.Png: { using var document = PngMetadataDocument.Open(input); document.SaveAll(output, edits); break; }
             case MetadataFormat.WebP: { using var document = WebPMetadataDocument.Open(input); document.SaveAll(output, edits); break; }
             case MetadataFormat.Tiff: { using var document = TiffBasedMetadataDocument.Open(input); document.SaveAll(output, edits); break; }
+            case MetadataFormat.Pgf: return PgfMetadata.Write(file, edits);
+            case MetadataFormat.Eps: return EpsMetadata.WriteXmp(file, edits.Xmp);
             default: { using var document = BmffMetadataDocument.Open(input); document.SaveAll(output, edits); break; }
         }
         return output.ToArray();
@@ -444,6 +448,7 @@ public static class MetadataOperations
 
     private static byte[] SaveComment(byte[] file, MetadataFormat format, string? comment)
     {
+        if (format == MetadataFormat.Pgf) return PgfMetadata.Write(file, new SyncEdits(), comment, replaceComment: true);
         using var input = new MemoryStream(file, false);
         var output = new MemoryStream();
         if (format == MetadataFormat.Jpeg) { using var document = JpegMetadataDocument.Open(input); document.SaveComment(output, comment); }

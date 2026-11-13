@@ -12,7 +12,7 @@ public enum MetadataFamilies
     Iptc = 2,
     /// <summary>The XMP packet (target <c>x</c>).</summary>
     Xmp = 4,
-    /// <summary>The comment of a JPEG or PNG file (target <c>c</c>).</summary>
+    /// <summary>The free-text comment of a JPEG, PNG or PGF file (target <c>c</c>).</summary>
     Comment = 8,
     /// <summary>The ICC profile (target <c>C</c>).</summary>
     IccProfile = 16,
