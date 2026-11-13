@@ -437,6 +437,7 @@ public sealed class MakerNoteInterpretationTests
     {
         Assert.Equal("100", Field(MakerNoteFormat.Nikon3, 0x0025, "ISO", Bytes(60)));
         Assert.Equal("12800", Field(MakerNoteFormat.Nikon3, 0x0025, "ISO2", Bytes(144)));
+        Assert.Equal("3", Field(MakerNoteFormat.Nikon3, 0x0091, "ISO", Bytes(0), 598));
         Assert.Equal("Off", Field(MakerNoteFormat.Nikon3, 0x0025, "ISOExpansion", Shorts(0)));
         Assert.Equal("Hi 2.0", Field(MakerNoteFormat.Nikon3, 0x0025, "ISOExpansion2", Shorts(0x108)));
         Assert.Null(Field(MakerNoteFormat.Nikon3, 0x0025, "ISO", Shorts(60)));

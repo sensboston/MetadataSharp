@@ -138,7 +138,8 @@ internal static partial class MakerNoteLabels
             (0x0100, "Lower-right"), (0x0200, "Far Left"), (0x0400, "Far Right"),
         ], Form.NikonAFPointsInFocus),
 
-        // ShotInfo (0x0091).
+        // ShotInfo (0x0091). Version 02xx also contains a byte encoded like ISOInfo.ISO.
+        new(0x0091, "ISO", [], Form.NikonIiIso),
         new(0x0091, "VibrationReduction", [(0, "Off"), (1, "On (1)")]),
         new(0x0091, "VibrationReduction1", OffOn),
         new(0x0091, "VibrationReduction2", [(0, "n/a")]),
