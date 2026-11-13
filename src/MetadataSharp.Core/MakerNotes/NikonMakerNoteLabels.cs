@@ -18,6 +18,7 @@ internal static partial class MakerNoteLabels
         },
         new(Top, "DigitalZoom", [], Form.NikonDigitalZoom),
         new(Top, "FocusDistance", [], Form.NikonFocusDistance),
+        new(Top, "ISOSpeed", [], Form.SecondOfTwo),
         new(Top, "AFFocusPos", [], Form.NikonAfFocusPosition),
     ];
 
@@ -49,9 +50,8 @@ internal static partial class MakerNoteLabels
         new(Top, "ShootingMode",
         [
             (0, "Single-frame"), (1, "Continuous"), (32, "Single-frame, Auto ISO"), (33, "Continuous, Auto ISO"),
-            (48, "Single-frame, Exposure bracketing, Unused LE-NR slowdown"),
             (49, "Continuous, Exposure Bracketing, Auto ISO"), (128, "IR Control"),
-        ]),
+        ], Form.NikonShootingMode),
         new(Top, "LensType", [(2, "D"), (6, "D G"), (14, "D G VR"), (70, "D G"), (78, "D G VR")]),
         new(Top, "ShutterMode",
         [
@@ -69,10 +69,11 @@ internal static partial class MakerNoteLabels
         // Ten places for the retouches applied in the camera; the corpus has none applied.
         new(Top, "RetouchHistory", [(0, "None")], Form.CodeList),
         new(Top, "Lens", [], Form.LensRange),
-        new(Top, "ProgramShift", [], Form.StopFraction),
-        new(Top, "FlashExposureComp", [], Form.StopFraction),
-        new(Top, "FlashBracketComp", [], Form.StopFraction),
-        new(Top, "FlashComp", [], Form.StopFraction),
+        new(Top, "ProgramShift", [], Form.NikonFlashComp),
+        new(Top, "ExposureDiff", [], Form.NikonFlashComp),
+        new(Top, "FlashExposureComp", [], Form.NikonFlashComp),
+        new(Top, "FlashBracketComp", [], Form.NikonFlashComp),
+        new(Top, "FlashComp", [], Form.NikonFlashComp),
 
         // Lens Data 3 (the LensData array of the note, tag 0x0098).
         new(0x0098, "ExitPupilPosition", [], Form.NikonLd3ExitPupil),

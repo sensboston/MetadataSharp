@@ -209,6 +209,8 @@ internal static partial class MakerNoteLabels
         NikonLd3FocalLength,
         NikonLd3LensFStops,
         NikonLd3ExitPupil,
+        NikonShootingMode,
+        NikonFlashComp,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -362,6 +364,8 @@ internal static partial class MakerNoteLabels
                 return NikonLd3LensFStops(value);
             case Form.NikonLd3ExitPupil:
                 return NikonLd3ExitPupil(value);
+            case Form.NikonFlashComp:
+                return NikonFlashComp(value);
         }
 
         if (value.Count != 1 || value.FieldType == TiffFieldType.Undefined ||
@@ -374,6 +378,8 @@ internal static partial class MakerNoteLabels
             if (candidate == number)
                 return label;
         }
+        if (rule.Reading == Form.NikonShootingMode)
+            return number == 48 ? "Single-frame, Exposure bracketing, Unused LE-NR slowdown" : Stored(number);
 
         switch (rule.Reading)
         {
@@ -565,10 +571,12 @@ internal static partial class MakerNoteLabels
     private static string? NikonFocusDistance(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Rational ||
-            !ExifTags.TryRational(value, 0, out long numerator, out long denominator) || denominator == 0)
+            !ExifTags.TryRational(value, 0, out long numerator, out long denominator))
             return null;
         if (numerator == 0)
             return "Unknown";
+        if (denominator == 0)
+            return null;
         return ((double)numerator / denominator).ToString("F2", CultureInfo.InvariantCulture) + " m";
     }
 
@@ -633,6 +641,21 @@ internal static partial class MakerNoteLabels
         if (!NikonLd3Byte(value, out long number) || number == 0)
             return null;
         return (2048.0 / number).ToString("F1", CultureInfo.InvariantCulture) + " mm";
+    }
+
+    private static string? NikonFlashComp(ExifValue value)
+    {
+        if (value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined) || value.Count == 0 || value.RawBytes.IsEmpty)
+            return null;
+        long number = value.RawBytes[0];
+        return number switch
+        {
+            0x06 => "+1.0 EV", 0x04 => "+0.7 EV", 0x03 => "+0.5 EV", 0x02 => "+0.3 EV",
+            0x00 => "0.0 EV", 0xFE => "-0.3 EV", 0xFD => "-0.5 EV", 0xFC => "-0.7 EV",
+            0xFA => "-1.0 EV", 0xF8 => "-1.3 EV", 0xF7 => "-1.5 EV", 0xF6 => "-1.7 EV",
+            0xF4 => "-2.0 EV", 0xF2 => "-2.3 EV", 0xF1 => "-2.5 EV", 0xF0 => "-2.7 EV",
+            0xEE => "-3.0 EV", _ => Stored(number),
+        };
     }
 
     /// <summary>

@@ -333,34 +333,37 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal(expected, Field(MakerNoteFormat.Nikon3, 0x0024, "Timezone", SignedShorts(minutes)));
 
     [Theory]
-    [InlineData(0, 1, 6, "0.0 EV")]
-    [InlineData(250, 1, 6, "-1.0 EV")]
-    [InlineData(254, 1, 6, "-0.3 EV")]
-    [InlineData(4, 1, 6, "+0.7 EV")]
-    [InlineData(2, 2, 6, "+0.7 EV")]
-    [InlineData(1, 1, 12, "+0.1 EV")]
-    [InlineData(3, 1, 12, "+0.2 EV")]     // 0.25 is halfway: the even tenth
-    [InlineData(9, 1, 12, "+0.8 EV")]     // 0.75 is halfway: the even tenth
-    [InlineData(18, 1, 12, "+1.5 EV")]
-    public void ANikonStopFractionIsRoundedToATenth(int count, int step, int perStop, string expected) =>
-        Assert.Equal(expected, Top(MakerNoteFormat.Nikon3, "FlashComp", Undefined((byte)count, (byte)step, (byte)perStop, 0)));
+    [InlineData(0x00, "0.0 EV")]
+    [InlineData(0x02, "+0.3 EV")]
+    [InlineData(0x06, "+1.0 EV")]
+    [InlineData(0xFE, "-0.3 EV")]
+    [InlineData(0xFA, "-1.0 EV")]
+    [InlineData(0xEE, "-3.0 EV")]
+    [InlineData(0x80, "(128)")]
+    public void NikonFlashCompUsesItsFirstByteAsAnEnumeration(int code, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Nikon3, "FlashComp", Undefined((byte)code, 1, 6, 0)));
 
     [Fact]
-    public void ANikonStopFractionNeedsItsFourBytesAndADivisor()
+    public void NikonFlashCompRequiresAByteLikeValue()
     {
-        Assert.Null(Top(MakerNoteFormat.Nikon3, "ProgramShift", Undefined(6, 1, 0, 0)));
-        Assert.Null(Top(MakerNoteFormat.Nikon3, "ProgramShift", Undefined(6, 1, 6)));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "ProgramShift", Undefined()));
         Assert.Null(Top(MakerNoteFormat.Nikon3, "ProgramShift", Shorts(6, 1, 6, 0)));
+        Assert.Equal("+1.0 EV", Top(MakerNoteFormat.Nikon3, "ProgramShift", Undefined(6)));
     }
 
     [Fact]
-    public void TheNikonExposureDifferenceKeepsItsEncodedValue()
+    public void TheNikonShootingModeNamesTheLegacyCompositeValue()
     {
-        // Exiv2 prints this field through the one-byte flash-compensation enumeration. The
-        // multi-byte payload is not a stop fraction, so do not invent a converted exposure value.
-        Assert.Null(Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(0, 1, 12, 0)));
-        Assert.Null(Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(1, 1, 12, 0)));
-        Assert.Null(Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(243, 1, 12, 0)));
+        Assert.Equal("Single-frame, Exposure bracketing, Unused LE-NR slowdown",
+            Top(MakerNoteFormat.Nikon3, "ShootingMode", Shorts(48)));
+    }
+
+    [Fact]
+    public void TheNikonExposureDifferenceUsesItsFirstByteMapping()
+    {
+        Assert.Equal("0.0 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(0, 1, 12, 0)));
+        Assert.Equal("+0.3 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(2, 1, 12, 0)));
+        Assert.Equal("(128)", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(128, 1, 12, 0)));
     }
 
     [Theory]
