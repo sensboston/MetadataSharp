@@ -9,6 +9,7 @@ allowlisted for formats the oracle reads.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 from pathlib import Path
 from typing import Any
@@ -100,7 +101,9 @@ def main(argv: list[str] | None = None) -> int:
     passed, message = evaluate(report)
     print(message, end="")
     if not passed:
-        print("::error title=Video parity gate::" + message.replace("\n", " | "))
+        diagnostic = base64.b64encode(message.encode("utf-8")).decode("ascii")
+        print(f"::notice title=VideoGate::{diagnostic}")
+        print("::error::Video-container parity gate failed; see the VideoGate diagnostic annotation.")
     return 0 if passed else 1
 
 
