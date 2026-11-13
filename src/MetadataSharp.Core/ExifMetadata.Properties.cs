@@ -191,6 +191,7 @@ public sealed partial class ExifMetadata
     private double? Quotient(ExifDirectoryKind directory, ushort tag) =>
         Rational(directory, tag) is { Denominator: not 0 } pair ? pair.ToDouble() : null;
 
+    // Prefer the EXIF pixel dimension, but do not substitute the full-image size for a reduced-resolution IFD.
     private int? Dimension(ushort exifTag, ushort imageTag)
     {
         uint? size = Unsigned(ExifDirectoryKind.Exif, exifTag);
@@ -204,6 +205,7 @@ public sealed partial class ExifMetadata
         return size is uint found && found != 0 && found <= int.MaxValue ? (int)found : null;
     }
 
+    // Accept a GPS coordinate only with three valid rationals and a matching reference; keep exact arithmetic until formatting.
     private double? Coordinate(ushort tag, ushort referenceTag, char positive, char negative, uint limit)
     {
         if (!TryGetEntry(new ExifTagKey(ExifDirectoryKind.Gps, tag), out ExifEntry? entry) ||
@@ -292,6 +294,7 @@ public sealed partial class ExifMetadata
         return new DateTimeOffset(moment, offset);
     }
 
+    // Parse exactly two ASCII digits; callers check the surrounding timestamp syntax and bounds.
     private static bool TwoDigits(string text, int at, out int number)
     {
         number = 0;

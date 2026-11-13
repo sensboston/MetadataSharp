@@ -45,8 +45,10 @@ public sealed partial class IptcPacket
         if (destination.Length < bytes.Length) throw new ArgumentException("The destination is too small.", nameof(destination));
         bytes.CopyTo(destination);
     }
+    // Use one stable error for every packet, dataset-count, value, and aggregate write budget.
     internal static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "IPTC exceeds a resource budget.");
     private static MetadataException Invalid() => new(MetadataErrorCode.InvalidIptc, "Malformed or truncated IIM framing.");
+    // Snapshot and validate options so later caller mutations cannot change this packet's read budget.
     internal static IptcLimits Settings(IptcReadOptions? options)
     {
         IptcLimits limits = options is null ? new() : options.Limits ?? throw new ArgumentException("Limits cannot be null.", nameof(options));
@@ -94,6 +96,7 @@ public sealed partial class IptcPacket
         }
         return Read(owned, limits, container);
     }
+    // Walk each length frame before slicing; the optional relaxed pass preserves refused streams without making them editable.
     private static IptcPacket Read(byte[] bytes, IptcLimits limits, MetadataException? refusal)
     {
         var datasets = new List<IptcDataset>(); int at = 0, charsetCount = 0, versionCount = 0;
@@ -283,6 +286,7 @@ public sealed partial class IptcPacket
     private static MetadataException Occurrence(IptcEdit.Operation operation, int count) =>
         new(MetadataErrorCode.InvalidIptcEdit,
             "Dataset " + operation.Key.Record + ":" + operation.Key.Dataset + " has " + count + " occurrences; index " + operation.Index + " is past them.");
+    // Frame new values in canonical IIM length form while untouched datasets keep their original bytes.
     private Item Frame(IptcDatasetKey key, IptcValue value)
     {
         if (value.ByteLength > limits.MaxValueBytes || 9L + value.ByteLength > limits.MaxPacketBytes) throw Limit();

@@ -11,6 +11,7 @@ public sealed partial class ExifValue
 {
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
+    // Centralize the source-order test so every numeric accessor interprets the same owned bytes consistently.
     private bool Little => ByteOrder == Endianness.LittleEndian;
 
     // ---- Arrays ----------------------------------------------------------------------------------------
@@ -318,6 +319,7 @@ public sealed partial class ExifValue
         _ => UInt32At(index * 4),
     };
 
+    // Widen the signed integer representation without losing its sign extension.
     private int SignedAt(int index) => FieldType switch
     {
         TiffFieldType.SByte => unchecked((sbyte)bytes[index]),
@@ -327,6 +329,7 @@ public sealed partial class ExifValue
         _ => unchecked((int)UInt32At(index * 4)),
     };
 
+    // Read a 32-bit word only after the accessor has checked the field type and index.
     private uint UInt32At(int offset) => Little
         ? BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(offset, 4))
         : BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(offset, 4));

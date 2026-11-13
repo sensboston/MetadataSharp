@@ -107,6 +107,7 @@ public static partial class ExifTags
 
     // ---- Enumerated tags -------------------------------------------------------------------------------
 
+    // Decode enumerated values only when their count and encoded padding fit the tag-specific representation.
     private static string? InterpretEnumerated(ExifTagKey key, ExifTagDefinition definition, ExifValue value)
     {
         // ComponentsConfiguration is the one enumerated tag with a value per position: the channel in
@@ -187,6 +188,7 @@ public static partial class ExifTags
     /// <summary>A number the tag does not assign, shown as stored so that it is not mistaken for a label.</summary>
     private static string Unassigned(long number) => "(" + Whole(number) + ")";
 
+    // Resolve a numeric value against the published meanings without assigning labels to unknown values.
     private static string? Meaning(ExifTagDefinition definition, long number)
     {
         foreach (ExifTagValueMeaning meaning in definition.ValueMeanings)
@@ -351,6 +353,7 @@ public static partial class ExifTags
 
     // ---- Exif IFD --------------------------------------------------------------------------------------
 
+    // Dispatch EXIF Photo IFD tags to their unit-aware conversions; unlisted tags remain uninterpreted.
     private static string? InterpretPhoto(ushort tag, ExifValue value) => tag switch
     {
         0x829A => ExposureTime(value),
@@ -381,6 +384,7 @@ public static partial class ExifTags
         _ => null,
     };
 
+    // Render reciprocal shutter speeds as fractions while preserving other valid times in seconds.
     private static string? ExposureTime(ExifValue value)
     {
         if (!TrySingleRational(value, out long numerator, out long denominator))
@@ -399,6 +403,7 @@ public static partial class ExifTags
         return Significant(Quotient(numerator, denominator), 6) + " s";
     }
 
+    // Format a positive aperture ratio as an F-number; do not invent a value for invalid ratios.
     private static string? FNumber(ExifValue value)
     {
         if (!TrySingleRational(value, out long numerator, out long denominator))
@@ -442,6 +447,7 @@ public static partial class ExifTags
         return Whole((long)Math.Round(1.0 / perSecond, MidpointRounding.AwayFromZero)) + " s";
     }
 
+    // Normalize the rational sign and reduce the fraction before displaying the exposure compensation.
     private static string? ExposureBias(ExifValue value)
     {
         if (!TrySingleRational(value, out long numerator, out long denominator))
@@ -464,6 +470,7 @@ public static partial class ExifTags
         return (numerator < 0 ? "-" : "+") + amount + " EV";
     }
 
+    // Handle the standard unknown and infinity sentinels before converting a distance to metres.
     private static string? SubjectDistance(ExifValue value)
     {
         if (!TrySingleRational(value, out long numerator, out long denominator) || numerator < 0)
@@ -480,6 +487,7 @@ public static partial class ExifTags
         return Fixed(Quotient(numerator, denominator), 2) + " m";
     }
 
+    // Format a nonnegative focal-length ratio in millimetres, preserving an undivided zero denominator.
     private static string? FocalLength(ExifValue value)
     {
         if (!TrySingleRational(value, out long numerator, out long denominator))
@@ -491,6 +499,7 @@ public static partial class ExifTags
         return Fixed(Quotient(numerator, denominator), 1) + " mm";
     }
 
+    // Treat zero as the standard unknown sentinel; positive integer lengths are millimetres.
     private static string? FocalLengthIn35mmFilm(ExifValue value)
     {
         if (value.Count != 1 || !TryInteger(value, 0, out long length) || length < 0)
@@ -498,6 +507,7 @@ public static partial class ExifTags
         return length == 0 ? "Unknown" : Whole(length) + ".0 mm";
     }
 
+    // Interpret a zero numerator as no digital zoom and otherwise format the ratio only when valid.
     private static string? DigitalZoomRatio(ExifValue value)
     {
         if (!TrySingleRational(value, out long numerator, out long denominator) || numerator < 0)
@@ -638,6 +648,7 @@ public static partial class ExifTags
         return text?.TrimEnd(' ', '\0');
     }
 
+    // Stop at the first NUL and reject non-ASCII bytes instead of replacing them during decoding.
     private static string? DecodeAscii(ReadOnlySpan<byte> bytes)
     {
         int length = bytes.IndexOf((byte)0);
@@ -651,6 +662,7 @@ public static partial class ExifTags
         return Encoding.ASCII.GetString(bytes);
     }
 
+    // Decode strictly after removing the terminator so malformed UTF-8 produces no interpretation.
     private static string? DecodeUtf8(ReadOnlySpan<byte> bytes)
     {
         int length = bytes.IndexOf((byte)0);
@@ -666,6 +678,7 @@ public static partial class ExifTags
         }
     }
 
+    // Honor an embedded byte-order mark, drop an incomplete trailing code unit, and reject invalid UTF-16.
     private static string? DecodeUtf16(ReadOnlySpan<byte> bytes, Endianness byteOrder)
     {
         bool bigEndian = byteOrder == Endianness.BigEndian;
@@ -697,6 +710,7 @@ public static partial class ExifTags
 
     // ---- GPS IFD ---------------------------------------------------------------------------------------
 
+    // Dispatch GPS tags while keeping coordinate references separate from coordinate values.
     private static string? InterpretGps(ushort tag, ExifValue value) => tag switch
     {
         0x0000 => GpsVersion(value),
@@ -715,6 +729,7 @@ public static partial class ExifTags
         _ => null,
     };
 
+    // Accept only the four-byte GPS version representation.
     private static string? GpsVersion(ExifValue value)
     {
         if (value.FieldType != TiffFieldType.Byte || value.Count != 4)
@@ -723,6 +738,7 @@ public static partial class ExifTags
         return Whole(parts[0]) + "." + Whole(parts[1]) + "." + Whole(parts[2]) + "." + Whole(parts[3]);
     }
 
+    // Translate a one-character ASCII code only when it matches a listed reference value.
     private static string? Letter(ExifValue value, char first, string firstMeaning, char second, string secondMeaning,
         char third = '\0', string? thirdMeaning = null)
     {
@@ -768,6 +784,7 @@ public static partial class ExifTags
         return FixedExact(degrees, 0) + " deg " + FixedExact(minutes, 0) + "' " + FixedExact(seconds, places) + "\"";
     }
 
+    // Format absolute altitude magnitude; the separate reference tag supplies above/below sea level.
     private static string? GpsAltitude(ExifValue value)
     {
         if (!TrySingleRational(value, out long numerator, out long denominator))
@@ -833,6 +850,7 @@ public static partial class ExifTags
         return Encoding.Latin1.GetString(bytes);
     }
 
+    // Require exactly one rational element before exposing its numerator and denominator.
     private static bool TrySingleRational(ExifValue value, out long numerator, out long denominator)
     {
         numerator = 0;
@@ -840,6 +858,7 @@ public static partial class ExifTags
         return value.Count == 1 && TryRational(value, 0, out numerator, out denominator);
     }
 
+    // Read signed or unsigned rational fields in their declared byte order without normalizing the pair.
     internal static bool TryRational(ExifValue value, int index, out long numerator, out long denominator)
     {
         numerator = 0;
@@ -868,6 +887,7 @@ public static partial class ExifTags
         return false;
     }
 
+    // Decode an integer element only for supported TIFF integer types and an in-range index.
     internal static bool TryInteger(ExifValue value, int index, out long number)
     {
         number = 0;
@@ -1017,6 +1037,7 @@ public static partial class ExifTags
         return fraction.Length == 0 ? whole : whole + "." + fraction;
     }
 
+    // Reduce rational display values using a positive divisor, with one as the zero-pair fallback.
     private static long GreatestCommonDivisor(long a, long b)
     {
         while (b != 0)

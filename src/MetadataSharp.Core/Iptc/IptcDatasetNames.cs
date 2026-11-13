@@ -117,6 +117,7 @@ public static class IptcDatasetNames
         }
     }
 
+    // Typed date/time forms are ASCII digits; reject high-bit bytes rather than normalizing them.
     private static bool Digits(ReadOnlySpan<byte> bytes)
     {
         foreach (byte b in bytes)

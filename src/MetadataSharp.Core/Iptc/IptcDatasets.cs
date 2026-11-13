@@ -60,6 +60,7 @@ public static class IptcDatasets
     public static bool TryGet(IptcDatasetKey key, [NotNullWhen(true)] out IptcDatasetDefinition? definition) =>
         Lookup.TryGetValue(key, out definition);
 
+    // Build one immutable lookup from the checked IIM table; a missing corresponding name invalidates the schema.
     private static Dictionary<IptcDatasetKey, IptcDatasetDefinition> Build()
     {
         var table = new Dictionary<IptcDatasetKey, IptcDatasetDefinition>();
@@ -152,6 +153,7 @@ public static class IptcDatasets
         return bytes;
     }
 
+    // Keep numeric text validation ASCII-only and bounds-checked before indexing the requested slice.
     private static bool Digits(string text, int start, int count)
     {
         if (text.Length < start + count) return false;
@@ -160,7 +162,9 @@ public static class IptcDatasets
         return true;
     }
     private static int Pair(string text, int at) => (text[at] - '0') * 10 + (text[at + 1] - '0');
+    // Compare a fixed two-digit field without converting or accepting a value outside its domain.
     private static bool Below(string text, int at, int limit) => Pair(text, at) < limit;
+    // Validate calendar dates while allowing only the explicitly supported partial month/day forms.
     private static bool IsDate(string text, bool partial)
     {
         if (text.Length != 8 || !Digits(text, 0, 8)) return false;
@@ -181,6 +185,7 @@ public static class IptcDatasets
     }
 
     internal static string Format(DateOnly date) => date.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+    // Preserve the caller's wall-clock time and serialize only an exact whole-minute UTC offset.
     internal static string Format(TimeOnly time, TimeSpan utcOffset)
     {
         if (utcOffset.Ticks % TimeSpan.TicksPerMinute != 0 || utcOffset.Duration() >= TimeSpan.FromHours(15))

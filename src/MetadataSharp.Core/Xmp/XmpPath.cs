@@ -30,6 +30,7 @@ internal static class XmpPath
 {
     private const int MaxSteps = 64;
 
+    // Parse the bounded path grammar here; namespace prefixes stay unresolved until a packet is available.
     internal static XmpStep[] Parse(string path)
     {
         ArgumentNullException.ThrowIfNull(path);

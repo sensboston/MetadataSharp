@@ -452,6 +452,7 @@ public static class MetadataCapabilities
             ? descriptor.Status
             : CapabilityStatus.NotSupported;
 
+    // Fail startup if the published manifest is unsorted, duplicated, undefined, or violates the note bound.
     private static Dictionary<(MetadataContainer Container, MetadataFamily Family, MetadataOperation Operation), CapabilityDescriptor> CreateIndex()
     {
         var map = new Dictionary<(MetadataContainer Container, MetadataFamily Family, MetadataOperation Operation), CapabilityDescriptor>(manifest.Length);
@@ -471,6 +472,7 @@ public static class MetadataCapabilities
         return map;
     }
 
+    // Compare the manifest's three-key ordering lexicographically, matching its documented stable order.
     private static int Compare(in CapabilityDescriptor left, in CapabilityDescriptor right)
     {
         int result = left.Container.CompareTo(right.Container);

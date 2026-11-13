@@ -67,6 +67,7 @@ public sealed record IptcLimits
     public int MaxValueBytes { get; init; } = 1_048_576;
     /// <summary>The most Photoshop image resources read to find the stream. Default 1,024.</summary>
     public int MaxResources { get; init; } = 1_024;
+    // Reject unusable budgets at capture time; every reader and writer can then rely on strictly positive limits.
     internal void Validate()
     {
         if (MaxPacketBytes <= 0 || MaxDatasets <= 0 || MaxValueBytes <= 0 || MaxResources <= 0)

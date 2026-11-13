@@ -767,6 +767,7 @@ public static partial class ExifTags
         _ => throw new ArgumentOutOfRangeException(nameof(directory)),
     };
 
+    // Index the complete, sorted vocabulary once; duplicate keys are an invalid table, not a last-write-wins override.
     private static Dictionary<ExifTagKey, ExifTagDefinition> Build()
     {
         var byKey = new Dictionary<ExifTagKey, ExifTagDefinition>();

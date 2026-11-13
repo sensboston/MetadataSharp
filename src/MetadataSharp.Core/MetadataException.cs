@@ -99,6 +99,7 @@ public enum MetadataErrorCode
 /// <summary>A data or safety error with an optional absolute offset in the input.</summary>
 public sealed class MetadataException : Exception
 {
+    // Keep the machine-readable error and absolute source position paired with the original failure message.
     internal MetadataException(MetadataErrorCode code, string message, long? sourceOffset = null)
         : base(message)
     {

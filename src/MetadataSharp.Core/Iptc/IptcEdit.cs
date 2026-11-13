@@ -278,6 +278,7 @@ public sealed class IptcEdit
     {
         if (value is null) Remove(key); else ReplaceText(key, [value]);
     }
+    // Encode once after checking repeatability so append and insert share the same definition rules.
     private IptcValue Repeated(IptcDatasetKey key, string value)
     {
         Check(key); ArgumentNullException.ThrowIfNull(value);
@@ -285,14 +286,17 @@ public sealed class IptcEdit
         if (!definition.IsRepeatable) throw new ArgumentException("The dataset does not repeat; set it instead.", nameof(key));
         return new(IptcDatasets.Encode(definition, value));
     }
+    // Centralize definition lookup so text edits cannot address unknown or writer-managed datasets.
     private static IptcDatasetDefinition Definition(IptcDatasetKey key) =>
         IptcDatasets.TryGet(key, out IptcDatasetDefinition? definition) ? definition
             : throw new ArgumentException("IIM 4.2 does not define the dataset in records 1 and 2; the raw methods write it.", nameof(key));
+    // Reject controls and non-addressable records before any typed operation is queued.
     private void Check(IptcDatasetKey key)
     {
         if (removeAll || key.Record is not (1 or 2) || key == new IptcDatasetKey(1, 90) || key == new IptcDatasetKey(2, 0))
             throw new ArgumentException("Only datasets of records 1 and 2 other than 1:90 and 2:0 can be addressed, without whole removal.", nameof(key));
     }
+    // Compute the new aggregate budget before swapping the list, so a rejected operation leaves the edit unchanged.
     private void Commit(Operation operation)
     {
         // A replacement of all occurrences makes every earlier operation on the dataset moot.

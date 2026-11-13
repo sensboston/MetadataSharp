@@ -5,6 +5,7 @@ namespace MetadataSharp.Core;
 // taken, so a row can be checked against its source by reading two columns of one table.
 public static partial class ExifTags
 {
+    // Add only tag IDs and published names here; the source annotation prevents treating external tables as richer schema.
     private static IEnumerable<ExifTagDefinition> Ifd0FromOtherSources() =>
     [
         // ISO 12234-2 (TIFF/EP): the fields it defines for the main directory of a raw file that the Exif
@@ -81,6 +82,7 @@ public static partial class ExifTags
             (0xCD4B, "JXLDecodeSpeed")),
     ];
 
+    // The interoperability directory is assembled from the source tables separate from the Exif vocabulary.
     private static IEnumerable<ExifTagDefinition> InteropFromOtherSources() =>
         // DCF: the version of the interoperability rules, and the three fields that describe the main image
         // a thumbnail file belongs to.

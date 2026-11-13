@@ -7,6 +7,7 @@ public sealed partial class ExifValue
 {
     private readonly byte[] bytes;
 
+    // The private byte array is always freshly owned by this value; callers enter through FromRaw's copy.
     private ExifValue(TiffFieldType fieldType, uint count, Endianness byteOrder, byte[] bytes)
     {
         FieldType = fieldType;
@@ -58,6 +59,7 @@ public sealed partial class ExifValue
 
     internal ReadOnlySpan<byte> RawBytes => bytes;
 
+    // This width table is the single source for FromRaw's checked count-to-byte-length invariant.
     internal static int GetWidth(TiffFieldType fieldType) => fieldType switch
     {
         TiffFieldType.Byte or TiffFieldType.Ascii or TiffFieldType.SByte or TiffFieldType.Undefined => 1,
