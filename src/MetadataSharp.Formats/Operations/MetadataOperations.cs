@@ -209,10 +209,10 @@ public static class MetadataOperations
                     var maker = new SyncEdits();
                     maker.Exif.SetMakerNoteForCopy(raw!, note);
                     try { output = Save(output, format, maker); }
-                    catch (MetadataException refusal)
+                    catch (MetadataException writeRefusal)
                     {
                         notes.Add(new(MetadataCopyReason.UnsafeMakerNoteRelocation,
-                            "The destination writer could not relocate and verify the MakerNote; it was skipped: " + refusal.Message,
+                            "The destination writer could not relocate and verify the MakerNote; it was skipped: " + writeRefusal.Message,
                             MetadataCopyFamilies.Exif));
                     }
                 }
