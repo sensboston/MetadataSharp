@@ -223,16 +223,18 @@ public sealed class SmallFormatTests
     // ---- PGF ----
 
     /// <summary>The header of a PGF file whose region holds <paramref name="image"/>, then that image.</summary>
-    internal static byte[] Pgf(int width, int height, byte[] image, byte version = (byte)'6')
+    internal static byte[] Pgf(int width, int height, byte[] image, byte version = (byte)'6', byte[]? colourTable = null)
     {
         // The header structure is sixteen bytes, all little endian: width, height, the number of
-        // levels, the quality, the bits per pixel, the channels, then two more bytes.
+        // levels, the quality, the bits per pixel, the channels, the colour mode, then padding. An
+        // indexed image states mode 2 and puts its 768-byte colour table after the structure.
         var structure = new byte[16];
         BinaryPrimitives.WriteUInt32LittleEndian(structure.AsSpan(0), (uint)width);
         BinaryPrimitives.WriteUInt32LittleEndian(structure.AsSpan(4), (uint)height);
         structure[8] = 3; structure[9] = 24; structure[10] = 8; structure[11] = 3;
-        int headerSize = 16 + image.Length;
-        return ["PGF"u8[0], "PGF"u8[1], "PGF"u8[2], version, .. Le32(headerSize), .. structure, .. image];
+        int headerSize = 16 + (colourTable?.Length ?? 0) + image.Length;
+        if (colourTable is not null) structure[12] = 2;
+        return ["PGF"u8[0], "PGF"u8[1], "PGF"u8[2], version, .. Le32(headerSize), .. structure, .. colourTable ?? [], .. image];
     }
 
     [Fact]
@@ -285,8 +287,7 @@ public sealed class SmallFormatTests
             firstLine + newline + header + newline +
             (announce ? "%ADO_ContainsXMP: MainFirst" + newline : "") +
             "%%EndComments" + newline +
-            (packet.Length == 0 ? "" : packet + newline) +
-            (trailer.Length == 0 ? "" : trailer + newline) +
+            packet + newline + trailer + newline +
             "% padding so that no file here ends in the bytes of a TARGA footer" + newline +
             "%%BeginProlog" + newline + "%%EndProlog" + newline +
             "%%PageTrailer" + newline + "%%EOF" + newline);
@@ -314,7 +315,7 @@ public sealed class SmallFormatTests
     public void EpsWithNoPacketHasNoXmp()
     {
         // A file of the comment block and a program, with no packet and nothing announcing one.
-        EpsMetadata eps = EpsMetadata.Read(Eps("", announce: false));
+        EpsMetadata eps = EpsMetadata.Read(Eps("", announce: false, trailer: ""));
         Assert.Null(eps.Xmp);
         Assert.Null(eps.Packet);
     }

@@ -34,6 +34,12 @@ public sealed class PgfMetadata
     /// <summary>The bytes of the colour table an indexed image puts after the structure.</summary>
     private const int ColourTableBytes = 256 * 3;
 
+    /// <summary>Where the colour mode of the structure stands, counted from the start of the file.</summary>
+    private const int ColourModeOffset = 20;
+
+    /// <summary>The colour mode of an image that keeps a colour table.</summary>
+    private const byte IndexedColourMode = 2;
+
     private PgfMetadata(uint width, uint height, long imageOffset, ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp)
     {
         Width = width;
@@ -86,9 +92,9 @@ public sealed class PgfMetadata
         if (headerSize == 0) throw Bad("The PGF file declares a header of no length.", 4);
         uint width = BinaryPrimitives.ReadUInt32LittleEndian(data[8..]);
         uint height = BinaryPrimitives.ReadUInt32LittleEndian(data[12..]);
-        // The structure states the colour mode in the byte at offset 20 of the file; an indexed image
-        // puts its colour table after the structure, inside the header region.
-        int structureBytes = data[20] == 2 ? StructureEnd + ColourTableBytes : StructureEnd;
+        // The structure states the colour mode in its thirteenth byte, at offset 20 of the file; an
+        // indexed image puts its colour table after the structure, inside the header region.
+        int structureBytes = data[ColourModeOffset] == IndexedColourMode ? StructureEnd + ColourTableBytes : StructureEnd;
         long regionStart = structureBytes;
         if (headerSize + 8 < regionStart) throw Bad("The header of the PGF file is shorter than its own structure.", 4);
         long regionLength = headerSize + 8 - regionStart;

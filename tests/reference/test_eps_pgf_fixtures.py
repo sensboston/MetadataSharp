@@ -66,6 +66,7 @@ class EpsPgfFixtureTests(unittest.TestCase):
 
     def test_indexed_pgf_puts_its_colour_table_between_structure_and_region(self):
         data = g.fixture_bytes("pgf-colour-table.pgf")
+        # The colour mode is the thirteenth byte of the sixteen-byte structure.
         self.assertEqual(data[20], 2)
         header_size = struct.unpack("<I", data[4:8])[0]
         self.assertEqual(header_size, 16 + 768 + len(data) - (24 + 768))

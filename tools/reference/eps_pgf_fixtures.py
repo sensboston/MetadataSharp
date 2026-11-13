@@ -67,7 +67,7 @@ def eps_file(packet=None, first=EPS_FIRST, newline=b'\n', trailer=b'<?xpacket en
     program += b'%%PageTrailer' + newline + b'%%Trailer' + newline + b'%%EOF' + newline
     if packet is None:
         return comment + program
-    return comment + packet + newline + (trailer + newline if trailer else b'') + program
+    return comment + packet + newline + trailer + newline + program
 
 
 def dos_eps_file(postscript, tiff=None):
@@ -90,7 +90,11 @@ def pgf_structure(width, height, levels=3, quality=24, bpp=8, channels=3, mode=0
 
 
 def pgf_file(width, height, image, version=ord('6'), colour_table=None, mode=0):
-    """A PGF file whose header region holds ``image`` and nothing else."""
+    """A PGF file whose header region holds ``image`` and, for an indexed image, its colour table."""
+    # An image that carries a colour table states the indexed mode in the thirteenth byte of the
+    # structure, at offset 20 of the file; the caller may say the mode itself instead.
+    if colour_table is not None and mode == 0:
+        mode = 2
     structure = pgf_structure(width, height, mode=mode)
     if colour_table is not None:
         assert len(colour_table) == 768

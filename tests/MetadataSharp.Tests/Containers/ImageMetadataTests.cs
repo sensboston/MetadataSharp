@@ -248,7 +248,16 @@ public sealed class ImageMetadataTests
     [InlineData("EFBBBF", MetadataFormat.Unknown)]
     [InlineData("3C3F666F6F", MetadataFormat.Unknown)]
     [InlineData("3C737667", MetadataFormat.Unknown)]
-    [InlineData("424D", MetadataFormat.Unknown)]
+    [InlineData("424D", MetadataFormat.Bmp)]
+    [InlineData("474946383961", MetadataFormat.Gif)]
+    [InlineData("474946383761", MetadataFormat.Gif)]
+    [InlineData("4749463838", MetadataFormat.Unknown)]
+    [InlineData("504746", MetadataFormat.Pgf)]
+    [InlineData("50474636", MetadataFormat.Pgf)]
+    [InlineData("504647", MetadataFormat.Unknown)]
+    [InlineData("2550532D41646F62652D332E30", MetadataFormat.Eps)]
+    [InlineData("C5D0D3C6", MetadataFormat.Eps)]
+    [InlineData("2550532D41646F62652D322E30", MetadataFormat.Unknown)]
     [InlineData("FF", MetadataFormat.Unknown)]
     [InlineData("FFD9", MetadataFormat.Unknown)]
     [InlineData("0000000C", MetadataFormat.Unknown)]
@@ -394,7 +403,7 @@ public sealed class ImageMetadataTests
 
     [Theory]
     [InlineData("")]
-    [InlineData("474946383961010001000000003B")]
+    [InlineData("5047463600000000")]
     [InlineData("1A45DFA3A3428681014282840100000000000000")]
     public void AnUnknownFormatGivesAnEmptySnapshot(string hex)
     {
