@@ -91,7 +91,7 @@ public enum MetadataFamily
     IptcIim,
     /// <summary>XMP packet (RDF) representation.</summary>
     Xmp,
-    /// <summary>ICC colour profile: returned as its bytes by <c>IccProfiles.Read</c> (operation <see cref="MetadataOperation.Extract"/>) and written by <c>SaveIccProfile</c> of the JPEG, PNG, WebP, TIFF-based and BMFF documents; not interpreted.</summary>
+    /// <summary>ICC colour profile: returned as its bytes by <c>IccProfiles.Read</c> (operation <see cref="MetadataOperation.Extract"/>) and written by the format documents or EXV creator where listed; not interpreted.</summary>
     Icc,
     /// <summary>Free-text comment (a JPEG COM segment or a PNG text chunk with the keyword Comment): listed by <c>Comments.Read</c>; written by the JPEG and PNG documents, and through a PNG carrier in PGF.</summary>
     Comment,
@@ -305,6 +305,7 @@ public static class MetadataCapabilities
         new(MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: inserts an announced packet in plain or DOS EPS; the rewritten packet is parsed before output."),
         new(MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: replaces the packet range; DOS section lengths and offsets are updated and previews verified byte-identical."),
         new(MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: removes the packet and marks NoMain; malformed framing and unsafe DOS layouts are refused."),
+        new(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Supported, "ExvFile.Create with iccProfile: a validated ICC profile in numbered APP2 ICC_PROFILE segments; at most 255 segments, with every other requested EXV part written as before."),
         new(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks, joined by their numbers as in a JPEG; the bytes the profile declares, not interpreted."),
         new(MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment, in file order, as in a JPEG. Nothing is written."),
         // HEIC and HEIF: as AVIF above.
@@ -332,6 +333,21 @@ public static class MetadataCapabilities
         new(MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile: the colr property of kind prof or rICC of the primary item, replaced for every item that shares it; inside the iprp box when it fits, else the meta box changes its length; the same profile is copied."),
         new(MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile with null: the property becomes a free box of eight bytes that no item is given; the item properties box is rewritten in the bytes it has; nclx colour information stays."),
         new(MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the colr property of kind prof or rICC that ipma gives the primary item, not interpreted; nclx colour information is not a profile; two profiles are refused."),
+        new(MetadataContainer.Jp2, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "Jp2Metadata.Read: the Exif UUID box, with a TIFF header or Exif\\0\\0 prefix; a single recognized EXIF block is parsed under the TIFF limits; duplicates are refused."),
+        new(MetadataContainer.Jp2, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Jp2Metadata.Write: editable EXIF tags are encoded in the Exif UUID box; MakerNote, image-address tags and the EXIF thumbnail directory are not carried."),
+        new(MetadataContainer.Jp2, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Jp2Metadata.Write: the Exif UUID box is replaced from the supplied editable EXIF snapshot, or removed when null."),
+        new(MetadataContainer.Jp2, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Jp2Metadata.Write with null EXIF: recognized Exif UUID boxes are removed."),
+        new(MetadataContainer.Jp2, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "Jp2Metadata.Read: IIM bytes of the recognized IPTC UUID box."),
+        new(MetadataContainer.Jp2, MetadataFamily.IptcIim, MetadataOperation.Insert, CapabilityStatus.Partial, "Jp2Metadata.Write: the supplied IIM stream is written in the IPTC UUID box."),
+        new(MetadataContainer.Jp2, MetadataFamily.IptcIim, MetadataOperation.Replace, CapabilityStatus.Partial, "Jp2Metadata.Write: the IPTC UUID box is replaced from the supplied packet, or removed when null."),
+        new(MetadataContainer.Jp2, MetadataFamily.IptcIim, MetadataOperation.Remove, CapabilityStatus.Partial, "Jp2Metadata.Write with null IPTC: recognized IPTC UUID boxes are removed."),
+        new(MetadataContainer.Jp2, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "Jp2Metadata.Read: the recognized XMP UUID box; XML boxes remain separately available as opaque payloads."),
+        new(MetadataContainer.Jp2, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Jp2Metadata.Write: the supplied packet is written in an XMP UUID box; ICC stays in jp2h."),
+        new(MetadataContainer.Jp2, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Jp2Metadata.Write: recognized XMP UUID boxes and parseable XML XMP boxes are replaced by one XMP UUID box."),
+        new(MetadataContainer.Jp2, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Jp2Metadata.Write with null XMP: recognized XMP UUID boxes and parseable XML XMP boxes are removed."),
+        new(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "Jp2Metadata.Write: an exact ICC profile is written as a method-2 colr child of jp2h, and read back before output is returned."),
+        new(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "Jp2Metadata.Write: method-2 or method-3 ICC colr children are replaced by one method-2 child; other boxes and color specifications are retained."),
+        new(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "Jp2Metadata.Write with null ICC: profile colr children are removed; removal is refused if no non-profile color specification remains."),
         new(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the first colr box of the jp2h header whose method is 2 or 3, not interpreted; a colour space named by number is not a profile."),
         // JPEG XL has no document type either: JxlMetadata reads, and nothing writes a JPEG XL file. A bare
         // codestream holds no metadata; a jumb box is reported by JxlMetadata.HasJumbf and not read.
@@ -395,7 +411,22 @@ public static class MetadataCapabilities
         new(MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer with the reference Description keyword; pinned Exiv2 does not surface PGF comments; the region length is updated and its image suffix retained."),
         new(MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer with the reference Description keyword; pinned Exiv2 does not surface PGF comments; the region length is updated and its image suffix retained."),
         new(MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write with comment null: removes Comment and Description text chunks through the PNG writer; pinned Exiv2 does not surface PGF comments; the PGF region length is updated."),
+        new(MetadataContainer.Psd, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: editable EXIF tags use resource 0x0422, capped at 65,527 bytes; MakerNote, image-address and thumbnail-directory tags are omitted; unrelated resources and image data are preserved."),
+        new(MetadataContainer.Psd, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: resource 0x0422 is replaced from the supplied editable EXIF snapshot, or removed when null; a rewritten PSD is parsed before return."),
+        new(MetadataContainer.Psd, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with null EXIF: resource 0x0422 is removed; unrelated resources and image bytes are preserved."),
+        new(MetadataContainer.Psd, MetadataFamily.IptcIim, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: IPTC packet bytes are written to resource 0x0404; stale IPTC digest resource 0x0425 is removed."),
+        new(MetadataContainer.Psd, MetadataFamily.IptcIim, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: resource 0x0404 is replaced from the supplied IPTC packet; stale IPTC digest resource 0x0425 is removed."),
+        new(MetadataContainer.Psd, MetadataFamily.IptcIim, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with null IPTC: resources 0x0404 and 0x0425 are removed."),
+        new(MetadataContainer.Psd, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: the supplied XMP packet bytes are written to image resource 0x0424."),
+        new(MetadataContainer.Psd, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: resource 0x0424 is replaced from the supplied XMP packet."),
+        new(MetadataContainer.Psd, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with null XMP: resource 0x0424 is removed."),
+        new(MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: an exact ICC profile is written to image resource 0x040F and read back before output is returned."),
+        new(MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: resource 0x040F is replaced from the exact supplied ICC profile."),
+        new(MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with null ICC profile: image resource 0x040F is removed."),
         new(MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: image resource 0x040F, not interpreted; a second one is refused."),
+        new(MetadataContainer.Psd, MetadataFamily.Thumbnail, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: a validated JPEG thumbnail is framed in image resource 0x040C with its Photoshop thumbnail header."),
+        new(MetadataContainer.Psd, MetadataFamily.Thumbnail, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: existing thumbnail resources 0x0409 and 0x040C are replaced by the JPEG resource 0x040C."),
+        new(MetadataContainer.Psd, MetadataFamily.Thumbnail, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with an empty thumbnail: image resources 0x0409 and 0x040C are removed."),
         // RAF has no document type: RafMetadata reads the embedded JPEG file and the TIFF structure.
         new(MetadataContainer.Raf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the EXIF block of the embedded JPEG file, and the tags only the primary directory of the TIFF structure has; its Fujifilm directory (tag 0xF000) is not read; tested on authored files. Nothing is written."),
         new(MetadataContainer.Raf, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the IPTC datasets of the embedded JPEG file; tested on authored files, not on camera files. Nothing is written."),

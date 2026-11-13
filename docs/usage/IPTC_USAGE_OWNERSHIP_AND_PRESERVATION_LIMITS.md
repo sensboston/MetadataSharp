@@ -43,7 +43,7 @@ document.SaveIptcAs("result.jpg", edit);                        // JPEG, TIFF-ba
   PNG: the `Raw profile type iptc` text chunk, kept in its form (tEXt or zTXt, bare stream or
   Photoshop resources, signature or none); a new one is zTXt with unsigned resources, before IDAT.
   PNG refuses as its other writes do (an unknown chunk that is unsafe to copy, two IPTC chunks).
-  PSD, WebP, BMFF and sidecars have no IPTC write.
+  PSD: `PsdMetadata.Write` writes the IIM stream to image resource 0x0404 as part of its complete-set rewrite. It removes resource 0x0425 rather than leaving a stale IPTC digest. WebP, BMFF and sidecars have no IPTC write.
 - Digest (resource 0x0425): by default it is left as it is, so after an edit it no longer matches,
   which is how readers learn that IPTC changed since XMP was last synchronised. It is never added,
   and it is removed with the stream. `new IptcWriteOptions { UpdateDigest = true }`, passed to

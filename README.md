@@ -21,6 +21,11 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
 - Bounded parsing of hostile input: every length, offset and count is checked and budgeted.
 - Continuously measured against the exiv2 0.28.9 test corpus.
 
+## Beyond exiv2
+
+- The PSD resource writer can add a checked ICC profile and a JPEG thumbnail, preserving unrelated
+  resource and image bytes ([preservation and round-trip test](tests/MetadataSharp.Tests/Psd/PsdMetadataTests.cs)).
+
 ## Quick start
 
 Reference `MetadataSharp.Formats`; it brings `MetadataSharp.Core` with it. No package is published

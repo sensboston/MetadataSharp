@@ -23,7 +23,7 @@ Exiv2's rows below reproduce its documented file-type table. `R/W` and `R` descr
 | GIF | — | — | — | — | — | — | Recognizes GIF and dimensions only |
 | HEIC | R | R | R | — | — | R | BMFF reader; limited read/write for EXIF, XMP and ICC; capability rows `Heic` |
 | HEIF | R | R | R | — | — | R | BMFF reader; limited read/write for EXIF, XMP and ICC; capability rows `Heif` |
-| JP2 | R/W | R/W | R/W | — | R/W | R/W | JP2 reader plus ICC extraction; no general JP2 metadata writer or JP2 preview extraction |
+| JP2 | R/W | R/W | R/W | — | R/W | R/W | `Jp2Metadata` reads recognized EXIF/IPTC/XMP UUID boxes and writes complete-set UUID/ICC boxes; no JP2 preview extraction |
 | JPEG | R/W | R/W | R/W | R/W | R/W | R/W | Broad reader and family-specific writers; operation limits are in the `Jpeg` capability rows |
 | JXL | R | R | R | — | — | R | JPEG XL reader; EXIF/XMP only to the extent represented by the current parser/capabilities; no writer |
 | MRW | R | R | R | — | — | R | MRW reader; read-only and partial by capability rows `Mrw` |
@@ -32,7 +32,7 @@ Exiv2's rows below reproduce its documented file-type table. `R/W` and `R` descr
 | PEF | R/W | R/W | R/W | — | R/W | R/W | TIFF family, read and restricted editing; capability rows `Pef` |
 | PGF | R/W | R/W | R/W | R/W | — | — | PGF/carrier reader and limited writes; no general native preview support |
 | PNG | — | R/W | R/W | — | R/W | R/W | EXIF, IPTC, XMP, ICC and comment APIs are implemented with format-specific limits; capability rows `Png` |
-| PSD | R/W | R/W | R/W | — | — | R/W | PSD metadata resources and preview/ICC extraction; no general metadata-family writer |
+| PSD | R/W | R/W | R/W | — | — | R/W | `PsdMetadata.Write` writes editable EXIF/IPTC/XMP/ICC resources and a JPEG thumbnail as a complete set; generic stream/path document operations remain absent |
 | RAF | R | R | R | — | — | R | RAF reader; read-only and partial by capability rows `Raf` |
 | RW2 | R | R | R | — | — | R | TIFF family; read plus limited EXIF replace/remove, no general insert; `Rw2` |
 | SR2 | R | R | R | — | — | R | TIFF family; limited read by `Tiff` reader, no separate full SR2 writer contract |
@@ -64,10 +64,10 @@ This matrix describes reader paths in `ImageMetadata.Compose` and writer APIs, n
 | RAF | R | R | R | — | — | — | `RafMetadata`; `Raf` rows and `RawContainers` tests |
 | CR3 | R | — | R | — | — | BMFF scanner range listing; media extraction limits apply | `Cr3Metadata`; read-only `Cr3` capability rows and `Cr3` tests |
 | AVIF, HEIC, HEIF | RW* | — | RW* | — | RW* | L/E*; coded BMFF previews may only be listed | BMFF family rows; tests `Bmff`, `BmffIcc`, `Previews` |
-| PSD | R† | R† | R† | — | R | L/E* | `PsdMetadata`, `IccProfiles`, `Previews`; tests `Psd` and `Previews`; no PSD metadata writer |
-| JP2 | — | — | R† | — | R | — | `Jp2Metadata`/`ImageMetadata.ReadJp2` and `IccProfiles`; tests `Jp2`, `Icc`; no family writer |
+| PSD | RW* | RW* | RW* | RW* | R | L/E*; JPEG thumbnail resource write | `PsdMetadata.Write` rewrites editable EXIF/IPTC/XMP/ICC resources and a JPEG thumbnail as a complete set; tests `Psd` and `Previews` pin resource preservation and read-back |
+| JP2 | RW* | RW* | RW* | RW* | R | — | `Jp2Metadata.Read`/`Write` reads and writes recognized UUID metadata boxes and ICC `colr` children; tests `Jp2`, `Icc`; opaque XML boxes and codestream bytes are preserved |
 | JXL | R | — | R | — | — | — | `JxlMetadata`; `Jxl` capability rows and tests; no writer |
-| EXV | R† | R† | R† | R | R | L/E* where the EXV segment scanner finds a supported range | `ExvMetadata`, `ExvFile`, `IccProfiles`, `Comments`, `Previews`; `Exv` tests; create is not an in-place writer and does not carry ICC |
+| EXV | R† | R† | R† | RW | R | L/E* where the EXV segment scanner finds a supported range | `ExvMetadata`, `ExvFile`, `IccProfiles`, `Comments`, `Previews`; `Exv` tests; creation can include a validated ICC profile as numbered APP2 segments, but is not an in-place writer |
 | EPS | — | — | RW* | — | — | — | `EpsMetadataDocument`; `Eps` capability rows and tests |
 | PGF | RW* | RW* | RW* | RW* (carrier-specific) | — | — | `PgfMetadata`; `Pgf` capability rows; EPS/PGF tests |
 | XMP sidecar | — | — | RW* | — | — | — | `XmpPacket` and sidecar operations; tests `Xmp`, `Operations` |
@@ -132,6 +132,6 @@ The libraries emit XML documentation on every build, and `Directory.Build.props`
 
 The small documentation/API-surface corrections in this change are behavior-neutral; the items above that remain partial or missing are not silently treated as parity. Each known functional gap has an estimate in its table or the grouped estimates below. The largest work is the Exiv2-compatible CLI layer and full reference data; these are multi-week efforts and are not safe one-day additions. DCP format support is also missing; implement only with a dedicated parser, bounded-write policy, capability rows and fixtures (estimate 1–2 weeks), not by treating an unverified DCP as arbitrary TIFF.
 
-Additional follow-up estimates for partial, currently tested subsets: complete the TIFF/raw camera-file differential corpus (1–2 weeks per format family); expand MRW and RAF coverage from the authored layouts to broader camera corpora (1–2 weeks each); broaden CRW rewrite/read-back parity (1–2 weeks); add PSD metadata-family writers (2–4 weeks); complete JP2 EXIF/IPTC reading, then XMP/EXIF/IPTC/ICC writing (3–5 weeks); add JXL IPTC reading (3–5 days; upstream lists no JXL writer); add CR3 IPTC reading where present in the pinned format contract (3–5 days); add AVIF/HEIF/HEIC IPTC reading if required by the pinned operation contract (1–2 weeks); add EXV ICC writing (3–5 days); add safe TIFF-based raw/DNG ICC writing for the families currently read-only (1–2 weeks, subject to layout proof). These are separate from the capability-manifest read-row correction and the CLI/preview estimates above. Broader preview parity and CLI output/targets have separate estimates above.
+Remaining format-level gaps include broader TIFF/raw camera-file differential fixtures, broader MRW/RAF and CRW corpora, JXL IPTC reading (upstream lists no JXL writer), CR3 IPTC reading where present in the pinned contract, AVIF/HEIF/HEIC IPTC reading where present in the pinned contract, and TIFF-based raw ICC writing only for layouts whose target image and preservation safety are demonstrated. The authored DNG, CR2, ORF/RW2, NEF/ARW and PEF layouts remain unsafe for first-directory ICC writes: their ICC target is absent, a reduced-image IFD, a raw sensor IFD, or a known RAW signature; the refusal cases are pinned by `TiffBasedIccProfileTests.ADngAndARawFileAreRefusedWithAProfileAndWithNone`, `AnRw2IsRefusedForItsHeaderBeforeAnythingElseIsAsked`, `TheVersionOfADngInThePrimaryDirectoryIsEnough`, `APrimaryDirectoryOfAReducedImageIsEnough`, and `RawSensorDataInAnyImageDirectoryIsEnough`. EXV ICC creation is covered by `ExvMetadataTests.ExvCreationWritesValidatedIccProfilesInNumberedApp2Segments` and the pinned EXV ICC insert capability row; it remains a create-only API, not an in-place EXV writer.
 
 The full CI workflow is the acceptance test: both target frameworks, OS matrix on PR, the test suite, compiled README examples, sample builds/smoke tests, offline policy checks and pinned Exiv2 differential jobs. A successful push-only run is not described as full CI. The final PR description records the final green run and its link.

@@ -1,6 +1,7 @@
 using System.Text;
 using MetadataSharp.Core;
 using MetadataSharp.Formats.Exv;
+using MetadataSharp.Formats.Operations;
 using Xunit;
 
 namespace MetadataSharp.Tests.Exv;
@@ -90,6 +91,24 @@ public sealed class ExvMetadataTests
     {
         var failure = Assert.Throws<MetadataException>(() => ExvMetadata.Read(file));
         Assert.Equal(MetadataErrorCode.InvalidExv, failure.Code);
+    }
+
+    [Fact]
+    public void ExvCreationWritesValidatedIccProfilesInNumberedApp2Segments()
+    {
+        byte[] profile = MetadataSharp.Tests.Containers.IccProfileTests.Profile(70_000, 19);
+        byte[] file = ExvFile.Create(null, null, null, iccProfile: profile);
+        Assert.Equal(profile, MetadataSharp.Formats.IccProfiles.Read(file));
+        Assert.Equal(Signature, file[..Signature.Length]);
+
+        byte[] malformed = (byte[])profile.Clone();
+        malformed[36] = (byte)'x';
+        var failure = Assert.Throws<MetadataException>(() => ExvFile.Create(null, null, null, iccProfile: malformed));
+        Assert.Equal(MetadataErrorCode.InvalidIccProfile, failure.Code);
+
+        byte[] tooLarge = MetadataSharp.Tests.Containers.IccProfileTests.Profile(65_519 * 255 + 1);
+        failure = Assert.Throws<MetadataException>(() => ExvFile.Create(null, null, null, iccProfile: tooLarge));
+        Assert.Equal(MetadataErrorCode.IccProfileTooLarge, failure.Code);
     }
 
     [Fact]

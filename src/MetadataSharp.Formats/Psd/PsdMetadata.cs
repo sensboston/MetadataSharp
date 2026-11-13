@@ -13,9 +13,9 @@ namespace MetadataSharp.Formats.Psd;
 /// inside the file, and merged image data that is stored raw or run-length encoded must have the
 /// length the header implies. Color-mode data and the layer and mask section are length-checked and
 /// otherwise not read. <see cref="IsRestrictedProfile"/> tells the narrow profile apart from the rest.
-/// This API does not decode pixels or write files.
+/// This API does not decode pixels; <see cref="Write"/> rewrites the metadata resource section without moving image data.
 /// </summary>
-public sealed class PsdMetadata
+public sealed partial class PsdMetadata
 {
     private const int MaxFileBytes = 64 * 1024 * 1024;
     private const int MaxResourceBytes = 4 * 1024 * 1024;
