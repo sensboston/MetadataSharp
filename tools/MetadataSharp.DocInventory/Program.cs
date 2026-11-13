@@ -275,6 +275,7 @@ internal static class Inventory
             RequiresReturn = hasReturn,
             ExceptionCount = exceptionCount,
             ExceptionRequiredByBody = requiresException,
+            Exceptions = exceptionsPresent,
             PublicGaps = gaps
         });
     }
@@ -354,7 +355,7 @@ internal static class Inventory
         PublicParameterGaps = entries.Sum(entry => entry.Public ? entry.MissingParameters.Length : 0),
         PublicTypeParameterGaps = entries.Sum(entry => entry.Public ? entry.MissingTypeParameters.Length : 0),
         PublicReturnGaps = entries.Count(entry => entry.Public && entry.RequiresReturn && !entry.Returns),
-        PublicExceptionGaps = entries.Count(entry => entry.Public && entry.ExceptionRequiredByBody && entry.ExceptionCount == 0),
+        PublicExceptionGaps = entries.Count(entry => entry.Public && entry.ExceptionRequiredByBody && !entry.Exceptions),
         NonTrivialInternalPrivate = entries.Count(entry => !entry.Public && entry.NonTrivial),
         NonPublicPurposeGaps = entries.Count(entry => !entry.Public && entry.NonTrivial && !entry.PurposeComment)
     };
@@ -403,6 +404,7 @@ internal static class Inventory
         public required bool RequiresReturn { get; init; }
         public required int ExceptionCount { get; init; }
         public required bool ExceptionRequiredByBody { get; init; }
+        public required bool Exceptions { get; init; }
         public required List<string> PublicGaps { get; init; }
     }
 }
