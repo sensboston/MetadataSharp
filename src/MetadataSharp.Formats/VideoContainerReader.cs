@@ -829,7 +829,7 @@ internal static class VideoContainerReader
             if (id == 0xBA && n is >= 1 and <= 8) height = (int)Math.Min(ReadUnsigned(p, n), int.MaxValue);
             if ((n is < 1 or > 8) && id is not (0x86 or 0x4D80 or 0x5741 or 0x7BA9 or 0x22B59C or 0x536E)) return;
             string value;
-            if (id is 0x86 or 0x4D80 or 0x5741 or 0x7BA9 or 0x22B59C or 0x536E)
+            if (id is 0x86 or 0x4D80 or 0x5741 or 0x7BA9 or 0x22B59C or 0x536E or 0x4282)
                 value = Text(p, n, Encoding.UTF8);
             else if (id == 0x2AD7B1)
             {
