@@ -95,6 +95,21 @@ public sealed class MakerNoteInterpretationTests
         return cameraModel is null ? note.Interpret(entry, part) : note.InterpretFieldForModel(entry, part, cameraModel);
     }
 
+    private static string? NikonFlashField(string version, string name, byte value, params (string Name, byte Value)[] siblings)
+    {
+        var fields = new List<MakerNoteField>
+        {
+            new(0, "Version", Undefined(Encoding.ASCII.GetBytes(version))),
+        };
+        foreach ((string siblingName, byte siblingValue) in siblings)
+            fields.Add(new MakerNoteField((ushort)fields.Count, siblingName, Bytes(siblingValue)));
+        if (!fields.Any(field => field.Name == name))
+            fields.Add(new MakerNoteField((ushort)fields.Count, name, Bytes(value)));
+        var entry = new MakerNoteEntry(0x00A8, "FlashInfo", Undefined(0), fields);
+        var note = new MakerNote(MakerNoteFormat.Nikon3, Little, [entry]);
+        return note.Interpret(entry, fields.Single(field => field.Name == name));
+    }
+
     // ---- Canon -------------------------------------------------------------------------------------------
 
     [Theory]
@@ -413,6 +428,22 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("Off", Field(MakerNoteFormat.Nikon3, 0x0025, "ISOExpansion", Shorts(0)));
         Assert.Equal("Hi 2.0", Field(MakerNoteFormat.Nikon3, 0x0025, "ISOExpansion2", Shorts(0x108)));
         Assert.Null(Field(MakerNoteFormat.Nikon3, 0x0025, "ISO", Shorts(60)));
+    }
+
+    [Fact]
+    public void NikonFlashInfoUsesVersionAndSiblingControlModes()
+    {
+        Assert.Equal("Did not fire", NikonFlashField("0106", "ExternalFlashData1", 0));
+        Assert.Equal("Fired, Bounce Flash adaptor, Wide Flash adaptor", NikonFlashField("0106", "ExternalFlashData1", 0x15));
+        Assert.Equal("External flash off", NikonFlashField("0106", "ExternalFlashData2", 0));
+        Assert.Equal("External flash on, Manual", NikonFlashField("0106", "ExternalFlashData2", 0x86));
+        Assert.Equal("n/a", NikonFlashField("0106", "FlashCompensationMaster", 0, ("ExternalFlashData1", (byte)0)));
+        Assert.Equal("1/1", NikonFlashField("0106", "FlashCompensationMaster", 0, ("ExternalFlashData1", (byte)6)));
+        Assert.Equal("External flash off", NikonFlashField("0107", "ExternalFlashData1", 0));
+        Assert.Equal("External flash on, External flash zoom override, Bounce Flash adaptor",
+            NikonFlashField("0108", "ExternalFlashData1", 0x85));
+        Assert.Equal("Manual", NikonFlashField("0107", "ExternalFlashData2", 6));
+        Assert.Equal("Exposure Comp.: Background Only", NikonFlashField("0107", "ExternalFlashData3", 4));
     }
 
     [Fact]

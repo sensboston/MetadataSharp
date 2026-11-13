@@ -216,6 +216,7 @@ internal static partial class MakerNoteLabels
         NikonLd4FocalLength,
         NikonLd4FocusDistance,
         NikonIiIso,
+        NikonFlashInfo,
         SonyExposureBias,
         SonyExposureStandardAdjustment,
         SonyAmbientTemperature,
@@ -415,6 +416,8 @@ internal static partial class MakerNoteLabels
                 return NikonLd4FocusDistance(value);
             case Form.NikonIiIso:
                 return NikonIiIso(value);
+            case Form.NikonFlashInfo:
+                return NikonFlashInfo(rule.Name, value, note);
             case Form.SonyExposureBias:
                 return SonyExposureBias(value);
             case Form.SonyExposureStandardAdjustment:
@@ -1467,6 +1470,127 @@ internal static partial class MakerNoteLabels
             return null;
         double iso = 100.0 * Math.Exp((number / 12.0 - 5) * Math.Log(2.0));
         return Whole((long)Math.Round(iso, MidpointRounding.AwayFromZero));
+    }
+
+    private static string? NikonFlashInfo(string name, ExifValue value, MakerNote? note)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long raw) || raw is < 0 or > 255 ||
+            !NikonFlashInfoVersion(note, out string? version))
+            return null;
+        int number = (int)raw;
+        bool v0106 = version == "0106";
+        bool v0107 = version is "0107" or "0108";
+        if (!v0106 && !v0107)
+            return null;
+
+        if (name == "ExternalFlashData1")
+        {
+            bool fired = (number & 1) != 0;
+            if (!v0106)
+            {
+                if (!fired)
+                    return "External flash off";
+                List<string> parts = ["External flash on", (number & 0x80) != 0 ? "External flash zoom override" : "No external flash zoom override"];
+                AddNikonFlashAdaptors(parts, number);
+                return string.Join(", ", parts);
+            }
+            if (!fired)
+                return "Did not fire";
+            List<string> firedParts = ["Fired"];
+            AddNikonFlashAdaptors(firedParts, number);
+            return string.Join(", ", firedParts);
+        }
+
+        if (name == "ExternalFlashData2")
+        {
+            if (!v0106)
+                return NikonFlashControlMode(number & 0x0F);
+            if ((number & 0x80) == 0)
+                return "External flash off";
+            return "External flash on, " + NikonFlashControlMode(number & 0x0F);
+        }
+
+        if (name == "ExternalFlashData3")
+        {
+            if (!v0107)
+                return null;
+            return (number & 0x04) == 0 ? "Exposure Comp.: Entire frame" : "Exposure Comp.: Background Only";
+        }
+
+        string modeField = name switch
+        {
+            "FlashCompensationMaster" or "FlashMasterOutput" => v0106 ? "ExternalFlashData1" : "ExternalFlashData2",
+            "FlashCompensationGroupA" or "FlashGroupAOutput" => "FlashGroupAControlData",
+            "FlashCompensationGroupB" or "FlashGroupBOutput" => "FlashGroupBCControlData",
+            "FlashCompensationGroupC" or "FlashGroupCOutput" => "FlashGroupBCControlData",
+            _ => "",
+        };
+        if (modeField.Length == 0 || !NikonFlashInfoByte(note, modeField, out int modeByte))
+            return null;
+        int mode = name.Contains("GroupB", StringComparison.Ordinal) ? modeByte >> 4 : modeByte & 0x0F;
+        if (name.Contains("GroupC", StringComparison.Ordinal))
+            mode = modeByte & 0x0F;
+        if (mode == 0)
+            return "n/a";
+        return NikonFlashCompensation(number, mode is 6 or 7);
+    }
+
+    private static bool NikonFlashInfoVersion(MakerNote? note, out string? version)
+    {
+        version = null;
+        if (!NikonFlashInfoValue(note, "Version", out ExifValue? value) || value is null ||
+            value.FieldType != TiffFieldType.Undefined || value.Count != 4)
+            return false;
+        version = Encoding.ASCII.GetString(value.RawBytes);
+        return true;
+    }
+
+    private static bool NikonFlashInfoByte(MakerNote? note, string name, out int number)
+    {
+        number = 0;
+        if (!NikonFlashInfoValue(note, name, out ExifValue? value) || value is null || value.FieldType != TiffFieldType.Byte || value.Count != 1 ||
+            !ExifTags.TryInteger(value, 0, out long raw) || raw is < 0 or > 255)
+            return false;
+        number = (int)raw;
+        return true;
+    }
+
+    private static bool NikonFlashInfoValue(MakerNote? note, string name, out ExifValue? value)
+    {
+        value = null;
+        if (note is null || !note.TryGetEntry(0x00A8, out MakerNoteEntry? flashInfo))
+            return false;
+        MakerNoteField? field = flashInfo.Fields.FirstOrDefault(item => item.Name == name);
+        if (field is null)
+            return false;
+        value = field.Value;
+        return true;
+    }
+
+    private static void AddNikonFlashAdaptors(List<string> parts, int value)
+    {
+        if ((value & 0x04) != 0) parts.Add("Bounce Flash adaptor");
+        if ((value & 0x10) != 0) parts.Add("Wide Flash adaptor");
+        if ((value & 0x20) != 0) parts.Add("Nikon Diffusion Dome");
+    }
+
+    private static string NikonFlashControlMode(int mode) => mode switch
+    {
+        0 => "Off", 1 => "TTL", 2 => "iTTL", 3 => "Auto Aperture", 4 => "Automatic",
+        5 => "GN (distance priority)", 6 => "Manual", 7 => "Repeating Flash", _ => Stored(mode),
+    };
+
+    private static string NikonFlashCompensation(int value, bool manualScale)
+    {
+        if (!manualScale)
+            return SixthsOfStopDown(value);
+        if (value > 48)
+            return Stored(value);
+        int fraction = value % 6;
+        int denominator = 1 << (value / 6);
+        string result = "1/" + denominator.ToString(CultureInfo.InvariantCulture);
+        string suffix = fraction switch { 1 => "1/6", 2 => "1/3", 3 => "1/2", 4 => "2/3", 5 => "5/6", _ => "" };
+        return suffix.Length == 0 ? result : result + " (-" + suffix + " EV)";
     }
 
     /// <summary>

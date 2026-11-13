@@ -155,6 +155,17 @@ internal static partial class MakerNoteLabels
         new(0x00A8, "CameraFlashOutput", [], Form.SixthsOfStopDown),
         new(0x00A8, "ExternalFlashData4", [(0, "Illumination Pat.: Standard"), (1, "Illumination Pat.: Center-weighted")]),
         new(0x00A8, "WirelessFlashData", [(0, "AWL Off"), (1, "Optical AWL")]),
+        new(0x00A8, "ExternalFlashData1", [], Form.NikonFlashInfo),
+        new(0x00A8, "ExternalFlashData2", [], Form.NikonFlashInfo),
+        new(0x00A8, "ExternalFlashData3", [], Form.NikonFlashInfo),
+        new(0x00A8, "FlashCompensationMaster", [], Form.NikonFlashInfo),
+        new(0x00A8, "FlashCompensationGroupA", [], Form.NikonFlashInfo),
+        new(0x00A8, "FlashCompensationGroupB", [], Form.NikonFlashInfo),
+        new(0x00A8, "FlashCompensationGroupC", [], Form.NikonFlashInfo),
+        new(0x00A8, "FlashMasterOutput", [], Form.NikonFlashInfo),
+        new(0x00A8, "FlashGroupAOutput", [], Form.NikonFlashInfo),
+        new(0x00A8, "FlashGroupBOutput", [], Form.NikonFlashInfo),
+        new(0x00A8, "FlashGroupCOutput", [], Form.NikonFlashInfo),
 
         // MultiExposure (0x00B0).
         new(0x00B0, "MultiExposureMode", [(0, "Off")]),
