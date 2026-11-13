@@ -476,6 +476,9 @@ public sealed class MakerNoteInterpretationTests
     {
         Assert.Equal("12.1.3.0", Top(MakerNoteFormat.PentaxDng, "Version", Bytes(12, 1, 3, 0)));
         Assert.Equal("K-70", Top(MakerNoteFormat.PentaxDng, "ModelID", Longs(78370)));
+        Assert.Equal("K-3", Top(MakerNoteFormat.PentaxDng, "ModelID", Longs(77760)));
+        Assert.Equal("K-30", Top(MakerNoteFormat.PentaxDng, "ModelID", Longs(77650)));
+        Assert.Equal("640x480", Top(MakerNoteFormat.PentaxDng, "PreviewResolution", Shorts(640, 480)));
         Assert.Equal("2020:01:10", Top(MakerNoteFormat.PentaxDng, "Date", Undefined(7, 228, 1, 10)));
         Assert.Equal("15:08:38", Top(MakerNoteFormat.PentaxDng, "Time", Undefined(15, 8, 38)));
         Assert.Equal("25 ms", Top(MakerNoteFormat.PentaxDng, "ExposureTime", Longs(2500)));

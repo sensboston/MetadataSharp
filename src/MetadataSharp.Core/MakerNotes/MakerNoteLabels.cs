@@ -131,6 +131,9 @@ internal static partial class MakerNoteLabels
         /// <summary>Pentax DNG version bytes written with dots between their numbers.</summary>
         PentaxVersion,
 
+        /// <summary>Pentax DNG preview dimensions written with an x between the numbers.</summary>
+        PentaxResolution,
+
         /// <summary>Pentax DNG date bytes: a two-byte year, month, and day.</summary>
         PentaxDate,
 
@@ -227,7 +230,7 @@ internal static partial class MakerNoteLabels
 
     private static string? Apply(Rule rule, ExifValue value, MakerNote? note = null)
     {
-        if (rule.Reading is Form.PentaxFirst or Form.PentaxVersion or Form.PentaxDate or Form.PentaxTime or
+        if (rule.Reading is Form.PentaxFirst or Form.PentaxVersion or Form.PentaxResolution or Form.PentaxDate or Form.PentaxTime or
             Form.PentaxExposure or Form.PentaxFNumber or Form.PentaxFocalLength or Form.PentaxExposureCompensation or
             Form.PentaxTemperature or Form.PentaxFlashCompensation or Form.PentaxBracketing or
             Form.PentaxThreeByteEnum or Form.PentaxFourByteEnum or Form.PentaxDynamicRange)

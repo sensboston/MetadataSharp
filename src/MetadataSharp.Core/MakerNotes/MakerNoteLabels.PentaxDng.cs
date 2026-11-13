@@ -13,8 +13,10 @@ internal static partial class MakerNoteLabels
     private static readonly Rule[] PentaxDng =
     [
         new(Top, "Mode", [(0, "Auto"), (1, "Night-Scene"), (2, "Manual")], Form.PentaxFirst),
-        new(Top, "ModelID", [(0x13222, "K-70"), (0x12b9c, "K100D"), (0x12c1e, "K10D"), (0x12cd2, "K20D")], Form.PentaxFirst),
+        new(Top, "ModelID", [(0x13222, "K-70"), (0x12b9c, "K100D"), (0x12c1e, "K10D"),
+            (0x12cd2, "K20D"), (0x12f52, "K-30"), (0x12fc0, "K-3")], Form.PentaxFirst),
         new(Top, "Version", [], Form.PentaxVersion),
+        new(Top, "PreviewResolution", [], Form.PentaxResolution),
         new(Top, "Date", [], Form.PentaxDate),
         new(Top, "Time", [], Form.PentaxTime),
         new(Top, "Quality", [(0, "Good"), (1, "Better"), (2, "Best"), (3, "TIFF"), (4, "RAW"), (5, "Premium"), (65535, "n/a")], Form.PentaxFirst),
@@ -144,6 +146,9 @@ internal static partial class MakerNoteLabels
                 return (value.FieldType is TiffFieldType.Byte or TiffFieldType.Undefined) && value.Count > 0
                     ? string.Join(".", value.RawBytes.ToArray().Select(number => number.ToString(CultureInfo.InvariantCulture)))
                     : null;
+            case Form.PentaxResolution:
+                return value.Count == 2 && Number(value, 0) is long width && Number(value, 1) is long height
+                    ? Whole(width) + "x" + Whole(height) : null;
             case Form.PentaxDate:
                 if (value.Count != 4 || value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined)) return null;
                 ReadOnlySpan<byte> date = value.RawBytes;
