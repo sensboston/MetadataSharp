@@ -50,6 +50,7 @@ public sealed partial class XmpPacket
         if (destination.Length < bytes.Length) throw new ArgumentException("Destination is too small.", nameof(destination));
         bytes.CopyTo(destination);
     }
+    // Snapshot and validate limits before parsing so all stream and XML stages use the same budget.
     private static XmpLimits Settings(XmpReadOptions? options)
     {
         XmpLimits value = options is null ? new() : options.Limits ?? throw new ArgumentException("Limits cannot be null.", nameof(options));
@@ -80,6 +81,7 @@ public sealed partial class XmpPacket
         if (bytes.Length > limits.MaxPacketBytes) throw XmpCodec.Limit();
         return ParseOwned(bytes.ToArray(), limits, default);
     }
+    // Parse only after the packet bytes are owned, keeping XML readers away from caller-mutated storage.
     private static XmpPacket ParseOwned(byte[] bytes, XmpLimits limits, CancellationToken token)
     {
         var result = XmpCodec.Read(bytes, limits, token);
@@ -106,6 +108,7 @@ public sealed partial class XmpPacket
     public static XmpPacket Load(string path, XmpReadOptions? options = null) => LoadPath(path, Settings(options), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="Load(string, XmpReadOptions?)"/>
     public static Task<XmpPacket> LoadAsync(string path, XmpReadOptions? options = null, CancellationToken cancellationToken = default) => LoadPath(path, Settings(options), true, cancellationToken);
+    // Open the path with shared-read access and dispose the handle after bounded loading completes.
     private static async Task<XmpPacket> LoadPath(string path, XmpLimits limits, bool asynchronous, CancellationToken token)
     {
         ArgumentException.ThrowIfNullOrEmpty(path); token.ThrowIfCancellationRequested();
@@ -113,6 +116,7 @@ public sealed partial class XmpPacket
             FileOptions.SequentialScan | (asynchronous ? FileOptions.Asynchronous : FileOptions.None));
         return await LoadCore(source, limits, asynchronous, token).ConfigureAwait(false);
     }
+    // Copy no more than the packet budget and honor cancellation during both synchronous and async reads.
     private static async Task<XmpPacket> LoadCore(Stream source, XmpLimits limits, bool asynchronous, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -199,6 +203,7 @@ public sealed partial class XmpPacket
     public void Save(Stream destination) => SaveCore(destination, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="Save(Stream)"/>
     public Task SaveAsync(Stream destination, CancellationToken cancellationToken = default) => SaveCore(destination, true, cancellationToken);
+    // Serialize into the destination only after the packet is editable and its output size has been checked.
     private async Task SaveCore(Stream destination, bool asynchronous, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(destination);
@@ -221,6 +226,7 @@ public sealed partial class XmpPacket
     public void SaveAs(string destinationPath) => SavePath(destinationPath, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveAs(string)"/>
     public Task SaveAsAsync(string destinationPath, CancellationToken cancellationToken = default) => SavePath(destinationPath, true, cancellationToken);
+    // Write a sibling temporary file and replace the target only after successful serialization and flush.
     private async Task SavePath(string path, bool asynchronous, CancellationToken token)
     {
         ArgumentException.ThrowIfNullOrEmpty(path); token.ThrowIfCancellationRequested();

@@ -137,6 +137,7 @@ internal static partial class MakerNoteLabels
         new(Top, "HDF", [(0, "Off"), (1, "On")], Form.PentaxFirst),
     ];
 
+    // Dispatch Pentax forms separately because their units, byte layouts, and cross-tag shutter count differ.
     private static string? PentaxDngInterpret(Rule rule, ExifValue value, MakerNote? note)
     {
         switch (rule.Reading)
@@ -193,6 +194,7 @@ internal static partial class MakerNoteLabels
         }
     }
 
+    // Read an indexed numeric component without coercing ASCII payloads or guessing beyond Undefined bytes.
     private static long? Number(ExifValue value, int index)
     {
         if (index >= value.Count || value.FieldType == TiffFieldType.Ascii) return null;
@@ -201,6 +203,7 @@ internal static partial class MakerNoteLabels
         return ExifTags.TryInteger(value, index, out long number) ? number : null;
     }
 
+    // Assemble the exact three- or four-byte enum key in network order before table lookup.
     private static string? Composite(Rule rule, ExifValue value, int count)
     {
         if (value.Count != count || value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined)) return null;
@@ -211,6 +214,7 @@ internal static partial class MakerNoteLabels
         return "Unknown (0x" + code.ToString(count == 3 ? "x6" : "x8", CultureInfo.InvariantCulture) + ")";
     }
 
+    // Dynamic-range values are a four-byte key; unknown combinations retain their hexadecimal identity.
     private static string? DynamicRange(Rule rule, ExifValue value)
     {
         if (value.Count != 4 || value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined)) return null;
@@ -221,6 +225,7 @@ internal static partial class MakerNoteLabels
         return "Unknown (0x" + code.ToString("x8", CultureInfo.InvariantCulture) + ")";
     }
 
+    // Separate the exposure step from optional extended-bracketing mode and range fields.
     private static string? Bracketing(ExifValue value)
     {
         if (value.Count is < 1 or > 2 || value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Short or TiffFieldType.Long) ||
@@ -235,6 +240,7 @@ internal static partial class MakerNoteLabels
         return text + " (" + label + " " + Whole(range) + ")";
     }
 
+    // Pentax masks its count with the companion date and inverted time, so absent companions prevent decoding.
     private static string? ShutterCount(ExifValue value, MakerNote? note)
     {
         if (value.Count != 4 || value.RawBytes.Length != 4 || note is null) return null;

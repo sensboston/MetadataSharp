@@ -32,6 +32,7 @@ public static class MetadataSync
 
     private static readonly (string Path, ExifXmpMapping? Exif, IptcXmpMapping? Iptc)[] Shared = BuildShared();
 
+    // Derive the cross-family mapping once so all sync directions use the same field definitions.
     private static (string, ExifXmpMapping?, IptcXmpMapping?)[] BuildShared()
     {
         var fields = new List<(string, ExifXmpMapping?, IptcXmpMapping?)>();
@@ -273,6 +274,7 @@ public static class MetadataSync
         return Enumerable.SequenceEqual(held, value);
     }
 
+    // Write ordinary properties through their mapping; Flash is expanded into its five structure fields.
     private static bool ToXmp(SyncEdits edits, SyncXmp view, string source, ExifXmpMapping mapping, string[] items)
     {
         if (mapping.Conversion != SyncConversion.Flash)
@@ -281,12 +283,14 @@ public static class MetadataSync
         return true;
     }
 
+    // Turn target-form refusals into sync notes so one incompatible property does not discard other edits.
     private static bool ToXmp(SyncEdits edits, SyncXmp view, string source, string path, string uri, string name, XmpValueKind form, string[] items)
     {
         try { view.Write(edits.Xmp, path, uri, name, form, items); return true; }
         catch (ArgumentException e) { edits.Note(source, path, e.Message); return false; }
     }
 
+    // Preserve the specific conversion reason while removing edit-layer advice from user-facing sync notes.
     private static bool ToExif(SyncEdits edits, string source, ExifXmpMapping mapping, string[] items, ExifMetadata? existing)
     {
         try { SyncExif.Write(edits.Exif, mapping, items, existing); return true; }
@@ -301,6 +305,7 @@ public static class MetadataSync
         }
     }
 
+    // Record dataset validation failures per property rather than aborting the remaining conversions.
     private static bool ToIptc(SyncEdits edits, string source, IptcXmpMapping mapping, string[] items)
     {
         try { SyncIptc.Write(edits.Iptc, mapping, items); return true; }

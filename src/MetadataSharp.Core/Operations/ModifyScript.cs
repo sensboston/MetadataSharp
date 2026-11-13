@@ -145,6 +145,7 @@ public sealed class ModifyScript
         return result;
     }
 
+    // Advance the shared cursor over one whitespace-delimited token without consuming the value tail.
     private static string Word(string line, ref int at)
     {
         while (at < line.Length && line[at] is ' ' or '\t') at++;
@@ -153,6 +154,7 @@ public sealed class ModifyScript
         return line[start..at];
     }
 
+    // Parse command shape and dispatch only after escapes, optional types, and key forms are resolved.
     private void Line(int number, string line, Endianness order)
     {
         int at = 0;
@@ -224,6 +226,7 @@ public sealed class ModifyScript
         return result.ToString();
     }
 
+    // Accept Unicode escape digits only when all four source characters are ASCII hexadecimal.
     private static bool IsHex(ReadOnlySpan<char> text)
     {
         foreach (char c in text)
@@ -233,6 +236,7 @@ public sealed class ModifyScript
 
     // ---- EXIF --------------------------------------------------------------------------------------------
 
+    // Preserve script semantics by parsing EXIF values and storing them through the unchecked edit path.
     private void ExifLine(int number, ModifyCommandKind command, ExifTagKey key, string? type, string value, Endianness order)
     {
         if (command == ModifyCommandKind.Delete) { Exif.Remove(key); return; }
@@ -355,6 +359,7 @@ public sealed class ModifyScript
         return dot > 4 && dot < key.Length - 1 ? key[4..dot] : null;
     }
 
+    // Choose known array/value forms from sync mappings before falling back to Dublin Core conventions.
     private static string XmpDefault(string key)
     {
         foreach (IptcXmpMapping mapping in MetadataSync.IptcMappings)
@@ -379,6 +384,7 @@ public sealed class ModifyScript
         };
     }
 
+    // Translate script array and language-alternative commands into the corresponding ordered XMP operations.
     private void XmpLine(int number, ModifyCommandKind command, string key, string? type, string value)
     {
         if (command == ModifyCommandKind.Delete) { Xmp.RemovePath(key); return; }

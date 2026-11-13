@@ -24,6 +24,7 @@ internal sealed class SyncXmp
         }
     }
 
+    // Resolve only built-in mapping prefixes; a table error is a programming invariant violation.
     internal static string Uri(string prefix) =>
         XmpNamespaces.TryGetUri(prefix, out string uri) ? uri : throw new InvalidOperationException("A mapping names an unknown prefix.");
 
@@ -64,6 +65,7 @@ internal sealed class SyncXmp
     }
 
     /// <exception cref="ArgumentException">The texts do not fit the form, or a text cannot be XML.</exception>
+    // Preserve existing language alternatives but replace a conflicting XMP form as a whole.
     internal void Write(XmpEdit edit, string path, string uri, string name, XmpValueKind form, string[] items)
     {
         switch (form)
@@ -84,6 +86,7 @@ internal sealed class SyncXmp
         }
     }
 
+    // Keep the EXIF Flash structure fields in the standard order expected by the shared mapping.
     internal static void WriteFlash(XmpEdit edit, string[] fields)
     {
         for (int i = 0; i < FlashFields.Length; i++)

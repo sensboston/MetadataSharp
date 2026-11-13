@@ -60,6 +60,7 @@ public enum SyncConversion
 /// <summary>One row of the EXIF and XMP mapping table.</summary>
 public sealed class ExifXmpMapping
 {
+    // Resolve the namespace at construction so malformed built-in mapping prefixes fail immediately.
     internal ExifXmpMapping(ExifDirectoryKind directory, ushort tag, string prefix, string name,
         SyncConversion conversion, XmpValueKind form, TiffFieldType type)
     {
@@ -99,6 +100,7 @@ public sealed class ExifXmpMapping
 /// <summary>One row of the IPTC and XMP mapping table.</summary>
 public sealed class IptcXmpMapping
 {
+    // Pair a date with its optional time dataset while freezing the resolved XMP namespace.
     internal IptcXmpMapping(byte dataset, string prefix, string name, XmpValueKind form, byte timeDataset = 0)
     {
         Dataset = new(2, dataset);

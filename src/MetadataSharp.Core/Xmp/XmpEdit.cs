@@ -219,6 +219,7 @@ public sealed class XmpEdit
         removeAll = true;
     }
 
+    // Require array operations to end at a property or field, never at an item or qualifier.
     private static XmpStep[] ArrayPath(string path)
     {
         XmpStep[] steps = XmpPath.Parse(path);
@@ -234,6 +235,7 @@ public sealed class XmpEdit
     private static int Position(int index) =>
         index >= 1 ? index : throw new ArgumentOutOfRangeException(nameof(index), "Array items are counted from one.");
 
+    // Record edits in order; the packet applies this immutable operation snapshot transactionally.
     private void Add(XmpOperation operation)
     {
         if (removeAll) throw new ArgumentException("Whole XMP removal cannot be mixed with property changes.");
@@ -242,6 +244,7 @@ public sealed class XmpEdit
     }
 
     /// <summary>A copy that later changes to this edit do not reach.</summary>
+    // Freeze operations and namespace registrations so subsequent caller edits cannot alter this batch.
     internal XmpEdit Snapshot()
     {
         var copy = new XmpEdit { removeAll = removeAll, replacement = replacement };

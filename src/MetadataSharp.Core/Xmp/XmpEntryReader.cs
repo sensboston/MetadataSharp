@@ -76,6 +76,7 @@ internal static class XmpEntryReader
         return tree;
     }
 
+    // Capture every in-scope prefix once so later path resolution can reproduce the packet’s namespaces.
     private static void Declarations(XmpTree tree, XElement element)
     {
         foreach (XAttribute attribute in element.Attributes())
@@ -83,6 +84,7 @@ internal static class XmpEntryReader
                 tree.Declarations.TryAdd(attribute.Name.LocalName, attribute.Value);
     }
 
+    // Flatten properties into stable public rows while charging path text against the XML-character budget.
     internal static IReadOnlyList<XmpEntry> Flatten(XmpTree tree, XmpLimits limits)
     {
         var output = new Output(limits.MaxXmlCharacters);
@@ -90,6 +92,7 @@ internal static class XmpEntryReader
         return output.Entries.AsReadOnly();
     }
 
+    // RDF and XML vocabulary nodes are syntax, not user properties in the flattened XMP model.
     private static bool IsPropertyName(XName name) =>
         name.Namespace != XNamespace.None && name.Namespace != Rdf && name.Namespace != XNamespace.Xml &&
         name.Namespace != XNamespace.Xmlns;
@@ -101,6 +104,7 @@ internal static class XmpEntryReader
         return string.IsNullOrEmpty(prefix) ? null : new XmpNode(name, prefix);
     }
 
+    // RDF permits formatting whitespace around child nodes, but non-whitespace text can change the value.
     private static bool OnlyWhitespace(XElement element)
     {
         foreach (XNode node in element.Nodes())
@@ -200,6 +204,7 @@ internal static class XmpEntryReader
         /// gives a simple value and the other attributes qualify it; without either, the attributes
         /// are the fields of a structure.
         /// </summary>
+        // Read rdf:value/rdf:resource shorthand without discarding qualifiers that the tree can represent.
         private XmpNode? Shorthand(XElement element, XmpNode node)
         {
             if (element.HasElements || !OnlyWhitespace(element)) return null;
@@ -246,6 +251,7 @@ internal static class XmpEntryReader
             return node;
         }
 
+        // Add structure fields only when their names are unique and their RDF content is representable.
         private bool Fields(XmpNode node, XElement container)
         {
             if (!OnlyWhitespace(container)) return false;
@@ -261,6 +267,7 @@ internal static class XmpEntryReader
     /// <summary>
     /// A structure with an <c>rdf:value</c> field is that value, and its other fields are qualifiers.
     /// </summary>
+    // Normalize qualifiers and language alternatives after parsing the complete RDF node.
     private static XmpNode Resolve(XmpNode node)
     {
         XmpNode? value = null;
@@ -289,6 +296,7 @@ internal static class XmpEntryReader
         Flatten(output, uri, prefix, property.Name.LocalName, property);
     }
 
+    // Emit one row per node and recurse with a bounded path; arrays and structs share this traversal.
     private static void Flatten(Output output, string uri, string prefix, string path, XmpNode node)
     {
         if (node.Kind is XmpEntryKind.Bag or XmpEntryKind.Seq or XmpEntryKind.Alt)
@@ -333,6 +341,7 @@ internal static class XmpEntryReader
         Qualifiers(output, uri, prefix, path, node);
     }
 
+    // Qualifiers are separate entries so language and RDF type metadata remain addressable.
     private static void Qualifiers(Output output, string uri, string prefix, string path, XmpNode node)
     {
         if (node.Language is not null)

@@ -39,6 +39,7 @@ internal sealed class XmpEditor
         foreach (XmpOperation operation in edit.Operations) editor.Apply(operation);
     }
 
+    // Seed prefix maps from declarations in the current tree before registered namespace aliases are added.
     private void Declared(XmpNode node)
     {
         if (node.Prefix.Length != 0 && node.Name.Namespace != XmpCodec.Rdf)
@@ -54,6 +55,7 @@ internal sealed class XmpEditor
         new(MetadataErrorCode.InvalidXmpPath, "The XMP edit does not apply to the packet: " + reason + ".");
 
     /// <summary>The expanded name of a step; a prefix nothing declares is refused.</summary>
+    // Resolve path names through packet declarations first, then built-ins, rejecting unknown prefixes.
     private XName NameOf(XmpStep step)
     {
         if (step.Uri is not null) return XName.Get(step.Name, step.Uri);
@@ -162,6 +164,7 @@ internal sealed class XmpEditor
         return current;
     }
 
+    // Compare expanded names rather than prefixes, which are aliases and may vary by packet.
     private static XmpNode? Find(List<XmpNode> nodes, XName name)
     {
         foreach (XmpNode node in nodes)
@@ -169,6 +172,7 @@ internal sealed class XmpEditor
         return null;
     }
 
+    // Apply one validated edit while preserving array form, language ordering, and qualified-value structure.
     private void Apply(XmpOperation operation)
     {
         XmpStep[] path = operation.Path;
@@ -236,6 +240,7 @@ internal sealed class XmpEditor
 
     private static bool IsDefault(string language) => language.Equals("x-default", StringComparison.OrdinalIgnoreCase);
 
+    // Language tags are case-insensitive for lookup, matching XML language-tag semantics.
     private static XmpNode? Localized(XmpNode array, string language)
     {
         foreach (XmpNode item in array.Children)
@@ -344,6 +349,7 @@ internal sealed class XmpEditor
         }
     }
 
+    // Remove the selected node or qualifier, then prune empty containers without deleting siblings.
     private void Remove(XmpStep[] path, XmpStep last)
     {
         if (path.Length == 1)
@@ -375,6 +381,7 @@ internal sealed class XmpEditor
     }
 
     /// <summary>The nodes the first <paramref name="count"/> steps lead through, or null when one is missing.</summary>
+    // Retain the parent chain during mutation so removal can safely prune from the leaf upward.
     private List<XmpNode>? Chain(XmpStep[] path, int count)
     {
         var chain = new List<XmpNode>(count);
@@ -390,6 +397,7 @@ internal sealed class XmpEditor
     /// Removes the structure or array the edit has just emptied, and each one above it that becomes
     /// empty by that. One that was empty in the source is never reached: only a removal leads here.
     /// </summary>
+    // Remove empty structures and arrays bottom-up, but stop at any node that still carries data.
     private void Prune(XmpStep[] path, List<XmpNode> chain)
     {
         for (int i = chain.Count - 1; i >= 0; i--)

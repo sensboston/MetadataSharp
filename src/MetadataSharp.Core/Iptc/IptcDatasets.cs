@@ -161,6 +161,7 @@ public static class IptcDatasets
             if (!char.IsAsciiDigit(text[i])) return false;
         return true;
     }
+    // Read two digits after IsDate or IsTime has verified the complete source slice.
     private static int Pair(string text, int at) => (text[at] - '0') * 10 + (text[at + 1] - '0');
     // Compare a fixed two-digit field without converting or accepting a value outside its domain.
     private static bool Below(string text, int at, int limit) => Pair(text, at) < limit;
@@ -175,15 +176,18 @@ public static class IptcDatasets
         // Year 0000 is written by some tools; it is a leap year of the proleptic calendar.
         return day <= DateTime.DaysInMonth(year == 0 ? 2000 : year, month);
     }
+    // Require the eleven-byte IIM time form and validate every clock and UTC-offset component.
     private static bool IsTime(string text) =>
         text.Length == 11 && Digits(text, 0, 6) && (text[6] is '+' or '-') && Digits(text, 7, 4)
         && Below(text, 0, 24) && Below(text, 2, 60) && Below(text, 4, 60) && Below(text, 7, 15) && Below(text, 9, 60);
+    // Subject Reference consists of an optional IPR prefix, an eight-digit ID, and up to three names.
     private static bool IsSubject(string text)
     {
         string[] parts = text.Split(':');
         return parts.Length is >= 2 and <= 5 && parts[0].Length is >= 1 and <= 32 && parts[1].Length == 8 && Digits(parts[1], 0, 8);
     }
 
+    // IIM stores dates without separators, independent of the process culture.
     internal static string Format(DateOnly date) => date.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
     // Preserve the caller's wall-clock time and serialize only an exact whole-minute UTC offset.
     internal static string Format(TimeOnly time, TimeSpan utcOffset)
