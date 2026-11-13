@@ -9,7 +9,6 @@ allowlisted for formats the oracle reads.
 from __future__ import annotations
 
 import argparse
-import base64
 import json
 from pathlib import Path
 from typing import Any
@@ -101,8 +100,9 @@ def main(argv: list[str] | None = None) -> int:
     passed, message = evaluate(report)
     print(message, end="")
     if not passed:
-        diagnostic = base64.b64encode(message.encode("utf-8")).decode("ascii")
-        print("::error::VideoGate diagnostic (base64): " + diagnostic)
+        for line in message.splitlines():
+            if line.strip() not in {"FAIL", ""}:
+                print("::error::VideoGate: " + line.strip()[:1500])
     return 0 if passed else 1
 
 
