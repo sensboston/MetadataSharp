@@ -292,6 +292,56 @@ public sealed class MakerNoteInterpretationTests
         Assert.Null(Field(MakerNoteFormat.Canon, 0x0026, "AFPointsInFocus", Bytes(1, 2)));
     }
 
+    // ---- Panasonic -------------------------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("Quality", 2, "High")]
+    [InlineData("WhiteBalance", 1, "Auto")]
+    [InlineData("FocusMode", 1, "Auto")]
+    [InlineData("ImageStabilization", 4, "On, Mode 2")]
+    [InlineData("Macro", 2, "Off")]
+    [InlineData("ShootingMode", 6, "Program")]
+    [InlineData("Audio", 2, "No")]
+    [InlineData("ColorEffect", 1, "Off")]
+    [InlineData("BurstMode", 0, "Off")]
+    [InlineData("Contrast", 2, "High")]
+    [InlineData("NoiseReduction", 0, "Standard")]
+    [InlineData("Rotation", 1, "Horizontal (normal)")]
+    [InlineData("AFAssistLamp", 2, "Enabled but Not Used")]
+    [InlineData("ColorMode", 0, "Normal")]
+    [InlineData("OpticalZoomMode", 1, "Standard")]
+    [InlineData("ConversionLens", 1, "Off")]
+    [InlineData("WorldTimeLocation", 1, "Home")]
+    [InlineData("TextStamp1", 1, "Off")]
+    [InlineData("ProgramISO", 65534, "Intelligent ISO")]
+    [InlineData("IntelligentExposure", 2, "Standard")]
+    [InlineData("FlashWarning", 0, "No")]
+    [InlineData("IntelligentResolution", 3, "High")]
+    [InlineData("ManometerPressure", 65535, "infinite")]
+    [InlineData("SceneMode", 29, "Underwater")]
+    [InlineData("FlashFired", 1, "No")]
+    public void APanasonicTagReadsAsItsReferenceRendering(string name, int number, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Panasonic, name, Longs(number)));
+
+    [Theory]
+    [InlineData(0, 16, "Spot mode off or 3-area (high speed)")]
+    [InlineData(16, 0, "1-area")]
+    [InlineData(16, 16, "1-area (high speed)")]
+    public void APanasonicAfModeReadsAsItsReferenceRendering(int first, int second, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Panasonic, "AFMode", Bytes((byte)first, (byte)second)));
+
+    [Fact]
+    public void APanasonicMakerNoteDecodesTextTimesAndAngles()
+    {
+        Assert.Equal("S000501110223", Top(MakerNoteFormat.Panasonic, "InternalSerialNumber",
+            Undefined(Encoding.ASCII.GetBytes("S000501110223\0"))));
+        Assert.Equal("3.90", Top(MakerNoteFormat.Panasonic, "ExifVersion", Undefined(Encoding.ASCII.GetBytes("0390"))));
+        Assert.Equal("00:00:17.62", Top(MakerNoteFormat.Panasonic, "TimeSincePowerOn", Longs(1762)));
+        Assert.Equal("1.0", Top(MakerNoteFormat.Panasonic, "RollAngle", Shorts(10)));
+        Assert.Equal("-1.0", Top(MakerNoteFormat.Panasonic, "PitchAngle", Shorts(10)));
+        Assert.Equal("-224", Top(MakerNoteFormat.Panasonic, "AccelerometerY", SignedLongs(-2147418336)));
+    }
+
     // ---- Minolta ----------------------------------------------------------------------------------------
 
     [Theory]

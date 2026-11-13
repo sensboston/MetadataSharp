@@ -291,6 +291,8 @@ internal static partial class MakerNoteLabels
             return null;
         if (format == MakerNoteFormat.Minolta)
             return MinoltaMakerNoteInterpretations.Interpret(scope, name, value);
+        if (format == MakerNoteFormat.Panasonic)
+            return PanasonicMakerNoteInterpretations.Interpret(name, value);
         Rule[]? rules = format switch
         {
             MakerNoteFormat.Canon => Canon,
