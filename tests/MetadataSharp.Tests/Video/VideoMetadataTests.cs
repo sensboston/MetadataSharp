@@ -65,7 +65,7 @@ public sealed class VideoMetadataTests
         VideoMetadata video = VideoMetadata.Read(Fixture("valid", "authored-quicktime.mp4"));
         VideoProperty brands = Assert.IsType<VideoProperty>(video["Xmp.video.CompatibleBrands"]);
         Assert.NotNull(brands.Items);
-        Assert.Equal(new[] { "MP4 Base Media v1 [IS0 14496-12:2003]", "mp42" }, brands.Items);
+        Assert.Equal(new[] { "MP4 Base Media v1 [IS0 14496-12:2003]", "MP4 v2 [ISO 14496-14]" }, brands.Items);
         Assert.Null(video["xmp.video.CompatibleBrands"]);
     }
 

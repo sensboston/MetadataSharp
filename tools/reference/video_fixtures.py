@@ -59,7 +59,14 @@ def fixtures() -> dict[str, bytes]:
     asf_payload = (2).to_bytes(4, "little") + b"\x01\x02" + children
     asf = asf_object(asf_header_guid, asf_payload)
 
-    ebml_header = ebml_element(bytes.fromhex("1a45dfa3"), b"")
+    ebml_payload = (ebml_element(bytes.fromhex("4286"), b"\x01") +
+                    ebml_element(bytes.fromhex("42f7"), b"\x01") +
+                    ebml_element(bytes.fromhex("42f2"), b"\x04") +
+                    ebml_element(bytes.fromhex("42f3"), b"\x08") +
+                    ebml_element(bytes.fromhex("4282"), b"webm") +
+                    ebml_element(bytes.fromhex("4287"), b"\x04") +
+                    ebml_element(bytes.fromhex("4285"), b"\x02"))
+    ebml_header = ebml_element(bytes.fromhex("1a45dfa3"), ebml_payload)
     info = (ebml_element(bytes.fromhex("2ad7b1"), (1_000_000).to_bytes(3, "big")) +
             ebml_element(bytes.fromhex("4489"), __import__("struct").pack(">d", 1200.0)) +
             ebml_element(bytes.fromhex("7ba9"), b"Fixture WebM"))

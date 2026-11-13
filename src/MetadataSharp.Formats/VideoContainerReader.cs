@@ -503,13 +503,10 @@ internal static class VideoContainerReader
                         _ => "Xmp.video"
                     };
                 }
-                if (type is "mdia" or "minf" or "stbl" or "dinf" or "edts" or "meta")
+                if (type == "mdia")
                 {
-                    int childStart = payload + (type == "meta" ? 4 : 0);
-                    if (childStart > atomEnd) throw Invalid("A QuickTime meta prefix exceeds its atom.", payload);
-                    string selected = FindTrackStream(childStart, atomEnd, depth + 1);
-                    if (selected == "Xmp.audio") return selected;
-                    if (selected == "Xmp.video") return selected;
+                    string selected = FindTrackStream(payload, atomEnd, depth + 1);
+                    if (selected == "Xmp.audio" || selected == "Xmp.video") return selected;
                 }
                 p = atomEnd;
             }
@@ -634,7 +631,7 @@ internal static class VideoContainerReader
                         Add("Xmp.audio.Compressor", codec);
                         Add("Xmp.audio.ChannelType", U16BE(q + 24).ToString(CultureInfo.InvariantCulture));
                         Add("Xmp.audio.BitsPerSample", U16BE(q + 26).ToString(CultureInfo.InvariantCulture));
-                        Add("Xmp.audio.SampleRate", Number(U32BE(q + 32) / 65536.0));
+                        Add("Xmp.audio.SampleRate", Number(U16BE(q + 32) + U16BE(q + 34) / 100.0));
                         string? vendor = VendorName(FourCC(q + 20));
                         if (vendor is not null) Add("Xmp.audio.VendorID", vendor);
                     }

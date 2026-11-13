@@ -34,8 +34,8 @@
       "sha256": "a8883abd5a2fff6a2abead79a4279b903ee0dab2c833c76c9686df7c1e5c32e0"
     },
     "valid/authored-webm.webm": {
-      "bytes": 48,
-      "sha256": "b2693943a800ed77f62585fa8cb846ca97aea199ce467030019f12877dac06d8"
+      "bytes": 79,
+      "sha256": "74a56e3c674f3543b8312adf5b2f31003eeba668f21f90bc9fb973c4ffa7f5a9"
     }
   }
 }
