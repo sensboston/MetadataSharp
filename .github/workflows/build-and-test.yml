@@ -288,7 +288,10 @@ jobs:
             --rows-per-file 20000 --annotate
           # Append each completed MakerNote family here; this gate requires full per-file detail.
           python tools/parity/makernote_render_gate.py artifacts/parity/upstream/parity-report.json \
-            --inventory --require Exif.PentaxDng --require Exif.Pentax
+            --inventory --require Exif.PentaxDng --require Exif.Pentax \
+            --require Exif.Canon --require Exif.CanonSi --require Exif.CanonCs \
+            --require Exif.CanonFi --require Exif.CanonAfC --require Exif.CanonPi --require Exif.CanonPa \
+            --require Exif.Fujifilm
       - name: Preview parity against upstream expectations (kind "Preview"; exiv2 -pp output read as text)
         shell: bash
         run: |

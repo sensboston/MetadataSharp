@@ -428,13 +428,27 @@ public sealed class MakerNoteInterpretationTests
         Assert.Null(Top(MakerNoteFormat.Sony2, "FileFormat", Bytes(3, 3, 1)));
     }
 
+    [Fact]
+    public void FujifilmSettingsReadAsTheirLabels()
+    {
+        Assert.Equal("Daylight", Top(MakerNoteFormat.Fujifilm, "WhiteBalance", Shorts(256)));
+        Assert.Equal("CLASSIC CHROME", Top(MakerNoteFormat.Fujifilm, "FilmMode", Shorts(1536)));
+        Assert.Equal("(999)", Top(MakerNoteFormat.Fujifilm, "WhiteBalance", Shorts(999)));
+        Assert.Equal("On", Top(MakerNoteFormat.Fujifilm, "Macro", Shorts(1)));
+        Assert.Null(Top(MakerNoteFormat.Fujifilm, "ColorSpace", Shorts(4)));
+        Assert.Equal("R: 1 B: -2", Top(MakerNoteFormat.Fujifilm, "WhiteBalanceFineTune", SignedLongs(20, -40)));
+        Assert.Equal("1.5(12)", Top(MakerNoteFormat.Fujifilm, "DigitalZoom", Longs(12)));
+        Assert.Equal("Continuous High, 8 fps, (3, 4)", Top(MakerNoteFormat.Fujifilm, "DriveSetting", Longs(0x08040302)));
+        Assert.Equal("Face Left Eye Right Eye", Top(MakerNoteFormat.Fujifilm, "FaceElementTypes", Ascii("123")));
+    }
+
     // ---- What has no interpretation ----------------------------------------------------------------------
 
     [Fact]
     public void ThereIsNothingToAddOutsideTheVocabulary()
     {
         // Another vendor.
-        Assert.Null(Top(MakerNoteFormat.Fujifilm, "ColorSpace", Shorts(1)));
+        Assert.Null(Top(MakerNoteFormat.Nikon1, "ColorSpace", Shorts(1)));
         Assert.Null(Top(MakerNoteFormat.Nikon1, "ColorSpace", Shorts(1)));
         // A tag the vocabulary does not have, and one this release cannot name.
         Assert.Null(Top(MakerNoteFormat.Canon, "OwnerName", Ascii("someone")));

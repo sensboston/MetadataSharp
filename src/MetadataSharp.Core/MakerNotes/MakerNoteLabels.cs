@@ -169,6 +169,18 @@ internal static partial class MakerNoteLabels
 
         /// <summary>A four-byte Pentax DNG dynamic-range status.</summary>
         PentaxDynamicRange,
+
+        /// <summary>Fujifilm white-balance fine tune, two signed shifts in twentieths.</summary>
+        FujifilmWhiteBalanceFineTune,
+
+        /// <summary>Fujifilm digital zoom, stored in eighths.</summary>
+        FujifilmDigitalZoom,
+
+        /// <summary>Fujifilm packed drive setting.</summary>
+        FujifilmDriveSetting,
+
+        /// <summary>Fujifilm face-element type codes stored as ASCII digits.</summary>
+        FujifilmFaceElementTypes,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -181,7 +193,7 @@ internal static partial class MakerNoteLabels
     /// <summary>Every rule, for the tests that check the tables against themselves.</summary>
     internal static IEnumerable<(string Vendor, int Scope, string Name, IReadOnlyList<long> Numbers, IReadOnlyList<string> Labels)> RulesForTests()
     {
-        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Sony", Sony), ("Pentax", PentaxDng), ("PentaxDng", PentaxDng) })
+        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Sony", Sony), ("Pentax", PentaxDng), ("PentaxDng", PentaxDng), ("Fujifilm", Fujifilm) })
         {
             foreach (Rule rule in rules)
             {
@@ -210,6 +222,7 @@ internal static partial class MakerNoteLabels
         Rule[]? rules = format switch
         {
             MakerNoteFormat.Canon => Canon,
+            MakerNoteFormat.Fujifilm => Fujifilm,
             MakerNoteFormat.Nikon3 => Nikon,
             MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 => Sony,
             MakerNoteFormat.Pentax or MakerNoteFormat.PentaxDng => PentaxDng,
@@ -262,6 +275,14 @@ internal static partial class MakerNoteLabels
                 return StopFraction(value);
             case Form.Abbreviation:
                 return Abbreviation(rule, value);
+            case Form.FujifilmWhiteBalanceFineTune:
+                return FujifilmWhiteBalanceFineTune(value);
+            case Form.FujifilmDigitalZoom:
+                return FujifilmDigitalZoom(value);
+            case Form.FujifilmDriveSetting:
+                return FujifilmDriveSetting(value);
+            case Form.FujifilmFaceElementTypes:
+                return FujifilmFaceElementTypes(value);
         }
 
         if (value.Count != 1 || value.FieldType == TiffFieldType.Undefined ||
