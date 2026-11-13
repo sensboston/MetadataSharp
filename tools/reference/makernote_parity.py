@@ -170,28 +170,12 @@ def main(argv=None, runner=run):
         return 1
 
     # The edit corpus above is intentionally JPEG/raw-only. The copy scan is broader: give the
-    # fixture generator every bounded corpus file and let the public reader identify decoded notes.
+    # fixture generator every corpus file and let the public reader identify decoded notes.
     copy_input_dir = work / "copy-inputs"
     copy_input_dir.mkdir(parents=True, exist_ok=True)
     copy_input_names = {}
     for path in sorted(Path(args.corpus).rglob("*")):
-        if not path.is_file() or path.stat().st_size > MAX_BYTES:
-            continue
-        ident = f"c{len(copy_input_names):06d}"
-        suffix = path.suffix.lower()
-        if len(suffix) > 12:
-            suffix = ".bin"
-        target = copy_input_dir / (ident + suffix)
-        shutil.copyfile(path, target)
-        copy_input_names[ident] = target
-
-    # The edit corpus above is intentionally JPEG/raw-only. The copy scan is broader: give the
-    # fixture generator every bounded corpus file and let the public reader identify decoded notes.
-    copy_input_dir = work / "copy-inputs"
-    copy_input_dir.mkdir(parents=True, exist_ok=True)
-    copy_input_names = {}
-    for path in sorted(Path(args.corpus).rglob("*")):
-        if not path.is_file() or path.stat().st_size > MAX_BYTES:
+        if not path.is_file():
             continue
         ident = f"c{len(copy_input_names):06d}"
         suffix = path.suffix.lower()
@@ -251,7 +235,7 @@ def main(argv=None, runner=run):
             return "carried", f"Exiv2 preserved {len(before)} MakerNote keys/values through -ea/-ia"
         missing = [key for key in before if after.get(key) != before[key]]
         extra = [key for key in after if key not in before]
-        return "differs", f"missing/changed={missing[:4]}, extra={extra[:4]}"
+        return "differs", f"Exiv2's own copy changed/dropped values: missing/changed={missing[:4]}, extra={extra[:4]}"
 
     for ident, layout, status, reason_codes, message in copy_rows:
         reason = reason_codes or "none"
@@ -287,8 +271,6 @@ def main(argv=None, runner=run):
                 if oracle_status == "carried":
                     failures.append(f"{layout} {ident}: MetadataSharp skipped ({reason}) but Exiv2 carries the MakerNote; "
                                     f"{message}; {oracle_detail}")
-                elif oracle_status == "differs":
-                    failures.append(f"{layout} {ident}: Exiv2's own -ea/-ia copy differs: {oracle_detail}")
         copy_counts[(layout, status, reason, oracle_status)] += 1
         copy_examples.setdefault((layout, status, reason, oracle_status), f"{ident}: {message or oracle_detail}")
         copy_details.append({"id": ident, "layout": layout, "status": status, "reason_codes": reason_codes,

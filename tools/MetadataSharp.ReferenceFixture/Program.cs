@@ -1917,9 +1917,12 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
                     MetadataSharp.Formats.Operations.MetadataCopyReason[] makerReasons = copy.Notes
                         .Where(note => note.Family == MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif)
                         .Select(note => note.Reason).Distinct().ToArray();
-                    reasonCodes = makerReasons.Length == 0 ? "CopyRefused" : string.Join(",", makerReasons);
+                    reasonCodes = makerReasons.Length == 0
+                        ? (codes.Length == 0 ? "CopyRefused" : string.Join(",", codes))
+                        : string.Join(",", makerReasons);
                     message = makerReasons.Length == 0
-                        ? "The copy was not refused but the destination has no decoded MakerNote."
+                        ? string.Join("; ", copy.Notes.Select(note => note.Message).DefaultIfEmpty(
+                            "The copy was not refused but the destination has no decoded MakerNote."))
                         : string.Join("; ", copy.Notes.Where(note => note.Family == MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif)
                             .Select(note => note.Message));
                 }

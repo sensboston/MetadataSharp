@@ -165,9 +165,20 @@ public static class MetadataOperations
             bool copyComment = supported.HasFlag(MetadataCopyFamilies.Comment) && from.Comments.Count != 0;
             if (copyExif || copyIptc || copyXmp || copyComment)
             {
-                byte[] exv = ExvFile.Create(copyExif ? from.Exif : null, copyIptc ? from.Iptc : null,
-                    copyXmp ? from.Xmp : null, copyComment ? from.Comments[0] : null,
-                    copyExif ? Thumbnail(source, from) : default);
+                byte[]? thumbnail = copyExif ? Thumbnail(source, from).ToArray() : null;
+                byte[] BuildExv(byte[]? preview) => ExvFile.Create(copyExif ? from.Exif : null, copyIptc ? from.Iptc : null,
+                    copyXmp ? from.Xmp : null, copyComment ? from.Comments[0] : null, preview ?? []);
+                byte[] exv;
+                try { exv = BuildExv(thumbnail); }
+                catch (MetadataException thumbnailRefusal) when (thumbnail is { Length: > 0 })
+                {
+                    // An unreadable/unsupported source thumbnail must not prevent copying otherwise
+                    // readable EXIF, including a MakerNote. The omission is explicit in the result.
+                    notes.Add(new(MetadataCopyReason.ValueNotRepresentable,
+                        "The EXIF thumbnail was skipped because it cannot be represented at the destination: " + thumbnailRefusal.Message,
+                        MetadataCopyFamilies.Exif));
+                    exv = BuildExv(null);
+                }
                 MetadataFamilies insertFamilies = MetadataFamilies.None;
                 if (copyExif) insertFamilies |= MetadataFamilies.Exif;
                 if (copyIptc) insertFamilies |= MetadataFamilies.Iptc;

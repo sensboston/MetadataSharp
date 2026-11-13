@@ -37,10 +37,19 @@ internal static class MakerNoteRelocator
             if (note.Format == MakerNoteFormat.Nikon3 && target.Field is null && target.Entry.TagId is 0x001D or 0x00A7)
                 continue;
             if (MakerNoteKeys.IsPointer(note.Format, target))
-                return Refuse($"{target.Key} addresses data, a directory, or a MakerNote cipher key outside the relocatable values.", out reason);
+            {
+                // A decoded nested IFD is relocatable as a unit: its directory and every value slot
+                // are checked below and every offset is rebased. Nikon3 Preview is image data, not an
+                // ordinary nested IFD, and remains refused.
+                bool nestedIfd = target.Field is null && target.Entry.Fields.Any(field => field.Slot is not null) &&
+                    !(note.Format == MakerNoteFormat.Nikon3 && target.Entry.TagId == 0x0011);
+                if (!nestedIfd)
+                    return Refuse($"{target.Key} addresses data, a directory, or a MakerNote cipher key outside the relocatable values.", out reason);
+            }
             if (target.Field is null && target.Entry.Name is null &&
                 target.Value.FieldType is TiffFieldType.Long or TiffFieldType.SLong or TiffFieldType.Undefined)
-                return Refuse($"Unnamed address-like MakerNote tag 0x{target.Entry.TagId:x4} is not relocated.", out reason);
+                return Refuse($"Unnamed address-like MakerNote tag 0x{target.Entry.TagId:x4} " +
+                    $"({target.Value.FieldType}, count {target.Value.Count}, bytes {Convert.ToHexString(target.Value.RawBytes)}) is not relocated.", out reason);
         }
 
         // Every entry in every decoded IFD must be represented by a slot; otherwise an opaque entry
