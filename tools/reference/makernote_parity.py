@@ -18,6 +18,11 @@ library appends) and "short" (another number in a SHORT tag). A refusal of the l
 failure: it is counted, by the layout of the note and its code. A copy that does not pass fails the
 job unless EXPECTED names the layout, the operation and the verdict with a reason.
 
+The same job also tries the public MakerNote=Copy path for every corpus file with a decoded note,
+counts copied/skipped/refused by layout and reason, and compares every copied note with Exiv2
+(-u -PEkv). For skips it tests Exiv2's own -ea/-ia round trip into the same neutral JPEG; a note
+Exiv2 carries but this library skips fails the gate. The full per-file ledger is copy-report.json.
+
 What this decides: MakerNoteKeys.Grows lists the layouts in which a value may grow. A layout is
 listed there only when its "grow" rows pass here.
 """
@@ -163,6 +168,38 @@ def main(argv=None, runner=run):
     if not names:
         print("::error title=MakerNote parity::no file of the corpus was prepared")
         return 1
+
+    # The edit corpus above is intentionally JPEG/raw-only. The copy scan is broader: give the
+    # fixture generator every bounded corpus file and let the public reader identify decoded notes.
+    copy_input_dir = work / "copy-inputs"
+    copy_input_dir.mkdir(parents=True, exist_ok=True)
+    copy_input_names = {}
+    for path in sorted(Path(args.corpus).rglob("*")):
+        if not path.is_file() or path.stat().st_size > MAX_BYTES:
+            continue
+        ident = f"c{len(copy_input_names):06d}"
+        suffix = path.suffix.lower()
+        if len(suffix) > 12:
+            suffix = ".bin"
+        target = copy_input_dir / (ident + suffix)
+        shutil.copyfile(path, target)
+        copy_input_names[ident] = target
+
+    # The edit corpus above is intentionally JPEG/raw-only. The copy scan is broader: give the
+    # fixture generator every bounded corpus file and let the public reader identify decoded notes.
+    copy_input_dir = work / "copy-inputs"
+    copy_input_dir.mkdir(parents=True, exist_ok=True)
+    copy_input_names = {}
+    for path in sorted(Path(args.corpus).rglob("*")):
+        if not path.is_file() or path.stat().st_size > MAX_BYTES:
+            continue
+        ident = f"c{len(copy_input_names):06d}"
+        suffix = path.suffix.lower()
+        if len(suffix) > 12:
+            suffix = ".bin"
+        target = copy_input_dir / (ident + suffix)
+        shutil.copyfile(path, target)
+        copy_input_names[ident] = target
     code, output, errors = runner(shlex.split(args.fixture) + ["makernote-parity", str(work)], timeout=900)
     sys.stdout.write(output)
     if code != 0:
@@ -173,29 +210,102 @@ def main(argv=None, runner=run):
 
     counts, examples = check(work, names, args.exiv2, runner)
     failures, accepted, summary = [], [], []
-    copy_lines = (work / "copy.tsv").read_text(encoding="utf-8").splitlines() if (work / "copy.tsv").exists() else []
-    copied_name = copy_lines[0].strip() if copy_lines else ""
-    if not copied_name or (copied_name != "owned" and copied_name not in names):
-        failures.append("no decoded MakerNote was safely copied into a JPEG for Exiv2 parity; " +
-                        "; ".join(copy_lines[:6]))
-    else:
-        source_path = work / ("copy-source.jpg" if copied_name == "owned" else
-                              f"{copied_name}.{names[copied_name][1]}")
-        copied_path = work / ("copy.ours.jpg" if copied_name == "owned" else
-                              f"{copied_name}.copy.ours.jpg")
-        if not copied_path.is_file():
-            failures.append(f"{copied_name}: the fixture generator did not produce the copied JPEG")
-        else:
-            source_note, source_code, _ = maker_note_printed(args.exiv2, source_path, runner)
-            copied_note, copied_code, _ = maker_note_printed(args.exiv2, copied_path, runner)
-            if source_code != copied_code:
-                failures.append(f"{copied_name}: Exiv2 exit code changed from {source_code} to {copied_code}")
-            elif source_note != copied_note:
-                missing = [key for key in source_note if copied_note.get(key) != source_note[key]]
-                extra = [key for key in copied_note if key not in source_note]
-                failures.append(f"{copied_name}: MakerNote Exiv2 key/value mismatch; missing/changed={missing[:4]}, extra={extra[:4]}")
+    copy_rows = []
+    copy_tsv = work / "copy.tsv"
+    if copy_tsv.exists():
+        for line in copy_tsv.read_text(encoding="utf-8").splitlines():
+            parts = line.split("\t", 4)
+            if len(parts) == 5:
+                copy_rows.append(parts)
+    copy_counts = Counter()
+    copy_examples = {}
+    copy_details = []
+    oracle_root = work / "copy-oracle"
+    neutral = work / "copy-neutral.jpg"
+    if not copy_rows:
+        failures.append("the corpus scan found no decoded MakerNotes")
+
+    def oracle_copy(source_path, ident):
+        """Try Exiv2's own -ea/-ia path into the same neutral JPEG; return status and detail."""
+        directory = oracle_root / ident
+        directory.mkdir(parents=True, exist_ok=True)
+        local_source = directory / ("source" + source_path.suffix.lower())
+        shutil.copyfile(source_path, local_source)
+        exv = local_source.with_suffix(".exv")
+        code, output, errors = runner([args.exiv2, "-ea", "ex", str(local_source)])
+        if code != 0 or not exv.is_file():
+            return "refused", f"extract exit={code}: {(errors or output).strip()[:400]}"
+        dest = directory / "destination.jpg"
+        shutil.copyfile(neutral, dest)
+        shutil.copyfile(exv, dest.with_suffix(".exv"))
+        code, output, errors = runner([args.exiv2, "-ia", "in", str(dest)])
+        if code != 0:
+            return "refused", f"insert exit={code}: {(errors or output).strip()[:400]}"
+        before, before_code, _ = maker_note_printed(args.exiv2, local_source, runner)
+        after, after_code, _ = maker_note_printed(args.exiv2, dest, runner)
+        if before_code != after_code:
+            return "differs", f"-PEkv exit code {before_code} -> {after_code}"
+        if not before:
+            return "not_printable", "Exiv2 -u -PEkv printed no decoded MakerNote keys from the source"
+        if before == after:
+            return "carried", f"Exiv2 preserved {len(before)} MakerNote keys/values through -ea/-ia"
+        missing = [key for key in before if after.get(key) != before[key]]
+        extra = [key for key in after if key not in before]
+        return "differs", f"missing/changed={missing[:4]}, extra={extra[:4]}"
+
+    for ident, layout, status, reason_codes, message in copy_rows:
+        reason = reason_codes or "none"
+        oracle_status, oracle_detail = "not_applicable", ""
+        if status == "copied":
+            source_path = copy_input_names.get(ident)
+            copied_path = work / "copy-output" / (ident + ".jpg")
+            if source_path is None or not copied_path.is_file():
+                failures.append(f"{layout} {ident}: copied status has no source or destination file")
+                oracle_status, oracle_detail = "missing", "copy output/source missing"
             else:
-                summary.append(f"{copied_name}: {len(source_note)} MakerNote keys and values preserved by Exiv2 after relocation")
+                before, before_code, before_errors = maker_note_printed(args.exiv2, source_path, runner)
+                after, after_code, after_errors = maker_note_printed(args.exiv2, copied_path, runner)
+                if not before:
+                    failures.append(f"{layout} {ident}: Exiv2 printed no MakerNote keys on the corpus source "
+                                    f"(exit {before_code}; {(before_errors or '')[:240]})")
+                    oracle_status, oracle_detail = "source_not_printable", ""
+                elif before_code != after_code or before != after:
+                    missing = [key for key in before if after.get(key) != before[key]]
+                    extra = [key for key in after if key not in before]
+                    failures.append(f"{layout} {ident}: copied MakerNote differs under Exiv2; "
+                                    f"exit {before_code}->{after_code}, missing/changed={missing[:5]}, extra={extra[:5]}")
+                    oracle_status, oracle_detail = "ours_differs", ""
+                else:
+                    oracle_status, oracle_detail = "matched", f"{len(before)} MakerNote keys/values"
+        elif status == "skipped":
+            source_path = copy_input_names.get(ident)
+            if source_path is None:
+                oracle_status, oracle_detail = "missing", "source path missing"
+                failures.append(f"{layout} {ident}: skipped source path is missing")
+            else:
+                oracle_status, oracle_detail = oracle_copy(source_path, ident)
+                if oracle_status == "carried":
+                    failures.append(f"{layout} {ident}: MetadataSharp skipped ({reason}) but Exiv2 carries the MakerNote; "
+                                    f"{message}; {oracle_detail}")
+                elif oracle_status == "differs":
+                    failures.append(f"{layout} {ident}: Exiv2's own -ea/-ia copy differs: {oracle_detail}")
+        copy_counts[(layout, status, reason, oracle_status)] += 1
+        copy_examples.setdefault((layout, status, reason, oracle_status), f"{ident}: {message or oracle_detail}")
+        copy_details.append({"id": ident, "layout": layout, "status": status, "reason_codes": reason_codes,
+                             "message": message, "exiv2_copy": oracle_status, "detail": oracle_detail})
+
+    for key, count in sorted(copy_counts.items()):
+        layout, status, reason, oracle_status = key
+        line = f"{layout} copy {status} reason={reason} exiv2={oracle_status}: {count}"
+        summary.append(line + (f"; e.g. {copy_examples[key]}" if status != "copied" else ""))
+    copy_report = {"decoded_makernote_files": len(copy_rows),
+                   "counts": [{"layout": k[0], "status": k[1], "reason_codes": k[2],
+                               "exiv2_copy": k[3], "count": v} for k, v in sorted(copy_counts.items())],
+                   "files": copy_details}
+    (work / "copy-report.json").write_text(__import__("json").dumps(copy_report, indent=2) + "\n", encoding="utf-8")
+    copy_totals = Counter(row[2] for row in copy_rows)
+    summary.insert(0, f"Corpus MakerNote copies: {len(copy_rows)} decoded; " +
+                   ", ".join(f"{name}={copy_totals.get(name, 0)}" for name in ("copied", "skipped", "refused")))
     for (group, operation, outcome), count in sorted(counts.items()):
         line = f"{group} {operation}: {outcome} {count}"
         if operation == "files":

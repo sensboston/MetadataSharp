@@ -777,6 +777,14 @@ jobs:
           python tools/reference/makernote_parity.py artifacts/parity/exiv2/test/data artifacts/parity/makernote \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
             --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      - name: Upload corpus MakerNote copy disposition report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: makernote-copy-parity
+          path: artifacts/parity/makernote/copy-report.json
+          if-no-files-found: ignore
+          retention-days: 30
       # Tags and the comment that this library writes into the records of the CRW files of the pinned
       # corpus; the pinned tool has to print what was set and every other key as before
       # (tools/reference/crw_parity.py).

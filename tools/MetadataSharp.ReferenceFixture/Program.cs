@@ -1868,98 +1868,72 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
 
     File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
 
-    // Also copy one decoded source MakerNote into an authored JPEG through the public transactional
-    // API. The comparer checks every MakerNote key/value that pinned Exiv2 prints on both files.
-    string copiedName = string.Empty;
-    var copyReasons = new SortedDictionary<string, int>(StringComparer.Ordinal);
-    try
+    // Copy every corpus input with a decoded MakerNote into the same neutral JPEG. The Python
+    // comparer runs Exiv2 over every output and records every disposition by decoded layout.
+    string copyInputs = Path.Combine(directory, "copy-inputs");
+    string copyOutput = Path.Combine(directory, "copy-output");
+    Directory.CreateDirectory(copyOutput);
+    File.WriteAllBytes(Path.Combine(directory, "copy-neutral.jpg"), JpegFixture.Build());
+    using (var report = new StreamWriter(Path.Combine(directory, "copy.tsv"), false, new UTF8Encoding(false)))
     {
-        // A minimal Nikon1 note has one named SHORT value and no offsets into the source image.
-        // It is the positive, deterministic relocation case; corpus cases below broaden coverage.
-        byte[] make = Encoding.ASCII.GetBytes("NIKON CORPORATION\0");
-        byte[] model = Encoding.ASCII.GetBytes("MetadataSharp fixture\0");
-        int makeAt = 50, modelAt = makeAt + make.Length, exifAt = modelAt + model.Length, noteAt = exifAt + 18;
-        byte[] safeNoteTiff = new byte[noteAt + 18];
-        safeNoteTiff[0] = safeNoteTiff[1] = 0x49;
-        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(2), 42);
-        BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(4), 8);
-        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(8), 3);
-        void Ifd0Entry(int at, ushort tag, ushort type, uint count, uint value)
+        foreach (string path in Directory.EnumerateFiles(copyInputs).Order(StringComparer.Ordinal))
         {
-            BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(at), tag);
-            BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(at + 2), type);
-            BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(at + 4), count);
-            BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(at + 8), value);
-        }
-        Ifd0Entry(10, 0x010F, 2, (uint)make.Length, (uint)makeAt);
-        Ifd0Entry(22, 0x0110, 2, (uint)model.Length, (uint)modelAt);
-        Ifd0Entry(34, 0x8769, 4, 1, (uint)exifAt);
-        make.CopyTo(safeNoteTiff, makeAt); model.CopyTo(safeNoteTiff, modelAt);
-        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(exifAt), 1);
-        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(exifAt + 2), 0x927C);
-        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(exifAt + 4), 7);
-        BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(exifAt + 6), 18);
-        BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(exifAt + 10), (uint)noteAt);
-        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(noteAt), 1);
-        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(noteAt + 2), 0x0004);
-        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(noteAt + 4), 3);
-        BinaryPrimitives.WriteUInt32LittleEndian(safeNoteTiff.AsSpan(noteAt + 6), 1);
-        BinaryPrimitives.WriteUInt16LittleEndian(safeNoteTiff.AsSpan(noteAt + 10), 1);
-        byte[] safeSource = JpegFixture.Build(prefix: JpegFixture.Segment(0xE1, JpegFixture.Exif(safeNoteTiff)));
-        MetadataSharp.Formats.Operations.MetadataCopyResult safeCopy =
-            MetadataSharp.Formats.Operations.MetadataOperations.CopyMetadata(safeSource, JpegFixture.Build(),
-                new MetadataSharp.Formats.Operations.MetadataCopyOptions
-                {
-                    Families = MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif
-                });
-        if (!safeCopy.WasRefused && ImageMetadata.Read(safeCopy.DestinationBytes).Exif?.MakerNote is not null)
-        {
-            File.WriteAllBytes(Path.Combine(directory, "copy-source.jpg"), safeSource);
-            File.WriteAllBytes(Path.Combine(directory, "copy.ours.jpg"), safeCopy.DestinationBytes);
-            copiedName = "owned";
-        }
-        else foreach (MetadataSharp.Formats.Operations.MetadataCopyNote note in safeCopy.Notes)
-        {
-            string reason = $"{note.Reason}: {note.Message}".Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
-            copyReasons[reason] = copyReasons.GetValueOrDefault(reason) + 1;
-        }
-    }
-    catch (MetadataException failure) { copyReasons[$"synthetic: {failure.Message}"] = 1; }
-    if (copiedName.Length == 0)
-    foreach (string path in Directory.EnumerateFiles(directory, "s*.*").Order(StringComparer.Ordinal))
-    {
-        string name = Path.GetFileNameWithoutExtension(path);
-        if (name.Contains('.')) continue;
-        byte[] sourceBytes = File.ReadAllBytes(path);
-        try
-        {
-            ImageMetadata sourceMetadata = ImageMetadata.Read(sourceBytes);
-            if (sourceMetadata.Exif?.MakerNote is null) continue;
-            MetadataSharp.Formats.Operations.MetadataCopyResult copy =
-                MetadataSharp.Formats.Operations.MetadataOperations.CopyMetadata(sourceBytes, JpegFixture.Build(),
-                    new MetadataSharp.Formats.Operations.MetadataCopyOptions
-                    {
-                        Families = MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif
-                    });
-            if (copy.WasRefused || ImageMetadata.Read(copy.DestinationBytes).Exif?.MakerNote is null)
+            string id = Path.GetFileNameWithoutExtension(path);
+            byte[] sourceBytes = File.ReadAllBytes(path);
+            ImageMetadata sourceMetadata;
+            try { sourceMetadata = ImageMetadata.Read(sourceBytes); }
+            catch (MetadataException) { continue; }
+            if (sourceMetadata.Exif?.MakerNote is not MakerNote makerNote) continue;
+
+            string status;
+            string reasonCodes;
+            string message;
+            try
             {
-                foreach (MetadataSharp.Formats.Operations.MetadataCopyNote note in copy.Notes)
+                MetadataSharp.Formats.Operations.MetadataCopyResult copy =
+                    MetadataSharp.Formats.Operations.MetadataOperations.CopyMetadata(sourceBytes, JpegFixture.Build(),
+                        new MetadataSharp.Formats.Operations.MetadataCopyOptions
+                        {
+                            Families = MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif,
+                            MakerNote = MetadataSharp.Formats.Operations.MetadataMakerNoteMode.Copy
+                        });
+                string[] codes = copy.Notes.Select(note => note.Reason.ToString()).Distinct(StringComparer.Ordinal).ToArray();
+                if (copy.WasRefused)
                 {
-                    string reason = $"{note.Reason}: {note.Message}".Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
-                    copyReasons[reason] = copyReasons.GetValueOrDefault(reason) + 1;
+                    status = "refused";
+                    reasonCodes = codes.Length == 0 ? "CopyRefused" : string.Join(",", codes);
+                    message = string.Join("; ", copy.Notes.Select(note => note.Message));
                 }
-                continue;
+                else if (ImageMetadata.Read(copy.DestinationBytes).Exif?.MakerNote is not null)
+                {
+                    status = "copied";
+                    reasonCodes = "";
+                    message = "";
+                    File.WriteAllBytes(Path.Combine(copyOutput, id + ".jpg"), copy.DestinationBytes);
+                }
+                else
+                {
+                    status = "skipped";
+                    MetadataSharp.Formats.Operations.MetadataCopyReason[] makerReasons = copy.Notes
+                        .Where(note => note.Family == MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif)
+                        .Select(note => note.Reason).Distinct().ToArray();
+                    reasonCodes = makerReasons.Length == 0 ? "CopyRefused" : string.Join(",", makerReasons);
+                    message = makerReasons.Length == 0
+                        ? "The copy was not refused but the destination has no decoded MakerNote."
+                        : string.Join("; ", copy.Notes.Where(note => note.Family == MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif)
+                            .Select(note => note.Message));
+                }
             }
-            File.WriteAllBytes(Path.Combine(directory, $"{name}.copy.ours.jpg"), copy.DestinationBytes);
-            copiedName = name;
-            break;
+            catch (MetadataException refusal)
+            {
+                status = "refused";
+                reasonCodes = "CopyRefused";
+                message = refusal.Message;
+            }
+            string Clean(string value) => value.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+            report.WriteLine(string.Join("\t", id, makerNote.Format, status, reasonCodes, Clean(message)));
         }
-        catch (MetadataException) { }
     }
-    File.WriteAllText(Path.Combine(directory, "copy.tsv"), copiedName.Length != 0
-        ? copiedName
-        : "\n" + string.Join("\n", copyReasons.OrderByDescending(pair => pair.Value).Take(12)
-            .Select(pair => $"{pair.Value}x {pair.Key}")));
     foreach (KeyValuePair<string, int> outcome in outcomes) Console.WriteLine($"{outcome.Key}: {outcome.Value}");
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=MakerNote parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
