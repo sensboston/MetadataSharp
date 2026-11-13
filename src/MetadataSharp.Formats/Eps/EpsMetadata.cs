@@ -273,6 +273,7 @@ public sealed class EpsMetadata
     {
         (int announcementAt, _) = DscInsertPoints(original);
         byte[] postScript = SetAnnouncement(original.ToArray(), AnnouncementKind.Packet, announcementAt);
+        postScript = MovePageBeforeImplicitContent(postScript);
         byte[] ending = LineEnding(original, EndOfLine(original, 0));
 
         int endSetup = FindLine(postScript, "%%EndPageSetup");
@@ -314,6 +315,56 @@ public sealed class EpsMetadata
             "[/NamespacePop Exiv2_pdfmark",
             "%Exiv2EndXMP");
         return Splice(postScript, trailerEnd, 0, close);
+    }
+
+    private static byte[] MovePageBeforeImplicitContent(byte[] postScript)
+    {
+        int at = 0;
+        while (at < postScript.Length)
+        {
+            int end = EndOfLine(postScript, at);
+            if (postScript.AsSpan(at, end - at).SequenceEqual("%%EndComments"u8))
+            {
+                at = AfterLine(postScript, end);
+                break;
+            }
+            at = AfterLine(postScript, end);
+        }
+
+        bool inProlog = false;
+        int implicitContentAt = -1;
+        int pageAt = -1;
+        while (at < postScript.Length)
+        {
+            int end = EndOfLine(postScript, at);
+            ReadOnlySpan<byte> line = postScript.AsSpan(at, end - at);
+            if (line.StartsWith("%%Page:"u8))
+            {
+                pageAt = at;
+                break;
+            }
+            if (line.SequenceEqual("%%BeginDefaults"u8) || line.SequenceEqual("%%BeginProlog"u8) ||
+                line.SequenceEqual("%%BeginSetup"u8)) inProlog = true;
+            else if (line.SequenceEqual("%%EndDefaults"u8) || line.SequenceEqual("%%EndProlog"u8) ||
+                     line.SequenceEqual("%%EndSetup"u8)) inProlog = false;
+            else if (!inProlog && implicitContentAt < 0 && !OnlyWhitespace(line) &&
+                     !line.StartsWith("%%"u8)) implicitContentAt = at;
+            at = AfterLine(postScript, end);
+        }
+
+        if (implicitContentAt < 0 || pageAt < 0 || implicitContentAt > pageAt) return postScript;
+        int pageEnd = EndOfLine(postScript, pageAt);
+        int pageAfter = AfterLine(postScript, pageEnd);
+        byte[] pageLine = postScript.AsSpan(pageAt, pageAfter - pageAt).ToArray();
+        byte[] withoutPage = Splice(postScript, pageAt, pageAfter - pageAt, []);
+        return Splice(withoutPage, implicitContentAt, 0, pageLine);
+    }
+
+    private static bool OnlyWhitespace(ReadOnlySpan<byte> line)
+    {
+        foreach (byte value in line)
+            if (value is not ((byte)' ' or (byte)'\\t' or (byte)'\\r' or (byte)'\\n')) return false;
+        return true;
     }
 
     private static byte[] PdfMarkPacket(byte[] packet, byte[] ending)
