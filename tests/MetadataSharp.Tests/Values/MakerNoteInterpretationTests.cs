@@ -378,6 +378,26 @@ public sealed class MakerNoteInterpretationTests
     }
 
     [Fact]
+    public void AnOlympusCameraSettingsArrayReadsItsCorpusRenderings()
+    {
+        Assert.Equal("1.00", Field(MakerNoteFormat.Olympus2, 0x2020, "CameraSettingsVersion",
+            Undefined(Encoding.ASCII.GetBytes("0100"))));
+        Assert.Equal("No", Field(MakerNoteFormat.Olympus2, 0x2020, "PreviewImageValid", Longs(0)));
+        Assert.Equal("Aperture-priority AE", Field(MakerNoteFormat.Olympus2, 0x2020, "ExposureMode", Shorts(3)));
+        Assert.Equal("Center-weighted average", Field(MakerNoteFormat.Olympus2, 0x2020, "MeteringMode", Shorts(2)));
+        Assert.Equal("MF16", Field(MakerNoteFormat.Olympus2, 0x2020, "FocusMode", Shorts(10, 16)));
+        Assert.Equal("AF Used", Field(MakerNoteFormat.Olympus2, 0x2020, "FocusProcess", Shorts(1)));
+        Assert.Equal("Ready", Field(MakerNoteFormat.Olympus2, 0x2020, "AFSearch", Shorts(1)));
+        Assert.Equal("Fill-in", Field(MakerNoteFormat.Olympus2, 0x2020, "FlashMode", Shorts(2)));
+        Assert.Equal("Auto (Keep Warm Color Off)", Field(MakerNoteFormat.Olympus2, 0x2020, "WhiteBalance", Shorts(1)));
+        Assert.Equal("Natural", Field(MakerNoteFormat.Olympus2, 0x2020, "PictureMode", Shorts(2, 2)));
+        Assert.Equal("Normal, User-Selected", Field(MakerNoteFormat.Olympus2, 0x2020, "Gradation", SignedShorts(0, -1, 1, 0)));
+        Assert.Equal("Off", Field(MakerNoteFormat.Olympus2, 0x2020, "NoiseFilter", SignedShorts(-2, -2, 1)));
+        Assert.Equal("Partial Color (position 6)", Field(MakerNoteFormat.Olympus2, 0x2020, "ArtFilter", Shorts(39, 4352, 0, 5)));
+        Assert.Equal("S-IS AUTO", Field(MakerNoteFormat.Olympus2, 0x2020, "ImageStabilization", Longs(4)));
+    }
+
+    [Fact]
     public void AnOmSystemNoteUsesTheExiv2Olympus2GroupName()
     {
         var entry = new MakerNoteEntry(0x0209, "CameraID", Undefined(Encoding.ASCII.GetBytes("OM SYSTEM CAMERA\0")), []);
