@@ -103,6 +103,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     passed, message = evaluate(report)
     print(message, end="")
+    if not passed:
+        print("::error title=Video parity gate::" + message.replace("\n", " | "))
     return 0 if passed else 1
 
 
