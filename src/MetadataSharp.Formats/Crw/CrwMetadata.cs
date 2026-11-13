@@ -10,6 +10,7 @@ namespace MetadataSharp.Formats.Crw;
 /// </summary>
 public sealed class CrwMetadata
 {
+    // Capture validated inputs and stable state for this CIFF object.
     internal CrwMetadata(ExifMetadata? exif, string? comment, long? previewOffset, long previewLength, long? thumbnailOffset, long thumbnailLength)
     {
         Exif = exif;

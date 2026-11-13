@@ -170,7 +170,9 @@ internal static class XmpWriter
         public override void Flush() { }
         // This stream exists only for the counting write pass; read, seek, and resize would break that invariant.
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        // Support relative and absolute seeks while rejecting positions outside the bounded output buffer.
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        // Prevent XML serialization from expanding or truncating beyond the configured packet budget.
         public override void SetLength(long value) => throw new NotSupportedException();
     }
 }

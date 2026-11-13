@@ -166,6 +166,7 @@ internal static class MakerNoteRelocator
         return false;
     }
 
+    // Rebase recognized MakerNote offsets in a copy and refuse pointers whose destination cannot be represented safely.
     internal static byte[] Relocate(MakerNote note, ExifValue raw, int destinationStart)
     {
         int sourceStart = checked((int)note.Offset);
@@ -208,6 +209,7 @@ internal static class MakerNoteRelocator
         return bytes;
     }
 
+    // Compare decoded note structure and values while ignoring source offsets that relocation may change.
     internal static bool Same(MakerNote left, MakerNote right)
     {
         if (left.Format != right.Format || left.Entries.Count != right.Entries.Count) return false;
@@ -222,6 +224,7 @@ internal static class MakerNoteRelocator
         return true;
     }
 
+    // Compare decoded note structure and values while ignoring source offsets that relocation may change.
     private static bool Same(MakerNoteField left, MakerNoteField right)
     {
         if (left.Index != right.Index || left.Fields.Count != right.Fields.Count ||
@@ -233,6 +236,7 @@ internal static class MakerNoteRelocator
 
     private static bool Same(ExifValue a, ExifValue b) => a.FieldType == b.FieldType && a.Count == b.Count && a.RawBytes.SequenceEqual(b.RawBytes);
 
+    // Enumerate top-level and nested pointer slots so relocation updates every recognized offset.
     private static IEnumerable<MakerNoteSlot> Slots(MakerNote note)
     {
         foreach (MakerNoteEntry entry in note.Entries)
@@ -243,6 +247,7 @@ internal static class MakerNoteRelocator
         }
     }
 
+    // Recursively expose pointer slots nested inside a decoded MakerNote field.
     private static IEnumerable<MakerNoteSlot> FieldSlots(MakerNoteField field)
     {
         if (field.Slot is MakerNoteSlot slot) yield return slot;

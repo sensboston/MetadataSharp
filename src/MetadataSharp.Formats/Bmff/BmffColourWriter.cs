@@ -29,6 +29,7 @@ internal sealed class BmffColourPlan(int sourceLength, List<(int Offset, byte[] 
     internal byte[]? Profile { get; } = profile;
     internal int OutputLength => SourceLength + Tail.Length;
 
+    // Apply the requested changes to a staged copy and preserve unrelated BMFF bytes.
     internal byte[] Apply(byte[] source)
     {
         byte[] output = new byte[OutputLength];
@@ -74,6 +75,7 @@ internal sealed class BmffColourPlanner
     /// <summary>What every item addresses, in the widest reading of its extents.</summary>
     private readonly List<(BmffSegment Segment, int Method)> others = [];
 
+    // Capture validated inputs and stable state for this BMFF object.
     private BmffColourPlanner(byte[] source, BmffFileMap map, BmffProperties properties, uint primary, byte[]? profile,
         MetadataLimits limits)
     {
@@ -262,6 +264,7 @@ internal sealed class BmffColourPlanner
         return Sized(bytes);
     }
 
+    // Serialize profile in its defined byte order without disturbing adjacent data.
     private static void PutProfile(List<byte> bytes, byte[] profile)
     {
         Put32(bytes, checked((uint)(12 + profile.Length)));
@@ -389,6 +392,7 @@ internal sealed class BmffColourPlanner
         bytes.Add((byte)value);
     }
 
+    // Serialize put32 in its defined byte order without disturbing adjacent data.
     private static void Put32(List<byte> bytes, uint value)
     {
         bytes.Add((byte)(value >> 24));
@@ -397,9 +401,11 @@ internal sealed class BmffColourPlanner
         bytes.Add((byte)value);
     }
 
+    // Preserve the format-specific error code and source offset for malformed BMFF data.
     private static MetadataException Unsupported(string message, long? offset) =>
         new(MetadataErrorCode.UnsupportedFeature, message, offset);
 
+    // Preserve the format-specific error code and source offset for malformed BMFF data.
     private static MetadataException Unsafe(string message, long? offset) =>
         new(MetadataErrorCode.UnsafeRelocation, message, offset);
 }
@@ -516,6 +522,7 @@ internal static class BmffColourVerifier
             throw Refuse("the version of the meta box changed");
     }
 
+    // Keep Kept focused on BMFF and its format-specific validation contract.
     private static List<BmffBox> Kept(BmffFileMap map)
     {
         var kept = new List<BmffBox>();
@@ -590,6 +597,7 @@ internal static class BmffColourVerifier
         }
     }
 
+    // Keep Others focused on BMFF and its format-specific validation contract.
     private static List<BmffBox> Others(BmffProperties properties)
     {
         var others = new List<BmffBox>();

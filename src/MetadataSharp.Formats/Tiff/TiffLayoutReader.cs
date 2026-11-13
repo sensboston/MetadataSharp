@@ -18,7 +18,9 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
     private long retained;
     private int entries, links, segments;
     private static MetadataException Bad(string text = "Malformed standalone TIFF.") => new(MetadataErrorCode.InvalidTiff, text);
+    // Convert budget exhaustion into the format-specific LimitExceeded error.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "TIFF accounting exceeds its configured budget.");
+    // Enforce the configured TIFF/DNG count, depth, or retained-byte budget before keeping more data.
     private void Charge(long bytes) { if (bytes > options.Limits.MaxRetainedMetadataBytes - retained) throw Limit(); retained += bytes; }
     private ushort U16(byte[] bytes, int at = 0) => order == Endianness.LittleEndian ? BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(at)) : BinaryPrimitives.ReadUInt16BigEndian(bytes.AsSpan(at));
     private uint U32(byte[] bytes, int at = 0) => order == Endianness.LittleEndian ? BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(at)) : BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(at));
@@ -29,6 +31,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         _ = aligned;
         if (start < 0 || count < 0 || start > length || count > length - start) throw Bad("Invalid TIFF range.");
     }
+    // Extract TIFF/DNG from the already-validated representation.
     private async Task<byte[]> At(long start, int count)
     {
         token.ThrowIfCancellationRequested(); Bounds(start, count); source.Position = start;
@@ -36,6 +39,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         await ContainerIo.Read(source, bytes, asynchronous, token).ConfigureAwait(false);
         return bytes;
     }
+    // Keep Range focused on TIFF/DNG and its format-specific validation contract.
     private void Range(TiffRangeKind kind, uint? owner, ushort? tag, long start, long count, ushort type = 0, uint n = 0)
     {
         Bounds(start, count); if (count == 0) return;
@@ -51,6 +55,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
     }
     private void Issue(TiffLayoutIssueCode code, uint owner, ushort? tag, string message)
     { Charge(96); issues.Add(new(code, owner, tag, message)); }
+    // Traverse TIFF/DNG while enforcing nesting depth and visited-range limits.
     private void Discover(uint target)
     {
         if (target == 0) throw Bad("Null directory target."); Bounds(target, 2, true);
@@ -58,11 +63,13 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         if (discovered.Count >= options.Limits.MaxDirectories) throw Limit(); Charge(128);
         discovered.Add(target); pending.Enqueue(target);
     }
+    // Keep Link focused on TIFF/DNG and its format-specific validation contract.
     private void Link(List<TiffDirectoryLink> result, uint owner, uint target, long pointer, TiffDirectoryLinkKind kind, ushort? tag)
     {
         if (links >= options.MaxDirectoryLinks) throw Limit(); links++; Charge(48);
         Discover(target); edges[owner].Add(target); result.Add(new(kind, tag, pointer, target));
     }
+    // Read TIFF/DNG data only after the input extent and applicable resource budgets are checked.
     internal static async Task<TiffLayout> Read(Stream source, TiffReadOptions options, bool asynchronous, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(source); token.ThrowIfCancellationRequested();
@@ -70,6 +77,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         var reader = new TiffLayoutReader(source, options, asynchronous, token);
         return await reader.Run().ConfigureAwait(false);
     }
+    // Keep Run focused on TIFF/DNG and its format-specific validation contract.
     private async Task<TiffLayout> Run()
     {
         if (length > options.Limits.MaxInputBytes) throw Limit();
@@ -89,6 +97,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         if (directories.All(d => d.Image is null)) Issue(TiffLayoutIssueCode.MissingImageLayout, first, null, "No candidate image layout found.");
         token.ThrowIfCancellationRequested(); return new(order, length, first, directories.ToArray(), sorted, issues.ToArray());
     }
+    // Keep Directory focused on TIFF/DNG and its format-specific validation contract.
     private async Task Directory(uint offset)
     {
         edges.Add(offset, []); int count = U16(await At(offset, 2).ConfigureAwait(false));
@@ -125,6 +134,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
     }
     // Only numeric TIFF6 storage/scalar fields with reviewed nonprivate semantics.
     private static bool Known(ushort tag) => tag is 254 or 255 or 256 or 257 or 258 or 259 or 262 or 266 or 269 or 270 or 271 or 272 or 273 or 274 or 277 or 278 or 279 or 280 or 281 or 282 or 283 or 284 or 285 or 286 or 287 or 296 or 297 or 305 or 306 or 315 or 316 or 317 or 320 or 322 or 323 or 324 or 325 or 338 or 339 or 347 or 513 or 514;
+    // Extract TIFF/DNG from the already-validated representation.
     private async Task<uint[]> Numbers(TiffFieldInfo field, bool shorts = true)
     {
         if (field.FieldType != 4 && !(shorts && field.FieldType == 3)) throw Bad("Invalid numeric storage field type.");
@@ -133,11 +143,13 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         for (int i = 0; i < result.Length; i++) { if ((i & 1023) == 0) token.ThrowIfCancellationRequested(); result[i] = width == 2 ? U16(bytes, i * width) : U32(bytes, i * width); }
         return result;
     }
+    // Extract TIFF/DNG from the already-validated representation.
     private async Task<uint> Scalar(Dictionary<ushort, TiffFieldInfo> fields, ushort tag, uint? fallback = null, bool shorts = true)
     {
         if (!fields.TryGetValue(tag, out var field)) return fallback ?? throw Bad("Required image scalar missing.");
         if (field.Count != 1 || (tag is 259 or 262 or 277 or 284 && field.FieldType != 3)) throw Bad("Invalid scalar shape."); return (await Numbers(field, shorts).ConfigureAwait(false))[0];
     }
+    // Extract TIFF/DNG from the already-validated representation.
     private async Task<TiffImageLayout?> Image(uint owner, Dictionary<ushort, TiffFieldInfo> f)
     {
         bool strips = f.ContainsKey(273) || f.ContainsKey(279) || f.ContainsKey(278);
@@ -206,6 +218,7 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         else Unsupported(TiffLayoutIssueCode.UnsupportedPointerLayout, null, "Candidate image has no supported strip/tile arrays.");
         return new(w, h, (ushort)compression, tiles ? TiffStorageKind.Tiles : TiffStorageKind.Strips, imageRanges.AsReadOnly(), jpeg, supported);
     }
+    // Extract TIFF/DNG from the already-validated representation.
     private async Task<TiffByteRange?> Preview(uint owner, Dictionary<ushort, TiffFieldInfo> fields, bool present)
     {
         if (!present) return null;
@@ -214,7 +227,9 @@ internal sealed class TiffLayoutReader(Stream source, TiffReadOptions options, b
         if (bytes > options.Limits.MaxThumbnailBytes) throw Limit();
         AddSegment(); Range(TiffRangeKind.JpegPreview, owner, 513, start, bytes); return new(start, bytes);
     }
+    // Enforce the configured TIFF/DNG count, depth, or retained-byte budget before keeping more data.
     private void AddSegment() { if (segments >= options.Limits.MaxSegments) throw Limit(); segments++; }
+    // Traverse TIFF/DNG while enforcing nesting depth and visited-range limits.
     private void Graph(uint first)
     {
         var degree = discovered.ToDictionary(v => v, _ => 0); var depth = discovered.ToDictionary(v => v, _ => 1);

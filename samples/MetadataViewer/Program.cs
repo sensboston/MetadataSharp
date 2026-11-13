@@ -1,5 +1,6 @@
 using Avalonia;
 
+// Represent the Program state used by desktop viewer parsing and output.
 internal static class Program
 {
     [STAThread]

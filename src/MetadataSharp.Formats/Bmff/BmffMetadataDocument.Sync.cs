@@ -18,6 +18,7 @@ public sealed partial class BmffMetadataDocument
     /// <summary>As <see cref="SaveAll(Stream, SyncEdits)"/>, to a new file.</summary>
     public void SaveAllAs(string destinationPath, SyncEdits edits) => SavePath(destinationPath, SyncParts(edits), false, default).GetAwaiter().GetResult();
 
+    // Keep SyncParts focused on BMFF and its format-specific validation contract.
     private static Pending SyncParts(SyncEdits edits)
     {
         ArgumentNullException.ThrowIfNull(edits);

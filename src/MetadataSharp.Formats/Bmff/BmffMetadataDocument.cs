@@ -78,6 +78,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         CancellationToken cancellationToken = default) =>
         OpenPath(path, (options ?? new()).Snapshot(), true, cancellationToken);
 
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static async Task<BmffMetadataDocument> OpenPath(string path, BmffReadOptions options,
         bool asynchronous, CancellationToken token)
     {
@@ -90,6 +91,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         finally { await file.DisposeAsync().ConfigureAwait(false); }
     }
 
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static async Task<BmffMetadataDocument> OpenCore(Stream source, string? path,
         BmffReadOptions options, bool asynchronous, CancellationToken token)
     {
@@ -190,6 +192,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     private static Pending Edit(ExifEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(edit.Snapshot(), null); }
     private static Pending Edit(XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(null, edit.Snapshot()); }
 
+    // Write the prepared BMFF edit only after validation, preserving unrelated payloads.
     private async Task SaveCore(Stream destination, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -198,6 +201,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         await ContainerIo.Write(destination, output, asynchronous, token).ConfigureAwait(false);
     }
 
+    // Write the prepared BMFF edit only after validation, preserving unrelated payloads.
     private async Task SavePath(string destinationPath, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);

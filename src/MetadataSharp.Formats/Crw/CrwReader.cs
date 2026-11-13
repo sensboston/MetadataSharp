@@ -37,6 +37,7 @@ internal ref struct CrwReader
     private long thumbnailOffset = -1;
     private long thumbnailLength;
 
+    // Capture validated inputs and stable state for this CIFF object.
     private CrwReader(ReadOnlySpan<byte> data, MetadataLimits limits, bool little)
     {
         this.data = data;
@@ -49,6 +50,7 @@ internal ref struct CrwReader
     internal static bool HasSignature(ReadOnlySpan<byte> header) =>
         header.Length >= 14 && header[0] == header[1] && (header[0] == 0x49 || header[0] == 0x4D) && header.Slice(6, 8).SequenceEqual("HEAPCCDR"u8);
 
+    // Read CIFF data only after the input extent and applicable resource budgets are checked.
     internal static CrwMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits)
     {
         limits ??= new MetadataLimits();
@@ -63,6 +65,7 @@ internal ref struct CrwReader
         return reader.Result();
     }
 
+    // Preserve the format-specific error code and source offset for malformed CIFF data.
     private static MetadataException Fail(string message, long offset) => new(MetadataErrorCode.InvalidCrw, message, offset);
 
     private readonly ushort U16(int at) => little
@@ -117,6 +120,7 @@ internal ref struct CrwReader
         }
     }
 
+    // Resolve of using the format-defined identifiers and naming rules.
     private static TiffFieldType TypeOf(ushort record) => (record & 0x3800) switch
     {
         0x0000 => TiffFieldType.Byte,
@@ -188,6 +192,7 @@ internal ref struct CrwReader
         }
     }
 
+    // Enforce the configured CIFF count, depth, or retained-byte budget before keeping more data.
     private void Retain(long bytes, long at)
     {
         retained += bytes;
@@ -223,6 +228,7 @@ internal ref struct CrwReader
         return data.Slice(at, length - (length % width)).ToArray();
     }
 
+    // Extract CIFF from the already-validated representation.
     private readonly byte[] Short(ushort value)
     {
         byte[] bytes = new byte[2];
@@ -230,6 +236,7 @@ internal ref struct CrwReader
         return bytes;
     }
 
+    // Extract CIFF from the already-validated representation.
     private readonly byte[] Long(uint value)
     {
         byte[] bytes = new byte[4];
@@ -237,6 +244,7 @@ internal ref struct CrwReader
         return bytes;
     }
 
+    // Keep Add focused on CIFF and its format-specific validation contract.
     private void Add(ExifDirectoryKind directory, ushort tag, TiffFieldType type, byte[] bytes)
     {
         var key = new ExifTagKey(directory, tag);

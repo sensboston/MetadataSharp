@@ -24,6 +24,7 @@ public sealed record TiffReadOptions
     public int MaxDirectoryLinks { get; init; } = 4096;
     /// <summary>The most byte ranges accounted for in one file. Default 16,384.</summary>
     public int MaxAccountedRanges { get; init; } = 16384;
+    // Take a stable copy without exposing mutable TIFF/DNG state.
     internal TiffReadOptions Snapshot()
     {
         ArgumentNullException.ThrowIfNull(Limits); Limits.Validate();
@@ -35,6 +36,7 @@ public sealed record TiffReadOptions
 /// <summary>An owned immutable accounting snapshot, not a pixel decoder or relocation certificate.</summary>
 public sealed class TiffLayout
 {
+    // Capture validated inputs and stable state for this TIFF/DNG object.
     internal TiffLayout(Endianness order, long length, uint first, TiffDirectoryInfo[] directories,
         TiffAccountedRange[] ranges, TiffLayoutIssue[] issues)
     { ByteOrder = order; SourceLength = length; FirstIfdOffset = first; Directories = Array.AsReadOnly(directories); Ranges = Array.AsReadOnly(ranges); Issues = Array.AsReadOnly(issues); }
@@ -65,6 +67,7 @@ public sealed class TiffLayout
     public static Task<TiffLayout> ReadAsync(Stream source, TiffReadOptions? options = null, CancellationToken cancellationToken = default) => TiffLayoutReader.Read(source, (options ?? new()).Snapshot(), true, cancellationToken);
     /// <inheritdoc cref="Read(string, TiffReadOptions?)"/>
     public static Task<TiffLayout> ReadAsync(string path, TiffReadOptions? options = null, CancellationToken cancellationToken = default) => PathRead(path, (options ?? new()).Snapshot(), true, cancellationToken);
+    // Keep PathRead focused on TIFF/DNG and its format-specific validation contract.
     private static async Task<TiffLayout> PathRead(string path, TiffReadOptions options, bool asynchronous, CancellationToken token)
     {
         ArgumentException.ThrowIfNullOrEmpty(path); token.ThrowIfCancellationRequested();

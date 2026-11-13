@@ -55,6 +55,7 @@ internal ref struct Cr3Reader
     private bool hasMovie;
     private bool hasCanon;
 
+    // Capture validated inputs and stable state for this BMFF object.
     private Cr3Reader(ReadOnlySpan<byte> data, MetadataLimits limits)
     {
         this.data = data;
@@ -91,6 +92,7 @@ internal ref struct Cr3Reader
         return reader.Metadata(layout, xmpOptions, refusals);
     }
 
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static Cr3Reader Open(ReadOnlySpan<byte> data, MetadataLimits? limits)
     {
         limits ??= BmffReadOptions.DefaultLimits;
@@ -100,6 +102,7 @@ internal ref struct Cr3Reader
         return new Cr3Reader(data, limits);
     }
 
+    // Traverse BMFF while enforcing nesting depth and visited-range limits.
     private Cr3Layout Walk()
     {
         int position = 0;
@@ -126,6 +129,7 @@ internal ref struct Cr3Reader
         return new Cr3Layout(ifd0, exif, makerNote, gps, xmp);
     }
 
+    // Keep Movie focused on BMFF and its format-specific validation contract.
     private void Movie(BoxSpan movie)
     {
         if (hasMovie) throw walk.Fail("The movie box appears more than once.", movie.Start);
@@ -141,6 +145,7 @@ internal ref struct Cr3Reader
         }
     }
 
+    // Keep Canon focused on BMFF and its format-specific validation contract.
     private void Canon(BoxSpan canon)
     {
         int position = canon.Payload + 16;
@@ -154,6 +159,7 @@ internal ref struct Cr3Reader
         }
     }
 
+    // Reject invalid BMFF ranges, overlaps, or field shapes before accepting the data.
     private readonly void Claim(ref Cr3Block block, BoxSpan box)
     {
         if (block.Present) throw walk.Fail("A CMT box appears more than once.", box.Start);

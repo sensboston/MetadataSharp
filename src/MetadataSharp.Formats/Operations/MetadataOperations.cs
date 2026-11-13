@@ -253,6 +253,7 @@ public static class MetadataOperations
         }
     }
 
+    // Keep Refused focused on metadata and its format-specific validation contract.
     private static MetadataCopyResult Refused(byte[] unchanged, List<MetadataCopyNote> notes,
         MetadataCopyReason reason, string message)
     {
@@ -266,6 +267,7 @@ public static class MetadataOperations
         return mapped != MetadataCopyFamilies.None && requested.HasFlag(mapped);
     }
 
+    // Keep FamilyOf focused on metadata and its format-specific validation contract.
     private static MetadataCopyFamilies FamilyOf(MetadataFamily family) => family switch
     {
         MetadataFamily.Exif => MetadataCopyFamilies.Exif,
@@ -276,6 +278,7 @@ public static class MetadataOperations
         _ => MetadataCopyFamilies.None
     };
 
+    // Keep SourceHasFamily focused on metadata and its format-specific validation contract.
     private static bool SourceHasFamily(ImageMetadata metadata, MetadataCopyFamilies family) => family switch
     {
         MetadataCopyFamilies.Exif => metadata.Exif is not null,
@@ -286,6 +289,7 @@ public static class MetadataOperations
         _ => false
     };
 
+    // Keep SupportsCopy focused on metadata and its format-specific validation contract.
     private static bool SupportsCopy(MetadataFormat format, MetadataCopyFamilies family) => family switch
     {
         MetadataCopyFamilies.Exif => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Bmff,
@@ -321,6 +325,7 @@ public static class MetadataOperations
         return false;
     }
 
+    // Keep TryMakerNoteValue focused on metadata and its format-specific validation contract.
     private static bool TryMakerNoteValue(ExifMetadata exif, out ExifValue? value)
     {
         ExifTagKey makerNote = new(ExifDirectoryKind.Exif, 0x927C);
@@ -406,6 +411,7 @@ public static class MetadataOperations
         return found.Length == 0 ? null : found.ToArray();
     }
 
+    // Keep Thumbnail focused on metadata and its format-specific validation contract.
     private static ReadOnlySpan<byte> Thumbnail(ReadOnlySpan<byte> file, ImageMetadata metadata)
     {
         foreach (PreviewImage preview in metadata.Previews)
@@ -587,6 +593,7 @@ public static class MetadataOperations
         return bytes;
     }
 
+    // Keep IsUtf8 focused on metadata and its format-specific validation contract.
     private static bool IsUtf8(IptcValue value)
     {
         byte[] bytes = new byte[value.ByteLength];
@@ -635,6 +642,7 @@ public static class MetadataOperations
         return edit;
     }
 
+    // Extract metadata from the already-validated representation.
     private static long? Field(MakerNote note, ushort tag, ushort index)
     {
         if (!note.TryGetEntry(tag, out MakerNoteEntry? entry)) return null;
@@ -668,6 +676,7 @@ public static class MetadataOperations
 
     // ---- the passes ----
 
+    // Keep Writable focused on metadata and its format-specific validation contract.
     private static MetadataFormat Writable(MetadataFormat format) => format switch
     {
         MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Bmff or MetadataFormat.Pgf or MetadataFormat.Eps => format,
@@ -678,6 +687,7 @@ public static class MetadataOperations
 
     private static bool HoldsComment(MetadataFormat format) => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.Pgf;
 
+    // Write the prepared metadata edit only after validation, preserving unrelated payloads.
     private static byte[] Save(byte[] file, MetadataFormat format, SyncEdits edits)
     {
         using var input = new MemoryStream(file, false);
@@ -695,6 +705,7 @@ public static class MetadataOperations
         return output.ToArray();
     }
 
+    // Write the prepared metadata edit only after validation, preserving unrelated payloads.
     private static byte[] SaveComment(byte[] file, MetadataFormat format, string? comment)
     {
         if (format == MetadataFormat.Pgf) return PgfMetadata.Write(file, new SyncEdits(), comment, replaceComment: true);
@@ -705,6 +716,7 @@ public static class MetadataOperations
         return output.ToArray();
     }
 
+    // Write the prepared metadata edit only after validation, preserving unrelated payloads.
     private static byte[] SaveIcc(byte[] file, MetadataFormat format, byte[]? profile)
     {
         using var input = new MemoryStream(file, false);
@@ -720,6 +732,7 @@ public static class MetadataOperations
         return output.ToArray();
     }
 
+    // Keep Drain focused on metadata and its format-specific validation contract.
     private static byte[] Drain(Stream source)
     {
         var buffer = new MemoryStream();

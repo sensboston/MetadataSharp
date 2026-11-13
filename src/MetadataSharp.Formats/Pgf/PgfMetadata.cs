@@ -42,6 +42,7 @@ public sealed class PgfMetadata
     /// <summary>The colour mode of an image that keeps a colour table.</summary>
     private const byte IndexedColourMode = 2;
 
+    // Capture validated inputs and stable state for this metadata object.
     private PgfMetadata(uint width, uint height, long imageOffset, ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp)
     {
         Width = width;
@@ -193,6 +194,7 @@ public sealed class PgfMetadata
         return output;
     }
 
+    // Compare the staged result with the source to confirm unrelated metadata data stayed unchanged.
     private static void VerifyEdits(PgfMetadata before, PgfMetadata after, SyncEdits edits, byte[] output,
         string? comment, bool replaceComment, MetadataLimits? limits)
     {
@@ -228,6 +230,7 @@ public sealed class PgfMetadata
     private static bool SameValue(ExifValue expected, ExifValue actual) =>
         expected.FieldType == actual.FieldType && expected.Count == actual.Count && expected.RawBytes.SequenceEqual(actual.RawBytes);
 
+    // Compare the staged result with the source to confirm unrelated metadata data stayed unchanged.
     private static bool SamePacket(XmpPacket? expected, XmpPacket? actual)
     {
         if (expected is null) return actual is null;
@@ -242,6 +245,7 @@ public sealed class PgfMetadata
         return true;
     }
 
+    // Compare the staged result with the source to confirm unrelated metadata data stayed unchanged.
     private static bool SamePacket(IptcPacket? expected, IptcPacket? actual)
     {
         if (expected is null) return actual is null;
@@ -254,5 +258,6 @@ public sealed class PgfMetadata
 
     private static MetadataException Unsafe(string message) => new(MetadataErrorCode.UnsafeRelocation, message);
 
+    // Preserve the format-specific error code and source offset for malformed metadata data.
     private static MetadataException Bad(string message, long offset) => new(MetadataErrorCode.InvalidPgf, message, offset);
 }

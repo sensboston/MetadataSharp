@@ -5,6 +5,7 @@ namespace MetadataSharp.Core.MakerNotes;
 /// <summary>Corpus-backed Sigma and Foveon MakerNote renderings.</summary>
 internal static class SigmaMakerNoteInterpretations
 {
+    // Decode Sigma text and numeric capture fields using field-specific delimiters and exact labels.
     internal static string? Interpret(string name, ExifValue value)
     {
         if (value.FieldType != TiffFieldType.Ascii) return null;
@@ -22,6 +23,7 @@ internal static class SigmaMakerNoteInterpretations
         };
     }
 
+    // Select a label from the first character only when the input has a matching code.
     private static string? FirstCharacter(string value, params (char Code, string Label)[] labels)
     {
         if (value.Length == 0) return null;

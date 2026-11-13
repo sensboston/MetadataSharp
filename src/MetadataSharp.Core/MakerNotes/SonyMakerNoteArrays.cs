@@ -8,6 +8,7 @@ namespace MetadataSharp.Core.MakerNotes;
 /// </summary>
 internal static class SonyMakerNoteArrays
 {
+    // Describe one Sony array element, including its stored range and nested decoding rules.
     private readonly record struct Field(ushort Offset, string Name, TiffFieldType Type = TiffFieldType.Byte, uint Count = 1);
 
     /// <summary>A layout; a null byte order means the MakerNote's.</summary>

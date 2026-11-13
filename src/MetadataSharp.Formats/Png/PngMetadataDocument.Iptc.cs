@@ -51,12 +51,14 @@ public sealed partial class PngMetadataDocument
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit, IptcWriteOptions)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SaveIptcPath(destinationPath, edit, options, true, cancellationToken);
 
+    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
     private async Task SaveIptcCore(Stream destination, IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(edit); ContainerIo.Output(source, destination);
         Prepared prepared = await PrepareIptc(edit, write, asynchronous, token).ConfigureAwait(false);
         await Emit(destination, prepared, asynchronous, token).ConfigureAwait(false);
     }
+    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
     private async Task SaveIptcPath(string path, IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(edit);

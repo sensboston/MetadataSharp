@@ -112,6 +112,7 @@ public static class Comments
 
     private const uint TextChunk = 0x74455874, CompressedTextChunk = 0x7A545874, InternationalTextChunk = 0x69545874;
 
+    // Preserve the format-specific error code and source offset for malformed metadata data.
     private static MetadataException Bad(string message, long offset) => new(MetadataErrorCode.InvalidPng, message, offset);
 
     private static void Png(ReadOnlySpan<byte> data, MetadataLimits limits, List<string> found,

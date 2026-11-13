@@ -7,6 +7,7 @@ namespace MetadataSharp.Formats.Internal;
 /// </summary>
 internal static class SyncSave
 {
+    // Keep Run focused on metadata and its format-specific validation contract.
     internal static void Run<T>(T document, Func<Stream, T> reopen, Stream? destination, string? path,
         List<(Action<T, Stream> ToStream, Action<T, string> ToPath)> steps) where T : class, IDisposable
     {

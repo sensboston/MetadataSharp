@@ -23,6 +23,7 @@ public sealed partial class JpegMetadataDocument
     public XmpPacket? ReadXmp(XmpReadOptions? options = null) => ReadXmpCore(options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="ReadXmp"/>
     public Task<XmpPacket?> ReadXmpAsync(XmpReadOptions? options = null, CancellationToken cancellationToken = default) => ReadXmpCore(options, true, cancellationToken);
+    // Compare the staged result with the source to confirm unrelated JPEG data stayed unchanged.
     private async Task VerifyXmpSource(bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -36,6 +37,7 @@ public sealed partial class JpegMetadataDocument
     private const int ExtensionHeaderBytes = ExtensionSignatureBytes + 32 + 4 + 4;
     private const int ExtensionPartBytes = 65_533 - ExtensionHeaderBytes;
     private const int StandardPacketBytes = 65_504;
+    // Keep UniqueXmp focused on JPEG and its format-specific validation contract.
     private JpegSegment? UniqueXmp()
     {
         JpegSegment[] segments = scan.Segments.Where(s => s.IsStandardXmp).Take(2).ToArray();
@@ -99,11 +101,13 @@ public sealed partial class JpegMetadataDocument
         XmpPacket joined = XmpExtended.Join(packet, whole, settings);
         token.ThrowIfCancellationRequested(); return joined;
     }
+    // Reject invalid JPEG ranges, overlaps, or field shapes before accepting the data.
     private void CheckXmpBudget(int packetBytes, XmpLimits xmpLimits)
     {
         if (packetBytes > xmpLimits.MaxPacketBytes || (long)packetBytes + (scan.Exif?.PayloadLength - 6 ?? 0) > limits.MaxRetainedMetadataBytes)
             throw XmpCodec.Limit();
     }
+    // Keep LoadXmp focused on JPEG and its format-specific validation contract.
     private async Task<XmpPacket> LoadXmp(JpegSegment segment, XmpReadOptions? options, bool asynchronous, CancellationToken token)
     {
         XmpLimits settings = options is null ? new() : options.Limits ?? throw new ArgumentException("Limits cannot be null.", nameof(options));
@@ -168,6 +172,7 @@ public sealed partial class JpegMetadataDocument
     public void SaveXmp(Stream destination, XmpEdit edit) => SaveXmpCore(destination, edit, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveXmp(Stream, XmpEdit)"/>
     public Task SaveXmpAsync(Stream destination, XmpEdit edit, CancellationToken cancellationToken = default) => SaveXmpCore(destination, edit, true, cancellationToken);
+    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
     private async Task SaveXmpCore(Stream destination, XmpEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(destination);
@@ -205,6 +210,7 @@ public sealed partial class JpegMetadataDocument
         }
         await CopyRange(destination, position, scan.Length - position, asynchronous, token).ConfigureAwait(false);
     }
+    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
     private static async Task EmitXmpSegments(Stream destination, XmpPrepared prepared, bool asynchronous, CancellationToken token)
     {
         if (prepared.Packet is not byte[] bytes) return;
@@ -233,6 +239,7 @@ public sealed partial class JpegMetadataDocument
     public void SaveXmpAs(string destinationPath, XmpEdit edit) => SaveXmpPath(destinationPath, edit, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) => SaveXmpPath(destinationPath, edit, true, cancellationToken);
+    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
     private async Task SaveXmpPath(string path, XmpEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentException.ThrowIfNullOrEmpty(path);

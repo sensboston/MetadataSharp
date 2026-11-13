@@ -19,6 +19,7 @@ public sealed class VideoMetadata
 {
     private readonly IReadOnlyList<VideoProperty> properties;
 
+    // Capture validated inputs and stable state for this video-container object.
     private VideoMetadata(MetadataFormat format, IEnumerable<VideoProperty> properties)
     {
         Format = format;
@@ -70,6 +71,7 @@ public sealed class VideoMetadata
     internal static VideoMetadata ReadKnown(ReadOnlySpan<byte> data, MetadataFormat format, MetadataLimits limits) =>
         new(format, VideoContainerReader.Read(data, format, limits));
 
+    // Keep TryDetect focused on video-container and its format-specific validation contract.
     internal static bool TryDetect(ReadOnlySpan<byte> data, out MetadataFormat format)
     {
         format = MetadataFormat.Unknown;

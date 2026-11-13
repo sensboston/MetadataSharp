@@ -67,6 +67,7 @@ public sealed partial class BmffMetadataDocument
 
     private static byte[]? Clone(byte[]? bytes) => bytes is null ? null : (byte[])bytes.Clone();
 
+    // Write the prepared BMFF edit only after validation, preserving unrelated payloads.
     private async Task SaveIcc(Stream destination, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -75,6 +76,7 @@ public sealed partial class BmffMetadataDocument
         await ContainerIo.Write(destination, output, asynchronous, token).ConfigureAwait(false);
     }
 
+    // Write the prepared BMFF edit only after validation, preserving unrelated payloads.
     private async Task SaveIccPath(string destinationPath, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);

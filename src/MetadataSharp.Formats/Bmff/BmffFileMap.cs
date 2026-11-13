@@ -107,6 +107,7 @@ internal sealed class BmffFileMap
     /// <summary>An item entry of a version this walk does not know: its item ID is not known either.</summary>
     internal bool HasUnknownItemEntry { get; private set; }
 
+    // Read BMFF data only after the input extent and applicable resource budgets are checked.
     internal static BmffFileMap Read(byte[] file, MetadataLimits limits)
     {
         ArgumentNullException.ThrowIfNull(file);
@@ -134,6 +135,7 @@ internal sealed class BmffFileMap
         return found;
     }
 
+    // Resolve BMFF using the format-defined identifiers and naming rules.
     internal BmffLocation? Location(uint id)
     {
         foreach (BmffLocation location in locations)
@@ -200,6 +202,7 @@ internal sealed class BmffFileMap
         return false;
     }
 
+    // Traverse BMFF while enforcing nesting depth and visited-range limits.
     private void Walk()
     {
         int position = 0;
@@ -262,6 +265,7 @@ internal sealed class BmffFileMap
         }
     }
 
+    // Read primary item from bounded BMFF data, validating its declared extent before consuming fields.
     private uint ReadPrimaryItem(BmffBox box)
     {
         int length = box.End - box.Payload;
@@ -280,6 +284,7 @@ internal sealed class BmffFileMap
         throw Fail("The primary item version is not defined.", box.Payload);
     }
 
+    // Read information from bounded BMFF data, validating its declared extent before consuming fields.
     private void ReadInformation(BmffBox box)
     {
         int length = box.End - box.Payload;
@@ -349,6 +354,7 @@ internal sealed class BmffFileMap
         items.Add(item);
     }
 
+    // Read locations from bounded BMFF data, validating its declared extent before consuming fields.
     private void ReadLocations(BmffBox box)
     {
         int length = box.End - box.Payload;
@@ -448,6 +454,7 @@ internal sealed class BmffFileMap
         return new BmffBox(type, start, header, (int)size, open);
     }
 
+    // Resolve sized using the format-defined identifiers and naming rules.
     private ulong Sized(ref int at, int size, int end)
     {
         if (size == 0) return 0;
@@ -466,6 +473,7 @@ internal sealed class BmffFileMap
         return at + stop + 1;
     }
 
+    // Reject invalid BMFF ranges, overlaps, or field shapes before accepting the data.
     private void Require(int at, int count, int end)
     {
         if (count > end - at) throw Fail("A box field is truncated.", at);
@@ -479,9 +487,11 @@ internal sealed class BmffFileMap
 
     private ulong U64(int at) => BinaryPrimitives.ReadUInt64BigEndian(file.AsSpan(at, 8));
 
+    // Preserve the format-specific error code and source offset for malformed BMFF data.
     private MetadataException Fail(string message, long offset) =>
         new(MetadataErrorCode.InvalidBmff, message, offset >= 0 && offset <= file.Length ? offset : null);
 
+    // Convert budget exhaustion into the format-specific LimitExceeded error.
     private MetadataException Limit(string message, long offset) =>
         new(MetadataErrorCode.LimitExceeded, message, offset >= 0 && offset <= file.Length ? offset : null);
 }

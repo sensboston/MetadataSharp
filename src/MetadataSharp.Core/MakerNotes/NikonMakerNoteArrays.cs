@@ -7,11 +7,13 @@ namespace MetadataSharp.Core.MakerNotes;
 /// </summary>
 internal static class NikonMakerNoteArrays
 {
+    // Describe one decoded Nikon array element, including its source range and nested fields.
     private readonly record struct Field(ushort Offset, string Name, TiffFieldType Type = TiffFieldType.Byte, uint Count = 1);
 
     /// <summary>A layout; <paramref name="BigEndian"/> forces the field byte order regardless of the MakerNote's.</summary>
     private sealed record Layout(Field[] Fields, bool BigEndian = false);
 
+    // Decode only recognized Nikon array layouts; preserve unknown or malformed layouts as stored values.
     internal static IReadOnlyList<MakerNoteField> Decompose(ushort tag, ExifValue value)
     {
         if (value.FieldType is not (TiffFieldType.Undefined or TiffFieldType.Byte) || Select(tag, value.RawBytes) is not Layout layout)
@@ -188,6 +190,7 @@ internal static class NikonMakerNoteArrays
 
     private static readonly Layout ColorBalance02 = new([new(0, "Version", U, 4), new(290, "WB_RGGBLevels", S, 4)]);
 
+    // Define Nikon FlashInfo version 0100 element offsets, names, and value types.
     private static readonly Layout FlashInfo0100 = new(
     [
         new(0, "Version", U, 4), new(4, "FlashSource"), new(6, "ExternalFlashFirmware", S), new(8, "ExternalFlashFlags"),
@@ -195,6 +198,7 @@ internal static class NikonMakerNoteArrays
         new(14, "FlashGNDistance"), new(15, "FlashGroupAControlMode"), new(16, "FlashGroupBControlMode"),
     ]);
 
+    // Define Nikon FlashInfo version 0102 element offsets, names, and value types.
     private static readonly Layout FlashInfo0102 = new(
     [
         new(0, "Version", U, 4), new(4, "FlashSource"), new(6, "ExternalFlashFirmware", S), new(8, "ExternalFlashFlags"),
@@ -202,6 +206,7 @@ internal static class NikonMakerNoteArrays
         new(15, "FlashGNDistance"),
     ]);
 
+    // Define Nikon FlashInfo version 0103 element offsets, names, and value types.
     private static readonly Layout FlashInfo0103 = new(
     [
         new(0, "Version", U, 4), new(4, "FlashSource"), new(6, "ExternalFlashFirmware", S), new(8, "ExternalFlashFlags"),

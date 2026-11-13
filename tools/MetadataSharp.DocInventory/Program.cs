@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 return await Inventory.Run(args);
 
+// Run the Roslyn-based source inventory and report documentation coverage.
 internal static class Inventory
 {
     private static readonly HashSet<string> InvariantTerms = new(StringComparer.OrdinalIgnoreCase)
@@ -15,6 +16,7 @@ internal static class Inventory
         "depth", "range", "segment", "box", "endian", "byteorder", "transaction", "verify", "preserve"
     };
 
+    // Parse options, compile source trees, collect declarations, and write the inventory summary.
     internal static async Task<int> Run(string[] args)
     {
         string root = "src";
@@ -99,6 +101,7 @@ internal static class Inventory
         return 1;
     }
 
+    // Use the active runtime’s trusted platform assemblies for Roslyn symbol resolution.
     private static MetadataReference[] PlatformReferences()
     {
         string? trusted = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
@@ -109,6 +112,7 @@ internal static class Inventory
             .ToArray();
     }
 
+    // Visit declaration syntax and add each symbol once with its resolved semantic information.
     private static void Collect(SyntaxNode root, SemanticModel model, string sourceRoot, List<DeclarationRecord> records)
     {
         foreach (SyntaxNode node in root.DescendantNodesAndSelf())
@@ -172,6 +176,7 @@ internal static class Inventory
         }
     }
 
+    // Compare XML documentation with symbol requirements and record public gaps and purpose-comment status.
     private static void Add(SyntaxNode node, ISymbol symbol, SemanticModel model, string sourceRoot,
         List<DeclarationRecord> records, string name, string kind, bool trivial)
     {
@@ -250,6 +255,7 @@ internal static class Inventory
         });
     }
 
+    // Parse compiler XML documentation as a safe fragment; malformed XML yields an empty document.
     private static XElement ParseDocumentation(string xml)
     {
         if (string.IsNullOrWhiteSpace(xml)) return new XElement("doc");
@@ -264,6 +270,7 @@ internal static class Inventory
         }
     }
 
+    // Walk containing symbols to determine whether a declaration is part of the public API.
     private static bool IsExternallyVisible(ISymbol symbol)
     {
         for (ISymbol? current = symbol; current is not null; current = current.ContainingSymbol)
@@ -287,6 +294,7 @@ internal static class Inventory
         .Any(child => child is ThrowStatementSyntax or ThrowExpressionSyntax ||
             child is InvocationExpressionSyntax invocation && invocation.Expression.ToString().Contains("ThrowIf", StringComparison.Ordinal));
 
+    // Recognize range, budget, preservation, or explicit-throw signals that make a declaration nontrivial.
     private static bool HasInvariantSignal(SyntaxNode node)
     {
         foreach (SyntaxToken token in node.DescendantTokens())
@@ -296,6 +304,7 @@ internal static class Inventory
         return node.DescendantNodes().Any(child => child is ThrowStatementSyntax or ThrowExpressionSyntax);
     }
 
+    // Search declaration trivia for a substantive line comment that explains its purpose.
     private static bool HasPurposeLineComment(SyntaxNode node)
     {
         IEnumerable<SyntaxTrivia> comments = node.GetLeadingTrivia().Concat(node.DescendantTrivia(descendIntoTrivia: true));
@@ -311,6 +320,7 @@ internal static class Inventory
     private static string Signature(IMethodSymbol symbol) =>
         symbol.Name + "(" + string.Join(", ", symbol.Parameters.Select(parameter => parameter.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat))) + ")";
 
+    // Aggregate declaration and documentation-gap counts for the inventory report.
     private static InventorySummary Summarize(List<DeclarationRecord> entries) => new()
     {
         Total = entries.Count,
@@ -325,6 +335,7 @@ internal static class Inventory
         NonPublicPurposeGaps = entries.Count(entry => !entry.Public && entry.NonTrivial && !entry.PurposeComment)
     };
 
+    // Store the complete inventory payload, including source count and per-declaration records.
     private sealed class InventoryReport
     {
         public required string Root { get; init; }
@@ -333,6 +344,7 @@ internal static class Inventory
         public required InventorySummary Summary { get; init; }
     }
 
+    // Store aggregate public-documentation and non-public purpose-comment counts.
     private sealed class InventorySummary
     {
         public int Total { get; init; }
@@ -347,6 +359,7 @@ internal static class Inventory
         public int NonPublicPurposeGaps { get; init; }
     }
 
+    // Store one declaration’s location, visibility, documentation coverage, and detected gaps.
     private sealed class DeclarationRecord
     {
         public required string Path { get; init; }

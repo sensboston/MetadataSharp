@@ -17,6 +17,7 @@ namespace MetadataSharp.Formats.Raf;
 /// </summary>
 public sealed class RafMetadata
 {
+    // Capture validated inputs and stable state for this metadata object.
     private RafMetadata(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp, IReadOnlyList<string> comments,
         long jpegOffset, long jpegLength, long? tiffOffset, long tiffLength)
     {
@@ -140,5 +141,6 @@ public sealed class RafMetadata
         return new ExifMetadata(tiff.ByteOrder, entries, jpeg?.MakerNote, editable: false);
     }
 
+    // Preserve the format-specific error code and source offset for malformed metadata data.
     private static MetadataException Fail(string message, long offset) => new(MetadataErrorCode.InvalidRaf, message, offset);
 }

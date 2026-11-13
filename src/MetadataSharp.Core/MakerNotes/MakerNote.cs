@@ -83,6 +83,7 @@ internal sealed record MakerNoteSlot(int Directory, int Entry, int Value, int By
 /// <summary>One named field inside an array-valued MakerNote tag, or one entry of a sub-directory.</summary>
 public sealed class MakerNoteField
 {
+    // Capture the vendor, raw value, decoded fields, and source offset for one parsed MakerNote.
     internal MakerNoteField(ushort index, string name, ExifValue value, IReadOnlyList<MakerNoteField>? fields = null, int offset = -1)
     {
         Index = index;
@@ -116,6 +117,7 @@ public sealed class MakerNoteField
 /// <summary>One tag of a decoded MakerNote directory.</summary>
 public sealed class MakerNoteEntry
 {
+    // Capture the vendor, raw value, decoded fields, and source offset for one parsed MakerNote.
     internal MakerNoteEntry(ushort tagId, string? name, ExifValue value, IReadOnlyList<MakerNoteField> fields)
     {
         TagId = tagId;

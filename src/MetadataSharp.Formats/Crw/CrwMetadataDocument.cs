@@ -106,6 +106,7 @@ public sealed class CrwMetadataDocument : IDisposable
         return new CrwMetadataDocument(ReadAll(source, limits), limits, full);
     }
 
+    // Read all from bounded CIFF data, validating its declared extent before consuming fields.
     private static byte[] ReadAll(Stream source, MetadataLimits limits)
     {
         var buffer = new MemoryStream();
@@ -200,6 +201,7 @@ public sealed class CrwMetadataDocument : IDisposable
         internal string? Comment { get; set; }
     }
 
+    // Apply the requested changes to a staged copy and preserve unrelated CIFF bytes.
     private byte[] Apply(ExifEdit.EditSnapshot? edit, bool setComment, string? comment)
     {
         CiffRecord root = CiffHeap.Parse(file, limits, out bool little, out int heap);

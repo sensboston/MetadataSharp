@@ -9,6 +9,7 @@ internal static class MinoltaMakerNoteInterpretations
     private const int Settings7D = 0x0004;
     private const int Settings5D = 0x0114;
 
+    // Decode known Minolta values by field name and retain the stored representation for unknown codes.
     internal static string? Interpret(int scope, string name, ExifValue value)
     {
         if (scope == Standard && name == "FlashExposureComp" && value.FieldType == TiffFieldType.SRational &&
@@ -119,6 +120,7 @@ internal static class MinoltaMakerNoteInterpretations
         return null;
     }
 
+    // Reduce rational camera values without overflowing on the sign of the operands.
     private static long GreatestCommonDivisor(long left, long right)
     {
         while (right != 0)
@@ -128,6 +130,7 @@ internal static class MinoltaMakerNoteInterpretations
 
     private static string? Bool(long number) => number switch { 0 => "Off", 1 => "On", _ => null };
 
+    // Map a known numeric code to its label and return no interpretation for unknown codes.
     private static string? Lookup(long number, params (long Number, string Label)[] entries)
     {
         foreach ((long key, string label) in entries)

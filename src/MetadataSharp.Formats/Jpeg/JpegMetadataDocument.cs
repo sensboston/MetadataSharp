@@ -23,6 +23,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
     private readonly byte[] digest;
     private bool disposed;
 
+    // Capture validated inputs and stable state for this JPEG object.
     private JpegMetadataDocument(Stream source, bool ownsSource, string? sourcePath, MetadataLimits limits,
         JpegScanResult scan, TiffReadResult? tiff, ExifMetadata? exif, MetadataException? exifRefusal, byte[] digest)
     {
@@ -60,6 +61,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         OpenCore(source, false, null, SnapshotLimits(limits is null ? null : new JpegReadOptions { Limits = limits }), false, default, refusals)
             .GetAwaiter().GetResult();
 
+    // Take a stable copy without exposing mutable JPEG state.
     private static MetadataLimits SnapshotLimits(JpegReadOptions? options)
     {
         MetadataLimits settings = options is null ? new() : options.Limits ?? throw new ArgumentException("Limits cannot be null.", nameof(options));
@@ -67,6 +69,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         return settings with { };
     }
 
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static async Task<JpegMetadataDocument> OpenPath(string path, MetadataLimits settings, bool asynchronous, CancellationToken token)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -143,6 +146,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
     /// <inheritdoc cref="SaveAs(string, ExifEdit)"/>
     public Task SaveAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, edit, true, cancellationToken);
 
+    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
     private async Task SaveCore(Stream destination, ExifEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -219,6 +223,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         return bytes is null ? new(true, null) : new(false, bytes);
     }
 
+    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
     private async Task Emit(Stream output, Prepared prepared, bool asynchronous, CancellationToken token)
     {
         if (prepared.CopyOnly)
@@ -236,6 +241,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         await CopyRange(output, end, scan.Length - end, asynchronous, token).ConfigureAwait(false);
     }
 
+    // Take a stable copy without exposing mutable JPEG state.
     private async Task CopyRange(Stream output, long at, long count, bool asynchronous, CancellationToken token)
     {
         source.Position = at;
@@ -255,6 +261,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         finally { ArrayPool<byte>.Shared.Return(buffer); }
     }
 
+    // Serialize JPEG in its defined byte order without disturbing adjacent data.
     private static async ValueTask Write(Stream output, ReadOnlyMemory<byte> bytes, bool asynchronous, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -262,6 +269,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         else output.Write(bytes.Span);
     }
 
+    // Read exact from bounded JPEG data, validating its declared extent before consuming fields.
     private static async Task ReadExact(Stream input, Memory<byte> bytes, bool asynchronous, CancellationToken token)
     {
         while (!bytes.IsEmpty)
@@ -273,6 +281,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         }
     }
 
+    // Keep Hash focused on JPEG and its format-specific validation contract.
     private static async Task<byte[]> Hash(Stream input, long expectedLength, int capacity, bool asynchronous, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();

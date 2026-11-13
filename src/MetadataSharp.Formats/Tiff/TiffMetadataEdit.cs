@@ -12,6 +12,7 @@ public sealed record TiffEditOptions
     public TiffReadOptions ReadOptions { get; init; } = new();
     /// <summary>The longest output written, in bytes. Default 1,073,741,824; four gigabytes and the input budget bound it as well.</summary>
     public long MaxOutputBytes { get; init; } = 1_073_741_824;
+    // Take a stable copy without exposing mutable TIFF/DNG state.
     internal TiffEditOptions Snapshot()
     {
         ArgumentNullException.ThrowIfNull(ReadOptions);
@@ -63,21 +64,26 @@ public sealed class TiffMetadataEdit
     }
 }
 
+// Represent the TiffEditPolicy state used by TIFF/DNG parsing and output.
 internal static class TiffEditPolicy
 {
     internal static bool Text(ushort tag) => tag is 269 or 270 or 271 or 272 or 285 or 305 or 306 or 315 or 316;
+    // Reject invalid TIFF/DNG ranges, overlaps, or field shapes before accepting the data.
     internal static bool Pointer(ushort tag) => tag is 330 or 34665 or 34853 or 40965;
+    // Reject invalid TIFF/DNG ranges, overlaps, or field shapes before accepting the data.
     internal static void Key(TiffFieldKey key)
     {
         if (key.DirectoryOffset < 8 || (key.DirectoryOffset & 1) != 0 || !(Text(key.TagId) || key.TagId == 274))
             throw new ArgumentException("Key must address a baseline descriptive field in a source IFD.", nameof(key));
     }
+    // Compare the staged result with the source to confirm unrelated TIFF/DNG data stayed unchanged.
     internal static byte[] Bytes(ExifValue value, Endianness order)
     {
         byte[] bytes = new byte[value.ByteLength]; value.CopyRawTo(bytes);
         if (value.FieldType == TiffFieldType.Short && value.ByteOrder != order) Array.Reverse(bytes);
         return bytes;
     }
+    // Extract TIFF/DNG from the already-validated representation.
     internal static bool Value(ushort tag, ExifValue value)
     {
         if (tag == 274 && (value.FieldType != TiffFieldType.Short || value.Count != 1)) return false;
@@ -93,6 +99,7 @@ internal static class TiffEditPolicy
         if (tag != 306) return true;
         return bytes.Length == 20 && DateTime.TryParseExact(Encoding.ASCII.GetString(bytes, 0, 19), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
     }
+    // Reject invalid TIFF/DNG ranges, overlaps, or field shapes before accepting the data.
     internal static bool Shape(TiffFieldInfo f, uint samples, uint extras, int segmentCount)
     {
         bool Short(uint n) => f.FieldType == 3 && f.Count == n;

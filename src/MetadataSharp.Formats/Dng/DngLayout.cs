@@ -6,6 +6,7 @@ namespace MetadataSharp.Formats.Dng;
 /// <summary>An owned immutable DNG inventory snapshot. Not a decoder, renderer or relocation certificate.</summary>
 public sealed class DngLayout
 {
+    // Capture validated inputs and stable state for this TIFF/DNG object.
     internal DngLayout(Endianness byteOrder, long sourceLength, uint firstIfdOffset, DngVersion version, DngVersion backwardVersion,
         bool isSupported, DngDirectoryInfo[] directories, TiffAccountedRange[] ranges, DngLayoutIssue[] issues)
     {
@@ -45,6 +46,7 @@ public sealed class DngLayout
     public static Task<DngLayout> ReadAsync(Stream source, DngReadOptions? options = null, CancellationToken cancellationToken = default) => DngReader.Read(source, (options ?? new()).Snapshot(), true, cancellationToken);
     /// <inheritdoc cref="Read(string, DngReadOptions?)"/>
     public static Task<DngLayout> ReadAsync(string path, DngReadOptions? options = null, CancellationToken cancellationToken = default) => PathRead(path, (options ?? new()).Snapshot(), true, cancellationToken);
+    // Keep PathRead focused on TIFF/DNG and its format-specific validation contract.
     private static async Task<DngLayout> PathRead(string path, DngReadOptions options, bool asynchronous, CancellationToken token)
     {
         ArgumentException.ThrowIfNullOrEmpty(path); token.ThrowIfCancellationRequested();

@@ -36,12 +36,14 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     public static Task<PngMetadataDocument> OpenAsync(Stream source, PngReadOptions? options = null, CancellationToken cancellationToken = default) => OpenCore(source, false, null, (options ?? new()).Snapshot(), true, cancellationToken);
     /// <inheritdoc cref="Open(string, PngReadOptions?)"/>
     public static Task<PngMetadataDocument> OpenAsync(string path, PngReadOptions? options = null, CancellationToken cancellationToken = default) => OpenPath(path, (options ?? new()).Snapshot(), true, cancellationToken);
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static async Task<PngMetadataDocument> OpenPath(string path, PngReadOptions options, bool asynchronous, CancellationToken token)
     {
         ArgumentException.ThrowIfNullOrEmpty(path); token.ThrowIfCancellationRequested(); string full = Path.GetFullPath(path);
         var file = new FileStream(full, FileMode.Open, FileAccess.Read, FileShare.Read, options.Limits.CopyBufferBytes, FileOptions.SequentialScan | (asynchronous ? FileOptions.Asynchronous : FileOptions.None));
         return await OpenCore(file, true, full, options, asynchronous, token).ConfigureAwait(false);
     }
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static async Task<PngMetadataDocument> OpenCore(Stream source, bool owns, string? path, PngReadOptions options, bool asynchronous, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -55,25 +57,30 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
         }
         catch { if (owns) await source.DisposeAsync().ConfigureAwait(false); throw; }
     }
+    // Compare the staged result with the source to confirm unrelated PNG data stayed unchanged.
     private async Task Verify(bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         byte[] current = await ContainerIo.Hash(source, scan.Length, options.Limits.CopyBufferBytes, asynchronous, token).ConfigureAwait(false);
         if (!CryptographicOperations.FixedTimeEquals(digest, current)) throw ContainerIo.Changed();
     }
+    // Keep Unique focused on PNG and its format-specific validation contract.
     private PngChunk? Unique(bool xmp)
     {
         PngChunk[] chunks = scan.Chunks.Where(c => xmp ? c.Xmp : c.Type == "eXIf").Take(2).ToArray();
         if (chunks.Length > 1) throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Duplicate target PNG metadata chunks.");
         return chunks.FirstOrDefault();
     }
+    // Enforce the configured PNG count, depth, or retained-byte budget before keeping more data.
     private void Budget(long bytes)
     { if (bytes > options.Limits.MaxRetainedMetadataBytes) throw new MetadataException(MetadataErrorCode.LimitExceeded, "PNG metadata exceeds its budget."); }
+    // Extract PNG from the already-validated representation.
     private async Task<byte[]> Payload(PngChunk chunk, bool asynchronous, CancellationToken token)
     {
         Budget(chunk.Size); byte[] bytes = new byte[chunk.Size]; source.Position = chunk.Payload;
         await ContainerIo.Read(source, bytes, asynchronous, token).ConfigureAwait(false); return bytes;
     }
+    // Keep Exif focused on PNG and its format-specific validation contract.
     private async Task<TiffReadResult> Exif(PngChunk chunk, bool asynchronous, CancellationToken token)
     {
         if (chunk.Size > 65527) throw new MetadataException(MetadataErrorCode.ExifTooLarge, "EXIF exceeds the approved classic TIFF profile cap.");
@@ -88,12 +95,14 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     }
     private static MetadataException ProfileIsReadOnly(string kind) =>
         new(MetadataErrorCode.UnsupportedFeature, kind + " held in a raw profile text chunk can be read and not edited.");
+    // Keep Profile focused on PNG and its format-specific validation contract.
     private PngChunk? Profile(string name)
     {
         PngChunk[] chunks = scan.Chunks.Where(c => c.Profile == name).Take(2).ToArray();
         if (chunks.Length > 1) throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "Duplicate raw profile PNG text chunks.");
         return chunks.FirstOrDefault();
     }
+    // Keep ProfileBytes focused on PNG and its format-specific validation contract.
     private async Task<byte[]> ProfileBytes(PngChunk chunk, bool asynchronous, CancellationToken token)
     {
         byte[] payload = await Payload(chunk, asynchronous, token).ConfigureAwait(false);
@@ -143,6 +152,7 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     public IptcPacket? ReadIptc(IptcReadOptions? options = null) => ReadIptcCore(options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="ReadIptc"/>
     public Task<IptcPacket?> ReadIptcAsync(IptcReadOptions? options = null, CancellationToken cancellationToken = default) => ReadIptcCore(options, true, cancellationToken);
+    // Read IPTC core from bounded PNG data, validating its declared extent before consuming fields.
     private async Task<IptcPacket?> ReadIptcCore(IptcReadOptions? settings, bool asynchronous, CancellationToken token)
     {
         IptcLimits limits = IptcPacket.Settings(settings);
@@ -180,6 +190,7 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     public XmpPacket? ReadXmp(XmpReadOptions? options = null) => ReadXmpCore(options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="ReadXmp"/>
     public Task<XmpPacket?> ReadXmpAsync(XmpReadOptions? options = null, CancellationToken cancellationToken = default) => ReadXmpCore(options, true, cancellationToken);
+    // Read XMP core from bounded PNG data, validating its declared extent before consuming fields.
     private async Task<XmpPacket?> ReadXmpCore(XmpReadOptions? settings, bool asynchronous, CancellationToken token)
     {
         await Verify(asynchronous, token).ConfigureAwait(false);
@@ -255,6 +266,7 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
         byte[]? rebuilt = bytes is null ? null : Crc.Chunk(isXmp ? "iTXt" : "eXIf", bytes);
         token.ThrowIfCancellationRequested(); return new(false, chunk, rebuilt);
     }
+    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
     private async Task Emit(Stream output, Prepared prepared, bool asynchronous, CancellationToken token)
     {
         if (prepared.Copy) { await ContainerIo.Copy(source, output, 0, scan.Length, options.Limits.CopyBufferBytes, asynchronous, token).ConfigureAwait(false); return; }
@@ -300,6 +312,7 @@ public sealed partial class PngMetadataDocument : IDisposable, IAsyncDisposable
     public void SaveXmpAs(string destinationPath, XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); SavePath(destinationPath, null, edit, false, default).GetAwaiter().GetResult(); }
     /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) { ArgumentNullException.ThrowIfNull(edit); return SavePath(destinationPath, null, edit, true, cancellationToken); }
+    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
     private async Task SavePath(string path, ExifEdit? exif, XmpEdit? xmp, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); string target = ContainerIo.Target(path, sourcePath);

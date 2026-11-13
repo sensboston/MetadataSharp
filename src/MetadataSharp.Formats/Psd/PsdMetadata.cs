@@ -22,6 +22,7 @@ public sealed class PsdMetadata
     private const int MaxResources = 1024;
     private readonly Dictionary<ushort, byte[]> resources;
 
+    // Capture validated inputs and stable state for this metadata object.
     private PsdMetadata(uint width, uint height, Dictionary<ushort, byte[]> resources, bool restricted)
     {
         Width = width;
@@ -130,6 +131,7 @@ public sealed class PsdMetadata
         return plain || signature.SequenceEqual("AgHg"u8) || signature.SequenceEqual("DCSR"u8) || signature.SequenceEqual("PHUT"u8);
     }
 
+    // Read resources from bounded metadata data, validating its declared extent before consuming fields.
     private static Dictionary<ushort, byte[]> ParseResources(ReadOnlySpan<byte> data, out bool plainFraming)
     {
         int at = 0;
@@ -158,6 +160,7 @@ public sealed class PsdMetadata
         return result;
     }
 
+    // Keep Section focused on metadata and its format-specific validation contract.
     private static ReadOnlySpan<byte> Section(ReadOnlySpan<byte> data, ref int at)
     {
         if (data.Length - at < 4) throw Bad("Truncated PSD section length.");
@@ -172,5 +175,6 @@ public sealed class PsdMetadata
     private static uint U32(ReadOnlySpan<byte> bytes, int at) => BinaryPrimitives.ReadUInt32BigEndian(bytes.Slice(at, 4));
     private static MetadataException Bad(string message) => new(MetadataErrorCode.InvalidPsd, message);
     private static MetadataException Unsupported(string message) => new(MetadataErrorCode.UnsupportedFeature, message);
+    // Convert budget exhaustion into the format-specific LimitExceeded error.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "PSD exceeds a fixed read budget.");
 }

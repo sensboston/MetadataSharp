@@ -3,6 +3,7 @@ using System.Xml;
 
 namespace MetadataSharp.Core.Xmp;
 
+// Distinguish property, array-index, and qualifier steps in the XMP path grammar.
 internal enum XmpStepKind
 {
     /// <summary>A top-level property.</summary>

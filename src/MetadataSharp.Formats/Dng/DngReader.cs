@@ -36,13 +36,17 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
 
     private static MetadataException Bad(string text = "Malformed DNG framing.") => new(MetadataErrorCode.InvalidTiff, text);
     private static MetadataException InvalidDng(string text) => new(MetadataErrorCode.InvalidDng, text);
+    // Map DNG accounting exhaustion to one stable LimitExceeded exception.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "DNG accounting exceeds its configured budget.");
+    // Charge retained bytes before keeping parsed TIFF/DNG metadata in memory.
     private void Charge(long bytes) { if (bytes > options.TiffOptions.Limits.MaxRetainedMetadataBytes - retained) throw Limit(); retained += bytes; }
     private ushort U16(byte[] bytes, int at = 0) => order == Endianness.LittleEndian ? BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(at)) : BinaryPrimitives.ReadUInt16BigEndian(bytes.AsSpan(at));
     private uint U32(byte[] bytes, int at = 0) => order == Endianness.LittleEndian ? BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(at)) : BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(at));
     private int S32(byte[] bytes, int at = 0) => order == Endianness.LittleEndian ? BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(at)) : BinaryPrimitives.ReadInt32BigEndian(bytes.AsSpan(at));
+    // Reject offsets, counts, and alignment that escape the source stream.
     private void Bounds(long start, long count, bool aligned = false)
     { if (start < 0 || count < 0 || start > length || count > length - start || (aligned && (start & 1) != 0)) throw Bad("Invalid DNG range/alignment."); }
+    // Read an exact source range after checking bounds and charging the retention budget.
     private async Task<byte[]> At(long start, int count)
     {
         token.ThrowIfCancellationRequested(); Bounds(start, count); source.Position = start;
@@ -50,6 +54,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         await ContainerIo.Read(source, bytes, asynchronous, token).ConfigureAwait(false);
         return bytes;
     }
+    // Record each TIFF range with its owner and tag for later overlap analysis.
     private void Range(TiffRangeKind kind, uint? owner, ushort? tag, long start, long count, ushort type = 0, uint n = 0)
     {
         Bounds(start, count); if (count == 0) return;
@@ -65,6 +70,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
     }
     private void Issue(DngLayoutIssueCode code, uint owner, ushort? tag, string message)
     { Charge(96); issues.Add(new(code, owner, tag, message)); }
+    // Traverse linked TIFF directories once, rejecting cycles and out-of-range pointers.
     private void Discover(uint target)
     {
         if (target == 0) throw Bad("Null directory target.");
@@ -73,6 +79,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         if (discovered.Count >= options.TiffOptions.Limits.MaxDirectories) throw Limit();
         Charge(128); discovered.Add(target); pending.Enqueue(target);
     }
+    // Validate and record a directory pointer with its owning tag and link kind.
     private void Link(List<TiffDirectoryLink> result, uint owner, uint target, long pointer, TiffDirectoryLinkKind kind, ushort? tag)
     {
         if (links >= options.TiffOptions.MaxDirectoryLinks) throw Limit();
@@ -81,6 +88,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         if (kind != TiffDirectoryLinkKind.NextIfd) edges[owner].Add(target);
         result.Add(new(kind, tag, pointer, target));
     }
+    // Read the DNG layout asynchronously and preserve the caller’s cancellation semantics.
     internal static async Task<DngLayout> Read(Stream source, DngReadOptions options, bool asynchronous, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(source); token.ThrowIfCancellationRequested();
@@ -88,6 +96,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         var reader = new DngReader(source, options, asynchronous, token);
         return await reader.Run().ConfigureAwait(false);
     }
+    // Walk the reachable IFD graph, decode required DNG tags, and produce an immutable layout.
     private async Task<DngLayout> Run()
     {
         if (length > options.TiffOptions.Limits.MaxInputBytes) throw Limit();
@@ -106,8 +115,10 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         token.ThrowIfCancellationRequested();
         return await Validate(first).ConfigureAwait(false);
     }
+    // Hold one mutable IFD during parsing before publishing its immutable snapshot.
     private sealed class WorkingDirectory
     {
+        // Retain Offset state required to parse or write TIFF/DNG data safely.
         public required uint Offset;
         public required bool IsRoot;
         public required List<TiffFieldInfo> Fields;
@@ -116,6 +127,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         public DngImageLayout? Image;
         public uint? NewSubFileType;
         public bool NewSubFileTypeBadShape;
+        // Freeze the completed IFD’s fields and links for the returned DNG layout.
         public DngDirectoryInfo Snapshot() => new(Offset, IsRoot, Image, Fields.AsReadOnly(), Links.AsReadOnly());
     }
 
@@ -173,6 +185,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         working.Add(workingDirectory);
     }
 
+    // Decode NewSubFileType only when its TIFF type and element count are supported.
     private async Task<(uint? Value, bool BadShape)> NewSubFileType(WorkingDirectory directory)
     {
         if (!directory.ByTag.TryGetValue(254, out var field)) return (null, false);
@@ -180,6 +193,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return ((await Uints(field, 4).ConfigureAwait(false))[0], false);
     }
 
+    // Follow next-IFD and sub-IFD links while rejecting cycles and repeated directories.
     private void Graph(uint first)
     {
         var degree = discovered.ToDictionary(v => v, _ => 0); var depth = discovered.ToDictionary(v => v, _ => 1);
@@ -194,6 +208,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         if (visited != discovered.Count || degree[first] != 0) throw Bad("Cyclic DNG directory graph.");
     }
 
+    // Decode unsigned integer elements only when their stored TIFF type matches the tag contract.
     private async Task<uint[]> Uints(TiffFieldInfo field, int expectedType)
     {
         if (field.FieldType != expectedType || field.Count == 0) throw new MetadataException(MetadataErrorCode.InvalidTiff, $"Invalid numeric field shape for tag {field.TagId}.");
@@ -204,6 +219,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return result;
     }
 
+    // Decode rational elements with the requested signedness and checked element ranges.
     private async Task<(int Num, int Den)[]> Rationals(TiffFieldInfo field, bool signed)
     {
         int type = signed ? 10 : 5;
@@ -326,6 +342,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
             return dir.NewSubFileType switch { 0 => DngImageRole.CfaRaw, 1 => DngImageRole.RgbThumbnail, _ => DngImageRole.Unknown };
         }
     }
+    // Compare packed DNG version components numerically rather than as text.
     private static int Compare(DngVersion a, DngVersion b)
     {
         if (a.Major != b.Major) return a.Major - b.Major;
@@ -334,6 +351,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return a.Build - b.Build;
     }
 
+    // Read the DNGVersion tag and reject malformed component counts or unsupported encodings.
     private async Task<DngVersion> IdentityVersion(TiffFieldInfo field, uint owner, ushort tag)
     {
         if (field.FieldType != 1 || field.Count != 4)
@@ -342,6 +360,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return new DngVersion(bytes[0], bytes[1], bytes[2], bytes[3]);
     }
 
+    // Read DNGBackwardVersion, defaulting or refusing according to the DNG tag rules.
     private async Task<DngVersion> BackwardVersion(WorkingDirectory dir, DngVersion version)
     {
         if (!dir.ByTag.TryGetValue(TagDngBackwardVersion, out var field))
@@ -356,6 +375,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return value;
     }
 
+    // Read a single LONG-valued directory tag and distinguish missing from malformed values.
     private async Task<(bool Ok, uint Value)> LongScalar(WorkingDirectory dir, ushort tag, string name)
     {
         if (!dir.ByTag.TryGetValue(tag, out var field)) { Issue(DngLayoutIssueCode.MissingRequiredField, dir.Offset, tag, name + " is required."); return (false, 0); }
@@ -363,6 +383,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return (true, (await Uints(field, 4).ConfigureAwait(false))[0]);
     }
 
+    // Read a single SHORT-valued directory tag and distinguish missing from malformed values.
     private async Task<(bool Ok, uint Value)> ShortScalar(WorkingDirectory dir, ushort tag, string name, DngLayoutIssueCode mismatchCode = DngLayoutIssueCode.InvalidSemanticValue)
     {
         if (!dir.ByTag.TryGetValue(tag, out var field)) { Issue(DngLayoutIssueCode.MissingRequiredField, dir.Offset, tag, name + " is required."); return (false, 0); }
@@ -370,6 +391,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return (true, (await Uints(field, 3).ConfigureAwait(false))[0]);
     }
 
+    // Read a BYTE array tag only after its type, element count, and byte range are validated.
     private async Task<byte[]?> ByteArray(WorkingDirectory dir, ushort tag, int count)
     {
         if (!dir.ByTag.TryGetValue(tag, out var field)) return null;
@@ -378,6 +400,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return await At(field.ValueRange.Offset, count).ConfigureAwait(false);
     }
 
+    // Keep UintArray focused on TIFF/DNG and its format-specific validation contract.
     private async Task<uint[]?> UintArray(WorkingDirectory dir, ushort tag, int type, int count)
     {
         if (!dir.ByTag.TryGetValue(tag, out var field)) return null;
@@ -387,6 +410,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
 
     private static bool Printable(byte[] bytes) => bytes.Length > 1 && bytes[^1] == 0 && bytes.Take(bytes.Length - 1).All(b => b >= 0x20 && b <= 0x7E);
 
+    // Accept only bounded ASCII tag text with valid termination and encoding.
     private async Task<bool> AsciiOk(WorkingDirectory dir, TiffFieldInfo field, ushort tag)
     {
         if (field.FieldType != 2 || field.Count < 2) { Issue(DngLayoutIssueCode.UnsupportedFieldShape, dir.Offset, tag, "ASCII field must be type 2 with at least one character and NUL."); return false; }
@@ -396,6 +420,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return true;
     }
 
+    // Check dimensions, sample layout, and strip/tile fields shared by DNG images.
     private async Task ValidateCommon(WorkingDirectory dir)
     {
         if (dir.ByTag.TryGetValue(274, out var orientation))
@@ -412,6 +437,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
                 await AsciiOk(dir, field, tag).ConfigureAwait(false);
     }
 
+    // Check the color-identity tags and their cross-field shape requirements.
     private async Task ValidateColorIdentity(WorkingDirectory dir, bool required)
     {
         if (dir.ByTag.TryGetValue(TagUniqueCameraModel, out var ucm)) { await AsciiOk(dir, ucm, TagUniqueCameraModel).ConfigureAwait(false); }
@@ -443,8 +469,10 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         }
         else if (required) Issue(DngLayoutIssueCode.MissingRequiredField, dir.Offset, TagAsShotNeutral, "AsShotNeutral is required.");
     }
+    // Count image segments against MaxSegments before recording more strip or tile ranges.
     private void AddSegment() { if (segments >= options.TiffOptions.Limits.MaxSegments) throw Limit(); segments++; }
 
+    // Validate strip offsets and byte counts as paired, in-range image segments.
     private async Task<List<TiffByteRange>?> ValidateStrips(WorkingDirectory dir, uint width, uint height, uint rowsPerStrip, int bytesPerSample, ulong? maxTotalBytes)
     {
         if (!dir.ByTag.TryGetValue(273, out var offField)) { Issue(DngLayoutIssueCode.MissingRequiredField, dir.Offset, 273, "StripOffsets is required."); return null; }
@@ -472,6 +500,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return strips;
     }
 
+    // Validate the CFA repeat pattern and color-plane description as a consistent pair.
     private async Task ValidateCfa(WorkingDirectory dir)
     {
         uint[]? pattern = await UintArray(dir, TagCfaRepeatPatternDim, 3, 2).ConfigureAwait(false);
@@ -494,6 +523,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         if (clOk && layout != 1) Issue(DngLayoutIssueCode.InvalidSemanticValue, dir.Offset, TagCfaLayout, "CFALayout must be 1 (rectangular).");
     }
 
+    // Validate black-level dimensions and values against the CFA repeat pattern.
     private async Task ValidateBlackLevel(WorkingDirectory dir)
     {
         uint[]? dims = await UintArray(dir, TagBlackLevelRepeatDim, 3, 2).ConfigureAwait(false);
@@ -512,12 +542,14 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         else Issue(DngLayoutIssueCode.MissingRequiredField, dir.Offset, TagBlackLevel, "BlackLevel is required.");
     }
 
+    // Validate white-level sample counts and values against the image sample layout.
     private async Task ValidateWhiteLevel(WorkingDirectory dir)
     {
         (bool ok, uint value) = await LongScalar(dir, TagWhiteLevel, "WhiteLevel").ConfigureAwait(false);
         if (ok && value != 65535) Issue(DngLayoutIssueCode.InvalidSemanticValue, dir.Offset, TagWhiteLevel, "WhiteLevel must be 65535.");
     }
 
+    // Ensure the active area is ordered and contained within the stored image dimensions.
     private async Task<(uint Left, uint Top, uint Right, uint Bottom)?> ValidateActiveArea(WorkingDirectory dir, (uint Width, uint Height)? dimensions)
     {
         if (!dir.ByTag.TryGetValue(TagActiveArea, out _)) return null;
@@ -529,6 +561,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return (left, top, right, bottom);
     }
 
+    // Ensure the default crop origin and size remain inside the active image area.
     private async Task ValidateCrop(WorkingDirectory dir, (uint Width, uint Height)? dimensions, (uint Left, uint Top, uint Right, uint Bottom)? activeArea)
     {
         bool hasOrigin = dir.ByTag.TryGetValue(TagDefaultCropOrigin, out _);
@@ -546,6 +579,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         if (origin[0] < left || origin[1] < top || rightEdge > right || bottomEdge > bottom)
             Issue(DngLayoutIssueCode.InvalidSemanticValue, dir.Offset, TagDefaultCropOrigin, "Default crop exceeds the active area.");
     }
+    // Validate raw-image dimensions and required DNG tags before accepting the image layout.
     private async Task<DngImageLayout?> ValidateRaw(WorkingDirectory dir)
     {
         (bool wOk, uint w) = await LongScalar(dir, 256, "ImageWidth").ConfigureAwait(false);
@@ -597,6 +631,7 @@ internal sealed class DngReader(Stream source, DngReadOptions options, bool asyn
         return dir.Image;
     }
 
+    // Validate thumbnail dimensions and ranges before retaining the thumbnail segment.
     private async Task<DngImageLayout?> ValidateThumbnail(WorkingDirectory dir)
     {
         (bool wOk, uint w) = await LongScalar(dir, 256, "ImageWidth").ConfigureAwait(false);

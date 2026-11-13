@@ -119,6 +119,7 @@ public sealed partial class JpegMetadataDocument
 
     private static byte[]? Copy(byte[]? bytes) => bytes is null ? null : (byte[])bytes.Clone();
 
+    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
     private async Task SaveEmbedded(Stream destination, EmbeddedKind kind, string? comment, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -127,6 +128,7 @@ public sealed partial class JpegMetadataDocument
         await EmitEmbedded(destination, plan, asynchronous, token).ConfigureAwait(false);
     }
 
+    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
     private async Task SaveEmbeddedPath(string destinationPath, EmbeddedKind kind, string? comment, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -357,6 +359,7 @@ public sealed partial class JpegMetadataDocument
         }
     }
 
+    // Write the prepared JPEG edit only after validation, preserving unrelated payloads.
     private async Task EmitEmbedded(Stream output, EmbeddedPlan? plan, bool asynchronous, CancellationToken token)
     {
         if (plan is null)
@@ -389,6 +392,7 @@ public sealed partial class JpegMetadataDocument
         public override bool CanWrite => false;
         public override long Length => length;
 
+        // Retain Position state required to parse or write JPEG data safely.
         public override long Position
         {
             get => position;
@@ -439,6 +443,7 @@ public sealed partial class JpegMetadataDocument
             return count;
         }
 
+        // Read async from bounded JPEG data, validating its declared extent before consuming fields.
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -457,9 +462,11 @@ public sealed partial class JpegMetadataDocument
             return count;
         }
 
+        // Read async from bounded JPEG data, validating its declared extent before consuming fields.
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
             ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
 
+        // Keep Seek focused on JPEG and its format-specific validation contract.
         public override long Seek(long offset, SeekOrigin origin)
         {
             Position = origin switch { SeekOrigin.Begin => offset, SeekOrigin.Current => position + offset, _ => length + offset };
@@ -467,7 +474,9 @@ public sealed partial class JpegMetadataDocument
         }
 
         public override void Flush() { }
+        // Keep SetLength focused on JPEG and its format-specific validation contract.
         public override void SetLength(long value) => throw new NotSupportedException();
+        // Serialize JPEG in its defined byte order without disturbing adjacent data.
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }

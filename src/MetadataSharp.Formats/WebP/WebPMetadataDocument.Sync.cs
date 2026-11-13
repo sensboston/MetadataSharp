@@ -28,6 +28,7 @@ public sealed partial class WebPMetadataDocument
         SavePath(destinationPath, exif, xmp, false, default).GetAwaiter().GetResult();
     }
 
+    // Keep SyncParts focused on WebP and its format-specific validation contract.
     private static (ExifEdit Exif, XmpEdit? Xmp) SyncParts(SyncEdits edits)
     {
         ArgumentNullException.ThrowIfNull(edits);

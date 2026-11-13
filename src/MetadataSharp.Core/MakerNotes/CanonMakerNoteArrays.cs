@@ -190,6 +190,7 @@ internal static class CanonMakerNoteArrays
     private static readonly Layout VignettingCorr2 = new(TiffFieldType.SLong,
         [new(5, "PeripheralLightingSetting"), new(6, "ChromaticAberrationSetting"), new(7, "DistortionCorrectionSetting")]);
 
+    // Map Canon LightingOpt values to the corresponding documented labels.
     private static readonly Layout LightingOpt = new(TiffFieldType.SLong,
     [
         new(1, "PeripheralIlluminationCorr"), new(2, "AutoLightingOptimizer"), new(3, "HighlightTonePriority"),

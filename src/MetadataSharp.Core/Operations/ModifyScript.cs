@@ -32,6 +32,7 @@ public sealed record ModifyCommand(int Line, ModifyCommandKind Kind, string Key,
 /// <summary>A line of a modify script that cannot be carried out.</summary>
 public sealed class ModifyScriptException : FormatException
 {
+    // Preserve the source line and command text so parse errors point back to the script input.
     internal ModifyScriptException(int line, string reason)
         : base("Line " + line.ToString(CultureInfo.InvariantCulture) + ": " + reason)
     {

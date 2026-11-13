@@ -83,6 +83,7 @@ public static class ExvFile
         }
     }
 
+    // Keep Segment focused on metadata and its format-specific validation contract.
     private static void Segment(Stream output, byte marker, ReadOnlySpan<byte> header, ReadOnlySpan<byte> payload, string what)
     {
         int length = 2 + header.Length + payload.Length;

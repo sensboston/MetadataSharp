@@ -6,6 +6,7 @@ namespace MetadataSharp.Formats.Crw;
 /// <summary>One record of the heap of a CRW file: a value, or a directory of records.</summary>
 internal sealed class CiffRecord
 {
+    // Capture validated inputs and stable state for this CIFF object.
     internal CiffRecord(ushort tag, byte[] data, List<CiffRecord>? children = null)
     {
         Tag = tag;
@@ -49,6 +50,7 @@ internal sealed class CiffRecord
 /// </summary>
 internal static class CiffHeap
 {
+    // Read CIFF data only after the input extent and applicable resource budgets are checked.
     internal static CiffRecord Parse(ReadOnlySpan<byte> data, MetadataLimits limits, out bool little, out int heap)
     {
         if (!CrwReader.HasSignature(data)) throw Fail("The file does not start with the header of a CRW file.", 0);
@@ -60,6 +62,7 @@ internal static class CiffHeap
         return new CiffRecord(0, [], Directory(data, heap, data.Length - heap, little, limits, 0, ref records));
     }
 
+    // Keep Directory focused on CIFF and its format-specific validation contract.
     private static List<CiffRecord> Directory(ReadOnlySpan<byte> data, int start, int size, bool little, MetadataLimits limits, int depth, ref int records)
     {
         if (depth > limits.MaxDirectoryDepth)
@@ -113,6 +116,7 @@ internal static class CiffHeap
         return output;
     }
 
+    // Serialize CIFF in its defined byte order without disturbing adjacent data.
     private static byte[] Serialize(CiffRecord directory, bool little)
     {
         List<CiffRecord> children = directory.Children!;
@@ -214,6 +218,7 @@ internal static class CiffHeap
         return true;
     }
 
+    // Preserve the format-specific error code and source offset for malformed CIFF data.
     private static MetadataException Fail(string message, long offset) => new(MetadataErrorCode.InvalidCrw, message, offset);
 
     private static ushort U16(ReadOnlySpan<byte> data, int at, bool little) =>

@@ -5,6 +5,7 @@ internal static class NikonMakerNoteNames
 {
     internal static string? Nikon1(ushort tag) => MakerNoteReader.Lookup(Nikon1Names, tag);
 
+    // Map Nikon1 tag IDs to names in ascending order for binary lookup.
     internal static readonly (ushort Id, string Name)[] Nikon1Names =
     [
         (0x0001, "Version"), (0x0002, "ISOSpeed"), (0x0003, "ColorMode"),
@@ -16,6 +17,7 @@ internal static class NikonMakerNoteNames
 
     internal static string? Nikon2(ushort tag) => MakerNoteReader.Lookup(Nikon2Names, tag);
 
+    // Map Nikon2 tag IDs to names in ascending order for binary lookup.
     internal static readonly (ushort Id, string Name)[] Nikon2Names =
     [
         (0x0003, "Quality"), (0x0004, "ColorMode"), (0x0005, "ImageAdjustment"),
@@ -25,6 +27,7 @@ internal static class NikonMakerNoteNames
 
     internal static string? Nikon3(ushort tag) => MakerNoteReader.Lookup(Nikon3Names, tag);
 
+    // Map Nikon3 tag IDs to names in ascending order for binary lookup.
     internal static readonly (ushort Id, string Name)[] Nikon3Names =
     [
         (0x0001, "Version"), (0x0002, "ISOSpeed"), (0x0003, "ColorMode"),

@@ -270,6 +270,7 @@ public sealed class EpsMetadata
     private static bool HasExiv2Embedding(ReadOnlySpan<byte> postScript, int packetStart) =>
         postScript[..packetStart].LastIndexOf("%Exiv2BeginXMP: Before"u8) >= 0;
 
+    // Keep InsertCanonicalPacket focused on metadata and its format-specific validation contract.
     private static byte[] InsertCanonicalPacket(ReadOnlySpan<byte> original, byte[] packet)
     {
         (int announcementAt, _) = DscInsertPoints(original);
@@ -362,6 +363,7 @@ public sealed class EpsMetadata
         return Splice(withoutPage, implicitContentAt, 0, pageLine);
     }
 
+    // Keep OnlyWhitespace focused on metadata and its format-specific validation contract.
     private static bool OnlyWhitespace(ReadOnlySpan<byte> line)
     {
         foreach (byte value in line)
@@ -369,6 +371,7 @@ public sealed class EpsMetadata
         return true;
     }
 
+    // Keep PdfMarkPacket focused on metadata and its format-specific validation contract.
     private static byte[] PdfMarkPacket(byte[] packet, byte[] ending)
     {
         string[] before =
@@ -402,6 +405,7 @@ public sealed class EpsMetadata
         return result.ToArray();
     }
 
+    // Keep Lines focused on metadata and its format-specific validation contract.
     private static byte[] Lines(byte[] ending, params string[] lines)
     {
         using var result = new MemoryStream();
@@ -411,6 +415,7 @@ public sealed class EpsMetadata
 
     private static int FindLine(ReadOnlySpan<byte> data, string line) => FindAnyLine(data, line);
 
+    // Resolve any line using the format-defined identifiers and naming rules.
     private static int FindAnyLine(ReadOnlySpan<byte> data, params string[] lines)
     {
         int at = 0;
@@ -424,6 +429,7 @@ public sealed class EpsMetadata
         return -1;
     }
 
+    // Reject invalid metadata ranges, overlaps, or field shapes before accepting the data.
     private static void ValidateSections(EpsMetadata metadata)
     {
         if (!metadata.IsDosEps) return;
@@ -442,6 +448,7 @@ public sealed class EpsMetadata
         }
     }
 
+    // Keep Reframe focused on metadata and its format-specific validation contract.
     private static byte[] Reframe(byte[] source, EpsMetadata before, byte[] newPs, long delta)
     {
         int start = checked((int)before.PostScriptOffset);
@@ -456,6 +463,7 @@ public sealed class EpsMetadata
         return output;
     }
 
+    // Keep AdjustSectionOffset focused on metadata and its format-specific validation contract.
     private static void AdjustSectionOffset(byte[] output, int field, long? offset, long length, EpsMetadata before, long delta)
     {
         if (offset is null || length == 0) return;
@@ -467,6 +475,7 @@ public sealed class EpsMetadata
         BinaryPrimitives.WriteUInt32LittleEndian(output.AsSpan(field), (uint)adjusted);
     }
 
+    // Compare the staged result with the source to confirm unrelated metadata data stayed unchanged.
     private static void VerifyPreview(byte[] source, byte[] output, long? offset, long length, EpsMetadata before, long delta, bool tiff)
     {
         if (offset is null || length == 0) return;
@@ -480,6 +489,7 @@ public sealed class EpsMetadata
                 tiff ? "The TIFF preview changed during EPS rewriting." : "The WMF preview changed during EPS rewriting.");
     }
 
+    // Compare the staged result with the source to confirm unrelated metadata data stayed unchanged.
     private static bool SameEntries(XmpPacket? expected, XmpPacket? actual)
     {
         if (expected is null) return actual is null;
@@ -494,6 +504,7 @@ public sealed class EpsMetadata
         return true;
     }
 
+    // Keep DscInsertPoints focused on metadata and its format-specific validation contract.
     private static (int AnnouncementAt, int PacketAt) DscInsertPoints(ReadOnlySpan<byte> postScript)
     {
         int at = AfterLine(postScript, EndOfLine(postScript, 0));
@@ -509,6 +520,7 @@ public sealed class EpsMetadata
         return (postScript.Length, postScript.Length);
     }
 
+    // Keep SetAnnouncement focused on metadata and its format-specific validation contract.
     private static byte[] SetAnnouncement(byte[] postScript, AnnouncementKind value, int? insertionAt = null)
     {
         string target = value == AnnouncementKind.Packet ? "%ADO_ContainsXMP: MainFirst" : "%ADO_ContainsXMP: NoMain";
@@ -542,6 +554,7 @@ public sealed class EpsMetadata
             ? [0x0D, 0x0A]
             : lineEnd < data.Length ? [data[lineEnd]] : [0x0A];
 
+    // Keep Splice focused on metadata and its format-specific validation contract.
     private static byte[] Splice(ReadOnlySpan<byte> source, int start, int remove, ReadOnlySpan<byte> inserted)
     {
         byte[] result = new byte[checked(source.Length - remove + inserted.Length)];
@@ -684,5 +697,6 @@ public sealed class EpsMetadata
         return at;
     }
 
+    // Preserve the format-specific error code and source offset for malformed metadata data.
     private static MetadataException Bad(string message, long offset) => new(MetadataErrorCode.InvalidEps, message, offset);
 }

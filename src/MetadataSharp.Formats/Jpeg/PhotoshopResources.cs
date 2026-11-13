@@ -18,6 +18,7 @@ internal sealed class PhotoshopResources
     internal IReadOnlyList<Resource> Resources => resources;
     private PhotoshopResources(List<Resource> resources, IptcLimits limits)
     { this.resources = resources.AsReadOnly(); this.limits = limits with { }; }
+    // Read JPEG data only after the input extent and applicable resource budgets are checked.
     internal static PhotoshopResources Parse(byte[] payload, IptcLimits limits)
     {
         limits.Validate(); if (payload.Length > limits.MaxPacketBytes) throw IptcPacket.Limit();
@@ -58,6 +59,7 @@ internal sealed class PhotoshopResources
     /// <summary>Whether the resources hold a stream and a digest of 16 bytes that is not the digest of that stream.</summary>
     internal bool DigestIsStale() =>
         Iptc is Resource stream && StoredDigest() is byte[] stored && !stored.AsSpan().SequenceEqual(MD5.HashData(stream.Data.Span));
+    // Keep IptcStream focused on JPEG and its format-specific validation contract.
     private Resource? IptcStream()
     {
         Resource? first = null;
@@ -76,6 +78,7 @@ internal sealed class PhotoshopResources
         try { ValidateTargets(); return null; }
         catch (MetadataException failure) { return failure; }
     }
+    // Reject invalid JPEG ranges, overlaps, or field shapes before accepting the data.
     internal void ValidateTargets()
     {
         if (resources.Count(r => r.Id == 0x0404) > 1 || resources.Count(r => r.Id == 0x0425) > 1)
@@ -127,6 +130,7 @@ internal sealed class PhotoshopResources
         foreach (var block in output) { block.Span.CopyTo(result.AsSpan(at)); at += block.Length; }
         return result;
     }
+    // Keep Frame focused on JPEG and its format-specific validation contract.
     private static byte[] Frame(ushort id, byte[] data, ReadOnlyMemory<byte> header)
     {
         int prefix = header.IsEmpty ? 8 : header.Length;

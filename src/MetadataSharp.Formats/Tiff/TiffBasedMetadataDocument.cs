@@ -102,6 +102,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     internal static Task<TiffBasedMetadataDocument> OpenLegacyAsync(string path, TiffEditOptions options, CancellationToken token) =>
         OpenLegacyPath(path, options.Snapshot(), true, token);
 
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static async Task<TiffBasedMetadataDocument> OpenLegacyPath(string path, TiffEditOptions options,
         bool asynchronous, CancellationToken token)
     {
@@ -118,6 +119,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         TiffEditOptions options, bool asynchronous, CancellationToken token, bool ownsStream = false) =>
         OpenCore(source, path, options.ReadOptions, asynchronous, token, options, ownsStream);
 
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static async Task<TiffBasedMetadataDocument> OpenPath(string path, TiffReadOptions options,
         bool asynchronous, CancellationToken token)
     {
@@ -130,6 +132,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         finally { await file.DisposeAsync().ConfigureAwait(false); }
     }
 
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static async Task<TiffBasedMetadataDocument> OpenCore(Stream source, string? path,
         TiffReadOptions options, bool asynchronous, CancellationToken token,
         TiffEditOptions? legacyOptions = null, bool ownsLegacyStream = false)
@@ -206,12 +209,14 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         return XmpPacket.Parse(entry.Value.RawBytes, options);
     }
 
+    // Retain LegacyLayout state required to parse or write TIFF/DNG data safely.
     internal TiffLayout LegacyLayout => legacyLayout ?? throw new InvalidOperationException("This document was not opened through the legacy TIFF editor.");
 
     internal ExifValue? ReadLegacyValue(TiffFieldKey key) => ReadLegacyValueCore(key, false, default).GetAwaiter().GetResult();
 
     internal Task<ExifValue?> ReadLegacyValueAsync(TiffFieldKey key, CancellationToken token) => ReadLegacyValueCore(key, true, token);
 
+    // Read legacy value core from bounded TIFF/DNG data, validating its declared extent before consuming fields.
     private async Task<ExifValue?> ReadLegacyValueCore(TiffFieldKey key, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -235,6 +240,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     internal Task SaveLegacyAsync(Stream destination, TiffMetadataEdit edit, bool asynchronous, CancellationToken token) =>
         SaveLegacyCore(destination, edit, asynchronous, token);
 
+    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
     private async Task SaveLegacyCore(Stream destination, TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -247,6 +253,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     internal Task SaveLegacyAsAsync(string path, TiffMetadataEdit edit, bool asynchronous, CancellationToken token) =>
         SaveLegacyPath(path, edit, asynchronous, token);
 
+    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
     private async Task SaveLegacyPath(string path, TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -257,6 +264,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
             destination => EmitLegacy(destination, plan, asynchronous, token)).ConfigureAwait(false);
     }
 
+    // Keep PrepareLegacy focused on TIFF/DNG and its format-specific validation contract.
     private async Task<TiffAppendPlan?> PrepareLegacy(TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(edit);
@@ -268,6 +276,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
             .Create(changes).ConfigureAwait(false);
     }
 
+    // Compare the staged result with the source to confirm unrelated TIFF/DNG data stayed unchanged.
     private async Task VerifyLegacySource(bool asynchronous, CancellationToken token)
     {
         if (legacyStream is null || legacyDigest is null || legacyOptions is null)
@@ -277,6 +286,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (!CryptographicOperations.FixedTimeEquals(digest, legacyDigest)) throw ContainerIo.Changed();
     }
 
+    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
     private async Task EmitLegacy(Stream destination, TiffAppendPlan? plan, bool asynchronous, CancellationToken token)
     {
         if (legacyStream is null || legacyOptions is null) throw new InvalidOperationException("Legacy TIFF source is not retained.");
@@ -428,6 +438,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     private static Pending Edit(IptcEdit edit, IptcWriteOptions? write) { ArgumentNullException.ThrowIfNull(edit); return new(null, null, edit.Capture(), null, write?.UpdateDigest ?? false); }
     private static Pending Icc(byte[]? profile) => new(null, null, null, new IccChange(profile is null ? null : (byte[])profile.Clone()));
 
+    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
     private async Task SaveCore(Stream destination, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -436,6 +447,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         await ContainerIo.Write(destination, output, asynchronous, token).ConfigureAwait(false);
     }
 
+    // Write the prepared TIFF/DNG edit only after validation, preserving unrelated payloads.
     private async Task SavePath(string destinationPath, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -680,6 +692,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         return left.AsSpan().SequenceEqual(right);
     }
 
+    // Extract TIFF/DNG from the already-validated representation.
     private ReadOnlySpan<byte> Value(TiffBasedField field)
     {
         if (field.ValueOffset > source.Length - field.ByteLength)

@@ -76,6 +76,7 @@ public sealed partial class XmpPacket
         return entry.Kind is XmpEntryKind.Text or XmpEntryKind.Alt && entry.Values.Count != 0 ? entry.Values[0] : null;
     }
 
+    // Return array members in their stored order and distinguish a missing property from an empty array.
     private IReadOnlyList<string> Items(string namespaceUri, string localName)
     {
         if (Find(namespaceUri, localName) is not XmpEntry entry ||

@@ -6,6 +6,7 @@ namespace MetadataSharp.Core.MakerNotes;
 /// <summary>Corpus-backed Panasonic MakerNote renderings.</summary>
 internal static class PanasonicMakerNoteInterpretations
 {
+    // Decode known Panasonic fields by name while leaving unrecognized values available in raw form.
     internal static string? Interpret(string name, ExifValue value)
     {
         if (name == "AFMode" && value.Count == 2 && ExifTags.TryInteger(value, 0, out long first) &&
@@ -116,6 +117,7 @@ internal static class PanasonicMakerNoteInterpretations
         };
     }
 
+    // Translate Panasonic shooting-mode codes, preserving unknown codes as their stored number.
     private static string? ShootingMode(long number) => Lookup(number,
         (0, "Off"), (1, "Normal"), (2, "Portrait"), (3, "Scenery"), (4, "Sports"), (5, "Night portrait"),
         (6, "Program"), (7, "Aperture priority"), (8, "Shutter-speed priority"), (9, "Macro"), (10, "Spot"),
@@ -136,6 +138,7 @@ internal static class PanasonicMakerNoteInterpretations
         (85, "Appetizing Food"), (86, "Cute Desert"), (87, "Freeze Animal Motion"), (88, "Clear Sports Shot"),
         (89, "Monochrome"), (90, "Creative Control"));
 
+    // Format the Panasonic elapsed-time value using its documented scale and units.
     private static string TimeSincePowerOn(long value)
     {
         long hours = value / 360000;
@@ -147,6 +150,7 @@ internal static class PanasonicMakerNoteInterpretations
 
     private static int SignedShort(long number) => unchecked((short)number);
 
+    // Read Panasonic ASCII fields up to the first NUL and trim only trailing padding.
     private static string? Ascii(ExifValue value)
     {
         ReadOnlySpan<byte> raw = value.RawBytes;
@@ -156,6 +160,7 @@ internal static class PanasonicMakerNoteInterpretations
         return length == 0 ? null : Encoding.ASCII.GetString(raw[..length]);
     }
 
+    // Map a recognized Panasonic numeric code to its label without guessing unknown values.
     private static string? Lookup(long number, params (long Number, string Label)[] entries)
     {
         foreach ((long key, string label) in entries)

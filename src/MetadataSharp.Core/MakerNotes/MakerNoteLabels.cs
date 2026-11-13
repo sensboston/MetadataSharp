@@ -326,6 +326,7 @@ internal static partial class MakerNoteLabels
         return null;
     }
 
+    // Dispatch one interpretation rule to its decoder and leave unsupported value shapes uninterpreted.
     private static string? Apply(Rule rule, ExifValue value, MakerNote? note = null, string? cameraModel = null)
     {
         if (rule.Reading is Form.PentaxFirst or Form.PentaxVersion or Form.PentaxResolution or Form.PentaxDate or Form.PentaxTime or
@@ -1117,6 +1118,7 @@ internal static partial class MakerNoteLabels
         6 => "Bottom Right Zone", 7 => "Bottom Left Zone", 8 => "Top Left Zone", 9 => "Top Right Zone", _ => Stored(number),
     };
 
+    // Decode the Sony AF-point bitset with the camera-generation table; retain unknown set-bit indices.
     private static string? SonyAFPointsUsed(ExifValue value, string? model)
     {
         if (value.FieldType != TiffFieldType.Byte || value.Count == 0)
@@ -1148,6 +1150,7 @@ internal static partial class MakerNoteLabels
         return found.Count == 0 ? "None" : string.Join(", ", found);
     }
 
+    // Treat a zero first byte as no active points; otherwise preserve the stored byte sequence.
     private static string? SonyFocalPlaneAFPointsUsed(ExifValue value)
     {
         if (value.FieldType != TiffFieldType.Byte || value.Count == 0)
@@ -1155,6 +1158,7 @@ internal static partial class MakerNoteLabels
         return value.RawBytes[0] == 0 ? "None" : "(" + string.Join(" ", value.RawBytes.ToArray().Select(item => Whole(item))) + ")";
     }
 
+    // Read the ASCII MetaVersion from the Sony note’s 0x3000 field.
     private static string? SonyMetaVersion(MakerNote? note)
     {
         if (SonyField(note, 0x3000, "MetaVersion") is not ExifValue versionValue || versionValue.FieldType != TiffFieldType.Ascii)
@@ -1165,6 +1169,7 @@ internal static partial class MakerNoteLabels
     private static bool SonyMisc3cNewGeneration(string model) =>
         SonyModelIs(model, "ILCE-1", "ILCE-7M4", "ILCE-7RM5", "ILCE-7SM3", "ILME-FX3");
 
+    // Interpret Misc3c shot counts only for camera models known to use this encoding.
     private static string? SonyMisc3cShotNumber(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Long || !ExifTags.TryInteger(value, 0, out long number))
@@ -1305,6 +1310,7 @@ internal static partial class MakerNoteLabels
         return number switch { 0 => "Multi", 1 => "Center", 2 => "Spot", 3 => "Flexible spot", 10 => "Selective (for miniature effect)", 14 => "Tracking", 15 => "Face tracking", 255 => "Manual", _ => Stored(number) };
     }
 
+    // Apply the model-specific FocusMode2 mapping and preserve unrecognized numeric values.
     private static string SonyFocusMode2Value(long number, string? model)
     {
         if (model is not null && model.StartsWith("DSC-", StringComparison.Ordinal) &&
@@ -1578,6 +1584,7 @@ internal static partial class MakerNoteLabels
         return reading.ToString(CultureInfo.InvariantCulture);
     }
 
+    // Render one BYTE-valued Nikon field as its exact stored integer.
     private static string? NikonRawNumeric(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
@@ -2007,6 +2014,7 @@ internal static partial class MakerNoteLabels
         return positions.Length == 0 ? "(none)" : positions.ToString();
     }
 
+    // Match exactly four big-endian bytes against the rule table; unknown codes stay uninterpreted.
     private static string? FourBytes(Rule rule, ExifValue value)
     {
         if (value.Count != 4 || value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined))
@@ -2021,6 +2029,7 @@ internal static partial class MakerNoteLabels
         return null;
     }
 
+    // Match the NUL-terminated ASCII abbreviation exactly and retain unknown text in parentheses.
     private static string? Abbreviation(Rule rule, ExifValue value)
     {
         if (value.FieldType != TiffFieldType.Ascii || value.Count == 0)

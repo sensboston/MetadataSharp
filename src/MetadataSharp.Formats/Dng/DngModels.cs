@@ -79,6 +79,7 @@ public sealed class DngImageLayout
 /// <summary>One directory of a DNG file.</summary>
 public sealed class DngDirectoryInfo
 {
+    // Capture validated inputs and stable state for this TIFF/DNG object.
     internal DngDirectoryInfo(uint offset, bool isRoot, DngImageLayout? image, IReadOnlyList<TiffFieldInfo> fields, IReadOnlyList<TiffDirectoryLink> links)
     { Offset = offset; IsRoot = isRoot; Image = image; Fields = fields; Links = links; }
     /// <summary>The offset of the directory in the file.</summary>

@@ -18,6 +18,7 @@ public sealed class ExvMetadata
     private const int MaxFileBytes = 64 * 1024 * 1024;
     private const int MaxSegments = 4_096;
 
+    // Capture validated inputs and stable state for this metadata object.
     private ExvMetadata(ExifMetadata? exif, XmpPacket? xmp, IptcPacket? iptc)
     {
         Exif = exif;
@@ -96,6 +97,7 @@ public sealed class ExvMetadata
         return new ExvMetadata(exif, xmp, iptc);
     }
 
+    // Preserve the format-specific error code and source offset for malformed metadata data.
     private static MetadataException Bad(string message, long offset) =>
         new(MetadataErrorCode.InvalidExv, message, offset);
 }

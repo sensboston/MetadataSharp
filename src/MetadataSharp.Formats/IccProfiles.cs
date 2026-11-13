@@ -69,6 +69,7 @@ public static class IccProfiles
         };
     }
 
+    // Preserve the format-specific error code and source offset for malformed metadata data.
     internal static MetadataException Invalid(string message, long? offset = null) =>
         new(MetadataErrorCode.InvalidIccProfile, message, offset);
 
@@ -106,6 +107,7 @@ public static class IccProfiles
             throw Invalid("The ICC profile header lacks the 'acsp' signature.");
     }
 
+    // Keep Ambiguous focused on metadata and its format-specific validation contract.
     private static MetadataException Ambiguous(string message, long offset) =>
         new(MetadataErrorCode.AmbiguousMetadata, message, offset);
 
@@ -232,6 +234,7 @@ public static class IccProfiles
 
     private const uint RiffProfileChunk = 0x49434350;
 
+    // Keep WebP focused on metadata and its format-specific validation contract.
     private static byte[]? WebP(ReadOnlySpan<byte> data, MetadataLimits limits)
     {
         int at = 12;

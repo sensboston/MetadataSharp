@@ -118,6 +118,7 @@ internal static class OlympusMakerNoteInterpretations
         };
     }
 
+    // Decode the Olympus image-processing payload by its versioned subfield layout.
     private static string? ImageProcessing(string name, ExifValue value)
     {
         if (name == "ImageProcessingVersion") return Version(value);
@@ -158,6 +159,7 @@ internal static class OlympusMakerNoteInterpretations
         };
     }
 
+    // Format the Olympus version bytes only when they match the expected ASCII shape.
     private static string? Version(ExifValue value)
     {
         ReadOnlySpan<byte> bytes = value.RawBytes;
@@ -179,6 +181,7 @@ internal static class OlympusMakerNoteInterpretations
         return ((double)distance).ToString("0.00", CultureInfo.InvariantCulture) + " m";
     }
 
+    // Decode the named camera-settings array using its exact Olympus layout and element types.
     private static string? CameraSettings(string name, ExifValue value)
     {
         if (name == "CameraSettingsVersion") return Version(value);
@@ -373,6 +376,7 @@ internal static class OlympusMakerNoteInterpretations
         return ratio.ToString("0.0", CultureInfo.InvariantCulture) + "x";
     }
 
+    // Return a label only for numeric values present in the Olympus code table.
     private static string? Lookup(long number, params (long Number, string Label)[] entries)
     {
         foreach ((long key, string label) in entries)
@@ -381,6 +385,7 @@ internal static class OlympusMakerNoteInterpretations
         return null;
     }
 
+    // Use an Olympus label when known and otherwise preserve the numeric value as stored.
     private static string LookupOrStored(long number, params (long Number, string Label)[] entries)
     {
         foreach ((long key, string label) in entries)

@@ -120,6 +120,7 @@ public sealed partial class PngMetadataDocument
 
     private static byte[]? Clone(byte[]? bytes) => bytes is null ? null : (byte[])bytes.Clone();
 
+    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
     private async Task SaveEmbedded(Stream destination, EmbeddedKind kind, string? comment, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -128,6 +129,7 @@ public sealed partial class PngMetadataDocument
         await EmitEmbedded(destination, plan, asynchronous, token).ConfigureAwait(false);
     }
 
+    // Write the prepared PNG edit only after validation, preserving unrelated payloads.
     private async Task SaveEmbeddedPath(string destinationPath, EmbeddedKind kind, string? comment, byte[]? profile, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -215,6 +217,7 @@ public sealed partial class PngMetadataDocument
         return (type, data);
     }
 
+    // Keep Deflate focused on PNG and its format-specific validation contract.
     private static byte[] Deflate(byte[] bytes)
     {
         using var packed = new MemoryStream();

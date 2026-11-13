@@ -15,6 +15,7 @@ namespace MetadataSharp.Formats.Mrw;
 /// </summary>
 public sealed class MrwMetadata
 {
+    // Capture validated inputs and stable state for this metadata object.
     private MrwMetadata(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp, long tiffOffset, long tiffLength)
     {
         Exif = exif;
@@ -51,6 +52,7 @@ public sealed class MrwMetadata
     /// </exception>
     public static MrwMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) => Read(data, limits, null);
 
+    // Read metadata data only after the input extent and applicable resource budgets are checked.
     internal static MrwMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, KindRefusals? refusals)
     {
         limits?.Validate();
@@ -99,5 +101,6 @@ public sealed class MrwMetadata
         }
     }
 
+    // Preserve the format-specific error code and source offset for malformed metadata data.
     private static MetadataException Fail(string message, long offset) => new(MetadataErrorCode.InvalidMrw, message, offset);
 }

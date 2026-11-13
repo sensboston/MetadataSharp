@@ -109,6 +109,7 @@ internal static class Program
         return 0;
     }
 
+    // Emit preview dimensions, MIME types, lengths, and source labels in the dump protocol.
     private static void ListPreviews(string path, StreamWriter stdout)
     {
         if (!WithinBudget(new FileInfo(path).Length, stdout)) return;
@@ -123,6 +124,7 @@ internal static class Program
         Done(stdout);
     }
 
+    // Read one bounded ICC profile and report its length and stable digest, never its bytes.
     private static void IccProfile(string path, StreamWriter stdout)
     {
         if (!WithinBudget(new FileInfo(path).Length, stdout)) return;
@@ -134,6 +136,7 @@ internal static class Program
         Done(stdout);
     }
 
+    // Emit decoded image comments as escaped protocol records in source order.
     private static void ListComments(string path, StreamWriter stdout)
     {
         if (!WithinBudget(new FileInfo(path).Length, stdout)) return;
@@ -303,6 +306,7 @@ internal static class Program
         Done(stdout);
     }
 
+    // Read an EXV sidecar through the normal metadata reader and emit its entries.
     private static void Exv(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
@@ -375,6 +379,7 @@ internal static class Program
         Tag(stdout, "Exif.Image2.JPEGInterchangeFormatLength", "Long", 1, length.ToString(CultureInfo.InvariantCulture));
     }
 
+    // Parse JP2 boxes and emit image properties and metadata using the dump protocol.
     private static void Jp2(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
@@ -387,6 +392,7 @@ internal static class Program
         Done(stdout);
     }
 
+    // Read supported sidecar metadata and emit its values without changing the source.
     private static void Sidecar(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
@@ -478,6 +484,7 @@ internal static class Program
         }
     }
 
+    // Classify Olympus MakerNote tags by their interpretation group.
     private static string OlympusGroup(ushort tag) => tag switch
     {
         0x2010 => "OlympusEq", 0x2020 => "OlympusCs", 0x2030 => "OlympusRd", 0x2031 => "OlympusRd2",
@@ -499,6 +506,7 @@ internal static class Program
         return note.Format == MakerNoteFormat.Sony1 && entry.TagId == 0xB020 && value.Length == 0 ? "()" : value;
     }
 
+    // Select the Sony array decoder from the MakerNote format and tag ID.
     private static string SonyArrayGroup(MakerNoteFormat format, ushort tag) => tag switch
     {
         0x0114 => format == MakerNoteFormat.Sony1 ? "Sony1Cs" : "Sony2Cs",
@@ -530,6 +538,7 @@ internal static class Program
         };
     }
 
+    // Map array-valued MakerNote tags to the decoder group used by the formatter.
     private static string ArrayGroup(ushort tag) => tag switch
     {
         0x0001 => "Cs",
@@ -651,6 +660,7 @@ internal static class Program
         }
     }
 
+    // Emit normalized video properties as escaped key/value records.
     private static void Video(VideoMetadata video, StreamWriter stdout)
     {
         foreach (VideoProperty property in video.Properties)
@@ -667,6 +677,7 @@ internal static class Program
         }
     }
 
+    // Join list values using the dump protocol’s delimiter and escaping rules.
     private static string Join(IReadOnlyList<string> items)
     {
         var parts = new List<string>(items.Count);
@@ -725,6 +736,7 @@ internal static class Program
         _ => null,
     };
 
+    // Map an EXIF directory kind to its stable printed group name.
     private static string Group(ExifDirectoryKind directory) => directory switch
     {
         ExifDirectoryKind.Ifd0 => "Image",
@@ -734,6 +746,7 @@ internal static class Program
         _ => "Thumbnail",
     };
 
+    // Render a CIFF record ID using its standardized name or numeric fallback.
     private static string RecordName(byte record) => record switch
     {
         1 => "Iptc.Envelope",
@@ -741,6 +754,7 @@ internal static class Program
         _ => "Iptc.Record" + record.ToString(CultureInfo.InvariantCulture),
     };
 
+    // Render a TIFF field type using its stable public-facing name.
     private static string TypeName(TiffFieldType type) => type switch
     {
         TiffFieldType.Byte => "Byte",
@@ -758,6 +772,7 @@ internal static class Program
         _ => "Type" + ((ushort)type).ToString(CultureInfo.InvariantCulture),
     };
 
+    // Return the encoded byte width of a TIFF field type, or zero when unsupported.
     private static int Size(TiffFieldType type) => type switch
     {
         TiffFieldType.Byte or TiffFieldType.Ascii or TiffFieldType.SByte or TiffFieldType.Undefined => 1,
@@ -812,6 +827,7 @@ internal static class Program
         : double.IsInfinity(value) ? (value < 0 ? "-inf" : "inf")
         : value.ToString("G15", CultureInfo.InvariantCulture).Replace('E', 'e');
 
+    // Format an EXIF value according to its type without changing its stored bytes.
     private static string Render(ExifValue value)
     {
         var bytes = new byte[value.ByteLength];
@@ -871,6 +887,7 @@ internal static class Program
 
     private static string Hex(ushort value) => value.ToString("x4", CultureInfo.InvariantCulture);
 
+    // Remove only the format-defined terminator and padding from a raw value.
     private static byte[] Trim(byte[] bytes)
     {
         int end = bytes.Length;
@@ -917,6 +934,7 @@ internal static class Program
         return bytes;
     }
 
+    // Read a typed integer at an offset only when the complete value is in range.
     private static bool At(byte[] data, int at, params int[] expected)
     {
         if (at + expected.Length > data.Length) return false;
@@ -924,6 +942,7 @@ internal static class Program
         return true;
     }
 
+    // Refuse oversized input before loading it and emit a protocol error record.
     private static bool WithinBudget(long length, StreamWriter stdout)
     {
         if (length <= MaxWholeFileBytes) return true;
@@ -947,6 +966,7 @@ internal static class Program
         else Record(stdout, "STATUS", "ok", string.Join(",", refused));
     }
 
+    // Write one escaped, tab-separated record with the protocol’s required field count.
     private static void Record(StreamWriter stdout, params string[] fields)
     {
         for (int i = 0; i < fields.Length; i++)

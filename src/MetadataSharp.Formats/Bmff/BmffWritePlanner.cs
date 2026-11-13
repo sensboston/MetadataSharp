@@ -48,6 +48,7 @@ internal sealed class BmffWritePlan(int sourceLength, List<(int Offset, byte[] B
     internal bool IsEmpty => Patches.Count == 0 && Tail.Length == 0;
     internal int OutputLength => SourceLength + Tail.Length;
 
+    // Apply the requested changes to a staged copy and preserve unrelated BMFF bytes.
     internal byte[] Apply(byte[] source)
     {
         byte[] output = new byte[OutputLength];
@@ -101,6 +102,7 @@ internal sealed class BmffWritePlanner
     /// <summary>What every item but the edited one addresses, in the widest reading of its extents.</summary>
     private readonly List<(BmffSegment Segment, int Method)> others = [];
 
+    // Capture validated inputs and stable state for this BMFF object.
     private BmffWritePlanner(byte[] source, BmffFileMap map, BmffItemKind kind, BmffItem? target, byte[] payload,
         MetadataLimits limits)
     {
@@ -129,6 +131,7 @@ internal sealed class BmffWritePlanner
         return new BmffWritePlanner(source, map, kind, target, payload, limits).Plan();
     }
 
+    // Reserve output ranges and compute lengths before serialization to catch overlap and overflow.
     private BmffWritePlan Plan()
     {
         BmffLocation? old = null;
@@ -301,6 +304,7 @@ internal sealed class BmffWritePlanner
         return data;
     }
 
+    // Keep NewItemId focused on BMFF and its format-specific validation contract.
     private uint NewItemId()
     {
         if (map.HasUnknownItemEntry)
@@ -452,6 +456,7 @@ internal sealed class BmffWritePlanner
         return Sized(bytes);
     }
 
+    // Keep MetaLength focused on BMFF and its format-specific validation contract.
     private int MetaLength(byte[] locations, byte[] information, byte[] references)
     {
         long length = 8 + 4;
@@ -521,6 +526,7 @@ internal sealed class BmffWritePlanner
     /// <summary>The smallest field size of an item location box that holds the value.</summary>
     private static int Width(ulong value) => value > uint.MaxValue ? 8 : 4;
 
+    // Serialize sized in its defined byte order without disturbing adjacent data.
     private static void PutSized(List<byte> bytes, int size, ulong value)
     {
         if (size == 0) return;
@@ -541,6 +547,7 @@ internal sealed class BmffWritePlanner
         bytes.Add((byte)value);
     }
 
+    // Serialize put32 in its defined byte order without disturbing adjacent data.
     private static void Put32(List<byte> bytes, uint value)
     {
         bytes.Add((byte)(value >> 24));
@@ -549,6 +556,7 @@ internal sealed class BmffWritePlanner
         bytes.Add((byte)value);
     }
 
+    // Preserve the format-specific error code and source offset for malformed BMFF data.
     private static MetadataException Unsafe(string message, long? offset) =>
         new(MetadataErrorCode.UnsafeRelocation, message, offset);
 }

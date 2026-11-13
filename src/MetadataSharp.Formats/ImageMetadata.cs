@@ -303,6 +303,7 @@ public sealed class ImageMetadata
         return OpenAndCompose(path, limits, cancellationToken);
     }
 
+    // Open the source with the selected options, keeping stream ownership and cancellation explicit.
     private static async Task<ImageMetadata> OpenAndCompose(string path, MetadataLimits? limits, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -314,6 +315,7 @@ public sealed class ImageMetadata
 
     // ---- the signature ----
 
+    // Extract metadata from the already-validated representation.
     private static bool At(ReadOnlySpan<byte> header, int offset, ReadOnlySpan<byte> bytes) =>
         header.Length - offset >= bytes.Length && header.Slice(offset, bytes.Length).SequenceEqual(bytes);
 
@@ -325,6 +327,7 @@ public sealed class ImageMetadata
 
     // ---- the bytes ----
 
+    // Reject invalid metadata ranges, overlaps, or field shapes before accepting the data.
     private static void Check(Stream source, MetadataLimits? limits)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -465,6 +468,7 @@ public sealed class ImageMetadata
         return new ImageMetadata(format, parts, profile, comments, previews);
     }
 
+    // Read JPEG from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadJpeg(byte[] file, MetadataLimits? limits, Parts parts)
     {
         var refusals = new KindRefusals();
@@ -482,6 +486,7 @@ public sealed class ImageMetadata
         }
     }
 
+    // Read PNG from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadPng(byte[] file, MetadataLimits? limits, Parts parts)
     {
         PngMetadataDocument document;
@@ -498,6 +503,7 @@ public sealed class ImageMetadata
         }
     }
 
+    // Read web p from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadWebP(byte[] file, MetadataLimits? limits, Parts parts)
     {
         WebPMetadataDocument document;
@@ -531,6 +537,7 @@ public sealed class ImageMetadata
         catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Xmp); }
     }
 
+    // Read PSD from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadPsd(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
     {
         PsdMetadata resources;
@@ -544,6 +551,7 @@ public sealed class ImageMetadata
         catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Xmp); }
     }
 
+    // Read exv from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadExv(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
     {
         var refusals = new KindRefusals();
@@ -579,6 +587,7 @@ public sealed class ImageMetadata
         catch (MetadataException refusal) { parts.Refuse(refusal, XmpOnly); }
     }
 
+    // Read CR3 from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadCr3(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
     {
         var refusals = new KindRefusals();
@@ -590,6 +599,7 @@ public sealed class ImageMetadata
         parts.Refuse(refusals);
     }
 
+    // Read BMFF from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadBmff(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
     {
         var refusals = new KindRefusals();
@@ -601,6 +611,7 @@ public sealed class ImageMetadata
         parts.Refuse(refusals);
     }
 
+    // Read CRW from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadCrw(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
     {
         try
@@ -612,6 +623,7 @@ public sealed class ImageMetadata
         catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Exif); }
     }
 
+    // Read mrw from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadMrw(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
     {
         var refusals = new KindRefusals();
@@ -626,6 +638,7 @@ public sealed class ImageMetadata
         catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); }
     }
 
+    // Read RAF from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadRaf(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
     {
         var refusals = new KindRefusals();
@@ -641,6 +654,7 @@ public sealed class ImageMetadata
         catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); }
     }
 
+    // Read JXL from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadJxl(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
     {
         var refusals = new KindRefusals();

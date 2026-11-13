@@ -60,6 +60,7 @@ public sealed class EpsHeader
     private static bool Parse(string value, out int result) =>
         int.TryParse(value, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out result);
 
+    // Keep Line focused on metadata and its format-specific validation contract.
     private static ReadOnlySpan<byte> Line(ReadOnlySpan<byte> data, ref int pos)
     {
         if (pos >= data.Length) throw Bad("Truncated EPS header.");
@@ -78,5 +79,6 @@ public sealed class EpsHeader
     }
     private static MetadataException Bad(string message) => new(MetadataErrorCode.InvalidEps, message);
     private static MetadataException Unsupported(string message) => new(MetadataErrorCode.UnsupportedFeature, message);
+    // Convert budget exhaustion into the format-specific LimitExceeded error.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "EPS exceeds a fixed header budget.");
 }

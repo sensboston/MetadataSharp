@@ -17,6 +17,7 @@ namespace MetadataSharp.Formats.Tiff;
 /// </remarks>
 internal static class TiffBasedWriteVerifier
 {
+    // Compare the staged result with the source to confirm unrelated TIFF/DNG data stayed unchanged.
     internal static void Verify(byte[] source, TiffBasedFileMap before, ExifMetadata exifBefore, byte[] output,
         TiffBasedWritePlan plan, MetadataLimits limits, int maxRanges, bool allowMakerNoteCopy = false)
     {
@@ -103,6 +104,7 @@ internal static class TiffBasedWriteVerifier
         }
     }
 
+    // Compare the staged result with the source to confirm unrelated TIFF/DNG data stayed unchanged.
     private static void Bytes(byte[] source, TiffBasedFileMap before, byte[] output, TiffBasedWritePlan plan)
     {
         if (plan.SourceLength != source.Length || output.Length != plan.OutputLength)

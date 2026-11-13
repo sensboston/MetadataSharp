@@ -7,6 +7,7 @@ internal static partial class MakerNoteLabels
 {
     private static (long Number, string Label)[] NotAvailableAtEnds => [(0, "n/a"), (255, "n/a")];
 
+    // Interpret selected tags from the early Nikon1 directory layout.
     private static readonly Rule[] Nikon1 =
     [
         new(Top, "Focus", [], Form.Abbreviation)
@@ -19,6 +20,7 @@ internal static partial class MakerNoteLabels
         new(Top, "AFFocusPos", [], Form.NikonAfFocusPosition),
     ];
 
+    // Interpret selected tags from the Nikon2 directory layout, whose IDs differ from Nikon1.
     private static readonly Rule[] Nikon2 =
     [
         new(Top, "Quality", []),

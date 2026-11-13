@@ -24,6 +24,7 @@ namespace MetadataSharp.Formats.SmallFormats;
 /// </remarks>
 public sealed class BmpMetadata
 {
+    // Capture validated inputs and stable state for this metadata object.
     private BmpMetadata(uint width, uint height, int headerBytes)
     {
         Width = width;

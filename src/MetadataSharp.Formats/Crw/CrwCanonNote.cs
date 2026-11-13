@@ -69,6 +69,7 @@ internal static class CrwCanonNote
         return block;
     }
 
+    // Extract CIFF from the already-validated representation.
     private static void Entry(Span<byte> span, int at, ushort tag, ushort type, uint count, uint value, bool little)
     {
         Put16(span, at, tag, little);

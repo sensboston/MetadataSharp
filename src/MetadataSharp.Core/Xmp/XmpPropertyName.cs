@@ -20,6 +20,7 @@ public readonly record struct XmpPropertyName
     /// <summary>The name inside the namespace, for example <c>title</c>.</summary>
     public string LocalName { get; }
 
+    // Reject invalid namespace URIs, prefixes, and local names before constructing an expanded property name.
     internal void Validate()
     {
         if (string.IsNullOrEmpty(NamespaceUri) || !Uri.TryCreate(NamespaceUri, UriKind.Absolute, out _) ||
