@@ -1,6 +1,12 @@
+import contextlib
+import io
+import json
+import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).parents[2]
 sys.path.insert(0, str(ROOT / "tools" / "parity"))
@@ -64,6 +70,22 @@ class VideoGateTests(unittest.TestCase):
         passed, message = video_gate.evaluate(report)
         self.assertFalse(passed)
         self.assertIn("generated:authored-matroska.mkv", message)
+
+    def test_main_writes_failure_reason_to_github_step_summary(self):
+        report = self.report(rows=[{"key": "Xmp.video.Extra", "outcome": "extra-key"}])
+        with tempfile.TemporaryDirectory() as directory:
+            report_path = Path(directory) / "parity-report.json"
+            summary_path = Path(directory) / "summary.md"
+            report_path.write_text(json.dumps(report), encoding="utf-8")
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(summary_path)}):
+                with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                    result = video_gate.main([str(report_path)])
+            self.assertEqual(result, 1)
+            contents = summary_path.read_text(encoding="utf-8")
+            self.assertIn("ours-only keys (must be removed): Xmp.video.Extra", contents)
+            self.assertTrue(contents.endswith("```\n"))
 
 
 if __name__ == "__main__":

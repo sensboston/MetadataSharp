@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -104,11 +106,21 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as error:
         print("::error::Video gate evaluation crashed: " + repr(error))
         raise
-    print(message, end="")
+    print(message, end="", flush=True)
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path:
+        with open(summary_path, "a", encoding="utf-8") as summary:
+            summary.write("## Video parity gate (Exiv2 0.28.9)\n\n```text\n")
+            summary.write(message)
+            summary.write("```\n")
     if not passed:
+        # Write to stderr as well as stdout: this remains visible in the failed step log even when
+        # the runner or check-annotation collector suppresses stdout annotations from child tools.
+        sys.stderr.write(message)
+        sys.stderr.flush()
         for line in message.splitlines():
             if line.strip() not in {"FAIL", ""}:
-                print("::error::VideoGate: " + line.strip()[:1500])
+                print("::error title=VideoGate::" + line.strip()[:1500], flush=True)
     return 0 if passed else 1
 
 
