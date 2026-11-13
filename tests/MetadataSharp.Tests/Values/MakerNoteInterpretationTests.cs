@@ -58,6 +58,14 @@ public sealed class MakerNoteInterpretationTests
         return ExifValue.FromRaw(TiffFieldType.SLong, (uint)numbers.Length, Little, bytes);
     }
 
+    private static ExifValue SignedRational(int numerator, int denominator)
+    {
+        var bytes = new byte[8];
+        BinaryPrimitives.WriteInt32LittleEndian(bytes, numerator);
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(4), denominator);
+        return ExifValue.FromRaw(TiffFieldType.SRational, 1, Little, bytes);
+    }
+
     private static ExifValue Rationals(params (uint Numerator, uint Denominator)[] numbers)
     {
         var bytes = new byte[numbers.Length * 8];
@@ -70,18 +78,36 @@ public sealed class MakerNoteInterpretationTests
     }
 
     /// <summary>What a note of the format makes of a tag of its own directory with this name and value.</summary>
-    private static string? Top(MakerNoteFormat format, string? name, ExifValue value)
+    private static string? Top(MakerNoteFormat format, string? name, ExifValue value, string? cameraModel = null)
     {
         var entry = new MakerNoteEntry(0x7001, name, value, []);
-        return new MakerNote(format, Little, [entry]).Interpret(entry);
+        var note = new MakerNote(format, Little, [entry]);
+        return cameraModel is null ? note.Interpret(entry) : note.InterpretForModel(entry, cameraModel);
     }
 
     /// <summary>What a note of the format makes of a named field of the array tag.</summary>
-    private static string? Field(MakerNoteFormat format, int tag, string name, ExifValue value, int index = 1)
+    private static string? Field(MakerNoteFormat format, int tag, string name, ExifValue value, int index = 1,
+        string? cameraModel = null)
     {
         var part = new MakerNoteField((ushort)index, name, value);
         var entry = new MakerNoteEntry((ushort)tag, "Array", Undefined(0), [part]);
-        return new MakerNote(format, Little, [entry]).Interpret(entry, part);
+        var note = new MakerNote(format, Little, [entry]);
+        return cameraModel is null ? note.Interpret(entry, part) : note.InterpretFieldForModel(entry, part, cameraModel);
+    }
+
+    private static string? NikonFlashField(string version, string name, byte value, params (string Name, byte Value)[] siblings)
+    {
+        var fields = new List<MakerNoteField>
+        {
+            new(0, "Version", Undefined(Encoding.ASCII.GetBytes(version))),
+        };
+        foreach ((string siblingName, byte siblingValue) in siblings)
+            fields.Add(new MakerNoteField((ushort)fields.Count, siblingName, Bytes(siblingValue)));
+        if (!fields.Any(field => field.Name == name))
+            fields.Add(new MakerNoteField((ushort)fields.Count, name, Bytes(value)));
+        var entry = new MakerNoteEntry(0x00A8, "FlashInfo", Undefined(0), fields);
+        var note = new MakerNote(MakerNoteFormat.Nikon3, Little, [entry]);
+        return note.Interpret(entry, fields.Single(field => field.Name == name));
     }
 
     // ---- Canon -------------------------------------------------------------------------------------------
@@ -275,10 +301,11 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("1.00", Field(MakerNoteFormat.Nikon3, 0x001F, "Version", Undefined(0x30, 0x31, 0x30, 0x30)));
         Assert.Equal("8.01", Field(MakerNoteFormat.Nikon3, 0x0098, "Version", Undefined(0x30, 0x38, 0x30, 0x31)));
         Assert.Equal("12.34", Field(MakerNoteFormat.Nikon3, 0x0091, "Version", Undefined(0x31, 0x32, 0x33, 0x34)));
-        // Not four digits: nothing to read.
-        Assert.Null(Top(MakerNoteFormat.Nikon3, "Version", Undefined(0, 2, 0, 0)));
+        // Exiv2's C-string based version printer renders an initial NUL as an empty version.
+        Assert.Equal("()", Top(MakerNoteFormat.Nikon3, "Version", Undefined(0, 2, 0, 0)));
         Assert.Null(Top(MakerNoteFormat.Nikon3, "Version", Undefined(0x30, 0x32, 0x31)));
         Assert.Null(Top(MakerNoteFormat.Nikon3, "Version", Ascii("0211")));
+        Assert.Equal("()", Top(MakerNoteFormat.Nikon3, "Version", Undefined()));
         // The rule is Nikon's.
         Assert.Null(Top(MakerNoteFormat.Canon, "Version", Undefined(0x30, 0x32, 0x31, 0x31)));
     }
@@ -333,32 +360,131 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal(expected, Field(MakerNoteFormat.Nikon3, 0x0024, "Timezone", SignedShorts(minutes)));
 
     [Theory]
-    [InlineData(0, 1, 6, "0.0 EV")]
-    [InlineData(250, 1, 6, "-1.0 EV")]
-    [InlineData(254, 1, 6, "-0.3 EV")]
-    [InlineData(4, 1, 6, "+0.7 EV")]
-    [InlineData(2, 2, 6, "+0.7 EV")]
-    [InlineData(1, 1, 12, "+0.1 EV")]
-    [InlineData(3, 1, 12, "+0.2 EV")]     // 0.25 is halfway: the even tenth
-    [InlineData(9, 1, 12, "+0.8 EV")]     // 0.75 is halfway: the even tenth
-    [InlineData(18, 1, 12, "+1.5 EV")]
-    public void ANikonStopFractionIsRoundedToATenth(int count, int step, int perStop, string expected) =>
-        Assert.Equal(expected, Top(MakerNoteFormat.Nikon3, "FlashComp", Undefined((byte)count, (byte)step, (byte)perStop, 0)));
+    [InlineData(0x00, "0.0 EV")]
+    [InlineData(0x02, "+0.3 EV")]
+    [InlineData(0x06, "+1.0 EV")]
+    [InlineData(0xFE, "-0.3 EV")]
+    [InlineData(0xFA, "-1.0 EV")]
+    [InlineData(0xEE, "-3.0 EV")]
+    [InlineData(0x80, "(128)")]
+    public void NikonFlashCompUsesItsFirstByteAsAnEnumeration(int code, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Nikon3, "FlashComp", Undefined((byte)code, 1, 6, 0)));
 
     [Fact]
-    public void ANikonStopFractionNeedsItsFourBytesAndADivisor()
+    public void NikonFlashCompRequiresAByteLikeValue()
     {
-        Assert.Null(Top(MakerNoteFormat.Nikon3, "ProgramShift", Undefined(6, 1, 0, 0)));
-        Assert.Null(Top(MakerNoteFormat.Nikon3, "ProgramShift", Undefined(6, 1, 6)));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "ProgramShift", Undefined()));
         Assert.Null(Top(MakerNoteFormat.Nikon3, "ProgramShift", Shorts(6, 1, 6, 0)));
+        Assert.Equal("+1.0 EV", Top(MakerNoteFormat.Nikon3, "ProgramShift", Undefined(6)));
     }
 
     [Fact]
-    public void TheNikonExposureDifferenceIsAStopFractionToo()
+    public void TheNikonShootingModeNamesTheLegacyCompositeValue()
+    {
+        Assert.Equal("Single-frame, Exposure bracketing, Unused LE-NR slowdown",
+            Top(MakerNoteFormat.Nikon3, "ShootingMode", Shorts(48)));
+    }
+
+    [Fact]
+    public void TheNikonExposureDifferenceUsesItsFirstByteMapping()
     {
         Assert.Equal("0.0 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(0, 1, 12, 0)));
-        Assert.Equal("+0.1 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(1, 1, 12, 0)));
-        Assert.Equal("-1.1 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(243, 1, 12, 0)));
+        Assert.Equal("+0.3 EV", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(2, 1, 12, 0)));
+        Assert.Equal("(128)", Top(MakerNoteFormat.Nikon3, "ExposureDiff", Undefined(128, 1, 12, 0)));
+    }
+
+    [Theory]
+    [InlineData("ColorMode", 1, "Color")]
+    [InlineData("ColorMode", 2, "Monochrome")]
+    [InlineData("ImageAdjustment", 3, "Contrast+")]
+    [InlineData("ISOSpeed", 0, "80")]
+    [InlineData("ISOSpeed", 5, "100")]
+    [InlineData("WhiteBalance", 6, "Speedlight")]
+    public void NikonTwoEnumsAreNamed(string name, int number, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Nikon2, name, Shorts(number)));
+
+    [Fact]
+    public void NikonTwoUnknownQualityRemainsRaw()
+    {
+        Assert.Equal("(12)", Top(MakerNoteFormat.Nikon2, "Quality", Shorts(12)));
+        Assert.Null(Top(MakerNoteFormat.Nikon3, "Quality", Shorts(12)));
+    }
+
+    [Fact]
+    public void NikonOneFocusAndDistanceFieldsAreRead()
+    {
+        Assert.Equal("Continuous autofocus", Top(MakerNoteFormat.Nikon1, "Focus", Ascii("AF-C  ")));
+        Assert.Equal("Unknown", Top(MakerNoteFormat.Nikon1, "FocusDistance", Rationals((0, 1))));
+        Assert.Equal("1.50 m", Top(MakerNoteFormat.Nikon1, "FocusDistance", Rationals((3, 2))));
+        Assert.Equal("Not used", Top(MakerNoteFormat.Nikon1, "DigitalZoom", Rationals((0, 1))));
+        Assert.Equal("1.0x", Top(MakerNoteFormat.Nikon1, "DigitalZoom", Rationals((1, 1))));
+        Assert.Equal("Dynamic area; Center", Top(MakerNoteFormat.Nikon1, "AFFocusPos", Undefined(1, 0, 0, 0)));
+    }
+
+    [Fact]
+    public void NikonThreeTopLevelValuesAndAutofocusFlagsAreInterpreted()
+    {
+        Assert.Equal("Unknown", Top(MakerNoteFormat.Nikon3, "FocusDistance", Rationals((0, 1))));
+        Assert.Equal("1.0x", Top(MakerNoteFormat.Nikon3, "DigitalZoom", Rationals((1, 1))));
+        Assert.Equal("7.8 x 7.8 um", Top(MakerNoteFormat.Nikon3, "SensorPixelSize", Rationals((78, 10), (78, 10))));
+        Assert.Equal("1583", Top(MakerNoteFormat.Nikon3, "BarometerInfo", Undefined(0, 0, 0, 0, 0, 0, 0x2F, 0x06, 0, 0, 0, 0)));
+        Assert.Equal("0", Field(MakerNoteFormat.Nikon3, 0x00B9, "AFFineTuneAdj", Bytes(0)));
+        Assert.Equal("Lower-right", Field(MakerNoteFormat.Nikon3, 0x0088, "AFPointsInFocus", Shorts(0x0100), 2));
+        Assert.Equal("Lower-right", Field(MakerNoteFormat.Nikon3, 0x0088, "AFPointsInFocus", Shorts(1), 2, "NIKON D70"));
+        Assert.Equal("Fired", Field(MakerNoteFormat.Nikon3, 0x00A8, "ExternalFlashFlags", Bytes(0), 8));
+        Assert.Equal("Off", Field(MakerNoteFormat.Nikon3, 0x00A8, "FlashGroupAControlMode", Bytes(0), 15));
+    }
+
+    [Fact]
+    public void NikonIsoInfoUsesItsThirdStopEncodingAndExpansionLabels()
+    {
+        Assert.Equal("100", Field(MakerNoteFormat.Nikon3, 0x0025, "ISO", Bytes(60)));
+        Assert.Equal("12800", Field(MakerNoteFormat.Nikon3, 0x0025, "ISO2", Bytes(144)));
+        Assert.Equal("3", Field(MakerNoteFormat.Nikon3, 0x0091, "ISO", Bytes(0), 598));
+        Assert.Equal("Off", Field(MakerNoteFormat.Nikon3, 0x0025, "ISOExpansion", Shorts(0)));
+        Assert.Equal("Hi 2.0", Field(MakerNoteFormat.Nikon3, 0x0025, "ISOExpansion2", Shorts(0x108)));
+        Assert.Null(Field(MakerNoteFormat.Nikon3, 0x0025, "ISO", Shorts(60)));
+    }
+
+    [Fact]
+    public void NikonFlashInfoUsesVersionAndSiblingControlModes()
+    {
+        Assert.Equal("Did not fire", NikonFlashField("0106", "ExternalFlashData1", 0));
+        Assert.Equal("Fired, Bounce Flash adaptor, Wide Flash adaptor", NikonFlashField("0106", "ExternalFlashData1", 0x15));
+        Assert.Equal("External flash off", NikonFlashField("0106", "ExternalFlashData2", 0));
+        Assert.Equal("External flash on, Manual", NikonFlashField("0106", "ExternalFlashData2", 0x86));
+        Assert.Equal("n/a", NikonFlashField("0106", "FlashCompensationMaster", 0, ("ExternalFlashData1", (byte)0)));
+        Assert.Equal("1/1", NikonFlashField("0106", "FlashCompensationMaster", 0, ("ExternalFlashData1", (byte)6)));
+        Assert.Equal("External flash off", NikonFlashField("0107", "ExternalFlashData1", 0));
+        Assert.Equal("External flash on, External flash zoom override, Bounce Flash adaptor",
+            NikonFlashField("0108", "ExternalFlashData1", 0x85));
+        Assert.Equal("Manual", NikonFlashField("0107", "ExternalFlashData2", 6));
+        Assert.Equal("Exposure Comp.: Background Only", NikonFlashField("0107", "ExternalFlashData3", 4));
+    }
+
+    [Fact]
+    public void NikonLensDataThreeNumbersUseTheirEncodedUnits()
+    {
+        Assert.Equal("F2.0", Field(MakerNoteFormat.Nikon3, 0x0098, "AFAperture", Bytes(24)));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance", Bytes(0)));
+        Assert.Equal("1.00 m", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance", Bytes(80)));
+        Assert.Equal("10.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength", Bytes(24)));
+        Assert.Equal("F5.0", Field(MakerNoteFormat.Nikon3, 0x0098, "LensFStops", Bytes(60)));
+        Assert.Equal("32.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "ExitPupilPosition", Bytes(64)));
+        Assert.Null(Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength", Shorts(24)));
+        Assert.Equal("6", Top(MakerNoteFormat.Nikon3, "LensFStops", Undefined(72, 1, 12, 0)));
+    }
+
+    [Fact]
+    public void NikonLensDataFourAddsItsHighResolutionValues()
+    {
+        Assert.Equal("F2.0", Field(MakerNoteFormat.Nikon3, 0x0098, "FNumber", Shorts(768)));
+        Assert.Equal("32.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "ExitPupilPosition", Bytes(64)));
+        Assert.Equal("(0)", Field(MakerNoteFormat.Nikon3, 0x0098, "ExitPupilPosition", Bytes(0)));
+        Assert.Equal("(64)", Field(MakerNoteFormat.Nikon3, 0x0098, "ExitPupilPosition", Shorts(64)));
+        Assert.Equal("50 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength2", Shorts(50)));
+        Assert.Equal("1.00 m", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance2", Shorts(20480)));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance2", Shorts(0)));
     }
 
     [Fact]
@@ -432,6 +558,9 @@ public sealed class MakerNoteInterpretationTests
     public void BothSonyLayoutsShareOneVocabulary(MakerNoteFormat format)
     {
         Assert.Equal("RAW + JPEG/HEIF", Top(format, "Quality", Longs(6)));
+        Assert.Equal("Off", Top(format, "MultiBurstMode", Undefined(0)));
+        Assert.Equal("On", Top(format, "MultiBurstMode", Undefined(1)));
+        Assert.Equal("(1)", Top(format, "MultiBurstMode", Shorts(1)));
         Assert.Equal("Aperture-priority AE", Top(format, "ExposureMode", Shorts(7)));
         Assert.Equal("n/a", Top(format, "DistortionCorrectionSetting", Longs(0xFFFFFFFF)));
         Assert.Equal("-0.3 EV", Top(format, "FlashLevel", SignedShorts(-1)));
@@ -439,9 +568,21 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("(9999)", Top(format, "SonyModelID", Shorts(9999)));
         Assert.Equal("Tracking", Field(format, 0x9402, "AFAreaMode", Bytes(14)));
         Assert.Equal("iAuto+", Field(format, 0x9404, "ExposureProgram", Bytes(7)));
-        Assert.Equal("n/a", Top(format, "HighISONoiseReduction2", Shorts(65535)));
-        Assert.Equal("DMF", Top(format, "FocusMode2", Bytes(6)));
-        Assert.Equal("Raw + JPEG", Field(format, 0x9400, "Quality2", Bytes(2)));
+        Assert.Equal("n/a", Top(format, "HighISONoiseReduction2", Shorts(65535), "DSC-RX100M7"));
+        Assert.Equal("DMF", Top(format, "FocusMode2", Bytes(6), "ILCE-6000"));
+        Assert.Equal("Raw + JPEG", Field(format, 0x9400, "Quality2", Bytes(2), cameraModel: "ILCE-6000"));
+    }
+
+    [Fact]
+    public void SonyModelIdSuppliesContextForModelSpecificLabels()
+    {
+        var model = new MakerNoteEntry(0x7001, "SonyModelID", Shorts(312), []);
+        var area = new MakerNoteEntry(0x7002, "AFAreaModeSetting", Bytes(11), []);
+        var point = new MakerNoteEntry(0x7003, "AFPointSelected", Bytes(1), []);
+        var note = new MakerNote(MakerNoteFormat.Sony2, Little, [model, area, point]);
+        Assert.Equal("ILCE-6000", note.InterpretForModel(model, null));
+        Assert.Equal("Center Zone", note.InterpretForModel(point, null));
+        Assert.Equal("n/a", Top(MakerNoteFormat.Sony2, "AFPointsUsed", Bytes(0), "DSC-RX100M5A"));
     }
 
     [Fact]
@@ -467,10 +608,16 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("3 shots", Field(MakerNoteFormat.Sony1, 0x9400, "SequenceLength1", Bytes(3)));
         Assert.Equal("1 file", Field(MakerNoteFormat.Sony1, 0x9400, "SequenceLength2", Bytes(1)));
         Assert.Equal("3 files", Field(MakerNoteFormat.Sony1, 0x9400, "SequenceLength2", Bytes(3)));
-        Assert.Equal("4000", Field(MakerNoteFormat.Sony1, 0x9400, "SonyImageHeight", Shorts(500)));
-        Assert.Equal("2014", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(14)));
-        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(255)));
-        Assert.Equal("176, 242", Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176, 242)));
+        Assert.Equal("4000", Field(MakerNoteFormat.Sony1, 0x9400, "SonyImageHeight", Shorts(500), cameraModel: "ILCE-6000"));
+        Assert.Equal("2014", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(14), cameraModel: "ILCE-6000"));
+        Assert.Equal("(255)", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(255), cameraModel: "ILCE-6000"));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "SonyImageHeight", Shorts(500), cameraModel: "ILCE-7SM3"));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(14), cameraModel: "ILCE-7SM3"));
+        Assert.Equal("Raw + JPEG", Field(MakerNoteFormat.Sony1, 0x9400, "Quality2", Bytes(3), cameraModel: "ILCE-7SM3"));
+        Assert.Equal("Raw + MPO", Field(MakerNoteFormat.Sony1, 0x9400, "Quality2", Bytes(3), cameraModel: "ILCE-6000"));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "ShotNumberSincePowerUp", Longs(7), cameraModel: "ILCE-7SM3"));
+        Assert.Equal("176, 242", Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176, 242), "ILCE-6000"));
+        Assert.Equal("n/a", Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176, 242), "DSC-R1"));
         Assert.Null(Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176)));
     }
 
@@ -480,10 +627,14 @@ public sealed class MakerNoteInterpretationTests
     [InlineData(506, "49%")]
     [InlineData(1013, "99%")]
     [InlineData(1023, "100%")]
-    [InlineData(128, "12%")]     // 12.5: the even one
-    [InlineData(384, "38%")]     // 37.5: the even one
+    [InlineData(128, "13%")]     // 12.5 rounds away from zero
+    [InlineData(384, "38%")]     // 37.5 rounds away from zero
     public void TheSonyZoomPositionIsAWholePercentage(int position, string expected) =>
-        Assert.Equal(expected, Field(MakerNoteFormat.Sony1, 0x9404, "LensZoomPosition", Shorts(position)));
+        Assert.Equal(expected, Field(MakerNoteFormat.Sony1, 0x9404, "LensZoomPosition", Shorts(position), cameraModel: "ILCE-6000"));
+
+    [Fact]
+    public void SonyZoomPositionRefusesModelsThatDoNotUseIt() =>
+        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9404, "LensZoomPosition", Shorts(0), cameraModel: "ILCA-68"));
 
     [Fact]
     public void ThePreciseSonyColourShiftIsInThousandths()
@@ -491,6 +642,23 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("A/B: 0, G/M: 0", Top(MakerNoteFormat.Sony1, "WBShiftABGMPrecise", SignedLongs(0, 0)));
         Assert.Equal("A/B: A1.00, G/M: G1.00", Top(MakerNoteFormat.Sony1, "WBShiftABGMPrecise", SignedLongs(-1000, -1000)));
         Assert.Equal("A/B: B1.00, G/M: M2.50", Top(MakerNoteFormat.Sony1, "WBShiftABGMPrecise", SignedLongs(1000, 2500)));
+    }
+
+    [Fact]
+    public void SonyBinaryContextTagsUseTheirByteLayout()
+    {
+        Assert.Equal("450x359", Top(MakerNoteFormat.Sony1, "FocusFrameSize", Undefined(194, 1, 103, 1, 1, 1)));
+        Assert.Equal("n/a", Top(MakerNoteFormat.Sony2, "FocusFrameSize", Undefined(194, 1, 103, 1, 0, 0)));
+        Assert.Equal("n/a", Top(MakerNoteFormat.Sony2, "PixelShiftInfo", Undefined(0, 0, 0, 0, 0, 0)));
+    }
+
+    [Fact]
+    public void SonyLensSpecificationSeparatesApertureNibbles()
+    {
+        Assert.Equal("24-70mm F1.8-2.8", Top(MakerNoteFormat.Sony1, "LensSpec", Bytes(0, 0, 0x24, 0, 0x70, 0x18, 0x28, 0)));
+        Assert.Equal("Unknown", Top(MakerNoteFormat.Sony2, "LensSpec", Bytes(0, 0, 0, 0, 0, 0, 0, 0)));
+        Assert.Equal("1.5", Top(MakerNoteFormat.Sony1, "ExposureStandardAdjustment", SignedRational(3, 2)));
+        Assert.Equal("+3/2 EV", Top(MakerNoteFormat.Sony1, "FlashExposureComp", SignedRational(3, 2)));
     }
 
     [Fact]
@@ -505,6 +673,16 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("A/B: B2, G/M: M3", Top(MakerNoteFormat.Sony1, "WBShiftABGM", SignedLongs(2, 3)));
         Assert.Null(Top(MakerNoteFormat.Sony1, "WBShiftABGM", SignedLongs(0)));
     }
+
+    [Theory]
+    [InlineData("AdobeRGB", "Adobe RGB")]
+    [InlineData("Autumnleaves", "Autumn leaves")]
+    [InlineData("BW", "Black and White")]
+    [InlineData("Standard", "Standard")]
+    [InlineData("Unlisted", "(Unlisted)")]
+    [InlineData("", "()")]
+    public void SonyCreativeStyleUsesItsStringLabels(string text, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Sony1, "CreativeStyle", Ascii(text)));
 
     [Fact]
     public void TheSonyFileFormatIsReadFromItsFourBytes()

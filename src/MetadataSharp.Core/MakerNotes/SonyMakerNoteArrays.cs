@@ -135,7 +135,8 @@ internal static class SonyMakerNoteArrays
         new(45, "FocusPosition2"),
     ], Endianness.BigEndian, Enciphered: true);
 
-    private static readonly Layout Misc1 = new([new(5, "CameraTemperature", TiffFieldType.SByte)],
+    private static readonly Layout Misc1 = new(
+        [new(5, "CameraTemperature", TiffFieldType.SByte)],
         Endianness.BigEndian, Enciphered: true);
 
     private static readonly Layout Misc2b = new(

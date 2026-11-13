@@ -236,8 +236,8 @@ public sealed class MakerNote
     /// not that the vendor gives it no meaning.
     /// </para>
     /// <para>
-    /// The vocabulary is deliberately limited to checked fields of Canon, Nikon (the
-    /// <see cref="MakerNoteFormat.Nikon3" /> layout), Sony and Pentax notes. Null means there is
+    /// The vocabulary is deliberately limited to checked fields of Canon, the Nikon 1, Nikon 2 and Nikon 3
+    /// layouts, Sony and Pentax notes. Null means there is
     /// nothing to add to the raw value: another vendor, a tag outside the vocabulary, or a value that
     /// does not have the type and count the interpretation needs. The raw
     /// value stays the truth; nothing is ever thrown for its content.

@@ -39,6 +39,34 @@ DOCUMENTED_EXCEPTIONS: dict[str, str] = {
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."
     ),
+    "Exif.NikonLd2.LensIDNumber": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
+    "Exif.NikonLd3.LensIDNumber": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
+    "Exif.NikonLd4.LensIDNumber": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
+    "Exif.NikonLd4.LensID": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
+    "Exif.Sony1.LensID": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
+    "Exif.Sony2.LensID": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
+    "Exif.SonyMinolta.LensID": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
 }
 
 # The parser deliberately refuses these two damaged/over-budget inputs. These are exact pinned corpus
@@ -58,6 +86,10 @@ DOCUMENTED_FILE_REFUSALS: dict[str, tuple[str, str]] = {
     "exiv2:issue_1920_poc.tiff": ("InvalidExif", "the EXIF structure is malformed"),
     "exiv2:issue_ghsa_h9x9_4f77_336w_poc.exv": ("InvalidExif", "the EXIF structure is malformed"),
     "exiv2:IMGP0006-min.jpg": ("InvalidJpeg", "the JPEG structure is malformed"),
+    "exiv2:issue_ghsa_5p8g_9xf3_gfrr_poc.exv": (
+        "UnsupportedFeature", "the GHSA proof-of-concept uses an unsupported encrypted Nikon MakerNote layout"),
+    "exiv2:issue_ghsa_5p8g_9xf3_gfrr_poc.webp": (
+        "UnsupportedFeature", "the GHSA proof-of-concept uses an unsupported encrypted Nikon MakerNote layout"),
 }
 
 # The reader exposes unnamed raw tags as 0xNNNN keys. Exiv2 has no corresponding named key, so these
