@@ -1907,8 +1907,8 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
                 else if (ImageMetadata.Read(copy.DestinationBytes).Exif?.MakerNote is not null)
                 {
                     status = "copied";
-                    reasonCodes = "";
-                    message = "";
+                    reasonCodes = codes.Length == 0 ? "" : string.Join(",", codes);
+                    message = string.Join("; ", copy.Notes.Select(note => note.Message));
                     File.WriteAllBytes(Path.Combine(copyOutput, id + ".jpg"), copy.DestinationBytes);
                 }
                 else

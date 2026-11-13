@@ -47,7 +47,8 @@ internal static class MakerNoteRelocator
                     return Refuse($"{target.Key} addresses data, a directory, or a MakerNote cipher key outside the relocatable values.", out reason);
             }
             if (target.Field is null && target.Entry.Name is null &&
-                target.Value.FieldType is TiffFieldType.Long or TiffFieldType.SLong or TiffFieldType.Undefined)
+                (target.Value.FieldType is TiffFieldType.Long or TiffFieldType.SLong or TiffFieldType.Undefined) &&
+                !IsCorpusProvenValue(note, raw, target))
                 return Refuse($"Unnamed address-like MakerNote tag 0x{target.Entry.TagId:x4} " +
                     $"({target.Value.FieldType}, count {target.Value.Count}, bytes {Convert.ToHexString(target.Value.RawBytes)}) is not relocated.", out reason);
         }
@@ -83,6 +84,42 @@ internal static class MakerNoteRelocator
                 return Refuse("Encrypted Nikon data has no copied serial-number or model key.", out reason);
         }
         return true;
+    }
+
+    /// <summary>
+    /// Unknown long/undefined entries are normally refused because they might hold external offsets.
+    /// These corpus-confirmed layouts are values or self-relative data; their containing value slots
+    /// are still bounds-checked and rebased by <see cref="Relocate"/> below.
+    /// </summary>
+    private static bool IsCorpusProvenValue(MakerNote note, ExifValue raw, MakerNoteTarget target)
+    {
+        ushort tag = target.Entry.TagId;
+        ExifValue value = target.Value;
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        if (note.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2)
+        {
+            if (tag == 0x1003 && value.FieldType == TiffFieldType.Long && value.Count > 1) return true;
+            if (note.Format == MakerNoteFormat.Sony1 && tag == 0x2000 &&
+                value.FieldType == TiffFieldType.Undefined && value.Count == 1 && bytes.SequenceEqual([0])) return true;
+        }
+        if (note.Format == MakerNoteFormat.Nikon3)
+        {
+            if (tag == 0x00A4 && value.FieldType == TiffFieldType.Undefined &&
+                bytes.Length == 4 && bytes.SequenceEqual("0200"u8)) return true;
+            if (tag == 0x002B && value.FieldType == TiffFieldType.Undefined &&
+                bytes.Length == 16 && bytes.StartsWith("0100"u8)) return true;
+            if (tag == 0x00B6 && value.FieldType == TiffFieldType.Undefined && bytes.Length == 8) return true;
+        }
+        if (note.Format == MakerNoteFormat.Nikon2 && tag == 0x0F00 &&
+            value.FieldType == TiffFieldType.Long && value.Count > 4) return true;
+        if (note.Format == MakerNoteFormat.Fujifilm && tag == 0x1025 &&
+            value.FieldType == TiffFieldType.Long && value.Count == 1 && value.TryGetUInt32(out uint relative) &&
+            target.Entry.Slot is { } fujiSlot && fujiSlot.OffsetBase != 0 && relative < raw.ByteLength) return true;
+        if (note.Format == MakerNoteFormat.Canon && tag == 0x0032 &&
+            value.FieldType == TiffFieldType.Long && value.Count > 1 && bytes.IndexOfAnyExcept((byte)0) < 0) return true;
+        if (note.Format == MakerNoteFormat.Canon && tag == 0x002D &&
+            value.FieldType == TiffFieldType.Long && value.Count == 1 && bytes.SequenceEqual([0, 0, 0, 0])) return true;
+        return false;
     }
 
     internal static byte[] Relocate(MakerNote note, ExifValue raw, int destinationStart)
