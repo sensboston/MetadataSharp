@@ -58,6 +58,18 @@ internal static partial class MakerNoteLabels
         new(0x0026, "AFPointsSelected", [], Form.BitPositions),
         new(0x0026, "AFPointsUnusable", [], Form.BitPositions),
 
+        // PictureInfo AF-point masks and Panorama direction.
+        new(0x0012, "AFPointsUsed",
+            [(0x01, "right"), (0x02, "mid-right"), (0x04, "bottom"), (0x08, "center"),
+             (0x10, "top"), (0x20, "mid-left"), (0x40, "left")], Form.BitMask),
+        new(0x0012, "AFPointsUsed20D",
+            [(0x001, "top"), (0x002, "upper-left"), (0x004, "upper-right"), (0x008, "left"),
+             (0x010, "center"), (0x020, "right"), (0x040, "lower-left"), (0x080, "lower-right"),
+             (0x100, "bottom")], Form.BitMask),
+        new(0x0005, "PanoramaDirection",
+            [(0, "Left to right"), (1, "Right to left"), (2, "Bottom to top"), (3, "Top to bottom"),
+             (4, "2x2 matrix (Clockwise)")]),
+
         // CameraSettings (0x0001).
         new(0x0001, "Macro", [(2, "Off")]),
         new(0x0001, "Selftimer", [(0, "Off")], Form.TenthsOfSecond),

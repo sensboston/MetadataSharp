@@ -86,6 +86,9 @@ internal static partial class MakerNoteLabels
         /// <summary>SHORT bit masks: the positions of the set bits, counted across the elements.</summary>
         BitPositions,
 
+        /// <summary>A SHORT bit mask rendered as the vendor's labels for its set flags.</summary>
+        BitMask,
+
         /// <summary>Four bytes read as one number, most significant first, and looked up as such.</summary>
         FourBytes,
 
@@ -253,6 +256,8 @@ internal static partial class MakerNoteLabels
         {
             case Form.BitPositions:
                 return BitPositions(value);
+            case Form.BitMask:
+                return BitMask(rule, value);
             case Form.HeightThenWidth:
                 return HeightThenWidth(value);
             case Form.AmberBlueGreenMagenta:
@@ -509,6 +514,22 @@ internal static partial class MakerNoteLabels
             !ExifTags.TryInteger(value, 0, out long height) || !ExifTags.TryInteger(value, 1, out long width))
             return null;
         return Whole(width) + " x " + Whole(height);
+    }
+
+    private static string? BitMask(Rule rule, ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short ||
+            !ExifTags.TryInteger(value, 0, out long mask) || mask == 0)
+            return null;
+        var labels = new List<string>();
+        long known = 0;
+        foreach ((long flag, string label) in rule.Labels)
+        {
+            known |= flag;
+            if ((mask & flag) != 0)
+                labels.Add(label);
+        }
+        return (mask & ~known) == 0 && labels.Count != 0 ? string.Join(", ", labels) : null;
     }
 
     private static string? BitPositions(ExifValue value)

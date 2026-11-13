@@ -149,6 +149,24 @@ public sealed class MakerNoteInterpretationTests
     public void ACanonFocusDistanceIsMetresWithTwoDecimals(string name, int number, string expected) =>
         Assert.Equal(expected, Field(MakerNoteFormat.Canon, 0x0093, name, SignedShorts(number)));
 
+    [Theory]
+    [InlineData(0, "Left to right")]
+    [InlineData(1, "Right to left")]
+    [InlineData(2, "Bottom to top")]
+    [InlineData(3, "Top to bottom")]
+    [InlineData(4, "2x2 matrix (Clockwise)")]
+    public void CanonPanoramaDirectionUsesTheReferenceLabels(int value, string expected) =>
+        Assert.Equal(expected, Field(MakerNoteFormat.Canon, 0x0005, "PanoramaDirection", Shorts(value), index: 5));
+
+    [Fact]
+    public void CanonPictureInfoBitmasksUseTheReferenceLabels()
+    {
+        Assert.Equal("bottom", Field(MakerNoteFormat.Canon, 0x0012, "AFPointsUsed", Shorts(4), index: 22));
+        Assert.Equal("upper-right, center, lower-right",
+            Field(MakerNoteFormat.Canon, 0x0012, "AFPointsUsed20D", Shorts(148), index: 26));
+        Assert.Null(Field(MakerNoteFormat.Canon, 0x0012, "AFPointsUsed", Shorts(0), index: 22));
+    }
+
     [Fact]
     public void CanonLensSerialNumberIsRenderedAsTwoHexDigitsPerByte() =>
         Assert.Equal("1c00000000", Field(MakerNoteFormat.Canon, 0x4019, "LensSerialNumber", Bytes(0x1C, 0, 0, 0, 0), index: 0));
