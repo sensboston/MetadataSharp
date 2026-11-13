@@ -1955,6 +1955,9 @@ internal static partial class MakerNoteLabels
         if (value.Count != 4 || value.FieldType is not (TiffFieldType.Undefined or TiffFieldType.Byte))
             return null;
         ReadOnlySpan<byte> bytes = value.RawBytes;
+        int terminator = bytes.IndexOf((byte)0);
+        if (terminator >= 0)
+            return "(" + Encoding.Latin1.GetString(bytes[..terminator]) + ")";
         foreach (byte digit in bytes)
         {
             if (digit < (byte)'0' || digit > (byte)'9')

@@ -115,6 +115,28 @@ class MakerNoteRenderGateTests(unittest.TestCase):
         passed, message = gate.evaluate(report, [self.GROUP], {self.GROUP + ".Quality": "explicit corpus exception"})
         self.assertTrue(passed, message)
 
+    def test_nikon_ld4_lens_database_exceptions_keep_raw_parity_required(self):
+        for key in ("Exif.NikonLd4.LensIDNumber", "Exif.NikonLd4.LensID"):
+            self.assertIn(key, gate.DOCUMENTED_EXCEPTIONS)
+        group = "Exif.NikonLd4"
+        key = group + ".LensIDNumber"
+        report = {
+            "by_family": {group: {"match-value": 1}},
+            "interpreted": {"by_family": {group: {"not-interpreted-translated": 1}}},
+            "per_file": [{"label": "exiv2:sample.exv", "rows_dropped": 0, "rows": [{
+                "key": key, "outcome": "match-value", "translated": True,
+                "interpreted": "not-interpreted", "our_interpreted": "(119)",
+                "their_interpreted": "External lens name",
+            }]}],
+        }
+        passed, message = gate.evaluate(report, [group], gate.DOCUMENTED_EXCEPTIONS)
+        self.assertTrue(passed, message)
+        report["per_file"][0]["rows"][0]["outcome"] = "value-diff"
+        report["by_family"][group] = {"value-diff": 1}
+        passed, message = gate.evaluate(report, [group], gate.DOCUMENTED_EXCEPTIONS)
+        self.assertFalse(passed)
+        self.assertIn("raw parity has missing=0, value-diff=1", message)
+
     def test_inventory_orders_largest_unrendered_gap_first(self):
         report = {
             "by_family": {},

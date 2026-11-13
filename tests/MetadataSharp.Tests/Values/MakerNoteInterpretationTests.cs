@@ -301,8 +301,8 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("1.00", Field(MakerNoteFormat.Nikon3, 0x001F, "Version", Undefined(0x30, 0x31, 0x30, 0x30)));
         Assert.Equal("8.01", Field(MakerNoteFormat.Nikon3, 0x0098, "Version", Undefined(0x30, 0x38, 0x30, 0x31)));
         Assert.Equal("12.34", Field(MakerNoteFormat.Nikon3, 0x0091, "Version", Undefined(0x31, 0x32, 0x33, 0x34)));
-        // Not four digits: nothing to read.
-        Assert.Null(Top(MakerNoteFormat.Nikon3, "Version", Undefined(0, 2, 0, 0)));
+        // Exiv2's C-string based version printer renders an initial NUL as an empty version.
+        Assert.Equal("()", Top(MakerNoteFormat.Nikon3, "Version", Undefined(0, 2, 0, 0)));
         Assert.Null(Top(MakerNoteFormat.Nikon3, "Version", Undefined(0x30, 0x32, 0x31)));
         Assert.Null(Top(MakerNoteFormat.Nikon3, "Version", Ascii("0211")));
         Assert.Equal("()", Top(MakerNoteFormat.Nikon3, "Version", Undefined()));

@@ -312,6 +312,15 @@ class CorpusDiscoveryTests(unittest.TestCase):
         self.assertEqual([(c.label, c.path.name, c.format) for c in found], [("shot.png", "shot.jpg", "jpg")])
         self.assertEqual(unmatched, [])
 
+    def test_synthetic_test_expectation_does_not_fall_back_to_a_real_input(self):
+        (self.data / "case.exv").write_bytes(b"EXV")
+        (self.data / "anchor.jpg").write_bytes(b"\xff\xd8")
+        self.write_reference("case.exv_test")
+        self.write_reference("anchor.jpg")
+        found, unmatched = corpus_mod.discover_exiv2(self.root)
+        self.assertEqual([candidate.label for candidate in found], ["anchor.jpg"])
+        self.assertEqual(unmatched, ["case.exv_test"])
+
     def test_a_tree_without_expectations_is_a_setup_error(self):
         with self.assertRaises(corpus_mod.CorpusError):
             corpus_mod.discover_exiv2(self.root / "nowhere")

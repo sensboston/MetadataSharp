@@ -85,6 +85,11 @@ def _resolve_input(stem: str, data: Path) -> Path | None:
     exact = data / stem
     if exact.is_file():
         return exact
+    # An upstream *_test expectation is sometimes an intentionally empty test fixture, not a
+    # converted-file alias. Never guess its input from the name before the suffix: doing so can pair
+    # it with a real file and manufacture dozens of raw extra-key failures.
+    if stem.endswith("_test"):
+        return None
     base = stem[: stem.rfind(".")] if "." in stem else stem
     for extension in FALLBACK_EXTENSIONS:
         candidate = data / (base + extension)

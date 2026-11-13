@@ -47,6 +47,14 @@ DOCUMENTED_EXCEPTIONS: dict[str, str] = {
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."
     ),
+    "Exif.NikonLd4.LensIDNumber": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
+    "Exif.NikonLd4.LensID": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
     "Exif.Sony1.LensID": (
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."

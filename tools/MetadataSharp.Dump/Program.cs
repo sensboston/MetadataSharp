@@ -427,7 +427,7 @@ internal static class Program
                     bool sonyMinolta = sony && entry.TagId == 0xB028;
                     bool keepParent = olympusIfd || nikonPreview || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
-                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value),
+                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, MakerNoteValue(makerNote, entry),
                             makerNote.InterpretForModel(entry, cameraModel));
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
                         : nikonPreview ? "NikonPreview"
@@ -468,7 +468,7 @@ internal static class Program
                     continue;
                 }
                 Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
-                    TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value), makerNote.InterpretForModel(entry, cameraModel));
+                    TypeName(entry.Value.FieldType), entry.Value.Count, MakerNoteValue(makerNote, entry), makerNote.InterpretForModel(entry, cameraModel));
             }
         }
     }
@@ -485,6 +485,14 @@ internal static class Program
         0x0001 => "MinoltaCsOld", 0x0003 => "MinoltaCsNew", 0x0004 => "MinoltaCs7D", 0x0114 => "MinoltaCs5D",
         _ => "Minolta0x" + tag.ToString("x4", CultureInfo.InvariantCulture)
     };
+
+    private static string MakerNoteValue(MakerNote note, MakerNoteEntry entry)
+    {
+        string value = Render(entry.Value);
+        // Exiv2's Sony1 string-tag printer writes an empty, all-NUL CreativeStyle as "()".
+        // Keep the raw bytes unchanged; match that reference spelling in the parity dump.
+        return note.Format == MakerNoteFormat.Sony1 && entry.TagId == 0xB020 && value.Length == 0 ? "()" : value;
+    }
 
     private static string SonyArrayGroup(MakerNoteFormat format, ushort tag) => tag switch
     {
