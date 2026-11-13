@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // Package audit intentionally exercises the retained compatibility editor.
 using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.InteropServices;
@@ -16,7 +17,7 @@ using MetadataSharp.Tests.Tiff;
 
 if (args.Length == 2 && args[0] == "--api")
 {
-    var signatures = new[] { typeof(ExifValue).Assembly, typeof(TiffMetadataDocument).Assembly }
+    var signatures = new[] { typeof(ExifValue).Assembly, typeof(TiffBasedMetadataDocument).Assembly }
         .SelectMany(a => a.GetExportedTypes()).OrderBy(t => t.FullName, StringComparer.Ordinal)
         .SelectMany(t => new[] { "TYPE " + t.FullName }.Concat(t.GetMembers(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly)
             .Select(m => t.FullName + " " + m.MemberType + " " + m.ToString()).Order(StringComparer.Ordinal))).ToArray();

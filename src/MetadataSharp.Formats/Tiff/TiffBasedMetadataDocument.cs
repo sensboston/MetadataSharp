@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using MetadataSharp.Core;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Sync;
@@ -41,13 +42,25 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     private readonly TiffReadOptions options;
     private readonly TiffBasedFileMap? map;
     private readonly MetadataException? refusal;
+    private readonly TiffLayout? legacyLayout;
+    private readonly TiffEditOptions? legacyOptions;
+    private readonly Stream? legacyStream;
+    private readonly bool ownsLegacyStream;
+    private readonly byte[]? legacyDigest;
     private bool disposed;
 
-    private TiffBasedMetadataDocument(byte[] source, string? sourcePath, TiffReadOptions options)
+    private TiffBasedMetadataDocument(byte[] source, string? sourcePath, TiffReadOptions options,
+        TiffLayout? legacyLayout = null, TiffEditOptions? legacyOptions = null, Stream? legacyStream = null,
+        bool ownsLegacyStream = false, byte[]? legacyDigest = null)
     {
         this.source = source;
         this.sourcePath = sourcePath;
         this.options = options;
+        this.legacyLayout = legacyLayout;
+        this.legacyOptions = legacyOptions;
+        this.legacyStream = legacyStream;
+        this.ownsLegacyStream = ownsLegacyStream;
+        this.legacyDigest = legacyDigest;
         // A layout the writer cannot account for is still a file to read: the refusal is kept for Save.
         try { map = TiffBasedFileMap.Read(source, options.Limits, options.MaxAccountedRanges); }
         catch (MetadataException failure) { refusal = failure; }
@@ -75,6 +88,36 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         CancellationToken cancellationToken = default) =>
         OpenPath(path, (options ?? new()).Snapshot(), true, cancellationToken);
 
+    // Compatibility entry points used only by the obsolete TiffMetadataDocument facade. They keep
+    // the old append-preserve editor's guarantees while storing all document state in this model.
+    internal static TiffBasedMetadataDocument OpenLegacy(Stream source, TiffEditOptions options) =>
+        OpenLegacyCore(source, null, options.Snapshot(), false, default).GetAwaiter().GetResult();
+
+    internal static TiffBasedMetadataDocument OpenLegacy(string path, TiffEditOptions options) =>
+        OpenLegacyPath(path, options.Snapshot(), false, default).GetAwaiter().GetResult();
+
+    internal static Task<TiffBasedMetadataDocument> OpenLegacyAsync(Stream source, TiffEditOptions options, CancellationToken token) =>
+        OpenLegacyCore(source, null, options.Snapshot(), true, token);
+
+    internal static Task<TiffBasedMetadataDocument> OpenLegacyAsync(string path, TiffEditOptions options, CancellationToken token) =>
+        OpenLegacyPath(path, options.Snapshot(), true, token);
+
+    private static async Task<TiffBasedMetadataDocument> OpenLegacyPath(string path, TiffEditOptions options,
+        bool asynchronous, CancellationToken token)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        token.ThrowIfCancellationRequested();
+        string full = Path.GetFullPath(path);
+        var file = new FileStream(full, FileMode.Open, FileAccess.Read, FileShare.Read, options.ReadOptions.Limits.CopyBufferBytes,
+            asynchronous ? FileOptions.Asynchronous : FileOptions.None);
+        try { return await OpenLegacyCore(file, full, options, asynchronous, token, ownsStream: true).ConfigureAwait(false); }
+        catch { await file.DisposeAsync().ConfigureAwait(false); throw; }
+    }
+
+    private static Task<TiffBasedMetadataDocument> OpenLegacyCore(Stream source, string? path,
+        TiffEditOptions options, bool asynchronous, CancellationToken token, bool ownsStream = false) =>
+        OpenCore(source, path, options.ReadOptions, asynchronous, token, options, ownsStream);
+
     private static async Task<TiffBasedMetadataDocument> OpenPath(string path, TiffReadOptions options,
         bool asynchronous, CancellationToken token)
     {
@@ -88,10 +131,13 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     }
 
     private static async Task<TiffBasedMetadataDocument> OpenCore(Stream source, string? path,
-        TiffReadOptions options, bool asynchronous, CancellationToken token)
+        TiffReadOptions options, bool asynchronous, CancellationToken token,
+        TiffEditOptions? legacyOptions = null, bool ownsLegacyStream = false)
     {
         ArgumentNullException.ThrowIfNull(source);
         if (!source.CanRead) throw new ArgumentException("The source must be readable.", nameof(source));
+        if (legacyOptions is not null && (!source.CanSeek || source.Position != 0))
+            throw new ArgumentException("The TIFF editing source must be seekable and at zero.", nameof(source));
         long ceiling = Math.Min(options.Limits.MaxInputBytes, Array.MaxLength);
         byte[] bytes;
         if (source.CanSeek)
@@ -121,7 +167,16 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (!ExifTiffReader.HasFileHeader(bytes))
             throw new MetadataException(MetadataErrorCode.InvalidTiff, "The data does not begin with a TIFF header.", 0);
         token.ThrowIfCancellationRequested();
-        return new TiffBasedMetadataDocument(bytes, path, options);
+        TiffLayout? legacyLayout = null;
+        byte[]? legacyDigest = null;
+        if (legacyOptions is not null)
+        {
+            using var layoutSource = new MemoryStream(bytes, writable: false);
+            legacyLayout = await TiffLayoutReader.Read(layoutSource, legacyOptions.ReadOptions, asynchronous, token).ConfigureAwait(false);
+            legacyDigest = SHA256.HashData(bytes);
+        }
+        return new TiffBasedMetadataDocument(bytes, path, options, legacyLayout, legacyOptions,
+            legacyOptions is null ? null : source, ownsLegacyStream, legacyDigest);
     }
 
     private static MetadataException TooLarge() =>
@@ -149,6 +204,90 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (!exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, XmpTag), out ExifEntry? entry) || entry.Value.ByteLength == 0)
             return null;
         return XmpPacket.Parse(entry.Value.RawBytes, options);
+    }
+
+    internal TiffLayout LegacyLayout => legacyLayout ?? throw new InvalidOperationException("This document was not opened through the legacy TIFF editor.");
+
+    internal ExifValue? ReadLegacyValue(TiffFieldKey key) => ReadLegacyValueCore(key, false, default).GetAwaiter().GetResult();
+
+    internal Task<ExifValue?> ReadLegacyValueAsync(TiffFieldKey key, CancellationToken token) => ReadLegacyValueCore(key, true, token);
+
+    private async Task<ExifValue?> ReadLegacyValueCore(TiffFieldKey key, bool asynchronous, CancellationToken token)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        TiffEditPolicy.Key(key);
+        await VerifyLegacySource(asynchronous, token).ConfigureAwait(false);
+        TiffLayout layout = LegacyLayout;
+        TiffDirectoryInfo directory = layout.Directories.FirstOrDefault(d => d.Offset == key.DirectoryOffset)
+            ?? throw new ArgumentException("Key does not identify a reachable source IFD.", nameof(key));
+        TiffFieldInfo? field = directory.Fields.FirstOrDefault(f => f.TagId == key.TagId);
+        if (field is null) return null;
+        if (!TiffEditPolicy.Shape(field, 1, 0, 0))
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Unsupported descriptive target shape.");
+        token.ThrowIfCancellationRequested();
+        ExifValue value = ExifValue.FromRaw((TiffFieldType)field.FieldType, field.Count, layout.ByteOrder,
+            source.AsSpan(checked((int)field.ValueRange.Offset), checked((int)field.ValueRange.Length)));
+        if (!TiffEditPolicy.Value(key.TagId, value))
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Unsupported descriptive target content.");
+        return value;
+    }
+
+    internal Task SaveLegacyAsync(Stream destination, TiffMetadataEdit edit, bool asynchronous, CancellationToken token) =>
+        SaveLegacyCore(destination, edit, asynchronous, token);
+
+    private async Task SaveLegacyCore(Stream destination, TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (legacyStream is null || legacyOptions is null) throw new InvalidOperationException("Legacy TIFF editing is not configured.");
+        ContainerIo.Output(legacyStream, destination);
+        TiffAppendPlan? plan = await PrepareLegacy(edit, asynchronous, token).ConfigureAwait(false);
+        await EmitLegacy(destination, plan, asynchronous, token).ConfigureAwait(false);
+    }
+
+    internal Task SaveLegacyAsAsync(string path, TiffMetadataEdit edit, bool asynchronous, CancellationToken token) =>
+        SaveLegacyPath(path, edit, asynchronous, token);
+
+    private async Task SaveLegacyPath(string path, TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (legacyOptions is null) throw new InvalidOperationException("Legacy TIFF editing is not configured.");
+        string target = ContainerIo.Target(path, sourcePath);
+        TiffAppendPlan? plan = await PrepareLegacy(edit, asynchronous, token).ConfigureAwait(false);
+        await ContainerIo.Publish(target, legacyOptions.ReadOptions.Limits.CopyBufferBytes, asynchronous, token,
+            destination => EmitLegacy(destination, plan, asynchronous, token)).ConfigureAwait(false);
+    }
+
+    private async Task<TiffAppendPlan?> PrepareLegacy(TiffMetadataEdit edit, bool asynchronous, CancellationToken token)
+    {
+        ArgumentNullException.ThrowIfNull(edit);
+        if (legacyOptions is null) throw new InvalidOperationException("Legacy TIFF editing is not configured.");
+        Dictionary<TiffFieldKey, ExifValue?> changes = edit.Snapshot(legacyOptions.ReadOptions.Limits.MaxRetainedMetadataBytes);
+        await VerifyLegacySource(asynchronous, token).ConfigureAwait(false);
+        return await new TiffAppendPlanner(LegacyLayout, legacyOptions,
+            (offset, count) => Task.FromResult(source.AsSpan(checked((int)offset), count).ToArray()), token)
+            .Create(changes).ConfigureAwait(false);
+    }
+
+    private async Task VerifyLegacySource(bool asynchronous, CancellationToken token)
+    {
+        if (legacyStream is null || legacyDigest is null || legacyOptions is null)
+            throw new InvalidOperationException("Legacy TIFF source verification is not configured.");
+        byte[] digest = await ContainerIo.Hash(legacyStream, LegacyLayout.SourceLength,
+            legacyOptions.ReadOptions.Limits.CopyBufferBytes, asynchronous, token).ConfigureAwait(false);
+        if (!CryptographicOperations.FixedTimeEquals(digest, legacyDigest)) throw ContainerIo.Changed();
+    }
+
+    private async Task EmitLegacy(Stream destination, TiffAppendPlan? plan, bool asynchronous, CancellationToken token)
+    {
+        if (plan is null)
+        {
+            await ContainerIo.Write(destination, source, asynchronous, token).ConfigureAwait(false);
+            return;
+        }
+        await ContainerIo.Write(destination, source.AsMemory(0, 4), asynchronous, token).ConfigureAwait(false);
+        await ContainerIo.Write(destination, plan.Root, asynchronous, token).ConfigureAwait(false);
+        await ContainerIo.Write(destination, source.AsMemory(8), asynchronous, token).ConfigureAwait(false);
+        await ContainerIo.Write(destination, plan.Tail, asynchronous, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -543,13 +682,19 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         return source.AsSpan((int)field.ValueOffset, (int)field.ByteLength);
     }
 
-    /// <summary>Marks the document as disposed. It holds a copy of the file in memory and no file or stream.</summary>
-    public void Dispose() => disposed = true;
+    /// <summary>Marks the document as disposed and closes a retained compatibility source when it owns one.</summary>
+    public void Dispose()
+    {
+        if (disposed) return;
+        disposed = true;
+        if (ownsLegacyStream) legacyStream?.Dispose();
+    }
 
     /// <inheritdoc cref="Dispose"/>
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
+        if (disposed) return;
         disposed = true;
-        return ValueTask.CompletedTask;
+        if (ownsLegacyStream && legacyStream is not null) await legacyStream.DisposeAsync().ConfigureAwait(false);
     }
 }
