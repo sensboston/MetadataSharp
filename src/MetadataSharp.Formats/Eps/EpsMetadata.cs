@@ -83,9 +83,9 @@ public sealed class EpsMetadata
         TiffOffset = tiffOffset;
         TiffLength = tiffLength;
         Xmp = xmp;
-        // A null byte array would be a Nullable<ReadOnlyMemory<byte>> that has a value - an empty one -
-        // so the absence of a packet is written as the null of the property itself.
-        Packet = packet is null ? null : new ReadOnlyMemory<byte>(packet);
+        // The conditional is written out with its nullable type: left to itself it takes the type of
+        // the second branch, and the null of the first becomes an empty memory that has a value.
+        Packet = packet is null ? (ReadOnlyMemory<byte>?)null : new ReadOnlyMemory<byte>(packet);
     }
 
     /// <summary>Whether the file is framed by the DOS EPS header.</summary>

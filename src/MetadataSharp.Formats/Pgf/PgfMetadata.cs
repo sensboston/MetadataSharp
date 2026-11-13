@@ -112,6 +112,14 @@ public sealed class PgfMetadata
         if (ImageMetadata.Detect(region) == MetadataFormat.Unknown)
             throw Bad("The header of the PGF file does not hold a container this library reads.", regionStart);
         ImageMetadata embedded = ImageMetadata.Read(region, limits);
+        // The snapshot a reader of the region refuses records the refusal rather than raising it, so
+        // the refusal is raised here, as the carrier's own reader raised it: a caller of a PGF file is
+        // told what its carrier failed of, which is what the reference reports of the same file.
+        foreach (MetadataReadError error in embedded.Errors)
+        {
+            if (error.Family is MetadataFamily.Exif or MetadataFamily.IptcIim or MetadataFamily.Xmp)
+                throw error.Exception;
+        }
         return new PgfMetadata(width, height, regionStart + regionLength, embedded.Exif, embedded.Iptc, embedded.Xmp);
     }
 

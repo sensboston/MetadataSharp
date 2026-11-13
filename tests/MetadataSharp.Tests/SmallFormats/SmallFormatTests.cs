@@ -388,7 +388,11 @@ public sealed class SmallFormatTests
     [Fact]
     public void EpsWithAPacketHeaderAndNoTrailerIsRefused()
     {
-        byte[] file = Encoding.Latin1.GetBytes("%!PS-Adobe-3.0 EPSF-3.0\n%%EndComments\n" + StripTrailer(PacketText) + "\n%%EOF\n");
+        // The comment block announces a packet and the file holds the header of one with no trailer:
+        // the reference refuses that file rather than report the packet it cannot find the end of.
+        byte[] file = Encoding.Latin1.GetBytes(
+            "%!PS-Adobe-3.0 EPSF-3.0\n%ADO_ContainsXMP: MainFirst\n%%EndComments\n" +
+            StripTrailer(PacketText) + "\n%%EOF\n");
         Assert.Equal(MetadataErrorCode.InvalidEps, Assert.Throws<MetadataException>(() => EpsMetadata.Read(file)).Code);
     }
 
