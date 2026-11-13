@@ -23,7 +23,7 @@ ROOT = HERE.parents[1]
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
-import run_parity  # noqa: E402
+import parity_support as run_parity  # noqa: E402
 
 TITLE = "SWEEP icc and comments"
 # The option of the dump tool, and the one kind of record it writes between FILE and STATUS.

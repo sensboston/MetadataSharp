@@ -59,10 +59,7 @@ jobs:
       - name: Test offline reference-harness policy
         shell: bash
         run: python -m unittest discover -s tests/reference -v 2>&1 | tee reference.log
-      # The differential parity harness is checked the same offline way: its rules are string
-      # transformations over a grammar both sides of the comparison agree on, so they are testable
-      # without a corpus, a build, or the external tool being present.
-      - name: Test offline parity-harness policy
+      - name: Test offline supporting parity reports
         shell: bash
         run: python -m unittest discover -s tests/parity -v 2>&1 | tee parity.log
       # Python-suite detail is published the same way the .NET trx failures below are. The
