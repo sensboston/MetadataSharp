@@ -12,7 +12,7 @@ def emit(project: str, category: str, rows: list[str]) -> None:
     current: list[str] = []
     size = 0
     for row in rows:
-        if current and size + len(row) + 1 > 2400:
+        if current and size + len(row) + 1 > 5600:
             chunks.append("\n".join(current))
             current = []
             size = 0
