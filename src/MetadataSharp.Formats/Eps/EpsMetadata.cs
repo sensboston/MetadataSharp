@@ -235,21 +235,19 @@ public sealed class EpsMetadata
         else replacement = [];
 
         byte[] newPs;
-        if (hasPacket)
+        if (hasPacket && desired is not null && HasExiv2Embedding(ps, packetStart))
         {
-            int beforePacket = packetStart;
-            int afterPacket = packetStart + packetLength;
-            newPs = Splice(ps, beforePacket, afterPacket - beforePacket, replacement);
+            newPs = Splice(ps, packetStart, packetLength, replacement);
         }
         else if (desired is not null)
         {
-            (int announcementAt, int packetAt) = DscInsertPoints(ps);
-            newPs = SetAnnouncement(ps.ToArray(), AnnouncementKind.Packet, announcementAt);
-            int shift = newPs.Length - ps.Length;
-            int insertAt = packetAt + shift;
-            int firstLineEnd = EndOfLine(ps, 0);
-            byte[] ending = LineEnding(ps, firstLineEnd);
-            newPs = Splice(newPs, insertAt, 0, [.. replacement, .. ending]);
+            ReadOnlySpan<byte> clean = ps;
+            if (hasPacket) clean = Splice(ps, packetStart, packetLength, []);
+            newPs = InsertCanonicalPacket(clean, replacement);
+        }
+        else if (hasPacket)
+        {
+            newPs = Splice(ps, packetStart, packetLength, []);
         }
         else newPs = ps.ToArray();
 
@@ -266,6 +264,111 @@ public sealed class EpsMetadata
         VerifyPreview(source, output, before.WmfOffset, before.WmfLength, before, delta, tiff: false);
         VerifyPreview(source, output, before.TiffOffset, before.TiffLength, before, delta, tiff: true);
         return output;
+    }
+
+    private static bool HasExiv2Embedding(ReadOnlySpan<byte> postScript, int packetStart) =>
+        postScript[..packetStart].LastIndexOf("%Exiv2BeginXMP: Before"u8) >= 0;
+
+    private static byte[] InsertCanonicalPacket(ReadOnlySpan<byte> original, byte[] packet)
+    {
+        (int announcementAt, _) = DscInsertPoints(original);
+        byte[] postScript = SetAnnouncement(original.ToArray(), AnnouncementKind.Packet, announcementAt);
+        byte[] ending = LineEnding(original, EndOfLine(original, 0));
+
+        int endSetup = FindLine(postScript, "%%EndPageSetup");
+        int insertSetupAt;
+        bool addSetupMarkers = endSetup < 0;
+        if (addSetupMarkers)
+        {
+            insertSetupAt = FindAnyLine(postScript, "%%PageTrailer", "%%Trailer", "%%EOF");
+            if (insertSetupAt < 0) insertSetupAt = postScript.Length;
+        }
+        else insertSetupAt = endSetup;
+
+        byte[] block = PdfMarkPacket(packet, ending);
+        if (addSetupMarkers)
+        {
+            byte[] wrapped = [.. Encoding.ASCII.GetBytes("%%BeginPageSetup"), .. ending,
+                .. block, .. Encoding.ASCII.GetBytes("%%EndPageSetup"), .. ending];
+            postScript = Splice(postScript, insertSetupAt, 0, wrapped);
+        }
+        else
+        {
+            int beginSetup = FindLine(postScript, "%%BeginPageSetup");
+            byte[] prefix = beginSetup < 0 ? [.. Encoding.ASCII.GetBytes("%%BeginPageSetup"), .. ending] : [];
+            postScript = Splice(postScript, insertSetupAt, 0, [.. prefix, .. block]);
+        }
+
+        int pageTrailer = FindLine(postScript, "%%PageTrailer");
+        if (pageTrailer < 0)
+        {
+            int trailerAt = FindAnyLine(postScript, "%%Trailer", "%%EOF");
+            if (trailerAt < 0) trailerAt = postScript.Length;
+            postScript = Splice(postScript, trailerAt, 0, [.. Encoding.ASCII.GetBytes("%%PageTrailer"), .. ending]);
+            pageTrailer = trailerAt;
+        }
+        int trailerEnd = AfterLine(postScript, EndOfLine(postScript, pageTrailer));
+        byte[] close = Lines(ending,
+            "%Exiv2BeginXMP: After %%PageTrailer",
+            "[/EMC Exiv2_pdfmark",
+            "[/NamespacePop Exiv2_pdfmark",
+            "%Exiv2EndXMP");
+        return Splice(postScript, trailerEnd, 0, close);
+    }
+
+    private static byte[] PdfMarkPacket(byte[] packet, byte[] ending)
+    {
+        string[] before =
+        [
+            "%Exiv2BeginXMP: Before %%EndPageSetup",
+            "/currentdistillerparams where",
+            "{pop currentdistillerparams /CoreDistVersion get 5000 lt} {true} ifelse",
+            "{userdict /Exiv2_pdfmark /cleartomark load put",
+            "    userdict /Exiv2_metafile_pdfmark {flushfile cleartomark} bind put}",
+            "{userdict /Exiv2_pdfmark /pdfmark load put",
+            "    userdict /Exiv2_metafile_pdfmark {/PUT pdfmark} bind put} ifelse",
+            "[/NamespacePush Exiv2_pdfmark",
+            "[/_objdef {Exiv2_metadata_stream} /type /stream /OBJ Exiv2_pdfmark",
+            "[{Exiv2_metadata_stream} 2 dict begin",
+            "    /Type /Metadata def /Subtype /XML def currentdict end /PUT Exiv2_pdfmark",
+            "[{Exiv2_metadata_stream}",
+            "    currentfile 0 (% &&end XMP packet marker&&)",
+            "    /SubFileDecode filter Exiv2_metafile_pdfmark",
+        ];
+        using var result = new MemoryStream();
+        foreach (string line in before) { result.Write(Encoding.ASCII.GetBytes(line)); result.Write(ending); }
+        result.Write(packet);
+        result.Write(ending);
+        foreach (string line in new[]
+        {
+            "% &&end XMP packet marker&&",
+            "[/Document 1 dict begin",
+            "    /Metadata {Exiv2_metadata_stream} def currentdict end /BDC Exiv2_pdfmark",
+            "%Exiv2EndXMP",
+        }) { result.Write(Encoding.ASCII.GetBytes(line)); result.Write(ending); }
+        return result.ToArray();
+    }
+
+    private static byte[] Lines(byte[] ending, params string[] lines)
+    {
+        using var result = new MemoryStream();
+        foreach (string line in lines) { result.Write(Encoding.ASCII.GetBytes(line)); result.Write(ending); }
+        return result.ToArray();
+    }
+
+    private static int FindLine(ReadOnlySpan<byte> data, string line) => FindAnyLine(data, line);
+
+    private static int FindAnyLine(ReadOnlySpan<byte> data, params string[] lines)
+    {
+        int at = 0;
+        while (at < data.Length)
+        {
+            int end = EndOfLine(data, at);
+            foreach (string expected in lines)
+                if (data[at..end].SequenceEqual(Encoding.ASCII.GetBytes(expected))) return at;
+            at = AfterLine(data, end);
+        }
+        return -1;
     }
 
     private static void ValidateSections(EpsMetadata metadata)
