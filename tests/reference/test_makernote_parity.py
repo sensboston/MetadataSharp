@@ -44,6 +44,13 @@ class VerdictTests(unittest.TestCase):
 
 
 class RunTests(unittest.TestCase):
+    def test_exiv2_carried_skips_need_a_structured_relocation_refusal(self):
+        self.assertTrue(x.documented_copy_skip("UnsafeMakerNoteRelocation", "unknown address-like tag 0x002b"))
+        self.assertTrue(x.documented_copy_skip("MakerNoteCipherKeysUnavailable", "cipher key missing"))
+        self.assertFalse(x.documented_copy_skip("", "unknown"))
+        self.assertFalse(x.documented_copy_skip("UnsafeMakerNoteRelocation", ""))
+        self.assertFalse(x.documented_copy_skip("CopyRefused", "writer failed"))
+
     def test_a_run_counts_what_passes_and_fails_on_what_does_not(self):
         with tempfile.TemporaryDirectory() as folder:
             corpus, work = Path(folder) / "corpus", Path(folder) / "work"

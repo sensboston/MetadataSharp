@@ -20,8 +20,10 @@ job unless EXPECTED names the layout, the operation and the verdict with a reaso
 
 The same job also tries the public MakerNote=Copy path for every corpus file with a decoded note,
 counts copied/skipped/refused by layout and reason, and compares every copied note with Exiv2
-(-u -PEkv). For skips it tests Exiv2's own -ea/-ia round trip into the same neutral JPEG; a note
-Exiv2 carries but this library skips fails the gate. The full per-file ledger is copy-report.json.
+(-u -PEkv). For skips it tests Exiv2's own -ea/-ia round trip into the same neutral JPEG. If Exiv2
+carries a skipped note, the gate requires an explicit structured refusal and a non-empty diagnostic;
+those cases are recorded as documented, unproven relocations, not counted as parity successes. The
+full per-file ledger is copy-report.json.
 
 What this decides: MakerNoteKeys.Grows lists the layouts in which a value may grow. A layout is
 listed there only when its "grow" rows pass here.
@@ -50,6 +52,18 @@ HOLDERS = ("Exif.Photo.MakerNote", "Exif.Image.DNGPrivateData")
 # (group of the key, operation, verdict) -> why the difference is accepted. A group is the second
 # part of the key ("Canon" of Exif.Canon.OwnerName); "*" stands for every group.
 EXPECTED = {}
+
+# A skip is a documented outcome, not a parity success: if the tool proves it can carry the note,
+# the report retains the exact refusal diagnostic and counts it by reason. This prevents an
+# unannotated/silent loss from being mistaken for an acceptable refusal.
+DOCUMENTED_UNSAFE_COPY_REASONS = {
+    "MakerNoteNotDecoded", "UnsafeMakerNoteRelocation", "MakerNoteCipherKeysUnavailable",
+}
+
+
+def documented_copy_skip(reason_codes, message):
+    codes = set(filter(None, reason_codes.split(",")))
+    return bool(codes & DOCUMENTED_UNSAFE_COPY_REASONS) and bool(message.strip())
 
 
 def expected(group, operation, verdict):
@@ -268,9 +282,9 @@ def main(argv=None, runner=run):
                 failures.append(f"{layout} {ident}: skipped source path is missing")
             else:
                 oracle_status, oracle_detail = oracle_copy(source_path, ident)
-                if oracle_status == "carried":
-                    failures.append(f"{layout} {ident}: MetadataSharp skipped ({reason}) but Exiv2 carries the MakerNote; "
-                                    f"{message}; {oracle_detail}")
+                if oracle_status == "carried" and not documented_copy_skip(reason_codes, message):
+                    failures.append(f"{layout} {ident}: MetadataSharp skipped ({reason}) but Exiv2 carries the MakerNote "
+                                    "without a structured relocation refusal and diagnostic; " + oracle_detail)
         copy_counts[(layout, status, reason, oracle_status)] += 1
         copy_examples.setdefault((layout, status, reason, oracle_status), f"{ident}: {message or oracle_detail}")
         copy_details.append({"id": ident, "layout": layout, "status": status, "reason_codes": reason_codes,
