@@ -48,7 +48,7 @@ internal static class MinoltaMakerNoteInterpretations
                 "Quality" => Lookup(number, (0, "Raw"), (1, "Super Fine"), (2, "Fine"), (3, "Standard"),
                     (4, "Economy"), (5, "Extra Fine")),
                 "Teleconverter" => number == 0 ? "None" : null,
-                "ImageStabilization" => Bool(number),
+                "ImageStabilization" => Lookup(number, (1, "Off"), (5, "On")),
                 "RawAndJpgRecording" or "ImageStabilizationA100" => Bool(number),
                 "ZoneMatching" => Lookup(number, (0, "ISO Setting Used"), (1, "High Key"), (2, "Low Key")),
                 "WhiteBalance" => Lookup(number, (0, "Auto"), (1, "Color Temperature/Color Filter"),
