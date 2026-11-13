@@ -159,7 +159,20 @@ jobs:
         run: |
           set -euo pipefail
           for project in MetaTool GeoTag BatchRename StripMetadata CopyMetadata Thumbnails MetadataViewer; do
-            dotnet build "samples/$project/$project.csproj" --configuration Release
+            log="$(mktemp)"
+            if ! dotnet build "samples/$project/$project.csproj" --configuration Release >"$log" 2>&1; then
+              cat "$log"
+              PROJECT="$project" LOG="$log" python - <<'PY'
+          import os
+          from pathlib import Path
+          project = os.environ['PROJECT']
+          lines = Path(os.environ['LOG']).read_text(errors='replace').splitlines()
+          print(f"::error title={project} build failed::" + " | ".join(lines[-15:]))
+          PY
+              exit 1
+            fi
+            cat "$log"
+            rm "$log"
           done
       - name: Generate small authored image fixtures
         shell: bash
