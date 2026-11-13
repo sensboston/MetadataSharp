@@ -80,7 +80,7 @@ internal sealed class MetadataWindow : Window
 
     private async void OnDrop(object? sender, DragEventArgs e)
     {
-        var file = e.Data.GetFiles()?.FirstOrDefault();
+        var file = e.DataTransfer.TryGetFiles()?.FirstOrDefault();
         if (file is not null) await LoadFile(file.Path.LocalPath);
     }
 
