@@ -63,7 +63,6 @@ def evaluate(report: dict[str, Any]) -> tuple[bool, str]:
             elif outcome == "match-key":
                 unexpected_values.append((label, key, row.get("our_value", ""), row.get("their_value", "")))
 
-    missing_allowed = sorted(ALLOWED_VALUE_DIFFS - allowed_seen)
     problems: list[str] = []
     if ours_only:
         problems.append("ours-only keys (must be removed): " + ", ".join(sorted(ours_only)))
@@ -72,9 +71,6 @@ def evaluate(report: dict[str, Any]) -> tuple[bool, str]:
     if unexpected_values:
         problems.append("unapproved value differences: " + "; ".join(
             f"{label} {key}: ours={ours!r}, Exiv2={theirs!r}" for label, key, ours, theirs in unexpected_values))
-    if missing_allowed:
-        problems.append("documented AVI divergences were not observed: " + ", ".join(
-            f"{label} {key}" for label, key in missing_allowed))
     if failures:
         problems.extend(failures)
 

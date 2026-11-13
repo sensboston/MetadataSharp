@@ -47,6 +47,10 @@ class VideoGateTests(unittest.TestCase):
         self.assertIn("ours-only keys (must be removed): Xmp.video.Extra", message)
         self.assertIn("reference-only keys (must be implemented): Xmp.video.Missing", message)
 
+    def test_permitted_avi_divergences_do_not_have_to_occur(self):
+        passed, message = video_gate.evaluate(self.report())
+        self.assertTrue(passed, message)
+
     def test_truncated_rows_fail_closed_instead_of_claiming_key_set_parity(self):
         report = self.report()
         report["per_file"][0]["rows_dropped"] = 1
