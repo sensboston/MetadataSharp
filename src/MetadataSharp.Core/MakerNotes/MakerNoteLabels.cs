@@ -217,6 +217,7 @@ internal static partial class MakerNoteLabels
         NikonLd4FocusDistance,
         NikonIiIso,
         NikonFlashInfo,
+        NikonSensorPixelSize,
         SonyExposureBias,
         SonyExposureStandardAdjustment,
         SonyAmbientTemperature,
@@ -418,6 +419,8 @@ internal static partial class MakerNoteLabels
                 return NikonIiIso(value);
             case Form.NikonFlashInfo:
                 return NikonFlashInfo(rule.Name, value, note);
+            case Form.NikonSensorPixelSize:
+                return NikonSensorPixelSize(value);
             case Form.SonyExposureBias:
                 return SonyExposureBias(value);
             case Form.SonyExposureStandardAdjustment:
@@ -1470,6 +1473,21 @@ internal static partial class MakerNoteLabels
             return null;
         double iso = 100.0 * Math.Exp((number / 12.0 - 5) * Math.Log(2.0));
         return Whole((long)Math.Round(iso, MidpointRounding.AwayFromZero));
+    }
+
+    private static string? NikonSensorPixelSize(ExifValue value)
+    {
+        if (value.Count != 2 || value.FieldType != TiffFieldType.Rational)
+            return null;
+        string[] sizes = new string[2];
+        for (int i = 0; i < sizes.Length; i++)
+        {
+            if (!ExifTags.TryRational(value, i, out long numerator, out long denominator) || denominator <= 0)
+                return null;
+            float size = (float)numerator / denominator;
+            sizes[i] = size.ToString("G6", CultureInfo.InvariantCulture).Replace('E', 'e');
+        }
+        return sizes[0] + " x " + sizes[1] + " um";
     }
 
     private static string? NikonFlashInfo(string name, ExifValue value, MakerNote? note)

@@ -421,6 +421,17 @@ public sealed class MakerNoteInterpretationTests
     }
 
     [Fact]
+    public void NikonThreeTopLevelValuesAndAutofocusFlagsAreInterpreted()
+    {
+        Assert.Equal("Unknown", Top(MakerNoteFormat.Nikon3, "FocusDistance", Rationals((0, 1))));
+        Assert.Equal("1.0x", Top(MakerNoteFormat.Nikon3, "DigitalZoom", Rationals((1, 1))));
+        Assert.Equal("7.8 x 7.8 um", Top(MakerNoteFormat.Nikon3, "SensorPixelSize", Rationals((78, 10), (78, 10))));
+        Assert.Equal("Lower-right", Field(MakerNoteFormat.Nikon3, 0x0088, "AFPointsInFocus", Shorts(0x0100), 2));
+        Assert.Equal("Fired", Field(MakerNoteFormat.Nikon3, 0x00A8, "ExternalFlashFlags", Bytes(0), 8));
+        Assert.Equal("Off", Field(MakerNoteFormat.Nikon3, 0x00A8, "FlashGroupAControlMode", Bytes(0), 15));
+    }
+
+    [Fact]
     public void NikonIsoInfoUsesItsThirdStopEncodingAndExpansionLabels()
     {
         Assert.Equal("100", Field(MakerNoteFormat.Nikon3, 0x0025, "ISO", Bytes(60)));

@@ -60,6 +60,8 @@ internal static partial class MakerNoteLabels
         {
             Texts = [("AF-S", "Single autofocus"), ("AF-C", "Continuous autofocus"), ("AF-A", "Automatic")],
         },
+        new(Top, "FocusDistance", [], Form.NikonFocusDistance),
+        new(Top, "DigitalZoom", [], Form.NikonDigitalZoom),
         // The first number says how the sensitivity was set and is not read here.
         new(Top, "ISOSpeed", [], Form.SecondOfTwo),
         new(Top, "ISOSettings", [], Form.SecondOfTwo),
@@ -67,6 +69,7 @@ internal static partial class MakerNoteLabels
         new(Top, "RetouchHistory", [(0, "None")], Form.CodeList),
         new(Top, "Lens", [], Form.LensRange),
         new(Top, "LensFStops", [], Form.Nikon3LensFStops),
+        new(Top, "SensorPixelSize", [], Form.NikonSensorPixelSize),
         new(Top, "ProgramShift", [], Form.NikonFlashComp),
         new(Top, "ExposureDiff", [], Form.NikonFlashComp),
         new(Top, "FlashExposureComp", [], Form.NikonFlashComp),
@@ -128,6 +131,12 @@ internal static partial class MakerNoteLabels
         // AFInfo (0x0088).
         new(0x0088, "AFAreaMode", [(0, "Single Area"), (1, "Dynamic Area")]),
         new(0x0088, "AFPoint", [(0, "Center")]),
+        new(0x0088, "AFPointsInFocus",
+        [
+            (0x0001, "Center"), (0x0002, "Top"), (0x0004, "Bottom"), (0x0008, "Mid-left"),
+            (0x0010, "Mid-right"), (0x0020, "Upper-left"), (0x0040, "Upper-right"), (0x0080, "Lower-left"),
+            (0x0100, "Lower-right"), (0x0200, "Far Left"), (0x0400, "Far Right"),
+        ], Form.BitMask),
 
         // ShotInfo (0x0091).
         new(0x0091, "VibrationReduction", [(0, "Off"), (1, "On (1)")]),
@@ -155,6 +164,17 @@ internal static partial class MakerNoteLabels
         new(0x00A8, "CameraFlashOutput", [], Form.SixthsOfStopDown),
         new(0x00A8, "ExternalFlashData4", [(0, "Illumination Pat.: Standard"), (1, "Illumination Pat.: Center-weighted")]),
         new(0x00A8, "WirelessFlashData", [(0, "AWL Off"), (1, "Optical AWL")]),
+        new(0x00A8, "ExternalFlashFlags", [(0, "Fired"), (2, "Bounce Flash"), (4, "Wide Flash Adapter")]),
+        new(0x00A8, "FlashGroupAControlMode",
+        [
+            (0, "Off"), (1, "TTL"), (2, "iTTL"), (3, "Auto Aperture"), (4, "Automatic"),
+            (5, "GN (distance priority)"), (6, "Manual"), (7, "Repeating Flash"),
+        ]),
+        new(0x00A8, "FlashGroupBControlMode",
+        [
+            (0, "Off"), (1, "TTL"), (2, "iTTL"), (3, "Auto Aperture"), (4, "Automatic"),
+            (5, "GN (distance priority)"), (6, "Manual"), (7, "Repeating Flash"),
+        ]),
         new(0x00A8, "ExternalFlashData1", [], Form.NikonFlashInfo),
         new(0x00A8, "ExternalFlashData2", [], Form.NikonFlashInfo),
         new(0x00A8, "ExternalFlashData3", [], Form.NikonFlashInfo),
