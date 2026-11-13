@@ -219,7 +219,7 @@ public static class MetadataOperations
                 else
                 {
                     var maker = new SyncEdits();
-                    maker.Exif.SetMakerNoteForCopy(raw!, note);
+                    maker.Exif.SetMakerNoteForCopy(raw!, note!);
                     try { output = Save(output, format, maker); }
                     catch (MetadataException writeRefusal)
                     {
