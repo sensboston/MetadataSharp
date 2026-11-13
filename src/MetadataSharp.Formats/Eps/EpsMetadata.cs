@@ -243,13 +243,13 @@ public sealed class EpsMetadata
         }
         else if (desired is not null)
         {
-            int lineEnd = EndOfLine(ps, 0);
-            int afterFirstLine = AfterLine(ps, lineEnd);
-            byte[] ending = LineEnding(ps, lineEnd);
-            byte[] announcementLine = Encoding.ASCII.GetBytes("%ADO_ContainsXMP: MainFirst");
-            byte[] prefix = afterFirstLine == 0 ? [] : lineEnd == ps.Length ? ending : [];
-            newPs = Splice(ps, afterFirstLine, 0,
-                [.. prefix, .. announcementLine, .. ending, .. replacement, .. ending]);
+            (int announcementAt, int packetAt) = DscInsertPoints(ps);
+            newPs = SetAnnouncement(ps.ToArray(), AnnouncementKind.Packet, announcementAt);
+            int shift = newPs.Length - ps.Length;
+            int insertAt = packetAt + shift;
+            int firstLineEnd = EndOfLine(ps, 0);
+            byte[] ending = LineEnding(ps, firstLineEnd);
+            newPs = Splice(newPs, insertAt, 0, [.. replacement, .. ending]);
         }
         else newPs = ps.ToArray();
 
@@ -338,7 +338,22 @@ public sealed class EpsMetadata
         return true;
     }
 
-    private static byte[] SetAnnouncement(byte[] postScript, AnnouncementKind value)
+    private static (int AnnouncementAt, int PacketAt) DscInsertPoints(ReadOnlySpan<byte> postScript)
+    {
+        int at = AfterLine(postScript, EndOfLine(postScript, 0));
+        while (at < postScript.Length)
+        {
+            int end = EndOfLine(postScript, at);
+            ReadOnlySpan<byte> line = postScript[at..end];
+            if (line.SequenceEqual("%%EndComments"u8)) return (at, AfterLine(postScript, end));
+            bool comment = line.Length >= 2 && line[0] == (byte)'%' && line[1] >= 0x21 && line[1] <= 0x7E;
+            if (!comment || line.SequenceEqual("%%EOF"u8)) return (at, at);
+            at = AfterLine(postScript, end);
+        }
+        return (postScript.Length, postScript.Length);
+    }
+
+    private static byte[] SetAnnouncement(byte[] postScript, AnnouncementKind value, int? insertionAt = null)
     {
         string target = value == AnnouncementKind.Packet ? "%ADO_ContainsXMP: MainFirst" : "%ADO_ContainsXMP: NoMain";
         int at = 0;
@@ -362,7 +377,7 @@ public sealed class EpsMetadata
         }
         if (value != AnnouncementKind.Packet) return postScript;
         int firstEnd = EndOfLine(postScript, 0);
-        int insertion = AfterLine(postScript, firstEnd);
+        int insertion = insertionAt ?? AfterLine(postScript, firstEnd);
         return Splice(postScript, insertion, 0, [.. Encoding.ASCII.GetBytes(target), .. LineEnding(postScript, firstEnd)]);
     }
 
