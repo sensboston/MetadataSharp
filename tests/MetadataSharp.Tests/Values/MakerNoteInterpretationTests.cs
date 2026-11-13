@@ -188,6 +188,17 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("(16191)", Field(MakerNoteFormat.Canon, 0x4028, "SelectAFAreaSelectionMode", SignedLongs(16191), index: 12));
     }
 
+    [Theory]
+    [InlineData(4231518, "Canon EOS 30D", "100-5604")]
+    [InlineData(2146202, "Canon EOS 20D", "766-6688")]
+    public void CanonFileNumberUsesTheEnclosingModelLayout(uint raw, string modelName, string expected)
+    {
+        var field = new MakerNoteField(1, "FileNumber", Longs(raw));
+        var entry = new MakerNoteEntry(0x0093, "CanonFileInfo", Undefined(0), [field]);
+        var note = new MakerNote(MakerNoteFormat.Canon, Little, [entry]);
+        Assert.Equal(expected, note.InterpretFieldForModel(entry, field, modelName));
+    }
+
     [Fact]
     public void CanonD30SerialNumberUsesTheModelSpecificReferenceFormat()
     {

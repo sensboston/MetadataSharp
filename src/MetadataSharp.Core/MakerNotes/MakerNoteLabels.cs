@@ -91,6 +91,7 @@ internal static partial class MakerNoteLabels
 
         CanonAutoIso,
         CanonBulbDuration,
+        CanonFileNumber,
         CanonPictureStyle,
         CanonSerialNumber,
         CanonRaw,
@@ -222,18 +223,19 @@ internal static partial class MakerNoteLabels
         }
     }
 
-    internal static string? Interpret(MakerNote note, MakerNoteEntry entry) =>
-        Interpret(note.Format, Top, entry.Name, entry.Value, note);
+    internal static string? Interpret(MakerNote note, MakerNoteEntry entry, string? cameraModel = null) =>
+        Interpret(note.Format, Top, entry.Name, entry.Value, note, cameraModel);
 
-    internal static string? Interpret(MakerNoteFormat format, MakerNoteEntry entry, MakerNoteField field)
+    internal static string? Interpret(MakerNote note, MakerNoteEntry entry, MakerNoteField field, string? cameraModel = null)
     {
         // Nikon's preview directory holds ordinary TIFF fields, and they read as they do anywhere else.
-        if (format == MakerNoteFormat.Nikon3 && entry.TagId == 0x0011)
+        if (note.Format == MakerNoteFormat.Nikon3 && entry.TagId == 0x0011)
             return ExifTags.Interpret(new ExifTagKey(ExifDirectoryKind.Ifd0, field.Index), field.Value);
-        return Interpret(format, entry.TagId, field.Name, field.Value);
+        return Interpret(note.Format, entry.TagId, field.Name, field.Value, note, cameraModel);
     }
 
-    private static string? Interpret(MakerNoteFormat format, int scope, string? name, ExifValue value, MakerNote? note = null)
+    private static string? Interpret(MakerNoteFormat format, int scope, string? name, ExifValue value,
+        MakerNote? note = null, string? cameraModel = null)
     {
         if (name is null)
             return null;
@@ -254,12 +256,12 @@ internal static partial class MakerNoteLabels
         foreach (Rule rule in rules)
         {
             if (rule.Scope == scope && rule.Name == name)
-                return Apply(rule, value, note);
+                return Apply(rule, value, note, cameraModel);
         }
         return null;
     }
 
-    private static string? Apply(Rule rule, ExifValue value, MakerNote? note = null)
+    private static string? Apply(Rule rule, ExifValue value, MakerNote? note = null, string? cameraModel = null)
     {
         if (rule.Reading is Form.PentaxFirst or Form.PentaxVersion or Form.PentaxResolution or Form.PentaxDate or Form.PentaxTime or
             Form.PentaxExposure or Form.PentaxFNumber or Form.PentaxFocalLength or Form.PentaxExposureCompensation or
@@ -277,6 +279,8 @@ internal static partial class MakerNoteLabels
                 return CanonAutoIso(value);
             case Form.CanonBulbDuration:
                 return CanonBulbDuration(value);
+            case Form.CanonFileNumber:
+                return CanonFileNumber(value, cameraModel);
             case Form.CanonPictureStyle:
                 return CanonPictureStyle(rule, value);
             case Form.CanonSerialNumber:
@@ -557,6 +561,36 @@ internal static partial class MakerNoteLabels
             !ExifTags.TryInteger(value, 0, out long height) || !ExifTags.TryInteger(value, 1, out long width))
             return null;
         return Whole(width) + " x " + Whole(height);
+    }
+
+    private static string? CanonFileNumber(ExifValue value, string? cameraModel)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Long || !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        uint number = unchecked((uint)stored);
+        if (cameraModel is null)
+            return $"({number.ToString(CultureInfo.InvariantCulture)})";
+
+        bool firstLayout = cameraModel.Contains("20D", StringComparison.Ordinal) ||
+            cameraModel.Contains("350D", StringComparison.Ordinal) || cameraModel.EndsWith("REBEL XT", StringComparison.Ordinal) ||
+            cameraModel.Contains("Kiss Digital N", StringComparison.Ordinal);
+        if (firstLayout)
+        {
+            uint directory = (number & 0x0000ffc0) >> 6;
+            uint file = ((number >> 16) & 0xff) + ((number & 0x3f) << 8);
+            return directory.ToString(CultureInfo.InvariantCulture) + "-" + file.ToString("D4", CultureInfo.InvariantCulture);
+        }
+
+        bool secondLayout = cameraModel.Contains("30D", StringComparison.Ordinal) ||
+            cameraModel.Contains("400D", StringComparison.Ordinal) || cameraModel.Contains("REBEL XTi", StringComparison.Ordinal) ||
+            cameraModel.Contains("Kiss Digital X", StringComparison.Ordinal) || cameraModel.Contains("K236", StringComparison.Ordinal);
+        if (!secondLayout)
+            return $"({number.ToString(CultureInfo.InvariantCulture)})";
+        uint secondDirectory = (number & 0x000ffc00) >> 10;
+        while (secondDirectory < 100)
+            secondDirectory += 0x40;
+        uint secondFile = ((number & 0x3ff) << 4) + ((number >> 20) & 0x0f);
+        return secondDirectory.ToString(CultureInfo.InvariantCulture) + "-" + secondFile.ToString("D4", CultureInfo.InvariantCulture);
     }
 
     private static string? CanonBulbDuration(ExifValue value)

@@ -105,7 +105,7 @@ internal static partial class MakerNoteLabels
         new(0x0004, "ShutterSpeedValue", [], Form.CanonShutter),
         new(0x0004, "FlashGuideNumber", [], Form.CanonFlashGuideNumber),
         new(0x0004, "AFPointUsed", [], Form.CanonAfPointUsed),
-        new(0x0093, "FileNumber", [], Form.DirectoryAndFile),
+        new(0x0093, "FileNumber", [], Form.CanonFileNumber),
         new(0x0001, "Macro", [(2, "Off")]),
         new(0x0001, "Selftimer", [(0, "Off")], Form.TenthsOfSecond),
         new(0x0001, "Quality", [(2, "Normal"), (3, "Fine"), (4, "RAW"), (5, "Superfine"), (7, "CRAW")]),

@@ -403,6 +403,7 @@ internal static class Program
                 ExifTags.Interpret(entry.Key, entry.Value));
         if (metadata.MakerNote is MakerNote makerNote)
         {
+            string? cameraModel = metadata.Model;
             string group = makerNote.Format switch { MakerNoteFormat.Canon => "Canon", _ => makerNote.Format.ToString() };
             // The reference reports where a note it recognises starts and which byte order it is read in
             // as two rows of a group of their own.
@@ -427,7 +428,7 @@ internal static class Program
                     bool keepParent = olympusIfd || nikonPreview || sonyMinolta || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
                         Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value),
-                            makerNote.Interpret(entry));
+                            makerNote.InterpretForModel(entry, cameraModel));
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
                         : nikonPreview ? "NikonPreview"
                         : sonyMinolta ? "SonyMinolta"
@@ -447,7 +448,7 @@ internal static class Program
                             entry.Value.CopyRawTo(array);
                             Tag(stdout, "Exif.NikonVr." + field.Name, "Byte", 3,
                                 string.Join(' ', array[4..7].Select(b => b.ToString(CultureInfo.InvariantCulture))),
-                                makerNote.Interpret(entry, field));
+                                makerNote.InterpretFieldForModel(entry, field, cameraModel));
                             continue;
                         }
                         // An entry of a sub-directory that is itself a split array: its elements only,
@@ -462,12 +463,12 @@ internal static class Program
                         }
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
                             TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value),
-                            makerNote.Interpret(entry, field));
+                            makerNote.InterpretFieldForModel(entry, field, cameraModel));
                     }
                     continue;
                 }
                 Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
-                    TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value), makerNote.Interpret(entry));
+                    TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value), makerNote.InterpretForModel(entry, cameraModel));
             }
         }
     }
