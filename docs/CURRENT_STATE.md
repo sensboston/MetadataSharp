@@ -139,8 +139,10 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   (tag 0x8773 of the first directory: over the stored value, else appended; removal leaves the bytes
   unaddressed) and `BmffMetadataDocument` (`colr` `prof` of the primary item: replaced in place,
   added last, removed as `free`; `iprp` in place, else `meta` grows or is appended; no item moves).
-  Same profile: copy. Verified before written. A DNG, a raw file (ORF / RW2 header, CR2 signature,
-  raw sensor data) and a first directory that is a reduced image are refused (`UnsupportedFeature`).
+  Same profile: copy. Verified before written. A DNG or raw layout with no valid existing primary
+  tag 0x8773, and a first directory that is a reduced image without such a target, are refused
+  (`UnsupportedFeature`). A readable existing primary profile permits only replace/remove, preserving
+  image and MakerNote bytes; insertion remains refused.
 - Write, complete-set PSD and JP2 metadata: `PsdMetadata.Write` replaces EXIF/IPTC/XMP/ICC resources,
   and adds or removes a JPEG thumbnail resource; unrelated resources and image bytes are preserved.
   `Jp2Metadata.Write` replaces EXIF/IPTC/XMP UUID boxes and ICC `colr`; unknown boxes and the
@@ -259,5 +261,5 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   CFAPattern, OECF, SpatialFrequencyResponse, DeviceSettingDescription. A value of a type or count
   the tag is not defined with is not converted and is listed in `SyncEdits.Notes`.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
-- PSD and JP2 writes are complete-set byte-buffer APIs, not the general per-family stream/path document APIs; JP2 XML boxes not parsed as XMP remain opaque. EXIF blocks written for PSD keep the 65,527-byte ceiling. ICC writes for TIFF-based RAW remain refused unless a layout proves that tag 0x8773 targets the image rather than a thumbnail or raw-sensor IFD; the authored DNG, CR2, ORF/RW2, NEF/ARW and PEF layouts fail that proof. Comments are written in JPEG, PNG and CRW only; a PNG profile over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to agree with a written profile. A BMFF item is edited or added, never removed. Previews are not decoded and not written. CR3, JPEG XL, MRW and RAF are read, never written. CRW: no async members; a record outside the directory the reference writes it to is not changed; the Fujifilm directory (0xF000) of a RAF TIFF structure is not read.
+- PSD and JP2 writes are complete-set byte-buffer APIs, not the general per-family stream/path document APIs; JP2 XML boxes not parsed as XMP remain opaque. EXIF blocks written for PSD keep the 65,527-byte ceiling. ICC insertion for TIFF-based RAW remains refused unless a layout proves that tag 0x8773 targets the image rather than a thumbnail or raw-sensor IFD; a validated existing primary ICC target permits replacement/removal only. The authored DNG, CR2, ORF/RW2, NEF/ARW and PEF layouts without that target remain refused. Comments are written in JPEG, PNG and CRW only; a PNG profile over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to agree with a written profile. A BMFF item is edited or added, never removed. Previews are not decoded and not written. CR3, JPEG XL, MRW and RAF are read, never written. CRW: no async members; a record outside the directory the reference writes it to is not changed; the Fujifilm directory (0xF000) of a RAF TIFF structure is not read.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.

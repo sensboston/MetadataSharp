@@ -1529,7 +1529,34 @@ else if (args.Length == 2 && args[0] == "tiff-based-icc-edits")
             }
         }
     }
-    Console.WriteLine($"::notice title=TIFF-based profile refusals::{raw.Count} authored DNG and raw files refused, with a profile and with none");
+    Console.WriteLine($"::notice title=TIFF-based profile refusals::{raw.Count} authored DNG and raw files without an existing profile refused for insertion and removal");
+
+    // A readable tag 0x8773 already in the accounted primary directory proves its target even
+    // when the surrounding DNG layout is not safe for inserting a new profile.
+    byte[] provenDng = TiffBasedFixture.Dng(false, iccProfile: small).Bytes;
+    string provenSource = "dng-existing-profile.dng";
+    File.WriteAllBytes(At(provenSource), provenDng);
+    string provenReplacement = "dng-existing-profile-replaced.dng";
+    using (TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(At(provenSource)))
+        document.SaveIccProfileAs(At(provenReplacement), odd);
+    byte[]? readReplacement = IccProfiles.Read(File.ReadAllBytes(At(provenReplacement)));
+    byte[]? readSource = IccProfiles.Read(File.ReadAllBytes(At(provenSource)));
+    if (readReplacement is null || !odd.AsSpan().SequenceEqual(readReplacement)
+        || readSource is null || !small.AsSpan().SequenceEqual(readSource))
+    {
+        Console.WriteLine($"{title}the proven DNG profile target was not replaced exactly");
+        return 1;
+    }
+    manifest.Add(string.Join('\t', provenSource, provenReplacement, oddIcc, "="));
+    string provenRemoved = "dng-existing-profile-removed.dng";
+    using (TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(At(provenSource)))
+        document.SaveIccProfileAs(At(provenRemoved), null);
+    if (IccProfiles.Read(File.ReadAllBytes(At(provenRemoved))) is not null)
+    {
+        Console.WriteLine($"{title}the proven DNG profile target was not removed");
+        return 1;
+    }
+    manifest.Add(string.Join('\t', provenSource, provenRemoved, "-", "="));
 
     foreach (string name in TiffBasedFixture.Plain)
     {
@@ -2197,7 +2224,37 @@ else if (args.Length == 2 && args[0] == "operations-parity")
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=Operation defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | tiff-based-corpus CORPUS DIRECTORY | bmff-edits DIRECTORY | bmff-corpus CORPUS DIRECTORY | jpeg-embedded-edits DIRECTORY | jpeg-embedded-corpus CORPUS DIRECTORY | png-webp-embedded-edits DIRECTORY | png-webp-embedded-corpus CORPUS DIRECTORY | tiff-based-icc-edits DIRECTORY | tiff-based-icc-corpus CORPUS DIRECTORY | bmff-icc-edits DIRECTORY | bmff-icc-corpus CORPUS DIRECTORY | sync-parity DIRECTORY | operations-parity-blank FILE | operations-parity DIRECTORY | inspect[-xmp|-iptc] FILE | noop[-xmp|-iptc] INPUT OUTPUT | rewrite-iptc INPUT OUTPUT"); return 2; }
+else if (args.Length == 2 && args[0] == "psd-jp2-exv-write-parity")
+{
+    Directory.CreateDirectory(args[1]);
+    string root = Directory.GetCurrentDirectory();
+    while (!File.Exists(Path.Combine(root, "MetadataSharp.sln")) && Directory.GetParent(root) is DirectoryInfo parent)
+        root = parent.FullName;
+    byte[] psd = File.ReadAllBytes(Path.Combine(root, "tests", "fixtures", "b8", "owned-metadata-rgb.psd"));
+    byte[] jp2 = File.ReadAllBytes(Path.Combine(root, "tests", "fixtures", "b8", "owned-rgb.jp2"));
+    byte[] profile = IccProfile(560, 37);
+    ExifMetadata exif = TiffExif.Read(TiffBasedFixture.Tiff(false).Bytes);
+    var iptcEdit = new IptcEdit();
+    iptcEdit.SetHeadline("MSParity");
+    IptcPacket iptc = IptcPacket.CreateEmpty().Apply(iptcEdit)!;
+    XmpPacket xmp = XmpPacket.Parse(Encoding.UTF8.GetBytes(
+        "<x:xmpmeta xmlns:x='adobe:ns:meta/'><rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>" +
+        "<rdf:Description rdf:about='' xmlns:xmp='http://ns.adobe.com/xap/1.0/'>" +
+        "<xmp:CreatorTool>MSParity</xmp:CreatorTool></rdf:Description></rdf:RDF></x:xmpmeta>"));
+    string At(string name) => Path.Combine(args[1], name);
+    File.WriteAllBytes(At("base-psd.psd"), psd);
+    File.WriteAllBytes(At("base-jp2.jp2"), jp2);
+    File.WriteAllBytes(At("base-exv.exv"), MetadataSharp.Formats.Operations.ExvFile.Create(null, null, null));
+    File.WriteAllBytes(At("profile.icc"), profile);
+    File.WriteAllBytes(At("ours-psd.psd"), MetadataSharp.Formats.Psd.PsdMetadata.Write(psd, exif, iptc, xmp, profile));
+    File.WriteAllBytes(At("ours-jp2.jp2"), MetadataSharp.Formats.Jp2.Jp2Metadata.Write(jp2, exif, iptc, xmp, profile));
+    File.WriteAllBytes(At("ours-exv.exv"), MetadataSharp.Formats.Operations.ExvFile.Create(exif, iptc, xmp, iccProfile: profile));
+    File.WriteAllText(At("modify.txt"),
+        "set Exif.Image.Make TestCompany\n" +
+        "set Iptc.Application2.Headline MSParity\n" +
+        "set Xmp.xmp.CreatorTool MSParity\n", new UTF8Encoding(false));
+}
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | bmff-edits DIRECTORY | jpeg-embedded-edits DIRECTORY | png-webp-embedded-edits DIRECTORY | tiff-based-icc-edits DIRECTORY | bmff-icc-edits DIRECTORY | psd-jp2-exv-write-parity DIRECTORY | sync-parity DIRECTORY | operations-parity DIRECTORY | inspect[-xmp|-iptc] FILE"); return 2; }
 return 0;
 
 

@@ -24,7 +24,7 @@ namespace MetadataSharp.Formats.Tiff;
 internal static class TiffBasedIccTarget
 {
     private const ushort ClassicMagic = 42, BigTiffMagic = 43;
-    private const ushort NewSubfileType = 0x00FE, Compression = 0x0103, Photometric = 0x0106, DngVersion = 0xC612;
+    private const ushort NewSubfileType = 0x00FE, Compression = 0x0103, Photometric = 0x0106, DngVersion = 0xC612, IccProfile = 0x8773;
     // PhotometricInterpretation of sensor data, and the Compression numbers of ARW, NEF and PEF.
     private const long ColourFilterArray = 32803, LinearRaw = 34892, SonyRaw = 32767, NikonRaw = 34713, PentaxRaw = 65535;
 
@@ -75,6 +75,14 @@ internal static class TiffBasedIccTarget
         }
         return null;
     }
+
+    /// <summary>
+    /// An existing, readable tag 0x8773 in the accounted primary directory is an explicit ICC
+    /// target even in a camera RAW layout that would be unsafe for a new profile. Replacing or
+    /// removing that tag keeps the profile attached to the same directory the source already names.
+    /// </summary>
+    internal static bool HasExistingPrimaryProfile(byte[] file, TiffBasedFileMap? map) =>
+        map?.Find(TiffBasedRole.Primary)?.Find(IccProfile) is not null && IccProfiles.Read(file) is not null;
 
     private static string Because(string reason) =>
         "The ICC profile of the first directory is not written or removed: " + reason

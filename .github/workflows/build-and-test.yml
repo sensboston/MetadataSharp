@@ -423,6 +423,14 @@ jobs:
           tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
           echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
           artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      - name: Bidirectional PSD, JP2 and EXV write parity
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/psd-jp2-exv
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 -- \
+            psd-jp2-exv-write-parity artifacts/parity/psd-jp2-exv
+          python tools/reference/psd_jp2_exv_write_parity.py artifacts/parity/psd-jp2-exv \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP"
       # The packaged release binary omits the optional video readers. Build only the pinned 0.28.9
       # CLI from the checkout above with video enabled, and keep the release binary for other jobs.
       - name: Build pinned Exiv2 video-enabled oracle
