@@ -426,7 +426,7 @@ internal static class Program
                     bool sonyMinolta = sony && entry.TagId == 0xB028;
                     bool keepParent = olympusIfd || nikonPreview || sonyMinolta || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
-                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, RenderMakerNote(makerNote.Format, entry.TagId, entry.Value),
+                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value),
                             makerNote.Interpret(entry));
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
                         : nikonPreview ? "NikonPreview"
@@ -461,13 +461,13 @@ internal static class Program
                             continue;
                         }
                         Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
-                            TypeName(field.Value.FieldType), field.Value.Count, RenderMakerNote(makerNote.Format, entry.TagId, field.Value),
+                            TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value),
                             makerNote.Interpret(entry, field));
                     }
                     continue;
                 }
                 Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
-                    TypeName(entry.Value.FieldType), entry.Value.Count, RenderMakerNote(makerNote.Format, entry.TagId, entry.Value), makerNote.Interpret(entry));
+                    TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value), makerNote.Interpret(entry));
             }
         }
     }
@@ -797,15 +797,6 @@ internal static class Program
         double.IsNaN(value) ? "nan"
         : double.IsInfinity(value) ? (value < 0 ? "-inf" : "inf")
         : value.ToString("G15", CultureInfo.InvariantCulture).Replace('E', 'e');
-
-    private static string RenderMakerNote(MakerNoteFormat format, ushort tag, ExifValue value)
-    {
-        string rendered = Render(value);
-        // Fujifilm's serial-number field uses trailing ASCII blanks as padding; Exiv2 omits them in its value text.
-        return format == MakerNoteFormat.Fujifilm && tag == 0x0010 && value.FieldType == TiffFieldType.Ascii
-            ? rendered.TrimEnd(' ')
-            : rendered;
-    }
 
     private static string Render(ExifValue value)
     {
