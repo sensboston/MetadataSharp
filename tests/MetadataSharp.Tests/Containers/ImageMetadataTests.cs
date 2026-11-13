@@ -403,7 +403,7 @@ public sealed class ImageMetadataTests
 
     [Theory]
     [InlineData("")]
-    [InlineData("5047463600000000")]
+    [InlineData("00524742")]
     [InlineData("1A45DFA3A3428681014282840100000000000000")]
     public void AnUnknownFormatGivesAnEmptySnapshot(string hex)
     {

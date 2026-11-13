@@ -260,7 +260,7 @@ public sealed class EpsMetadata
                 for (int t = 0; t < PacketTrailers.Length; t++)
                 {
                     string trailer = PacketTrailers[t].Text;
-                    if (!postScript[trailerAt..].StartsWith(Encoding.ASCII.GetBytes(trailer))) continue;
+                    if (!postScript[trailerAt..].StartsWith(Encoding.Latin1.GetBytes(trailer))) continue;
                     // A trailer marked r states a packet its writer means to be read only. The
                     // reference refuses such a file rather than report a packet it may not keep.
                     if (PacketTrailers[t].ReadOnly) throw Bad("The XMP trailer states a read-only packet.", trailerAt);
@@ -280,12 +280,16 @@ public sealed class EpsMetadata
     private static int IndexOf(ReadOnlySpan<byte> data, ReadOnlySpan<byte> needle) =>
         data.IndexOf(needle);
 
-    /// <summary>The header that begins at <paramref name="at"/>, or null when none does.</summary>
+    /// <summary>
+    /// The header that begins at <paramref name="at"/>, or null when none does. The bytes of a header
+    /// are read as ISO-8859-1, which is the one-byte-per-character reading the BOM of the <c>begin</c>
+    /// attribute needs: as ASCII those three bytes become question marks and no header ever matches.
+    /// </summary>
     private static string? Match(ReadOnlySpan<byte> data, int at, string[] headers)
     {
         foreach (string text in headers)
         {
-            if (data[at..].StartsWith(Encoding.ASCII.GetBytes(text))) return text;
+            if (data[at..].StartsWith(Encoding.Latin1.GetBytes(text))) return text;
         }
         return null;
     }
