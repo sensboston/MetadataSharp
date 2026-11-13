@@ -12,6 +12,7 @@ internal static class SyncIptc
 
     internal static string Key(IptcDatasetKey key) => "Iptc." + key.Record.ToString(Invariant) + ":" + key.Dataset.ToString(Invariant);
 
+    // Compare dataset presence only; value equality and replacement policy belong to the sync caller.
     internal static bool Has(IptcPacket iptc, IptcDatasetKey key)
     {
         foreach (IptcDataset dataset in iptc.Datasets)

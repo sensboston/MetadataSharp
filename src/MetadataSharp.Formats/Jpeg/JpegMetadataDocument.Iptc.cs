@@ -13,9 +13,12 @@ public sealed partial class JpegMetadataDocument
     /// false: resources spread over several segments, a repeated stream or digest, a digest without a
     /// stream, padding after the last dataset. <see cref="SaveIptc(Stream, IptcEdit)"/> refuses a change to such a file.
     /// </summary>
+    /// <param name="options">IPTC read settings; null selects the defaults.</param>
+    /// <returns>The parsed IPTC packet, or null when the file has no IPTC data.</returns>
     public IptcPacket? ReadIptc(IptcReadOptions? options = null) => ReadIptcCore(options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="ReadIptc"/>
     public Task<IptcPacket?> ReadIptcAsync(IptcReadOptions? options = null, CancellationToken cancellationToken = default) => ReadIptcCore(options, true, cancellationToken);
+    // Compare the staged result with the source to confirm unrelated JPEG data stayed unchanged.
     private async Task VerifyIptcSource(bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -26,17 +29,20 @@ public sealed partial class JpegMetadataDocument
     }
     private static MetadataException SeveralSegments() =>
         new(MetadataErrorCode.AmbiguousMetadata, "Multiple Photoshop APP13 segments are unsupported for IPTC operations.");
+    // Keep UniquePhotoshop focused on JPEG and its format-specific validation contract.
     private JpegSegment? UniquePhotoshop()
     {
         JpegSegment[] matches = scan.Segments.Where(s => s.IsPhotoshop).Take(2).ToArray();
         if (matches.Length > 1) throw SeveralSegments();
         return matches.FirstOrDefault();
     }
+    // Reject invalid JPEG ranges, overlaps, or field shapes before accepting the data.
     private void CheckIptcBudget(int photoshopBytes, IptcLimits settings)
     {
         long retained = (scan.Exif?.PayloadLength - 6 ?? 0) + scan.Segments.Where(s => s.IsStandardXmp).Sum(s => (long)s.PayloadLength - 29);
         if (photoshopBytes > settings.MaxPacketBytes || retained + photoshopBytes > limits.MaxRetainedMetadataBytes) throw IptcPacket.Limit();
     }
+    // Keep LoadPhotoshop focused on JPEG and its format-specific validation contract.
     private async Task<PhotoshopResources> LoadPhotoshop(JpegSegment segment, IptcLimits settings, bool forEdit, bool asynchronous, CancellationToken token)
     {
         CheckIptcBudget(segment.PayloadLength, settings);
@@ -83,6 +89,7 @@ public sealed partial class JpegMetadataDocument
         IptcPacket packet = IptcPacket.Inspect(iptc.Data.Span, new() { Limits = settings }, refusal).WithDigest(resources.StoredDigest());
         token.ThrowIfCancellationRequested(); return packet;
     }
+    // Represent the IptcPrepared state used by JPEG parsing and output.
     private sealed record IptcPrepared(bool CopyOnly, JpegSegment? Segment, byte[]? Payload);
     private async Task<IptcPrepared> PrepareIptc(IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
@@ -131,13 +138,19 @@ public sealed partial class JpegMetadataDocument
     /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
     /// opened; otherwise the code of the reason the edit is refused.
     /// </exception>
+    /// <param name="destination">Empty writable, seekable destination stream for the IPTC edit; it must not be the source stream.</param>
+    /// <param name="edit">IPTC changes to apply to this JPEG document.</param>
     public void SaveIptc(Stream destination, IptcEdit edit) => SaveIptcCore(destination, edit, null, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit)"/>
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcCore(destination, edit, null, true, cancellationToken);
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, with options; null options are the defaults.</summary>
+    /// <param name="destination">Empty writable, seekable destination stream for the IPTC edit; it must not be the source stream.</param>
+    /// <param name="edit">IPTC changes to apply to this JPEG document.</param>
+    /// <param name="options">IPTC write settings; null selects the defaults.</param>
     public void SaveIptc(Stream destination, IptcEdit edit, IptcWriteOptions? options) => SaveIptcCore(destination, edit, options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit, IptcWriteOptions)"/>
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SaveIptcCore(destination, edit, options, true, cancellationToken);
+    // Apply IPTC edits and digest policy before committing the JPEG output.
     private async Task SaveIptcCore(Stream destination, IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentNullException.ThrowIfNull(destination);
@@ -146,6 +159,7 @@ public sealed partial class JpegMetadataDocument
         IptcPrepared prepared = await PrepareIptc(edit, write, asynchronous, token).ConfigureAwait(false);
         await EmitIptc(destination, prepared, asynchronous, token).ConfigureAwait(false);
     }
+    // Write the planned IPTC segments while copying untouched JPEG data.
     private async Task EmitIptc(Stream destination, IptcPrepared prepared, bool asynchronous, CancellationToken token)
     {
         if (prepared.CopyOnly) { await CopyRange(destination, 0, scan.Length, asynchronous, token).ConfigureAwait(false); return; }
@@ -162,14 +176,20 @@ public sealed partial class JpegMetadataDocument
     }
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
     /// <exception cref="IOException">The destination exists or is the source.</exception>
+    /// <param name="destinationPath">Path for publishing IPTC edits in JPEG format.</param>
+    /// <param name="edit">IPTC changes to apply to this JPEG document.</param>
     public void SaveIptcAs(string destinationPath, IptcEdit edit) => SaveIptcPath(destinationPath, edit, null, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SaveIptcPath(destinationPath, edit, null, true, cancellationToken);
     /// <summary>As <see cref="SaveIptcAs(string, IptcEdit)"/>, with options; null options are the defaults.</summary>
     /// <exception cref="IOException">The destination exists or is the source.</exception>
+    /// <param name="destinationPath">Path for publishing IPTC edits in JPEG format.</param>
+    /// <param name="edit">IPTC changes to apply to this JPEG document.</param>
+    /// <param name="options">IPTC write settings; null selects the defaults.</param>
     public void SaveIptcAs(string destinationPath, IptcEdit edit, IptcWriteOptions? options) => SaveIptcPath(destinationPath, edit, options, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit, IptcWriteOptions)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, IptcWriteOptions? options, CancellationToken cancellationToken = default) => SaveIptcPath(destinationPath, edit, options, true, cancellationToken);
+    // Write the staged IPTC result to a new path after validation completes.
     private async Task SaveIptcPath(string path, IptcEdit edit, IptcWriteOptions? write, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this); ArgumentException.ThrowIfNullOrEmpty(path);

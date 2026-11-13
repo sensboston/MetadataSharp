@@ -13,6 +13,7 @@ internal readonly record struct SyncDate(int Year, int Month, int Day, bool HasT
     /// <summary>The zone as <c>±hh:mm</c>; empty when the moment names none. <c>Z</c> is <c>+00:00</c>.</summary>
     internal string Offset => Zone == "Z" ? "+00:00" : Zone;
 
+    // Parse the accepted ISO-like precision without normalizing its offset or discarding fractional digits.
     internal static bool TryParse(string text, out SyncDate date)
     {
         date = default;
@@ -58,6 +59,7 @@ internal readonly record struct SyncDate(int Year, int Month, int Day, bool HasT
         return true;
     }
 
+    // Consume a delimiter only at the current cursor so optional date-time sections stay unambiguous.
     private static bool Skip(string text, ref int at, char c)
     {
         if (at >= text.Length || text[at] != c) return false;
@@ -65,6 +67,7 @@ internal readonly record struct SyncDate(int Year, int Month, int Day, bool HasT
         return true;
     }
 
+    // Parse a fixed number of ASCII digits and advance only after the entire component is valid.
     private static bool Number(string text, ref int at, int digits, out int value)
     {
         value = 0;
@@ -78,6 +81,7 @@ internal readonly record struct SyncDate(int Year, int Month, int Day, bool HasT
         return true;
     }
 
+    // Reconstruct exactly the precision represented by the parsed fields, including the original zone.
     public override string ToString()
     {
         string text = Year.ToString("0000", CultureInfo.InvariantCulture);

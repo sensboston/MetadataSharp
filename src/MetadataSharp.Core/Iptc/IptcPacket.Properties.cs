@@ -48,6 +48,7 @@ public sealed partial class IptcPacket
     /// </summary>
     public string? Caption => First(new IptcDatasetKey(2, 120));
 
+    // Read only the first occurrence because these convenience properties model a single-valued field.
     private string? First(IptcDatasetKey key)
     {
         foreach (IptcDataset dataset in Datasets)
@@ -58,6 +59,7 @@ public sealed partial class IptcPacket
         return null;
     }
 
+    // Decode every occurrence in wire order for the IPTC properties whose schema permits repetition.
     private IReadOnlyList<string> All(IptcDatasetKey key)
     {
         List<string>? found = null;

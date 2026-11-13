@@ -46,6 +46,7 @@ internal sealed class XmpNode(XName name, string prefix)
         return true;
     }
 
+    // Deep-copy child and qualifier lists because edits must not mutate the packet’s original tree.
     internal XmpNode Clone()
     {
         var copy = new XmpNode(Name, Prefix) { Kind = Kind, Value = Value, IsUri = IsUri, Language = Language };
@@ -64,6 +65,7 @@ internal sealed class XmpNode(XName name, string prefix)
         return Same(left.Children, right.Children) && Same(left.Qualifiers, right.Qualifiers);
     }
 
+    // Preserve order for sequences and qualifiers; XMP prefixes are handled separately from node equality.
     internal static bool Same(List<XmpNode> left, List<XmpNode> right)
     {
         if (left.Count != right.Count) return false;
@@ -87,6 +89,7 @@ internal sealed class XmpTree
     /// </summary>
     internal Dictionary<string, string> Declarations { get; } = new(StringComparer.Ordinal);
 
+    // Copy declarations and all properties together so edits retain the packet’s namespace scope.
     internal XmpTree Clone()
     {
         var copy = new XmpTree { About = About };
@@ -98,6 +101,7 @@ internal sealed class XmpTree
     internal static bool Same(XmpTree left, XmpTree right) =>
         string.Equals(left.About, right.About, StringComparison.Ordinal) && XmpNode.Same(left.Properties, right.Properties);
 
+    // Match expanded names; source prefixes may differ while the property identity remains the same.
     internal XmpNode? Find(XName name)
     {
         foreach (XmpNode property in Properties)

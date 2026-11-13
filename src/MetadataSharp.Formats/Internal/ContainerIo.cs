@@ -4,8 +4,10 @@ using MetadataSharp.Core;
 
 namespace MetadataSharp.Formats.Internal;
 
+// Represent the ContainerIo state used by metadata parsing and output.
 internal static class ContainerIo
 {
+    // Read metadata data only after the input extent and applicable resource budgets are checked.
     internal static async ValueTask Read(Stream source, Memory<byte> bytes, bool asynchronous, CancellationToken token)
     {
         while (!bytes.IsEmpty)
@@ -21,6 +23,7 @@ internal static class ContainerIo
         token.ThrowIfCancellationRequested();
         if (asynchronous) await output.WriteAsync(bytes, token).ConfigureAwait(false); else output.Write(bytes.Span);
     }
+    // Take a stable copy without exposing mutable metadata state.
     internal static async Task Copy(Stream input, Stream output, long start, long length, int capacity, bool asynchronous, CancellationToken token)
     {
         input.Position = start; byte[] buffer = ArrayPool<byte>.Shared.Rent(capacity);
@@ -35,6 +38,7 @@ internal static class ContainerIo
         }
         finally { ArrayPool<byte>.Shared.Return(buffer); }
     }
+    // Keep Hash focused on metadata and its format-specific validation contract.
     internal static async Task<byte[]> Hash(Stream source, long length, int capacity, bool asynchronous, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -56,12 +60,14 @@ internal static class ContainerIo
         finally { ArrayPool<byte>.Shared.Return(buffer); }
     }
     internal static MetadataException Changed() => new(MetadataErrorCode.SourceChanged, "The source changed since opening.");
+    // Keep Output focused on metadata and its format-specific validation contract.
     internal static void Output(Stream source, Stream destination)
     {
         ArgumentNullException.ThrowIfNull(destination);
         if (ReferenceEquals(source, destination) || !destination.CanWrite || !destination.CanSeek || destination.Position != 0 || destination.Length != 0)
             throw new ArgumentException("Destination must be distinct, writable, seekable, empty and at zero.", nameof(destination));
     }
+    // Keep Target focused on metadata and its format-specific validation contract.
     internal static string Target(string path, string? sourcePath)
     {
         ArgumentException.ThrowIfNullOrEmpty(path); string target = Path.GetFullPath(path);
@@ -70,6 +76,7 @@ internal static class ContainerIo
             throw new IOException("Destination must be a new path distinct from the source.");
         return target;
     }
+    // Keep Publish focused on metadata and its format-specific validation contract.
     internal static async Task Publish(string target, int buffer, bool asynchronous, CancellationToken token, Func<Stream, Task> emit)
     {
         token.ThrowIfCancellationRequested(); string temporary = Path.Combine(Path.GetDirectoryName(target)!, ".metadatasharp-" + Guid.NewGuid().ToString("N") + ".tmp"); bool created = false;

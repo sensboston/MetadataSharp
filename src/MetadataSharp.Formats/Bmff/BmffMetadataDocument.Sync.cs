@@ -13,11 +13,16 @@ public sealed partial class BmffMetadataDocument
     /// Otherwise the call fails as <see cref="SaveExif(Stream, ExifEdit)"/> and
     /// <see cref="SaveXmp(Stream, XmpEdit)"/> do. Edits without a change copy the file.
     /// </summary>
+    /// <param name="destination">Empty writable, seekable destination stream for the combined metadata edit; it must not be the source stream.</param>
+    /// <param name="edits">EXIF, IPTC and XMP changes to apply together to this BMFF image.</param>
     public void SaveAll(Stream destination, SyncEdits edits) => SaveCore(destination, SyncParts(edits), false, default).GetAwaiter().GetResult();
 
     /// <summary>As <see cref="SaveAll(Stream, SyncEdits)"/>, to a new file.</summary>
+    /// <param name="destinationPath">Path for publishing combined metadata edits in BMFF format.</param>
+    /// <param name="edits">EXIF, IPTC and XMP changes to apply together to this BMFF image.</param>
     public void SaveAllAs(string destinationPath, SyncEdits edits) => SavePath(destinationPath, SyncParts(edits), false, default).GetAwaiter().GetResult();
 
+    // Keep SyncParts focused on BMFF and its format-specific validation contract.
     private static Pending SyncParts(SyncEdits edits)
     {
         ArgumentNullException.ThrowIfNull(edits);

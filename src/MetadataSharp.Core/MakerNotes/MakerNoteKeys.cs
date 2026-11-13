@@ -124,6 +124,7 @@ internal static class MakerNoteKeys
 
     private static string Hex(ushort value) => value.ToString("x4", CultureInfo.InvariantCulture);
 
+    // Map Olympus pointer tags to their separate Exiv2 groups instead of the parent note group.
     private static string OlympusGroup(ushort tag) => tag switch
     {
         0x2010 => "OlympusEq", 0x2020 => "OlympusCs", 0x2030 => "OlympusRd", 0x2031 => "OlympusRd2",
@@ -137,6 +138,7 @@ internal static class MakerNoteKeys
         _ => "Minolta0x" + Hex(tag),
     };
 
+    // Keep Sony array fields grouped by their tag-specific decoded layout and camera generation.
     private static string SonyArrayGroup(MakerNoteFormat format, ushort tag) => tag switch
     {
         0x0114 => format == MakerNoteFormat.Sony1 ? "Sony1Cs" : "Sony2Cs",
@@ -162,6 +164,7 @@ internal static class MakerNoteKeys
         };
     }
 
+    // Use Canon’s published array group names for editable keys of split fields.
     private static string CanonArrayGroup(ushort tag) => tag switch
     {
         0x0001 => "Cs", 0x0004 => "Si", 0x0005 => "Pa", 0x000F => "Cf", 0x0012 => "Pi", 0x0093 => "Fi",

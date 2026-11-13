@@ -14,6 +14,7 @@ namespace MetadataSharp.Core.MakerNotes;
 /// </remarks>
 internal static class CanonMakerNoteReader
 {
+    // Restrict parsing to the validated note slice and apply only a footer-confirmed offset correction.
     internal static MakerNote? TryRead(ReadOnlySpan<byte> tiff, int start, int length, Endianness order,
         MetadataLimits limits, long retainedBudget)
     {

@@ -37,6 +37,9 @@ public sealed class BmffMetadata
     /// <paramref name="limits"/> the budgets are the defaults of <see cref="BmffReadOptions"/>; the
     /// EXIF block of an item may be longer than a JPEG APP1 segment holds.
     /// </summary>
+    /// <param name="data">Complete BMFF file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing BMFF; null selects the default limits.</param>
+    /// <returns>The parsed BmffMetadata for the complete input file.</returns>
     public static BmffMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
         BmffReader.Read(data, limits);
 }
@@ -79,6 +82,7 @@ internal ref struct BmffReader
     private bool hasLocations;
     private bool hasIdat;
 
+    // Retain parsed BMFF properties and metadata extents for the metadata facade.
     private BmffReader(ReadOnlySpan<byte> data, MetadataLimits limits, XmpReadOptions? xmpOptions)
     {
         this.data = data;
@@ -139,6 +143,7 @@ internal ref struct BmffReader
         return new BmffMetadata(brand, exif, xmp);
     }
 
+    // Resolve BMFF using the format-defined identifiers and naming rules.
     private string Brand(BoxHeader box)
     {
         int length = box.End - box.Payload;
@@ -206,6 +211,7 @@ internal ref struct BmffReader
         hasHandler = true;
     }
 
+    // Keep PrimaryItem focused on BMFF and its format-specific validation contract.
     private void PrimaryItem(BoxHeader box)
     {
         if (hasPrimary) throw Fail("The primary item box appears more than once.", box.Start);
@@ -361,6 +367,7 @@ internal ref struct BmffReader
         }
     }
 
+    // Extract data from the already-validated representation.
     private void ItemData(BoxHeader box)
     {
         if (hasIdat) throw Fail("The item data box appears more than once.", box.Start);
@@ -390,6 +397,7 @@ internal ref struct BmffReader
         return ExifTiffReader.Inspect(bytes.AsSpan((int)start), limits, source + start, ExifTiffReader.NoCeiling);
     }
 
+    // Keep XmpItem focused on BMFF and its format-specific validation contract.
     private XmpPacket? XmpItem()
     {
         uint id = 0;
@@ -485,6 +493,7 @@ internal ref struct BmffReader
         return at + stop + 1;
     }
 
+    // Reject invalid BMFF ranges, overlaps, or field shapes before accepting the data.
     private void Require(int at, int count, int end)
     {
         if (count > end - at) throw Fail("A box field is truncated.", at);
@@ -498,9 +507,11 @@ internal ref struct BmffReader
 
     private ulong U64(int at) => BinaryPrimitives.ReadUInt64BigEndian(data.Slice(at, 8));
 
+    // Convert a reader-detected BMFF defect into an offset-aware metadata error.
     private MetadataException Fail(string message, long offset) =>
         new(MetadataErrorCode.InvalidBmff, message, offset >= 0 && offset <= data.Length ? offset : null);
 
+    // Build the BMFF limit exception while preserving the failing byte offset.
     private MetadataException Limit(string message, long offset) =>
         new(MetadataErrorCode.LimitExceeded, message, offset >= 0 && offset <= data.Length ? offset : null);
 
@@ -508,6 +519,7 @@ internal ref struct BmffReader
 
     private readonly record struct Item(uint Id, uint Type, string? ContentType);
 
+    // Represent the Extent state used by BMFF parsing and output.
     private readonly record struct Extent(ulong Offset, ulong Length);
 
     private readonly record struct Location(uint Id, byte Method, ulong BaseOffset, List<Extent> Extents);

@@ -24,6 +24,7 @@ public sealed record MetadataLimits
     /// <summary>The buffer for stream copies, in bytes, from 4,096 to 1,048,576. Default 65,536.</summary>
     public int CopyBufferBytes { get; init; } = 65_536;
 
+    // Validate the whole budget as one unit; parsers may then rely on positive bounds and a usable copy buffer.
     internal void Validate()
     {
         if (MaxInputBytes <= 0 || MaxSegments <= 0 || MaxRetainedMetadataBytes <= 0 ||

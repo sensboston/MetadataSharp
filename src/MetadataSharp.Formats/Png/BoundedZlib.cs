@@ -10,12 +10,14 @@ internal static class BoundedZlib
     private static readonly int[] LengthBase = [3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258];
     private static readonly Huffman FixedLiteral = BuildFixedLiteral();
     private static readonly Huffman FixedDistance = new(Enumerable.Repeat(5, 32).ToArray());
+    // Keep BuildFixedLiteral focused on PNG and its format-specific validation contract.
     private static Huffman BuildFixedLiteral()
     {
         int[] lengths = new int[288];
         for (int i = 0; i < lengths.Length; i++) lengths[i] = i < 144 ? 8 : i < 256 ? 9 : i < 280 ? 7 : 8;
         return new(lengths);
     }
+    // Stop inflation when expanded PNG data exceeds its output budget.
     internal static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "Expanded data exceeds its budget.");
     private static MetadataException Bad() => PngScanner.Invalid("Invalid or truncated zlib stream.");
     internal static byte[] Expand(byte[] input, int maximum, CancellationToken token)
@@ -97,10 +99,12 @@ internal static class BoundedZlib
         }
         catch (InvalidDataException) { throw Bad(); }
     }
+    // Represent the Bits state used by PNG parsing and output.
     private sealed class Bits(byte[] data, int start, int end)
     {
         private long position = (long)start * 8;
         internal int EndByte => (int)((position + 7) / 8);
+        // Read PNG data only after the input extent and applicable resource budgets are checked.
         internal int Read(int count)
         {
             if (position + count > (long)end * 8) throw Bad(); int value = 0;
@@ -108,11 +112,14 @@ internal static class BoundedZlib
             return value;
         }
         internal void Align() => position = (position + 7) & ~7L;
+        // Keep SkipBytes focused on PNG and its format-specific validation contract.
         internal void SkipBytes(int count) { if (position + count * 8L > end * 8L) throw Bad(); position += count * 8L; }
     }
+    // Represent the Huffman state used by PNG parsing and output.
     private sealed class Huffman
     {
         private readonly Dictionary<int, int> symbols = [];
+        // Capture validated inputs and stable state for this PNG object.
         internal Huffman(int[] lengths)
         {
             int[] counts = new int[16], next = new int[16];
@@ -131,6 +138,7 @@ internal static class BoundedZlib
                 symbols.Add((1 << length) | reversed, symbol);
             }
         }
+        // Keep Decode focused on PNG and its format-specific validation contract.
         internal int Decode(Bits bits)
         {
             int code = 0;

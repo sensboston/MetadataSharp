@@ -83,6 +83,7 @@ internal sealed record MakerNoteSlot(int Directory, int Entry, int Value, int By
 /// <summary>One named field inside an array-valued MakerNote tag, or one entry of a sub-directory.</summary>
 public sealed class MakerNoteField
 {
+    // Capture the vendor, raw value, decoded fields, and source offset for one parsed MakerNote.
     internal MakerNoteField(ushort index, string name, ExifValue value, IReadOnlyList<MakerNoteField>? fields = null, int offset = -1)
     {
         Index = index;
@@ -116,6 +117,7 @@ public sealed class MakerNoteField
 /// <summary>One tag of a decoded MakerNote directory.</summary>
 public sealed class MakerNoteEntry
 {
+    // Capture the vendor, raw value, decoded fields, and source offset for one parsed MakerNote.
     internal MakerNoteEntry(ushort tagId, string? name, ExifValue value, IReadOnlyList<MakerNoteField> fields)
     {
         TagId = tagId;
@@ -134,6 +136,7 @@ public sealed class MakerNoteEntry
     internal Func<byte[], byte[]>? Encode { get; init; }
 
     /// <summary>The entry with other fields, where it lies and how it is enciphered kept.</summary>
+    // Replace decoded fields while preserving slot and codec metadata needed by a later copy operation.
     internal MakerNoteEntry With(IReadOnlyList<MakerNoteField> fields, Func<byte[], byte[]>? decode = null, Func<byte[], byte[]>? encode = null) =>
         new(TagId, Name, Value, fields) { Slot = Slot, Decode = decode ?? Decode, Encode = encode ?? Encode };
 
@@ -163,6 +166,7 @@ public sealed class MakerNote
 {
     private readonly Dictionary<ushort, MakerNoteEntry> lookup;
 
+    // Snapshot directory order and retain the first duplicate tag for deterministic lookup.
     internal MakerNote(MakerNoteFormat format, Endianness byteOrder, IReadOnlyList<MakerNoteEntry> entries)
     {
         Format = format;
@@ -193,6 +197,9 @@ public sealed class MakerNote
     public IReadOnlyList<MakerNoteEntry> Entries { get; }
 
     /// <summary>Looks up an entry by tag ID; the first one when the directory repeats a tag.</summary>
+    /// <param name="tagId">The numeric MakerNote tag ID.</param>
+    /// <param name="entry">Receives the first matching entry, or <see langword="null"/> when none exists.</param>
+    /// <returns><see langword="true"/> when the tag is present; otherwise, <see langword="false"/>.</returns>
     public bool TryGetEntry(ushort tagId, [NotNullWhen(true)] out MakerNoteEntry? entry) =>
         lookup.TryGetValue(tagId, out entry);
 
@@ -201,6 +208,9 @@ public sealed class MakerNote
     /// takes it: <c>Exif.Canon.OwnerName</c>; <c>Exif.Fujifilm.0x1234</c> for a tag without a name.
     /// </summary>
     /// <exception cref="ArgumentException">The entry is not one of this note.</exception>
+    /// <param name="entry">An entry in this note's top-level directory.</param>
+    /// <returns>The dotted EXIF key for the entry.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is null.</exception>
     public string GetKey(MakerNoteEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
@@ -215,6 +225,11 @@ public sealed class MakerNote
     /// <see cref="MakerNoteField.Fields"/> of such an entry, pass that element too.
     /// </summary>
     /// <exception cref="ArgumentException">The field is not one of the entry, or the entry not one of this note.</exception>
+    /// <param name="entry">The top-level tag or subdirectory entry containing the field.</param>
+    /// <param name="field">The array field or subdirectory tag.</param>
+    /// <param name="element">The field within an array field, or null when <paramref name="field"/> is itself the target.</param>
+    /// <returns>The dotted EXIF key for the field or entry.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> or <paramref name="field"/> is null.</exception>
     public string GetKey(MakerNoteEntry entry, MakerNoteField field, MakerNoteField? element = null)
     {
         ArgumentNullException.ThrowIfNull(entry);
@@ -244,6 +259,7 @@ public sealed class MakerNote
     /// </para>
     /// </remarks>
     /// <param name="entry">A tag of this note's own directory.</param>
+    /// <returns>The human-readable value, or <see langword="null"/> when no interpretation is available.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="entry" /> is null.</exception>
     public string? Interpret(MakerNoteEntry entry)
     {
@@ -254,6 +270,7 @@ public sealed class MakerNote
     /// <summary>Reads an entry, supplying the enclosing image model when a vendor needs it.</summary>
     /// <param name="entry">A tag of this note's own directory.</param>
     /// <param name="cameraModel">The enclosing EXIF image model, if known.</param>
+    /// <returns>The human-readable value, or <see langword="null"/> when no interpretation is available.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="entry" /> is null.</exception>
     public string? InterpretForModel(MakerNoteEntry entry, string? cameraModel)
     {
@@ -268,6 +285,7 @@ public sealed class MakerNote
     /// </summary>
     /// <param name="entry">The tag the field belongs to.</param>
     /// <param name="field">One of the tag's <see cref="MakerNoteEntry.Fields" />.</param>
+    /// <returns>The human-readable value, or <see langword="null"/> when no interpretation is available.</returns>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
     public string? Interpret(MakerNoteEntry entry, MakerNoteField field)
     {
@@ -280,6 +298,7 @@ public sealed class MakerNote
     /// <param name="entry">The tag the field belongs to.</param>
     /// <param name="field">One of the tag's <see cref="MakerNoteEntry.Fields" />.</param>
     /// <param name="cameraModel">The enclosing EXIF image model, if known.</param>
+    /// <returns>The human-readable value, or <see langword="null"/> when no interpretation is available.</returns>
     /// <exception cref="ArgumentNullException">An argument is null.</exception>
     public string? InterpretFieldForModel(MakerNoteEntry entry, MakerNoteField field, string? cameraModel)
     {

@@ -61,10 +61,16 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     /// <see cref="MetadataErrorCode.InvalidBmff"/> when the data does not begin with a file type
     /// box; <see cref="MetadataErrorCode.LimitExceeded"/> when it exceeds the input budget.
     /// </exception>
+    /// <param name="source">Readable, seekable BMFF input stream positioned at the start; it remains open after the read.</param>
+    /// <param name="options">Settings for BMFF parsing; null selects the defaults.</param>
+    /// <returns>An open BmffMetadataDocument bound to the source and captured read options.</returns>
     public static BmffMetadataDocument Open(Stream source, BmffReadOptions? options = null) =>
         OpenCore(source, null, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
 
     /// <summary>Reads the whole file and closes it.</summary>
+    /// <param name="path">Path of the BMFF file to identify or open.</param>
+    /// <param name="options">Settings for BMFF parsing; null selects the defaults.</param>
+    /// <returns>An open BmffMetadataDocument bound to the source and captured read options.</returns>
     public static BmffMetadataDocument Open(string path, BmffReadOptions? options = null) =>
         OpenPath(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
 
@@ -78,6 +84,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         CancellationToken cancellationToken = default) =>
         OpenPath(path, (options ?? new()).Snapshot(), true, cancellationToken);
 
+    // Open the path asynchronously with captured BMFF limits and ownership.
     private static async Task<BmffMetadataDocument> OpenPath(string path, BmffReadOptions options,
         bool asynchronous, CancellationToken token)
     {
@@ -90,6 +97,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         finally { await file.DisposeAsync().ConfigureAwait(false); }
     }
 
+    // Parse the supplied BMFF stream and dispose it only when this call owns it.
     private static async Task<BmffMetadataDocument> OpenCore(Stream source, string? path,
         BmffReadOptions options, bool asynchronous, CancellationToken token)
     {
@@ -131,6 +139,8 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         new(MetadataErrorCode.LimitExceeded, "The BMFF file exceeds the input budget.", 0);
 
     /// <summary>The EXIF item of the file, as <see cref="BmffMetadata.Read"/> returns it, or null.</summary>
+    /// <returns>The parsed EXIF metadata, or null when the file has no EXIF block.</returns>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
     public ExifMetadata? ReadExif()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -138,6 +148,9 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     }
 
     /// <summary>The XMP item of the file (<c>mime</c>, <c>application/rdf+xml</c>), or null.</summary>
+    /// <param name="options">Settings for XMP packet parsing; null selects the defaults.</param>
+    /// <returns>The parsed XMP packet, or null when the file has no XMP packet.</returns>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
     public XmpPacket? ReadXmp(XmpReadOptions? options = null)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -161,6 +174,8 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     /// other bound: it may be longer than a JPEG APP1 segment holds); otherwise the code the
     /// reader reports for the file.
     /// </exception>
+    /// <param name="destination">Empty writable, seekable destination stream for the EXIF edit; it must not be the source stream.</param>
+    /// <param name="edit">EXIF changes to apply to this BMFF document.</param>
     public void SaveExif(Stream destination, ExifEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveExif(Stream, ExifEdit)"/>
     public Task SaveExifAsync(Stream destination, ExifEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
@@ -171,15 +186,21 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a packet outside the editable profile
     /// and for removal of all XMP.
     /// </summary>
+    /// <param name="destination">Empty writable, seekable destination stream for the XMP edit; it must not be the source stream.</param>
+    /// <param name="edit">XMP changes to apply to this BMFF document.</param>
     public void SaveXmp(Stream destination, XmpEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveXmp(Stream, XmpEdit)"/>
     public Task SaveXmpAsync(Stream destination, XmpEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
 
     /// <summary>Writes the edited file to a new path; the file appears there complete or not at all.</summary>
+    /// <param name="destinationPath">Path for publishing EXIF edits in BMFF format.</param>
+    /// <param name="edit">EXIF changes to apply to this BMFF document.</param>
     public void SaveExifAs(string destinationPath, ExifEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveExifAs(string, ExifEdit)"/>
     public Task SaveExifAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
     /// <summary>As <see cref="SaveXmp(Stream, XmpEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
+    /// <param name="destinationPath">Path for publishing XMP edits in BMFF format.</param>
+    /// <param name="edit">XMP changes to apply to this BMFF document.</param>
     public void SaveXmpAs(string destinationPath, XmpEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
@@ -190,6 +211,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
     private static Pending Edit(ExifEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(edit.Snapshot(), null); }
     private static Pending Edit(XmpEdit edit) { ArgumentNullException.ThrowIfNull(edit); return new(null, edit.Snapshot()); }
 
+    // Prepare BMFF metadata property changes and verify the rebuilt item graph.
     private async Task SaveCore(Stream destination, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -198,6 +220,7 @@ public sealed partial class BmffMetadataDocument : IDisposable, IAsyncDisposable
         await ContainerIo.Write(destination, output, asynchronous, token).ConfigureAwait(false);
     }
 
+    // Publish the validated BMFF box plan at a separate destination path.
     private async Task SavePath(string destinationPath, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);

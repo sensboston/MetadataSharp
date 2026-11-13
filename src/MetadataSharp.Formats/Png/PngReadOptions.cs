@@ -11,6 +11,7 @@ public sealed record PngReadOptions
     public int MaxCompressedXmpBytes { get; init; } = 1_048_576;
     /// <summary>The longest XMP packet after decompression, and the longest packet written, in bytes. Default 1,048,576.</summary>
     public int MaxDecompressedXmpBytes { get; init; } = 1_048_576;
+    // Take a stable copy without exposing mutable PNG state.
     internal PngReadOptions Snapshot()
     {
         ArgumentNullException.ThrowIfNull(Limits); Limits.Validate();

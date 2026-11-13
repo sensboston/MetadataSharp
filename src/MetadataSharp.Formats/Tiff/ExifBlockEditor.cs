@@ -181,6 +181,7 @@ internal static class ExifBlockEditor
         return output;
     }
 
+    // Keep RelocateMakerNote focused on TIFF/DNG and its format-specific validation contract.
     internal static byte[] RelocateMakerNote(byte[] block, ExifEdit.MakerNoteCopyPayload copy, MetadataLimits limits)
     {
         TiffBasedFileMap map = TiffBasedFileMap.Read(block, limits, MaxAccountedRanges);
@@ -200,6 +201,7 @@ internal static class ExifBlockEditor
     private static bool Same(ExifValue left, ExifValue right) =>
         left.FieldType == right.FieldType && left.Count == right.Count && left.RawBytes.SequenceEqual(right.RawBytes);
 
+    // Preserve a nested TIFF limit failure when translating editor errors.
     private static MetadataException? Limit(MetadataException failure) =>
         failure.Code is MetadataErrorCode.LimitExceeded or MetadataErrorCode.ExifTooLarge
             ? new MetadataException(failure.Code, failure.Message)

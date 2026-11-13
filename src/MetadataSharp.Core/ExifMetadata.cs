@@ -7,6 +7,7 @@ public sealed partial class ExifMetadata
 {
     private readonly Dictionary<ExifTagKey, ExifEntry> lookup;
 
+    // Preserve the parsed MakerNote for read access even when the enclosing block cannot be safely edited.
     internal ExifMetadata(Endianness byteOrder, IReadOnlyList<ExifEntry> entries, MakerNote? makerNote,
         bool editable = true)
         : this(byteOrder, entries)
@@ -15,6 +16,7 @@ public sealed partial class ExifMetadata
         IsEditable = editable;
     }
 
+    // Validate before publishing either view so the ordered entries and keyed lookup describe one immutable block.
     internal ExifMetadata(Endianness byteOrder, IReadOnlyList<ExifEntry> entries)
     {
         if (byteOrder is not Endianness.LittleEndian and not Endianness.BigEndian)
@@ -55,6 +57,9 @@ public sealed partial class ExifMetadata
     public MakerNote? MakerNote { get; }
 
     /// <summary>Looks up a directory/tag pair without interpreting the tag ID.</summary>
+    /// <param name="key">The directory and tag ID to find.</param>
+    /// <param name="entry">Receives the matching entry when found; otherwise receives <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> when the key is present; otherwise <see langword="false"/>.</returns>
     public bool TryGetEntry(ExifTagKey key, [NotNullWhen(true)] out ExifEntry? entry) =>
         lookup.TryGetValue(key, out entry);
 }

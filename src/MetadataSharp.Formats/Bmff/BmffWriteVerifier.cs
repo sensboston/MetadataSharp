@@ -132,6 +132,7 @@ internal static class BmffWriteVerifier
         if (plan.Added) Reference(source, before, output, after, plan);
     }
 
+    // Keep Kept focused on BMFF and its format-specific validation contract.
     private static List<BmffBox> Kept(BmffFileMap map, bool added)
     {
         var kept = new List<BmffBox>();
@@ -282,6 +283,7 @@ internal static class BmffWriteVerifier
         }
     }
 
+    // Compare the staged result with the source to confirm unrelated BMFF data stayed unchanged.
     internal static bool SameExif(ExifMetadata? left, ExifMetadata? right)
     {
         if (left is null || right is null) return left is null && right is null;
@@ -295,6 +297,7 @@ internal static class BmffWriteVerifier
     private static bool SameValue(ExifValue left, ExifValue right) =>
         left.FieldType == right.FieldType && left.Count == right.Count && left.RawBytes.SequenceEqual(right.RawBytes);
 
+    // Keep Raw focused on BMFF and its format-specific validation contract.
     internal static byte[] Raw(XmpPacket packet)
     {
         byte[] bytes = new byte[packet.ByteLength];
@@ -302,6 +305,7 @@ internal static class BmffWriteVerifier
         return bytes;
     }
 
+    // Extract BMFF from the already-validated representation.
     internal static ReadOnlySpan<byte> Payload(byte[] file, BmffBox box) => file.AsSpan(box.Payload, box.End - box.Payload);
 
     /// <summary>

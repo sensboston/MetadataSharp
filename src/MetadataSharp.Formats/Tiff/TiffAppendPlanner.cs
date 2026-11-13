@@ -9,14 +9,17 @@ internal sealed record TiffAppendPlan(byte[] Root, byte[] Tail);
 internal sealed class TiffAppendPlanner(TiffLayout layout, TiffEditOptions options,
     Func<long, int, Task<byte[]>> read, CancellationToken token)
 {
+    // Track the next output offset while planning appended TIFF ranges.
     private readonly Endianness order = layout.ByteOrder;
     private long retained;
     private long cursor = layout.SourceLength;
     private readonly Dictionary<uint, uint> map = [];
     private sealed record Field(ushort Tag, byte[] Entry, byte[]? External);
     private sealed record Node(TiffDirectoryInfo Source, List<Field> Fields);
+    // Reject an append plan that exceeds TIFF address space or its write budget.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "TIFF write plan exceeds its finite budget/address space.");
     private static MetadataException Unsupported() => new(MetadataErrorCode.UnsupportedFeature, "TIFF field/layout is outside the closed write schema.");
+    // Enforce the configured TIFF/DNG count, depth, or retained-byte budget before keeping more data.
     private void Charge(long bytes) { if (bytes > options.ReadOptions.Limits.MaxRetainedMetadataBytes - retained) throw Limit(); retained += bytes; }
     private ushort U16(byte[] b) => order == Endianness.LittleEndian ? BinaryPrimitives.ReadUInt16LittleEndian(b) : BinaryPrimitives.ReadUInt16BigEndian(b);
     private void Put16(byte[] b, int at, ushort n) { if (order == Endianness.LittleEndian) BinaryPrimitives.WriteUInt16LittleEndian(b.AsSpan(at), n); else BinaryPrimitives.WriteUInt16BigEndian(b.AsSpan(at), n); }
@@ -24,6 +27,7 @@ internal sealed class TiffAppendPlanner(TiffLayout layout, TiffEditOptions optio
     private byte[] Entry(ushort tag, ushort type, uint count)
     { byte[] bytes = new byte[12]; Put16(bytes, 0, tag); Put16(bytes, 2, type); Put32(bytes, 4, count); return bytes; }
     private long Ceiling => Math.Min(4294967296L, Math.Min(options.MaxOutputBytes, options.ReadOptions.Limits.MaxInputBytes));
+    // Keep Reserve focused on TIFF/DNG and its format-specific validation contract.
     private uint Reserve(long bytes)
     {
         cursor = (cursor + 1) & ~1L;
@@ -137,6 +141,7 @@ internal sealed class TiffAppendPlanner(TiffLayout layout, TiffEditOptions optio
         }
         byte[] root = new byte[4]; Put32(root, 0, map[layout.FirstIfdOffset]); token.ThrowIfCancellationRequested(); return new(root, tail);
     }
+    // Keep Changed focused on TIFF/DNG and its format-specific validation contract.
     private Field Changed(ushort tag, ExifValue value)
     {
         Charge(64L + value.ByteLength); byte[] bytes = TiffEditPolicy.Bytes(value, order);

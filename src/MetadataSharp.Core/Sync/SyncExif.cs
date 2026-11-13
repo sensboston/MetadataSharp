@@ -335,13 +335,16 @@ internal static class SyncExif
         return bytes.IndexOfAnyExcept((byte)0, (byte)0x20) < 0;
     }
 
+    // Scalar mappings accept one value only; multi-valued source arrays are never silently truncated.
     private static string One(string[] items) => items.Length == 1 ? items[0] : throw new ArgumentException("The tag holds one value.");
 
     private static bool Flag(string text) => text.Trim() is "True" or "true" or "1";
 
+    // Parse one decimal integer exactly, with invariant syntax and no surrounding whitespace.
     private static int Two(string text) =>
         text.Trim().Length == 0 ? 0 : int.TryParse(text.Trim(), NumberStyles.None, Invariant, out int n) && n <= 3 ? n : throw new ArgumentException("A Flash field is 0 to 3.");
 
+    // Keep rational values exact and enforce the target integer range before constructing the pair.
     private static (long Numerator, long Denominator) Ratio(string text, long min, long max)
     {
         string[] parts = text.Trim().Split('/');

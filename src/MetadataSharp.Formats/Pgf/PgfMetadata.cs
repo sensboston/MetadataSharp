@@ -42,6 +42,7 @@ public sealed class PgfMetadata
     /// <summary>The colour mode of an image that keeps a colour table.</summary>
     private const byte IndexedColourMode = 2;
 
+    // Capture the PGF image bounds and metadata packets parsed from its header.
     private PgfMetadata(uint width, uint height, long imageOffset, ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp)
     {
         Width = width;
@@ -85,6 +86,7 @@ public sealed class PgfMetadata
     /// the refusal of the carrier's own reader, as it raised it, when the region holds a file that
     /// reader refused; <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded.
     /// </exception>
+    /// <returns>The parsed PgfMetadata for the complete input file.</returns>
     public static PgfMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null)
     {
         limits?.Validate();
@@ -135,6 +137,9 @@ public sealed class PgfMetadata
     /// <param name="comment">When <paramref name="replaceComment"/> is true, the embedded PNG comment to write, or null to remove.</param>
     /// <param name="replaceComment">Whether to apply <paramref name="comment"/>.</param>
     /// <param name="limits">The budgets, or null for the defaults.</param>
+    /// <returns>The complete PGF file bytes with requested metadata changes applied and verified.</returns>
+    /// <exception cref="ArgumentNullException">The synchronized edits are null.</exception>
+    /// <exception cref="MetadataException">The PGF input is malformed, unsupported for editing, or exceeds a configured budget.</exception>
     public static byte[] Write(ReadOnlySpan<byte> data, SyncEdits edits, string? comment = null,
         bool replaceComment = false, MetadataLimits? limits = null)
     {
@@ -193,6 +198,7 @@ public sealed class PgfMetadata
         return output;
     }
 
+    // Re-read the PGF header to confirm each requested EXIF, IPTC and XMP change survived writing.
     private static void VerifyEdits(PgfMetadata before, PgfMetadata after, SyncEdits edits, byte[] output,
         string? comment, bool replaceComment, MetadataLimits? limits)
     {
@@ -228,6 +234,7 @@ public sealed class PgfMetadata
     private static bool SameValue(ExifValue expected, ExifValue actual) =>
         expected.FieldType == actual.FieldType && expected.Count == actual.Count && expected.RawBytes.SequenceEqual(actual.RawBytes);
 
+    // Compare XMP packet bytes after parsing the written PGF header.
     private static bool SamePacket(XmpPacket? expected, XmpPacket? actual)
     {
         if (expected is null) return actual is null;
@@ -242,6 +249,7 @@ public sealed class PgfMetadata
         return true;
     }
 
+    // Compare IPTC dataset sequences, including their encoded values.
     private static bool SamePacket(IptcPacket? expected, IptcPacket? actual)
     {
         if (expected is null) return actual is null;
@@ -254,5 +262,6 @@ public sealed class PgfMetadata
 
     private static MetadataException Unsafe(string message) => new(MetadataErrorCode.UnsafeRelocation, message);
 
+    // Report the PGF header or embedded chunk that failed validation.
     private static MetadataException Bad(string message, long offset) => new(MetadataErrorCode.InvalidPgf, message, offset);
 }

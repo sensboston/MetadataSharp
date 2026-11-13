@@ -102,6 +102,7 @@ internal static class MakerNoteWriter
         return null;
     }
 
+    // Re-read the source note under the caller’s limits before attempting an edit.
     private static (ExifMetadata Metadata, byte[]? Thumbnail) ReadSource(byte[] block, MetadataLimits limits, bool wholeFile)
     {
         if (wholeFile) return (ExifTiffReader.InspectFile(block, limits), null);
@@ -109,6 +110,7 @@ internal static class MakerNoteWriter
         return (read.Metadata, read.Thumbnail);
     }
 
+    // Parse the supplied MakerNote bytes with the same safety limits used by normal metadata reads.
     private static (ExifMetadata Metadata, byte[]? Thumbnail) Read(byte[] block, MetadataLimits limits, bool wholeFile)
     {
         try { return ReadSource(block, limits, wholeFile); }
@@ -132,6 +134,7 @@ internal static class MakerNoteWriter
         return unnamed && target.Value.FieldType is TiffFieldType.Long or TiffFieldType.SLong or TiffFieldType.Undefined;
     }
 
+    // Resolve a dotted MakerNote field path through nested decoded arrays.
     private static MakerNoteTarget Find(MakerNote note, string key)
     {
         foreach (MakerNoteTarget target in MakerNoteKeys.Enumerate(note))
@@ -358,6 +361,7 @@ internal static class MakerNoteWriter
         Put16(output, slot.Directory, (ushort)(count - 1), slot.Little);
     }
 
+    // Confirm a slot’s source range is inside the original MakerNote byte buffer.
     private static void CheckSlot(byte[] output, MakerNoteSlot slot)
     {
         if (slot.Directory < 0 || slot.Entry < slot.Directory + 2 || slot.Entry > output.Length - 12 ||
@@ -408,6 +412,7 @@ internal static class MakerNoteWriter
         return false;
     }
 
+    // Detect intersecting byte intervals before an edit overwrites existing note data.
     private static bool Overlap(int start, int length, int otherStart, int otherLength) =>
         start < otherStart + otherLength && otherStart < start + length;
 

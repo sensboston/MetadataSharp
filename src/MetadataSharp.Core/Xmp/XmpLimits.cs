@@ -20,6 +20,7 @@ public sealed record XmpLimits
     /// <summary>The longest name, prefix or namespace URI, in characters. Default 1,024.</summary>
     public int MaxNameCharacters { get; init; } = 1_024;
 
+    // Reject invalid budgets up front so XML readers can rely on positive, internally consistent limits.
     internal void Validate()
     {
         if (MaxPacketBytes <= 0 || MaxXmlCharacters <= 0 || MaxDepth <= 0 || MaxNodes <= 0 ||

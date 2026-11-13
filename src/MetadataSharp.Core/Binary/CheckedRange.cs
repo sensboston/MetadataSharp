@@ -3,6 +3,7 @@ namespace MetadataSharp.Core.Binary;
 /// <summary>Validates nonnegative sizes without overflowing or narrowing unchecked.</summary>
 internal static class CheckedRange
 {
+    // Bound both values against the total before narrowing; subtraction avoids overflowing offset + length.
     internal static bool TryGetSpanRange(long offset, long length, int totalLength,
         out int start, out int count)
     {
@@ -27,6 +28,7 @@ internal static class CheckedRange
         return true;
     }
 
+    // Check the upper bound before addition so malformed file offsets never wrap into a valid range.
     internal static bool TryAdd(long offset, long length, out long end)
     {
         end = 0;

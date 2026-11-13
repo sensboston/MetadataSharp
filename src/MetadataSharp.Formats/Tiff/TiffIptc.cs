@@ -23,6 +23,10 @@ public static class TiffIptc
     /// What <see cref="TiffExif.Read"/> reports for the file, or the code the IPTC and the Photoshop
     /// resource readers report for a stream they refuse.
     /// </exception>
+    /// <param name="data">Complete input file bytes, beginning at the container signature.</param>
+    /// <param name="limits">Resource budgets for parsing; null selects the default limits.</param>
+    /// <param name="options">IPTC read settings; null selects the defaults.</param>
+    /// <returns>The parsed IptcPacket for the complete input file.</returns>
     public static IptcPacket? Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null, IptcReadOptions? options = null)
     {
         IptcLimits iptcLimits = IptcPacket.Settings(options);

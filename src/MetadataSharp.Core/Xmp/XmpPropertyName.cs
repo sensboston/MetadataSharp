@@ -6,6 +6,8 @@ namespace MetadataSharp.Core.Xmp;
 public readonly record struct XmpPropertyName
 {
     /// <summary>Creates a name from a namespace URI and a local name.</summary>
+    /// <param name="namespaceUri">The absolute, nonreserved namespace URI.</param>
+    /// <param name="localName">The XML local name within the namespace.</param>
     /// <exception cref="ArgumentException">The URI is not absolute or is reserved (RDF, <c>x:xmpmeta</c>, XML), or the local name is not an XML name.</exception>
     public XmpPropertyName(string namespaceUri, string localName)
     {
@@ -18,6 +20,7 @@ public readonly record struct XmpPropertyName
     /// <summary>The name inside the namespace, for example <c>title</c>.</summary>
     public string LocalName { get; }
 
+    // Reject invalid namespace URIs, prefixes, and local names before constructing an expanded property name.
     internal void Validate()
     {
         if (string.IsNullOrEmpty(NamespaceUri) || !Uri.TryCreate(NamespaceUri, UriKind.Absolute, out _) ||

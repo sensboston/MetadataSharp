@@ -10,10 +10,12 @@ using MetadataSharp.Formats.Png;
 using MetadataSharp.Formats.Tiff;
 using MetadataSharp.Formats.WebP;
 
+// Share format detection, atomic file output, and metadata-edit helpers across the command-line samples.
 internal static class SampleSupport
 {
     public static byte[] ReadBytes(string path) => File.ReadAllBytes(path);
 
+    // Replace a destination through a same-directory temporary file so incomplete writes are never exposed.
     public static void WriteAtomic(string path, ReadOnlySpan<byte> bytes)
     {
         string full = Path.GetFullPath(path);
@@ -29,6 +31,7 @@ internal static class SampleSupport
 
     public static MetadataFormat Detect(ReadOnlySpan<byte> bytes) => ImageMetadata.Detect(bytes[..Math.Min(bytes.Length, ImageMetadata.HeaderLength)]);
 
+    // Route an EXIF edit to the format-specific document and return the fully serialized result.
     public static byte[] SaveExif(ReadOnlySpan<byte> file, ExifEdit edit)
     {
         MetadataFormat format = Detect(file);
@@ -46,6 +49,7 @@ internal static class SampleSupport
         return output.ToArray();
     }
 
+    // Route an IPTC edit only to supported formats and return the serialized result.
     public static byte[] SaveIptc(ReadOnlySpan<byte> file, IptcEdit edit)
     {
         MetadataFormat format = Detect(file);
@@ -61,6 +65,7 @@ internal static class SampleSupport
         return output.ToArray();
     }
 
+    // Route an XMP edit to the format-specific document and return the fully serialized result.
     public static byte[] SaveXmp(ReadOnlySpan<byte> file, XmpEdit edit)
     {
         MetadataFormat format = Detect(file);
@@ -78,6 +83,7 @@ internal static class SampleSupport
         return output.ToArray();
     }
 
+    // Apply synchronized metadata edits in one document save rather than serializing each family separately.
     public static byte[] SaveAll(ReadOnlySpan<byte> file, SyncEdits edits)
     {
         MetadataFormat format = Detect(file);
@@ -95,6 +101,7 @@ internal static class SampleSupport
         return output.ToArray();
     }
 
+    // Route ICC profile replacement to the format-specific writer and return the serialized result.
     public static byte[] SaveIcc(ReadOnlySpan<byte> file, byte[]? icc)
     {
         MetadataFormat format = Detect(file);
@@ -112,6 +119,7 @@ internal static class SampleSupport
         return output.ToArray();
     }
 
+    // Apply the script’s non-empty metadata families in sequence while carrying forward each edited file.
     public static byte[] SaveScript(ReadOnlySpan<byte> file, ModifyScript script)
     {
         byte[] current = file.ToArray();
@@ -121,6 +129,7 @@ internal static class SampleSupport
         return current;
     }
 
+    // Show the stored EXIF representation when a value has no supported textual interpretation.
     public static string RawText(ExifValue value)
     {
         if (value.TryGetString(out string? text)) return text ?? string.Empty;

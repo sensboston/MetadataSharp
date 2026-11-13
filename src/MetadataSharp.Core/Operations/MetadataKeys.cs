@@ -29,6 +29,8 @@ public static class MetadataKeys
     };
 
     /// <summary>The key of an EXIF tag: <c>Exif.</c>, the group of the directory (<c>Image</c>, <c>Photo</c>, <c>GPSInfo</c>, <c>Iop</c>, <c>Thumbnail</c>) and the name or the number of the tag.</summary>
+    /// <param name="key">The directory and tag identifier.</param>
+    /// <returns>The dotted Exiv2-style key, using a hexadecimal ID when the tag has no name.</returns>
     public static string Format(ExifTagKey key)
     {
         string group = "Image";
@@ -44,6 +46,9 @@ public static class MetadataKeys
     /// <c>0x</c> and four hexadecimal digits. Names are matched exactly. False for any other text,
     /// MakerNote groups included: those are not edited.
     /// </summary>
+    /// <param name="key">The dotted EXIF key to parse.</param>
+    /// <param name="result">Receives the parsed directory and tag, or the default key on failure.</param>
+    /// <returns><see langword="true"/> when the key names a supported standard tag; otherwise, <see langword="false"/>.</returns>
     public static bool TryParseExif([NotNullWhen(true)] string? key, out ExifTagKey result)
     {
         result = default;
@@ -72,6 +77,8 @@ public static class MetadataKeys
     }
 
     /// <summary>The key of an IPTC dataset: <c>Iptc.Envelope.</c> or <c>Iptc.Application2.</c> and the name or the number of the dataset; null for a record other than 1 and 2, which Exiv2 has no key for.</summary>
+    /// <param name="key">The IPTC record and dataset number.</param>
+    /// <returns>The dotted Exiv2-style key, or <see langword="null"/> when the record is not 1 or 2.</returns>
     public static string? Format(IptcDatasetKey key)
     {
         if (key.Record is not (1 or 2)) return null;
@@ -80,6 +87,9 @@ public static class MetadataKeys
     }
 
     /// <summary>Reads an IPTC key: the record <c>Envelope</c> or <c>Application2</c>, then a name of <see cref="IptcDatasetNames"/> or <c>0x</c> and four hexadecimal digits below 0x0100.</summary>
+    /// <param name="key">The dotted IPTC key to parse.</param>
+    /// <param name="result">Receives the parsed record and dataset, or the default key on failure.</param>
+    /// <returns><see langword="true"/> when the key names a dataset; otherwise, <see langword="false"/>.</returns>
     public static bool TryParseIptc([NotNullWhen(true)] string? key, out IptcDatasetKey result)
     {
         result = default;

@@ -11,6 +11,7 @@ public sealed partial class ExifValue
 {
     private static readonly UTF8Encoding StrictUtf8 = new(false, true);
 
+    // Centralize the source-order test so every numeric accessor interprets the same owned bytes consistently.
     private bool Little => ByteOrder == Endianness.LittleEndian;
 
     // ---- Arrays ----------------------------------------------------------------------------------------
@@ -229,6 +230,7 @@ public sealed partial class ExifValue
     // ---- Single values ---------------------------------------------------------------------------------
 
     /// <summary>The one element of a LONG, SHORT or BYTE value.</summary>
+    /// <param name="value">Receives the value on success, or zero on failure.</param>
     /// <returns>False when the count is not 1 or the field type is not LONG, SHORT or BYTE.</returns>
     public bool TryGetUInt32(out uint value)
     {
@@ -240,6 +242,7 @@ public sealed partial class ExifValue
     }
 
     /// <summary>The one element of an SLONG, SSHORT or SBYTE value.</summary>
+    /// <param name="value">Receives the value on success, or zero on failure.</param>
     /// <returns>False when the count is not 1 or the field type is not SLONG, SSHORT or SBYTE.</returns>
     public bool TryGetInt32(out int value)
     {
@@ -251,6 +254,7 @@ public sealed partial class ExifValue
     }
 
     /// <summary>The one element of a value of any integer type, signed or unsigned.</summary>
+    /// <param name="value">Receives the value on success, or zero on failure.</param>
     /// <returns>False when the count is not 1 or the field type is not one of the six integer types.</returns>
     public bool TryGetInt64(out long value)
     {
@@ -267,6 +271,7 @@ public sealed partial class ExifValue
     }
 
     /// <summary>The one element of a RATIONAL value, as stored.</summary>
+    /// <param name="value">Receives the numerator and denominator on success, or the default pair on failure.</param>
     /// <returns>False when the count is not 1 or the field type is not RATIONAL.</returns>
     public bool TryGetRational(out UnsignedRational value)
     {
@@ -278,6 +283,7 @@ public sealed partial class ExifValue
     }
 
     /// <summary>The one element of an SRATIONAL value, as stored.</summary>
+    /// <param name="value">Receives the numerator and denominator on success, or the default pair on failure.</param>
     /// <returns>False when the count is not 1 or the field type is not SRATIONAL.</returns>
     public bool TryGetSignedRational(out SignedRational value)
     {
@@ -289,6 +295,7 @@ public sealed partial class ExifValue
     }
 
     /// <summary>The one element of a DOUBLE value, or of a FLOAT value widened.</summary>
+    /// <param name="value">Receives the floating-point value on success, or zero on failure.</param>
     /// <returns>False when the count is not 1 or the field type is neither DOUBLE nor FLOAT.</returns>
     public bool TryGetDouble(out double value)
     {
@@ -312,6 +319,7 @@ public sealed partial class ExifValue
         _ => UInt32At(index * 4),
     };
 
+    // Widen the signed integer representation without losing its sign extension.
     private int SignedAt(int index) => FieldType switch
     {
         TiffFieldType.SByte => unchecked((sbyte)bytes[index]),
@@ -321,6 +329,7 @@ public sealed partial class ExifValue
         _ => unchecked((int)UInt32At(index * 4)),
     };
 
+    // Read a 32-bit word only after the accessor has checked the field type and index.
     private uint UInt32At(int offset) => Little
         ? BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(offset, 4))
         : BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(offset, 4));

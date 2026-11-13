@@ -96,6 +96,7 @@ public sealed class TiffDirectoryLink
 /// <summary>A range of the file together with what holds it.</summary>
 public sealed class TiffAccountedRange
 {
+    // Record a TIFF byte interval already charged to the layout budget.
     internal TiffAccountedRange(TiffRangeKind kind, uint? directoryOffset, ushort? tagId, TiffByteRange range)
     { Kind = kind; DirectoryOffset = directoryOffset; TagId = tagId; Range = range; }
     /// <summary>What the range holds.</summary>
@@ -147,6 +148,7 @@ public sealed class TiffImageLayout
 /// <summary>One directory of the file.</summary>
 public sealed class TiffDirectoryInfo
 {
+    // Store parsed TIFF directory offsets, fields and relationships for layout consumers.
     internal TiffDirectoryInfo(uint offset, TiffByteRange directoryRange, IReadOnlyList<TiffFieldInfo> fields, IReadOnlyList<TiffDirectoryLink> links, TiffImageLayout? image)
     { Offset = offset; DirectoryRange = directoryRange; Fields = fields; Links = links; Image = image; }
     /// <summary>The offset of the directory in the file.</summary>

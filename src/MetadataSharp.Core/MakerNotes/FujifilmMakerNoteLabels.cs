@@ -3,6 +3,7 @@ namespace MetadataSharp.Core.MakerNotes;
 // Fujifilm interpretation rules, maintained by hand in this project's field-oriented table format.
 internal static partial class MakerNoteLabels
 {
+    // Interpret selected Fujifilm MakerNote fields by tag and decoded field name.
     private static readonly Rule[] Fujifilm =
     [
         new(Top, "Sharpness", [(0, "-4 (softest)"), (1, "-3 (very soft)"), (2, "-2 (soft)"), (3, "0 (normal)"), (4, "+2 (hard)"), (5, "+3 (very hard)"), (6, "+4 (hardest)"), (130, "-1 (medium soft)"), (132, "+1 (medium hard)")]),

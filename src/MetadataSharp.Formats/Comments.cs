@@ -41,6 +41,7 @@ public static class Comments
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when the file, the number of its segments or
     /// chunks, one comment or the comments together exceed a budget.
     /// </exception>
+    /// <returns>Comments in file order, decoded as UTF-8 when valid and ISO-8859-1 otherwise.</returns>
     public static IReadOnlyList<string> Read(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
     {
         limits = EmbeddedFile.Checked(file, limits);
@@ -112,6 +113,7 @@ public static class Comments
 
     private const uint TextChunk = 0x74455874, CompressedTextChunk = 0x7A545874, InternationalTextChunk = 0x69545874;
 
+    // Point malformed comment data to the byte that failed decoding or framing.
     private static MetadataException Bad(string message, long offset) => new(MetadataErrorCode.InvalidPng, message, offset);
 
     private static void Png(ReadOnlySpan<byte> data, MetadataLimits limits, List<string> found,

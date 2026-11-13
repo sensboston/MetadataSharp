@@ -5,6 +5,7 @@ namespace MetadataSharp.Core.Tiff.Serialization;
 /// <summary>Validates a complete layout before touching caller-owned output.</summary>
 internal static class ExifTiffSerializer
 {
+    // Validate the entire plan before clearing or writing any caller-owned destination bytes.
     internal static void Write(ExifWritePlan plan, Span<byte> destination)
     {
         ArgumentNullException.ThrowIfNull(plan);
@@ -42,6 +43,7 @@ internal static class ExifTiffSerializer
             plan.Thumbnail.CopyTo(output[thumbnailAt..]);
     }
 
+    // Prove directory order, pointers, element shapes, and byte ranges before serialization begins.
     private static void Validate(ExifWritePlan plan)
     {
         if (plan.ByteOrder is not Endianness.LittleEndian and not Endianness.BigEndian ||
@@ -128,6 +130,7 @@ internal static class ExifTiffSerializer
         if (cursor != plan.Length) throw Invalid("The planned output length does not match its contents.");
     }
 
+    // Every present child directory must have its generated pointer in the owning parent.
     private static void RequireParentLink(PlannedDirectory directory, ExifDirectoryKind owner,
         ushort tag, ExifDirectoryKind target, Dictionary<ExifDirectoryKind, int> offsets)
     {

@@ -29,6 +29,7 @@ internal ref struct ExifTiffReader
     private readonly List<ExifEntry> entries;
     private readonly List<ExifDirectoryKind> directories;
     private readonly List<(int Start, int Length)> ranges;
+    // Breadth-first worklist avoids recursion and carries each directory role and depth into validation.
     private readonly Queue<(uint Offset, ExifDirectoryKind Kind, int Depth)> pending;
     private readonly HashSet<uint> offsets;
     private readonly HashSet<ExifDirectoryKind> roles;
@@ -133,6 +134,7 @@ internal ref struct ExifTiffReader
         }
     }
 
+    // Validate the external block and its header before constructing the bounded directory walker.
     private static TiffReadResult ReadBlock(ReadOnlySpan<byte> tiff, MetadataLimits? limits, long sourceBase,
         bool readOnly, int ceiling, ExifDirectoryKind first = ExifDirectoryKind.Ifd0)
     {
@@ -173,6 +175,7 @@ internal ref struct ExifTiffReader
         catch (MetadataException failure) when (IsRelaxable(failure)) { return ReadWhole(file, limits, readOnly: true).Metadata; }
     }
 
+    // Whole-file reads retain selected metadata only and intentionally ignore image-data directory chains.
     private static TiffReadResult ReadWhole(ReadOnlySpan<byte> file, MetadataLimits? limits, bool readOnly)
     {
         limits ??= new();
@@ -204,6 +207,7 @@ internal ref struct ExifTiffReader
     private static bool HasByteOrderMark(ReadOnlySpan<byte> tiff) =>
         (tiff[0] == 0x49 && tiff[1] == 0x49) || (tiff[0] == 0x4D && tiff[1] == 0x4D);
 
+    // Validate the TIFF header, drain the nonrecursive directory queue, then collect only a safe thumbnail.
     private TiffReadResult Parse()
     {
         ushort magic = U16(2);
@@ -228,6 +232,7 @@ internal ref struct ExifTiffReader
             directories.AsReadOnly(), thumbnail);
     }
 
+    // Decode maker-note fields only after the containing value and its protected byte range are established.
     private MakerNote? ReadMakerNote()
     {
         long budget = limits.MaxRetainedMetadataBytes - retainedBytes;
@@ -254,6 +259,7 @@ internal ref struct ExifTiffReader
     /// <summary>The raw bytes of the 0th IFD ASCII Model tag, or empty.</summary>
     private readonly ReadOnlySpan<byte> Model() => Ifd0Ascii(0x0110);
 
+    // Read a top-level ASCII tag only from its validated, retained entry bytes.
     private readonly ReadOnlySpan<byte> Ifd0Ascii(ushort tag)
     {
         foreach (ExifEntry entry in entries)
@@ -262,6 +268,7 @@ internal ref struct ExifTiffReader
         return default;
     }
 
+    // Reject repeated, role-conflicting, or over-budget directory pointers before enqueueing them.
     private void Schedule(uint offset, ExifDirectoryKind kind, int depth)
     {
         if (offset == 0)
@@ -404,6 +411,7 @@ internal ref struct ExifTiffReader
         return data.Slice(start, (int)byteLength).ToArray();
     }
 
+    // Thumbnail tags belong to the thumbnail IFD only; similarly numbered primary tags are unrelated.
     private ExifEntry? FindThumbnail(ushort tag)
     {
         foreach (ExifEntry entry in entries)
@@ -412,6 +420,7 @@ internal ref struct ExifTiffReader
         return null;
     }
 
+    // Decode a validated one-element TIFF scalar using the file byte order.
     private uint ReadScalar(ExifValue value)
     {
         Span<byte> bytes = stackalloc byte[4];
@@ -421,6 +430,7 @@ internal ref struct ExifTiffReader
             : (order == Endianness.LittleEndian ? BinaryPrimitives.ReadUInt32LittleEndian(bytes) : BinaryPrimitives.ReadUInt32BigEndian(bytes));
     }
 
+    // Convert an untrusted TIFF offset to a span index only after checked range validation.
     private int RequireRange(long offset, long length)
     {
         if (!CheckedRange.TryGetSpanRange(offset, length, data.Length, out int start, out _))
@@ -440,6 +450,7 @@ internal ref struct ExifTiffReader
         ranges.Add((start, length));
     }
 
+    // Charge retained metadata incrementally so whole-file reads do not reserve the entire input.
     private void ReserveBytes(int count, long at)
     {
         if (count > limits.MaxRetainedMetadataBytes - retainedBytes)
@@ -455,6 +466,7 @@ internal ref struct ExifTiffReader
         ? BinaryPrimitives.ReadUInt32LittleEndian(data.Slice(p, 4))
         : BinaryPrimitives.ReadUInt32BigEndian(data.Slice(p, 4));
 
+    // Convert in-payload offsets back to absolute source positions; synthetic/out-of-range offsets stay unset.
     private MetadataException Error(MetadataErrorCode code, string message, long offset) =>
         new(code, message, offset >= 0 && offset <= data.Length ? sourceBase + offset : null);
 }

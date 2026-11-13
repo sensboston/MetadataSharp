@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace MetadataSharp.Parity;
 
+// Coordinate file discovery, dump execution, comparison, and report serialization for this tool.
 internal static class Program
 {
     private const string MatchValue = "match-value", MatchKey = "match-key", ValueDiff = "value-diff";
@@ -27,6 +28,7 @@ internal static class Program
         ".crw", ".raf", ".dng", ".cr2", ".nef", ".orf", ".rw2", ".arw", ".sr2", ".srw", ".pef", ".mrw",
         ".mp4", ".mov", ".avi", ".asf", ".wav", ".xmp", ".exv", ".eps", ".pgf", ".dcp", ".gif", ".bmp", ".tga", ".targa"];
     private static readonly HashSet<string> SkipSuffixes = [".json", ".md", ".txt", ".py", ".sh", ".out"];
+    // Retain InterpretationAllowances state required to parse or write parity report data safely.
     private static readonly Dictionary<string, string> InterpretationAllowances = new(StringComparer.Ordinal)
     {
         ["Exif.CanonCs.LensType"] = "External lens-ID database is not vendored.",
@@ -41,12 +43,14 @@ internal static class Program
         ["Exif.SonyMinolta.LensID"] = "External lens-ID database is not vendored.",
         ["Exif.Minolta.LensID"] = "External lens-ID database is not vendored.",
     };
+    // Retain RawExtras state required to parse or write parity report data safely.
     private static readonly Dictionary<string, string> RawExtras = new(StringComparer.Ordinal)
     {
         ["Exif.Canon.Categories"] = "Exiv2 0.28.9 disables Canon tag 0x0023.",
         ["Exif.Canon.PictureStylePC"] = "Exiv2 0.28.9 disables Canon tag 0x4009.",
         ["Exif.Canon.FilterInfo"] = "Exiv2 0.28.9 does not surface Canon tag 0x4024 in these records.",
     };
+    // Retain Refusals state required to parse or write parity report data safely.
     private static readonly Dictionary<string, (string Code, string Reason)> Refusals = new(StringComparer.Ordinal)
     {
         ["exiv2:issue_2006_poc.tiff"] = ("InvalidExif", "the EXIF structure is malformed"),
@@ -59,6 +63,7 @@ internal static class Program
         ["exiv2:issue_ghsa_5p8g_9xf3_gfrr_poc.webp"] = ("UnsupportedFeature", "unsupported encrypted Nikon MakerNote layout"),
     };
 
+    // Parse command-line options, run the selected comparisons, and return a failure status for mismatches.
     public static async Task<int> Main(string[] args)
     {
         try
@@ -111,6 +116,7 @@ internal static class Program
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
+    // Enumerate supported candidate files recursively while retaining deterministic input order.
     private static void DiscoverTree(string tree, List<Candidate> candidates, List<string> unmatched)
     {
         string data = Path.Combine(tree, "test", "data");
@@ -126,6 +132,7 @@ internal static class Program
         if (candidates.Count == 0) throw new IOException($"{references} has no usable expectation.");
     }
 
+    // Resolve an explicit path against the chosen root and reject paths outside the input scope.
     private static string? ResolveInput(string stem, string data)
     {
         string exact = Path.Combine(data, stem);
@@ -141,6 +148,7 @@ internal static class Program
         return null;
     }
 
+    // Collect owned fixtures and optionally include only the fixture classes selected by options.
     private static void DiscoverFixtures(List<string> directories, List<Candidate> candidates, bool hasOracle)
     {
         HashSet<string> seen = new(StringComparer.Ordinal);
@@ -159,6 +167,7 @@ internal static class Program
         if (candidates.Count == 0) throw new IOException("No fixture candidates found (generated fixtures need --exiv2-command).");
     }
 
+    // Map a candidate extension to its metadata format, returning no guess for unknown extensions.
     private static string FormatOf(string path)
     {
         string suffix = Path.GetExtension(path).TrimStart('.').ToLowerInvariant();
@@ -169,6 +178,7 @@ internal static class Program
         };
     }
 
+    // Load reference rows for each candidate and retain unsupported or absent references as explicit states.
     private static async Task<Dictionary<string, Dictionary<string, RefTag>>> GetReferences(List<Candidate> candidates, Options options)
     {
         Dictionary<string, Dictionary<string, RefTag>> references = new(StringComparer.Ordinal);
@@ -191,6 +201,7 @@ internal static class Program
         return references;
     }
 
+    // Parse one reference-output line into its normalized tag key and value.
     private static Dictionary<string, RefTag> ParseReference(string text)
     {
         Dictionary<string, RefTag> tags = new(StringComparer.Ordinal);
@@ -212,6 +223,7 @@ internal static class Program
         return tags;
     }
 
+    // Split tabular reference output without losing empty columns or escaped delimiters.
     private static (string? Raw, string? Interpreted) SplitColumns(string value)
     {
         MatchCollection gaps = Regex.Matches(value, " {2,}", RegexOptions.CultureInvariant);
@@ -229,6 +241,7 @@ internal static class Program
         return (null, null);
     }
 
+    // Collect reference dimensions, sizes, and MIME types for candidates that provide them.
     private static async Task<Dictionary<string, (string Width, string Height, string Mime)>> GetSizeSummaries(List<Candidate> candidates, Options options)
     {
         Dictionary<string, (string, string, string)> result = new(StringComparer.Ordinal);
@@ -251,6 +264,7 @@ internal static class Program
         return result;
     }
 
+    // Invoke the repository dump tool once for the selected candidates and capture its structured output.
     private static async Task<Dictionary<string, DumpBlock>> RunDump(List<Candidate> candidates, List<string> dumpCommand)
     {
         Dictionary<string, DumpBlock> blocks = new(StringComparer.Ordinal);
@@ -285,6 +299,7 @@ internal static class Program
         return blocks;
     }
 
+    // Parse dump records into per-file blocks while preserving repeated tags and empty values.
     private static Dictionary<string, DumpBlock> ParseDump(string output)
     {
         Dictionary<string, DumpBlock> blocks = new(StringComparer.Ordinal);
@@ -334,6 +349,7 @@ internal static class Program
         return blocks;
     }
 
+    // Decode the dump protocol’s escaped text without treating arbitrary backslashes as escapes.
     private static string Unescape(string value)
     {
         StringBuilder result = new(value.Length);
@@ -354,6 +370,7 @@ internal static class Program
         return result.ToString();
     }
 
+    // Start the requested tool with redirected output, cancellation, and a bounded execution result.
     private static async Task<ProcessResult> RunProcess(List<string> command, string? stdin)
     {
         if (command.Count == 0) throw new InvalidOperationException("Empty process command.");
@@ -372,6 +389,7 @@ internal static class Program
         return new(await stdout.ConfigureAwait(false), await stderr.ConfigureAwait(false), process.ExitCode);
     }
 
+    // Compare library output with reference data and aggregate parity counters by file and tag.
     private static Report BuildReport(List<Candidate> candidates,
         Dictionary<string, Dictionary<string, RefTag>> references,
         Dictionary<string, (string Width, string Height, string Mime)> summaries,
@@ -431,6 +449,7 @@ internal static class Program
         return report;
     }
 
+    // Compare expected tags against one dump block and attribute missing, extra, or differing values.
     private static List<ParityRow> CompareTags(Dictionary<string, RefTag> reference, DumpBlock dump)
     {
         if (dump.Status != "ok") return reference.Select(pair => new ParityRow { Key = pair.Key, Outcome = NotRead, TheirType = pair.Value.Type, TheirCount = pair.Value.Count, TheirValue = pair.Value.Value }).ToList();
@@ -470,6 +489,7 @@ internal static class Program
         return rows;
     }
 
+    // Normalize only the documented value differences before deciding whether two values match.
     private static bool ValuesAgree(string ours, string theirs)
     {
         if (ours == theirs || Normalize(ours) == Normalize(theirs)) return true;
@@ -479,6 +499,7 @@ internal static class Program
         return false;
     }
 
+    // Split a printed value into its protocol-defined display columns.
     private static IEnumerable<string> ValueColumns(string value)
     {
         MatchCollection gaps = Regex.Matches(value, @"\s{2,}", RegexOptions.CultureInvariant);
@@ -493,6 +514,7 @@ internal static class Program
     private static string Normalize(string value) => Regex.Replace(value, @"\s+", " ", RegexOptions.CultureInvariant).Trim();
     private static string Family(string key) { int dot = key.IndexOf('.'); int second = dot >= 0 ? key.IndexOf('.', dot + 1) : -1; return second >= 0 ? key[..second] : key; }
 
+    // Compare width, height, and MIME type only when the reference supplied a size record.
     private static SizeResult CompareSize((string Width, string Height, string Mime) theirs, (string Width, string Height, string Mime)? ours)
     {
         string outcome = ours is null ? "size-missing" : ours.Value == theirs ? "size-match-value" : "size-diff";
@@ -505,6 +527,7 @@ internal static class Program
     { if (!counts.TryGetValue(key, out Dictionary<string, int>? found)) counts[key] = found = []; return found; }
     private static Dictionary<string, Dictionary<string, int>> Sorted(Dictionary<string, Dictionary<string, int>> value) => value.OrderBy(kv => kv.Key, StringComparer.Ordinal).ToDictionary(kv => kv.Key, kv => kv.Value.OrderBy(c => c.Key, StringComparer.Ordinal).ToDictionary(c => c.Key, c => c.Value), StringComparer.Ordinal);
 
+    // Serialize parity measurements into the stable machine-readable report shape.
     private static string FormatReport(Report report)
     {
         StringBuilder text = new();
@@ -524,6 +547,7 @@ internal static class Program
 
     private static string Percent(int n, int d) => d == 0 ? "n/a" : $"{100d * n / d:0.0}%";
 
+    // Compare measured counters with a checked-in report and enumerate every changed measurement.
     private static List<string> CompareReports(JsonElement legacy, Report current)
     {
         List<string> differences = [];
@@ -562,6 +586,7 @@ internal static class Program
         return differences;
     }
 
+    // Check one named counter and report the exact expected-versus-actual discrepancy.
     private static void CompareCounter(string name, JsonElement expected, Dictionary<string, int> actual, List<string> differences)
     {
         Dictionary<string, int> parsed = expected.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetInt32(), StringComparer.Ordinal);
@@ -569,6 +594,7 @@ internal static class Program
         { if (parsed.GetValueOrDefault(key) != actual.GetValueOrDefault(key)) differences.Add($"{name}.{key}: Python={parsed.GetValueOrDefault(key)} C#={actual.GetValueOrDefault(key)}"); }
     }
 
+    // Compare nested per-format counters without discarding missing or newly added keys.
     private static void CompareNested(string name, JsonElement expected, Dictionary<string, Dictionary<string, int>> actual, List<string> differences)
     {
         Dictionary<string, Dictionary<string, int>> parsed = expected.EnumerateObject().ToDictionary(p => p.Name,
@@ -583,6 +609,7 @@ internal static class Program
         }
     }
 
+    // Enforce the MakerNote coverage threshold and report the attribution for unread entries.
     private static (bool Pass, string Text) MakerNoteGate(Report report, List<string> required, bool all, bool inventory)
     {
         List<string> groups = required.Distinct(StringComparer.Ordinal).ToList();
@@ -652,6 +679,7 @@ internal static class Program
         return (true, text.ToString());
     }
 
+    // Group unread MakerNote values by their format and source so parity gaps are actionable.
     private static List<UnreadEntry> UnreadAttribution(Report report)
     {
         List<UnreadEntry> output = [];
@@ -682,6 +710,7 @@ internal static class Program
     private sealed record UnreadEntry(string Group, string File, string Code, string Reason, int Count);
     private sealed record SizeResult(string Outcome, string[]? Ours, string[] Theirs);
 
+    // Represent the ParityRow state used by parity report parsing and output.
     private sealed class ParityRow
     {
         public string Key { get; init; } = "";
@@ -699,6 +728,7 @@ internal static class Program
         public string? TheirInterpreted { get; set; }
     }
 
+    // Represent the FileReport state used by parity report parsing and output.
     private sealed class FileReport(string label, string corpus, string format, string status, string detail, int referenceTags, int ourTags, List<ParityRow> rows)
     {
         public string Label { get; } = label;
@@ -711,6 +741,7 @@ internal static class Program
         public int RowsDropped { get; private set; }
         public List<ParityRow> Rows { get; } = rows;
         public SizeResult? Size { get; set; }
+        // Convert rows according to its format-defined representation, preserving unknown stored values.
         public void TrimRows(int maximum)
         {
             int keep = Math.Max(0, maximum);
@@ -720,6 +751,7 @@ internal static class Program
         }
     }
 
+    // Represent the Report state used by parity report parsing and output.
     private sealed class Report
     {
         public string Schema { get; } = "metadatasharp-parity/1";
@@ -735,6 +767,7 @@ internal static class Program
         [System.Text.Json.Serialization.JsonIgnore] public int Attempted { get; set; }
     }
 
+    // Represent the FileCounts state used by parity report parsing and output.
     private sealed class FileCounts
     {
         public int Total { get; set; }
@@ -742,6 +775,7 @@ internal static class Program
         public Dictionary<string, int> Statuses { get; set; } = new(StringComparer.Ordinal);
         public Dictionary<string, int> Refusals { get; set; } = new(StringComparer.Ordinal);
     }
+    // Represent the InterpretedCounts state used by parity report parsing and output.
     private sealed class InterpretedCounts
     {
         public Dictionary<string, Dictionary<string, int>> ByFamily { get; set; } = new(StringComparer.Ordinal);
@@ -758,6 +792,7 @@ internal static class Program
     private sealed class CorpusReport { public CorpusDetails? Exiv2 { get; set; } public CorpusDetails? Generated { get; set; } }
     private sealed class CorpusDetails { public string? Tree { get; set; } public List<string>? Directories { get; set; } public int Files { get; set; } public int UnmatchedExpectations { get; set; } public List<string>? UnmatchedNames { get; set; } public string? Oracle { get; set; } }
 
+    // Represent the Options state used by parity report parsing and output.
     private sealed class Options
     {
         public string? Tree { get; private set; }
@@ -772,6 +807,7 @@ internal static class Program
         public bool RequireAllMakerNotes { get; private set; }
         public List<string> RequiredGroups { get; } = [];
         public string? CompareReport { get; private set; }
+        // Parse command-line switches once and reject incompatible or incomplete option combinations.
         public static Options Parse(string[] args)
         {
             Options result = new();
@@ -803,6 +839,7 @@ internal static class Program
         }
     }
 
+    // Tokenize a configured command line while honoring quoted arguments.
     private static List<string> SplitCommand(string command)
     {
         List<string> parts = [];

@@ -90,6 +90,7 @@ public sealed record MetadataCopyNote(MetadataCopyReason Reason, string Message,
 /// <summary>The outcome of a transactional metadata copy.</summary>
 public sealed class MetadataCopyResult
 {
+    // Freeze the copy outcome, copied-family mask and any refusal notes.
     internal MetadataCopyResult(byte[] destinationBytes, MetadataCopyFamilies copiedFamilies, IReadOnlyList<MetadataCopyNote> notes, bool refused)
     {
         DestinationBytes = destinationBytes;

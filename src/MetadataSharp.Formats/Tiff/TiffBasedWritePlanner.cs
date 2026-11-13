@@ -34,6 +34,7 @@ internal sealed class TiffBasedWritePlan(int sourceLength, List<(int Offset, byt
     internal bool IsEmpty => Patches.Count == 0 && Tail.Length == 0;
     internal int OutputLength => SourceLength + Tail.Length;
 
+    // Apply the requested changes to a staged copy and preserve unrelated TIFF/DNG bytes.
     internal byte[] Apply(byte[] source)
     {
         byte[] output = new byte[OutputLength];
@@ -78,6 +79,7 @@ internal sealed class TiffBasedWritePlanner
     private readonly MetadataLimits limits;
     private readonly long ceiling;
     private readonly bool emptyPrimary;
+    // Retain patches state required to parse or write TIFF/DNG data safely.
     private readonly List<(int Offset, byte[] Bytes)> patches = [];
     private readonly List<byte> tail = [];
     private readonly Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> effective = [];
@@ -86,6 +88,7 @@ internal sealed class TiffBasedWritePlanner
     private readonly Dictionary<TiffBasedRole, SortedDictionary<ushort, uint?>> pointers = [];
     private uint? successor;
 
+    // Keep the source layout and edit set used to construct a TIFF/DNG write plan.
     private TiffBasedWritePlanner(byte[] source, TiffBasedFileMap map,
         IReadOnlyDictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, MetadataLimits limits, long ceiling,
         bool emptyPrimary)
@@ -259,6 +262,7 @@ internal sealed class TiffBasedWritePlanner
         else Point(parent, pointerTag, copy);
     }
 
+    // Keep Point focused on TIFF/DNG and its format-specific validation contract.
     private void Point(TiffBasedRole parent, ushort pointerTag, uint? target)
     {
         if (!pointers.TryGetValue(parent, out SortedDictionary<ushort, uint?>? tags))
@@ -276,6 +280,7 @@ internal sealed class TiffBasedWritePlanner
         : new MetadataException(MetadataErrorCode.UnsupportedFeature,
             "The file has no directory after the primary one: a thumbnail directory is not created by a tag edit.");
 
+    // Require directory edits to follow the stable source-offset order used by the planner.
     private static void RequireSorted(TiffBasedDirectory? directory)
     {
         if (directory is not null && !directory.IsSorted)
@@ -340,6 +345,7 @@ internal sealed class TiffBasedWritePlanner
         return (uint)at;
     }
 
+    // Encode a numeric field in the selected TIFF byte order and value width.
     private byte[] Number(uint value)
     {
         byte[] bytes = new byte[4];

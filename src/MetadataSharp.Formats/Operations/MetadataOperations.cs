@@ -36,6 +36,9 @@ public static class MetadataOperations
 
     /// <summary>Writes <paramref name="sourcePath"/> to <paramref name="destinationPath"/> without the kinds of metadata named: <c>exiv2 rm -d</c>.</summary>
     /// <exception cref="MetadataException">As <see cref="Delete(ReadOnlySpan{byte}, MetadataFamilies)"/>.</exception>
+    /// <param name="sourcePath">Image file whose selected metadata families are removed.</param>
+    /// <param name="destinationPath">Path for publishing the image after the selected metadata families are removed.</param>
+    /// <param name="families">Metadata families to remove from the source image.</param>
     public static void Delete(string sourcePath, string destinationPath, MetadataFamilies families = MetadataFamilies.All)
     {
         ArgumentException.ThrowIfNullOrEmpty(sourcePath);
@@ -44,6 +47,11 @@ public static class MetadataOperations
     }
 
     /// <summary>As <see cref="Delete(string, string, MetadataFamilies)"/>, from a stream read to its end, to a stream.</summary>
+    /// <param name="source">Readable, seekable image file input stream positioned at the start; it remains open after the read.</param>
+    /// <param name="destination">Writable destination stream for the rewritten image; the source stream remains open and separate.</param>
+    /// <param name="families">Metadata families to remove from the source image.</param>
+    /// <exception cref="ArgumentNullException">The source or destination stream is null.</exception>
+    /// <exception cref="MetadataException">The file is malformed, unsupported for this operation, or exceeds a configured budget.</exception>
     public static void Delete(Stream source, Stream destination, MetadataFamilies families = MetadataFamilies.All)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -61,6 +69,9 @@ public static class MetadataOperations
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a container no document writes, or for a
     /// kind the document of the container does not remove; what the readers refuse the file with.
     /// </exception>
+    /// <param name="file">Complete image bytes from which the selected metadata families are removed.</param>
+    /// <param name="families">Metadata families to remove from the file.</param>
+    /// <returns>The complete file bytes after removing the selected metadata families.</returns>
     public static byte[] Delete(ReadOnlySpan<byte> file, MetadataFamilies families = MetadataFamilies.All)
     {
         byte[] bytes = file.ToArray();
@@ -102,6 +113,13 @@ public static class MetadataOperations
     /// Copies selected metadata families from one image to another. The source is read before the
     /// destination is touched; a refusal returns the original destination bytes and writes nothing.
     /// </summary>
+    /// <param name="sourcePath">Image file supplying the metadata families to copy.</param>
+    /// <param name="destinationPath">Path for publishing the destination image with the selected source metadata copied into it.</param>
+    /// <param name="options">Metadata-copy settings; null selects the defaults.</param>
+    /// <returns>The copy result, including destination bytes and any refusal reason or notes.</returns>
+    /// <exception cref="ArgumentException">A required source or destination path is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">A required option value is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">A metadata-family or copy-policy option contains an unsupported value.</exception>
     public static MetadataCopyResult CopyMetadata(string sourcePath, string destinationPath, MetadataCopyOptions? options = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(sourcePath);
@@ -114,6 +132,12 @@ public static class MetadataOperations
     }
 
     /// <summary>As the path overload, returning the complete new destination bytes instead of writing a file.</summary>
+    /// <param name="source">Complete source image bytes from which to copy metadata.</param>
+    /// <param name="destination">Complete destination image bytes to preserve when applying the selected metadata changes.</param>
+    /// <param name="options">Metadata-copy settings; null selects the defaults.</param>
+    /// <returns>The copy result, including destination bytes and any refusal reason or notes.</returns>
+    /// <exception cref="ArgumentNullException">The options contain a null limits object.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">A metadata-family or copy-policy option contains an unsupported value.</exception>
     public static MetadataCopyResult CopyMetadata(ReadOnlySpan<byte> source, ReadOnlySpan<byte> destination,
         MetadataCopyOptions? options = null)
     {
@@ -253,6 +277,7 @@ public static class MetadataOperations
         }
     }
 
+    // Keep Refused focused on metadata and its format-specific validation contract.
     private static MetadataCopyResult Refused(byte[] unchanged, List<MetadataCopyNote> notes,
         MetadataCopyReason reason, string message)
     {
@@ -266,6 +291,7 @@ public static class MetadataOperations
         return mapped != MetadataCopyFamilies.None && requested.HasFlag(mapped);
     }
 
+    // Keep FamilyOf focused on metadata and its format-specific validation contract.
     private static MetadataCopyFamilies FamilyOf(MetadataFamily family) => family switch
     {
         MetadataFamily.Exif => MetadataCopyFamilies.Exif,
@@ -276,6 +302,7 @@ public static class MetadataOperations
         _ => MetadataCopyFamilies.None
     };
 
+    // Keep SourceHasFamily focused on metadata and its format-specific validation contract.
     private static bool SourceHasFamily(ImageMetadata metadata, MetadataCopyFamilies family) => family switch
     {
         MetadataCopyFamilies.Exif => metadata.Exif is not null,
@@ -286,6 +313,7 @@ public static class MetadataOperations
         _ => false
     };
 
+    // Keep SupportsCopy focused on metadata and its format-specific validation contract.
     private static bool SupportsCopy(MetadataFormat format, MetadataCopyFamilies family) => family switch
     {
         MetadataCopyFamilies.Exif => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Bmff,
@@ -321,6 +349,7 @@ public static class MetadataOperations
         return false;
     }
 
+    // Keep TryMakerNoteValue focused on metadata and its format-specific validation contract.
     private static bool TryMakerNoteValue(ExifMetadata exif, out ExifValue? value)
     {
         ExifTagKey makerNote = new(ExifDirectoryKind.Exif, 0x927C);
@@ -352,6 +381,9 @@ public static class MetadataOperations
     /// with the limits it states; an ICC profile is then not carried.
     /// </remarks>
     /// <exception cref="MetadataException">What the readers refuse the file with, and what <see cref="ExvFile.Create"/> refuses.</exception>
+    /// <param name="file">Complete image bytes from which the selected metadata families are extracted into EXV.</param>
+    /// <param name="families">Metadata families selected for this operation.</param>
+    /// <returns>A complete EXV file containing the selected metadata families.</returns>
     public static byte[] ExtractExv(ReadOnlySpan<byte> file, MetadataFamilies families = MetadataFamilies.All)
     {
         // A JPEG file and an EXV file hold their metadata in the same segments, which are copied as they are.
@@ -375,6 +407,9 @@ public static class MetadataOperations
     /// do, which is what exiv2 writes. Null for a file with nothing to write.
     /// </summary>
     /// <exception cref="MetadataException">What the readers refuse the file with; <see cref="MetadataErrorCode.UnsupportedFeature"/> for a packet that cannot be edited.</exception>
+    /// <param name="file">Complete image bytes whose XMP packet is serialized as a sidecar.</param>
+    /// <param name="convert">Whether to convert sidecar properties into corresponding EXIF and IPTC values after replacing XMP.</param>
+    /// <returns>The serialized XMP sidecar bytes, or null when the file has no XMP packet.</returns>
     public static byte[]? ExtractXmpSidecar(ReadOnlySpan<byte> file, bool convert = true)
     {
         ImageMetadata metadata = ImageMetadata.Read(file);
@@ -400,12 +435,15 @@ public static class MetadataOperations
 
     /// <summary>The JPEG thumbnail of the EXIF block of a file (<c>exiv2 ex -e t</c>), or null when it has none.</summary>
     /// <exception cref="MetadataException">What the readers refuse the file with.</exception>
+    /// <param name="file">Complete image bytes whose EXIF thumbnail is being extracted.</param>
+    /// <returns>The JPEG thumbnail bytes, or null when the EXIF block has no JPEG thumbnail.</returns>
     public static byte[]? ExtractThumbnail(ReadOnlySpan<byte> file)
     {
         ReadOnlySpan<byte> found = Thumbnail(file, ImageMetadata.Read(file));
         return found.Length == 0 ? null : found.ToArray();
     }
 
+    // Keep Thumbnail focused on metadata and its format-specific validation contract.
     private static ReadOnlySpan<byte> Thumbnail(ReadOnlySpan<byte> file, ImageMetadata metadata)
     {
         foreach (PreviewImage preview in metadata.Previews)
@@ -421,6 +459,11 @@ public static class MetadataOperations
 
     /// <summary>Writes <paramref name="sourcePath"/> to <paramref name="destinationPath"/> with the metadata of an EXV file: see <see cref="InsertExv(ReadOnlySpan{byte}, ReadOnlySpan{byte}, MetadataFamilies, out IReadOnlyList{string})"/>.</summary>
     /// <returns>What was not carried.</returns>
+    /// <param name="sourcePath">Image file to receive the selected EXV metadata.</param>
+    /// <param name="destinationPath">Path for publishing the image after the selected EXV metadata is inserted.</param>
+    /// <param name="exv">Complete EXV file bytes containing the metadata to insert.</param>
+    /// <param name="families">Metadata families from the EXV file that may replace corresponding destination families.</param>
+    /// <exception cref="ArgumentException">A source or destination path is null or empty.</exception>
     public static IReadOnlyList<string> InsertExv(string sourcePath, string destinationPath, ReadOnlySpan<byte> exv, MetadataFamilies families = MetadataFamilies.All)
     {
         ArgumentException.ThrowIfNullOrEmpty(sourcePath);
@@ -444,6 +487,11 @@ public static class MetadataOperations
     /// over the ones the file has, since the tags that describe its image cannot be removed.
     /// </remarks>
     /// <exception cref="MetadataException">What the readers and the documents refuse; <see cref="MetadataErrorCode.UnsupportedFeature"/> for a container no document writes.</exception>
+    /// <param name="file">Complete image bytes to update with the selected EXV metadata.</param>
+    /// <param name="exv">Complete EXV file bytes containing the metadata to insert.</param>
+    /// <param name="families">Metadata families from the EXV file that may replace corresponding destination families.</param>
+    /// <param name="notes">Receives non-fatal notes about metadata families that could not be inserted.</param>
+    /// <returns>The complete output image bytes after inserting the selected EXV metadata.</returns>
     public static byte[] InsertExv(ReadOnlySpan<byte> file, ReadOnlySpan<byte> exv, MetadataFamilies families, out IReadOnlyList<string> notes) =>
         InsertExvCore(file, exv, families, out notes, preserveExisting: false);
 
@@ -546,6 +594,11 @@ public static class MetadataOperations
     }
 
     /// <summary>Writes <paramref name="sourcePath"/> to <paramref name="destinationPath"/> with the packet of a sidecar file: see <see cref="InsertXmpSidecar(ReadOnlySpan{byte}, ReadOnlySpan{byte}, bool)"/>.</summary>
+    /// <param name="sourcePath">Image file to receive the sidecar XMP packet.</param>
+    /// <param name="destinationPath">Path for publishing the image after its XMP sidecar packet is applied.</param>
+    /// <param name="sidecar">Complete XMP sidecar packet bytes to insert.</param>
+    /// <param name="convert">Whether to convert sidecar properties into corresponding EXIF and IPTC values after replacing XMP.</param>
+    /// <exception cref="ArgumentException">A source or destination path is null or empty.</exception>
     public static void InsertXmpSidecar(string sourcePath, string destinationPath, ReadOnlySpan<byte> sidecar, bool convert = true)
     {
         ArgumentException.ThrowIfNullOrEmpty(sourcePath);
@@ -560,6 +613,10 @@ public static class MetadataOperations
     /// <see cref="MetadataSync.XmpToIptc"/> do, which is what exiv2 does.
     /// </summary>
     /// <exception cref="MetadataException">What the readers and the documents refuse; <see cref="MetadataErrorCode.UnsupportedFeature"/> for a container no document writes or a packet that cannot be edited.</exception>
+    /// <param name="file">Complete image bytes to update with the sidecar XMP packet.</param>
+    /// <param name="sidecar">Complete XMP sidecar packet bytes to insert.</param>
+    /// <param name="convert">Whether to convert sidecar properties into corresponding EXIF and IPTC values after replacing XMP.</param>
+    /// <returns>The complete output image bytes after replacing XMP and applying any requested conversions.</returns>
     public static byte[] InsertXmpSidecar(ReadOnlySpan<byte> file, ReadOnlySpan<byte> sidecar, bool convert = true)
     {
         XmpPacket packet = XmpPacket.Parse(sidecar);
@@ -587,6 +644,7 @@ public static class MetadataOperations
         return bytes;
     }
 
+    // Keep IsUtf8 focused on metadata and its format-specific validation contract.
     private static bool IsUtf8(IptcValue value)
     {
         byte[] bytes = new byte[value.ByteLength];
@@ -606,6 +664,9 @@ public static class MetadataOperations
     /// Canon or Nikon MakerNote. Null when the tag is present, when there is no such MakerNote, or
     /// when it holds no speed that fits the tag.
     /// </summary>
+    /// <param name="exif">EXIF metadata whose tags are inspected for a possible correction.</param>
+    /// <returns>An EXIF edit that normalizes ISO speed tags, or null when no correction is needed.</returns>
+    /// <exception cref="ArgumentNullException">The EXIF metadata is null.</exception>
     public static ExifEdit? FixIso(ExifMetadata exif)
     {
         ArgumentNullException.ThrowIfNull(exif);
@@ -635,6 +696,7 @@ public static class MetadataOperations
         return edit;
     }
 
+    // Find a MakerNote value by its tag and occurrence index.
     private static long? Field(MakerNote note, ushort tag, ushort index)
     {
         if (!note.TryGetEntry(tag, out MakerNoteEntry? entry)) return null;
@@ -649,6 +711,10 @@ public static class MetadataOperations
     /// order of the block. Null without the tag, for a comment under another character code, and
     /// when the bytes would not change.
     /// </summary>
+    /// <param name="exif">EXIF metadata whose tags are inspected for a possible correction.</param>
+    /// <param name="current">Encoding used to decode the current EXIF UserComment bytes.</param>
+    /// <returns>An EXIF edit that normalizes UserComment bytes, or null when no correction is needed.</returns>
+    /// <exception cref="ArgumentNullException">The EXIF metadata or text encoding is null.</exception>
     public static ExifEdit? FixUserComment(ExifMetadata exif, Encoding current)
     {
         ArgumentNullException.ThrowIfNull(exif);
@@ -668,6 +734,7 @@ public static class MetadataOperations
 
     // ---- the passes ----
 
+    // Keep Writable focused on metadata and its format-specific validation contract.
     private static MetadataFormat Writable(MetadataFormat format) => format switch
     {
         MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Bmff or MetadataFormat.Pgf or MetadataFormat.Eps => format,
@@ -678,6 +745,7 @@ public static class MetadataOperations
 
     private static bool HoldsComment(MetadataFormat format) => format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.Pgf;
 
+    // Write the prepared metadata edit only after validation, preserving unrelated payloads.
     private static byte[] Save(byte[] file, MetadataFormat format, SyncEdits edits)
     {
         using var input = new MemoryStream(file, false);
@@ -695,6 +763,7 @@ public static class MetadataOperations
         return output.ToArray();
     }
 
+    // Write the prepared metadata edit only after validation, preserving unrelated payloads.
     private static byte[] SaveComment(byte[] file, MetadataFormat format, string? comment)
     {
         if (format == MetadataFormat.Pgf) return PgfMetadata.Write(file, new SyncEdits(), comment, replaceComment: true);
@@ -705,6 +774,7 @@ public static class MetadataOperations
         return output.ToArray();
     }
 
+    // Write the prepared metadata edit only after validation, preserving unrelated payloads.
     private static byte[] SaveIcc(byte[] file, MetadataFormat format, byte[]? profile)
     {
         using var input = new MemoryStream(file, false);
@@ -720,6 +790,7 @@ public static class MetadataOperations
         return output.ToArray();
     }
 
+    // Keep Drain focused on metadata and its format-specific validation contract.
     private static byte[] Drain(Stream source)
     {
         var buffer = new MemoryStream();

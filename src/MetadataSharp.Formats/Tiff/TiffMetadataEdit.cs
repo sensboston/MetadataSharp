@@ -12,6 +12,7 @@ public sealed record TiffEditOptions
     public TiffReadOptions ReadOptions { get; init; } = new();
     /// <summary>The longest output written, in bytes. Default 1,073,741,824; four gigabytes and the input budget bound it as well.</summary>
     public long MaxOutputBytes { get; init; } = 1_073_741_824;
+    // Take a stable copy without exposing mutable TIFF/DNG state.
     internal TiffEditOptions Snapshot()
     {
         ArgumentNullException.ThrowIfNull(ReadOptions);
@@ -21,6 +22,8 @@ public sealed record TiffEditOptions
 }
 
 /// <summary>An editable field addressed by an original-source IFD offset, not an output offset.</summary>
+/// <param name="DirectoryOffset">Offset of the source TIFF IFD containing the field; it is not an output-file offset.</param>
+/// <param name="TagId">TIFF tag ID of the field within the addressed source IFD.</param>
 public readonly record struct TiffFieldKey(uint DirectoryOffset, ushort TagId);
 
 /// <summary>Addressed baseline descriptive changes. Removal is not physical erasure.</summary>
@@ -41,6 +44,8 @@ public sealed class TiffMetadataEdit
     /// ASCII with a final NUL, a date in the form <c>yyyy:MM:dd HH:mm:ss</c> for DateTime, or a SHORT
     /// from 1 to 8 for Orientation.
     /// </exception>
+    /// <param name="key">Original-source directory offset and tag ID identifying the descriptive TIFF field.</param>
+    /// <param name="value">Typed EXIF value to assign to the addressed TIFF field.</param>
     public void Set(TiffFieldKey key, ExifValue value)
     {
         TiffEditPolicy.Key(key); ArgumentNullException.ThrowIfNull(value);
@@ -48,6 +53,7 @@ public sealed class TiffMetadataEdit
         changes[key] = value;
     }
     /// <summary>Removes a descriptive field; see <see cref="Set"/>. The bytes of its value stay in the file, no longer addressed.</summary>
+    /// <param name="key">Original-source directory offset and tag ID identifying the descriptive TIFF field.</param>
     public void Remove(TiffFieldKey key) { TiffEditPolicy.Key(key); changes[key] = null; }
     internal Dictionary<TiffFieldKey, ExifValue?> Snapshot(long budget = long.MaxValue)
     {
@@ -63,21 +69,26 @@ public sealed class TiffMetadataEdit
     }
 }
 
+// Represent the TiffEditPolicy state used by TIFF/DNG parsing and output.
 internal static class TiffEditPolicy
 {
     internal static bool Text(ushort tag) => tag is 269 or 270 or 271 or 272 or 285 or 305 or 306 or 315 or 316;
+    // Identify TIFF tags whose values point to other directories.
     internal static bool Pointer(ushort tag) => tag is 330 or 34665 or 34853 or 40965;
+    // Reject field keys that do not address a descriptive tag in the source directory.
     internal static void Key(TiffFieldKey key)
     {
         if (key.DirectoryOffset < 8 || (key.DirectoryOffset & 1) != 0 || !(Text(key.TagId) || key.TagId == 274))
             throw new ArgumentException("Key must address a baseline descriptive field in a source IFD.", nameof(key));
     }
+    // Encode an EXIF field value using the byte order recorded by the source TIFF layout.
     internal static byte[] Bytes(ExifValue value, Endianness order)
     {
         byte[] bytes = new byte[value.ByteLength]; value.CopyRawTo(bytes);
         if (value.FieldType == TiffFieldType.Short && value.ByteOrder != order) Array.Reverse(bytes);
         return bytes;
     }
+    // Select the typed source EXIF value for an addressed field edit.
     internal static bool Value(ushort tag, ExifValue value)
     {
         if (tag == 274 && (value.FieldType != TiffFieldType.Short || value.Count != 1)) return false;
@@ -93,6 +104,7 @@ internal static class TiffEditPolicy
         if (tag != 306) return true;
         return bytes.Length == 20 && DateTime.TryParseExact(Encoding.ASCII.GetString(bytes, 0, 19), "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
     }
+    // Check whether a TIFF field type/count combination is valid for this image layout.
     internal static bool Shape(TiffFieldInfo f, uint samples, uint extras, int segmentCount)
     {
         bool Short(uint n) => f.FieldType == 3 && f.Count == n;

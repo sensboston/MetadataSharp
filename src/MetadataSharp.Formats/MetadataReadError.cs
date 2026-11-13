@@ -24,5 +24,6 @@ public sealed class MetadataReadError
     public MetadataErrorCode Code => Exception.Code;
 
     /// <summary>The kind, the code and the message, for a log line.</summary>
+    /// <returns>A concise string containing the metadata family, error code, and message.</returns>
     public override string ToString() => Family + ": " + Code + ": " + Exception.Message;
 }

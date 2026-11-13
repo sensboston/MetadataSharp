@@ -8,6 +8,7 @@ namespace MetadataSharp.Formats;
 /// <summary>Bounded, independent parsers for the four video readers enabled by the pinned reference build.</summary>
 internal static class VideoContainerReader
 {
+    // Dispatch to the selected bounded video-container parser and return its normalized properties.
     internal static IReadOnlyList<VideoProperty> Read(ReadOnlySpan<byte> data, MetadataFormat format, MetadataLimits limits)
     {
         var reader = new Reader(data, limits, format);
@@ -38,6 +39,7 @@ internal static class VideoContainerReader
 
         private IReadOnlyList<VideoProperty> Result() => values.Values.OrderBy(value => value.Key, StringComparer.Ordinal).ToArray();
 
+        // Enforce value and entry budgets before replacing or appending a normalized video property.
         private void Add(string key, string value, IReadOnlyList<string>? items = null)
         {
             int bytes = Encoding.UTF8.GetByteCount(value);
@@ -49,6 +51,7 @@ internal static class VideoContainerReader
             values[key] = new VideoProperty(key, value, items);
         }
 
+        // Add shared file-size, MIME-type, and optional aspect-ratio properties for each container.
         private void Common(bool mib, bool ratio)
         {
             Add("Xmp.video.FileSize", mib ? Number(data.Length / 1048576d) : data.Length.ToString(CultureInfo.InvariantCulture));
@@ -63,18 +66,23 @@ internal static class VideoContainerReader
         }
 
         private string Number(double value) => value.ToString("G6", CultureInfo.InvariantCulture).Replace('E', 'e');
+        // Bound the total number of video structures and report the offending source offset.
         private void Count(ref int count, long offset)
         {
             if (++count > limits.MaxSegments) throw Limit("The video structure count budget was exceeded.", offset);
         }
+        // Bound nested container traversal before descending into child structures.
         private void Depth(int depth, long offset)
         {
             if (depth > limits.MaxDirectoryDepth) throw Limit("The video nesting budget was exceeded.", offset);
         }
+        // Attach the InvalidVideoContainer code and a valid source offset to malformed-input failures.
         internal MetadataException Invalid(string message, long offset) =>
             new(MetadataErrorCode.InvalidVideoContainer, message, offset >= 0 && offset <= data.Length ? offset : null);
+        // Attach LimitExceeded and a valid source offset when a video parsing budget is exhausted.
         private MetadataException Limit(string message, long offset) =>
             new(MetadataErrorCode.LimitExceeded, message, offset >= 0 && offset <= data.Length ? offset : null);
+        // Reject a field whose range escapes its enclosing chunk or the input buffer.
         private void Need(int start, int length, int end, string what)
         {
             if (start < 0 || length < 0 || end < start || end > data.Length || length > end - start)
@@ -86,6 +94,7 @@ internal static class VideoContainerReader
         private ulong U64BE(int at) => BinaryPrimitives.ReadUInt64BigEndian(data.Slice(at, 8));
         private ushort U16LE(int at) => BinaryPrimitives.ReadUInt16LittleEndian(data.Slice(at, 2));
         private ushort U16BE(int at) => BinaryPrimitives.ReadUInt16BigEndian(data.Slice(at, 2));
+        // Reduce width and height by their greatest common divisor for a canonical aspect ratio.
         private static string Ratio(int w, int h)
         {
             if (w <= 0 || h <= 0) return "1:1";
@@ -93,6 +102,7 @@ internal static class VideoContainerReader
             while (b != 0) (a, b) = (b, a % b);
             return (w / a).ToString(CultureInfo.InvariantCulture) + ":" + (h / a).ToString(CultureInfo.InvariantCulture);
         }
+        // Decode a length-delimited string only after its byte length fits the configured value budget.
         private string Text(int start, int length, Encoding encoding, bool trimZero = true)
         {
             if (length > limits.MaxValueBytes) throw Limit("A video text value exceeds the value budget.", start);
@@ -101,6 +111,7 @@ internal static class VideoContainerReader
             if (trimZero) result = result.TrimEnd('\0', ' ');
             return result;
         }
+        // Stop a fixed-width string at its first NUL while enforcing the value-size budget.
         private string CString(int start, int length, Encoding encoding)
         {
             if (length > limits.MaxValueBytes) throw Limit("A video text value exceeds the value budget.", start);
@@ -111,6 +122,7 @@ internal static class VideoContainerReader
         }
         private string FourCC(int start) => Encoding.Latin1.GetString(data.Slice(start, 4));
 
+        // Validate the RIFF form extent, then dispatch AVI/WAVE chunks to their bounded readers.
         internal IReadOnlyList<VideoProperty> Riff()
         {
             if (data.Length < 12 || !data[..4].SequenceEqual("RIFF"u8)) throw Invalid("The RIFF header is truncated or absent.", 0);
@@ -129,6 +141,7 @@ internal static class VideoContainerReader
             return Result();
         }
 
+        // Walk padded RIFF chunks within the parent extent and recurse only into recognized lists.
         private void WalkRiff(int start, int end, int depth, bool audio)
         {
             Depth(depth, start);
@@ -159,6 +172,7 @@ internal static class VideoContainerReader
             }
         }
 
+        // Decode AVI timing and dimensions only from a complete avih payload.
         private void ReadAviHeader(int p, int end)
         {
             Need(p, 40, end, "AVI main header");
@@ -184,6 +198,7 @@ internal static class VideoContainerReader
         }
 
         private string streamKind = "VIDS";
+        // Decode stream type, timing, and frame dimensions from a complete strh payload.
         private void ReadStreamHeader(int p, int end)
         {
             Need(p, 56, end, "AVI stream header");
@@ -229,6 +244,7 @@ internal static class VideoContainerReader
             Add("Xmp.video.NumIfImpColours", important == 0 ? "All" : important.ToString(CultureInfo.InvariantCulture));
         }
 
+        // Map recognized INFO chunk IDs to normalized descriptive properties.
         private void ReadInfo(int p, int end)
         {
             var found = new SortedDictionary<string, string>(StringComparer.Ordinal);
@@ -251,6 +267,7 @@ internal static class VideoContainerReader
             foreach ((string key, string value) in found) Add(key, value);
         }
 
+        // Translate standard four-character INFO IDs to stable XMP property keys.
         private static string? InfoKey(string four) => four switch
         {
             "IARL" => "Xmp.video.ArchivalLocation", "IART" => "Xmp.video.Artist", "ICMS" => "Xmp.video.Commissioned",
@@ -278,6 +295,7 @@ internal static class VideoContainerReader
         };
         private static string WavCodec(ushort tag) => tag switch { 1 => "Microsoft PCM", 3 => "IEEE Float", 0x55 => "MPEG Layer 3", _ => tag.ToString(CultureInfo.InvariantCulture) };
 
+        // Validate the ASF header object and traverse its children under configured budgets.
         internal IReadOnlyList<VideoProperty> Asf()
         {
             if (data.Length < 24 || !data[..16].SequenceEqual(AsfHeaderGuid)) throw Invalid("The ASF header object is truncated or absent.", 0);
@@ -289,6 +307,7 @@ internal static class VideoContainerReader
         }
 
         private static readonly byte[] AsfHeaderGuid = [0x30, 0x26, 0xB2, 0x75, 0x8E, 0x66, 0xCF, 0x11, 0xA6, 0xD9, 0, 0xAA, 0, 0x62, 0xCE, 0x6C];
+        // Check each ASF object size and recurse only within its declared parent extent.
         private void ReadAsfObject(ref int pos, int parentEnd, int depth)
         {
             Depth(depth, pos); Count(ref structures, pos);
@@ -321,6 +340,7 @@ internal static class VideoContainerReader
         private static readonly byte[] AsfExtendedContent = [0x40,0xA4,0xD0,0xD2,0x07,0xE3,0xD2,0x11,0x97,0xF0,0,0xA0,0xC9,0x5E,0xA8,0x50];
         private static readonly byte[] AsfExtendedStream = [0xCB,0xA5,0xE6,0x14,0x72,0xC6,0x32,0x43,0x83,0x99,0xA9,0x69,0x52,0x06,0x5B,0x5A];
 
+        // Decode ASF file size, duration, packet count, and bitrate from the fixed properties object.
         private void ReadAsfFileProperties(int p, int end)
         {
             Need(p, 80, end, "ASF file properties");
@@ -338,6 +358,7 @@ internal static class VideoContainerReader
             Guid value = new(bytes);
             return value.ToString("D", CultureInfo.InvariantCulture).ToUpperInvariant();
         }
+        // Map ASF content-description fields to normalized title, author, and comment properties.
         private void ReadAsfContent(int p, int end)
         {
             Need(p, 10, end, "ASF content description");
@@ -351,6 +372,7 @@ internal static class VideoContainerReader
                 p += lengths[i];
             }
         }
+        // Decode ASF stream properties without reading beyond the stream object.
         private void ReadAsfStream(int p, int end)
         {
             Need(p, 54, end, "ASF stream properties");
@@ -396,6 +418,7 @@ internal static class VideoContainerReader
                 p += infoLength;
             }
         }
+        // Decode typed ASF extended-content attributes within each declared value range.
         private void ReadAsfExtendedContent(int p, int end)
         {
             Need(p, 2, end, "ASF extended content description");
@@ -419,6 +442,7 @@ internal static class VideoContainerReader
             }
             Add("Xmp.video.ExtendedContentDescription", output.ToString());
         }
+        // Read ASF stream-specific attributes using their declared type and length.
         private void ReadAsfExtendedStream(int p, int end)
         {
             Need(p, 52, end, "ASF extended stream properties");
@@ -427,6 +451,7 @@ internal static class VideoContainerReader
             Add("Xmp.video.FrameRate", U16LE(p + 50).ToString(CultureInfo.InvariantCulture));
         }
 
+        // Validate the top-level QuickTime atom tree and collect movie and track metadata.
         internal IReadOnlyList<VideoProperty> QuickTime()
         {
             if (data.Length < 12) throw Invalid("The QuickTime header is truncated.", 0);
@@ -436,6 +461,7 @@ internal static class VideoContainerReader
             return Result();
         }
 
+        // Traverse QuickTime atoms inside parent extents while enforcing depth and structure budgets.
         private void WalkAtoms(int start, int end, int depth, string parent, string streamPrefix)
         {
             Depth(depth, start); int p = start;
@@ -487,6 +513,7 @@ internal static class VideoContainerReader
             }
         }
 
+        // Associate a track with its handler type so track properties receive the correct prefix.
         private string FindTrackStream(int start, int end, int depth)
         {
             Depth(depth, start);
@@ -528,6 +555,7 @@ internal static class VideoContainerReader
             return "Xmp.ignored";
         }
 
+        // Decode recognized QuickTime user-data atoms and report whether the tag was handled.
         private bool ReadUserDataTag(string type, int p, int end)
         {
             string normalized = type.Length == 4 && type[0] == '\u00A9' ? " " + type[1..] : type;
@@ -545,6 +573,7 @@ internal static class VideoContainerReader
             return true;
         }
 
+        // Parse ftyp brands and derive the normalized container and MIME properties.
         private void ReadFileType(int p, int end)
         {
             Need(p, 8, end, "QuickTime file type");
@@ -557,6 +586,7 @@ internal static class VideoContainerReader
             for (int i = 0; i < count; i++) brands.Add(BrandName(FourCC(p + 8 + 4 * i)));
             Add("Xmp.video.CompatibleBrands", string.Join(", ", brands), brands);
         }
+        // Translate standardized QuickTime brand codes to readable format names.
         private static string BrandName(string brand) => brand switch
         {
             "qt  " => "Apple QuickTime (.MOV/QT)",
@@ -571,6 +601,7 @@ internal static class VideoContainerReader
             "3gp5" => "3GPP Media (.3GP) Release 5",
             _ => brand
         };
+        // Translate known handler vendor codes without inventing names for unknown codes.
         private static string? VendorName(string vendor) => vendor switch
         {
             "FFMP" => "FFmpeg", "appl" => "Apple", "olym" => "Olympus", "GIC " => "General Imaging Co.",
@@ -579,6 +610,7 @@ internal static class VideoContainerReader
             "mino" => "Minolta", "sany" => "Sanyo", _ => null
         };
 
+        // Decode movie time scale and duration for later track-duration conversion.
         private void ReadMovieHeader(int p, int end)
         {
             Need(p, 100, end, "QuickTime movie header");
@@ -594,6 +626,7 @@ internal static class VideoContainerReader
             for (int i = 0; i < tailKeys.Length; i++)
                 Add("Xmp.video." + tailKeys[i], U32BE(p + 72 + i * 4).ToString(CultureInfo.InvariantCulture));
         }
+        // Decode track dimensions and duration using the movie time scale.
         private void ReadTrackHeader(int p, int end, string prefix)
         {
             Need(p, 84, end, "QuickTime track header");
@@ -616,6 +649,7 @@ internal static class VideoContainerReader
                 if (h != 0) { height = (int)h; Add("Xmp.video.Height", h.ToString(CultureInfo.InvariantCulture)); }
             }
         }
+        // Decode the media time scale and duration used by the current track.
         private void ReadMediaHeader(int p, int end, string prefix)
         {
             Need(p, 24, end, "QuickTime media header");
@@ -628,6 +662,7 @@ internal static class VideoContainerReader
             Add(prefix + ".MediaDuration", (U32BE(p + 16) / mediaTimeScale).ToString(CultureInfo.InvariantCulture));
             Add(prefix + ".MediaLangCode", U16BE(p + 20).ToString(CultureInfo.InvariantCulture));
         }
+        // Identify the track handler and select its normalized video or audio property prefix.
         private void ReadHandler(int p, int end, string prefix)
         {
             Need(p, 20, end, "QuickTime handler");
@@ -648,6 +683,7 @@ internal static class VideoContainerReader
             if (handlerName is not null) Add(prefix + ".HandlerType", handlerName);
             if (vendorName is not null) Add(prefix + ".HandlerVendorID", vendorName);
         }
+        // Read codec and sample dimensions from a bounded sample-entry payload.
         private void ReadSampleDescription(int p, int end, string prefix)
         {
             Need(p, 8, end, "QuickTime sample description");
@@ -695,6 +731,7 @@ internal static class VideoContainerReader
                 q += (int)size;
             }
         }
+        // Sum sample timing entries under bounds checks and convert ticks to duration.
         private void ReadTimeToSample(int p, int end, string prefix)
         {
             Need(p, 8, end, "QuickTime time-to-sample table");
@@ -712,6 +749,7 @@ internal static class VideoContainerReader
             if (prefix == "Xmp.video" && ticks != 0)
                 Add("Xmp.video.FrameRate", Number((double)samples * mediaTimeScale / ticks));
         }
+        // Read the video track header fields from its complete fixed-size payload.
         private void ReadVideoHeader(int p, int end)
         {
             Need(p, 12, end, "QuickTime video media header");
@@ -724,6 +762,7 @@ internal static class VideoContainerReader
             Add("Xmp.video.OpColor", U16BE(p + 6).ToString(CultureInfo.InvariantCulture));
         }
 
+        // Validate the EBML document header and parse Matroska elements within configured limits.
         internal IReadOnlyList<VideoProperty> Matroska()
         {
             if (data.Length < 4 || data[0] != 0x1A || data[1] != 0x45 || data[2] != 0xDF || data[3] != 0xA3)
@@ -735,6 +774,7 @@ internal static class VideoContainerReader
         }
 
         private readonly record struct EbmlHeader(ulong Id, int HeaderLength, int PayloadLength, bool Unknown);
+        // Decode one EBML ID or size vint and reject invalid or truncated encodings.
         private EbmlHeader EbmlNext(int p, int end, bool identifier)
         {
             if (p >= end) throw Invalid("An EBML variable integer is truncated.", p);
@@ -753,6 +793,7 @@ internal static class VideoContainerReader
         private static readonly HashSet<ulong> EbmlMasters = [
             0x1A45DFA3, 0x18538067, 0x1549A966, 0x1654AE6B, 0xAE, 0xE0, 0xE1, 0x1254C367, 0x7373, 0x63C0, 0x67C8,
             0x1043A770, 0x45B9, 0xB6, 0x80, 0x6240, 0x5034, 0x5035];
+        // Traverse Matroska master elements recursively while respecting element extents and depth limits.
         private void ParseEbml(int start, int end, int depth, int trackType, string path)
         {
             Depth(depth, start); int p = start;
@@ -783,6 +824,7 @@ internal static class VideoContainerReader
                 if (size.Unknown) break;
             }
         }
+        // Find the Matroska TrackType element for the selected track entry.
         private int FindEbmlTrackType(int start, int end)
         {
             int p = start;

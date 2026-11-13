@@ -32,6 +32,7 @@ public static class MetadataFileNames
     /// <param name="format">The format; <see cref="DefaultFormat"/> is what Exiv2 defaults to.</param>
     /// <param name="taken">The moment to name the file after, usually <see cref="ExifMetadata.DateTaken"/>.</param>
     /// <param name="path">The path or the name of the file as it is now.</param>
+    /// <returns>The formatted file name with the original extension, not a path.</returns>
     /// <exception cref="ArgumentException">The format has a conversion that is not listed or ends with <c>%</c>, the result is empty, or it holds a character a file name cannot (a separator, a NUL).</exception>
     public static string Format(string format, DateTime taken, string path)
     {

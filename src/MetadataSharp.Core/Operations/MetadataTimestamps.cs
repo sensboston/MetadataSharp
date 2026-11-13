@@ -18,6 +18,7 @@ namespace MetadataSharp.Core.Operations;
 public readonly record struct TimestampShift(int Years, int Months, int Days, TimeSpan Time)
 {
     /// <summary>A shift by a time alone.</summary>
+    /// <param name="time">The whole-second time interval to add.</param>
     public TimestampShift(TimeSpan time) : this(0, 0, 0, time) { }
 
     /// <summary>True when the shift moves nothing.</summary>
@@ -67,6 +68,7 @@ public static class MetadataTimestamps
     /// <param name="iptc">The IPTC stream of the file, or null.</param>
     /// <param name="xmp">The XMP packet of the file, or null.</param>
     /// <param name="shift">The amount.</param>
+    /// <returns>The EXIF, IPTC, and XMP changes and any reconciliation notes.</returns>
     /// <exception cref="ArgumentException">The time of the shift has a fraction of a second.</exception>
     public static SyncEdits Adjust(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp, TimestampShift shift)
     {

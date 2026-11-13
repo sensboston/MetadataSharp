@@ -746,6 +746,8 @@ public static partial class ExifTags
     private static readonly Dictionary<ExifTagKey, ExifTagDefinition> ByKey = Build();
 
     /// <summary>What its publication says of one tag, or null for a tag the vocabulary does not list.</summary>
+    /// <param name="key">The directory and tag ID to look up.</param>
+    /// <returns>The tag definition, or <see langword="null"/> when the vocabulary has no entry for the key.</returns>
     public static ExifTagDefinition? Find(ExifTagKey key) => ByKey.GetValueOrDefault(key);
 
     /// <summary>
@@ -753,6 +755,8 @@ public static partial class ExifTags
     /// fields, so it shares those definitions.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">A value that is not one of the supported directories.</exception>
+    /// <param name="directory">The directory role whose definitions to retrieve.</param>
+    /// <returns>The definitions in ascending tag ID order.</returns>
     public static IReadOnlyList<ExifTagDefinition> Definitions(ExifDirectoryKind directory) => directory switch
     {
         ExifDirectoryKind.Ifd0 => Ifd0Complete,
@@ -763,6 +767,7 @@ public static partial class ExifTags
         _ => throw new ArgumentOutOfRangeException(nameof(directory)),
     };
 
+    // Index the complete, sorted vocabulary once; duplicate keys are an invalid table, not a last-write-wins override.
     private static Dictionary<ExifTagKey, ExifTagDefinition> Build()
     {
         var byKey = new Dictionary<ExifTagKey, ExifTagDefinition>();

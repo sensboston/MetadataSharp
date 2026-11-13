@@ -5,6 +5,7 @@ using MetadataSharp.Formats.Internal;
 
 namespace MetadataSharp.Formats.WebP;
 
+// Represent the WebPChunk state used by WebP parsing and output.
 internal sealed record WebPChunk(string Type, long Start, long Size)
 {
     internal long Payload => Start + 8;
@@ -20,6 +21,7 @@ internal static class WebPScanner
     private static MetadataException Unsupported(string message) => new(MetadataErrorCode.UnsupportedFeature, message);
     internal static int U24(ReadOnlySpan<byte> bytes) => bytes[0] | bytes[1] << 8 | bytes[2] << 16;
     internal static void Put24(Span<byte> bytes, int value) { bytes[0] = (byte)value; bytes[1] = (byte)(value >> 8); bytes[2] = (byte)(value >> 16); }
+    // Keep Chunk focused on WebP and its format-specific validation contract.
     internal static byte[] Chunk(string type, byte[] payload)
     {
         byte[] chunk = new byte[checked(8 + payload.Length + (payload.Length & 1))];

@@ -26,9 +26,14 @@ public sealed class Jp2Metadata
     /// <summary>Number of top-level XML boxes, irrespective of their content.</summary>
     public int XmlBoxCount => xmlBoxes.Length;
     /// <summary>Return an independent copy of an opaque XML box payload.</summary>
+    /// <param name="index">Zero-based index of the XML box in the order returned by the reader.</param>
+    /// <returns>An independent copy of the indexed XML box payload.</returns>
     public byte[] GetXmlBox(int index) => (byte[])xmlBoxes[index].Clone();
 
     /// <summary>Inspect one complete boxed JP2 buffer with finite limits.</summary>
+    /// <param name="data">Complete JPEG 2000 file bytes starting at the container signature.</param>
+    /// <returns>The parsed Jp2Metadata for the complete input file.</returns>
+    /// <exception cref="MetadataException">The JP2 structure is malformed, unsupported, or exceeds a configured read budget.</exception>
     public static Jp2Metadata Read(ReadOnlySpan<byte> data)
     {
         if (data.Length > MaxFileBytes) throw Limit();
@@ -77,6 +82,7 @@ public sealed class Jp2Metadata
         return new Jp2Metadata(width, height, xml);
     }
 
+    // Read header from bounded metadata data, validating its declared extent before consuming fields.
     private static void ReadHeader(ReadOnlySpan<byte> data, Box parent, ref int boxes, out uint width, out uint height)
     {
         int at = parent.Payload;
@@ -95,7 +101,9 @@ public sealed class Jp2Metadata
         if (!color) throw Bad("Missing JP2 color specification box.");
     }
 
+    // Represent the Box state used by metadata parsing and output.
     private readonly record struct Box(uint Type, int Payload, int End, int Length);
+    // Keep Next focused on metadata and its format-specific validation contract.
     private static Box Next(ReadOnlySpan<byte> data, ref int at, ref int count)
     {
         if (++count > MaxBoxes) throw Limit();
@@ -110,5 +118,6 @@ public sealed class Jp2Metadata
     private static uint U32(ReadOnlySpan<byte> data, int at) => BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at, 4));
     private static MetadataException Bad(string message) => new(MetadataErrorCode.InvalidJp2, message);
     private static MetadataException Unsupported(string message) => new(MetadataErrorCode.UnsupportedFeature, message);
+    // Report a JP2 box or file-size budget violation.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "JP2 exceeds a fixed read budget.");
 }

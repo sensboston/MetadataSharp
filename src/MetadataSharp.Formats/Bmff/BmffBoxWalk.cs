@@ -24,6 +24,7 @@ internal ref struct BmffBoxWalk
     private readonly MetadataLimits limits;
     private int boxes;
 
+    // Keep the BMFF source span, limits and box count while walking nested boxes.
     internal BmffBoxWalk(ReadOnlySpan<byte> data, MetadataLimits limits)
     {
         this.data = data;
@@ -68,9 +69,11 @@ internal ref struct BmffBoxWalk
 
     internal readonly uint U32(int at) => BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at, 4));
 
+    // Attach the current box offset to a BMFF structural failure.
     internal readonly MetadataException Fail(string message, long offset) =>
         new(MetadataErrorCode.InvalidBmff, message, offset >= 0 && offset <= data.Length ? offset : null);
 
+    // Report a box-walk budget failure at the offending BMFF offset.
     internal readonly MetadataException Limit(string message, long offset) =>
         new(MetadataErrorCode.LimitExceeded, message, offset >= 0 && offset <= data.Length ? offset : null);
 }

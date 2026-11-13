@@ -3,6 +3,8 @@ using System.Text;
 namespace MetadataSharp.Core.Iptc;
 
 /// <summary>An IIM record and dataset number, without a schema or prefix alias.</summary>
+/// <param name="Record">The IIM record number.</param>
+/// <param name="Dataset">The dataset number within the record.</param>
 public readonly record struct IptcDatasetKey(byte Record, byte Dataset);
 /// <summary>The packet's explicit encoding declaration, never a guessed code page.</summary>
 public enum IptcCharacterSet
@@ -21,6 +23,8 @@ public sealed class IptcValue
     private readonly ReadOnlyMemory<byte> bytes;
     internal IptcValue(ReadOnlyMemory<byte> bytes) => this.bytes = bytes;
     /// <summary>Creates a value from a copy of the bytes.</summary>
+    /// <param name="bytes">The raw dataset value bytes.</param>
+    /// <returns>An immutable value that owns a copy of the input.</returns>
     /// <exception cref="ArgumentException">The value is longer than 1,048,576 bytes.</exception>
     public static IptcValue FromRaw(ReadOnlySpan<byte> bytes)
     {
@@ -30,6 +34,8 @@ public sealed class IptcValue
     /// <summary>The length of the value in bytes.</summary>
     public int ByteLength => bytes.Length;
     /// <summary>Copies the value to the start of the destination, which has to be at least <see cref="ByteLength"/> long.</summary>
+    /// <param name="destination">The buffer that receives the raw bytes.</param>
+    /// <exception cref="ArgumentException">The destination is shorter than <see cref="ByteLength"/>.</exception>
     public void CopyRawTo(Span<byte> destination)
     {
         if (destination.Length < bytes.Length) throw new ArgumentException("The destination is too small.", nameof(destination));
@@ -61,6 +67,7 @@ public sealed record IptcLimits
     public int MaxValueBytes { get; init; } = 1_048_576;
     /// <summary>The most Photoshop image resources read to find the stream. Default 1,024.</summary>
     public int MaxResources { get; init; } = 1_024;
+    // Reject unusable budgets at capture time; every reader and writer can then rely on strictly positive limits.
     internal void Validate()
     {
         if (MaxPacketBytes <= 0 || MaxDatasets <= 0 || MaxValueBytes <= 0 || MaxResources <= 0)

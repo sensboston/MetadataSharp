@@ -24,6 +24,7 @@ internal enum TiffBasedRole
     Other
 }
 
+// Represent the TiffBasedRangeKind state used by TIFF/DNG parsing and output.
 internal enum TiffBasedRangeKind
 {
     Directory,
@@ -46,10 +47,12 @@ internal readonly record struct TiffBasedRange(TiffBasedRangeKind Kind, long Sta
 internal sealed record TiffBasedField(ushort Tag, ushort Type, uint Count, int EntryOffset, bool IsInline,
     long ValueOffset, long ByteLength);
 
+// Represent the TiffBasedDirectory state used by TIFF/DNG parsing and output.
 internal sealed class TiffBasedDirectory(TiffBasedRole role, uint offset, List<TiffBasedField> fields, uint next,
     bool sorted)
 {
     internal TiffBasedRole Role { get; } = role;
+    // Retain Offset state required to parse or write TIFF/DNG data safely.
     internal uint Offset { get; } = offset;
     internal IReadOnlyList<TiffBasedField> Fields { get; } = fields;
     internal uint Next { get; } = next;
@@ -59,6 +62,7 @@ internal sealed class TiffBasedDirectory(TiffBasedRole role, uint offset, List<T
     internal int References { get; set; } = 1;
     internal int Length => 2 + 12 * Fields.Count + 4;
 
+    // Resolve TIFF/DNG using the format-defined identifiers and naming rules.
     internal TiffBasedField? Find(ushort tag)
     {
         foreach (TiffBasedField field in Fields)
@@ -92,11 +96,13 @@ internal sealed class TiffBasedFileMap
     private readonly List<TiffBasedRange> ranges = [];
     private readonly Dictionary<uint, TiffBasedDirectory?> seen = [];
     private readonly Dictionary<uint, int> extraReferences = [];
+    // Retain pending state required to parse or write TIFF/DNG data safely.
     private readonly Queue<(uint Offset, TiffBasedRole Role)> pending = new();
     private readonly int maxRanges;
     private readonly bool rw2;
     private int totalEntries;
 
+    // Retain the TIFF source bytes and accounted ranges used to protect untouched data.
     private TiffBasedFileMap(byte[] file, MetadataLimits limits, int maxRanges)
     {
         this.file = file;
@@ -123,6 +129,7 @@ internal sealed class TiffBasedFileMap
     /// </summary>
     internal bool HasOpenEndedImageData { get; private set; }
 
+    // Read TIFF/DNG data only after the input extent and applicable resource budgets are checked.
     internal static TiffBasedFileMap Read(byte[] file, MetadataLimits limits, int maxRanges)
     {
         ArgumentNullException.ThrowIfNull(file);
@@ -146,6 +153,7 @@ internal sealed class TiffBasedFileMap
         return null;
     }
 
+    // Resolve at using the format-defined identifiers and naming rules.
     internal TiffBasedDirectory? FindAt(uint offset)
     {
         foreach (TiffBasedDirectory directory in directories)
@@ -169,6 +177,7 @@ internal sealed class TiffBasedFileMap
         return owners == 1;
     }
 
+    // Traverse TIFF/DNG while enforcing nesting depth and visited-range limits.
     private void Walk()
     {
         uint first = U32(4);
@@ -343,6 +352,7 @@ internal sealed class TiffBasedFileMap
         AddRange(TiffBasedRangeKind.ImageData, start, length);
     }
 
+    // Keep AddRange focused on TIFF/DNG and its format-specific validation contract.
     private void AddRange(TiffBasedRangeKind kind, long start, long length)
     {
         if (length == 0) return;
@@ -350,6 +360,7 @@ internal sealed class TiffBasedFileMap
         Account(new(kind, start, length), start);
     }
 
+    // Keep Account focused on TIFF/DNG and its format-specific validation contract.
     private void Account(TiffBasedRange range, long at)
     {
         if (ranges.Count >= maxRanges)

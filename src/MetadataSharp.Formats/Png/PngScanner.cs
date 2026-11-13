@@ -6,6 +6,7 @@ using MetadataSharp.Formats.Internal;
 
 namespace MetadataSharp.Formats.Png;
 
+// Represent the PngChunk state used by PNG parsing and output.
 internal sealed record PngChunk(string Type, long Start, int Size, bool Xmp, bool UnsafeUnknown)
 {
     /// <summary>The NAME of a tEXt or zTXt chunk whose keyword is "Raw profile type NAME", else null.</summary>
@@ -24,6 +25,7 @@ internal static class PngScanner
 {
     internal static MetadataException Invalid(string message = "Malformed PNG container.") => new(MetadataErrorCode.InvalidPng, message);
     private static readonly HashSet<string> Known = ["IHDR", "PLTE", "IDAT", "IEND", "eXIf", "iTXt", "tEXt", "zTXt", "iCCP", "cHRM", "gAMA", "sBIT", "sRGB", "cICP", "mDCV", "cLLI", "bKGD", "hIST", "tRNS", "pHYs", "sPLT", "tIME"];
+    // Keep RawProfileName focused on PNG and its format-specific validation contract.
     private static string? RawProfileName(ReadOnlySpan<byte> prefix)
     {
         ReadOnlySpan<byte> lead = "Raw profile type "u8;
@@ -174,17 +176,21 @@ internal static class PngRawProfile
         return System.Text.Encoding.ASCII.GetBytes(text.ToString());
     }
 }
+// Represent the Crc state used by PNG parsing and output.
 internal static class Crc
 {
     private static readonly uint[] Table = Build();
+    // Keep Build focused on PNG and its format-specific validation contract.
     private static uint[] Build()
     {
         var table = new uint[256];
         for (uint i = 0; i < 256; i++) { uint value = i; for (int n = 0; n < 8; n++) value = (value >> 1) ^ ((value & 1) == 0 ? 0 : 0xedb88320); table[i] = value; }
         return table;
     }
+    // Keep Update focused on PNG and its format-specific validation contract.
     internal static uint Update(uint crc, ReadOnlySpan<byte> bytes)
     { foreach (byte b in bytes) crc = Table[(crc ^ b) & 255] ^ (crc >> 8); return crc; }
+    // Keep Chunk focused on PNG and its format-specific validation contract.
     internal static byte[] Chunk(string type, byte[] data)
     {
         byte[] result = new byte[checked(data.Length + 12)]; BinaryPrimitives.WriteUInt32BigEndian(result, (uint)data.Length);

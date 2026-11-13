@@ -173,6 +173,7 @@ internal static class ExifThumbnailWriter
             : (little ? BinaryPrimitives.ReadUInt32LittleEndian(bytes) : BinaryPrimitives.ReadUInt32BigEndian(bytes));
     }
 
+    // Confirm thumbnail replacement leaves every non-thumbnail EXIF entry unchanged.
     private static bool SameOutside(ExifMetadata one, ExifMetadata other)
     {
         foreach (ExifEntry entry in one.Entries)

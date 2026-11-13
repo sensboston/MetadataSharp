@@ -24,6 +24,9 @@ public static class TiffExif
     /// header; <see cref="MetadataErrorCode.LimitExceeded"/> when a budget of <paramref name="limits"/>
     /// is exceeded; otherwise the code the EXIF directory reader reports for the structure it refused.
     /// </exception>
+    /// <param name="data">Complete input file bytes, beginning at the container signature.</param>
+    /// <param name="limits">Resource budgets for parsing; null selects the default limits.</param>
+    /// <returns>The parsed ExifMetadata for the complete input file.</returns>
     public static ExifMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null)
     {
         limits ??= TiffReadOptions.FileLimits;

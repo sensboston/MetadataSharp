@@ -6,6 +6,7 @@ namespace MetadataSharp.Core.Binary;
 internal ref struct EndianReader
 {
     private readonly ReadOnlySpan<byte> buffer;
+    // Keep the source order with the cursor; every multibyte read uses the same header-selected order.
     private readonly Endianness byteOrder;
 
     /// <summary>Starts a cursor at the first byte of a span.</summary>

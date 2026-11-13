@@ -54,6 +54,7 @@ internal sealed class PlannedOutput
         public override bool CanWrite => false;
         public override long Length => length;
 
+        // Retain Position state required to parse or write metadata data safely.
         public override long Position
         {
             get => position;
@@ -102,12 +103,14 @@ internal sealed class PlannedOutput
             return count;
         }
 
+        // Read metadata data only after the input extent and applicable resource budgets are checked.
         public override int Read(byte[] buffer, int offset, int count)
         {
             ValidateBufferArguments(buffer, offset, count);
             return Read(buffer.AsSpan(offset, count));
         }
 
+        // Read async from bounded metadata data, validating its declared extent before consuming fields.
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -126,12 +129,14 @@ internal sealed class PlannedOutput
             return count;
         }
 
+        // Read async from bounded metadata data, validating its declared extent before consuming fields.
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             ValidateBufferArguments(buffer, offset, count);
             return ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
         }
 
+        // Keep Seek focused on metadata and its format-specific validation contract.
         public override long Seek(long offset, SeekOrigin origin)
         {
             Position = origin switch { SeekOrigin.Begin => offset, SeekOrigin.Current => position + offset, _ => length + offset };
@@ -139,7 +144,9 @@ internal sealed class PlannedOutput
         }
 
         public override void Flush() { }
+        // Keep SetLength focused on metadata and its format-specific validation contract.
         public override void SetLength(long value) => throw new NotSupportedException();
+        // Serialize metadata in its defined byte order without disturbing adjacent data.
         public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
     }
 }

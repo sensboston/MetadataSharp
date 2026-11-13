@@ -23,6 +23,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
     private readonly byte[] digest;
     private bool disposed;
 
+    // Capture validated inputs and stable state for this JPEG object.
     private JpegMetadataDocument(Stream source, bool ownsSource, string? sourcePath, MetadataLimits limits,
         JpegScanResult scan, TiffReadResult? tiff, ExifMetadata? exif, MetadataException? exifRefusal, byte[] digest)
     {
@@ -38,10 +39,16 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
     public ExifMetadata? Exif => exif;
 
     /// <summary>Opens a JPEG file and keeps it open, shared for reading, until the document is disposed. Fails as <see cref="Open(Stream, JpegReadOptions?)"/> does.</summary>
+    /// <param name="path">Path of the JPEG file to identify or open.</param>
+    /// <param name="options">Settings for JPEG parsing; null selects the defaults.</param>
+    /// <returns>An open JpegMetadataDocument bound to the source and captured read options.</returns>
     public static JpegMetadataDocument Open(string path, JpegReadOptions? options = null) =>
         OpenPath(path, SnapshotLimits(options), false, default).GetAwaiter().GetResult();
     /// <summary>Opens a JPEG from a readable, seekable stream at position zero. The stream stays open, and has to stay unchanged, while the document is in use.</summary>
     /// <exception cref="MetadataException">The data is not a file this document reads, or it exceeds a budget of the limits.</exception>
+    /// <param name="source">Readable, seekable JPEG input stream positioned at the start; it remains open after the read.</param>
+    /// <param name="options">Settings for JPEG parsing; null selects the defaults.</param>
+    /// <returns>An open JpegMetadataDocument bound to the source and captured read options.</returns>
     public static JpegMetadataDocument Open(Stream source, JpegReadOptions? options = null) =>
         OpenCore(source, false, null, SnapshotLimits(options), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="Open(string, JpegReadOptions?)"/>
@@ -60,6 +67,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         OpenCore(source, false, null, SnapshotLimits(limits is null ? null : new JpegReadOptions { Limits = limits }), false, default, refusals)
             .GetAwaiter().GetResult();
 
+    // Take a stable copy without exposing mutable JPEG state.
     private static MetadataLimits SnapshotLimits(JpegReadOptions? options)
     {
         MetadataLimits settings = options is null ? new() : options.Limits ?? throw new ArgumentException("Limits cannot be null.", nameof(options));
@@ -67,6 +75,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         return settings with { };
     }
 
+    // Open the JPEG path with the requested I/O mode and retain its read settings.
     private static async Task<JpegMetadataDocument> OpenPath(string path, MetadataLimits settings, bool asynchronous, CancellationToken token)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
@@ -134,15 +143,20 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
     /// <see cref="MetadataErrorCode.SourceChanged"/> when the source is no longer the data that was
     /// opened; otherwise the code of the reason the edit is refused.
     /// </exception>
+    /// <param name="destination">Empty writable, seekable destination stream for the metadata edit; it must not be the source stream.</param>
+    /// <param name="edit">EXIF changes to apply to this JPEG document.</param>
     public void Save(Stream destination, ExifEdit edit) => SaveCore(destination, edit, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="Save(Stream, ExifEdit)"/>
     public Task SaveAsync(Stream destination, ExifEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, edit, true, cancellationToken);
     /// <summary>As <see cref="Save(Stream, ExifEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
     /// <exception cref="IOException">The destination exists or is the source.</exception>
+    /// <param name="destinationPath">Path for publishing metadata edits in JPEG format.</param>
+    /// <param name="edit">EXIF changes to apply to this JPEG document.</param>
     public void SaveAs(string destinationPath, ExifEdit edit) => SavePath(destinationPath, edit, false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveAs(string, ExifEdit)"/>
     public Task SaveAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, edit, true, cancellationToken);
 
+    // Validate the EXIF edit and prepare its JPEG replacement plan.
     private async Task SaveCore(Stream destination, ExifEdit edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -219,6 +233,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         return bytes is null ? new(true, null) : new(false, bytes);
     }
 
+    // Stream the prepared EXIF plan while preserving non-EXIF JPEG segments.
     private async Task Emit(Stream output, Prepared prepared, bool asynchronous, CancellationToken token)
     {
         if (prepared.CopyOnly)
@@ -236,6 +251,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         await CopyRange(output, end, scan.Length - end, asynchronous, token).ConfigureAwait(false);
     }
 
+    // Take a stable copy without exposing mutable JPEG state.
     private async Task CopyRange(Stream output, long at, long count, bool asynchronous, CancellationToken token)
     {
         source.Position = at;
@@ -255,6 +271,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         finally { ArrayPool<byte>.Shared.Return(buffer); }
     }
 
+    // Serialize JPEG in its defined byte order without disturbing adjacent data.
     private static async ValueTask Write(Stream output, ReadOnlyMemory<byte> bytes, bool asynchronous, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
@@ -262,6 +279,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         else output.Write(bytes.Span);
     }
 
+    // Read exact from bounded JPEG data, validating its declared extent before consuming fields.
     private static async Task ReadExact(Stream input, Memory<byte> bytes, bool asynchronous, CancellationToken token)
     {
         while (!bytes.IsEmpty)
@@ -273,6 +291,7 @@ public sealed partial class JpegMetadataDocument : IDisposable, IAsyncDisposable
         }
     }
 
+    // Keep Hash focused on JPEG and its format-specific validation contract.
     private static async Task<byte[]> Hash(Stream input, long expectedLength, int capacity, bool asynchronous, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();

@@ -14,6 +14,7 @@ public sealed record DngReadOptions
     public long MaxThumbnailPixels { get; init; } = 1_048_576;
     /// <summary>The most bytes of image data of the reduced RGB image. Default 61,440.</summary>
     public int MaxThumbnailBytes { get; init; } = 61_440;
+    // Take a stable copy without exposing mutable TIFF/DNG state.
     internal DngReadOptions Snapshot()
     {
         ArgumentNullException.ThrowIfNull(TiffOptions);

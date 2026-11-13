@@ -20,6 +20,11 @@ public sealed partial class JpegMetadataDocument
     /// <see cref="SaveIptc(Stream, IptcEdit, IptcWriteOptions?)"/>). Edits without a change copy the file,
     /// with a stale digest recomputed when the options ask for it.
     /// </summary>
+    /// <param name="destination">Writable, seekable, empty output stream, distinct from the source stream.</param>
+    /// <param name="edits">Combined metadata edits to apply in one save pass.</param>
+    /// <exception cref="ArgumentNullException">The destination stream or edit set is null.</exception>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
+    /// <exception cref="MetadataException">The source or synchronized changes cannot be written without loss.</exception>
     public void SaveAll(Stream destination, SyncEdits edits)
     {
         ArgumentNullException.ThrowIfNull(destination);
@@ -27,6 +32,12 @@ public sealed partial class JpegMetadataDocument
     }
 
     /// <summary>As <see cref="SaveAll(Stream, SyncEdits)"/>, to a new file that appears only when every pass succeeded.</summary>
+    /// <param name="destinationPath">Path at which to publish the completed output file.</param>
+    /// <param name="edits">Combined metadata edits to apply in one save pass.</param>
+    /// <exception cref="ArgumentException">The destination path is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">The edit set is null.</exception>
+    /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
+    /// <exception cref="MetadataException">The source or synchronized changes cannot be written without loss.</exception>
     public void SaveAllAs(string destinationPath, SyncEdits edits)
     {
         ArgumentException.ThrowIfNullOrEmpty(destinationPath);

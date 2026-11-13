@@ -60,6 +60,7 @@ public sealed class XmpEdit
     /// </summary>
     /// <exception cref="ArgumentException">The edit removes the whole packet.</exception>
     /// <exception cref="MetadataException"><see cref="MetadataErrorCode.UnsupportedFeature"/> when <paramref name="packet"/> cannot be edited (<see cref="XmpPacket.IsEditable"/>).</exception>
+    /// <param name="packet">The source packet whose properties replace the current packet's properties.</param>
     public void ReplaceWith(XmpPacket packet)
     {
         ArgumentNullException.ThrowIfNull(packet);
@@ -75,6 +76,8 @@ public sealed class XmpEdit
     /// written when the packet does not declare the namespace yet. Registering is not a change.
     /// </summary>
     /// <exception cref="ArgumentException">The prefix is not an XML name or is reserved (<c>xml</c>, <c>xmlns</c>, <c>rdf</c>, <c>x</c>), it is registered for another namespace, or the URI is not absolute or is reserved.</exception>
+    /// <param name="prefix">The XML prefix used in paths and serialization.</param>
+    /// <param name="namespaceUri">The absolute namespace URI bound to the prefix.</param>
     public void RegisterNamespace(string prefix, string namespaceUri)
     {
         ArgumentNullException.ThrowIfNull(prefix);
@@ -92,6 +95,8 @@ public sealed class XmpEdit
 
     /// <summary>Sets a top-level property, replacing its value whatever form it had; qualifiers of an existing property stay.</summary>
     /// <exception cref="ArgumentException">The name is not valid, the edit already removes all XMP, or the edit holds more than 8,192 changes.</exception>
+    /// <param name="name">The expanded name of the top-level property.</param>
+    /// <param name="value">The immutable value to assign.</param>
     public void Set(XmpPropertyName name, XmpValue value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -100,6 +105,7 @@ public sealed class XmpEdit
 
     /// <summary>Removes a top-level property; one the packet does not have is no change.</summary>
     /// <exception cref="ArgumentException">As <see cref="Set(XmpPropertyName, XmpValue)"/>.</exception>
+    /// <param name="name">The expanded name of the top-level property to remove.</param>
     public void Remove(XmpPropertyName name) => Add(new(XmpOperationKind.Remove, XmpPath.Property(name)));
 
     /// <summary>
@@ -110,10 +116,14 @@ public sealed class XmpEdit
     /// keeps its qualifiers.
     /// </summary>
     /// <exception cref="ArgumentException">The path or the text is not valid (see <see cref="XmpValue.CreateText"/>), or as <see cref="Set(XmpPropertyName, XmpValue)"/>.</exception>
+    /// <param name="path">The XMP path identifying the node to set.</param>
+    /// <param name="text">The text value to assign.</param>
     public void Set(string path, string text) => SetValue(path, XmpValue.CreateText(text));
 
     /// <summary>As <see cref="Set(string, string)"/>, with a value of any form: text, an array of texts or a language alternative.</summary>
     /// <exception cref="ArgumentException">As <see cref="Set(string, string)"/>; also when an array or a language alternative is given for <c>/?xml:lang</c>.</exception>
+    /// <param name="path">The XMP path identifying the node to set.</param>
+    /// <param name="value">The immutable value to assign.</param>
     public void SetValue(string path, XmpValue value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -129,6 +139,7 @@ public sealed class XmpEdit
     /// no change. A structure or an array left empty stays.
     /// </summary>
     /// <exception cref="ArgumentException">The path is not valid, or as <see cref="Set(XmpPropertyName, XmpValue)"/>.</exception>
+    /// <param name="path">The XMP path identifying the node to remove.</param>
     public void RemovePath(string path) => Add(new(XmpOperationKind.Remove, XmpPath.Parse(path)));
 
     /// <summary>
@@ -137,6 +148,9 @@ public sealed class XmpEdit
     /// that form.
     /// </summary>
     /// <exception cref="ArgumentException">The form is not <see cref="XmpValueKind.Bag"/>, <see cref="XmpValueKind.Sequence"/> or <see cref="XmpValueKind.Alternative"/>, or as <see cref="Set(string, string)"/>.</exception>
+    /// <param name="path">The path of the array to append to.</param>
+    /// <param name="arrayKind">The required form when the array must be created.</param>
+    /// <param name="text">The text value for the new final item.</param>
     public void Append(string path, XmpValueKind arrayKind, string text) =>
         Add(new(XmpOperationKind.Append, ArrayPath(path), XmpValue.CreateText(text), ArrayKind: ArrayForm(arrayKind)));
 
@@ -145,6 +159,8 @@ public sealed class XmpEdit
     /// <c>path[last()]/prefix:field</c>.
     /// </summary>
     /// <exception cref="ArgumentException">As <see cref="Append"/>.</exception>
+    /// <param name="path">The path of the array to append to.</param>
+    /// <param name="arrayKind">The required form when the array must be created.</param>
     public void AppendStruct(string path, XmpValueKind arrayKind) =>
         Add(new(XmpOperationKind.Append, ArrayPath(path), Structure: true, ArrayKind: ArrayForm(arrayKind)));
 
@@ -153,11 +169,16 @@ public sealed class XmpEdit
     /// one more than the number of items appends. The array has to exist.
     /// </summary>
     /// <exception cref="ArgumentException">The index is below one, or as <see cref="Set(string, string)"/>.</exception>
+    /// <param name="path">The path of the existing array.</param>
+    /// <param name="index">The one-based position before which to insert; the count plus one appends.</param>
+    /// <param name="text">The text value for the new item.</param>
     public void Insert(string path, int index, string text) =>
         Add(new(XmpOperationKind.Insert, ArrayPath(path), XmpValue.CreateText(text), Index: Position(index)));
 
     /// <summary>As <see cref="Insert"/>, inserting an empty structure; its fields are then set through <c>path[index]/prefix:field</c>.</summary>
     /// <exception cref="ArgumentException">As <see cref="Insert"/>.</exception>
+    /// <param name="path">The path of the existing array.</param>
+    /// <param name="index">The one-based position before which to insert; the count plus one appends.</param>
     public void InsertStruct(string path, int index) =>
         Add(new(XmpOperationKind.Insert, ArrayPath(path), Structure: true, Index: Position(index)));
 
@@ -168,6 +189,9 @@ public sealed class XmpEdit
     /// derived from another: <c>x-default</c> is written only when it is set.
     /// </summary>
     /// <exception cref="ArgumentException">The language is not a language tag, or as <see cref="Set(string, string)"/>.</exception>
+    /// <param name="path">The path of the language alternative.</param>
+    /// <param name="language">The BCP 47 language tag of the item to set.</param>
+    /// <param name="text">The text for that language item.</param>
     public void SetLanguage(string path, string language, string text)
     {
         if (!XmpValue.ValidLanguage(language)) throw new ArgumentException("Not a language tag.", nameof(language));
@@ -179,6 +203,8 @@ public sealed class XmpEdit
     /// only item, the alternative goes with it. An item the packet does not have is no change.
     /// </summary>
     /// <exception cref="ArgumentException">As <see cref="SetLanguage"/>.</exception>
+    /// <param name="path">The path of the language alternative.</param>
+    /// <param name="language">The BCP 47 language tag of the item to remove.</param>
     public void RemoveLanguage(string path, string language)
     {
         if (!XmpValue.ValidLanguage(language)) throw new ArgumentException("Not a language tag.", nameof(language));
@@ -193,6 +219,7 @@ public sealed class XmpEdit
         removeAll = true;
     }
 
+    // Require array operations to end at a property or field, never at an item or qualifier.
     private static XmpStep[] ArrayPath(string path)
     {
         XmpStep[] steps = XmpPath.Parse(path);
@@ -200,14 +227,17 @@ public sealed class XmpEdit
         return steps;
     }
 
+    // Append and insert accept only the three RDF array forms, not scalar or language-alternative values.
     private static XmpValueKind ArrayForm(XmpValueKind kind) =>
         kind is XmpValueKind.Bag or XmpValueKind.Sequence or XmpValueKind.Alternative
             ? kind
             : throw new ArgumentException("An array is a Bag, a Sequence or an Alternative; a language alternative is edited with SetLanguage.", nameof(kind));
 
+    // Convert the script-facing one-based array index to the editor’s zero-based insertion position.
     private static int Position(int index) =>
         index >= 1 ? index : throw new ArgumentOutOfRangeException(nameof(index), "Array items are counted from one.");
 
+    // Record edits in order; the packet applies this immutable operation snapshot transactionally.
     private void Add(XmpOperation operation)
     {
         if (removeAll) throw new ArgumentException("Whole XMP removal cannot be mixed with property changes.");
@@ -216,6 +246,7 @@ public sealed class XmpEdit
     }
 
     /// <summary>A copy that later changes to this edit do not reach.</summary>
+    // Freeze operations and namespace registrations so subsequent caller edits cannot alter this batch.
     internal XmpEdit Snapshot()
     {
         var copy = new XmpEdit { removeAll = removeAll, replacement = replacement };

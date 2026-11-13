@@ -56,6 +56,7 @@ internal static class XmpWriter
         return prefixes;
     }
 
+    // Select one collision-free prefix per namespace while preserving a node's prefix where possible.
     private static void Assign(XmpNode node, Dictionary<string, string> prefixes, HashSet<string> used, IReadOnlyDictionary<string, string>? registered)
     {
         string uri = node.Name.NamespaceName;
@@ -83,6 +84,7 @@ internal static class XmpWriter
 
     private static bool Free(string prefix, HashSet<string> used) => prefix.Length != 0 && !used.Contains(prefix);
 
+    // Emit canonical RDF/XML without indentation so the serialized tree stays within the reader's node budget.
     private static void Emit(Stream stream, XmpTree tree, Dictionary<string, string> prefixes, bool wrapper)
     {
         var settings = new XmlWriterSettings
@@ -150,6 +152,7 @@ internal static class XmpWriter
         }
     }
 
+    /// <summary>Counts encoded output bytes without retaining them and aborts as soon as the packet budget is crossed.</summary>
     private sealed class BudgetStream(int maximum) : Stream
     {
         private long length;
@@ -157,13 +160,19 @@ internal static class XmpWriter
         public override bool CanSeek => false;
         public override bool CanWrite => true;
         public override long Length => length;
+        // The measured byte count is the only position this write-only counting stream supports.
         public override long Position { get => length; set => throw new NotSupportedException(); }
+        // Count writes without copying their contents; the second Emit pass writes the actual bytes.
         public override void Write(byte[] buffer, int offset, int count) => Add(count);
         public override void Write(ReadOnlySpan<byte> buffer) => Add(buffer.Length);
+        // Keep the first pass bounded even when a hostile tree would serialize beyond the packet limit.
         private void Add(int count) { length += count; if (length > maximum) throw XmpCodec.Limit(); }
         public override void Flush() { }
+        // This stream exists only for the counting write pass; read, seek, and resize would break that invariant.
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        // Support relative and absolute seeks while rejecting positions outside the bounded output buffer.
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        // Prevent XML serialization from expanding or truncating beyond the configured packet budget.
         public override void SetLength(long value) => throw new NotSupportedException();
     }
 }

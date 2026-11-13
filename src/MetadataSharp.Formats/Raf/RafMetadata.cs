@@ -17,6 +17,7 @@ namespace MetadataSharp.Formats.Raf;
 /// </summary>
 public sealed class RafMetadata
 {
+    // Store RAF metadata packets and the comments recovered from its container.
     private RafMetadata(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp, IReadOnlyList<string> comments,
         long jpegOffset, long jpegLength, long? tiffOffset, long tiffLength)
     {
@@ -70,6 +71,9 @@ public sealed class RafMetadata
     /// code the EXIF, IPTC or XMP reader reports for what it refused. Bytes in the place of the
     /// JPEG file that are no JPEG file are not an error: the file then has no metadata from there.
     /// </exception>
+    /// <param name="data">Complete RAF file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing RAF; null selects the default limits.</param>
+    /// <returns>The parsed RafMetadata for the complete input file.</returns>
     public static RafMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) => Read(data, limits, null);
 
     internal static RafMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits, KindRefusals? refusals)
@@ -140,5 +144,6 @@ public sealed class RafMetadata
         return new ExifMetadata(tiff.ByteOrder, entries, jpeg?.MakerNote, editable: false);
     }
 
+    // Attach the RAF section offset to a malformed-container error.
     private static MetadataException Fail(string message, long offset) => new(MetadataErrorCode.InvalidRaf, message, offset);
 }

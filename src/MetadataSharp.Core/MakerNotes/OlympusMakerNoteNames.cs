@@ -5,6 +5,7 @@ internal static class OlympusMakerNoteNames
 {
     internal static string? Main(ushort tag) => MakerNoteReader.Lookup(MainNames, tag);
 
+    // Map top-level Olympus MakerNote tags to their stable names.
     internal static readonly (ushort Id, string Name)[] MainNames =
     [
         (0x0100, "ThumbnailImage"), (0x0104, "BodyFirmwareVersion"), (0x0200, "SpecialMode"),
@@ -37,6 +38,7 @@ internal static class OlympusMakerNoteNames
 
     internal static string? Cs(ushort tag) => MakerNoteReader.Lookup(CsNames, tag);
 
+    // Map Olympus CameraSettings array IDs to field names.
     internal static readonly (ushort Id, string Name)[] CsNames =
     [
         (0x0000, "CameraSettingsVersion"), (0x0100, "PreviewImageValid"), (0x0101, "PreviewImageStart"),
@@ -61,6 +63,7 @@ internal static class OlympusMakerNoteNames
 
     internal static string? Eq(ushort tag) => MakerNoteReader.Lookup(EqNames, tag);
 
+    // Map Olympus Equipment array IDs to field names.
     internal static readonly (ushort Id, string Name)[] EqNames =
     [
         (0x0000, "EquipmentVersion"), (0x0100, "CameraType"), (0x0101, "SerialNumber"),
@@ -76,6 +79,7 @@ internal static class OlympusMakerNoteNames
 
     internal static string? Rd(ushort tag) => MakerNoteReader.Lookup(RdNames, tag);
 
+    // Map Olympus RawDevelopment array IDs to field names.
     internal static readonly (ushort Id, string Name)[] RdNames =
     [
         (0x0000, "RawDevVersion"), (0x0100, "ExposureBiasValue"), (0x0101, "WhiteBalanceValue"),
@@ -87,6 +91,7 @@ internal static class OlympusMakerNoteNames
 
     internal static string? Rd2(ushort tag) => MakerNoteReader.Lookup(Rd2Names, tag);
 
+    // Map Olympus RawDevelopment2 array IDs to field names.
     internal static readonly (ushort Id, string Name)[] Rd2Names =
     [
         (0x0000, "RawDev2Version"), (0x0100, "ExposureBiasValue"), (0x0101, "WhiteBalance"),
@@ -101,6 +106,7 @@ internal static class OlympusMakerNoteNames
 
     internal static string? Ip(ushort tag) => MakerNoteReader.Lookup(IpNames, tag);
 
+    // Map Olympus ImageProcessing array IDs to field names.
     internal static readonly (ushort Id, string Name)[] IpNames =
     [
         (0x0000, "ImageProcessingVersion"), (0x0100, "WB_RBLevels"), (0x0102, "WB_RBLevels3000K"),
@@ -124,6 +130,7 @@ internal static class OlympusMakerNoteNames
 
     internal static string? Fi(ushort tag) => MakerNoteReader.Lookup(FiNames, tag);
 
+    // Map Olympus FocusInfo array IDs to field names.
     internal static readonly (ushort Id, string Name)[] FiNames =
     [
         (0x0000, "FocusInfoVersion"), (0x0209, "AutoFocus"), (0x0210, "SceneDetect"),
@@ -137,6 +144,7 @@ internal static class OlympusMakerNoteNames
 
     internal static string? Ri(ushort tag) => MakerNoteReader.Lookup(RiNames, tag);
 
+    // Map Olympus RawInfo array IDs to field names.
     internal static readonly (ushort Id, string Name)[] RiNames =
     [
         (0x0000, "RawInfoVersion"), (0x0100, "WB_RBLevelsUsed"), (0x0110, "WB_RBLevelsAuto"),

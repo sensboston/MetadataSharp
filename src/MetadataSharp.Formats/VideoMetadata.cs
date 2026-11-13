@@ -19,6 +19,7 @@ public sealed class VideoMetadata
 {
     private readonly IReadOnlyList<VideoProperty> properties;
 
+    // Capture validated inputs and stable state for this video-container object.
     private VideoMetadata(MetadataFormat format, IEnumerable<VideoProperty> properties)
     {
         Format = format;
@@ -55,6 +56,9 @@ public sealed class VideoMetadata
     /// <see cref="MetadataErrorCode.InvalidVideoContainer"/> for malformed or unsupported container structure;
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when a resource budget is exceeded.
     /// </exception>
+    /// <param name="data">Complete video container file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing video container; null selects the default limits.</param>
+    /// <returns>The parsed VideoMetadata for the complete input file.</returns>
     public static VideoMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null)
     {
         limits ??= new MetadataLimits();
@@ -70,6 +74,7 @@ public sealed class VideoMetadata
     internal static VideoMetadata ReadKnown(ReadOnlySpan<byte> data, MetadataFormat format, MetadataLimits limits) =>
         new(format, VideoContainerReader.Read(data, format, limits));
 
+    // Keep TryDetect focused on video-container and its format-specific validation contract.
     internal static bool TryDetect(ReadOnlySpan<byte> data, out MetadataFormat format)
     {
         format = MetadataFormat.Unknown;

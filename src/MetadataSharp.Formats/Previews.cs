@@ -37,6 +37,9 @@ public static class Previews
     /// stream is not listed; a file of an unknown kind has no previews.
     /// </summary>
     /// <exception cref="MetadataException"><see cref="MetadataErrorCode.LimitExceeded"/> when the file exceeds the input budget.</exception>
+    /// <param name="file">Complete input image file bytes starting at the container signature.</param>
+    /// <param name="limits">Resource budgets applied while parsing image file; null selects the default limits.</param>
+    /// <returns>Preview records sorted from smallest image to largest.</returns>
     public static IReadOnlyList<PreviewImage> List(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
     {
         limits = Checked(file, limits);
@@ -56,6 +59,10 @@ public static class Previews
     /// preview lies outside the file or is not what it claims to be;
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a type that is only listed.
     /// </exception>
+    /// <param name="file">Complete input image file bytes starting at the container signature.</param>
+    /// <param name="preview">Preview record returned by <see cref="List"/> whose byte range is to extract.</param>
+    /// <param name="limits">Resource budgets applied while parsing image file; null selects the default limits.</param>
+    /// <returns>The selected preview bytes, including tolerated zero padding after a JPEG EOI marker.</returns>
     public static byte[] Extract(ReadOnlySpan<byte> file, PreviewImage preview, MetadataLimits? limits = null)
     {
         ArgumentNullException.ThrowIfNull(preview);
@@ -84,6 +91,7 @@ public static class Previews
         return bytes.ToArray();
     }
 
+    // Validate preview input limits before traversing any container-specific pointers.
     private static MetadataLimits Checked(ReadOnlySpan<byte> file, MetadataLimits? limits)
     {
         limits ??= new MetadataLimits();
@@ -96,6 +104,7 @@ public static class Previews
     private static long Area(PreviewImage preview) =>
         preview.Width is int width && preview.Height is int height ? (long)width * height : 0;
 
+    // Sort previews by pixel area, then by byte offset for stable ordering.
     private static int Compare(PreviewImage left, PreviewImage right)
     {
         int order = Area(left).CompareTo(Area(right));
@@ -120,6 +129,7 @@ internal ref struct PreviewScanner
     private int directories;
     private int subImages;
 
+    // Retain the file span and limits while scanning preview pointers.
     internal PreviewScanner(ReadOnlySpan<byte> data, MetadataLimits limits)
     {
         this.data = data;
@@ -135,6 +145,7 @@ internal ref struct PreviewScanner
     /// <summary>A directory entry whose value lies inside the region; <c>At</c> is the position of the value in the file.</summary>
     private readonly record struct Entry(ushort Tag, ushort Type, uint Count, int At);
 
+    // Keep Run focused on metadata and its format-specific validation contract.
     internal List<PreviewImage> Run()
     {
         if (data.Length >= 2 && data[0] == 0xFF && data[1] == 0xD8) Segments(2);
@@ -180,6 +191,7 @@ internal ref struct PreviewScanner
         }
     }
 
+    // Keep Png focused on metadata and its format-specific validation contract.
     private void Png()
     {
         int at = 8;
@@ -219,6 +231,7 @@ internal ref struct PreviewScanner
 
     // ---- TIFF ----
 
+    // Keep Tiff focused on metadata and its format-specific validation contract.
     private void Tiff(int origin, int end, bool panasonicRaw)
     {
         if (origin < 0 || end > data.Length || end - origin < 8) return;
@@ -286,6 +299,7 @@ internal ref struct PreviewScanner
         return next;
     }
 
+    // Keep ExifDirectory focused on metadata and its format-specific validation contract.
     private void ExifDirectory(Frame frame, long position, string make)
     {
         var entries = new List<Entry>();
@@ -424,6 +438,7 @@ internal ref struct PreviewScanner
             Minolta(frame, directory, "SonyMinolta", (int)position, tableEnd);
     }
 
+    // Keep Minolta focused on metadata and its format-specific validation contract.
     private void Minolta(Frame frame, List<Entry> entries, string group, int tableStart, int tableEnd)
     {
         if (Find(entries, 0x0081) is Entry thumbnail && (thumbnail.Type == 1 || thumbnail.Type == 7))
@@ -431,6 +446,7 @@ internal ref struct PreviewScanner
         Pointer(frame, entries, 0x0088, 0x0089, "Exif." + group + ".ThumbnailOffset", tableStart, tableEnd);
     }
 
+    // Resolve a paired TIFF offset/length tag only when its range stays inside the owning table.
     private void Pointer(Frame frame, List<Entry> entries, ushort offsetTag, ushort lengthTag, string source, int tableStart, int tableEnd)
     {
         long offset = Number(frame, entries, offsetTag), length = Number(frame, entries, lengthTag);
@@ -482,6 +498,7 @@ internal ref struct PreviewScanner
         return true;
     }
 
+    // Resolve metadata using the format-defined identifiers and naming rules.
     private static Entry? Find(List<Entry> entries, ushort tag)
     {
         foreach (Entry entry in entries)
@@ -497,6 +514,7 @@ internal ref struct PreviewScanner
         return value < 0 ? missing : value;
     }
 
+    // Read one TIFF entry value while checking its type, count and byte range.
     private long Element(Frame frame, Entry entry, int index)
     {
         if ((uint)index >= entry.Count) return -1;
@@ -509,6 +527,7 @@ internal ref struct PreviewScanner
         };
     }
 
+    // Decode a preview text field only when it contains a supported string value.
     private string Text(Entry? field)
     {
         if (field is not Entry entry || entry.Type != 2) return "";
@@ -566,6 +585,7 @@ internal ref struct PreviewScanner
     private const uint ThumbnailReference = 0x74686D62, JpegItem = 0x6A706567, HevcItem = 0x68766331, Av1Item = 0x61763031;
     private const uint CanonThumbnail = 0x54484D42, CanonPreview = 0x50525657;
 
+    // Keep Box focused on metadata and its format-specific validation contract.
     private bool Box(int at, int limit, out uint type, out int payload, out int end)
     {
         type = 0;
@@ -636,6 +656,7 @@ internal ref struct PreviewScanner
         if (length <= (uint)(boxEnd - at)) Jpeg(at, length, source, 0, 0);
     }
 
+    // Keep Meta focused on metadata and its format-specific validation contract.
     private void Meta(int at, int limit)
     {
         var types = new Dictionary<uint, uint>();
@@ -752,6 +773,7 @@ internal ref struct PreviewScanner
 
     private static bool Sized(int size) => size is 0 or 4 or 8;
 
+    // Read a little-endian TIFF scalar of the requested byte width.
     private ulong Field(int at, int size) => size switch
     {
         4 => Be32(at),
@@ -838,6 +860,7 @@ internal ref struct PreviewScanner
         Add(new PreviewImage(Previews.JpegType, width, height, offset, (int)length, source));
     }
 
+    // Keep Add focused on metadata and its format-specific validation contract.
     private void Add(PreviewImage preview)
     {
         if (found.Count >= MaxPreviews) return;

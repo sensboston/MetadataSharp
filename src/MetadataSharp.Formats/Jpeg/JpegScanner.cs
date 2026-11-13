@@ -229,6 +229,7 @@ internal static class JpegScanner
         if (components > 1 && frame.Samples > 10) throw Error(MetadataErrorCode.InvalidJpeg, "The interleaved sampling budget exceeds ten.", at);
     }
 
+    // Read quant from bounded JPEG data, validating its declared extent before consuming fields.
     private static void ReadQuant(byte[] data, int count, bool[] tables, long at)
     {
         if (count == 0) throw Error(MetadataErrorCode.InvalidJpeg, "Empty DQT segment.", at);
@@ -254,6 +255,7 @@ internal static class JpegScanner
         }
     }
 
+    // Read huffman from bounded JPEG data, validating its declared extent before consuming fields.
     private static void ReadHuffman(byte[] data, int count, bool[,] tables, long at)
     {
         if (count == 0) throw Error(MetadataErrorCode.InvalidJpeg, "Empty DHT segment.", at);
@@ -303,6 +305,7 @@ internal static class JpegScanner
 
     private static MetadataException Error(MetadataErrorCode code, string message, long at) => new(code, message, at);
 
+    // Represent the BufferedInput state used by JPEG parsing and output.
     private sealed class BufferedInput : IDisposable
     {
         private readonly Stream source;
@@ -314,6 +317,7 @@ internal static class JpegScanner
         internal long Position { get; private set; }
         internal BufferedInput(Stream source, int capacity, bool asynchronous, CancellationToken token)
         { this.source = source; this.capacity = capacity; this.asynchronous = asynchronous; this.token = token; buffer = ArrayPool<byte>.Shared.Rent(capacity); }
+        // Keep Byte focused on JPEG and its format-specific validation contract.
         internal ValueTask<byte> Byte()
         {
             token.ThrowIfCancellationRequested();
@@ -325,6 +329,7 @@ internal static class JpegScanner
             await Fill().ConfigureAwait(false);
             Position++; return buffer[current++];
         }
+        // Keep Fill focused on JPEG and its format-specific validation contract.
         private async ValueTask Fill()
         {
             token.ThrowIfCancellationRequested();
@@ -332,6 +337,7 @@ internal static class JpegScanner
             end = asynchronous ? await source.ReadAsync(buffer.AsMemory(0, capacity), token).ConfigureAwait(false) : source.Read(buffer, 0, capacity);
             if (end == 0) throw Error(MetadataErrorCode.InvalidJpeg, "Unexpected end of JPEG input.", Position);
         }
+        // Keep Block focused on JPEG and its format-specific validation contract.
         internal async ValueTask Block(byte[] output, int count)
         {
             int written = 0;
@@ -344,6 +350,7 @@ internal static class JpegScanner
                 current += n; Position += n; written += n;
             }
         }
+        // Keep SkipPlainBytes focused on JPEG and its format-specific validation contract.
         internal int SkipPlainBytes()
         {
             int n = buffer.AsSpan(current, end - current).IndexOf((byte)0xFF);

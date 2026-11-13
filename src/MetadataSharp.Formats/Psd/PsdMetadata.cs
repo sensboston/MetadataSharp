@@ -22,6 +22,7 @@ public sealed class PsdMetadata
     private const int MaxResources = 1024;
     private readonly Dictionary<ushort, byte[]> resources;
 
+    // Store parsed PSD dimensions, resources and the restricted-layout flag.
     private PsdMetadata(uint width, uint height, Dictionary<ushort, byte[]> resources, bool restricted)
     {
         Width = width;
@@ -47,15 +48,19 @@ public sealed class PsdMetadata
     /// read as the EXIF block of any other container is, under the same size cap and limits; one that
     /// only the read-only rules accept comes back with <see cref="ExifMetadata.IsEditable"/> false.
     /// </summary>
+    /// <param name="limits">Resource budgets applied while parsing PSD; null selects the default limits.</param>
+    /// <returns>The parsed EXIF metadata, or null when the file has no EXIF block.</returns>
     public ExifMetadata? ReadExif(MetadataLimits? limits = null) =>
         resources.TryGetValue(0x0422, out byte[]? block) && block.Length != 0 ? ExifTiffReader.Inspect(block, limits) : null;
 
     /// <summary>Reads the IPTC stream of resource 0x0404, or returns null when the file has none.</summary>
+    /// <returns>The parsed IPTC packet, or null when the file has no IPTC data.</returns>
     public IptcPacket? ReadIptc() =>
         resources.TryGetValue(0x0404, out byte[]? stream) && stream.Length != 0
             ? IptcPacket.Inspect(stream).WithDigest(resources.TryGetValue(0x0425, out byte[]? digest) && digest.Length == 16 ? digest : null) : null;
 
     /// <summary>Reads the XMP packet of resource 0x0424, or returns null when the file has none.</summary>
+    /// <returns>The parsed XMP packet, or null when the file has no XMP packet.</returns>
     public XmpPacket? ReadXmp() =>
         resources.TryGetValue(0x0424, out byte[]? packet) && packet.Length != 0 ? XmpPacket.Parse(packet) : null;
 
@@ -64,9 +69,14 @@ public sealed class PsdMetadata
     /// absent. Names and padding are not included. Payloads may be malformed;
     /// callers must validate them before interpreting them.
     /// </summary>
+    /// <param name="id">Photoshop image-resource ID to look up.</param>
+    /// <returns>A copy of the resource payload, or null when no resource with that ID exists.</returns>
     public byte[]? GetResource(ushort id) => resources.TryGetValue(id, out byte[]? bytes) ? (byte[])bytes.Clone() : null;
 
     /// <summary>Inspect a complete PSD buffer, subject to fixed finite limits.</summary>
+    /// <param name="data">Complete PSD file bytes starting at the container signature.</param>
+    /// <returns>The parsed PsdMetadata for the complete input file.</returns>
+    /// <exception cref="MetadataException">The PSD header or resource section is malformed, unsupported, or exceeds a configured budget.</exception>
     public static PsdMetadata Read(ReadOnlySpan<byte> data)
     {
         if (data.Length > MaxFileBytes) throw Limit();
@@ -130,6 +140,7 @@ public sealed class PsdMetadata
         return plain || signature.SequenceEqual("AgHg"u8) || signature.SequenceEqual("DCSR"u8) || signature.SequenceEqual("PHUT"u8);
     }
 
+    // Read resources from bounded metadata data, validating its declared extent before consuming fields.
     private static Dictionary<ushort, byte[]> ParseResources(ReadOnlySpan<byte> data, out bool plainFraming)
     {
         int at = 0;
@@ -158,6 +169,7 @@ public sealed class PsdMetadata
         return result;
     }
 
+    // Keep Section focused on metadata and its format-specific validation contract.
     private static ReadOnlySpan<byte> Section(ReadOnlySpan<byte> data, ref int at)
     {
         if (data.Length - at < 4) throw Bad("Truncated PSD section length.");
@@ -172,5 +184,6 @@ public sealed class PsdMetadata
     private static uint U32(ReadOnlySpan<byte> bytes, int at) => BinaryPrimitives.ReadUInt32BigEndian(bytes.Slice(at, 4));
     private static MetadataException Bad(string message) => new(MetadataErrorCode.InvalidPsd, message);
     private static MetadataException Unsupported(string message) => new(MetadataErrorCode.UnsupportedFeature, message);
+    // Reject PSD resource data once the fixed parsing budget is exhausted.
     private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "PSD exceeds a fixed read budget.");
 }

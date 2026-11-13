@@ -52,6 +52,7 @@ public static class IccProfiles
     /// chunks, boxes, resources, directory entries or property associations, or the profile exceeds
     /// a budget.
     /// </exception>
+    /// <returns>A copy of the embedded ICC profile, or null when the file has no supported profile.</returns>
     public static byte[]? Read(ReadOnlySpan<byte> file, MetadataLimits? limits = null)
     {
         limits = EmbeddedFile.Checked(file, limits);
@@ -69,6 +70,7 @@ public static class IccProfiles
         };
     }
 
+    // Report an embedded ICC profile that fails validation at its source location.
     internal static MetadataException Invalid(string message, long? offset = null) =>
         new(MetadataErrorCode.InvalidIccProfile, message, offset);
 
@@ -106,6 +108,7 @@ public static class IccProfiles
             throw Invalid("The ICC profile header lacks the 'acsp' signature.");
     }
 
+    // Keep Ambiguous focused on metadata and its format-specific validation contract.
     private static MetadataException Ambiguous(string message, long offset) =>
         new(MetadataErrorCode.AmbiguousMetadata, message, offset);
 
@@ -232,6 +235,7 @@ public static class IccProfiles
 
     private const uint RiffProfileChunk = 0x49434350;
 
+    // Keep WebP focused on metadata and its format-specific validation contract.
     private static byte[]? WebP(ReadOnlySpan<byte> data, MetadataLimits limits)
     {
         int at = 12;

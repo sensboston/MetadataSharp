@@ -24,6 +24,7 @@ namespace MetadataSharp.Formats.SmallFormats;
 /// </remarks>
 public sealed class BmpMetadata
 {
+    // Record the BMP dimensions and validated header length.
     private BmpMetadata(uint width, uint height, int headerBytes)
     {
         Width = width;
@@ -56,6 +57,8 @@ public sealed class BmpMetadata
     /// header that does not lie inside the file is not a refusal: the size is then the two zeroes the
     /// reference reports of a file it cannot take a size from.
     /// </exception>
+    /// <param name="data">Complete BMP file bytes starting at the container signature.</param>
+    /// <returns>The parsed BmpMetadata for the complete input file.</returns>
     public static BmpMetadata Read(ReadOnlySpan<byte> data)
     {
         if (!HasSignature(data)) throw new MetadataException(MetadataErrorCode.InvalidBmp, "The file does not begin with the signature of a Windows bitmap.", 0);

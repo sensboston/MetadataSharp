@@ -23,6 +23,7 @@ internal static class SyncTable
     private static ExifXmpMapping Coordinate(ushort tag, string name) => new(G, tag, "exif", name, SyncConversion.GpsCoordinate, T, R);
     private static ExifXmpMapping Comment(ExifDirectoryKind d, ushort tag, string name, XmpValueKind form) => new(d, tag, "exif", name, SyncConversion.Comment, form, Undefined);
 
+    // EXIF-to-XMP rows use the published field type and container form for each supported tag.
     internal static readonly ExifXmpMapping[] Exif =
     [
         // Image structure and colour (IFD0).
@@ -85,6 +86,7 @@ internal static class SyncTable
         Int(G, 0x001E, "exif", "GPSDifferential"),
     ];
 
+    // IPTC-to-XMP rows pair date/time datasets and preserve the standard array or language form.
     internal static readonly IptcXmpMapping[] Iptc =
     [
         new(5, "dc", "title", Lang), new(10, "photoshop", "Urgency", T), new(15, "photoshop", "Category", T),

@@ -160,6 +160,7 @@ internal static class ExifLayoutPlanner
             thumbnailOffset, thumbnail is null ? ReadOnlySpan<byte>.Empty : thumbnail.AsSpan(), ceiling);
     }
 
+    // Add a payload extent without final alignment; the next block owns any padding before it.
     private static int Advance(int start, long bytes, int ceiling)
     {
         long end = start + bytes;
@@ -170,6 +171,7 @@ internal static class ExifLayoutPlanner
         return (int)end; // Align only when another block follows, not after the final payload.
     }
 
+    // Keep pointers and thumbnail selectors identical to the source so only the planner can safely rewrite them.
     private static void ValidateProtectedEntries(TiffReadResult? original, ExifMetadata desired)
     {
         foreach (ExifEntry entry in desired.Entries)
@@ -189,6 +191,7 @@ internal static class ExifLayoutPlanner
     private static bool Protected(ExifTagKey key) => key.Directory == ExifDirectoryKind.Thumbnail ||
         TryLink(key.Directory, key.TagId, out _);
 
+    // Centralize the three supported parent-pointer tags shared by planning and serialization checks.
     internal static bool TryLink(ExifDirectoryKind role, ushort tag, out ExifDirectoryKind target)
     {
         target = (role, tag) switch

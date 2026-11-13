@@ -10,6 +10,7 @@ using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Operations;
 using MetadataSharp.Formats;
 
+// Present metadata editing and preview actions for the selected image in the desktop sample.
 internal sealed class MetadataWindow : Window
 {
     private readonly TextBox search = new() { Watermark = "Search keys and values…", MinWidth = 220 };
@@ -19,6 +20,7 @@ internal sealed class MetadataWindow : Window
     private readonly TextBlock status = new() { Text = "Read-only metadata viewer", Foreground = Brushes.SlateGray };
     private readonly List<Row> rows = [];
 
+    // Capture validated inputs and stable state for this desktop viewer object.
     public MetadataWindow(string? initialPath = null)
     {
         Title = "MetadataSharp Viewer";
@@ -67,6 +69,7 @@ internal sealed class MetadataWindow : Window
         if (initialPath is not null) Opened += async (_, _) => await LoadFile(initialPath);
     }
 
+    // Select an image file and load it through the shared metadata document API.
     private async Task OpenPicker()
     {
         IReadOnlyList<IStorageFile> files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -84,6 +87,7 @@ internal sealed class MetadataWindow : Window
         if (file is not null) await LoadFile(file.Path.LocalPath);
     }
 
+    // Keep LoadFile focused on desktop viewer and its format-specific validation contract.
     private async Task LoadFile(string path)
     {
         try
@@ -124,6 +128,7 @@ internal sealed class MetadataWindow : Window
         }
     }
 
+    // Keep BuildTree focused on desktop viewer and its format-specific validation contract.
     private void BuildTree()
     {
         string query = search.Text?.Trim() ?? string.Empty;

@@ -9,6 +9,7 @@ internal static partial class MakerNoteLabels
 
     private static (long Number, string Label)[] OffNotAvailable => [(0, "Off"), (65535, "n/a")];
 
+    // Sony rules are keyed by vendor format, tag/field name, and sometimes camera model or note version.
     private static readonly Rule[] Sony =
     [
         // The note's own directory.

@@ -54,6 +54,9 @@ public sealed class JxlMetadata
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded; otherwise the code
     /// the EXIF reader or the XMP reader reports for what it refused.
     /// </exception>
+    /// <param name="data">Complete input file bytes, beginning at the container signature.</param>
+    /// <param name="limits">Resource budgets for parsing; null selects the default limits.</param>
+    /// <returns>The parsed JxlMetadata for the complete input file.</returns>
     public static JxlMetadata Read(ReadOnlySpan<byte> data, MetadataLimits? limits = null) =>
         JxlReader.Read(data, limits);
 }

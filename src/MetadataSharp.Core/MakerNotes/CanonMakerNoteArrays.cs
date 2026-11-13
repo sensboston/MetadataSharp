@@ -11,6 +11,7 @@ internal static class CanonMakerNoteArrays
 
     private sealed record Layout(TiffFieldType ElementType, Field[] Fields);
 
+    // Resolve Canon element-index layouts while preserving special raw-byte views and rejecting width mismatches.
     internal static IReadOnlyList<MakerNoteField> Decompose(ushort tag, ExifValue value)
     {
         // Canon LensInfo is commonly stored as SLong[7], but Exiv2 exposes its first five raw bytes
@@ -58,6 +59,7 @@ internal static class CanonMakerNoteArrays
     /// widths, N heights, N X positions and N Y positions (SSHORT); then three SHORT bit masks of
     /// ceil(N / 16) elements each: points in focus, selected and unusable.
     /// </summary>
+    // Derive AF array lengths from the encoded point count, stopping before any truncated variable section.
     private static IReadOnlyList<MakerNoteField> AFInfo(ExifValue value)
     {
         ReadOnlySpan<byte> raw = value.RawBytes;
@@ -95,6 +97,7 @@ internal static class CanonMakerNoteArrays
         ("AFPointsUnusable", TiffFieldType.Short, 2),
     ];
 
+    // Keep per-tag array layouts explicit; unknown Canon tags are deliberately not split into guessed fields.
     private static Layout? Find(ushort tag) => tag switch
     {
         0x0001 => CameraSettings,
@@ -115,6 +118,7 @@ internal static class CanonMakerNoteArrays
         _ => null
     };
 
+    // CameraSettings indexes SHORT elements; fields spanning three values are kept as one lens tuple.
     private static readonly Layout CameraSettings = new(TiffFieldType.Short,
     [
         new(1, "Macro"), new(2, "Selftimer"), new(3, "Quality"), new(4, "FlashMode"), new(5, "DriveMode"),
@@ -129,6 +133,7 @@ internal static class CanonMakerNoteArrays
         new(41, "ManualFlashOutput"), new(42, "ColorTone"), new(46, "SRAWQuality"),
     ]);
 
+    // ShotInfo carries the exposure and capture-state vocabulary at Canon element indexes.
     private static readonly Layout ShotInfo = new(TiffFieldType.Short,
     [
         new(1, "AutoISO"), new(2, "ISOSpeed"), new(3, "MeasuredEV"), new(4, "TargetAperture"),
@@ -141,11 +146,13 @@ internal static class CanonMakerNoteArrays
         new(28, "NDFilter"), new(29, "SelfTimer2"), new(33, "FlashOutput"),
     ]);
 
+    // Panorama contributes only the frame and direction indexes defined for this array.
     private static readonly Layout Panorama = new(TiffFieldType.Short,
     [
         new(2, "PanoramaFrame"), new(5, "PanoramaDirection"),
     ]);
 
+    // CustomFunctions maps the numbered camera preferences without exposing unlisted array elements.
     private static readonly Layout CustomFunctions = new(TiffFieldType.Short,
     [
         new(1, "NoiseReduction"), new(2, "ShutterAeLock"), new(3, "MirrorLockup"),
@@ -155,12 +162,14 @@ internal static class CanonMakerNoteArrays
         new(13, "SensorCleaning"), new(14, "SuperimposedDisplay"), new(15, "ShutterReleaseNoCFCard"),
     ]);
 
+    // PictureInfo records image geometry and generation-specific AF point masks.
     private static readonly Layout PictureInfo = new(TiffFieldType.Short,
     [
         new(2, "ImageWidth"), new(3, "ImageHeight"), new(4, "ImageWidthAsShot"), new(5, "ImageHeightAsShot"),
         new(22, "AFPointsUsed"), new(26, "AFPointsUsed20D"),
     ]);
 
+    // FileInfo uses signed-short elements except for explicitly wider file and lens identifiers.
     private static readonly Layout FileInfo = new(TiffFieldType.SShort,
     [
         new(1, "FileNumber", TiffFieldType.Long), new(3, "BracketMode"), new(4, "BracketValue"),
@@ -181,6 +190,7 @@ internal static class CanonMakerNoteArrays
     private static readonly Layout VignettingCorr2 = new(TiffFieldType.SLong,
         [new(5, "PeripheralLightingSetting"), new(6, "ChromaticAberrationSetting"), new(7, "DistortionCorrectionSetting")]);
 
+    // Map Canon LightingOpt values to the corresponding documented labels.
     private static readonly Layout LightingOpt = new(TiffFieldType.SLong,
     [
         new(1, "PeripheralIlluminationCorr"), new(2, "AutoLightingOptimizer"), new(3, "HighlightTonePriority"),
@@ -195,6 +205,7 @@ internal static class CanonMakerNoteArrays
 
     private static readonly Layout HDRInfo = new(TiffFieldType.SLong, [new(1, "HDR"), new(2, "HDREffect")]);
 
+    // AFConfig exposes the numbered tracking and servo preferences from this SLong array.
     private static readonly Layout AFConfig = new(TiffFieldType.SLong,
     [
         new(1, "AFConfigTool"), new(2, "AFTrackingSensitivity"), new(3, "AFAccelDecelTracking"),
@@ -206,6 +217,7 @@ internal static class CanonMakerNoteArrays
         new(19, "InitialAFPointInServo"),
     ]);
 
+    // ProcessingInfo holds signed image-adjustment values and white-balance corrections.
     private static readonly Layout ProcessingInfo = new(TiffFieldType.SShort,
     [
         new(1, "ToneCurve"), new(2, "Sharpness"), new(3, "SharpnessFrequency"), new(4, "SensorRedLevel"),

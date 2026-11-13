@@ -3,6 +3,7 @@ using System.Xml;
 
 namespace MetadataSharp.Core.Xmp;
 
+// Distinguish property, array-index, and qualifier steps in the XMP path grammar.
 internal enum XmpStepKind
 {
     /// <summary>A top-level property.</summary>
@@ -30,6 +31,7 @@ internal static class XmpPath
 {
     private const int MaxSteps = 64;
 
+    // Parse the bounded path grammar here; namespace prefixes stay unresolved until a packet is available.
     internal static XmpStep[] Parse(string path)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -84,6 +86,7 @@ internal static class XmpPath
         return [new(XmpStepKind.Property, string.Empty, name.LocalName, name.NamespaceUri, 0)];
     }
 
+    // Read one path component while leaving separators for the grammar-specific caller.
     private static string Name(string path, ref int at)
     {
         int start = at;
@@ -91,6 +94,7 @@ internal static class XmpPath
         return path[start..at];
     }
 
+    // Validate XML local-name syntax and preserve the original path for precise refusal errors.
     private static string Verified(string path, string name)
     {
         try { return XmlConvert.VerifyNCName(name); }
