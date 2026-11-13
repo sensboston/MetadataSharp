@@ -234,9 +234,9 @@ def encode_inventory(rows: list[tuple[str, dict[str, int]]]) -> str:
 
 
 def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> dict[str, list[dict[str, Any]]]:
-    """Compact actionable samples, split by group so CI annotations stay readable."""
-    gaps: dict[str, Counter[tuple[str, str, str, str, str, str]]] = {group: Counter() for group in groups}
-    examples: dict[tuple[str, str, str, str, str, str], list[str]] = {}
+    """Compact, per-key raw and interpreted gap samples suitable for one CI annotation."""
+    gaps: dict[str, Counter[tuple[str, ...]]] = {group: Counter() for group in groups}
+    examples: dict[tuple[str, ...], list[str]] = {}
     for file in report.get("per_file", []):
         label = file.get("label", "")
         for row in file.get("rows", []):
@@ -246,13 +246,16 @@ def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> d
                 continue
             outcome = str(row.get("outcome", ""))
             translated_gap = row.get("translated") is True and row.get("interpreted") != MATCH_INTERPRETED
-            raw_gap = outcome in (MISSING_KEY, VALUE_DIFF, MATCH_KEY, NOT_READ)
+            raw_gap = outcome in (MISSING_KEY, VALUE_DIFF, MATCH_KEY, NOT_READ) or (
+                outcome == EXTRA_KEY and not OPAQUE_NUMERIC_KEY.fullmatch(key))
             if not translated_gap and not raw_gap:
                 continue
-            interpretation = str(row.get("interpreted", ""))
-            signature = (group, key, outcome, interpretation,
-                         str(row.get("our_interpreted", row.get("our_value", ""))),
-                         str(row.get("their_interpreted", row.get("their_value", ""))))
+            signature = (
+                group, key, outcome, str(row.get("interpreted", "")),
+                str(row.get("our_interpreted", "")), str(row.get("their_interpreted", "")),
+                str(row.get("our_type", "")), str(row.get("our_count", "")), str(row.get("our_value", "")),
+                str(row.get("their_type", "")), str(row.get("their_count", "")), str(row.get("their_value", "")),
+            )
             gaps[group][signature] += 1
             examples.setdefault(signature, [])
             if label and len(examples[signature]) < 3 and label not in examples[signature]:
@@ -262,8 +265,12 @@ def gap_details(report: dict[str, Any], groups: list[str], limit: int = 30) -> d
         rows = [
             {"key": key, "outcome": outcome, "interpretation": interpretation,
              "count": count, "ours": ours, "exiv2": theirs,
-             "files": examples[(vendor_group, key, outcome, interpretation, ours, theirs)]}
-            for (vendor_group, key, outcome, interpretation, ours, theirs), count in counter.items()
+             "our_type": our_type, "our_count": our_count, "our_value": our_value,
+             "exiv2_type": their_type, "exiv2_count": their_count, "exiv2_value": their_value,
+             "files": examples[signature]}
+            for signature, count in counter.items()
+            for (vendor_group, key, outcome, interpretation, ours, theirs,
+                 our_type, our_count, our_value, their_type, their_count, their_value) in [signature]
         ]
         rows.sort(key=lambda row: (row["interpretation"] != INTERPRETED_DIFF, -row["count"], row["key"]))
         result[group] = rows[:limit]
@@ -303,11 +310,10 @@ def main(argv: list[str] | None = None) -> int:
         payload = base64.b64encode(zlib.compress(json.dumps(failure_lines, separators=(",", ":")).encode(), 9)).decode()
         print(f"::error title=MakerNote parity failures::{payload}", flush=True)
     print(message, end="", flush=True)
-    for group, gaps in gap_details(report, args.require).items():
-        if not gaps:
-            continue
-        payload = base64.b64encode(zlib.compress(json.dumps(gaps, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
-        print(f"::notice title=MakerNote gaps {group}::{payload}", flush=True)
+    details = {group: gaps for group, gaps in gap_details(report, args.require).items() if gaps}
+    if details:
+        payload = base64.b64encode(zlib.compress(json.dumps(details, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
+        print(f"::notice title=MakerNote actionable gaps::{payload}", flush=True)
     return 0 if passed else 1
 
 

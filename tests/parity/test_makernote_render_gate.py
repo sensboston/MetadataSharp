@@ -187,6 +187,14 @@ class MakerNoteRenderGateTests(unittest.TestCase):
         self.assertEqual(details[self.GROUP][0]["key"], self.GROUP + ".Quality")
         self.assertEqual(details[self.GROUP][0]["files"], ["exiv2:sample.dng"])
         self.assertEqual(details[self.GROUP][0]["interpretation"], "not-interpreted")
+        self.assertIn("our_value", details[self.GROUP][0])
+        report = self.report()
+        report["per_file"][0]["rows"].append({
+            "key": self.GROUP + ".NamedExtra", "outcome": "extra-key", "our_type": "Byte", "our_count": 1,
+            "our_value": "7",
+        })
+        details = gate.gap_details(report, [self.GROUP])
+        self.assertIn(self.GROUP + ".NamedExtra", [row["key"] for row in details[self.GROUP]])
 
 
 if __name__ == "__main__":
