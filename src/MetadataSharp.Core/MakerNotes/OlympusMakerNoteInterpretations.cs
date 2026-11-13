@@ -169,7 +169,8 @@ internal static class OlympusMakerNoteInterpretations
         uint numerator = little ? BinaryPrimitives.ReadUInt32LittleEndian(bytes) : BinaryPrimitives.ReadUInt32BigEndian(bytes);
         uint denominator = little ? BinaryPrimitives.ReadUInt32LittleEndian(bytes[4..]) : BinaryPrimitives.ReadUInt32BigEndian(bytes[4..]);
         if (numerator == uint.MaxValue) return "Infinity";
-        return ((double)numerator / 1000d).ToString("0.00", CultureInfo.InvariantCulture) + " m";
+        float distance = numerator / 1000f;
+        return ((double)distance).ToString("0.00", CultureInfo.InvariantCulture) + " m";
     }
 
     private static string? CameraSettings(string name, ExifValue value)
