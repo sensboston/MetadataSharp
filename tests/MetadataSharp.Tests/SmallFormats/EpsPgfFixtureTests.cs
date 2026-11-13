@@ -174,12 +174,21 @@ public sealed class EpsPgfFixtureTests
         PgfMetadata before = PgfMetadata.Read(source);
         byte[] suffix = source.AsSpan((int)before.ImageOffset).ToArray();
         var edits = new SyncEdits();
+        edits.Exif.Set(new(ExifDirectoryKind.Ifd0, 0x013B), "PGF artist");
+        edits.Iptc.SetHeadline("PGF headline");
         edits.Xmp.Set("Xmp.xmp.CreatorTool", "PGF writer");
         byte[] output = PgfMetadata.Write(source, edits);
         PgfMetadata after = PgfMetadata.Read(output);
         Assert.Equal(before.Width, after.Width);
         Assert.Equal(before.Height, after.Height);
         Assert.Equal(suffix, output.AsSpan((int)after.ImageOffset).ToArray());
+        Assert.True(after.Exif!.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? artist));
+        byte[] artistBytes = new byte[artist!.Value.ByteLength];
+        artist.Value.CopyRawTo(artistBytes);
+        Assert.Equal("PGF artist", System.Text.Encoding.ASCII.GetString(artistBytes).TrimEnd('\0'));
+        int headlineIndex = after.Iptc!.Datasets.ToList().FindIndex(item => item.Key == new IptcDatasetKey(2, 105));
+        Assert.True(headlineIndex >= 0);
+        Assert.Equal("PGF headline", after.Iptc.GetText(headlineIndex));
         Assert.Contains(after.Xmp!.Entries, entry => entry.Values.Contains("PGF writer"));
 
         byte[] commented = PgfMetadata.Write(output, new SyncEdits(), "inside PGF", replaceComment: true);
