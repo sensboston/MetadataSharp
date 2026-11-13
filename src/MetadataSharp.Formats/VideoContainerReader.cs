@@ -453,13 +453,13 @@ internal static class VideoContainerReader
                 else if (type == "stsd") ReadSampleDescription(payload, atomEnd, streamPrefix);
                 else if (type == "vmhd") ReadVideoHeader(payload, atomEnd);
                 else if (type == "stts") ReadTimeToSample(payload, atomEnd, streamPrefix);
-                else if (type == "url ") Add(streamPrefix + ".URL", Text(payload, atomEnd - payload, Encoding.Latin1, false));
-                else if (type == "urn ") Add(streamPrefix + ".URN", Text(payload, atomEnd - payload, Encoding.Latin1, false));
+                else if (type == "url " && streamPrefix != "Xmp.ignored") Add(streamPrefix + ".URL", Text(payload, atomEnd - payload, Encoding.Latin1, false));
+                else if (type == "urn " && streamPrefix != "Xmp.ignored") Add(streamPrefix + ".URN", Text(payload, atomEnd - payload, Encoding.Latin1, false));
                 else if (type == "dcom") Add("Xmp.video.Compressor", Text(payload, atomEnd - payload, Encoding.Latin1, false));
                 else if (type == "smhd")
                 {
                     Need(payload, 8, atomEnd, "QuickTime sound media header");
-                    Add("Xmp.audio.Balance", U16BE(payload + 6).ToString(CultureInfo.InvariantCulture));
+                    if (streamPrefix == "Xmp.audio") Add("Xmp.audio.Balance", U16BE(payload + 6).ToString(CultureInfo.InvariantCulture));
                 }
                 else if (type is "moov" or "trak" or "mdia" or "minf" or "stbl" or "dinf" or "dref" or "edts" or "udta" or "tapt" or "ilst" or "meta" or "moof" or "traf")
                 {
@@ -501,7 +501,7 @@ internal static class VideoContainerReader
                     {
                         "soun" => "Xmp.audio",
                         "vide" => "Xmp.video",
-                        _ => "Xmp.video"
+                        _ => "Xmp.ignored"
                     };
                 }
                 if (type == "mdia")
@@ -511,7 +511,7 @@ internal static class VideoContainerReader
                 }
                 p = atomEnd;
             }
-            return "Xmp.video";
+            return "Xmp.ignored";
         }
 
         private void ReadFileType(int p, int end)
@@ -566,6 +566,7 @@ internal static class VideoContainerReader
         private void ReadTrackHeader(int p, int end, string prefix)
         {
             Need(p, 84, end, "QuickTime track header");
+            if (prefix == "Xmp.ignored") return;
             byte version = data[p];
             int baseAt = p + (version == 1 ? 20 : 12);
             Need(baseAt, 72, end, "QuickTime track header fields");
@@ -587,6 +588,7 @@ internal static class VideoContainerReader
         private void ReadMediaHeader(int p, int end, string prefix)
         {
             Need(p, 24, end, "QuickTime media header");
+            if (prefix == "Xmp.ignored") return;
             Add(prefix + ".MediaHeaderVersion", data[p].ToString(CultureInfo.InvariantCulture));
             Add(prefix + ".MediaCreateDate", U32BE(p + 4).ToString(CultureInfo.InvariantCulture));
             Add(prefix + ".MediaModifyDate", U32BE(p + 8).ToString(CultureInfo.InvariantCulture));
@@ -598,6 +600,7 @@ internal static class VideoContainerReader
         private void ReadHandler(int p, int end, string prefix)
         {
             Need(p, 20, end, "QuickTime handler");
+            if (prefix == "Xmp.ignored") return;
             string handlerClass = FourCC(p + 4);
             string handler = FourCC(p + 8);
             string vendor = FourCC(p + 12);
@@ -617,6 +620,7 @@ internal static class VideoContainerReader
         private void ReadSampleDescription(int p, int end, string prefix)
         {
             Need(p, 8, end, "QuickTime sample description");
+            if (prefix == "Xmp.ignored") return;
             uint count = U32BE(p + 4);
             if (count > limits.MaxEntriesPerDirectory) throw Limit("The QuickTime sample-description count exceeds its budget.", p);
             int q = p + 8;
