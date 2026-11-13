@@ -52,6 +52,8 @@ jobs:
         run: dotnet --info
       - name: Restore
         run: dotnet restore MetadataSharp.sln
+      - name: Inventory source documentation (baseline)
+        run: dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- --root src --report artifacts/doc-inventory/baseline.json
       - name: Build Release
         run: dotnet build MetadataSharp.sln --configuration Release --no-restore
       - name: Verify authored video fixtures
@@ -132,6 +134,14 @@ jobs:
           if total < 450:
               raise SystemExit(f'Expected at least 450 M01–M16 cases, got {total}')
           print(f'::notice title=Executed test count::Validated {total} passing tests')
+      - name: Upload documentation inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-inventory-${{ matrix.os }}-${{ matrix.tfm }}
+          path: artifacts/doc-inventory/baseline.json
+          if-no-files-found: warn
+          retention-days: 30
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
