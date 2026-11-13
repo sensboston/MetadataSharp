@@ -331,16 +331,28 @@ jobs:
           cmake --build artifacts/parity/exiv2-video-build --parallel 2 --target exiv2
           artifacts/parity/exiv2-video-build/bin/exiv2 -V
           echo "VIDEO_EXIV2=$PWD/artifacts/parity/exiv2-video-build/bin/exiv2" >> "$GITHUB_ENV"
-      # Every generated video fixture must be read by the pinned tool, and the gate below enforces
-      # exact key-set parity plus the two explicitly documented AVI value exceptions.
+      # Exiv2 0.28.9's video-enabled build still rejects RIFF/WAVE as unknown image type. Assert
+      # that exact known limitation; WAV remains covered by MetadataSharp reader tests. If the oracle
+      # starts supporting it, fail here so it can be added to parity rather than silently skipped.
+      # Every other authored video fixture is read by the pinned tool; the gate enforces exact
+      # key-set parity plus the two explicitly documented AVI value exceptions.
       - name: Video-container key and value parity (required gate)
         shell: bash
         run: |
           python tools/reference/video_fixtures.py verify tests/fixtures/video
-          mkdir -p artifacts/parity/video-corpus
+          if "$VIDEO_EXIV2" -Pkycvt tests/fixtures/video/valid/authored-wave.wav > artifacts/parity/wave-oracle.txt 2>&1; then
+            echo "Pinned Exiv2 now reads the authored WAV; add it to the required video key/value parity set."
+            cat artifacts/parity/wave-oracle.txt
+            exit 1
+          fi
+          grep -F "unknown image type" artifacts/parity/wave-oracle.txt
+          mkdir -p artifacts/parity/video-corpus artifacts/parity/video-generated
           ln -s "$PWD/artifacts/parity/exiv2/test/data/sample_960x540.asf" artifacts/parity/video-corpus/sample_960x540.asf
+          for fixture in authored-asf.asf authored-avi.avi authored-matroska.mkv authored-quicktime.mp4 authored-webm.webm; do
+            ln -s "$PWD/tests/fixtures/video/valid/$fixture" "artifacts/parity/video-generated/$fixture"
+          done
           python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
-            --fixtures artifacts/parity/video-corpus --fixtures tests/fixtures/video/valid \
+            --fixtures artifacts/parity/video-corpus --fixtures artifacts/parity/video-generated \
             --exiv2-command "$VIDEO_EXIV2 -Pkycvt" --require-reference-tags \
             --dump-command "$DUMP" --out artifacts/parity/video --title 'PARITY video containers' --annotate
           python tools/parity/video_gate.py artifacts/parity/video/parity-report.json

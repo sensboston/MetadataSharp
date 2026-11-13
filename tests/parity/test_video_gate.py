@@ -17,7 +17,6 @@ class VideoGateTests(unittest.TestCase):
                 ("generated:authored-avi.avi", "avi"),
                 ("generated:authored-matroska.mkv", "mkv"),
                 ("generated:authored-quicktime.mp4", "mp4"),
-                ("generated:authored-wave.wav", "wav"),
                 ("generated:authored-webm.webm", "webm"),
             )
         ] + [
@@ -35,6 +34,8 @@ class VideoGateTests(unittest.TestCase):
         passed, message = video_gate.evaluate(self.report(rows=rows))
         self.assertTrue(passed, message)
         self.assertIn("PASS", message)
+        self.assertIn("generated:authored-wave.wav", message)
+        self.assertIn("unknown image type", message)
 
     def test_any_extra_or_missing_key_fails_and_names_which_side_has_it(self):
         report = self.report(rows=[

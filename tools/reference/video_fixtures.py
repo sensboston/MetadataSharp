@@ -68,8 +68,13 @@ def fixtures() -> dict[str, bytes]:
     children = (asf_object(file_props_guid, file_props) + asf_object(content_guid, content) +
                 asf_object(codec_list_guid, codec_list) + asf_object(stream_guid, stream_data))
     asf_header_guid = bytes.fromhex("3026b2758e66cf11a6d900aa0062ce6c")
+    data_guid = bytes.fromhex("3626b2758e66cf11a6d900aa0062ce6c")
     asf_payload = (4).to_bytes(4, "little") + b"\x01\x02" + children
-    asf = asf_object(asf_header_guid, asf_payload)
+    asf_header = asf_object(asf_header_guid, asf_payload)
+    # ASF requires a Data Object after its Header Object. Even a zero-packet
+    # data object makes the container structurally complete for Exiv2.
+    asf_data = asf_object(data_guid, file_id + bytes(8) + bytes(8) + b"\x01\x01")
+    asf = asf_header + asf_data
 
     def matroska_file(doc_type: bytes, title: bytes) -> bytes:
         ebml_payload = (ebml_element(bytes.fromhex("4286"), b"\x01") +
@@ -116,9 +121,11 @@ def fixtures() -> dict[str, bytes]:
     avih += (320).to_bytes(4, "little") + (240).to_bytes(4, "little") + bytes(16)
     strh = b"vids" + b"DIB " + bytes(8) + (1).to_bytes(4, "little") + (30).to_bytes(4, "little")
     strh += bytes(4) + (30).to_bytes(4, "little") + bytes(4) + (30).to_bytes(4, "little") + bytes(4) + (0xFFFFFFFF).to_bytes(4, "little")
-    strh += bytes(16)
-    strf = (40).to_bytes(4, "little") + (320).to_bytes(4, "little", signed=True) + (240).to_bytes(4, "little", signed=True)
-    strf += (1).to_bytes(2, "little") + (24).to_bytes(2, "little") + b"DIB " + (320 * 240 * 3).to_bytes(4, "little") + bytes(16)
+    strh += bytes(8)  # RECT rcFrame is four signed 16-bit values.
+    # Exiv2 0.28.9 reads the two pixels-per-meter DWORDs as QWORDs, so
+    # provide the consumed eight-byte extension in the authored DIB header.
+    strf = (48).to_bytes(4, "little") + (320).to_bytes(4, "little", signed=True) + (240).to_bytes(4, "little", signed=True)
+    strf += (1).to_bytes(2, "little") + (24).to_bytes(2, "little") + b"DIB " + (320 * 240 * 3).to_bytes(4, "little") + bytes(24)
 
     hdrl = chunk(b"avih", avih) + chunk(b"LIST", b"strl" + chunk(b"strh", strh) + chunk(b"strf", strf))
     avi = riff(b"AVI ", chunk(b"LIST", b"hdrl" + hdrl) + chunk(b"LIST", b"movi"))

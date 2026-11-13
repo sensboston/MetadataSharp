@@ -2,7 +2,9 @@
 
 The pinned Exiv2 0.28.9 RIFF reader reads BITMAPINFOHEADER pixel densities as QWORDs, so the
 color-count fields for the upstream ``flame.avi`` sample are shifted. We intentionally decode the
-bounded, declared DWORD fields instead. No key-set difference is allowlisted.
+bounded, declared DWORD fields instead. It also rejects RIFF/WAVE as an unknown image type, so the
+authored WAV is tested by MetadataSharp but excluded from Exiv2 parity. No key-set difference is
+allowlisted for formats the oracle reads.
 """
 from __future__ import annotations
 
@@ -21,7 +23,6 @@ REQUIRED_GENERATED = {
     "generated:authored-avi.avi",
     "generated:authored-matroska.mkv",
     "generated:authored-quicktime.mp4",
-    "generated:authored-wave.wav",
     "generated:authored-webm.webm",
 }
 
@@ -76,6 +77,7 @@ def evaluate(report: dict[str, Any]) -> tuple[bool, str]:
         problems.extend(failures)
 
     lines = ["Video parity gate (Exiv2 0.28.9):", f"  measured video files: {len(selected)}",
+             "  documented oracle limitation: generated:authored-wave.wav (RIFF/WAVE is rejected as unknown image type; covered by reader tests, not key parity)",
              "  ours-only keys: " + (", ".join(sorted(ours_only)) or "none"),
              "  reference-only keys: " + (", ".join(sorted(reference_only)) or "none"),
              "  allowed documented AVI value differences: " + (", ".join(
