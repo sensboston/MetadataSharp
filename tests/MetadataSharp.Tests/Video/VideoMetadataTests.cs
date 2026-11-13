@@ -34,11 +34,13 @@ public sealed class VideoMetadataTests
         Assert.Null(image.Xmp);
     }
 
-    [Fact]
-    public void AuthoredWebMHasReferenceReadableTrackMetadata()
+    [Theory]
+    [InlineData("authored-webm.webm", "webm")]
+    [InlineData("authored-matroska.mkv", "matroska")]
+    public void AuthoredMatroskaVariantsHaveReferenceReadableTrackMetadata(string name, string docType)
     {
-        VideoMetadata video = VideoMetadata.Read(Fixture("valid", "authored-webm.webm"));
-        Assert.Equal("webm", video["Xmp.video.DocType"]!.Value);
+        VideoMetadata video = VideoMetadata.Read(Fixture("valid", name));
+        Assert.Equal(docType, video["Xmp.video.DocType"]!.Value);
         Assert.Equal("V_VP8", video["Xmp.video.Codec"]!.Value);
         Assert.Equal("320", video["Xmp.video.Width"]!.Value);
         Assert.Equal("240", video["Xmp.video.Height"]!.Value);

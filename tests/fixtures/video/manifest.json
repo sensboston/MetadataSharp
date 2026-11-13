@@ -25,6 +25,10 @@
       "bytes": 232,
       "sha256": "108268c1776359145fbe1eb24c85637a3c8d086d5a83bce7feda48a7fcdf86c2"
     },
+    "valid/authored-matroska.mkv": {
+      "bytes": 106,
+      "sha256": "ff4d5a612985a3ec0885b08c8276b15b054d9e1c754db29502443def00e2d2e6"
+    },
     "valid/authored-quicktime.mp4": {
       "bytes": 294,
       "sha256": "9dbaf326449d86e69263cf0e2e978c5bbbb17361bfdfd5e356c670856926c35e"

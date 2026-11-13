@@ -1,0 +1,58 @@
+import sys
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).parents[2]
+sys.path.insert(0, str(ROOT / "tools" / "parity"))
+import video_gate  # noqa: E402
+
+
+class VideoGateTests(unittest.TestCase):
+    def report(self, *, rows=None):
+        return {"per_file": [
+            {"corpus": "generated", "label": name.removeprefix("generated:"), "format": fmt,
+             "status": "ok", "rows": []}
+            for name, fmt in (
+                ("generated:authored-asf.asf", "asf"),
+                ("generated:authored-avi.avi", "avi"),
+                ("generated:authored-matroska.mkv", "mkv"),
+                ("generated:authored-quicktime.mp4", "mp4"),
+                ("generated:authored-wave.wav", "wav"),
+                ("generated:authored-webm.webm", "webm"),
+            )
+        ] + [
+            {"corpus": "exiv2", "label": "flame.avi", "format": "avi", "status": "ok",
+             "rows": rows or []}
+        ]}
+
+    def test_all_keys_must_match_and_only_the_two_documented_avi_values_are_allowed(self):
+        rows = [
+            {"key": "Xmp.video.NumOfColours", "outcome": "value-diff", "our_value": "Unspecified",
+             "their_value": "1263424842  1263424842"},
+            {"key": "Xmp.video.NumIfImpColours", "outcome": "value-diff", "our_value": "All",
+             "their_value": "1816  1816"},
+        ]
+        passed, message = video_gate.evaluate(self.report(rows=rows))
+        self.assertTrue(passed, message)
+        self.assertIn("PASS", message)
+
+    def test_any_extra_or_missing_key_fails_and_names_which_side_has_it(self):
+        report = self.report(rows=[
+            {"key": "Xmp.video.Extra", "outcome": "extra-key", "our_value": "1"},
+            {"key": "Xmp.video.Missing", "outcome": "missing-key", "their_value": "2"},
+        ])
+        passed, message = video_gate.evaluate(report)
+        self.assertFalse(passed)
+        self.assertIn("ours-only keys (must be removed): Xmp.video.Extra", message)
+        self.assertIn("reference-only keys (must be implemented): Xmp.video.Missing", message)
+
+    def test_missing_authored_mkv_fails_the_gate(self):
+        report = self.report()
+        report["per_file"] = [entry for entry in report["per_file"] if entry["label"] != "authored-matroska.mkv"]
+        passed, message = video_gate.evaluate(report)
+        self.assertFalse(passed)
+        self.assertIn("generated:authored-matroska.mkv", message)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -71,24 +71,28 @@ def fixtures() -> dict[str, bytes]:
     asf_payload = (4).to_bytes(4, "little") + b"\x01\x02" + children
     asf = asf_object(asf_header_guid, asf_payload)
 
-    ebml_payload = (ebml_element(bytes.fromhex("4286"), b"\x01") +
-                    ebml_element(bytes.fromhex("42f7"), b"\x01") +
-                    ebml_element(bytes.fromhex("4282"), b"webm") +
-                    ebml_element(bytes.fromhex("4287"), b"\x04") +
-                    ebml_element(bytes.fromhex("4285"), b"\x02"))
-    ebml_header = ebml_element(bytes.fromhex("1a45dfa3"), ebml_payload)
-    info = (ebml_element(bytes.fromhex("2ad7b1"), (1_000_000).to_bytes(3, "big")) +
-            ebml_element(bytes.fromhex("4489"), __import__("struct").pack(">d", 1200.0)) +
-            ebml_element(bytes.fromhex("7ba9"), b"Fixture WebM"))
-    video_track = (ebml_element(bytes.fromhex("83"), b"\x01") +
-                   ebml_element(bytes.fromhex("86"), b"V_VP8") +
-                   ebml_element(bytes.fromhex("e0"),
-                       ebml_element(bytes.fromhex("b0"), (320).to_bytes(2, "big")) +
-                       ebml_element(bytes.fromhex("ba"), (240).to_bytes(2, "big"))))
-    tracks = ebml_element(bytes.fromhex("1654ae6b"), ebml_element(bytes.fromhex("ae"), video_track))
-    segment = ebml_element(bytes.fromhex("18538067"),
-                            ebml_element(bytes.fromhex("1549a966"), info) + tracks)
-    webm = ebml_header + segment
+    def matroska_file(doc_type: bytes, title: bytes) -> bytes:
+        ebml_payload = (ebml_element(bytes.fromhex("4286"), b"\x01") +
+                        ebml_element(bytes.fromhex("42f7"), b"\x01") +
+                        ebml_element(bytes.fromhex("4282"), doc_type) +
+                        ebml_element(bytes.fromhex("4287"), b"\x04") +
+                        ebml_element(bytes.fromhex("4285"), b"\x02"))
+        ebml_header = ebml_element(bytes.fromhex("1a45dfa3"), ebml_payload)
+        info = (ebml_element(bytes.fromhex("2ad7b1"), (1_000_000).to_bytes(3, "big")) +
+                ebml_element(bytes.fromhex("4489"), __import__("struct").pack(">d", 1200.0)) +
+                ebml_element(bytes.fromhex("7ba9"), title))
+        video_track = (ebml_element(bytes.fromhex("83"), b"\x01") +
+                       ebml_element(bytes.fromhex("86"), b"V_VP8") +
+                       ebml_element(bytes.fromhex("e0"),
+                           ebml_element(bytes.fromhex("b0"), (320).to_bytes(2, "big")) +
+                           ebml_element(bytes.fromhex("ba"), (240).to_bytes(2, "big"))))
+        tracks = ebml_element(bytes.fromhex("1654ae6b"), ebml_element(bytes.fromhex("ae"), video_track))
+        segment = ebml_element(bytes.fromhex("18538067"),
+                                ebml_element(bytes.fromhex("1549a966"), info) + tracks)
+        return ebml_header + segment
+
+    webm = matroska_file(b"webm", b"Fixture WebM")
+    matroska = matroska_file(b"matroska", b"Fixture Matroska")
 
     ftyp = atom(b"ftyp", b"isom" + (512).to_bytes(4, "big") + b"isommp42")
     mvhd = bytearray(100)
@@ -122,6 +126,7 @@ def fixtures() -> dict[str, bytes]:
     return {
         "authored-asf.asf": asf,
         "authored-webm.webm": webm,
+        "authored-matroska.mkv": matroska,
         "authored-quicktime.mp4": qt,
         "authored-wave.wav": wav,
         "authored-avi.avi": avi,

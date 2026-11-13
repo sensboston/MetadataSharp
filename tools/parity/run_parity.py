@@ -92,15 +92,20 @@ def _isolate(dump_command: list[str], batch: list[Path]) -> dict[str, dict]:
     return recovered
 
 
-def run_reference(reference_command: list[str], path: Path) -> str:
+def run_reference(reference_command: list[str], path: Path, *, require_success: bool = False) -> str:
     """The pinned reference tool's own print for one of our fixtures.
 
     Run on files this project wrote, and on a file of the pinned tree that the tree gives no
     expectation for. Its output is parsed in memory and never stored, so no expectation of ours -
-    and none of theirs - ends up in the repository.
+    and none of theirs - ends up in the repository. A required oracle call fails closed: stderr and
+    its exit status must not be converted into an empty reference (which would mislabel all our keys
+    as extras).
     """
     finished = subprocess.run(reference_command + [str(path)], capture_output=True, text=True,
                               encoding="utf-8", errors="replace", timeout=300, check=False)
+    if require_success and finished.returncode != 0:
+        detail = (finished.stderr or finished.stdout or "").strip().replace("\n", " ")[:400]
+        raise StructuralError(f"pinned reference failed on {path.name} with {finished.returncode}: {detail}")
     return finished.stdout or ""
 
 
@@ -534,6 +539,8 @@ def main(argv: list[str] | None = None) -> int:
                              "write paths with forward slashes, which Python and dotnet both accept)")
     parser.add_argument("--exiv2-command", help="the pinned reference tool, split the same way; used as the "
                                                 "oracle for --fixtures files, and its output is never stored")
+    parser.add_argument("--require-reference-tags", action="store_true",
+                        help="for each generated fixture, fail unless the pinned tool succeeds and prints at least one tag")
     parser.add_argument("--summary-command", help="the same tool with its summary option (exiv2 -ps), split the same "
                                                   "way; the size of a file that carries no metadata block is compared "
                                                   "against what it prints of it")
@@ -559,7 +566,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.exiv2_command:
             oracle = shlex.split(args.exiv2_command)
             for candidate in generated:
-                reference_texts[candidate.uid] = run_reference(oracle, candidate.path)
+                printed = run_reference(oracle, candidate.path, require_success=args.require_reference_tags)
+                if args.require_reference_tags and not exiv2_print.parse_reference(printed)[0]:
+                    raise StructuralError(f"pinned reference printed no tag records for {candidate.uid}")
+                reference_texts[candidate.uid] = printed
         elif generated:
             raise StructuralError("the generated corpus has no oracle: --fixtures needs --exiv2-command")
         candidates.extend(generated if args.exiv2_command else [])
