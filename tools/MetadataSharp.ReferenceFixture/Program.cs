@@ -1871,6 +1871,7 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
     // Also copy one decoded source MakerNote into an authored JPEG through the public transactional
     // API. The comparer checks every MakerNote key/value that pinned Exiv2 prints on both files.
     string copiedName = string.Empty;
+    var copyReasons = new SortedDictionary<string, int>(StringComparer.Ordinal);
     foreach (string path in Directory.EnumerateFiles(directory, "s*.*").Order(StringComparer.Ordinal))
     {
         string name = Path.GetFileNameWithoutExtension(path);
@@ -1886,14 +1887,25 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
                     {
                         Families = MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif
                     });
-            if (copy.WasRefused || ImageMetadata.Read(copy.DestinationBytes).Exif?.MakerNote is null) continue;
+            if (copy.WasRefused || ImageMetadata.Read(copy.DestinationBytes).Exif?.MakerNote is null)
+            {
+                foreach (MetadataSharp.Formats.Operations.MetadataCopyNote note in copy.Notes)
+                {
+                    string reason = $"{note.Reason}: {note.Message}".Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+                    copyReasons[reason] = copyReasons.GetValueOrDefault(reason) + 1;
+                }
+                continue;
+            }
             File.WriteAllBytes(Path.Combine(directory, $"{name}.copy.ours.jpg"), copy.DestinationBytes);
             copiedName = name;
             break;
         }
         catch (MetadataException) { }
     }
-    File.WriteAllText(Path.Combine(directory, "copy.tsv"), copiedName);
+    File.WriteAllText(Path.Combine(directory, "copy.tsv"), copiedName.Length != 0
+        ? copiedName
+        : "\n" + string.Join("\n", copyReasons.OrderByDescending(pair => pair.Value).Take(12)
+            .Select(pair => $"{pair.Value}x {pair.Key}")));
     foreach (KeyValuePair<string, int> outcome in outcomes) Console.WriteLine($"{outcome.Key}: {outcome.Value}");
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=MakerNote parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;

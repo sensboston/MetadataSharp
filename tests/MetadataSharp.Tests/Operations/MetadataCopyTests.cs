@@ -7,6 +7,7 @@ using MetadataSharp.Tests.Jpeg;
 using MetadataSharp.Tests.Png;
 using MetadataSharp.Tests.Tiff;
 using MetadataSharp.Tests.WebP;
+using Xunit;
 
 namespace MetadataSharp.Tests.Operations;
 

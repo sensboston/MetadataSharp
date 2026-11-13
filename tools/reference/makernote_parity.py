@@ -173,9 +173,11 @@ def main(argv=None, runner=run):
 
     counts, examples = check(work, names, args.exiv2, runner)
     failures, accepted, summary = [], [], []
-    copied_name = (work / "copy.tsv").read_text(encoding="utf-8").strip() if (work / "copy.tsv").exists() else ""
+    copy_lines = (work / "copy.tsv").read_text(encoding="utf-8").splitlines() if (work / "copy.tsv").exists() else []
+    copied_name = copy_lines[0].strip() if copy_lines else ""
     if not copied_name or copied_name not in names:
-        failures.append("no decoded MakerNote was safely copied into a JPEG for Exiv2 parity")
+        failures.append("no decoded MakerNote was safely copied into a JPEG for Exiv2 parity; " +
+                        "; ".join(copy_lines[:6]))
     else:
         source_path = work / f"{copied_name}.{names[copied_name][1]}"
         copied_path = work / f"{copied_name}.copy.ours.jpg"
