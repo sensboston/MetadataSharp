@@ -215,6 +215,25 @@ internal static partial class MakerNoteLabels
         NikonLd4Aperture,
         NikonLd4FocalLength,
         NikonLd4FocusDistance,
+        SonyExposureBias,
+        SonyAmbientTemperature,
+        SonyMisc1Temperature,
+        SonyFocusPosition,
+        SonyAFAreaModeSetting,
+        SonyFocusMode2,
+        SonyFlexibleSpotPosition,
+        SonyHighIso2,
+        SonyAFTracking,
+        SonyAFPointSelected,
+        SonyAFPointsUsed,
+        SonyFocalPlaneAFPointsUsed,
+        SonyFocusMode3,
+        SonyLensSpec,
+        SonyMisc2bFocusPosition,
+        SonyAFMode,
+        SonyFocusMode,
+        SonyQuality2,
+        SonyVariableLowPass,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -378,6 +397,44 @@ internal static partial class MakerNoteLabels
                 return NikonLd4FocalLength(value);
             case Form.NikonLd4FocusDistance:
                 return NikonLd4FocusDistance(value);
+            case Form.SonyExposureBias:
+                return SonyExposureBias(value);
+            case Form.SonyAmbientTemperature:
+                return SonyAmbientTemperature(value, note);
+            case Form.SonyMisc1Temperature:
+                return SonyMisc1Temperature(value, note);
+            case Form.SonyFocusPosition:
+                return SonyFocusPosition(value, cameraModel);
+            case Form.SonyMisc2bFocusPosition:
+                return SonyMisc2bFocusPosition(value, cameraModel);
+            case Form.SonyAFMode:
+                return SonyAFMode(value, note);
+            case Form.SonyFocusMode:
+                return SonyFocusMode(value, note);
+            case Form.SonyQuality2:
+                return SonyQuality2(value);
+            case Form.SonyVariableLowPass:
+                return SonyVariableLowPass(value);
+            case Form.SonyAFAreaModeSetting:
+                return SonyAFAreaModeSetting(value, cameraModel);
+            case Form.SonyFocusMode2:
+                return SonyFocusMode2(value, cameraModel);
+            case Form.SonyFlexibleSpotPosition:
+                return SonyFlexibleSpotPosition(value, cameraModel);
+            case Form.SonyHighIso2:
+                return SonyHighIso2(value, cameraModel);
+            case Form.SonyAFTracking:
+                return SonyAFTracking(value, cameraModel);
+            case Form.SonyAFPointSelected:
+                return SonyAFPointSelected(value, cameraModel, note);
+            case Form.SonyAFPointsUsed:
+                return SonyAFPointsUsed(value, cameraModel);
+            case Form.SonyFocalPlaneAFPointsUsed:
+                return SonyFocalPlaneAFPointsUsed(value);
+            case Form.SonyFocusMode3:
+                return SonyFocusMode3(value, note);
+            case Form.SonyLensSpec:
+                return SonyLensSpec(value);
         }
 
         if (value.Count != 1 || value.FieldType == TiffFieldType.Undefined ||
@@ -579,6 +636,378 @@ internal static partial class MakerNoteLabels
         }
         return null;
     }
+
+    private static ExifValue? SonyField(MakerNote? note, ushort entryTag, string fieldName)
+    {
+        if (note is null || !note.TryGetEntry(entryTag, out MakerNoteEntry? entry))
+            return null;
+        foreach (MakerNoteField field in entry.Fields)
+            if (field.Name == fieldName)
+                return field.Value;
+        return null;
+    }
+
+    private static long? SonyInteger(ExifValue? value)
+    {
+        if (value is null || value.Count != 1 || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        return number;
+    }
+
+    private static string? SonyExposureBias(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.SRational ||
+            !ExifTags.TryRational(value, 0, out long numerator, out long denominator))
+            return null;
+        if (numerator == 0 || numerator == int.MinValue)
+            return "0 EV";
+        if (denominator <= 0)
+            return "(" + Whole(numerator) + "/" + Whole(denominator) + ")";
+        long gcd = Gcd(Math.Abs(numerator), denominator);
+        long reducedNumerator = Math.Abs(numerator) / gcd;
+        long reducedDenominator = denominator / gcd;
+        return (numerator < 0 ? "-" : "+") + Whole(reducedNumerator) +
+               (reducedDenominator == 1 ? "" : "/" + Whole(reducedDenominator)) + " EV";
+    }
+
+    private static long Gcd(long left, long right)
+    {
+        while (right != 0)
+            (left, right) = (right, left % right);
+        return left;
+    }
+
+    private static string? SonyAmbientTemperature(ExifValue value, MakerNote? note)
+    {
+        long? marker = SonyInteger(SonyField(note, 0x9402, "0x0002"));
+        if (value.Count != 1 || value.FieldType != TiffFieldType.SByte || !ExifTags.TryInteger(value, 0, out long temperature))
+            return null;
+        return marker == 255 ? Whole(temperature) + " \u00B0C" : "n/a";
+    }
+
+    private static string? SonyMisc1Temperature(ExifValue value, MakerNote? note)
+    {
+        long? marker = SonyInteger(SonyField(note, 0x9403, "0x0004"));
+        if (value.Count != 1 || value.FieldType != TiffFieldType.SByte || !ExifTags.TryInteger(value, 0, out long temperature))
+            return null;
+        return marker is > 0 and < 100 ? Whole(temperature) + " \u00B0C" : "n/a";
+    }
+
+    private static bool SonyModelIs(string? model, params string[] prefixes) =>
+        model is not null && prefixes.Any(prefix => model.StartsWith(prefix, StringComparison.Ordinal));
+
+    private static string? SonyFocusPosition(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        if (SonyModelIs(model, "DSC-", "Stellar"))
+            return "n/a";
+        return number == 255 ? "Infinity" : Whole(number);
+    }
+
+    private static string? SonyMisc2bFocusPosition(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        return SonyModelIs(model, "SLT-", "HV", "ILCA-") ? "n/a" : Whole(number);
+    }
+
+    private static string? SonyAFAreaModeSetting(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        (string Prefix, (long Number, string Label)[] Labels)[] sets =
+        [
+            ("SLT-", [(0, "Wide"), (4, "Local"), (8, "Zone"), (9, "Spot")]),
+            ("HV", [(0, "Wide"), (4, "Local"), (8, "Zone"), (9, "Spot")]),
+            ("ILCA-", [(0, "Wide"), (4, "Flexible spot"), (8, "Zone"), (9, "Center"), (12, "Expanded flexible spot")]),
+            ("NEX-", [(0, "Wide"), (1, "Center"), (3, "Flexible Spot"), (4, "Flexible Spot (LA-EA4)"), (9, "Center (LA-EA4)"), (11, "Zone"), (12, "Expanded flexible spot")]),
+            ("ILCE-", [(0, "Wide"), (1, "Center"), (3, "Flexible Spot"), (4, "Flexible Spot (LA-EA4)"), (9, "Center (LA-EA4)"), (11, "Zone"), (12, "Expanded flexible spot")]),
+            ("ILME-", [(0, "Wide"), (1, "Center"), (3, "Flexible Spot"), (4, "Flexible Spot (LA-EA4)"), (9, "Center (LA-EA4)"), (11, "Zone"), (12, "Expanded flexible spot")]),
+            ("DSC-RX10M4", [(0, "Wide"), (1, "Center"), (3, "Flexible Spot"), (4, "Flexible Spot (LA-EA4)"), (9, "Center (LA-EA4)"), (11, "Zone"), (12, "Expanded flexible spot")]),
+            ("DSC-RX100M6", [(0, "Wide"), (1, "Center"), (3, "Flexible Spot"), (4, "Flexible Spot (LA-EA4)"), (9, "Center (LA-EA4)"), (11, "Zone"), (12, "Expanded flexible spot")]),
+            ("DSC-RX100M7", [(0, "Wide"), (1, "Center"), (3, "Flexible Spot"), (4, "Flexible Spot (LA-EA4)"), (9, "Center (LA-EA4)"), (11, "Zone"), (12, "Expanded flexible spot")]),
+            ("DSC-RX100M5A", [(0, "Wide"), (1, "Center"), (3, "Flexible Spot"), (4, "Flexible Spot (LA-EA4)"), (9, "Center (LA-EA4)"), (11, "Zone"), (12, "Expanded flexible spot")]),
+            ("DSC-HX99", [(0, "Wide"), (1, "Center"), (3, "Flexible Spot"), (4, "Flexible Spot (LA-EA4)"), (9, "Center (LA-EA4)"), (11, "Zone"), (12, "Expanded flexible spot")]),
+            ("DSC-RX0M2", [(0, "Wide"), (1, "Center"), (3, "Flexible Spot"), (4, "Flexible Spot (LA-EA4)"), (9, "Center (LA-EA4)"), (11, "Zone"), (12, "Expanded flexible spot")]),
+        ];
+        foreach ((string prefix, (long Number, string Label)[] labels) in sets)
+            if (model.StartsWith(prefix, StringComparison.Ordinal))
+                return labels.FirstOrDefault(label => label.Number == number).Label ?? Stored(number);
+        return "n/a";
+    }
+
+    private static string? SonyFocusMode2(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        if (model.StartsWith("DSC-", StringComparison.Ordinal) &&
+            !SonyModelIs(model, "DSC-RX10M4", "DSC-RX100M6", "DSC-RX100M7", "DSC-RX100M5A", "DSC-HX99", "DSC-RX0M2"))
+            return "n/a";
+        return number switch { 0 => "Manual", 2 => "AF-S", 3 => "AF-C", 4 => "AF-A", 6 => "DMF", 7 => "AF-D", _ => Stored(number) };
+    }
+
+    private static string? SonyFlexibleSpotPosition(ExifValue value, string? model)
+    {
+        if (value.Count != 2 || value.FieldType != TiffFieldType.Short ||
+            !ExifTags.TryInteger(value, 0, out long x) || !ExifTags.TryInteger(value, 1, out long y))
+            return null;
+        if (model is null)
+            return "(" + Whole(x) + " " + Whole(y) + ")";
+        if (SonyModelIs(model, "NEX-", "ILCE-", "ILME-", "DSC-RX10M4", "DSC-RX100M6", "DSC-RX100M7", "DSC-RX100M5A", "DSC-HX99", "DSC-RX0M2"))
+            return Whole(x) + ", " + Whole(y);
+        return "n/a";
+    }
+
+    private static string? SonyHighIso2(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        if (!SonyModelIs(model, "DSC-", "Stellar"))
+            return "n/a";
+        return number switch { 0 => "Normal", 1 => "High", 2 => "Low", 3 => "Off", 65535 => "n/a", _ => Stored(number) };
+    }
+
+    private static string? SonyAFTracking(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        if (model.StartsWith("DSC-", StringComparison.Ordinal) &&
+            !SonyModelIs(model, "DSC-RX10M4", "DSC-RX100M6", "DSC-RX100M7", "DSC-RX100M5A", "DSC-HX99", "DSC-RX0M2"))
+            return "n/a";
+        return number switch { 0 => "Off", 1 => "Face tracking", 2 => "Lock on AF", _ => Stored(number) };
+    }
+
+    private static long? SonyTopInteger(MakerNote? note, string name)
+    {
+        if (note is null)
+            return null;
+        foreach (MakerNoteEntry entry in note.Entries)
+            if (entry.Name == name)
+                return SonyInteger(entry.Value);
+        return null;
+    }
+
+    private static string? SonyAFPointSelected(ExifValue value, string? model, MakerNote? note)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        long? area = SonyTopInteger(note, "AFAreaModeSetting");
+        if (SonyModelIs(model, "SLT-", "HV-"))
+            return SonyAfPointSet1(number);
+        if (SonyModelIs(model, "ILCE-", "ILME-"))
+            return area == 4 ? SonyAfPointSet1(number) : SonyAfPointSet5(number);
+        if (SonyModelIs(model, "ILCA-68", "ILCA-77M2"))
+            return area is null ? "n/a" : area == 8 ? SonyAfPointSet4(number) : SonyAfPointSet2(number);
+        if (model.StartsWith("ILCA-99M2", StringComparison.Ordinal))
+            return area is null ? "n/a" : area == 8 ? SonyAfPointSet4(number) : SonyAfPointSet3(number);
+        if (SonyModelIs(model, "ILCA-"))
+            return area == 8 ? SonyAfPointSet4(number) : "n/a";
+        if (SonyModelIs(model, "NEX-"))
+            return SonyAfPointSet5(number);
+        return "n/a";
+    }
+
+    private static string SonyAfPointSet1(long number) => number switch
+    {
+        0 => "Auto", 1 => "Center", 2 => "Top", 3 => "Upper-right", 4 => "Right", 5 => "Lower-right",
+        6 => "Bottom", 7 => "Lower-left", 8 => "Left", 9 => "Upper-left", 10 => "Far Right", 11 => "Far Left",
+        12 => "Upper-middle", 13 => "Near Right", 14 => "Lower-middle", 15 => "Near Left", 16 => "Upper Far Right",
+        17 => "Lower Far Right", 18 => "Lower Far Left", 19 => "Upper Far Left", _ => Stored(number),
+    };
+
+    private static string SonyAfPointSet2(long number)
+    {
+        string[] labels = ["Auto", "A6", "A7", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10",
+            "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "D1", "D2", "D3",
+            "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "E1", "E2", "E3", "E4", "E5", "E6 (Center)",
+            "E7", "E8", "E9", "E10", "E11", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10",
+            "F11", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "H2", "H3", "H4",
+            "H5", "H6", "H7", "H8", "H9", "H10", "I5", "I6", "I7"];
+        return number == 128 ? "Auto" : number >= 0 && number < labels.Length ? labels[number] : Stored(number);
+    }
+
+    private static string SonyAfPointSet3(long number) => number switch
+    {
+        0 => "Auto", 93 => "A5", 94 => "A6", 95 => "A7", 106 => "B2", 107 => "B3", 108 => "B4", 110 => "B5",
+        111 => "B6", 112 => "B7", 114 => "B8", 115 => "B9", 116 => "B10", 122 => "C1", 123 => "C2", 124 => "C3",
+        215 => "C4", 127 => "C5", _ => Stored(number),
+    };
+
+    private static string SonyAfPointSet4(long number) => number switch
+    {
+        0 => "n/a", 1 => "Top Left Zone", 2 => "Top Zone", 3 => "Top Right Zone", 4 => "Left Zone", 5 => "Center Zone",
+        6 => "Right Zone", 7 => "Bottom Left Zone", 8 => "Bottom Zone", 9 => "Bottom Right Zone", _ => Stored(number),
+    };
+
+    private static string SonyAfPointSet5(long number) => number switch
+    {
+        0 => "n/a", 1 => "Center Zone", 2 => "Top Zone", 3 => "Right Zone", 4 => "Left Zone", 5 => "Bottom Zone",
+        6 => "Bottom Right Zone", 7 => "Bottom Left Zone", 8 => "Top Left Zone", 9 => "Top Right Zone", _ => Stored(number),
+    };
+
+    private static string? SonyAFPointsUsed(ExifValue value, string? model)
+    {
+        if (value.FieldType != TiffFieldType.Byte || value.Count == 0)
+            return null;
+        if (model is null)
+            return "(" + string.Join(" ", value.RawBytes.ToArray().Select(Whole)) + ")";
+        bool ilca = SonyModelIs(model, "ILCA-");
+        bool set2 = SonyModelIs(model, "ILCA-68", "ILCA-77M2");
+        if (ilca && !set2)
+            return "n/a";
+        string[] names1 = ["Center", "Top", "Upper-right", "Right", "Lower-right", "Bottom", "Lower-left", "Left", "Upper-left", "Far right", "Far left", "Upper-middle", "Near right", "Lower-middle", "Near left", "Upper far right", "Lower far right", "Lower far left", "Upper far left"];
+        string[] names2 = ["A5", "A6", "A7", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "D11", "E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8", "E9", "E10", "E11", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "H10", "I5", "I6", "I7"];
+        var found = new List<string>();
+        for (int i = 0; i < value.Count; i++)
+        {
+            long bits = value.RawBytes[i];
+            for (int bit = 0; bit < 8; bit++)
+            {
+                if ((bits & (1 << bit)) == 0)
+                    continue;
+                int index = i * 8 + bit;
+                if (set2 && index < names2.Length)
+                    found.Add(names2[index]);
+                else if (!set2 && index < names1.Length)
+                    found.Add(names1[index]);
+            }
+        }
+        return found.Count == 0 ? "None" : string.Join(", ", found);
+    }
+
+    private static string? SonyFocalPlaneAFPointsUsed(ExifValue value)
+    {
+        if (value.FieldType != TiffFieldType.Byte || value.Count == 0)
+            return null;
+        return value.RawBytes[0] == 0 ? "None" : "(" + string.Join(" ", value.RawBytes.ToArray().Select(Whole)) + ")";
+    }
+
+    private static string? SonyMetaVersion(MakerNote? note)
+    {
+        if (SonyField(note, 0x3000, "MetaVersion") is not ExifValue versionValue || versionValue.FieldType != TiffFieldType.Ascii)
+            return null;
+        return Encoding.Latin1.GetString(versionValue.RawBytes).TrimEnd('\0', ' ');
+    }
+
+    private static string? SonyQuality2(ExifValue value)
+    {
+        if (value.Count != 2 || value.FieldType != TiffFieldType.Short ||
+            !ExifTags.TryInteger(value, 0, out long first) || !ExifTags.TryInteger(value, 1, out long second))
+            return null;
+        string[] labels = ["n/a", "Standard", "Fine", "Extra fine", "Light"];
+        if (first == 0 && second >= 0 && second < labels.Length)
+            return labels[second];
+        if (first is >= 1 and <= 5 && second is >= 0 and <= 4)
+        {
+            string[] suffix = ["", "+ standard", "+ fine", "+ extra fine", "+ light"];
+            string prefix = first switch
+            {
+                1 => "RAW", 2 => "S-size RAW", 3 => "M-size RAW", 4 => "Compressed RAW", _ => "Compressed (HQ) RAW",
+            };
+            return second == 0 ? prefix : prefix + " " + suffix[second];
+        }
+        return "(" + Whole(first) + " " + Whole(second) + ")";
+    }
+
+    private static string? SonyVariableLowPass(ExifValue value)
+    {
+        if (value.Count != 2 || value.FieldType != TiffFieldType.Short ||
+            !ExifTags.TryInteger(value, 0, out long enabled) || !ExifTags.TryInteger(value, 1, out long level))
+            return null;
+        return (enabled, level) switch
+        {
+            (0, 0) or (65535, 65535) => "n/a", (1, 0) => "Off", (1, 1) => "Standard", (1, 2) => "High",
+            _ => "(" + Whole(enabled) + " " + Whole(level) + ")",
+        };
+    }
+
+    private static string? SonyFocusMode(ExifValue value, MakerNote? note)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        string? version = SonyMetaVersion(note);
+        if (version is null)
+            return Stored(number);
+        if (version == "DC7303320222000")
+            return "n/a";
+        return number switch { 1 => "AF-S", 2 => "AF-C", 4 => "Permanent-AF", 65535 => "n/a", _ => Stored(number) };
+    }
+
+    private static string? SonyAFMode(ExifValue value, MakerNote? note)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        string? version = SonyMetaVersion(note);
+        if (version is null)
+            return Stored(number);
+        if (version != "DC7303320222000")
+            return number switch { 0 => "Default", 1 => "Multi", 2 => "Center", 3 => "Spot", 4 => "Flexible Spot", 6 => "Touch", 14 => "Tracking", 15 => "Face Detected", 65535 => "n/a", _ => Stored(number) };
+        long? focusMode = null;
+        if (note is not null)
+            foreach (MakerNoteEntry entry in note.Entries)
+                if (entry.Name == "FocusMode2") { focusMode = SonyInteger(entry.Value); break; }
+        if (focusMode is null || focusMode == 0)
+            return "n/a";
+        return number switch { 0 => "Multi", 1 => "Center", 2 => "Spot", 3 => "Flexible spot", 10 => "Selective (for miniature effect)", 14 => "Tracking", 15 => "Face tracking", 255 => "Manual", _ => Stored(number) };
+    }
+
+    private static string? SonyFocusMode3(ExifValue value, MakerNote? note)
+    {
+        string? version = SonyMetaVersion(note);
+        if (version is null)
+            return null;
+        if (version != "DC7303320222000")
+            return "n/a";
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        return number switch { 0 => "Manual", 2 => "AF-S", 3 => "AF-C", 5 => "Semi-manual", 6 => "DMF", _ => Stored(number) };
+    }
+
+    private static string? SonyLensSpec(ExifValue value)
+    {
+        if (value.Count != 8 || value.FieldType != TiffFieldType.Byte)
+            return null;
+        ReadOnlySpan<byte> b = value.RawBytes;
+        if (b.Length != 8 || (b.ToArray().All(x => x == 0)) || b[2] == 0 || b[5] == 0)
+            return "Unknown";
+        int joined = b[0] << 8 | b[7];
+        string start = "", end = "";
+        void AddStart(string label) => start = start.Length == 0 ? label : label + " " + start;
+        void AddEnd(string label) => end = end.Length == 0 ? label : end + " " + label;
+        if ((joined & 0x4000) != 0) AddStart("PZ");
+        int type = joined & 0x0300;
+        if (type != 0) AddStart(type == 0x0100 ? "DT" : type == 0x0200 ? "FE" : "E");
+        if ((joined & 0x00e0) != 0) AddEnd((joined & 0x00e0) switch { 0x20 => "STF", 0x40 => "Reflex", 0x60 => "Macro", _ => "Fisheye" });
+        if ((joined & 0x000c) != 0) AddEnd((joined & 0x000c) == 4 ? "ZA" : "G");
+        if ((joined & 0x0003) != 0) AddEnd((joined & 0x0003) == 1 ? "SSM" : "SAM");
+        if ((joined & 0x8000) != 0) AddEnd("OSS");
+        if ((joined & 0x2000) != 0) AddEnd("LE");
+        if ((joined & 0x0800) != 0) AddEnd("II");
+        string focal = NibblePair(b[2]);
+        string maxFocal = b[3] == 0 && b[4] == 0 ? "" : "-" + (b[3] == 0 ? "" : NibblePair(b[3])) + NibblePair(b[4]);
+        string result = (start.Length == 0 ? "" : start + " ") + focal + maxFocal + "mm F" + NibblePair(b[5]);
+        if (b[6] != 0) result += "-" + (b[6] >> 4) + "." + (b[6] & 15);
+        return result + (end.Length == 0 ? "" : " " + end);
+    }
+
+    private static string NibblePair(byte value) =>
+        (value >> 4 == 0 ? "" : (value >> 4).ToString(CultureInfo.InvariantCulture)) +
+        (value & 15).ToString(CultureInfo.InvariantCulture);
 
     private static string? NikonFocusDistance(ExifValue value)
     {

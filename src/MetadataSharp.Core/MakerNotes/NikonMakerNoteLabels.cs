@@ -1,11 +1,8 @@
 namespace MetadataSharp.Core.MakerNotes;
 
-// Nikon (the Nikon3 layout): the fields of the note and of its arrays that occur in the comparison
-// corpus, with the numbers that occur there. Lens data (focal lengths, apertures and distances in
-// logarithmic codes), the sensitivities of ISOInfo, lens identifiers and the flash outputs whose reading
-// depends on the control mode are left without an interpretation. Two FlashInfo fields,
-// ExternalFlashData1 and ExternalFlashData2, mean different things in versions 0106 and 0107 and are
-// left out for that reason.
+// Nikon 1/2 and Nikon 3: selected fields of the early directories and modern note arrays from the
+// comparison corpus. Lens names still require an external ID database; some version-dependent flash
+// data and other camera-specific fields remain uninterpreted until their meanings are established.
 internal static partial class MakerNoteLabels
 {
     private static (long Number, string Label)[] NotAvailableAtEnds => [(0, "n/a"), (255, "n/a")];

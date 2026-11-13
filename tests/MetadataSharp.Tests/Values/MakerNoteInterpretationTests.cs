@@ -70,18 +70,21 @@ public sealed class MakerNoteInterpretationTests
     }
 
     /// <summary>What a note of the format makes of a tag of its own directory with this name and value.</summary>
-    private static string? Top(MakerNoteFormat format, string? name, ExifValue value)
+    private static string? Top(MakerNoteFormat format, string? name, ExifValue value, string? cameraModel = null)
     {
         var entry = new MakerNoteEntry(0x7001, name, value, []);
-        return new MakerNote(format, Little, [entry]).Interpret(entry);
+        var note = new MakerNote(format, Little, [entry]);
+        return cameraModel is null ? note.Interpret(entry) : note.InterpretForModel(entry, cameraModel);
     }
 
     /// <summary>What a note of the format makes of a named field of the array tag.</summary>
-    private static string? Field(MakerNoteFormat format, int tag, string name, ExifValue value, int index = 1)
+    private static string? Field(MakerNoteFormat format, int tag, string name, ExifValue value, int index = 1,
+        string? cameraModel = null)
     {
         var part = new MakerNoteField((ushort)index, name, value);
         var entry = new MakerNoteEntry((ushort)tag, "Array", Undefined(0), [part]);
-        return new MakerNote(format, Little, [entry]).Interpret(entry, part);
+        var note = new MakerNote(format, Little, [entry]);
+        return cameraModel is null ? note.Interpret(entry, part) : note.InterpretFieldForModel(entry, part, cameraModel);
     }
 
     // ---- Canon -------------------------------------------------------------------------------------------
@@ -410,9 +413,9 @@ public sealed class MakerNoteInterpretationTests
     [Fact]
     public void NikonLensDataFourAddsItsHighResolutionValues()
     {
-        Assert.Equal("F2.0", Field(MakerNoteFormat.Nikon3, 0x0098, "FNumber", Shorts(384)));
+        Assert.Equal("F2.0", Field(MakerNoteFormat.Nikon3, 0x0098, "FNumber", Shorts(768)));
         Assert.Equal("50.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength2", Shorts(50)));
-        Assert.Equal("1.00 m", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance2", Shorts(10240)));
+        Assert.Equal("1.00 m", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance2", Shorts(20480)));
         Assert.Equal("n/a", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance2", Shorts(0)));
     }
 
@@ -494,8 +497,8 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("(9999)", Top(format, "SonyModelID", Shorts(9999)));
         Assert.Equal("Tracking", Field(format, 0x9402, "AFAreaMode", Bytes(14)));
         Assert.Equal("iAuto+", Field(format, 0x9404, "ExposureProgram", Bytes(7)));
-        Assert.Equal("n/a", Top(format, "HighISONoiseReduction2", Shorts(65535)));
-        Assert.Equal("DMF", Top(format, "FocusMode2", Bytes(6)));
+        Assert.Equal("n/a", Top(format, "HighISONoiseReduction2", Shorts(65535), "DSC-RX100M7"));
+        Assert.Equal("DMF", Top(format, "FocusMode2", Bytes(6), "ILCE-6000"));
         Assert.Equal("Raw + JPEG", Field(format, 0x9400, "Quality2", Bytes(2)));
     }
 
@@ -525,7 +528,8 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("4000", Field(MakerNoteFormat.Sony1, 0x9400, "SonyImageHeight", Shorts(500)));
         Assert.Equal("2014", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(14)));
         Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(255)));
-        Assert.Equal("176, 242", Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176, 242)));
+        Assert.Equal("176, 242", Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176, 242), "ILCE-6000"));
+        Assert.Equal("n/a", Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176, 242), "DSC-R1"));
         Assert.Null(Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176)));
     }
 

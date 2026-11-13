@@ -1,11 +1,8 @@
 namespace MetadataSharp.Core.MakerNotes;
 
-// Sony (both layouts share one vocabulary): the fields of the note and of its arrays that occur in the
-// comparison corpus, with the numbers that occur there. A number is read as what it means on the cameras
-// that use the field; whether a given camera uses it is not decided here. The fields whose numbers mean
-// different things on different cameras (the autofocus area, points and tracking, FocusMode, FocusMode3,
-// lens identifiers), the temperatures, which are only valid together with another byte, and LensSpec are
-// left without an interpretation.
+// Sony (both layouts share one vocabulary): fields from the comparison corpus. Model-dependent autofocus
+// and temperature readings use the enclosing model and the sibling values that establish their validity;
+// lens identifiers remain raw because their names come from an external lens database.
 internal static partial class MakerNoteLabels
 {
     private static (long Number, string Label)[] OffAutoNotAvailable => [(0, "Off"), (2, "Auto"), (0xFFFFFFFF, "n/a")];
@@ -29,6 +26,23 @@ internal static partial class MakerNoteLabels
             ],
         },
         new(Top, "FlashLevel", [(0, "Normal"), (-1, "-0.3 EV")]),
+        new(Top, "FlashExposureComp", [], Form.SonyExposureBias),
+        new(Top, "ExposureStandardAdjustment", [], Form.SonyExposureBias),
+        new(Top, "FlexibleSpotPosition", [], Form.SonyFlexibleSpotPosition),
+        new(Top, "FocusMode2", [], Form.SonyFocusMode2),
+        new(Top, "AFAreaModeSetting", [], Form.SonyAFAreaModeSetting),
+        new(Top, "HighISONoiseReduction2", [], Form.SonyHighIso2),
+        new(Top, "AFTracking", [], Form.SonyAFTracking),
+        new(Top, "AFMode", [], Form.SonyAFMode),
+        new(Top, "FocusMode", [], Form.SonyFocusMode),
+        new(Top, "AFPointSelected", [], Form.SonyAFPointSelected),
+        new(Top, "AFPointsUsed", [], Form.SonyAFPointsUsed),
+        new(Top, "FocalPlaneAFPointsUsed", [], Form.SonyFocalPlaneAFPointsUsed),
+        new(Top, "FocusMode3", [], Form.SonyFocusMode3),
+        new(Top, "LensSpec", [], Form.SonyLensSpec),
+        new(Top, "LensID", []),
+        new(Top, "Quality2", [], Form.SonyQuality2),
+        new(Top, "VariableLowPassFilter", [], Form.SonyVariableLowPass),
         new(Top, "ReleaseMode", [(0, "Normal"), (2, "Continuous"), (5, "Exposure Bracketing"), (65535, "n/a")]),
         new(Top, "SequenceNumber", [(0, "Single"), (65535, "n/a")]),
         new(Top, "AntiBlur", [(0, "Off"), (2, "On (Shooting)"), (65535, "n/a")]),
@@ -64,9 +78,6 @@ internal static partial class MakerNoteLabels
         new(Top, "MultiFrameNoiseReduction", [(0, "Off")]),
         new(Top, "MultiFrameNREffect", [(0, "Normal")]),
         new(Top, "HighISONoiseReduction", [(0, "Off"), (1, "Low"), (2, "Normal")]),
-        new(Top, "HighISONoiseReduction2", [(0, "Normal"), (65535, "n/a")]),
-        new(Top, "FocusMode2", [(0, "Manual"), (2, "AF-S"), (4, "AF-A"), (6, "DMF")]),
-        new(Top, "FlexibleSpotPosition", [], Form.Pair),
         new(Top, "LongExposureNoiseReduction", [(0, "Off"), (1, "On (unused)")]),
         new(Top, "VignettingCorrection", OffAutoNotAvailable),
         new(Top, "LateralChromaticAberration", OffAutoNotAvailable),
@@ -107,9 +118,15 @@ internal static partial class MakerNoteLabels
             Form.LowSevenBits),
         new(0x9402, "AFAreaMode",
         [
-            (0, "Multi"), (1, "Center"), (3, "Flexible Spot"), (12, "Expanded Flexible Spot"), (14, "Tracking"),
-            (15, "Face Tracking"),
+            (0, "Multi"), (1, "Center"), (2, "Spot"), (3, "Flexible Spot"), (10, "Selective (for Miniature effect)"),
+            (11, "Zone"), (12, "Expanded Flexible Spot"), (14, "Tracking"), (15, "Face Tracking"),
+            (20, "Animal Eye Tracking"), (255, "Manual"),
         ]),
+        new(0x9402, "AmbientTemperature", [], Form.SonyAmbientTemperature),
+        new(0x9402, "FocusPosition2", [], Form.SonyFocusPosition),
+
+        // The array of tag 0x9403.
+        new(0x9403, "CameraTemperature", [], Form.SonyMisc1Temperature),
 
         // The array of tag 0x9404.
         new(0x9404, "ExposureProgram",
@@ -119,5 +136,6 @@ internal static partial class MakerNoteLabels
         ]),
         new(0x9404, "IntelligentAuto", OffOn),
         new(0x9404, "LensZoomPosition", [], Form.PercentOf1024),
+        new(0x9404, "FocusPosition2", [], Form.SonyMisc2bFocusPosition),
     ];
 }
