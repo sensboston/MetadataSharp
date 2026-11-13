@@ -335,7 +335,7 @@ public sealed class MakerNoteInterpretationTests
     {
         Assert.Equal("S000501110223", Top(MakerNoteFormat.Panasonic, "InternalSerialNumber",
             Undefined(Encoding.ASCII.GetBytes("S000501110223\0"))));
-        Assert.Equal("3.90", Top(MakerNoteFormat.Panasonic, "ExifVersion", Undefined(Encoding.ASCII.GetBytes("0390"))));
+        Assert.Equal("03.90", Top(MakerNoteFormat.Panasonic, "ExifVersion", Undefined(Encoding.ASCII.GetBytes("0390"))));
         Assert.Equal("00:00:17.62", Top(MakerNoteFormat.Panasonic, "TimeSincePowerOn", Longs(1762)));
         Assert.Equal("1.0", Top(MakerNoteFormat.Panasonic, "RollAngle", Shorts(10)));
         Assert.Equal("-1.0", Top(MakerNoteFormat.Panasonic, "PitchAngle", Shorts(10)));
