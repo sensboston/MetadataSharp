@@ -286,7 +286,9 @@ jobs:
           python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
             --dump-command "$DUMP" --out artifacts/parity/upstream --title 'PARITY upstream' \
             --rows-per-file 20000 --annotate
-          python tools/parity/makernote_render_gate.py artifacts/parity/upstream/parity-report.json --inventory
+          # Append each completed MakerNote family here; this gate requires full per-file detail.
+          python tools/parity/makernote_render_gate.py artifacts/parity/upstream/parity-report.json \
+            --inventory --require Exif.PentaxDng
       - name: Preview parity against upstream expectations (kind "Preview"; exiv2 -pp output read as text)
         shell: bash
         run: |

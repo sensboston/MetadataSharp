@@ -236,10 +236,10 @@ public sealed class MakerNote
     /// not that the vendor gives it no meaning.
     /// </para>
     /// <para>
-    /// The vocabulary is small on purpose: Canon, Nikon (the <see cref="MakerNoteFormat.Nikon3" />
-    /// layout) and Sony, and of those the tags and numbers this project has checked against real
-    /// files. Null means there is nothing to add to the raw value: another vendor, a tag outside the
-    /// vocabulary, or a value that does not have the type and count the interpretation needs. The raw
+    /// The vocabulary is deliberately limited to checked fields of Canon, Nikon (the
+    /// <see cref="MakerNoteFormat.Nikon3" /> layout), Sony and Pentax DNG notes. Null means there is
+    /// nothing to add to the raw value: another vendor, a tag outside the vocabulary, or a value that
+    /// does not have the type and count the interpretation needs. The raw
     /// value stays the truth; nothing is ever thrown for its content.
     /// </para>
     /// </remarks>
@@ -248,7 +248,7 @@ public sealed class MakerNote
     public string? Interpret(MakerNoteEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
-        return MakerNotes.MakerNoteLabels.Interpret(Format, entry);
+        return MakerNotes.MakerNoteLabels.Interpret(this, entry);
     }
 
     /// <summary>

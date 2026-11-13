@@ -43,11 +43,13 @@ class MakerNoteRenderGateTests(unittest.TestCase):
                 self.assertIn("interpreted=" + repr(verdict), message)
 
     def test_raw_key_or_value_difference_fails(self):
-        report = self.report(raw="value-diff")
-        report["by_family"][self.GROUP] = {"value-diff": 1}
-        passed, message = gate.evaluate(report, [self.GROUP])
-        self.assertFalse(passed)
-        self.assertIn("value-diff=1", message)
+        for outcome in ("value-diff", "match-key"):
+            with self.subTest(outcome=outcome):
+                report = self.report(raw=outcome)
+                report["by_family"][self.GROUP] = {outcome: 1}
+                passed, message = gate.evaluate(report, [self.GROUP])
+                self.assertFalse(passed)
+                self.assertIn("value-diff=1", message)
 
     def test_truncated_rows_fail_closed(self):
         passed, message = gate.evaluate(self.report(rows_dropped=1), [self.GROUP])

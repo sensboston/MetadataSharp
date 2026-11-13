@@ -49,7 +49,7 @@ def group_metrics(report: dict[str, Any], group: str) -> dict[str, int]:
         "missing_keys": raw.get(MISSING_KEY, 0),
         "extra_keys": raw.get(EXTRA_KEY, 0),
         "not_read": raw.get(NOT_READ, 0),
-        "raw_value_different": raw.get(VALUE_DIFF, 0),
+        "raw_value_different": raw.get(VALUE_DIFF, 0) + raw.get(MATCH_KEY, 0),
     }
 
 

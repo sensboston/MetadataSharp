@@ -7,14 +7,14 @@ namespace MetadataSharp.Core.MakerNotes;
 // an interpretation is only derived from it for display.
 //
 // The tables are this project's own and are written by hand, one field at a time: a number and the short
-// label a property sheet shows for it, or the unit a number is counted in. They cover the Canon, Nikon
-// and Sony fields that occur in the comparison corpus, and for each of those the numbers that occur
-// there; they are not complete vendor vocabularies. A number a table does not list is shown as stored,
+// label a property sheet shows for it, or the unit a number is counted in. They cover selected Canon,
+// Nikon, Sony and Pentax DNG fields in the comparison corpus and the numbers checked there; they are
+// not complete vendor vocabularies. A number a table does not list is shown as stored,
 // in parentheses, so that a missing label is never mistaken for a meaning.
 //
-// Everything is integer arithmetic. Fields whose meaning needs a power, a logarithm or another field of
-// the note (apertures and shutter speeds in APEX-like codes, lens identifiers, fields that depend on the
-// camera model) are deliberately left without an interpretation.
+// Numeric formats use invariant-culture arithmetic and formatting. Fields whose meaning depends on a
+// lens-name database or an unavailable camera-specific rule remain uninterpreted; the stored value stays
+// available to callers.
 internal static partial class MakerNoteLabels
 {
     /// <summary>The scope of a tag of the note's own directory; a field of an array has its tag as scope.</summary>
@@ -124,6 +124,48 @@ internal static partial class MakerNoteLabels
 
         /// <summary>Four rationals: the shortest and the longest focal length, then the widest aperture at each.</summary>
         LensRange,
+
+        /// <summary>Pentax DNG field whose printed meaning uses its first numeric item.</summary>
+        PentaxFirst,
+
+        /// <summary>Pentax DNG version bytes written with dots between their numbers.</summary>
+        PentaxVersion,
+
+        /// <summary>Pentax DNG date bytes: a two-byte year, month, and day.</summary>
+        PentaxDate,
+
+        /// <summary>Pentax DNG time bytes: hour, minute, and second.</summary>
+        PentaxTime,
+
+        /// <summary>Pentax DNG exposure time in hundredths of a millisecond.</summary>
+        PentaxExposure,
+
+        /// <summary>Pentax DNG aperture in tenths, prefixed by F.</summary>
+        PentaxFNumber,
+
+        /// <summary>Pentax DNG focal length in hundredths of a millimetre, fixed to one decimal.</summary>
+        PentaxFocalLength,
+
+        /// <summary>Pentax DNG exposure compensation: (first value minus 50) tenths of an EV.</summary>
+        PentaxExposureCompensation,
+
+        /// <summary>Pentax DNG temperature in degrees Celsius.</summary>
+        PentaxTemperature,
+
+        /// <summary>Pentax DNG flash compensation in 1/256 EV units.</summary>
+        PentaxFlashCompensation,
+
+        /// <summary>Pentax DNG bracketing range and optional extension code.</summary>
+        PentaxBracketing,
+
+        /// <summary>A three-byte Pentax DNG composite enum.</summary>
+        PentaxThreeByteEnum,
+
+        /// <summary>A four-byte Pentax DNG composite enum.</summary>
+        PentaxFourByteEnum,
+
+        /// <summary>A four-byte Pentax DNG dynamic-range status.</summary>
+        PentaxDynamicRange,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -136,7 +178,7 @@ internal static partial class MakerNoteLabels
     /// <summary>Every rule, for the tests that check the tables against themselves.</summary>
     internal static IEnumerable<(string Vendor, int Scope, string Name, IReadOnlyList<long> Numbers, IReadOnlyList<string> Labels)> RulesForTests()
     {
-        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Sony", Sony) })
+        foreach ((string vendor, Rule[] rules) in new[] { ("Canon", Canon), ("Nikon", Nikon), ("Sony", Sony), ("PentaxDng", PentaxDng) })
         {
             foreach (Rule rule in rules)
             {
@@ -147,8 +189,8 @@ internal static partial class MakerNoteLabels
         }
     }
 
-    internal static string? Interpret(MakerNoteFormat format, MakerNoteEntry entry) =>
-        Interpret(format, Top, entry.Name, entry.Value);
+    internal static string? Interpret(MakerNote note, MakerNoteEntry entry) =>
+        Interpret(note.Format, Top, entry.Name, entry.Value, note);
 
     internal static string? Interpret(MakerNoteFormat format, MakerNoteEntry entry, MakerNoteField field)
     {
@@ -158,7 +200,7 @@ internal static partial class MakerNoteLabels
         return Interpret(format, entry.TagId, field.Name, field.Value);
     }
 
-    private static string? Interpret(MakerNoteFormat format, int scope, string? name, ExifValue value)
+    private static string? Interpret(MakerNoteFormat format, int scope, string? name, ExifValue value, MakerNote? note = null)
     {
         if (name is null)
             return null;
@@ -167,6 +209,7 @@ internal static partial class MakerNoteLabels
             MakerNoteFormat.Canon => Canon,
             MakerNoteFormat.Nikon3 => Nikon,
             MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 => Sony,
+            MakerNoteFormat.PentaxDng => PentaxDng,
             _ => null,
         };
         if (rules is null)
@@ -177,13 +220,19 @@ internal static partial class MakerNoteLabels
         foreach (Rule rule in rules)
         {
             if (rule.Scope == scope && rule.Name == name)
-                return Apply(rule, value);
+                return Apply(rule, value, note);
         }
         return null;
     }
 
-    private static string? Apply(Rule rule, ExifValue value)
+    private static string? Apply(Rule rule, ExifValue value, MakerNote? note = null)
     {
+        if (rule.Reading is Form.PentaxFirst or Form.PentaxVersion or Form.PentaxDate or Form.PentaxTime or
+            Form.PentaxExposure or Form.PentaxFNumber or Form.PentaxFocalLength or Form.PentaxExposureCompensation or
+            Form.PentaxTemperature or Form.PentaxFlashCompensation or Form.PentaxBracketing or
+            Form.PentaxThreeByteEnum or Form.PentaxFourByteEnum or Form.PentaxDynamicRange)
+            return PentaxDngInterpret(rule, value, note);
+
         switch (rule.Reading)
         {
             case Form.BitPositions:
