@@ -34,6 +34,25 @@ public sealed class VideoMetadataTests
         Assert.Null(image.Xmp);
     }
 
+    [Fact]
+    public void AuthoredWebMHasReferenceReadableTrackMetadata()
+    {
+        VideoMetadata video = VideoMetadata.Read(Fixture("valid", "authored-webm.webm"));
+        Assert.Equal("webm", video["Xmp.video.DocType"]!.Value);
+        Assert.Equal("V_VP8", video["Xmp.video.Codec"]!.Value);
+        Assert.Equal("320", video["Xmp.video.Width"]!.Value);
+        Assert.Equal("240", video["Xmp.video.Height"]!.Value);
+    }
+
+    [Fact]
+    public void AuthoredAsfExposesStreamTimingAndPinnedCodecRouting()
+    {
+        VideoMetadata video = VideoMetadata.Read(Fixture("valid", "authored-asf.asf"));
+        Assert.Equal("777", video["Xmp.video.TimeOffset"]!.Value);
+        Assert.Equal("msmpeg4v3", video["Xmp.audio.CodecName"]!.Value);
+        Assert.Equal("MP43", video["Xmp.audio.CodecInfo"]!.Value);
+    }
+
     [Theory]
     [InlineData("asf.asf", MetadataFormat.Asf)]
     [InlineData("ebml.webm", MetadataFormat.Matroska)]

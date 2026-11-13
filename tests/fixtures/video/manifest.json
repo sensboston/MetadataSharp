@@ -2,8 +2,8 @@
   "provenance": "Authored by tools/reference/video_fixtures.py; no media, copied files, or copied parser code.",
   "files": {
     "malformed/asf.asf": {
-      "bytes": 194,
-      "sha256": "cf6434a02dadc24d0e141d6be946f180f877170544647508150e5fab15002553"
+      "bytes": 360,
+      "sha256": "0796fbe1d517cfcfaea2c2fa63bbbd6456b40866ad602edbdad60c4cd6b81f69"
     },
     "malformed/ebml.webm": {
       "bytes": 12,
@@ -18,8 +18,8 @@
       "sha256": "4225b32c53458b166263c4aac4a0524e57a571c15ac0c0be265b812f7adf6026"
     },
     "valid/authored-asf.asf": {
-      "bytes": 194,
-      "sha256": "ec1d63ea106f2f72183ec73548eae2140c377dcfb9bb019a0be7ae8826b79be6"
+      "bytes": 360,
+      "sha256": "455c02c1f7ffe1234a60fbf269096a9a03cd6b68e0a1d228004df9040589200e"
     },
     "valid/authored-avi.avi": {
       "bytes": 232,
@@ -34,8 +34,8 @@
       "sha256": "a8883abd5a2fff6a2abead79a4279b903ee0dab2c833c76c9686df7c1e5c32e0"
     },
     "valid/authored-webm.webm": {
-      "bytes": 79,
-      "sha256": "74a56e3c674f3543b8312adf5b2f31003eeba668f21f90bc9fb973c4ffa7f5a9"
+      "bytes": 98,
+      "sha256": "40c36bf75f462debb9c6d45bf16cebf619e16577ff63487bc3b6fa474ff93859"
     }
   }
 }

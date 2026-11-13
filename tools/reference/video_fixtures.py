@@ -46,6 +46,8 @@ def asf_object(guid: bytes, payload: bytes) -> bytes:
 def fixtures() -> dict[str, bytes]:
     file_props_guid = bytes.fromhex("a1dcab8c47a9cf118ee400c00c205365")
     content_guid = bytes.fromhex("3326b2758e66cf11a6d900aa0062ce6c")
+    stream_guid = bytes.fromhex("9107dcb7b7a9cf118ee600c00c205365")
+    codec_list_guid = bytes.fromhex("4052d1861d31d011a3a400a0c90348f6")
     file_id = bytes.fromhex("00112233445566778899aabbccddeeff")
     file_props = (file_id + (123456).to_bytes(8, "little") + (0).to_bytes(8, "little") +
                   (12).to_bytes(8, "little") + (50000000).to_bytes(8, "little") +
@@ -54,15 +56,23 @@ def fixtures() -> dict[str, bytes]:
                   (2048).to_bytes(4, "little") + (800000).to_bytes(4, "little"))
     title = "Video fixture".encode("utf-16le")
     content = (len(title).to_bytes(2, "little") + b"\0\0\0\0\0\0\0\0" + title)
-    children = asf_object(file_props_guid, file_props) + asf_object(content_guid, content)
+    codec_name = "msmpeg4v3\0".encode("utf-16le")
+    codec_list = (bytes(16) + (1).to_bytes(4, "little") + (1).to_bytes(2, "little") +
+                  (len(codec_name) // 2).to_bytes(2, "little") + codec_name +
+                  (0).to_bytes(2, "little") + (4).to_bytes(2, "little") + b"MP43")
+    stream_data = (bytes.fromhex("c0ef19bc4d5bcf11a8fd00805f5c442b") +
+                   bytes.fromhex("3526b2758e66cf11a6d900aa0062ce6c") +
+                   (777).to_bytes(8, "little") + (12).to_bytes(4, "little") +
+                   (0).to_bytes(4, "little") + bytes(6) + bytes(4) +
+                   (320).to_bytes(4, "little") + (240).to_bytes(4, "little"))
+    children = (asf_object(file_props_guid, file_props) + asf_object(content_guid, content) +
+                asf_object(codec_list_guid, codec_list) + asf_object(stream_guid, stream_data))
     asf_header_guid = bytes.fromhex("3026b2758e66cf11a6d900aa0062ce6c")
-    asf_payload = (2).to_bytes(4, "little") + b"\x01\x02" + children
+    asf_payload = (4).to_bytes(4, "little") + b"\x01\x02" + children
     asf = asf_object(asf_header_guid, asf_payload)
 
     ebml_payload = (ebml_element(bytes.fromhex("4286"), b"\x01") +
                     ebml_element(bytes.fromhex("42f7"), b"\x01") +
-                    ebml_element(bytes.fromhex("42f2"), b"\x04") +
-                    ebml_element(bytes.fromhex("42f3"), b"\x08") +
                     ebml_element(bytes.fromhex("4282"), b"webm") +
                     ebml_element(bytes.fromhex("4287"), b"\x04") +
                     ebml_element(bytes.fromhex("4285"), b"\x02"))
@@ -70,7 +80,14 @@ def fixtures() -> dict[str, bytes]:
     info = (ebml_element(bytes.fromhex("2ad7b1"), (1_000_000).to_bytes(3, "big")) +
             ebml_element(bytes.fromhex("4489"), __import__("struct").pack(">d", 1200.0)) +
             ebml_element(bytes.fromhex("7ba9"), b"Fixture WebM"))
-    segment = ebml_element(bytes.fromhex("18538067"), ebml_element(bytes.fromhex("1549a966"), info))
+    video_track = (ebml_element(bytes.fromhex("83"), b"\x01") +
+                   ebml_element(bytes.fromhex("86"), b"V_VP8") +
+                   ebml_element(bytes.fromhex("e0"),
+                       ebml_element(bytes.fromhex("b0"), (320).to_bytes(2, "big")) +
+                       ebml_element(bytes.fromhex("ba"), (240).to_bytes(2, "big"))))
+    tracks = ebml_element(bytes.fromhex("1654ae6b"), ebml_element(bytes.fromhex("ae"), video_track))
+    segment = ebml_element(bytes.fromhex("18538067"),
+                            ebml_element(bytes.fromhex("1549a966"), info) + tracks)
     webm = ebml_header + segment
 
     ftyp = atom(b"ftyp", b"isom" + (512).to_bytes(4, "big") + b"isommp42")

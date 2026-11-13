@@ -33,6 +33,7 @@ internal static class VideoContainerReader
         private int height = 1;
         private uint movieTimeScale = 1;
         private uint mediaTimeScale = 1;
+        private string currentQuickTimeStream = "Xmp.video";
         private double timeCodeScale = 1.0;
 
         private IReadOnlyList<VideoProperty> Result() => values.Values.OrderBy(value => value.Key, StringComparer.Ordinal).ToArray();
@@ -99,6 +100,14 @@ internal static class VideoContainerReader
             string result = encoding.GetString(bytes);
             if (trimZero) result = result.TrimEnd('\0', ' ');
             return result;
+        }
+        private string CString(int start, int length, Encoding encoding)
+        {
+            if (length > limits.MaxValueBytes) throw Limit("A video text value exceeds the value budget.", start);
+            ReadOnlySpan<byte> bytes = data.Slice(start, length);
+            int zero = bytes.IndexOf((byte)0);
+            if (zero >= 0) bytes = bytes[..zero];
+            return encoding.GetString(bytes);
         }
         private string FourCC(int start) => Encoding.Latin1.GetString(data.Slice(start, 4));
 
@@ -359,8 +368,9 @@ internal static class VideoContainerReader
                 Add("Xmp.video.Height", h.ToString(CultureInfo.InvariantCulture));
             }
         }
-        private static readonly byte[] AsfVideoMedia = [0xBC,0x19,0xEF,0xC0,0x5B,0x4D,0xCF,0x11,0xA8,0xFD,0,0x80,0x5F,0x5C,0x44,0x2B];
-        private static readonly byte[] AsfAudioMedia = [0x40,0x99,0x69,0xF8,0x4D,0x5B,0xCF,0x11,0xA8,0xFD,0,0x80,0x5F,0x5C,0x44,0x2B];
+        // GUIDs are compared in their on-disk little-endian field order.
+        private static readonly byte[] AsfVideoMedia = [0xC0,0xEF,0x19,0xBC,0x4D,0x5B,0xCF,0x11,0xA8,0xFD,0,0x80,0x5F,0x5C,0x44,0x2B];
+        private static readonly byte[] AsfAudioMedia = [0x40,0x9E,0x69,0xF8,0x4D,0x5B,0xCF,0x11,0xA8,0xFD,0,0x80,0x5F,0x5C,0x44,0x2B];
         private void ReadAsfCodec(int p, int end)
         {
             Need(p, 20, end, "ASF codec list");
@@ -377,7 +387,9 @@ internal static class VideoContainerReader
                 p += 4;
                 int nameBytes = checked(nameChars * 2);
                 Need(p, nameBytes + 2, end, "ASF codec name");
-                string prefix = type == 1 ? "Xmp.video." : "Xmp.audio.";
+                // Match the pinned reader's printed key: it doubles the codec type before testing for 1,
+                // so the resulting even value routes every codec-list entry to the audio namespace.
+                string prefix = (ushort)(type * 2) == 1 ? "Xmp.video." : "Xmp.audio.";
                 if (nameBytes != 0) Add(prefix + "CodecName", Text(p, nameBytes, Encoding.Unicode));
                 p += nameBytes;
                 ushort descriptionLength = U16LE(p); p += 2;
@@ -453,9 +465,10 @@ internal static class VideoContainerReader
                 else if (type == "stsd") ReadSampleDescription(payload, atomEnd, streamPrefix);
                 else if (type == "vmhd") ReadVideoHeader(payload, atomEnd);
                 else if (type == "stts") ReadTimeToSample(payload, atomEnd, streamPrefix);
-                else if (type == "url " && streamPrefix != "Xmp.ignored") Add(streamPrefix + ".URL", Text(payload, atomEnd - payload, Encoding.Latin1, false));
-                else if (type == "urn " && streamPrefix != "Xmp.ignored") Add(streamPrefix + ".URN", Text(payload, atomEnd - payload, Encoding.Latin1, false));
-                else if (type == "dcom") Add("Xmp.video.Compressor", Text(payload, atomEnd - payload, Encoding.Latin1, false));
+                else if (type == "url " && streamPrefix != "Xmp.ignored") Add(streamPrefix + ".URL", CString(payload, atomEnd - payload, Encoding.Latin1));
+                else if (type == "urn " && streamPrefix != "Xmp.ignored") Add(streamPrefix + ".URN", CString(payload, atomEnd - payload, Encoding.Latin1));
+                else if (type == "dcom") Add("Xmp.video.Compressor", CString(payload, atomEnd - payload, Encoding.Latin1));
+                else if (parent == "udta" && ReadUserDataTag(type, payload, atomEnd)) { }
                 else if (type == "smhd")
                 {
                     Need(payload, 8, atomEnd, "QuickTime sound media header");
@@ -466,7 +479,13 @@ internal static class VideoContainerReader
                     int prefixBytes = type switch { "meta" => 4, "dref" => 8, _ => 0 };
                     if (atomEnd - payload < prefixBytes) throw Invalid("A QuickTime child-table prefix exceeds its atom.", payload);
                     int childStart = payload + prefixBytes;
-                    string childStream = type == "trak" ? FindTrackStream(childStart, atomEnd, depth + 1) : streamPrefix;
+                    string childStream = streamPrefix;
+                    if (type == "trak")
+                    {
+                        childStream = FindTrackStream(childStart, atomEnd, depth + 1);
+                        if (childStream is "Xmp.audio" or "Xmp.video") currentQuickTimeStream = childStream;
+                    }
+                    else if (type == "udta") childStream = currentQuickTimeStream;
                     WalkAtoms(childStart, atomEnd, depth + 1, type, childStream);
                 }
                 p = atomEnd;
@@ -514,6 +533,23 @@ internal static class VideoContainerReader
             return "Xmp.ignored";
         }
 
+        private bool ReadUserDataTag(string type, int p, int end)
+        {
+            string normalized = type.Length == 4 && type[0] == '\u00A9' ? " " + type[1..] : type;
+            string? key = normalized switch
+            {
+                " swr" => "Xmp.video.SoftwareVersion", " nam" => "Xmp.video.Title", " cmt" => "Xmp.video.Comment",
+                " cpy" => "Xmp.video.Copyright", " ART" => "Xmp.video.Artist", " alb" => "Xmp.video.Album",
+                " com" => "Xmp.video.Composer", " dir" => "Xmp.video.Director", " gen" => "Xmp.video.Genre",
+                " too" => "Xmp.video.Encoder", " trk" => "Xmp.video.Track", " xyz" => "Xmp.video.GPSCoordinates",
+                _ => null
+            };
+            if (key is null) return false;
+            Need(p, 4, end, "QuickTime user-data text prefix");
+            Add(key, CString(p + 4, end - p - 4, Encoding.Latin1));
+            return true;
+        }
+
         private void ReadFileType(int p, int end)
         {
             Need(p, 8, end, "QuickTime file type");
@@ -558,7 +594,7 @@ internal static class VideoContainerReader
             Add("Xmp.video.TimeScale", U32BE(p + 12).ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.Duration", ((ulong)U32BE(p + 16) * 1000UL / movieTimeScale).ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.PreferredRate", Number(U16BE(p + 20) + U16BE(p + 22) / 100.0));
-            Add("Xmp.video.PreferredVolume", Number(U16BE(p + 24) * 100.0));
+            Add("Xmp.video.PreferredVolume", Number((data[p + 24] + data[p + 26] * 0.1) * 100));
             string[] tailKeys = ["PreviewTime", "PreviewDuration", "PosterTime", "SelectionTime", "SelectionDuration", "CurrentTime", "NextTrackID"];
             for (int i = 0; i < tailKeys.Length; i++)
                 Add("Xmp.video." + tailKeys[i], U32BE(p + 72 + i * 4).ToString(CultureInfo.InvariantCulture));
