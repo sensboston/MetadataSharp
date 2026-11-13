@@ -6,6 +6,10 @@ using MetadataSharp.Core;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Core.Iptc;
 using MetadataSharp.Formats.Jpeg;
+using MetadataSharp.Formats;
+using MetadataSharp.Formats.Eps;
+using MetadataSharp.Formats.Pgf;
+using MetadataSharp.Core.Sync;
 using MetadataSharp.Tests.Jpeg;
 using MetadataSharp.Tests.Png;
 using MetadataSharp.Formats.Png;
@@ -119,6 +123,39 @@ if (args.Length == 2 && args[0] == "generate")
     var full = new IptcEdit(); full.ReplaceText(new(2, 25), Enumerable.Repeat(new string('a', 64), 949).Append("aaaaa"));
     withXmp.SaveIptcAs(Path.Combine(args[1], "iptc-boundary.jpg"), full);
 
+}
+else if (args.Length == 3 && args[0] == "small-format-writes")
+{
+    string fixtures = args[1], output = args[2];
+    Directory.CreateDirectory(output);
+    byte[] ReadFixture(string name) => File.ReadAllBytes(Path.Combine(fixtures, name));
+    XmpEdit Xmp(string value) { var edit = new XmpEdit(); edit.Set("Xmp.xmp.CreatorTool", value); return edit; }
+
+    File.WriteAllBytes(Path.Combine(output, "ours-eps-insert.eps"), EpsMetadata.WriteXmp(ReadFixture("eps-plain.eps"), Xmp("Parity tool")));
+    File.WriteAllBytes(Path.Combine(output, "ours-eps-replace.eps"), EpsMetadata.WriteXmp(ReadFixture("eps-xmp.eps"), Xmp("Parity tool")));
+    var remove = new XmpEdit(); remove.RemoveAllXmp();
+    File.WriteAllBytes(Path.Combine(output, "ours-eps-remove.eps"), EpsMetadata.WriteXmp(ReadFixture("eps-xmp.eps"), remove));
+    File.WriteAllBytes(Path.Combine(output, "ours-dos-eps.eps"), EpsMetadata.WriteXmp(ReadFixture("dos-eps-xmp.eps"), Xmp("Parity tool")));
+
+    var edits = new SyncEdits();
+    edits.Exif.Set(new(ExifDirectoryKind.Ifd0, 0x013B), "Parity Artist");
+    edits.Iptc.SetHeadline("Parity headline");
+    edits.Xmp.Set("Xmp.xmp.CreatorTool", "Parity tool");
+    File.WriteAllBytes(Path.Combine(output, "ours-pgf.pgf"), PgfMetadata.Write(ReadFixture("pgf-png.pgf"), edits, "Parity comment", replaceComment: true));
+}
+else if (args.Length == 2 && args[0] == "inspect-small-format")
+{
+    ImageMetadata image = ImageMetadata.Read(args[1]);
+    string? artist = null, headline = null, creatorTool = null;
+    if (image.Exif is ExifMetadata exif && exif.TryGetEntry(new(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? entry))
+    { byte[] bytes = new byte[entry.Value.ByteLength]; entry.Value.CopyRawTo(bytes); artist = Encoding.ASCII.GetString(bytes).TrimEnd('\0'); }
+    if (image.Iptc is not null)
+    {
+        int index = image.Iptc.Datasets.ToList().FindIndex(item => item.Key == new IptcDatasetKey(2, 105));
+        if (index >= 0) headline = image.Iptc.GetText(index);
+    }
+    creatorTool = image.Xmp?.Entries.FirstOrDefault(item => item.Path == "CreatorTool")?.Values.FirstOrDefault();
+    Console.WriteLine(JsonSerializer.Serialize(new { format = image.Format.ToString(), artist, headline, creatorTool, comments = image.Comments }));
 }
 else if (args.Length == 2 && args[0] == "inspect-png")
 {

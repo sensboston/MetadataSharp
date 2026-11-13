@@ -7,6 +7,8 @@ using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats;
 using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
+using MetadataSharp.Formats.Pgf;
+using MetadataSharp.Formats.SmallFormats;
 using MetadataSharp.Formats.Tiff;
 
 // Byte-level metadata dump for the differential parity harness, deliberately restricted to the
@@ -38,6 +40,12 @@ using MetadataSharp.Formats.Tiff;
 // With --comments they give way to one record per comment Comments.Read lists, in its order:
 //   COMMENT <index from 1>  <text, escaped like a value>
 // The reference prints one comment and a line end (exiv2 -pc): for a JPEG, the first of these.
+//
+// A picture whose format carries no metadata block (GIF, BMP, TARGA) gives one record, because the
+// reference reports one thing of it - the size its header states, with exiv2 -ps:
+//   SIZE    <width>x<height>  <MIME type, as the reference names it>
+// A PGF file, whose header region holds a whole image file, writes that file's TAG records and then
+// a SIZE record of its own, since the reference prints both the embedded metadata and the size.
 internal static class Program
 {
     private const long MaxWholeFileBytes = 64L * 1024 * 1024;
@@ -147,11 +155,27 @@ internal static class Program
             if (want > 0) _ = probe.Read(head.AsSpan(0, want));
         }
         MetadataFormat format = ImageMetadata.Detect(head);
+        // A TARGA file is told by the footer at its end, so the whole file is needed to know what it is.
+        if (format == MetadataFormat.Unknown && length >= 26)
+        {
+            byte[] tail = new byte[26];
+            using var probe = File.OpenRead(path);
+            probe.Position = length - tail.Length;
+            _ = probe.Read(tail, 0, tail.Length);
+            format = ImageMetadata.Detect(tail);
+        }
+        if (format == MetadataFormat.Unknown && string.Equals(Path.GetExtension(path), ".tga", StringComparison.OrdinalIgnoreCase))
+            format = MetadataFormat.Tga;
         switch (format)
         {
             case MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff or MetadataFormat.Psd:
                 Snapshot(path, stdout, length);
                 return;
+            case MetadataFormat.Gif: Size(path, stdout, length, "gif"); return;
+            case MetadataFormat.Bmp: Size(path, stdout, length, "bmp"); return;
+            case MetadataFormat.Tga: Size(path, stdout, length, "tga"); return;
+            case MetadataFormat.Pgf: Pgf(path, stdout, length); return;
+            case MetadataFormat.Eps: Eps(path, stdout, length); return;
             case MetadataFormat.Exv: Exv(path, stdout, length); return;
             case MetadataFormat.Crw: CrwFile(path, stdout, length); return;
             case MetadataFormat.Mrw: MrwFile(path, stdout, length); return;
@@ -213,6 +237,65 @@ internal static class Program
         }
         if (file.Xmp is not null) Xmp(file.Xmp, stdout);
         Done(stdout, refused);
+    }
+
+    /// <summary>
+    /// A GIF, BMP or TARGA file: the size its header states, and the type the reference names, in the
+    /// one record the reference's own summary prints of such a file. Nothing else of it is read.
+    /// </summary>
+    private static void Size(string path, StreamWriter stdout, long length, string kind)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        byte[] data = File.ReadAllBytes(path);
+        switch (kind)
+        {
+            case "gif":
+                GifMetadata gif = GifMetadata.Read(data);
+                Record(stdout, "SIZE", gif.Width.ToString(CultureInfo.InvariantCulture) + "x" + gif.Height.ToString(CultureInfo.InvariantCulture), GifMetadata.MimeType);
+                break;
+            case "bmp":
+                BmpMetadata bmp = BmpMetadata.Read(data);
+                Record(stdout, "SIZE", bmp.Width.ToString(CultureInfo.InvariantCulture) + "x" + bmp.Height.ToString(CultureInfo.InvariantCulture), BmpMetadata.MimeType);
+                break;
+            default:
+                TgaMetadata tga = TgaMetadata.Read(data);
+                Record(stdout, "SIZE", tga.Width.ToString(CultureInfo.InvariantCulture) + "x" + tga.Height.ToString(CultureInfo.InvariantCulture), TgaMetadata.MimeType);
+                break;
+        }
+        Done(stdout);
+    }
+
+    /// <summary>
+    /// A PGF file: the metadata of the image file its header region holds, and then the size the
+    /// reference prints of the PGF file itself. The reference hands the region to one reader and takes
+    /// whatever that reader gives or throws, so a refusal in the region ends the whole file.
+    /// </summary>
+    private static void Pgf(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        byte[] data = File.ReadAllBytes(path);
+        ImageMetadata file = ImageMetadata.Read(data);
+        if (file.Errors.FirstOrDefault()?.Exception is MetadataException refusal) throw refusal;
+        Exif(file.Exif, stdout);
+        if (file.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
+        if (file.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
+        PgfMetadata pgf = PgfMetadata.Read(data);
+        Record(stdout, "SIZE", pgf.Width.ToString(CultureInfo.InvariantCulture) + "x" + pgf.Height.ToString(CultureInfo.InvariantCulture), PgfMetadata.MimeType);
+        Done(stdout);
+    }
+
+    /// <summary>
+    /// An EPS file: the XMP packet of its DSC comments, which is all the reference reads of it. The
+    /// reference refuses the whole file when the packet cannot be found, is announced and missing, or
+    /// does not decode, so a refusal is reported as one and leaves the file with no rows at all.
+    /// </summary>
+    private static void Eps(string path, StreamWriter stdout, long length)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        ImageMetadata file = ImageMetadata.Read(path);
+        if (file.Errors.FirstOrDefault()?.Exception is MetadataException refusal) throw refusal;
+        if (file.Xmp is XmpPacket xmp) Xmp(xmp, stdout);
+        Done(stdout);
     }
 
     private static void Exv(string path, StreamWriter stdout, long length)

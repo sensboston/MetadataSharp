@@ -43,12 +43,21 @@ public sealed partial class PngMetadataDocument
         var steps = new List<(Action<PngMetadataDocument, Stream> ToStream, Action<PngMetadataDocument, string> ToPath)>();
         // The IPTC pass also runs for edits that only ask for the digest: it recomputes a digest that went stale.
         bool iptcPass = !iptc.IsEmpty || write.UpdateDigest;
-        if (!exif.IsEmpty || xmp is not null || !iptcPass)
-        {
-            steps.Add(((document, stream) => document.SaveCore(stream, exif, xmp, false, default).GetAwaiter().GetResult(),
-                (document, target) => document.SavePath(target, exif, xmp, false, default).GetAwaiter().GetResult()));
-        }
+        // Prepare handles one carrier at a time. Separate passes keep a simultaneous EXIF and XMP
+        // edit from silently choosing the XMP chunk and dropping the EXIF edit.
+        if (!exif.IsEmpty)
+            steps.Add(((document, stream) => document.SaveCore(stream, exif, null, false, default).GetAwaiter().GetResult(),
+                (document, target) => document.SavePath(target, exif, null, false, default).GetAwaiter().GetResult()));
+        if (xmp is not null)
+            steps.Add(((document, stream) => document.SaveCore(stream, null, xmp, false, default).GetAwaiter().GetResult(),
+                (document, target) => document.SavePath(target, null, xmp, false, default).GetAwaiter().GetResult()));
         if (iptcPass) steps.Add(((document, stream) => document.SaveIptc(stream, iptc, write), (document, target) => document.SaveIptcAs(target, iptc, write)));
+        if (steps.Count == 0)
+        {
+            var copy = new ExifEdit();
+            steps.Add(((document, stream) => document.SaveCore(stream, copy, null, false, default).GetAwaiter().GetResult(),
+                (document, target) => document.SavePath(target, copy, null, false, default).GetAwaiter().GetResult()));
+        }
         PngReadOptions settings = options;
         SyncSave.Run(this, stream => Open(stream, settings), destination, path, steps);
     }

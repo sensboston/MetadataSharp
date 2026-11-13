@@ -1,0 +1,134 @@
+[
+  {
+    "file": "dos-eps-xmp.eps",
+    "length": 681,
+    "sha256": "f7f41e23169c4778e182c1c86ae181ce59e69cc23f84840e25593a112282e191",
+    "layout": "dos-eps-xmp",
+    "recipe": "dos-eps-postscript-and-tiff-sections-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "eps-plain.eps",
+    "length": 221,
+    "sha256": "8ebb27ce694d164f6557aa8be3db2d5328ddb4e5c002c1cc23d4936062f87d82",
+    "layout": "eps-plain",
+    "recipe": "eps-plain-empty-comment-block-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "none",
+    "xmp": false
+  },
+  {
+    "file": "eps-reference-write.eps",
+    "length": 165,
+    "sha256": "9fc44ac33a0177f03bda0fee8797572a6759d8bb93b1705e8310030f11eae5f5",
+    "layout": "eps-reference-write",
+    "recipe": "eps-dsc-page-without-preceding-implicit-content-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "none",
+    "xmp": false
+  },
+  {
+    "file": "eps-xmp-31.eps",
+    "length": 607,
+    "sha256": "162f460f3fb8f156f4e564455c0fbbced34338c3b16edae8b00e9ec299ce4e93",
+    "layout": "eps-xmp-31",
+    "recipe": "eps-xmp-illustrator-first-line-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "eps-xmp-crlf.eps",
+    "length": 622,
+    "sha256": "4fc2ff441da76f2a8a333f191be3dc143f3aeff35ded74c06d764064bade4752",
+    "layout": "eps-xmp-crlf",
+    "recipe": "eps-xmp-dos-line-endings-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "eps-xmp-nomain.eps",
+    "length": 604,
+    "sha256": "589b9933d4d2cd6b5020f55c9f403e6fcf929d528e0d32ec5fd917261ede1ffb",
+    "layout": "eps-xmp-nomain",
+    "recipe": "eps-xmp-packet-but-header-says-none-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "none",
+    "xmp": false
+  },
+  {
+    "file": "eps-xmp-readonly.eps",
+    "length": 607,
+    "sha256": "bbc89cd80a2ef35ddfab65a501e50a680f3366bfb639f821f469d139109da893",
+    "layout": "eps-xmp-readonly",
+    "recipe": "eps-xmp-read-only-trailer-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp-refused",
+    "xmp": false
+  },
+  {
+    "file": "eps-xmp-space.eps",
+    "length": 608,
+    "sha256": "5b30438be10f887985641c16b0c967fe90dd94565778b91b7331fb7fd28526e9",
+    "layout": "eps-xmp-space",
+    "recipe": "eps-xmp-openoffice-first-line-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "eps-xmp.eps",
+    "length": 607,
+    "sha256": "4e6c4aae33d3f7f362e0c60c6ad879c75c9ff31509db407b6f0c2ce373741239",
+    "layout": "eps-xmp",
+    "recipe": "eps-xmp-packet-in-comment-block-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "eps",
+    "carriers": "xmp",
+    "xmp": true
+  },
+  {
+    "file": "pgf-colour-table.pgf",
+    "length": 1310,
+    "sha256": "006afc127070b98f08201576d6418d184d239790c439baa3c6d39d39669afa7b",
+    "layout": "pgf-colour-table",
+    "recipe": "pgf-indexed-mode-colour-table-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "pgf",
+    "carriers": "exif,xmp",
+    "xmp": true
+  },
+  {
+    "file": "pgf-empty-region.pgf",
+    "length": 24,
+    "sha256": "945b879dca304e9460aaf48981aa6663b15c00ccf3703f557f3e20e3cbf2b02d",
+    "layout": "pgf-empty-region",
+    "recipe": "pgf-header-region-of-no-length-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "pgf",
+    "carriers": "none",
+    "xmp": false
+  },
+  {
+    "file": "pgf-png.pgf",
+    "length": 542,
+    "sha256": "ad48808673a2edbf0da70006ba32819b6486218205828dc0a0a82cc2ee1dd00c",
+    "layout": "pgf-png",
+    "recipe": "pgf-header-region-holding-a-png-v1",
+    "rights": "owned-synthetic",
+    "dispatch": "pgf",
+    "carriers": "exif,xmp",
+    "xmp": true
+  }
+]

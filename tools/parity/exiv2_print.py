@@ -135,3 +135,35 @@ def summarize_notes(notes: list[str]) -> dict[str, int]:
             kind = "other"
         kinds[kind] = kinds.get(kind, 0) + 1
     return kinds
+
+
+#: What ``exiv2 -ps`` prints of a file whose format carries no metadata block: a line with the label
+#: and the size as "<width> x <height>", and a line with the label and the MIME type. The labels are
+#: the untranslated English ones; ``LC_ALL=C`` in the job keeps them so.
+SUMMARY_IMAGE_SIZE = re.compile(r"^Image size\s+:\s*(?P<width>\d+) x (?P<height>\d+)\s*$")
+SUMMARY_MIME_TYPE = re.compile(r"^MIME type\s+:\s*(?P<mime>\S+)\s*$")
+
+
+def parse_summary(text: str) -> tuple[str, str, str] | None:
+    """``(width, height, mime)`` from what ``exiv2 -ps`` printed, or ``None`` when it printed no size.
+
+    The summary prints ``Image size : <width> x <height>`` for a format whose header states a size and
+    ``0 x 0`` for one whose header does not - an EPS file, whose pixel size the tool never learns. A
+    zero pair is therefore not a measurement and gives ``None``, together with the MIME type it does
+    not accompany. A value is kept as the text the tool wrote, so that the comparison is of what was
+    reported and not of a number this harness made of it.
+    """
+    size = mime = None
+    for line in text.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        found = SUMMARY_IMAGE_SIZE.match(line)
+        if found:
+            size = (found.group("width"), found.group("height"))
+            continue
+        found = SUMMARY_MIME_TYPE.match(line)
+        if found:
+            mime = found.group("mime")
+    if size is None or size == ("0", "0"):
+        return None
+    if mime is None:
+        return None
+    return (size[0], size[1], mime)

@@ -4,6 +4,7 @@ The grammar is one record per line, tab-separated fields, LF endings:
 
     FILE\t<path>
     TAG\t<key>\t<type>\t<count>\t<value>[\t<interpreted>]
+    SIZE\t<width>x<height>\t<mime type>
     STATUS\tok|refused|not-attempted|error\t<detail>
 
 The sixth ``TAG`` field is optional. A record that carries it offers an interpreted (human-readable)
@@ -17,6 +18,8 @@ rather than as a broken run.
 """
 
 from __future__ import annotations
+
+import re
 
 STATUS_KINDS = ("ok", "refused", "not-attempted", "error")
 _UNESCAPE = {"\\t": "\t", "\\n": "\n", "\\r": "\r", "\\\\": "\\"}
@@ -104,7 +107,8 @@ def parse_dump(text: str, *, source: str = "dump") -> dict[str, dict]:
                 raise DumpFormatError(f"{source}:{lineno}: FILE record without a path")
             if current is not None:
                 raise DumpFormatError(f"{source}:{lineno}: FILE record before the previous one was closed")
-            current = {"status": None, "detail": "", "tags": {}, "order": [], "duplicates": 0, "interpreted": {}}
+            current = {"status": None, "detail": "", "tags": {}, "order": [], "duplicates": 0, "interpreted": {},
+                   "size": None}
             files[unescape(fields[1])] = current
             continue
         if current is None:
@@ -128,6 +132,18 @@ def parse_dump(text: str, *, source: str = "dump") -> dict[str, dict]:
             current["order"].append(key)
             if len(fields) == 6:
                 current["interpreted"][key] = unescape(fields[5])
+            continue
+        if kind == "SIZE":
+            # The record a format without a metadata block gives: the size its header states, which is
+            # what the reference's own summary (`exiv2 -ps`) prints of such a file.
+            if len(fields) != 3:
+                raise DumpFormatError(f"{source}:{lineno}: SIZE record must have 3 fields, got {len(fields)}")
+            if current["size"] is not None:
+                raise DumpFormatError(f"{source}:{lineno}: second SIZE record for one file")
+            match = re.fullmatch(r"(\d+)x(\d+)", fields[1])
+            if match is None:
+                raise DumpFormatError(f"{source}:{lineno}: SIZE record does not give two dimensions: {fields[1]!r}")
+            current["size"] = (int(match.group(1)), int(match.group(2)), unescape(fields[2]))
             continue
         if kind == "STATUS":
             if current["status"] is not None:

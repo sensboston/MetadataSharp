@@ -43,7 +43,7 @@ namespace MetadataSharp.Formats;
 public sealed class ImageMetadata
 {
     /// <summary>
-    /// How many bytes from the start of a file <see cref="Detect"/> looks at, at most. A shorter
+    /// How many bytes from the start of a file <see cref="Detect(ReadOnlySpan{byte})"/> looks at, at most. A shorter
     /// header is not an error: it gives <see cref="MetadataFormat.Unknown"/> where the signature
     /// does not fit in it.
     /// </summary>
@@ -153,8 +153,51 @@ public sealed class ImageMetadata
         // bytes a bare codestream starts with.
         if (At(header, 0, [0x00, 0x00, 0x00, 0x0C, 0x4A, 0x58, 0x4C, 0x20, 0x0D, 0x0A, 0x87, 0x0A]) || At(header, 0, [0xFF, 0x0A]))
             return MetadataFormat.Jxl;
+        // GIF, BMP, PGF and EPS are told by their first bytes; a TARGA file has no signature at its
+        // start, so it is told by the footer at its end when the whole file is given.
+        if (SmallFormats.GifMetadata.HasSignature(header)) return MetadataFormat.Gif;
+        if (SmallFormats.BmpMetadata.HasSignature(header)) return MetadataFormat.Bmp;
+        if (Pgf.PgfMetadata.HasSignature(header)) return MetadataFormat.Pgf;
+        if (Eps.EpsMetadata.HasSignature(header)) return MetadataFormat.Eps;
+        if (SmallFormats.TgaMetadata.HasSignature(header)) return MetadataFormat.Tga;
         return MetadataFormat.Unknown;
     }
+
+    /// <summary>
+    /// Tells the format of a file at a path. Signatures take precedence; when none identifies the
+    /// file, a <c>.tga</c> or <c>.TGA</c> suffix tells TARGA as it does for the reference tool.
+    /// </summary>
+    public static MetadataFormat Detect(string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+        using var file = new FileStream(Path.GetFullPath(path), FileMode.Open, FileAccess.Read, FileShare.Read);
+        byte[] head = new byte[HeaderLength];
+        int read = 0;
+        while (read < head.Length)
+        {
+            int count = file.Read(head.AsSpan(read));
+            if (count == 0) break;
+            read += count;
+        }
+        MetadataFormat format = Detect(head.AsSpan(0, read));
+        if (format == MetadataFormat.Unknown && file.Length >= 26)
+        {
+            byte[] tail = new byte[26];
+            file.Position = file.Length - tail.Length;
+            int tailRead = 0;
+            while (tailRead < tail.Length)
+            {
+                int count = file.Read(tail.AsSpan(tailRead));
+                if (count == 0) break;
+                tailRead += count;
+            }
+            format = Detect(tail.AsSpan(0, tailRead));
+        }
+        return format == MetadataFormat.Unknown && HasTgaName(path) ? MetadataFormat.Tga : format;
+    }
+
+    private static bool HasTgaName(string path) =>
+        string.Equals(Path.GetExtension(path), ".tga", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Reads every kind of metadata of one complete file held in memory.</summary>
     /// <param name="data">The whole file.</param>
@@ -217,7 +260,7 @@ public sealed class ImageMetadata
         Compose(await Drain(source, limits, true, token).ConfigureAwait(false), limits);
 
     /// <summary>Reads every kind of metadata of the file at a path. The file is read into memory and closed.</summary>
-    /// <param name="path">The path of the file. Its name plays no part: the format is told by the signature.</param>
+    /// <param name="path">The path of the file. A <c>.tga</c> or <c>.TGA</c> suffix identifies TARGA when no signature identifies a format.</param>
     /// <param name="limits">The budgets handed to the readers, or null for the defaults of each reader.</param>
     /// <returns>The snapshot, as for the read of a file held in memory.</returns>
     /// <exception cref="MetadataException">
@@ -230,14 +273,14 @@ public sealed class ImageMetadata
         limits?.Validate();
         using var file = new FileStream(Path.GetFullPath(path), FileMode.Open, FileAccess.Read, FileShare.Read,
             (limits ?? new MetadataLimits()).CopyBufferBytes, FileOptions.SequentialScan);
-        return Compose(Drain(file, limits, false, default).GetAwaiter().GetResult(), limits);
+        return Compose(Drain(file, limits, false, default).GetAwaiter().GetResult(), limits, path);
     }
 
     /// <summary>
     /// Reads every kind of metadata of the file at a path without blocking on it. The file is read
     /// into memory and closed.
     /// </summary>
-    /// <param name="path">The path of the file. Its name plays no part: the format is told by the signature.</param>
+    /// <param name="path">The path of the file. A <c>.tga</c> or <c>.TGA</c> suffix identifies TARGA when no signature identifies a format.</param>
     /// <param name="limits">The budgets handed to the readers, or null for the defaults of each reader.</param>
     /// <param name="cancellationToken">Ends the read of the file.</param>
     /// <returns>The snapshot, as for the read of a file held in memory.</returns>
@@ -260,7 +303,7 @@ public sealed class ImageMetadata
         token.ThrowIfCancellationRequested();
         var file = new FileStream(Path.GetFullPath(path), FileMode.Open, FileAccess.Read, FileShare.Read,
             (limits ?? new MetadataLimits()).CopyBufferBytes, FileOptions.SequentialScan | FileOptions.Asynchronous);
-        try { return Compose(await Drain(file, limits, true, token).ConfigureAwait(false), limits); }
+        try { return Compose(await Drain(file, limits, true, token).ConfigureAwait(false), limits, path); }
         finally { await file.DisposeAsync().ConfigureAwait(false); }
     }
 
@@ -359,15 +402,16 @@ public sealed class ImageMetadata
         }
     }
 
-    private static ImageMetadata Compose(byte[] file, MetadataLimits? limits) => Compose(file, file, limits);
+    private static ImageMetadata Compose(byte[] file, MetadataLimits? limits, string? path = null) => Compose(file, file, limits, path);
 
     /// <summary>
     /// Reads the kinds one by one. <paramref name="owned"/> is the same file as an array when the
     /// caller has one, for the readers that take a stream; they get a copy otherwise.
     /// </summary>
-    private static ImageMetadata Compose(ReadOnlySpan<byte> data, byte[]? owned, MetadataLimits? limits)
+    private static ImageMetadata Compose(ReadOnlySpan<byte> data, byte[]? owned, MetadataLimits? limits, string? path = null)
     {
         MetadataFormat format = Detect(data);
+        if (format == MetadataFormat.Unknown && path is not null && HasTgaName(path)) format = MetadataFormat.Tga;
         var parts = new Parts();
         switch (format)
         {
@@ -385,6 +429,13 @@ public sealed class ImageMetadata
             case MetadataFormat.Crw: ReadCrw(data, limits, parts); break;
             case MetadataFormat.Mrw: ReadMrw(data, limits, parts); break;
             case MetadataFormat.Raf: ReadRaf(data, limits, parts); break;
+            // A GIF, BMP or TARGA file has no metadata block, so no reader runs for it and the
+            // snapshot is empty rather than refused.
+            case MetadataFormat.Gif:
+            case MetadataFormat.Bmp:
+            case MetadataFormat.Tga: break;
+            case MetadataFormat.Pgf: ReadPgf(data, limits, parts); break;
+            case MetadataFormat.Eps: ReadEps(data, limits, parts); break;
         }
 
         // These three readers tell the container themselves and take any bytes: a format the
@@ -587,6 +638,41 @@ public sealed class ImageMetadata
         try { metadata = JxlReader.Read(data, limits, null, refusals); }
         catch (MetadataException refusal) { parts.Refuse(refusal, ExifXmp); return; }
         parts.Exif = metadata.Exif;
+        parts.Xmp = metadata.Xmp;
+        parts.Refuse(refusals);
+    }
+
+    // ---- the small formats ----
+    //
+    // BMP, GIF and TARGA carry no EXIF, IPTC or XMP block, and the reference reads none of them: there
+    // is nothing here for a reader to refuse, so the snapshot of such a file has no parts and no
+    // errors. What the format does have is the size its header states, which is not metadata; the
+    // readers that give it - BmpMetadata, GifMetadata and TgaMetadata - are called by a consumer that
+    // wants it, as the dump tool of this repository is.
+
+    /// <summary>
+    /// A PGF file: the EXIF, IPTC and XMP of the image file its header region holds. The reference
+    /// hands the region to one reader and takes whatever that reader gives or throws, so a refusal
+    /// anywhere in the region - of the carrier's container or of one kind of its metadata - ends the
+    /// whole file as refused rather than leaving the other kinds behind.
+    /// </summary>
+    private static void ReadPgf(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
+    {
+        Pgf.PgfMetadata metadata;
+        try { metadata = Pgf.PgfMetadata.Read(data, limits); }
+        catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); return; }
+        parts.Exif = metadata.Exif;
+        parts.Iptc = metadata.Iptc;
+        parts.Xmp = metadata.Xmp;
+    }
+
+    /// <summary>An EPS file: the XMP packet of its DSC comments and nothing else.</summary>
+    private static void ReadEps(ReadOnlySpan<byte> data, MetadataLimits? limits, Parts parts)
+    {
+        var refusals = new KindRefusals();
+        Eps.EpsMetadata metadata;
+        try { metadata = Eps.EpsMetadata.Read(data, limits, refusals); }
+        catch (MetadataException refusal) { parts.Refuse(refusal, XmpOnly); return; }
         parts.Xmp = metadata.Xmp;
         parts.Refuse(refusals);
     }

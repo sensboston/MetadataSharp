@@ -12,6 +12,8 @@ internal sealed record PngChunk(string Type, long Start, int Size, bool Xmp, boo
     internal string? Profile { get; init; }
     /// <summary>A tEXt, zTXt or iTXt chunk whose keyword is exactly "Comment".</summary>
     internal bool Comment { get; init; }
+    /// <summary>A tEXt, zTXt or iTXt chunk whose keyword is exactly "Description".</summary>
+    internal bool Description { get; init; }
     /// <summary>The checksum the chunk ends with, which the scan found to hold.</summary>
     internal uint Checksum { get; init; }
     internal long Payload => Start + 8;
@@ -104,8 +106,11 @@ internal static class PngScanner
                 if (fixedSize >= 0 && size != fixedSize) throw Invalid("Invalid fixed-size ancillary chunk.");
                 bool xmp = type == "iTXt" && prefix.AsSpan().StartsWith("XML:com.adobe.xmp\0"u8);
                 string? profile = type is "tEXt" or "zTXt" ? RawProfileName(prefix) : null;
-                bool comment = type is ("tEXt" or "zTXt" or "iTXt") && prefix.AsSpan().StartsWith("Comment\0"u8);
-                chunks.Add(new(type, start, (int)size, xmp, !Known.Contains(type) && (header[7] & 32) == 0) { Profile = profile, Comment = comment, Checksum = ~crc });
+                bool text = type is "tEXt" or "zTXt" or "iTXt";
+                bool comment = text && prefix.AsSpan().StartsWith("Comment\0"u8);
+                bool description = text && prefix.AsSpan().StartsWith("Description\0"u8);
+                chunks.Add(new(type, start, (int)size, xmp, !Known.Contains(type) && (header[7] & 32) == 0)
+                { Profile = profile, Comment = comment, Description = description, Checksum = ~crc });
             }
             throw Invalid("Missing IEND.");
         }

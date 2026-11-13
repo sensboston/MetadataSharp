@@ -1,7 +1,7 @@
 namespace MetadataSharp.Formats;
 
 /// <summary>
-/// What the first bytes of a file say it is, as <see cref="ImageMetadata.Detect"/> tells it. A
+/// What the first bytes of a file say it is, as <see cref="ImageMetadata.Detect(ReadOnlySpan{byte})"/> tells it. A
 /// member names a signature and so a reader, not a camera or a file extension: where several kinds
 /// of file share one signature they share one member.
 /// </summary>
@@ -67,5 +67,36 @@ public enum MetadataFormat
     Mrw,
 
     /// <summary>Fujifilm RAF: the text <c>FUJIFILM</c>.</summary>
-    Raf
+    Raf,
+
+    /// <summary>
+    /// CompuServe GIF: the text <c>GIF87a</c> or <c>GIF89a</c>. The format carries no metadata block;
+    /// the size of its logical screen is what is read.
+    /// </summary>
+    Gif,
+
+    /// <summary>
+    /// Windows bitmap: the bytes <c>BM</c>. The format carries no metadata block; the size of its
+    /// information header is what is read.
+    /// </summary>
+    Bmp,
+
+    /// <summary>
+    /// Truevision TARGA: no signature stands at the start of the file, so the 2.0 footer at its end is
+    /// what tells it; byte detection needs the whole file, and the path overload also accepts a <c>.tga</c> name. The version 1 file
+    /// the reference tells by its name alone is not recognised.
+    /// </summary>
+    Tga,
+
+    /// <summary>
+    /// PGF: the bytes <c>PGF</c>. The header region holds one whole image file, whose EXIF, IPTC and XMP
+    /// are the metadata of the PGF file.
+    /// </summary>
+    Pgf,
+
+    /// <summary>
+    /// Encapsulated PostScript: a first line of DSC 3.0, or the DOS EPS signature. XMP is what the
+    /// format carries, and the only thing read of it.
+    /// </summary>
+    Eps
 }

@@ -138,6 +138,10 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Crw, MetadataFamily.Comment, MetadataOperation.Insert, CapabilityStatus.Supported, "CrwMetadataDocument.SaveComment: the comment as UTF-8 in a user comment record added to the image properties directory; every other record keeps its bytes."),
         (MetadataContainer.Crw, MetadataFamily.Comment, MetadataOperation.Replace, CapabilityStatus.Supported, "CrwMetadataDocument.SaveComment: the comment as UTF-8 in the record the file has, which keeps its length when the comment is shorter, as Exiv2 0.28.9 keeps it."),
         (MetadataContainer.Crw, MetadataFamily.Comment, MetadataOperation.Remove, CapabilityStatus.Supported, "CrwMetadataDocument.SaveComment with null: the record stays and is filled with zero bytes, as Exiv2 0.28.9 leaves it, which reads as no comment."),
+        (MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "EpsMetadata.Read: an announced XMP packet in plain or DOS EPS; read-only trailers are refused."),
+        (MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: inserts an announced packet in plain or DOS EPS; the rewritten packet is parsed before output."),
+        (MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: replaces the packet range; DOS section lengths and offsets are updated and previews verified byte-identical."),
+        (MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: removes the packet and marks NoMain; malformed framing and unsafe DOS layouts are refused."),
         (MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks, joined by their numbers as in a JPEG; the bytes the profile declares, not interpreted."),
         (MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment, in file order, as in a JPEG. Nothing is written."),
         (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; a block longer than a JPEG segment holds is read within the budgets. An item built from other items or stored in another file is refused."),
@@ -206,6 +210,22 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; any property by path, in any namespace."),
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; any property by path; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the EXIF of the image file held in the header region; width and height from the PGF header."),
+        (MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer for a PNG carrier; EXIF tags retain the PNG writer's edit restrictions."),
+        (MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer for a PNG carrier; EXIF tags retain the PNG writer's edit restrictions."),
+        (MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer for a PNG carrier; whole EXIF removal and per-tag removals are supported."),
+        (MetadataContainer.Pgf, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the IPTC of the image file held in the header region."),
+        (MetadataContainer.Pgf, MetadataFamily.IptcIim, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer's Raw profile type iptc stream and IPTC edit restrictions."),
+        (MetadataContainer.Pgf, MetadataFamily.IptcIim, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer's Raw profile type iptc stream and IPTC edit restrictions."),
+        (MetadataContainer.Pgf, MetadataFamily.IptcIim, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer's Raw profile type iptc stream; whole and per-dataset removal are supported."),
+        (MetadataContainer.Pgf, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the XMP packet of the image file held in the header region."),
+        (MetadataContainer.Pgf, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer to insert XMP in a PNG carrier."),
+        (MetadataContainer.Pgf, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer to replace XMP in a PNG carrier."),
+        (MetadataContainer.Pgf, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer to remove XMP in a PNG carrier."),
+        (MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Partial, "Comments.Read: reads Comment and reference Description text chunks of an embedded PNG carrier; pinned Exiv2 does not surface PGF comments."),
+        (MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer with the reference Description keyword; pinned Exiv2 does not surface PGF comments; the region length is updated and its image suffix retained."),
+        (MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer with the reference Description keyword; pinned Exiv2 does not surface PGF comments; the region length is updated and its image suffix retained."),
+        (MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write with comment null: removes Comment and Description text chunks through the PNG writer; pinned Exiv2 does not surface PGF comments; the PGF region length is updated."),
         (MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: image resource 0x040F, not interpreted; a second one is refused."),
         (MetadataContainer.Raf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the EXIF block of the embedded JPEG file, and the tags only the primary directory of the TIFF structure has; its Fujifilm directory (tag 0xF000) is not read; tested on authored files. Nothing is written."),
         (MetadataContainer.Raf, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the IPTC datasets of the embedded JPEG file; tested on authored files, not on camera files. Nothing is written."),
@@ -403,7 +423,7 @@ public sealed class MetadataCapabilitiesTests
         MetadataContainer[] profiles = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.WebP, MetadataContainer.Tiff,
             MetadataContainer.Avif, MetadataContainer.Exv, MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Psd];
         // The comment of a CRW file is a record of its heap: CrwMetadata reads it, and RawContainerTests authors one.
-        MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Crw, MetadataContainer.Exv];
+        MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Crw, MetadataContainer.Exv, MetadataContainer.Pgf];
         CapabilityDescriptor[] extracted = MetadataCapabilities.All.Where(row => row.Operation == MetadataOperation.Extract).ToArray();
         CapabilityDescriptor[] listed = MetadataCapabilities.All
             .Where(row => row.Family == MetadataFamily.Comment && row.Operation == MetadataOperation.Read).ToArray();
@@ -421,7 +441,7 @@ public sealed class MetadataCapabilitiesTests
         foreach (CapabilityDescriptor row in listed)
         {
             // Of a PNG only the keyword Comment is read.
-            Assert.Equal(row.Container == MetadataContainer.Png ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
+            Assert.Equal(row.Container is MetadataContainer.Png or MetadataContainer.Pgf ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
             Assert.StartsWith(row.Container == MetadataContainer.Crw ? "CrwMetadata.Read: " : "Comments.Read: ", row.Note);
         }
     }
@@ -450,6 +470,7 @@ public sealed class MetadataCapabilitiesTests
             (MetadataContainer.Png, "PngMetadataDocument", CapabilityStatus.Supported),
             // CrwWriterTests sets, replaces and clears the comment record.
             (MetadataContainer.Crw, "CrwMetadataDocument", CapabilityStatus.Supported),
+            (MetadataContainer.Pgf, "PgfMetadata", CapabilityStatus.Partial),
         ];
         (MetadataFamily Family, string Save, (MetadataContainer Container, string Document, CapabilityStatus Status)[] Writers)[] families =
         [
@@ -464,7 +485,7 @@ public sealed class MetadataCapabilitiesTests
             foreach ((MetadataContainer container, string document, CapabilityStatus status) in writers)
             {
                 CapabilityDescriptor[] own = rows.Where(row => row.Container == container).ToArray();
-                string api = document + "." + save;
+                string api = container == MetadataContainer.Pgf ? "PgfMetadata.Write" : document + "." + save;
 
                 Assert.Equal(writes, own.Select(row => row.Operation));
                 Assert.All(own, row =>
@@ -472,7 +493,8 @@ public sealed class MetadataCapabilitiesTests
                     Assert.Equal(status, row.Status);
                     Assert.StartsWith(api, row.Note);
                 });
-                Assert.StartsWith(api + " with null: ", own[2].Note);
+                if (container == MetadataContainer.Pgf) Assert.StartsWith(api + " with comment null: ", own[2].Note);
+                else Assert.StartsWith(api + " with null: ", own[2].Note);
             }
         }
     }

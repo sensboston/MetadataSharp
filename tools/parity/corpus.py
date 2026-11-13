@@ -26,6 +26,7 @@ FALLBACK_EXTENSIONS = (
     ".jpg", ".jpeg", ".tiff", ".tif", ".png", ".webp", ".psd", ".jp2", ".jxl", ".avif", ".heic",
     ".crw", ".raf", ".dng", ".cr2", ".nef", ".orf", ".rw2", ".arw", ".sr2", ".srw", ".pef", ".mrw",
     ".mp4", ".mov", ".avi", ".asf", ".wav", ".xmp", ".exv", ".eps", ".pgf", ".dcp",
+    ".gif", ".bmp", ".tga", ".targa",
 )
 SKIP_SUFFIXES = (".json", ".md", ".txt", ".py", ".sh", ".out")
 
