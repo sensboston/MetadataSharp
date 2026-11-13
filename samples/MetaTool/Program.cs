@@ -33,7 +33,8 @@ static int Run(string[] args)
     }
 }
 
-static void Usage() => Console.WriteLine("""MetaTool — public-API metadata sample
+static void Usage() => Console.WriteLine("""
+MetaTool — public-API metadata sample
   metatool -p <a|e|i|x|c> [-K key] file
   metatool set <key> <value> file | del <key> file
   metatool rename [pattern] [--dry-run] file...
