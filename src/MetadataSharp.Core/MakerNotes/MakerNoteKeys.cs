@@ -40,7 +40,12 @@ internal static class MakerNoteKeys
     }
 
     /// <summary>The group of the tags of the note's own directory.</summary>
-    internal static string Group(MakerNoteFormat format) => format == MakerNoteFormat.Canon ? "Canon" : format.ToString();
+    internal static string Group(MakerNoteFormat format) => format switch
+    {
+        MakerNoteFormat.Canon => "Canon",
+        MakerNoteFormat.OMSystem => "Olympus2",
+        _ => format.ToString(),
+    };
 
     /// <summary>
     /// True for the layouts in which a value that grows is appended. Each was confirmed by the

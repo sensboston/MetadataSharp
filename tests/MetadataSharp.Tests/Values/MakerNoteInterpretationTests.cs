@@ -345,6 +345,47 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("-224", Top(MakerNoteFormat.Panasonic, "AccelerometerY", SignedLongs(-2147418336)));
     }
 
+    // ---- Olympus / OM System ---------------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("Quality", 2, "High Quality (HQ)")]
+    [InlineData("Quality", 7, "(7)")]
+    [InlineData("Macro", 0, "Off")]
+    [InlineData("BWMode", 0, "Off")]
+    [InlineData("FlashMode", 0, "Off")]
+    [InlineData("FlashDevice", 0, "None")]
+    [InlineData("FocusRange", 0, "Normal")]
+    [InlineData("FocusMode", 0, "Auto")]
+    [InlineData("SharpnessFactor", 0, "Normal")]
+    [InlineData("ExternalFlashBounce", 0, "Off")]
+    [InlineData("Contrast", 1, "Normal")]
+    [InlineData("OneTouchWB", 1, "On")]
+    public void AnOlympusTagReadsAsItsReferenceRendering(string name, int number, string expected) =>
+        Assert.Equal(expected, Top(MakerNoteFormat.Olympus, name, Shorts(number)));
+
+    [Fact]
+    public void AnOlympusMakerNoteReadsItsCompositeAndTextValues()
+    {
+        Assert.Equal("Normal", Top(MakerNoteFormat.Olympus, "SpecialMode", Longs(0, 0, 0)));
+        Assert.Equal("Fast, Sequence number 1", Top(MakerNoteFormat.Olympus2, "SpecialMode", Longs(2, 1, 0)));
+        Assert.Equal("Panorama, Sequence number 3, Top to bottom", Top(MakerNoteFormat.Olympus, "SpecialMode", Longs(3, 3, 4)));
+        Assert.Equal("1.7x", Top(MakerNoteFormat.Olympus, "DigitalZoom", Rationals((17, 10))));
+        Assert.Equal("None", Top(MakerNoteFormat.Olympus, "DigitalZoom", Rationals((1, 1))));
+        Assert.Equal("Auto", Top(MakerNoteFormat.Olympus, "WhiteBalance", Shorts(1, 0)));
+        Assert.Equal("5500 Kelvin", Top(MakerNoteFormat.Olympus, "WhiteBalance", Shorts(2, 6)));
+        Assert.Equal("OLYMPUS DIGITAL CAMERA", Top(MakerNoteFormat.Olympus2, "CameraID",
+            Undefined(Encoding.ASCII.GetBytes("OLYMPUS DIGITAL CAMERA\0"))));
+    }
+
+    [Fact]
+    public void AnOmSystemNoteUsesTheExiv2Olympus2GroupName()
+    {
+        var entry = new MakerNoteEntry(0x0209, "CameraID", Undefined(Encoding.ASCII.GetBytes("OM SYSTEM CAMERA\0")), []);
+        var note = new MakerNote(MakerNoteFormat.OMSystem, Little, [entry]);
+        Assert.Equal("Exif.Olympus2.CameraID", note.GetKey(entry));
+        Assert.Equal("OM SYSTEM CAMERA", note.Interpret(entry));
+    }
+
     // ---- Minolta ----------------------------------------------------------------------------------------
 
     [Theory]
