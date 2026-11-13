@@ -215,6 +215,7 @@ internal static partial class MakerNoteLabels
         NikonLd4Aperture,
         NikonLd4FocalLength,
         NikonLd4FocusDistance,
+        NikonIiIso,
         SonyExposureBias,
         SonyExposureStandardAdjustment,
         SonyAmbientTemperature,
@@ -409,6 +410,8 @@ internal static partial class MakerNoteLabels
                 return NikonLd4FocalLength(value);
             case Form.NikonLd4FocusDistance:
                 return NikonLd4FocusDistance(value);
+            case Form.NikonIiIso:
+                return NikonIiIso(value);
             case Form.SonyExposureBias:
                 return SonyExposureBias(value);
             case Form.SonyExposureStandardAdjustment:
@@ -1453,6 +1456,14 @@ internal static partial class MakerNoteLabels
         if (!NikonLd4Short(value, out long number))
             return null;
         return number == 0 ? "n/a" : (0.01 * Math.Pow(10, number / 10240.0)).ToString("F2", CultureInfo.InvariantCulture) + " m";
+    }
+
+    private static string? NikonIiIso(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number) || number is < 0 or > 255)
+            return null;
+        double iso = 100.0 * Math.Exp((number / 12.0 - 5) * Math.Log(2.0));
+        return Whole((long)Math.Round(iso, MidpointRounding.AwayFromZero));
     }
 
     /// <summary>

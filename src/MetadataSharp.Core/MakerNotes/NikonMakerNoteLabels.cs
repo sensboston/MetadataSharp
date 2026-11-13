@@ -73,6 +73,26 @@ internal static partial class MakerNoteLabels
         new(Top, "FlashBracketComp", [], Form.NikonFlashComp),
         new(Top, "FlashComp", [], Form.NikonFlashComp),
 
+        // ISOInfo (0x0025). The two ISO bytes use Nikon's logarithmic third-stop encoding.
+        new(0x0025, "ISO", [], Form.NikonIiIso),
+        new(0x0025, "ISO2", [], Form.NikonIiIso),
+        new(0x0025, "ISOExpansion",
+        [
+            (0x000, "Off"), (0x101, "Hi 0.3"), (0x102, "Hi 0.5"), (0x103, "Hi 0.7"), (0x104, "Hi 1.0"),
+            (0x105, "Hi 1.3"), (0x106, "Hi 1.5"), (0x107, "Hi 1.7"), (0x108, "Hi 2.0"), (0x109, "Hi 2.3"),
+            (0x10A, "Hi 2.5"), (0x10B, "Hi 2.7"), (0x10C, "Hi 3.0"), (0x10D, "Hi 3.3"), (0x10E, "Hi 3.5"),
+            (0x10F, "Hi 3.7"), (0x110, "Hi 4.0"), (0x111, "Hi 4.3"), (0x112, "Hi 4.5"), (0x113, "Hi 4.7"),
+            (0x114, "Hi 5.0"), (0x201, "Lo 0.3"), (0x202, "Lo 0.5"), (0x203, "Lo 0.7"), (0x204, "Lo 1.0"),
+        ]),
+        new(0x0025, "ISOExpansion2",
+        [
+            (0x000, "Off"), (0x101, "Hi 0.3"), (0x102, "Hi 0.5"), (0x103, "Hi 0.7"), (0x104, "Hi 1.0"),
+            (0x105, "Hi 1.3"), (0x106, "Hi 1.5"), (0x107, "Hi 1.7"), (0x108, "Hi 2.0"), (0x109, "Hi 2.3"),
+            (0x10A, "Hi 2.5"), (0x10B, "Hi 2.7"), (0x10C, "Hi 3.0"), (0x10D, "Hi 3.3"), (0x10E, "Hi 3.5"),
+            (0x10F, "Hi 3.7"), (0x110, "Hi 4.0"), (0x111, "Hi 4.3"), (0x112, "Hi 4.5"), (0x113, "Hi 4.7"),
+            (0x114, "Hi 5.0"), (0x201, "Lo 0.3"), (0x202, "Lo 0.5"), (0x203, "Lo 0.7"), (0x204, "Lo 1.0"),
+        ]),
+
         // Lens Data 3 (the LensData array of the note, tag 0x0098).
         new(0x0098, "ExitPupilPosition", [], Form.NikonLd3ExitPupil),
         new(0x0098, "AFAperture", [], Form.NikonLd3Aperture),

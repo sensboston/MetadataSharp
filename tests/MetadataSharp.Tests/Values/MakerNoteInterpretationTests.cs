@@ -406,6 +406,16 @@ public sealed class MakerNoteInterpretationTests
     }
 
     [Fact]
+    public void NikonIsoInfoUsesItsThirdStopEncodingAndExpansionLabels()
+    {
+        Assert.Equal("100", Field(MakerNoteFormat.Nikon3, 0x0025, "ISO", Bytes(60)));
+        Assert.Equal("12800", Field(MakerNoteFormat.Nikon3, 0x0025, "ISO2", Bytes(144)));
+        Assert.Equal("Off", Field(MakerNoteFormat.Nikon3, 0x0025, "ISOExpansion", Shorts(0)));
+        Assert.Equal("Hi 2.0", Field(MakerNoteFormat.Nikon3, 0x0025, "ISOExpansion2", Shorts(0x108)));
+        Assert.Null(Field(MakerNoteFormat.Nikon3, 0x0025, "ISO", Shorts(60)));
+    }
+
+    [Fact]
     public void NikonLensDataThreeNumbersUseTheirEncodedUnits()
     {
         Assert.Equal("F2.0", Field(MakerNoteFormat.Nikon3, 0x0098, "AFAperture", Bytes(24)));
