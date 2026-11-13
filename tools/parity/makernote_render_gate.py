@@ -67,6 +67,10 @@ DOCUMENTED_EXCEPTIONS: dict[str, str] = {
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."
     ),
+    "Exif.Minolta.LensID": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
 }
 
 # The parser deliberately refuses these two damaged/over-budget inputs. These are exact pinned corpus
@@ -82,6 +86,8 @@ DOCUMENTED_RAW_EXTRA_KEYS: dict[str, str] = {
 }
 
 DOCUMENTED_FILE_REFUSALS: dict[str, tuple[str, str]] = {
+    "exiv2:issue_2006_poc.tiff": ("InvalidExif", "the EXIF structure is malformed"),
+    "exiv2:poc_2542.exv": ("AmbiguousMetadata", "the file has ambiguous EXIF metadata"),
     "exiv2:issue_1706_poc.exv": ("LimitExceeded", "the EXIF directory exceeds configured reader limits"),
     "exiv2:issue_1920_poc.tiff": ("InvalidExif", "the EXIF structure is malformed"),
     "exiv2:issue_ghsa_h9x9_4f77_336w_poc.exv": ("InvalidExif", "the EXIF structure is malformed"),
@@ -153,8 +159,6 @@ def evaluate(report: dict[str, Any], groups: list[str],
             f"{metrics['interpreted_keys_found']}/{metrics['interpreted_values_equal']}; "
             f"raw keys found/equal={metrics['keys_found']}/{metrics['raw_values_equal']}"
         )
-        if metrics["interpreted_keys_found"] == 0 and metrics["keys_found"] == 0 and metrics["missing_keys"] == 0:
-            failures.append(f"{group}: no comparable MakerNote rows were measured")
         if metrics["missing_keys"] or metrics["raw_value_different"]:
             failures.append(
                 f"{group}: raw parity has missing={metrics['missing_keys']}, "

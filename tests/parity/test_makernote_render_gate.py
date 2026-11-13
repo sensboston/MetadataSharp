@@ -103,6 +103,19 @@ class MakerNoteRenderGateTests(unittest.TestCase):
         self.assertFalse(passed)
         self.assertIn("raw outcome not-read", message)
 
+    def test_all_rows_may_be_a_documented_exact_reader_refusal(self):
+        group = "Exif.PentaxDng"
+        report = {
+            "by_family": {group: {"not-read": 1}},
+            "interpreted": {"by_family": {}},
+            "per_file": [{"label": "exiv2:issue_1706_poc.exv", "detail": "LimitExceeded",
+                           "status": "refused", "rows_dropped": 0, "rows": [
+                               {"key": group + ".Quality", "outcome": "not-read"},
+                           ]}],
+        }
+        passed, message = gate.evaluate(report, [group])
+        self.assertTrue(passed, message)
+
     def test_truncated_rows_fail_closed(self):
         passed, message = gate.evaluate(self.report(rows_dropped=1), [self.GROUP])
         self.assertFalse(passed)
