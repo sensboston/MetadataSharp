@@ -42,6 +42,7 @@ DOCUMENTED_EXCEPTIONS: dict[str, str] = {
 DOCUMENTED_FILE_REFUSALS: dict[str, tuple[str, str]] = {
     "exiv2:issue_1706_poc.exv": ("LimitExceeded", "the EXIF directory exceeds configured reader limits"),
     "exiv2:issue_1920_poc.tiff": ("InvalidExif", "the EXIF structure is malformed"),
+    "exiv2:IMGP0006-min.jpg": ("InvalidJpeg", "the JPEG structure is malformed"),
 }
 
 # The reader exposes unnamed raw tags as 0xNNNN keys. Exiv2 has no corresponding named key, so these

@@ -13,7 +13,7 @@ internal static partial class MakerNoteLabels
     [
         new(Top, "Mode", [(0, "Auto"), (1, "Night-Scene"), (2, "Manual")], Form.PentaxFirst),
         new(Top, "ModelID", [(0x13222, "K-70"), (0x12b9c, "K100D"), (0x12c1e, "K10D"),
-            (0x12cd2, "K20D"), (0x12f52, "K-30"), (0x12fc0, "K-3")], Form.PentaxFirst),
+            (0x12cd2, "K20D"), (0x12f52, "K-30"), (0x12fc0, "K-3"), (0x12b1a, "*ist DL")], Form.PentaxFirst),
         new(Top, "Version", [], Form.PentaxVersion),
         new(Top, "PreviewResolution", [], Form.PentaxResolution),
         new(Top, "Date", [], Form.PentaxDate),
