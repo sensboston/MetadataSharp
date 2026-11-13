@@ -71,6 +71,15 @@ jobs:
                          f"{summary['NonTrivialInternalPrivate']} non-trivial non-public; "
                          f"{summary['NonPublicPurposeGaps']} without purpose comment")
               print(f"::notice title=Roslyn documentation baseline::{message}")
+              prefix = {'core': 'src/MetadataSharp.Core', 'formats': 'src/MetadataSharp.Formats',
+                        'tools': 'tools', 'samples': 'samples'}[path.stem.removeprefix('baseline-')]
+              for declaration in report['Declarations']:
+                  if declaration['PublicGaps']:
+                      detail = f"{declaration['Name']}: missing {', '.join(declaration['PublicGaps'])}"
+                      print(f"::notice file={prefix}/{declaration['Path']},line={declaration['Line']} title=Public documentation gap::{detail}")
+                  elif declaration['NonTrivial'] and not declaration['PurposeComment']:
+                      detail = f"{declaration['Kind']} {declaration['Name']} has no purpose/invariant comment"
+                      print(f"::notice file={prefix}/{declaration['Path']},line={declaration['Line']} title=Non-public comment gap::{detail}")
           PY
       - name: Build Release
         run: dotnet build MetadataSharp.sln --configuration Release --no-restore
