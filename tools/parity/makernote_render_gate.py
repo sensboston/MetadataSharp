@@ -213,15 +213,15 @@ def main(argv: list[str] | None = None) -> int:
     if not args.require:
         return 0
     passed, message = evaluate(report, args.require, DOCUMENTED_EXCEPTIONS)
+    if not passed:
+        failure_lines = message.split("FAIL\n", 1)[-1].splitlines()
+        payload = base64.b64encode(zlib.compress(json.dumps(failure_lines, separators=(",", ":")).encode(), 9)).decode()
+        print(f"::error title=MakerNote parity failures::{payload}", flush=True)
     print(message, end="", flush=True)
     gaps = gap_details(report, args.require)
     if gaps:
         payload = base64.b64encode(zlib.compress(json.dumps(gaps, separators=(",", ":"), sort_keys=True).encode(), 9)).decode()
         print(f"::notice title=MakerNote parity gaps::{payload}", flush=True)
-    if not passed:
-        for line in message.splitlines():
-            if line.strip() not in {"FAIL", ""}:
-                print("::error title=MakerNoteInterpreterGate::" + line.strip()[:1500], flush=True)
     return 0 if passed else 1
 
 
