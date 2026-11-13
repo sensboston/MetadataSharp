@@ -865,7 +865,7 @@ internal static partial class MakerNoteLabels
         if (value.FieldType != TiffFieldType.Byte || value.Count == 0)
             return null;
         if (model is null)
-            return "(" + string.Join(" ", value.RawBytes.ToArray().Select(Whole)) + ")";
+            return "(" + string.Join(" ", value.RawBytes.ToArray().Select(item => Whole(item))) + ")";
         bool ilca = SonyModelIs(model, "ILCA-");
         bool set2 = SonyModelIs(model, "ILCA-68", "ILCA-77M2");
         if (ilca && !set2)
@@ -894,7 +894,7 @@ internal static partial class MakerNoteLabels
     {
         if (value.FieldType != TiffFieldType.Byte || value.Count == 0)
             return null;
-        return value.RawBytes[0] == 0 ? "None" : "(" + string.Join(" ", value.RawBytes.ToArray().Select(Whole)) + ")";
+        return value.RawBytes[0] == 0 ? "None" : "(" + string.Join(" ", value.RawBytes.ToArray().Select(item => Whole(item))) + ")";
     }
 
     private static string? SonyMetaVersion(MakerNote? note)
