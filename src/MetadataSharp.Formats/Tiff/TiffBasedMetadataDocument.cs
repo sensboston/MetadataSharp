@@ -515,10 +515,13 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (changes.Count == 0) return start;
 
         token.ThrowIfCancellationRequested();
-        TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(start, layout, changes, limits);
+        bool makerNoteCopy = exif?.MakerNoteCopy is not null;
+        TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(start, layout, changes, limits, allowMakerNoteCopy: makerNoteCopy);
         if (plan.IsEmpty) return start;
         byte[] output = plan.Apply(start);
-        TiffBasedWriteVerifier.Verify(start, layout, before, output, plan, limits, options.MaxAccountedRanges);
+        TiffBasedWriteVerifier.Verify(start, layout, before, output, plan, limits, options.MaxAccountedRanges,
+            allowMakerNoteCopy: makerNoteCopy);
+        if (makerNoteCopy) output = ExifBlockEditor.RelocateMakerNote(output, exif!.MakerNoteCopy!, limits);
         if (icc is not null) HoldIcc(output, icc.Profile, limits);
         token.ThrowIfCancellationRequested();
         return output;

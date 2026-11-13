@@ -1867,6 +1867,76 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
     }
 
     File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
+
+    // Copy every corpus input with a decoded MakerNote into the same neutral JPEG. The Python
+    // comparer runs Exiv2 over every output and records every disposition by decoded layout.
+    string copyInputs = Path.Combine(directory, "copy-inputs");
+    string copyOutput = Path.Combine(directory, "copy-output");
+    Directory.CreateDirectory(copyOutput);
+    File.WriteAllBytes(Path.Combine(directory, "copy-neutral.jpg"), JpegFixture.Build());
+    using (var report = new StreamWriter(Path.Combine(directory, "copy.tsv"), false, new UTF8Encoding(false)))
+    {
+        foreach (string path in Directory.EnumerateFiles(copyInputs).Order(StringComparer.Ordinal))
+        {
+            string id = Path.GetFileNameWithoutExtension(path);
+            byte[] sourceBytes = File.ReadAllBytes(path);
+            ImageMetadata sourceMetadata;
+            try { sourceMetadata = ImageMetadata.Read(sourceBytes); }
+            catch (MetadataException) { continue; }
+            if (sourceMetadata.Exif?.MakerNote is not MakerNote makerNote) continue;
+
+            string status;
+            string reasonCodes;
+            string message;
+            try
+            {
+                MetadataSharp.Formats.Operations.MetadataCopyResult copy =
+                    MetadataSharp.Formats.Operations.MetadataOperations.CopyMetadata(sourceBytes, JpegFixture.Build(),
+                        new MetadataSharp.Formats.Operations.MetadataCopyOptions
+                        {
+                            Families = MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif,
+                            MakerNote = MetadataSharp.Formats.Operations.MetadataMakerNoteMode.Copy
+                        });
+                string[] codes = copy.Notes.Select(note => note.Reason.ToString()).Distinct(StringComparer.Ordinal).ToArray();
+                if (copy.WasRefused)
+                {
+                    status = "refused";
+                    reasonCodes = codes.Length == 0 ? "CopyRefused" : string.Join(",", codes);
+                    message = string.Join("; ", copy.Notes.Select(note => note.Message));
+                }
+                else if (ImageMetadata.Read(copy.DestinationBytes).Exif?.MakerNote is not null)
+                {
+                    status = "copied";
+                    reasonCodes = codes.Length == 0 ? "" : string.Join(",", codes);
+                    message = string.Join("; ", copy.Notes.Select(note => note.Message));
+                    File.WriteAllBytes(Path.Combine(copyOutput, id + ".jpg"), copy.DestinationBytes);
+                }
+                else
+                {
+                    status = "skipped";
+                    MetadataSharp.Formats.Operations.MetadataCopyReason[] makerReasons = copy.Notes
+                        .Where(note => note.Family == MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif)
+                        .Select(note => note.Reason).Distinct().ToArray();
+                    reasonCodes = makerReasons.Length == 0
+                        ? (codes.Length == 0 ? "CopyRefused" : string.Join(",", codes))
+                        : string.Join(",", makerReasons);
+                    message = makerReasons.Length == 0
+                        ? string.Join("; ", copy.Notes.Select(note => note.Message).DefaultIfEmpty(
+                            "The copy was not refused but the destination has no decoded MakerNote."))
+                        : string.Join("; ", copy.Notes.Where(note => note.Family == MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif)
+                            .Select(note => note.Message));
+                }
+            }
+            catch (MetadataException refusal)
+            {
+                status = "refused";
+                reasonCodes = "CopyRefused";
+                message = refusal.Message;
+            }
+            string Clean(string value) => value.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+            report.WriteLine(string.Join("\t", id, makerNote.Format, status, reasonCodes, Clean(message)));
+        }
+    }
     foreach (KeyValuePair<string, int> outcome in outcomes) Console.WriteLine($"{outcome.Key}: {outcome.Value}");
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=MakerNote parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
@@ -1956,6 +2026,33 @@ else if (args.Length == 2 && args[0] == "crw-parity")
     }
 
     File.WriteAllLines(Path.Combine(directory, "ours.tsv"), manifest);
+
+    // Also copy one decoded source MakerNote into an authored JPEG through the public transactional
+    // API. The comparer checks every MakerNote key/value that pinned Exiv2 prints on both files.
+    string copiedName = string.Empty;
+    foreach (string path in Directory.EnumerateFiles(directory, "s*.*").Order(StringComparer.Ordinal))
+    {
+        string name = Path.GetFileNameWithoutExtension(path), extension = Path.GetExtension(path).TrimStart('.');
+        if (name.Contains('.') || extension is "tsv" or "txt") continue;
+        byte[] sourceBytes = File.ReadAllBytes(path);
+        try
+        {
+            ImageMetadata sourceMetadata = ImageMetadata.Read(sourceBytes);
+            if (sourceMetadata.Exif?.MakerNote is null) continue;
+            MetadataSharp.Formats.Operations.MetadataCopyResult copy =
+                MetadataSharp.Formats.Operations.MetadataOperations.CopyMetadata(sourceBytes, JpegFixture.Build(),
+                    new MetadataSharp.Formats.Operations.MetadataCopyOptions
+                    {
+                        Families = MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif
+                    });
+            if (copy.WasRefused || ImageMetadata.Read(copy.DestinationBytes).Exif?.MakerNote is null) continue;
+            File.WriteAllBytes(Path.Combine(directory, $"{name}.copy.ours.jpg"), copy.DestinationBytes);
+            copiedName = name;
+            break;
+        }
+        catch (MetadataException) { }
+    }
+    File.WriteAllText(Path.Combine(directory, "copy.tsv"), copiedName);
     foreach (KeyValuePair<string, int> outcome in outcomes) Console.WriteLine($"{outcome.Key}: {outcome.Value}");
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=CRW parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;

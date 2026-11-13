@@ -18,17 +18,17 @@ namespace MetadataSharp.Formats.Tiff;
 internal static class TiffBasedWriteVerifier
 {
     internal static void Verify(byte[] source, TiffBasedFileMap before, ExifMetadata exifBefore, byte[] output,
-        TiffBasedWritePlan plan, MetadataLimits limits, int maxRanges)
+        TiffBasedWritePlan plan, MetadataLimits limits, int maxRanges, bool allowMakerNoteCopy = false)
     {
         Bytes(source, before, output, plan);
         TiffBasedFileMap after;
         try { after = TiffBasedFileMap.Read(output, limits, maxRanges); }
         catch (MetadataException failure) { throw Limit(failure) ?? Refuse("the layout of the output is not readable"); }
-        Layout(source, before, output, after, plan);
+        Layout(source, before, output, after, plan, allowMakerNoteCopy);
         ExifMetadata exifAfter;
         try { exifAfter = ExifTiffReader.InspectFile(output, limits); }
         catch (MetadataException failure) { throw Limit(failure) ?? Refuse("the reader refuses the output"); }
-        Reader(exifBefore, exifAfter, plan);
+        Reader(exifBefore, exifAfter, plan, allowMakerNoteCopy);
     }
 
     /// <summary>
@@ -129,9 +129,9 @@ internal static class TiffBasedWriteVerifier
     }
 
     private static void Layout(byte[] source, TiffBasedFileMap before, byte[] output, TiffBasedFileMap after,
-        TiffBasedWritePlan plan)
+        TiffBasedWritePlan plan, bool allowMakerNoteCopy)
     {
-        if (!Protected(before).SequenceEqual(Protected(after)))
+        if (allowMakerNoteCopy ? !ImageData(before).SequenceEqual(ImageData(after)) : !Protected(before).SequenceEqual(Protected(after)))
             throw Refuse("image data or MakerNote ranges are not the ones of the source");
         foreach (TiffBasedDirectory was in before.Directories)
         {
@@ -177,6 +177,11 @@ internal static class TiffBasedWriteVerifier
         }
     }
 
+    private static List<(long Start, long End)> ImageData(TiffBasedFileMap map) => map.Ranges
+        .Where(r => r.Kind == TiffBasedRangeKind.ImageData)
+        .OrderBy(r => r.Start).ThenBy(r => r.End)
+        .Select(r => (r.Start, r.End)).ToList();
+
     /// <summary>The image data and MakerNote ranges, sorted and joined, so that two walks compare.</summary>
     private static List<(long Start, long End)> Protected(TiffBasedFileMap map)
     {
@@ -197,7 +202,7 @@ internal static class TiffBasedWriteVerifier
     /// What a reader returns after the edit, against what it returned before: also the check of an
     /// EXIF block that was edited inside another container.
     /// </summary>
-    internal static void Reader(ExifMetadata before, ExifMetadata after, TiffBasedWritePlan plan)
+    internal static void Reader(ExifMetadata before, ExifMetadata after, TiffBasedWritePlan plan, bool allowMakerNoteCopy = false)
     {
         var edited = new Dictionary<ExifTagKey, TiffBasedChange?>();
         foreach (KeyValuePair<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> change in plan.Effective)
@@ -214,6 +219,7 @@ internal static class TiffBasedWriteVerifier
                 throw Refuse("the reader returns a tag the edit did not name");
         foreach (KeyValuePair<ExifTagKey, TiffBasedChange?> change in edited)
         {
+            if (allowMakerNoteCopy && change.Key == new ExifTagKey(ExifDirectoryKind.Exif, 0x927C)) continue;
             bool found = after.TryGetEntry(change.Key, out ExifEntry? entry);
             if (change.Value is not TiffBasedChange value)
             {
@@ -224,10 +230,10 @@ internal static class TiffBasedWriteVerifier
                 !entry.Value.RawBytes.SequenceEqual(value.Bytes))
                 throw Refuse("the reader does not return an edited tag as it was written");
         }
-        if ((before.MakerNote is null) != (after.MakerNote is null) ||
+        if (!allowMakerNoteCopy && ((before.MakerNote is null) != (after.MakerNote is null) ||
             (before.MakerNote is not null && after.MakerNote is not null &&
              (before.MakerNote.Format != after.MakerNote.Format || before.MakerNote.Offset != after.MakerNote.Offset ||
-              before.MakerNote.Entries.Count != after.MakerNote.Entries.Count)))
+              before.MakerNote.Entries.Count != after.MakerNote.Entries.Count))))
             throw Refuse("the MakerNote no longer reads as it did");
     }
 

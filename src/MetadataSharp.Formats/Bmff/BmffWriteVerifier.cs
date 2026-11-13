@@ -36,8 +36,10 @@ internal static class BmffWriteVerifier
     /// <param name="limits">The budgets the output is read with.</param>
     /// <param name="tiffPlan">The plan of the EXIF block of an item that was edited, or null.</param>
     /// <param name="desired">The EXIF of an item that was added, or null.</param>
+    /// <param name="allowMakerNoteCopy">Whether the plan explicitly adds a MakerNote and its relocation is verified separately.</param>
     internal static void Verify(byte[] source, BmffFileMap before, BmffMetadata readBefore, byte[] output,
-        BmffWritePlan plan, MetadataLimits limits, TiffBasedWritePlan? tiffPlan, ExifMetadata? desired)
+        BmffWritePlan plan, MetadataLimits limits, TiffBasedWritePlan? tiffPlan, ExifMetadata? desired,
+        bool allowMakerNoteCopy = false)
     {
         Bytes(source, output, plan.SourceLength, plan.OutputLength, plan.Patches, plan.Tail);
         BmffFileMap after;
@@ -48,7 +50,7 @@ internal static class BmffWriteVerifier
         BmffMetadata readAfter;
         try { readAfter = BmffReader.Read(output, limits); }
         catch (MetadataException failure) { throw Limit(failure) ?? Refuse("the reader refuses the output"); }
-        Reader(readBefore, readAfter, plan, tiffPlan, desired);
+        Reader(readBefore, readAfter, plan, tiffPlan, desired, allowMakerNoteCopy);
     }
 
     /// <summary>
@@ -245,7 +247,7 @@ internal static class BmffWriteVerifier
     }
 
     private static void Reader(BmffMetadata before, BmffMetadata after, BmffWritePlan plan, TiffBasedWritePlan? tiffPlan,
-        ExifMetadata? desired)
+        ExifMetadata? desired, bool allowMakerNoteCopy)
     {
         if (before.MajorBrand != after.MajorBrand) throw Refuse("the reader returns another brand");
         if (plan.Kind == BmffItemKind.Xmp)
@@ -262,12 +264,13 @@ internal static class BmffWriteVerifier
         if (tiffPlan is not null)
         {
             if (before.Exif is null) throw Refuse("the reader returned no EXIF for the item that was edited");
-            TiffBasedWriteVerifier.Reader(before.Exif, after.Exif, tiffPlan);
+            TiffBasedWriteVerifier.Reader(before.Exif, after.Exif, tiffPlan, allowMakerNoteCopy);
             return;
         }
         if (before.Exif is not null || desired is null) throw Refuse("an EXIF item was added to a file that had one");
         foreach (ExifEntry entry in desired.Entries)
-            if (!after.Exif.TryGetEntry(entry.Key, out ExifEntry? written) || !SameValue(entry.Value, written.Value))
+            if (!(allowMakerNoteCopy && entry.Key == new ExifTagKey(ExifDirectoryKind.Exif, 0x927C)) &&
+                (!after.Exif.TryGetEntry(entry.Key, out ExifEntry? written) || !SameValue(entry.Value, written.Value)))
                 throw Refuse("the reader does not return a tag of the new EXIF as it was written");
         foreach (ExifEntry entry in after.Exif.Entries)
         {

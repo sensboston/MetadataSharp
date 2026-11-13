@@ -771,12 +771,20 @@ jobs:
           tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
           echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
           artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
-      - name: MakerNote tags set by this library, read back by the pinned tool (exiv2 -u -PEkv)
+      - name: MakerNote edit and copy relocation parity against pinned Exiv2 (exiv2 -u -PEkv)
         shell: bash
         run: |
           python tools/reference/makernote_parity.py artifacts/parity/exiv2/test/data artifacts/parity/makernote \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
             --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      - name: Upload corpus MakerNote copy disposition report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: makernote-copy-parity
+          path: artifacts/parity/makernote/copy-report.json
+          if-no-files-found: ignore
+          retention-days: 30
       # Tags and the comment that this library writes into the records of the CRW files of the pinned
       # corpus; the pinned tool has to print what was set and every other key as before
       # (tools/reference/crw_parity.py).

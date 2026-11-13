@@ -129,14 +129,15 @@ internal sealed class TiffBasedWritePlanner
     /// </summary>
     internal static TiffBasedWritePlan Create(byte[] source, TiffBasedFileMap map,
         IReadOnlyDictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> changes, MetadataLimits limits,
-        long ceiling = long.MaxValue, bool emptyPrimary = false)
+        long ceiling = long.MaxValue, bool emptyPrimary = false, bool allowMakerNoteCopy = false)
     {
         foreach (KeyValuePair<(TiffBasedRole Role, ushort Tag), TiffBasedChange?> change in changes)
         {
             if (change.Key.Role == TiffBasedRole.Other || !Enum.IsDefined(change.Key.Role))
                 throw new ArgumentException("Only the primary, Exif, GPS and Interoperability directories and the directory after the primary one are edited.", nameof(changes));
             var key = new ExifTagKey(Kind(change.Key.Role), change.Key.Tag);
-            if (!ExifEdit.IsEditable(key))
+            if (!ExifEdit.IsEditable(key) && !(allowMakerNoteCopy && key == new ExifTagKey(ExifDirectoryKind.Exif, 0x927C) &&
+                change.Value is TiffBasedChange { Type: (ushort)TiffFieldType.Undefined }))
                 throw ExifEdit.NotEditable(key);
             if (change.Key.Tag == 0x0118 && map.IsRw2 && change.Key.Role == TiffBasedRole.Primary)
                 throw new MetadataException(MetadataErrorCode.TagNotEditable,
