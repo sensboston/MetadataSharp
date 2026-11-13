@@ -61,17 +61,19 @@ def check_exiv2_read(exiv2: list[str], image: Path, *, icc: bool, profile: bytes
                               f"got {len(actual)} bytes, expected {0 if profile is None else len(profile)}")
 
 
-def check_dump(dump: list[str], image: Path, *, icc: bool, profile: bytes | None) -> None:
+def check_dump(dump: list[str], image: Path) -> None:
     printed = run(dump + [str(image)]).decode("utf-8", errors="replace")
     for key, value in EXIV2_EXPECTED.items():
         if not any(f"\t{key}\t" in line and value in line for line in printed.splitlines()):
             raise ParityError(f"MetadataSharp did not report the expected {key}={value} in {image.name}:\n{printed}")
-    if icc:
-        records = run(dump + ["--icc", str(image)]).decode("utf-8", errors="replace")
-        digest = hashlib.md5(profile or b"").hexdigest()
-        expected = f"ICC\t{len(profile or b'')}\t{digest}"
-        if expected not in records:
-            raise ParityError(f"MetadataSharp ICC result differs for {image.name}; wanted {expected!r}, got {records!r}")
+
+
+def check_dump_icc(dump: list[str], image: Path, profile: bytes) -> None:
+    records = run(dump + ["--icc", str(image)]).decode("utf-8", errors="replace")
+    digest = hashlib.md5(profile).hexdigest()
+    expected = f"ICC\t{len(profile)}\t{digest}"
+    if expected not in records:
+        raise ParityError(f"MetadataSharp ICC result differs for {image.name}; wanted {expected!r}, got {records!r}")
 
 
 def main() -> int:
@@ -95,21 +97,25 @@ def main() -> int:
         check_exiv2_read(exiv2, image, icc=supports_icc, profile=profile if supports_icc else None)
         passed += 1
 
-    # Exiv2-authored outputs must be consumable by MetadataSharp. Each run starts from an untouched
-    # base file; ICC insert is separate because Exiv2's profile option reads a sidecar named for the
-    # target stem. PSD has no ICC operation in Exiv2 0.28.9's documented format matrix.
+    # Exiv2-authored outputs must be consumable by MetadataSharp. Keep metadata edits and the ICC
+    # insert as separate targets: the former tests metadata read-back, the latter tests ICC bytes.
+    # Exiv2's profile option reads a sidecar named for the target stem; PSD has no ICC operation in
+    # the pinned format matrix.
     with tempfile.TemporaryDirectory(prefix="metadatasharp-exiv2-write-") as temporary:
         work = Path(temporary)
         for name, extension, supports_icc in FORMATS:
             target = work / f"theirs-{name}{extension}"
             shutil.copyfile(root / f"base-{name}{extension}", target)
-            if supports_icc:
-                sidecar = work / f"{target.stem}.icc"
-                sidecar.write_bytes(profile)
-                run(exiv2 + ["-iC", "-l", str(work), "in", str(target)])
             run(exiv2 + ["-m", str(root / "modify.txt"), "mo", str(target)])
-            check_dump(dump, target, icc=supports_icc, profile=profile if supports_icc else None)
+            check_dump(dump, target)
             passed += 1
+            if supports_icc:
+                icc_target = work / f"theirs-{name}-icc{extension}"
+                shutil.copyfile(root / f"base-{name}{extension}", icc_target)
+                (work / f"{icc_target.stem}.icc").write_bytes(profile)
+                run(exiv2 + ["-iC", "-l", str(work), "in", str(icc_target)])
+                check_dump_icc(dump, icc_target, profile)
+                passed += 1
     print(f"PSD/JP2/EXV bidirectional write parity: {passed} checks passed; "
           "EXIF/IPTC/XMP all formats, exact ICC JP2; PSD/EXV ICC stays on MetadataSharp format tests.")
     return 0
