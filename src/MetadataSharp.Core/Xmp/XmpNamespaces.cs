@@ -72,6 +72,7 @@ internal static class XmpNamespaces
 
     private static readonly Dictionary<string, string> UriByPrefix = BuildUriByPrefix();
 
+    // Build the reverse built-in namespace map and fail if aliases collide with different URIs.
     private static Dictionary<string, string> BuildUriByPrefix()
     {
         var map = new Dictionary<string, string>(StringComparer.Ordinal);

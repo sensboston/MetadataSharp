@@ -85,6 +85,7 @@ internal static class XmpPath
         return [new(XmpStepKind.Property, string.Empty, name.LocalName, name.NamespaceUri, 0)];
     }
 
+    // Read one path component while leaving separators for the grammar-specific caller.
     private static string Name(string path, ref int at)
     {
         int start = at;
@@ -92,6 +93,7 @@ internal static class XmpPath
         return path[start..at];
     }
 
+    // Validate XML local-name syntax and preserve the original path for precise refusal errors.
     private static string Verified(string path, string name)
     {
         try { return XmlConvert.VerifyNCName(name); }

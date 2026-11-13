@@ -23,6 +23,7 @@ internal static class XmpEntryReader
         private long remaining = pathCharacters;
         internal List<XmpEntry> Entries { get; } = [];
 
+        // Charge path length before retaining the row, keeping expanded paths within the packet budget.
         internal void Add(string path, string namespaceUri, string prefix, XmpEntryKind kind, bool hasChildEntries,
             string[] values, (string Language, string Value)[] languages)
         {
@@ -289,6 +290,7 @@ internal static class XmpEntryReader
         return resolved;
     }
 
+    // Seed the path with a top-level property and carry its namespace through all descendant entries.
     private static void Flatten(Output output, XmpNode property)
     {
         string uri = property.Name.NamespaceName;

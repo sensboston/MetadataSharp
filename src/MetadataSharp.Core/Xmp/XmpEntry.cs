@@ -38,6 +38,7 @@ public enum XmpEntryKind
 /// </remarks>
 public sealed class XmpEntry
 {
+    // Snapshot caller-owned arrays so an entry remains a stable view of the parsed packet.
     internal XmpEntry(string path, string namespaceUri, string prefix, XmpEntryKind kind, bool hasChildEntries,
         string[] values, (string Language, string Value)[] languages)
     {

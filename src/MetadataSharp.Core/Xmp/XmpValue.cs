@@ -79,6 +79,7 @@ public sealed class XmpValue
         }
         return new(XmpValueKind.LanguageAlternative, null, [], copy);
     }
+    // Validate BCP-47 language syntax before values enter an RDF language alternative.
     internal static bool ValidLanguage(string? language)
     {
         if (string.IsNullOrEmpty(language) || language.Length > 1024) return false;
@@ -91,6 +92,7 @@ public sealed class XmpValue
         int bytes = 0;
         CheckText(text, ref bytes);
     }
+    // Count both UTF-8 bytes and XML characters against the aggregate value budget.
     private static void CheckText(string text, ref int bytes)
     {
         ArgumentNullException.ThrowIfNull(text);

@@ -30,6 +30,7 @@ internal static class SigmaMakerNoteInterpretations
         return "(" + value + ")";
     }
 
+    // Remove only the vendor’s first label prefix; subsequent colons belong to the value itself.
     private static string StripLabel(string value)
     {
         int separator = value.IndexOf(':');
@@ -39,6 +40,7 @@ internal static class SigmaMakerNoteInterpretations
         return value[start..];
     }
 
+    // Stop at the first NUL and leave an empty string uninterpreted rather than inventing a label.
     private static string? Ascii(ExifValue value)
     {
         ReadOnlySpan<byte> bytes = value.RawBytes;

@@ -5,6 +5,7 @@ internal static class VendorMakerNoteNames
 {
     internal static string? Fujifilm(ushort tag) => MakerNoteReader.Lookup(FujifilmNames, tag);
 
+    // Fujifilm IDs map to the names consumed by field interpretation and dotted-key lookup.
     internal static readonly (ushort Id, string Name)[] FujifilmNames =
     [
         (0x0000, "Version"), (0x0010, "SerialNumber"), (0x1000, "Quality"),
@@ -41,6 +42,7 @@ internal static class VendorMakerNoteNames
 
     internal static string? Pentax(ushort tag) => MakerNoteReader.Lookup(PentaxNames, tag);
 
+    // Pentax names include the camera settings used by both legacy and DNG-style layouts.
     internal static readonly (ushort Id, string Name)[] PentaxNames =
     [
         (0x0000, "Version"), (0x0001, "Mode"), (0x0002, "PreviewResolution"),
@@ -75,6 +77,7 @@ internal static class VendorMakerNoteNames
 
     internal static string? Sony(ushort tag) => MakerNoteReader.Lookup(SonyNames, tag);
 
+    // Sony tag names cover the top-level arrays and model/version fields used by interpretation gates.
     internal static readonly (ushort Id, string Name)[] SonyNames =
     [
         (0x0102, "Quality"), (0x0104, "FlashExposureComp"), (0x0105, "Teleconverter"),
@@ -108,6 +111,7 @@ internal static class VendorMakerNoteNames
 
     internal static string? Panasonic(ushort tag) => MakerNoteReader.Lookup(PanasonicNames, tag);
 
+    // Panasonic names include nested and scalar fields while preserving the vendor’s tag-number order.
     internal static readonly (ushort Id, string Name)[] PanasonicNames =
     [
         (0x0001, "Quality"), (0x0002, "FirmwareVersion"), (0x0003, "WhiteBalance"),
@@ -148,6 +152,7 @@ internal static class VendorMakerNoteNames
     /// <summary>Minolta and Konica Minolta.</summary>
     internal static string? Minolta(ushort tag) => MakerNoteReader.Lookup(MinoltaNames, tag);
 
+    // Minolta names distinguish multiple camera-generation settings arrays and pointer-like thumbnails.
     internal static readonly (ushort Id, string Name)[] MinoltaNames =
     [
         (0x0000, "Version"), (0x0001, "CameraSettingsStdOld"), (0x0003, "CameraSettingsStdNew"),
@@ -164,6 +169,7 @@ internal static class VendorMakerNoteNames
     /// <summary>Casio, the early layout.</summary>
     internal static string? Casio(ushort tag) => MakerNoteReader.Lookup(CasioNames, tag);
 
+    // Early Casio tags use their own compact, headerless directory vocabulary.
     internal static readonly (ushort Id, string Name)[] CasioNames =
     [
         (0x0001, "RecodingMode"), (0x0002, "Quality"), (0x0003, "FocusMode"), (0x0004, "FlashMode"),
@@ -176,6 +182,7 @@ internal static class VendorMakerNoteNames
     /// <summary>Casio, the layout behind the "QVC" signature.</summary>
     internal static string? Casio2(ushort tag) => MakerNoteReader.Lookup(Casio2Names, tag);
 
+    // QVC-signature Casio names include preview pointers and the later 0x3000-series settings.
     internal static readonly (ushort Id, string Name)[] Casio2Names =
     [
         (0x0002, "PreviewImageSize"), (0x0003, "PreviewImageLength"), (0x0004, "PreviewImageStart"),
@@ -197,6 +204,7 @@ internal static class VendorMakerNoteNames
     /// <summary>Samsung, the plain directory.</summary>
     internal static string? Samsung2(ushort tag) => MakerNoteReader.Lookup(Samsung2Names, tag);
 
+    // Samsung’s plain-directory table includes fields used by its picture-wizard and encrypted payloads.
     internal static readonly (ushort Id, string Name)[] Samsung2Names =
     [
         (0x0001, "Version"), (0x0021, "PictureWizard"), (0x0030, "LocalLocationName"), (0x0031, "LocationName"),
@@ -213,6 +221,7 @@ internal static class VendorMakerNoteNames
     /// <summary>Sigma and Foveon.</summary>
     internal static string? Sigma(ushort tag) => MakerNoteReader.Lookup(SigmaNames, tag);
 
+    // Sigma and Foveon share this sorted tag vocabulary for ASCII-valued capture settings.
     internal static readonly (ushort Id, string Name)[] SigmaNames =
     [
         (0x0002, "SerialNumber"), (0x0003, "DriveMode"), (0x0004, "ResolutionMode"), (0x0005, "AutofocusMode"),

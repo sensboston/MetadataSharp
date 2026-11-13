@@ -305,6 +305,7 @@ public sealed class ModifyScript
 
     // ---- IPTC --------------------------------------------------------------------------------------------
 
+    // Apply IIM’s repeatability rules after parsing date, time, numeric, and text dataset forms.
     private void IptcLine(int number, ModifyCommandKind command, IptcDatasetKey key, string? type, string value)
     {
         if (command == ModifyCommandKind.Delete) { Iptc.Remove(key); return; }

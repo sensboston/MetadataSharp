@@ -227,11 +227,13 @@ public sealed class XmpEdit
         return steps;
     }
 
+    // Append and insert accept only the three RDF array forms, not scalar or language-alternative values.
     private static XmpValueKind ArrayForm(XmpValueKind kind) =>
         kind is XmpValueKind.Bag or XmpValueKind.Sequence or XmpValueKind.Alternative
             ? kind
             : throw new ArgumentException("An array is a Bag, a Sequence or an Alternative; a language alternative is edited with SetLanguage.", nameof(kind));
 
+    // Convert the script-facing one-based array index to the editor’s zero-based insertion position.
     private static int Position(int index) =>
         index >= 1 ? index : throw new ArgumentOutOfRangeException(nameof(index), "Array items are counted from one.");
 

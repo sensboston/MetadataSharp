@@ -100,6 +100,7 @@ public sealed class ExifEdit
         Store(key, ExifValue.FromRaw(TiffFieldType.Ascii, (uint)bytes.Length, Endianness.LittleEndian, bytes), validate: true);
     }
 
+    // Enforce ASCII’s seven-bit subset and reject NUL before the setter appends its terminator.
     private static bool IsSevenBitText(string text)
     {
         foreach (char character in text)
@@ -442,6 +443,7 @@ public sealed class ExifEdit
         internal IReadOnlyList<MakerNoteChange> MakerNote { get; init; } = [];
         internal MakerNoteCopyPayload? MakerNoteCopy { get; init; }
         internal bool IsEmpty => !RemoveAll && Changes.Count == 0 && !HasThumbnailChange && MakerNote.Count == 0 && MakerNoteCopy is null;
+        // Apply detached edits, convert every value to the requested byte order, and charge the result budget.
         internal ExifMetadata Apply(TiffReadResult? source, Endianness order, MetadataLimits limits)
         {
             var entries = source?.Metadata.Entries.ToDictionary(e => e.Key, e => e.Value) ?? [];
@@ -465,6 +467,7 @@ public sealed class ExifEdit
         }
     }
 
+    // Reverse each numeric component, not the whole array; rational numerators and denominators stay separate.
     internal static ExifValue ConvertOrder(ExifValue value, Endianness order)
     {
         if (value.ByteOrder == order) return value;

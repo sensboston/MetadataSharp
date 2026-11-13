@@ -10,6 +10,7 @@ internal static class XmpCodec
     internal const string MetaUri = "adobe:ns:meta/";
     internal static readonly XNamespace Rdf = RdfUri;
     private static readonly UTF8Encoding Utf8 = new(false, true);
+    // Use one stable error code and message for all XMP parser and serializer budget violations.
     internal static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "XMP exceeds a resource budget.");
     internal static MetadataException Unsupported() => new(MetadataErrorCode.UnsupportedFeature, "The XMP packet holds RDF that cannot be written again without loss; it is copied and listed, not edited.");
 
@@ -121,6 +122,7 @@ internal static class XmpCodec
     private static bool OnlyWhitespace(XElement e) => !e.Nodes().OfType<XText>().Any(t => !string.IsNullOrWhiteSpace(t.Value));
     private static bool PlainContainer(XElement e) => OnlyWhitespace(e) && e.Attributes().All(a => a.IsNamespaceDeclaration);
     private static bool NoQualifiers(XElement e) => e.Attributes().All(a => a.IsNamespaceDeclaration);
+    // Convert each XML node under depth and item limits before materializing its XMP value tree.
     private static XmpValue? Value(XElement element, XmpLimits limits, ref int itemCount)
     {
         if (!NoQualifiers(element)) return null;

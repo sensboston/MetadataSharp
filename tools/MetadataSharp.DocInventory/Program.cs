@@ -298,7 +298,8 @@ internal static class Inventory
 
     private static bool HasPurposeLineComment(SyntaxNode node)
     {
-        foreach (SyntaxTrivia trivia in node.GetLeadingTrivia())
+        IEnumerable<SyntaxTrivia> comments = node.GetLeadingTrivia().Concat(node.DescendantTrivia(descendIntoTrivia: true));
+        foreach (SyntaxTrivia trivia in comments)
         {
             if (!trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) && !trivia.IsKind(SyntaxKind.MultiLineCommentTrivia)) continue;
             string text = trivia.ToString().Trim('/', '*', ' ', '\t', '\r', '\n', '-');

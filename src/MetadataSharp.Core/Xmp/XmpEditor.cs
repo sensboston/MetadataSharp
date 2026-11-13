@@ -248,6 +248,7 @@ internal sealed class XmpEditor
         return null;
     }
 
+    // Translate the public array form into the internal RDF node kind used by edit operations.
     private static XmpEntryKind Form(XmpValueKind kind) => kind switch
     {
         XmpValueKind.Bag => XmpEntryKind.Bag,
@@ -255,6 +256,7 @@ internal sealed class XmpEditor
         _ => XmpEntryKind.Alt
     };
 
+    // Keep type-mismatch errors consistent across all operation paths.
     private static string Describe(XmpEntryKind kind) => kind switch
     {
         XmpEntryKind.Bag => "a bag",
