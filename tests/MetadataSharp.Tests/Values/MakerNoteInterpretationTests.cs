@@ -427,6 +427,18 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("OM SYSTEM CAMERA", note.Interpret(entry));
     }
 
+    [Fact]
+    public void ASigmaMakerNoteReadsItsReferenceRenderings()
+    {
+        Assert.Equal("Manual", Top(MakerNoteFormat.Sigma, "ExposureMode", Ascii("M")));
+        Assert.Equal("8-Segment", Top(MakerNoteFormat.Sigma, "MeteringMode", Ascii("8")));
+        Assert.Equal("+0.0", Top(MakerNoteFormat.Sigma, "Exposure", Ascii("Expo:+0.0")));
+        Assert.Equal("+0.0", Top(MakerNoteFormat.Sigma, "FillLight", Ascii("Fill:+0.0")));
+        Assert.Equal("0", Top(MakerNoteFormat.Sigma, "ColorAdjustment", Ascii("CC:0")));
+        Assert.Equal("12", Top(MakerNoteFormat.Sigma, "Quality", Ascii("Qual:12")));
+        Assert.Equal("(X)", Top(MakerNoteFormat.Sigma, "ExposureMode", Ascii("X")));
+    }
+
     // ---- Minolta ----------------------------------------------------------------------------------------
 
     [Theory]

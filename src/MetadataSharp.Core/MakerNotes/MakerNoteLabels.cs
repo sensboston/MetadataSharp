@@ -293,6 +293,8 @@ internal static partial class MakerNoteLabels
             return MinoltaMakerNoteInterpretations.Interpret(scope, name, value);
         if (format == MakerNoteFormat.Panasonic)
             return PanasonicMakerNoteInterpretations.Interpret(name, value);
+        if (format == MakerNoteFormat.Sigma)
+            return SigmaMakerNoteInterpretations.Interpret(name, value);
         if (format is MakerNoteFormat.Olympus or MakerNoteFormat.Olympus2 or MakerNoteFormat.OMSystem)
             return OlympusMakerNoteInterpretations.Interpret(scope, name, value);
         Rule[]? rules = format switch
