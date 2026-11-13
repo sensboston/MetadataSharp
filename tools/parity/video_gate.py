@@ -96,6 +96,7 @@ def main(argv: list[str] | None = None) -> int:
         report = json.loads(args.report.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         print(f"video parity gate could not read report: {error}")
+        print("::error::Video gate could not load parity-report.json: " + str(error)[:1200])
         return 1
     print("::notice title=VideoGate::started")
     try:

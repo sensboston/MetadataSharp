@@ -351,11 +351,13 @@ jobs:
           for fixture in authored-asf.asf authored-avi.avi authored-matroska.mkv authored-quicktime.mp4 authored-webm.webm; do
             ln -s "$PWD/tests/fixtures/video/valid/$fixture" "artifacts/parity/video-generated/$fixture"
           done
+          VIDEO_REPORT_DIR="$PWD/artifacts/parity/video"
           python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
             --fixtures artifacts/parity/video-corpus --fixtures artifacts/parity/video-generated \
             --exiv2-command "$VIDEO_EXIV2 -Pkycvt" --require-reference-tags --rows-per-file 1000 \
-            --dump-command "$DUMP" --out artifacts/parity/video --title 'PARITY video containers' --annotate
-          python tools/parity/video_gate.py artifacts/parity/video/parity-report.json
+            --dump-command "$DUMP" --out "$VIDEO_REPORT_DIR" --title 'PARITY video containers' --annotate
+          test -s "$VIDEO_REPORT_DIR/parity-report.json"
+          python tools/parity/video_gate.py "$VIDEO_REPORT_DIR/parity-report.json"
       # The pinned tree holds one CR3 file and no expectation for it, so the pinned tool reads it here.
       # Two measurements, no gate: key parity of the CMT boxes and the XMP box, and the preview list.
       - name: The CR3 file of the pinned corpus against the pinned tool (exiv2 -Pkycvt, exiv2 -pp)
