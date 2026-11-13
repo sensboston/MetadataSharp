@@ -461,10 +461,11 @@ internal static class VideoContainerReader
                     Need(payload, 8, atomEnd, "QuickTime sound media header");
                     Add("Xmp.audio.Balance", U16BE(payload + 6).ToString(CultureInfo.InvariantCulture));
                 }
-                else if (type is "moov" or "trak" or "mdia" or "minf" or "stbl" or "dinf" or "edts" or "udta" or "tapt" or "ilst" or "meta" or "moof" or "traf")
+                else if (type is "moov" or "trak" or "mdia" or "minf" or "stbl" or "dinf" or "dref" or "edts" or "udta" or "tapt" or "ilst" or "meta" or "moof" or "traf")
                 {
-                    int childStart = payload + (type == "meta" ? 4 : 0);
-                    if (childStart > atomEnd) throw Invalid("A QuickTime meta prefix exceeds its atom.", payload);
+                    int prefixBytes = type switch { "meta" => 4, "dref" => 8, _ => 0 };
+                    if (atomEnd - payload < prefixBytes) throw Invalid("A QuickTime child-table prefix exceeds its atom.", payload);
+                    int childStart = payload + prefixBytes;
                     string childStream = type == "trak" ? FindTrackStream(childStart, atomEnd, depth + 1) : streamPrefix;
                     WalkAtoms(childStart, atomEnd, depth + 1, type, childStream);
                 }
@@ -557,7 +558,7 @@ internal static class VideoContainerReader
             Add("Xmp.video.TimeScale", U32BE(p + 12).ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.Duration", ((ulong)U32BE(p + 16) * 1000UL / movieTimeScale).ToString(CultureInfo.InvariantCulture));
             Add("Xmp.video.PreferredRate", Number(U16BE(p + 20) + U16BE(p + 22) / 100.0));
-            Add("Xmp.video.PreferredVolume", Number((U16BE(p + 24) + U16BE(p + 26) / 1000.0) * 100));
+            Add("Xmp.video.PreferredVolume", Number(U16BE(p + 24) * 100.0));
             string[] tailKeys = ["PreviewTime", "PreviewDuration", "PosterTime", "SelectionTime", "SelectionDuration", "CurrentTime", "NextTrackID"];
             for (int i = 0; i < tailKeys.Length; i++)
                 Add("Xmp.video." + tailKeys[i], U32BE(p + 72 + i * 4).ToString(CultureInfo.InvariantCulture));
@@ -649,8 +650,8 @@ internal static class VideoContainerReader
                     }
                     if (size >= 86)
                     {
-                        Add("Xmp.video.XResolution", Number(U32BE(q + 40) / 65536.0));
-                        Add("Xmp.video.YResolution", Number(U32BE(q + 44) / 65536.0));
+                        Add("Xmp.video.XResolution", Number(U32BE(q + 36) / 65536.0));
+                        Add("Xmp.video.YResolution", Number(U32BE(q + 40) / 65536.0));
                         int compressorLength = Math.Min(data[q + 50], (byte)31);
                         Add("Xmp.video.Compressor", Text(q + 51, compressorLength, Encoding.Latin1));
                         Add("Xmp.video.BitDepth", U16BE(q + 82).ToString(CultureInfo.InvariantCulture));
