@@ -29,7 +29,7 @@ public sealed class MetadataCopyTests
             JpegFixture.Build(),
             PngFixture.Build(),
             WebPFixture.Image(0),
-            StandaloneTiffFixture.Create().Bytes,
+            TiffBasedFixture.Create("tiff", false).Bytes,
             DngFixture.RawOnly().Bytes,
             BmffFixture.Create("heic-bare", false).Bytes
         ];
@@ -56,9 +56,10 @@ public sealed class MetadataCopyTests
                     chunk.SequenceEqual(PngFixture.Chunk("IDAT", PngFixture.Compress([0, 10, 20, 30]))));
             else if (destination.AsSpan().StartsWith("RIFF"u8))
                 Assert.True(result.DestinationBytes.AsSpan().IndexOf(WebPFixture.Image(0).AsSpan(12)) >= 0);
-            else if (destination.Length >= 2304 && destination[0] == 0x49 && destination[1] == 0x49 &&
-                     destination[2] == 42 && destination[3] == 0)
-                Assert.Equal(destination.AsSpan(2048, 256).ToArray(), result.DestinationBytes.AsSpan(2048, 256).ToArray());
+            else if (destination.Length == 364)
+                Assert.Equal(destination.AsSpan(300, 64).ToArray(), result.DestinationBytes.AsSpan(300, 64).ToArray());
+            else if (destination.Length == 598)
+                Assert.Equal(destination.AsSpan(582, 16).ToArray(), result.DestinationBytes.AsSpan(582, 16).ToArray());
         }
     }
 
