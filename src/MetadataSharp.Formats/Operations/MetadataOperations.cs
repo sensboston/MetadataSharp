@@ -6,6 +6,7 @@ using MetadataSharp.Core.MakerNotes;
 using MetadataSharp.Core.Sync;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
+using MetadataSharp.Formats.Cr3;
 using MetadataSharp.Formats.Jpeg;
 using MetadataSharp.Formats.Png;
 using MetadataSharp.Formats.Pgf;
@@ -202,15 +203,15 @@ public static class MetadataOperations
 
             if (copyExif && options.MakerNote == MetadataMakerNoteMode.Copy)
             {
-                if (from.Exif!.MakerNote is not { } note || !TryMakerNoteValue(from.Exif, out ExifValue? raw))
+                if (!TryMakerNoteForCopy(source, from, options.Limits, out MakerNote? note, out ExifValue? raw))
                 {
-                    if (HasRawMakerNote(from.Exif))
+                    if (from.Exif!.MakerNote is not null || HasRawMakerNote(from.Exif))
                         notes.Add(new(MetadataCopyReason.MakerNoteNotDecoded,
                             "The source MakerNote is not decoded well enough to prove safe relocation.", MetadataCopyFamilies.Exif));
                 }
-                else if (!MakerNoteRelocator.CanRelocate(note, raw!, from.Exif, out string refusal))
+                else if (!MakerNoteRelocator.CanRelocate(note!, raw!, from.Exif!, out string refusal))
                 {
-                    MetadataCopyReason reason = note.Format == MakerNoteFormat.Nikon3 &&
+                    MetadataCopyReason reason = note!.Format == MakerNoteFormat.Nikon3 &&
                         (refusal.Contains("cipher", StringComparison.OrdinalIgnoreCase) || refusal.Contains("shutter-count key", StringComparison.OrdinalIgnoreCase) || refusal.Contains("serial-number", StringComparison.OrdinalIgnoreCase))
                         ? MetadataCopyReason.MakerNoteCipherKeysUnavailable : MetadataCopyReason.UnsafeMakerNoteRelocation;
                     notes.Add(new(reason, refusal, MetadataCopyFamilies.Exif));
@@ -294,6 +295,31 @@ public static class MetadataOperations
         MetadataCopyFamilies.Comment => HoldsComment(format),
         _ => false
     };
+
+    private static bool TryMakerNoteForCopy(ReadOnlySpan<byte> source, ImageMetadata metadata, MetadataLimits limits,
+        out MakerNote? note, out ExifValue? value)
+    {
+        note = metadata.Exif?.MakerNote;
+        if (note is null) { value = null; return false; }
+        if (TryMakerNoteValue(metadata.Exif!, out value)) return true;
+
+        // In CR3 the MakerNote is CMT3, a standalone TIFF rather than an Exif.Photo.MakerNote value.
+        // Its directory has already been decoded, so retain the CMT3 payload from the source and
+        // normalize its TIFF header/offset origin before the ordinary relocation proof and writer.
+        if (metadata.Format == MetadataFormat.Cr3 && note.Format == MakerNoteFormat.Canon)
+        {
+            Cr3Layout layout = Cr3Reader.Locate(source, limits);
+            if (layout.MakerNote.Present)
+            {
+                ReadOnlySpan<byte> embedded = source.Slice(layout.MakerNote.Start, layout.MakerNote.Length);
+                value = MakerNoteRelocator.NormalizeEmbeddedTiff(note, embedded, out MakerNote normalized);
+                note = normalized;
+                return true;
+            }
+        }
+        value = null;
+        return false;
+    }
 
     private static bool TryMakerNoteValue(ExifMetadata exif, out ExifValue? value)
     {

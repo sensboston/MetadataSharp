@@ -5,6 +5,46 @@ namespace MetadataSharp.Core.MakerNotes;
 /// <summary>Copy-only relocation checks for a MakerNote that is about to move to another TIFF offset.</summary>
 internal static class MakerNoteRelocator
 {
+    /// <summary>
+    /// Converts the standalone Canon TIFF used by a CR3 CMT3 box into a headerless Canon MakerNote:
+    /// retain the IFD and its payloads, shift every decoded slot to the new note origin, and let the
+    /// normal relocation pass rebase TIFF-header offsets when the note is written into a JPEG.
+    /// </summary>
+    internal static ExifValue NormalizeEmbeddedTiff(MakerNote note, ReadOnlySpan<byte> embeddedTiff, out MakerNote normalized)
+    {
+        ArgumentNullException.ThrowIfNull(note);
+        if (note.Format != MakerNoteFormat.Canon || embeddedTiff.Length < 8 || note.Offset < 8 || note.Offset > embeddedTiff.Length)
+            throw new MetadataException(MetadataErrorCode.UnsafeRelocation, "The embedded Canon MakerNote TIFF has no in-range IFD.");
+        int origin = checked((int)note.Offset);
+        byte[] raw = embeddedTiff[origin..].ToArray();
+        MakerNoteEntry[] entries = note.Entries.Select(Clone).ToArray();
+        normalized = new MakerNote(note.Format, note.ByteOrder, entries);
+        return ExifValue.FromRaw(TiffFieldType.Undefined, (uint)raw.Length, note.ByteOrder, raw);
+
+        MakerNoteEntry Clone(MakerNoteEntry entry) => new(entry.TagId, entry.Name, entry.Value,
+            entry.Fields.Select(Clone).ToArray())
+        {
+            Slot = Shift(entry.Slot),
+            Decode = entry.Decode,
+            Encode = entry.Encode
+        };
+
+        MakerNoteField Clone(MakerNoteField field) => new(field.Index, field.Name, field.Value,
+            field.Fields.Select(Clone).ToArray(), field.Offset)
+        {
+            Slot = Shift(field.Slot)
+        };
+
+        MakerNoteSlot? Shift(MakerNoteSlot? slot) => slot is null ? null : slot with
+        {
+            Directory = checked(slot.Directory - origin),
+            Entry = checked(slot.Entry - origin),
+            Value = checked(slot.Value - origin),
+            OffsetBase = slot.OffsetBase == 0 ? 0 : checked(slot.OffsetBase - origin),
+            RegionEnd = checked(slot.RegionEnd - origin)
+        };
+    }
+
     internal static bool CanRelocate(MakerNote note, ExifValue raw, ExifMetadata exif, out string reason)
     {
         ArgumentNullException.ThrowIfNull(note);

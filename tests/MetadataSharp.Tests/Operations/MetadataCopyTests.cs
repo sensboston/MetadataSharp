@@ -1,7 +1,9 @@
 using MetadataSharp.Core;
+using MetadataSharp.Core.MakerNotes;
 using MetadataSharp.Formats;
 using MetadataSharp.Formats.Operations;
 using MetadataSharp.Tests.Bmff;
+using MetadataSharp.Tests.Cr3;
 using MetadataSharp.Tests.Dng;
 using MetadataSharp.Tests.Jpeg;
 using MetadataSharp.Tests.Png;
@@ -75,6 +77,30 @@ public sealed class MetadataCopyTests
         Assert.True(before.Exif!.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? artist));
         Assert.True(after.Exif!.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? copied));
         Assert.Equal(artist!.Value.RawBytes.ToArray(), copied!.Value.RawBytes.ToArray());
+    }
+
+    [Fact]
+    public void Cr3EmbeddedCanonMakerNoteCopiesToJpegWithDecodedValuesIntact()
+    {
+        byte[] source = Cr3Fixture.Create().Bytes;
+        MetadataCopyResult result = MetadataOperations.CopyMetadata(source, JpegFixture.Build(),
+            new MetadataCopyOptions { Families = MetadataCopyFamilies.Exif, MakerNote = MetadataMakerNoteMode.Copy });
+
+        Assert.False(result.WasRefused, string.Join(Environment.NewLine, result.Notes.Select(note => note.Message)));
+        Assert.DoesNotContain(result.Notes, note => note.Reason is MetadataCopyReason.UnsafeMakerNoteRelocation or MetadataCopyReason.MakerNoteNotDecoded);
+        ImageMetadata before = ImageMetadata.Read(source), after = ImageMetadata.Read(result.DestinationBytes);
+        MakerNote sourceNote = Assert.IsType<MakerNote>(before.Exif!.MakerNote);
+        MakerNote copiedNote = Assert.IsType<MakerNote>(after.Exif!.MakerNote);
+        Assert.Equal(sourceNote.Format, copiedNote.Format);
+        Assert.Equal(sourceNote.Entries.Count, copiedNote.Entries.Count);
+        for (int i = 0; i < sourceNote.Entries.Count; i++)
+        {
+            MakerNoteEntry expected = sourceNote.Entries[i], actual = copiedNote.Entries[i];
+            Assert.Equal(expected.TagId, actual.TagId);
+            Assert.Equal(expected.Value.FieldType, actual.Value.FieldType);
+            Assert.Equal(expected.Value.Count, actual.Value.Count);
+            Assert.Equal(expected.Value.RawBytes.ToArray(), actual.Value.RawBytes.ToArray());
+        }
     }
 
     [Fact]
