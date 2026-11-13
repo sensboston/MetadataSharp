@@ -7,6 +7,7 @@ namespace MetadataSharp.Core.MakerNotes;
 /// <summary>Corpus-backed Olympus and OM System MakerNote renderings.</summary>
 internal static class OlympusMakerNoteInterpretations
 {
+    // Route Olympus scopes to their distinct vocabularies before applying the shared top-level tag table.
     internal static string? Interpret(int scope, string name, ExifValue value)
     {
         if (name == "CameraID" && value.FieldType is TiffFieldType.Ascii or TiffFieldType.Undefined)
@@ -46,6 +47,7 @@ internal static class OlympusMakerNoteInterpretations
         };
     }
 
+    // Decode lens and extender signatures only at their documented six-byte layout and known model tuples.
     private static string? Equipment(string name, ExifValue value)
     {
         if (name is "EquipmentVersion") return Version(value);
@@ -78,6 +80,7 @@ internal static class OlympusMakerNoteInterpretations
         };
     }
 
+    // Render raw-development values using their own enumerations and bit assignments, not camera-setting codes.
     private static string? RawDevelopment(string name, ExifValue value)
     {
         if (name == "RawDevVersion") return Version(value);
@@ -96,6 +99,7 @@ internal static class OlympusMakerNoteInterpretations
         };
     }
 
+    // Keep the second raw-development IFD vocabulary separate because several numeric codes differ by scope.
     private static string? RawDevelopment2(string name, ExifValue value)
     {
         if (name == "RawDev2Version") return Version(value);
@@ -132,6 +136,7 @@ internal static class OlympusMakerNoteInterpretations
         };
     }
 
+    // Decode focus information with special handling for multi-element flash and AF-point fields.
     private static string? FocusInfo(string name, ExifValue value)
     {
         if (name == "FocusInfoVersion") return Version(value);
@@ -161,6 +166,7 @@ internal static class OlympusMakerNoteInterpretations
         return version.All(char.IsAsciiDigit) ? int.Parse(version[..2], CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture) + "." + version[2..] : null;
     }
 
+    // Olympus stores focus distance in thousandths of a metre, with UINT32_MAX denoting infinity.
     private static string? FocusDistance(ExifValue value)
     {
         if (value.FieldType != TiffFieldType.Rational || value.Count != 1 || value.RawBytes.Length < 8) return null;
@@ -239,6 +245,7 @@ internal static class OlympusMakerNoteInterpretations
         };
     }
 
+    // Older records store a mode code; newer ones add a bit mask in the second element.
     private static string? CameraFocusMode(ExifValue value)
     {
         if (!ExifTags.TryInteger(value, 0, out long first)) return null;
@@ -253,6 +260,7 @@ internal static class OlympusMakerNoteInterpretations
         return string.Join(", ", labels) + mask.ToString(CultureInfo.InvariantCulture);
     }
 
+    // Recognize only documented gradation triples and the optional fourth-element override mode.
     private static string? Gradation(ExifValue value)
     {
         if (value.Count is not (3 or 4) || !ExifTags.TryInteger(value, 0, out long first) ||
@@ -269,6 +277,7 @@ internal static class OlympusMakerNoteInterpretations
         return result;
     }
 
+    // The level is meaningful only with the fixed step and scale fields from the known Olympus tuple.
     private static string? NoiseFilter(ExifValue value)
     {
         if (value.Count != 3 || !ExifTags.TryInteger(value, 0, out long level) ||
@@ -277,6 +286,7 @@ internal static class OlympusMakerNoteInterpretations
         return level switch { -2 => "Off", -1 => "Low", 0 => "Standard", 1 => "High", _ => level.ToString(CultureInfo.InvariantCulture) };
     }
 
+    // Map only known art-filter IDs and include the selected position for partial-color effects.
     private static string? ArtFilter(ExifValue value)
     {
         if (value.Count != 4 || !ExifTags.TryInteger(value, 0, out long code) ||
@@ -297,6 +307,7 @@ internal static class OlympusMakerNoteInterpretations
     private static string? BitMask(long number, params (long Bit, string Label)[] labels) =>
         BitMask(number, null, labels);
 
+    // Report recognized set bits only; an unrecognized nonzero mask is not silently treated as zero.
     private static string? BitMask(long number, string? zeroLabel, params (long Bit, string Label)[] labels)
     {
         if (number == 0) return zeroLabel;
@@ -306,6 +317,7 @@ internal static class OlympusMakerNoteInterpretations
         return matches.Count == 0 ? null : string.Join(", ", matches);
     }
 
+    // Interpret the three-element panorama/burst record while leaving mode-specific direction fields conditional.
     private static string? SpecialMode(ExifValue value)
     {
         if (value.Count != 3 || !ExifTags.TryInteger(value, 0, out long mode) ||
@@ -327,6 +339,7 @@ internal static class OlympusMakerNoteInterpretations
         return result;
     }
 
+    // White balance uses both mode and setting; avoid turning an incomplete pair into a guessed preset.
     private static string? WhiteBalance(ExifValue value)
     {
         if (!ExifTags.TryInteger(value, 0, out long mode)) return null;
@@ -345,6 +358,7 @@ internal static class OlympusMakerNoteInterpretations
         return null;
     }
 
+    // Reject malformed rationals and normalize the standard zero and unity ratios to “None”.
     private static string? DigitalZoom(ExifValue value)
     {
         if (value.FieldType != TiffFieldType.Rational || value.Count != 1 || value.RawBytes.Length < 8)

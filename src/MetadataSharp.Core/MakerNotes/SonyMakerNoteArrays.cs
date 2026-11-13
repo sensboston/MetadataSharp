@@ -15,6 +15,7 @@ internal static class SonyMakerNoteArrays
 
     private static readonly byte[] Decipher = BuildDecipher();
 
+    // Construct the inverse permutation for p³ mod 249, leaving the reserved high byte values unchanged.
     private static byte[] BuildDecipher()
     {
         var table = new byte[256];
@@ -25,6 +26,7 @@ internal static class SonyMakerNoteArrays
         return table;
     }
 
+    // Apply the inverse substitution to a copy so callers never mutate the packet-owned bytes.
     internal static byte[] Plain(ReadOnlySpan<byte> stored)
     {
         byte[] plain = new byte[stored.Length];
@@ -57,6 +59,7 @@ internal static class SonyMakerNoteArrays
     internal static bool IsEnciphered(ushort tag, ExifValue value, ReadOnlySpan<byte> model) =>
         value.FieldType is TiffFieldType.Undefined or TiffFieldType.Byte && Select(tag, value.RawBytes, model) is { Enciphered: true };
 
+    // Split only recognized byte arrays, honoring each layout’s byte order and stopping at truncated fields.
     internal static IReadOnlyList<MakerNoteField> Decompose(ushort tag, ExifValue value, ReadOnlySpan<byte> model)
     {
         if (value.FieldType is not (TiffFieldType.Undefined or TiffFieldType.Byte) || Select(tag, value.RawBytes, model) is not Layout layout)
@@ -90,6 +93,7 @@ internal static class SonyMakerNoteArrays
         _ => null
     };
 
+    // Match the explicit camera set that uses the large 2010e array layout; do not infer by model prefix.
     private static bool Is2010eModel(ReadOnlySpan<byte> model)
     {
         string name = System.Text.Encoding.ASCII.GetString(model).TrimEnd('\0', ' ');
@@ -102,6 +106,7 @@ internal static class SonyMakerNoteArrays
     private const TiffFieldType L = TiffFieldType.Long;
 
     /// <summary>Big-endian SHORTs, whatever the MakerNote's byte order; the offsets are in bytes.</summary>
+    // This generation’s 280-byte array is explicitly big-endian regardless of the enclosing note.
     private static readonly Layout CameraSettings = new(
     [
         new(8, "DriveMode", S), new(12, "WhiteBalanceFineTune", TiffFieldType.SShort), new(32, "FocusMode", S),
@@ -122,6 +127,7 @@ internal static class SonyMakerNoteArrays
         new(48, "FacesDetected", S), new(52, "MetaVersion", TiffFieldType.Ascii, 16),
     ], Endianness.LittleEndian, Enciphered: false);
 
+    // Sony Misc3c offsets are decoded from the encrypted variant selected by the stored leading byte.
     private static readonly Layout Misc3c = new(
     [
         new(9, "ReleaseMode2"), new(10, "ShotNumberSincePowerUp", L), new(18, "SequenceImageNumber", L),
@@ -144,6 +150,7 @@ internal static class SonyMakerNoteArrays
         new(12, "ExposureProgram"), new(14, "IntelligentAuto"), new(30, "LensZoomPosition", S), new(32, "FocusPosition2"),
     ], Endianness.LittleEndian, Enciphered: true);
 
+    // The model-gated 2010e layout contains sparse fields at vendor-defined offsets in a large encrypted block.
     private static readonly Layout Info2010e = new(
     [
         new(0, "SequenceImageNumber", L), new(4, "SequenceFileNumber", L), new(8, "ReleaseMode2", L),

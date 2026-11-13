@@ -40,8 +40,10 @@ internal static class NikonMakerNoteArrays
     /// <summary>How many bytes at the start of an encrypted array are stored in the clear.</summary>
     internal static int EncryptedStart(ushort tag, ExifValue value) => SelectEncrypted(tag, value.RawBytes).Item2;
 
+    // Group versioned Nikon arrays by their two-byte major family before applying per-version exceptions.
     private static bool Major02(ReadOnlySpan<byte> raw) => raw.Length >= 4 && raw[0] == (byte)'0' && raw[1] == (byte)'2';
 
+    // Return both the version-specific layout and the cleartext prefix length used by Nikon ciphering.
     private static (Layout?, int) SelectEncrypted(ushort tag, ReadOnlySpan<byte> raw) => tag switch
     {
         0x0098 when Version(raw, "0201") || Version(raw, "0202") || Version(raw, "0203") => (LensData0101, 4),
@@ -56,6 +58,7 @@ internal static class NikonMakerNoteArrays
         _ => (null, 0)
     };
 
+    // Materialize only complete fields in ascending-offset order, honoring forced byte order where specified.
     private static IReadOnlyList<MakerNoteField> Split(Layout layout, ReadOnlySpan<byte> raw, Endianness parentOrder)
     {
         Endianness order = layout.BigEndian ? Endianness.BigEndian : parentOrder;
@@ -71,9 +74,11 @@ internal static class NikonMakerNoteArrays
         return fields;
     }
 
+    // Compare version bytes in place; decoding arbitrary array prefixes as text is unnecessary.
     private static bool Version(ReadOnlySpan<byte> raw, string version) =>
         raw.Length >= 4 && raw[0] == version[0] && raw[1] == version[1] && raw[2] == version[2] && raw[3] == version[3];
 
+    // Select only layouts whose tag, version, and known framing identify the exact field offsets.
     private static Layout? Select(ushort tag, ReadOnlySpan<byte> raw) => tag switch
     {
         0x001F => VRInfo,
@@ -102,8 +107,10 @@ internal static class NikonMakerNoteArrays
     private const TiffFieldType U = TiffFieldType.Undefined;
     private const TiffFieldType S = TiffFieldType.Short;
 
+    // VRInfo is a four-byte version followed by a single vibration-reduction flag.
     private static readonly Layout VRInfo = new([new(0, "Version", U, 4), new(4, "VibrationReduction")]);
 
+    // PictureControl has fixed-width ASCII names followed by one-byte adjustment controls.
     private static readonly Layout PictureControl = new(
     [
         new(0, "Version", U, 4), new(4, "Name", TiffFieldType.Ascii, 20), new(24, "Base", TiffFieldType.Ascii, 20),
@@ -112,20 +119,25 @@ internal static class NikonMakerNoteArrays
         new(57, "ToningSaturation"),
     ]);
 
+    // WorldTime combines a signed timezone offset with separate daylight and display-format codes.
     private static readonly Layout WorldTime = new(
         [new(0, "Timezone", TiffFieldType.SShort), new(2, "DaylightSavings"), new(3, "DateDisplayFormat")]);
 
+    // ISOInfo is explicitly big-endian even when the surrounding Nikon MakerNote is little-endian.
     private static readonly Layout ISOInfo = new(
         [new(0, "ISO"), new(4, "ISOExpansion", S), new(6, "ISO2"), new(10, "ISOExpansion2", S)], BigEndian: true);
 
+    // AFInfo stores point and focus-mask values in a compact mixed-width layout.
     private static readonly Layout AFInfo = new([new(0, "AFAreaMode"), new(1, "AFPoint"), new(2, "AFPointsInFocus", S)]);
 
+    // LensData 0100 predates the focus-distance fields introduced by later versions.
     private static readonly Layout LensData0100 = new(
     [
         new(0, "Version", U, 4), new(6, "LensIDNumber"), new(7, "LensFStops"), new(8, "MinFocalLength"),
         new(9, "MaxFocalLength"), new(10, "MaxApertureAtMinFocal"), new(11, "MaxApertureAtMaxFocal"), new(12, "MCUVersion"),
     ]);
 
+    // LensData 0101 shifts the lens identifiers and includes additional focus and aperture values.
     private static readonly Layout LensData0101 = new(
     [
         new(0, "Version", U, 4), new(4, "ExitPupilPosition"), new(5, "AFAperture"), new(8, "FocusPosition"),
@@ -134,6 +146,7 @@ internal static class NikonMakerNoteArrays
         new(16, "MaxApertureAtMaxFocal"), new(17, "MCUVersion"), new(18, "EffectiveMaxAperture"),
     ]);
 
+    // Version 0204 has distinct offsets; it must not reuse the otherwise similar 0101 layout.
     private static readonly Layout LensData0204 = new(
     [
         new(0, "Version", U, 4), new(4, "ExitPupilPosition"), new(5, "AFAperture"), new(8, "FocusPosition"),
@@ -142,6 +155,7 @@ internal static class NikonMakerNoteArrays
         new(17, "MaxApertureAtMaxFocal"), new(18, "MCUVersion"), new(19, "EffectiveMaxAperture"),
     ]);
 
+    // Version 0800 adds high-offset lens identifiers while retaining earlier focus measurements.
     private static readonly Layout LensData0800 = new(
     [
         new(0, "Version", U, 4), new(4, "ExitPupilPosition"), new(5, "AFAperture"), new(9, "FocusPosition"),
@@ -152,6 +166,7 @@ internal static class NikonMakerNoteArrays
         new(78, "FocusDistance2", S),
     ]);
 
+    // ShotInfo 02xx uses big-endian counters and offsets that differ from its clear 01xx predecessor.
     private static readonly Layout ShotInfo02 = new(
     [
         new(0, "Version", U, 4), new(106, "ShutterCount1", TiffFieldType.Long), new(110, "DeletedImageCount", TiffFieldType.Long),
@@ -159,6 +174,7 @@ internal static class NikonMakerNoteArrays
         new(430, "VibrationReduction2"), new(598, "ISO"), new(630, "ShutterCount", TiffFieldType.Long),
     ], BigEndian: true);
 
+    // The clear 01xx ShotInfo layout ends before the later 02xx shutter-count field.
     private static readonly Layout ShotInfo01 = new(
     [
         new(0, "Version", U, 4), new(106, "ShutterCount1", TiffFieldType.Long), new(110, "DeletedImageCount", TiffFieldType.Long),
@@ -193,6 +209,7 @@ internal static class NikonMakerNoteArrays
         new(15, "FlashGNDistance"), new(16, "FlashColorFilter"),
     ]);
 
+    // FlashInfo 0106 introduces the expanded control/output fields and forces big-endian values.
     private static readonly Layout FlashInfo0106 = new(
     [
         new(0, "Version", U, 4), new(4, "FlashSource"), new(6, "ExternalFlashFirmware", S), new(8, "ExternalFlashData1"),
@@ -204,6 +221,7 @@ internal static class NikonMakerNoteArrays
         new(40, "FlashGroupAOutput"), new(41, "FlashGroupBOutput"), new(42, "FlashGroupCOutput"),
     ], BigEndian: true);
 
+    // FlashInfo 0107 adds external-flash data while preserving the big-endian expanded layout.
     private static readonly Layout FlashInfo0107 = new(
     [
         new(0, "Version", U, 4), new(4, "FlashSource"), new(6, "ExternalFlashFirmware", S), new(8, "ExternalFlashData1"),
@@ -223,6 +241,7 @@ internal static class NikonMakerNoteArrays
         new(8, "MultiExposureShots", TiffFieldType.Long), new(12, "MultiExposureAutoGain", TiffFieldType.Long),
     ]);
 
+    // AFInfo2 0100 places its area geometry immediately after the seven-byte AF-point mask.
     private static readonly Layout AFInfo2V0100 = new(
     [
         new(0, "Version", U, 4), new(4, "ContrastDetectAF"), new(5, "AFAreaMode"), new(6, "PhaseDetectAF"),
@@ -231,6 +250,7 @@ internal static class NikonMakerNoteArrays
         new(24, "AFAreaWidth", S), new(26, "AFAreaHeight", S), new(28, "ContrastDetectAFInFocus"),
     ]);
 
+    // AFInfo2 0101 moves area geometry later in the record, so its exact length selects this layout.
     private static readonly Layout AFInfo2V0101 = new(
     [
         new(0, "Version", U, 4), new(4, "ContrastDetectAF"), new(5, "AFAreaMode"), new(6, "PhaseDetectAF"),

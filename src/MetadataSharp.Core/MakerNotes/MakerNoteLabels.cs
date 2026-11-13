@@ -626,6 +626,7 @@ internal static partial class MakerNoteLabels
         return quotient;
     }
 
+    // Render signed white-balance movement with vendor-specific direction letters and optional thousandths.
     private static string Shift(long amount, char negative, char positive, bool thousandths = false)
     {
         if (amount == 0)
@@ -635,6 +636,7 @@ internal static partial class MakerNoteLabels
                (thousandths ? Whole(size / 1000) + "." + TwoDigits(size % 1000 / 10) : Whole(size));
     }
 
+    // Decode exactly two signed Canon white-balance adjustments; malformed values have no interpretation.
     private static string? AmberBlueGreenMagenta(ExifValue value, bool thousandths)
     {
         if (value.Count != 2 || value.FieldType is not (TiffFieldType.SLong or TiffFieldType.Long) ||
@@ -644,6 +646,7 @@ internal static partial class MakerNoteLabels
                ", G/M: " + Shift(Signed32(value, greenMagenta), 'G', 'M', thousandths);
     }
 
+    // Preserve opaque byte payloads as lowercase hex rather than guessing a text encoding.
     private static string? Hex(ExifValue value)
     {
         if (value.Count == 0 || value.FieldType is not (TiffFieldType.Byte or TiffFieldType.Undefined))
@@ -651,6 +654,7 @@ internal static partial class MakerNoteLabels
         return Convert.ToHexString(value.RawBytes).ToLowerInvariant();
     }
 
+    // Read the second component only for the two-integer pair layouts used by these vendor fields.
     private static string? SecondOfTwo(ExifValue value)
     {
         if (value.Count != 2 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.Long) ||
@@ -659,6 +663,7 @@ internal static partial class MakerNoteLabels
         return Whole(second);
     }
 
+    // Format only complete two-element integer pairs; partial values are not meaningful coordinates.
     private static string? Pair(ExifValue value)
     {
         if (value.Count != 2 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.Long) ||
@@ -688,6 +693,7 @@ internal static partial class MakerNoteLabels
         return list.Length == 0 ? Find(rule, 0) : list.ToString();
     }
 
+    // Keep unknown codes unknown instead of assigning a nearest or default label.
     private static string? Find(Rule rule, long number)
     {
         foreach ((long candidate, string label) in rule.Labels)
@@ -698,6 +704,7 @@ internal static partial class MakerNoteLabels
         return null;
     }
 
+    // Model IDs gate later Sony interpretations because several maker-note encodings vary by camera family.
     private static readonly (long Number, string Label)[] SonyModels =
     [
         (0, "Multiple camera models"),
@@ -817,6 +824,7 @@ internal static partial class MakerNoteLabels
         (411, "DSC-RX10M5"),
     ];
 
+    // Preserve unlisted numeric Sony IDs as stored values while requiring the specified SHORT encoding.
     private static string? SonyModelId(ExifValue value)
     {
         long? number = SonyInteger(value);
@@ -825,6 +833,7 @@ internal static partial class MakerNoteLabels
         return SonyModels.FirstOrDefault(model => model.Number == number).Label ?? Stored(number.Value);
     }
 
+    // Use only unambiguous single-model labels to select model-specific field interpretation rules.
     private static string? SonyModelFromNote(MakerNote? note)
     {
         long? number = SonyTopInteger(note, "SonyModelID");
@@ -834,6 +843,7 @@ internal static partial class MakerNoteLabels
         return label is not null && !label.Contains(' ') ? label : null;
     }
 
+    // Locate a named decoded field within one Sony array entry without scanning unrelated tags.
     private static ExifValue? SonyField(MakerNote? note, ushort entryTag, string fieldName)
     {
         if (note is null || !note.TryGetEntry(entryTag, out MakerNoteEntry? entry))
@@ -844,6 +854,7 @@ internal static partial class MakerNoteLabels
         return null;
     }
 
+    // Accept only a single integer element; arrays and undecodable numeric types remain uninterpreted.
     private static long? SonyInteger(ExifValue? value)
     {
         if (value is null || value.Count != 1 || !ExifTags.TryInteger(value, 0, out long number))
@@ -851,6 +862,7 @@ internal static partial class MakerNoteLabels
         return number;
     }
 
+    // Reduce a valid signed exposure-bias ratio, but preserve malformed denominators as raw fractions.
     private static string? SonyExposureBias(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.SRational ||
@@ -867,6 +879,7 @@ internal static partial class MakerNoteLabels
                (reducedDenominator == 1 ? "" : "/" + Whole(reducedDenominator)) + " EV";
     }
 
+    // Sony stores this adjustment as a signed rational; reject zero denominators before decimal conversion.
     private static string? SonyExposureStandardAdjustment(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.SRational ||
@@ -875,6 +888,7 @@ internal static partial class MakerNoteLabels
         return ((decimal)numerator / denominator).ToString("0.0", CultureInfo.InvariantCulture);
     }
 
+    // Reduce exposure-bias fractions with Euclid’s algorithm after callers normalize their signs.
     private static long Gcd(long left, long right)
     {
         while (right != 0)
@@ -882,6 +896,7 @@ internal static partial class MakerNoteLabels
         return left;
     }
 
+    // Decode a Sony array before reading its marker byte; encrypted source bytes are never indexed directly.
     private static byte? SonyArrayByte(MakerNote? note, ushort tag, int offset)
     {
         if (note is null)
@@ -896,6 +911,7 @@ internal static partial class MakerNoteLabels
         return null;
     }
 
+    // Report the signed byte as Celsius only when the companion array marks this sensor value as valid.
     private static string? SonyAmbientTemperature(ExifValue value, MakerNote? note)
     {
         byte? marker = SonyArrayByte(note, 0x9402, 2);
@@ -904,6 +920,7 @@ internal static partial class MakerNoteLabels
         return marker == 255 ? Whole(unchecked((byte)temperature)) + " \u00B0C" : "n/a";
     }
 
+    // Gate this temperature interpretation on Sony’s companion validity range to avoid fabricated readings.
     private static string? SonyMisc1Temperature(ExifValue value, MakerNote? note)
     {
         byte? marker = SonyArrayByte(note, 0x9403, 4);
@@ -915,6 +932,7 @@ internal static partial class MakerNoteLabels
     private static bool SonyModelIs(string? model, params string[] prefixes) =>
         model is not null && prefixes.Any(prefix => model.StartsWith(prefix, StringComparison.Ordinal));
 
+    // Sony compact models use this byte differently; without a known model retain only the stored number.
     private static string? SonyFocusPosition(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
@@ -926,6 +944,7 @@ internal static partial class MakerNoteLabels
         return number == 255 ? "Infinity" : Whole(number);
     }
 
+    // Avoid interpreting model families known to repurpose the focus-position byte.
     private static string? SonyMisc2bFocusPosition(ExifValue value, string? model)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
@@ -1009,6 +1028,7 @@ internal static partial class MakerNoteLabels
         return number switch { 0 => "Off", 1 => "Face tracking", 2 => "Lock on AF", _ => Stored(number) };
     }
 
+    // Resolve a one-element integer from a top-level Sony field for cross-field interpretation gates.
     private static long? SonyTopInteger(MakerNote? note, string name)
     {
         if (note is null)
