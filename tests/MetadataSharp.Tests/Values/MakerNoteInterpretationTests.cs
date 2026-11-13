@@ -170,6 +170,7 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("--", Field(MakerNoteFormat.Canon, 0x0004, "FlashGuideNumber", Shorts(65535), index: 13));
         Assert.Equal("inf", Field(MakerNoteFormat.Canon, 0x0004, "ISOSpeed", Shorts(65535), index: 2));
         Assert.Equal("1 s", Field(MakerNoteFormat.Canon, 0x0004, "TargetShutterSpeed", Shorts(65535), index: 5));
+        Assert.Equal("2075", Field(MakerNoteFormat.Canon, 0x0004, "BulbDuration", Shorts(20755), index: 24));
         Assert.Equal("3 focus points; center used",
             Field(MakerNoteFormat.Canon, 0x0004, "AFPointUsed", Shorts(0x3002), index: 14));
     }
@@ -182,6 +183,7 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("Internal flash, E-TTL",
             Field(MakerNoteFormat.Canon, 0x0001, "FlashDetails", Shorts(0x2008), index: 29));
         Assert.Equal("(0)", Field(MakerNoteFormat.Canon, 0x0093, "FileNumber", Longs(0), index: 1));
+        Assert.Equal("Standard", Field(MakerNoteFormat.Canon, 0x00A0, "PictureStyle", Shorts(129, 129, 129), index: 5));
     }
 
     [Fact]

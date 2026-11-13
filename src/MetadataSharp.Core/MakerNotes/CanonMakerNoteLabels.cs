@@ -93,6 +93,7 @@ internal static partial class MakerNoteLabels
         new(0x0004, "TargetAperture", [], Form.CanonAperture),
         new(0x0004, "ApertureValue", [], Form.CanonAperture),
         new(0x0004, "TargetShutterSpeed", [], Form.CanonShutter),
+        new(0x0004, "BulbDuration", [], Form.CanonBulbDuration),
         new(0x0004, "ShutterSpeedValue", [], Form.CanonShutter),
         new(0x0004, "FlashGuideNumber", [], Form.CanonFlashGuideNumber),
         new(0x0004, "AFPointUsed", [], Form.CanonAfPointUsed),
@@ -180,7 +181,7 @@ internal static partial class MakerNoteLabels
         [
             (0, "None"), (33, "User Def. 1"), (34, "User Def. 2"), (129, "Standard"), (131, "Landscape"),
             (132, "Neutral"), (133, "Faithful"), (135, "Auto"),
-        ]),
+        ], Form.CanonPictureStyle),
 
         // TimeInfo (0x0035).
         new(0x0035, "TimeZoneCity", [(0, "n/a"), (19, "Paris"), (20, "London"), (30, "Los Angeles"), (32766, "(not set)")]),

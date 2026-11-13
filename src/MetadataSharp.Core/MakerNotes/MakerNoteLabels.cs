@@ -90,6 +90,8 @@ internal static partial class MakerNoteLabels
         BitMask,
 
         CanonAutoIso,
+        CanonBulbDuration,
+        CanonPictureStyle,
         CanonIso,
         CanonMeasuredEv,
         CanonMeasuredEv2,
@@ -271,6 +273,10 @@ internal static partial class MakerNoteLabels
                 return BitMask(rule, value);
             case Form.CanonAutoIso:
                 return CanonAutoIso(value);
+            case Form.CanonBulbDuration:
+                return CanonBulbDuration(value);
+            case Form.CanonPictureStyle:
+                return CanonPictureStyle(rule, value);
             case Form.CanonIso:
                 return CanonIso(value);
             case Form.CanonMeasuredEv:
@@ -547,6 +553,20 @@ internal static partial class MakerNoteLabels
         return Whole(width) + " x " + Whole(height);
     }
 
+    private static string? CanonBulbDuration(ExifValue value)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
+            return null;
+        return (stored / 10).ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string? CanonPictureStyle(Rule rule, ExifValue value)
+    {
+        if (value.Count == 0 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long code))
+            return null;
+        return rule.Labels.FirstOrDefault(label => label.Number == code).Label;
+    }
+
     private static string? CanonAutoIso(ExifValue value)
     {
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long code))
@@ -593,7 +613,8 @@ internal static partial class MakerNoteLabels
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long stored))
             return null;
         double exposureDenominator = Math.Pow(2.0, CanonEv(stored));
-        if (!double.IsFinite(exposureDenominator) || exposureDenominator <= 0) return null;
+        if (double.IsNaN(exposureDenominator)) return null;
+        if (double.IsInfinity(exposureDenominator) || exposureDenominator <= 0) return "1 s";
         const double maxRationalPart = uint.MaxValue;
         if (exposureDenominator > 1)
         {
