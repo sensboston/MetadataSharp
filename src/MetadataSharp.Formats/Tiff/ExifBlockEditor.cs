@@ -173,7 +173,8 @@ internal static class ExifBlockEditor
         TiffReadResult after;
         try { after = ExifTiffReader.Read(output, limits); }
         catch (MetadataException failure) { throw Limit(failure) ?? Refuse("the reader of the block refuses the output"); }
-        TiffBasedWriteVerifier.Reader(before.Metadata, after.Metadata, plan);
+        TiffBasedWriteVerifier.Reader(before.Metadata, after.Metadata, plan,
+            allowMakerNoteCopy: edit.MakerNoteCopy is not null);
         if ((before.Thumbnail is null) != (after.Thumbnail is null) ||
             (before.Thumbnail is not null && !before.Thumbnail.AsSpan().SequenceEqual(after.Thumbnail)))
             throw Refuse("the thumbnail no longer reads as it did");

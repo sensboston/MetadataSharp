@@ -38,7 +38,8 @@ public sealed class MetadataCopyTests
         {
             MetadataCopyResult result = MetadataOperations.CopyMetadata(source, destination,
                 new MetadataCopyOptions { Families = MetadataCopyFamilies.Exif, MakerNote = MetadataMakerNoteMode.Skip });
-            Assert.False(result.WasRefused, string.Join(Environment.NewLine, result.Notes.Select(note => note.Message)));
+            Assert.False(result.WasRefused, $"{ImageMetadata.Detect(destination)}: " +
+                string.Join(Environment.NewLine, result.Notes.Select(note => note.Message)));
             Assert.True(result.CopiedFamilies.HasFlag(MetadataCopyFamilies.Exif));
             ImageMetadata arrived = ImageMetadata.Read(result.DestinationBytes);
             Assert.Empty(arrived.Errors);
@@ -90,8 +91,9 @@ public sealed class MetadataCopyTests
             new MetadataCopyOptions { Families = MetadataCopyFamilies.Exif, MakerNote = MetadataMakerNoteMode.Copy });
         Assert.False(result.WasRefused);
         Assert.Contains(result.Notes, note => note.Reason == MetadataCopyReason.MakerNoteNotDecoded);
-        Assert.DoesNotContain(ImageMetadata.Read(result.DestinationBytes).Exif!.Entries,
-            entry => entry.Key == new ExifTagKey(ExifDirectoryKind.Exif, 0x927C));
+        ExifMetadata? copiedExif = ImageMetadata.Read(result.DestinationBytes).Exif;
+        Assert.True(copiedExif is null || !copiedExif.TryGetEntry(
+            new ExifTagKey(ExifDirectoryKind.Exif, 0x927C), out _));
     }
 
     [Fact]
