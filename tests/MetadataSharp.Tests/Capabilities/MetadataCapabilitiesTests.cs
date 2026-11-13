@@ -237,6 +237,10 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.XmpSidecar, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Any property by path: simple values, arrays, language alternatives, structures and qualifiers in any namespace; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.XmpSidecar, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Any property by path: simple values, arrays, language alternatives, structures and qualifiers in any namespace; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.XmpSidecar, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal is also supported."),
+        (MetadataContainer.Asf, MetadataFamily.Video, MetadataOperation.Read, CapabilityStatus.Partial, "VideoMetadata.Read: bounded ASF Header GUID object traversal; no EXIF, IPTC, packet XMP or writes."),
+        (MetadataContainer.Matroska, MetadataFamily.Video, MetadataOperation.Read, CapabilityStatus.Partial, "VideoMetadata.Read: bounded EBML element traversal, including unknown-size masters; no writes."),
+        (MetadataContainer.QuickTime, MetadataFamily.Video, MetadataOperation.Read, CapabilityStatus.Partial, "VideoMetadata.Read: bounded QuickTime atom traversal; no embedded packet XMP or EXIF is surfaced by the pinned reader."),
+        (MetadataContainer.Riff, MetadataFamily.Video, MetadataOperation.Read, CapabilityStatus.Partial, "VideoMetadata.Read: bounded RIFF chunk traversal for AVI and WAV; no writes."),
     ];
 
     [Fact]
@@ -502,8 +506,8 @@ public sealed class MetadataCapabilitiesTests
     [Fact]
     public void EnumDomains_CoverTheDocumentedBaseline()
     {
-        Assert.Equal(32, Enum.GetValues<MetadataContainer>().Length); // Unknown + the 31 documented baseline rows (XMP represented as XmpSidecar)
-        Assert.Equal(7, Enum.GetValues<MetadataFamily>().Length);
+        Assert.Equal(36, Enum.GetValues<MetadataContainer>().Length); // Unknown + 31 baseline categories + four video readers.
+        Assert.Equal(8, Enum.GetValues<MetadataFamily>().Length);
         Assert.Equal(5, Enum.GetValues<MetadataOperation>().Length);
         Assert.Equal(0, (int)MetadataContainer.Unknown);
         Assert.Equal(0, (int)MetadataFamily.Exif);

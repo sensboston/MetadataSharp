@@ -54,6 +54,8 @@ jobs:
         run: dotnet restore MetadataSharp.sln
       - name: Build Release
         run: dotnet build MetadataSharp.sln --configuration Release --no-restore
+      - name: Verify authored video fixtures
+        run: python tools/reference/video_fixtures.py verify tests/fixtures/video
       - name: Test offline reference-harness policy
         shell: bash
         run: python -m unittest discover -s tests/reference -v 2>&1 | tee reference.log
@@ -314,6 +316,18 @@ jobs:
           tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
           echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
           artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      # Use the existing differential comparison for every eligible checked-in video expectation,
+      # the authored tiny fixtures, and the pinned ASF corpus sample (linked, never copied).
+      - name: Video-container key and value parity (corpus and authored fixtures)
+        shell: bash
+        run: |
+          python tools/reference/video_fixtures.py verify tests/fixtures/video
+          mkdir -p artifacts/parity/video-corpus
+          ln -s "$PWD/artifacts/parity/exiv2/test/data/sample_960x540.asf" artifacts/parity/video-corpus/sample_960x540.asf
+          python tools/parity/run_parity.py --tree artifacts/parity/exiv2 \
+            --fixtures artifacts/parity/video-corpus --fixtures tests/fixtures/video/valid \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
+            --dump-command "$DUMP" --out artifacts/parity/video --title 'PARITY video containers' --annotate
       # The pinned tree holds one CR3 file and no expectation for it, so the pinned tool reads it here.
       # Two measurements, no gate: key parity of the CMT boxes and the XMP box, and the preview list.
       - name: The CR3 file of the pinned corpus against the pinned tool (exiv2 -Pkycvt, exiv2 -pp)
@@ -488,6 +502,8 @@ jobs:
           path: |
             artifacts/parity/upstream/parity-report.txt
             artifacts/parity/upstream/parity-report.json
+            artifacts/parity/video/parity-report.txt
+            artifacts/parity/video/parity-report.json
             artifacts/parity/preview/preview-report.txt
             artifacts/parity/preview/preview-report.json
             artifacts/parity/icc/icc-report.txt

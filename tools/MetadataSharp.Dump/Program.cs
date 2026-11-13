@@ -177,6 +177,8 @@ internal static class Program
             case MetadataFormat.Pgf: Pgf(path, stdout, length); return;
             case MetadataFormat.Eps: Eps(path, stdout, length); return;
             case MetadataFormat.Exv: Exv(path, stdout, length); return;
+            case MetadataFormat.Asf or MetadataFormat.Matroska or MetadataFormat.QuickTime or MetadataFormat.Riff:
+                Snapshot(path, stdout, length); return;
             case MetadataFormat.Crw: CrwFile(path, stdout, length); return;
             case MetadataFormat.Mrw: MrwFile(path, stdout, length); return;
             case MetadataFormat.Raf: RafFile(path, stdout, length); return;
@@ -203,6 +205,8 @@ internal static class Program
         MetadataException? Refusal(MetadataFamily kind) =>
             file.Errors.FirstOrDefault(error => error.Family == kind)?.Exception;
         MetadataException? exif = Refusal(MetadataFamily.Exif), iptc = Refusal(MetadataFamily.IptcIim), xmp = Refusal(MetadataFamily.Xmp);
+        MetadataException? video = Refusal(MetadataFamily.Video);
+        if (video is not null) throw video;
 
         // The container itself was refused: the library lists that one exception under EXIF and XMP.
         if (exif is not null && ReferenceEquals(exif, xmp)) throw exif;
@@ -236,6 +240,7 @@ internal static class Program
             refused.Add("xmp-refused:" + xmp.Code);
         }
         if (file.Xmp is not null) Xmp(file.Xmp, stdout);
+        if (file.Video is not null) Video(file.Video, stdout);
         Done(stdout, refused);
     }
 
@@ -628,6 +633,22 @@ internal static class Program
             else
             {
                 Tag(stdout, key, "Xmp" + entry.Kind, (uint)entry.Values.Count, Join(entry.Values));
+            }
+        }
+    }
+
+    private static void Video(VideoMetadata video, StreamWriter stdout)
+    {
+        foreach (VideoProperty property in video.Properties)
+        {
+            if (property.Items is IReadOnlyList<string> items)
+            {
+                string joined = string.Join(", ", items.Select(Escape));
+                Tag(stdout, property.Key, "XmpSeq", 1, joined);
+            }
+            else
+            {
+                Tag(stdout, property.Key, "XmpText", (uint)Encoding.UTF8.GetByteCount(property.Value), Escape(property.Value));
             }
         }
     }

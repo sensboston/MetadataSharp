@@ -3,9 +3,9 @@ using System.Collections.ObjectModel;
 namespace MetadataSharp.Core;
 
 /// <summary>Container/file categories for capability discovery. Unknown = 0.
-/// Members cover the 31 documented v0.28.9 baseline category rows; the XMP
-/// row is represented as XmpSidecar. Every documented category is present so
-/// "not supported" is an explicit answer, not an absence of information.</summary>
+/// Members cover the documented v0.28.9 baseline category rows and the four
+/// read-only video-reader categories; the XMP row is represented as XmpSidecar.
+/// Every documented category is present so "not supported" is an explicit answer.</summary>
 public enum MetadataContainer
 {
     /// <summary>No container information; never assumed supported.</summary>
@@ -71,7 +71,15 @@ public enum MetadataContainer
     /// <summary>Targa TGA.</summary>
     Tga,
     /// <summary>XMP packet or .xmp sidecar (not a pixel container).</summary>
-    XmpSidecar
+    XmpSidecar,
+    /// <summary>Advanced Systems Format (ASF).</summary>
+    Asf,
+    /// <summary>Matroska and WebM.</summary>
+    Matroska,
+    /// <summary>QuickTime-family ISO base media files.</summary>
+    QuickTime,
+    /// <summary>RIFF AVI and WAV.</summary>
+    Riff
 }
 
 /// <summary>Metadata family granularity used for capability rows.</summary>
@@ -90,7 +98,9 @@ public enum MetadataFamily
     /// <summary>Embedded thumbnail; no general public API in this build.</summary>
     Thumbnail,
     /// <summary>Embedded preview; no general public API in this build.</summary>
-    Preview
+    Preview,
+    /// <summary>Properties decoded from a read-only video container.</summary>
+    Video
 }
 
 /// <summary>User-visible operation classes; mirrors the E01 ledger axes.</summary>
@@ -393,6 +403,11 @@ public static class MetadataCapabilities
         new(MetadataContainer.XmpSidecar, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Any property by path: simple values, arrays, language alternatives, structures and qualifiers in any namespace; a packet that cannot be rewritten without loss is refused."),
         new(MetadataContainer.XmpSidecar, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Any property by path: simple values, arrays, language alternatives, structures and qualifiers in any namespace; a packet that cannot be rewritten without loss is refused."),
         new(MetadataContainer.XmpSidecar, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal is also supported."),
+        // Video containers are read-only. The one family is the container-derived key/value property set.
+        new(MetadataContainer.Asf, MetadataFamily.Video, MetadataOperation.Read, CapabilityStatus.Partial, "VideoMetadata.Read: bounded ASF Header GUID object traversal; no EXIF, IPTC, packet XMP or writes."),
+        new(MetadataContainer.Matroska, MetadataFamily.Video, MetadataOperation.Read, CapabilityStatus.Partial, "VideoMetadata.Read: bounded EBML element traversal, including unknown-size masters; no writes."),
+        new(MetadataContainer.QuickTime, MetadataFamily.Video, MetadataOperation.Read, CapabilityStatus.Partial, "VideoMetadata.Read: bounded QuickTime atom traversal; no embedded packet XMP or EXIF is surfaced by the pinned reader."),
+        new(MetadataContainer.Riff, MetadataFamily.Video, MetadataOperation.Read, CapabilityStatus.Partial, "VideoMetadata.Read: bounded RIFF chunk traversal for AVI and WAV; no writes."),
     ];
 
     /// <summary>All declared (non-NotSupported) capability rows in stable sorted
