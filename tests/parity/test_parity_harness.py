@@ -658,7 +658,7 @@ class SizeParityTests(unittest.TestCase):
         with self.assertRaises(dump_format.DumpFormatError):
             dump_format.parse_dump(text)
 
-    def test_the_four_verdicts_of_a_size(self):
+    def test_the_verdicts_of_a_size(self):
         self.assertEqual(compare_mod.compare_size(None, None), None)
         self.assertEqual(compare_mod.compare_size(("64", "48", "image/gif"), (64, 48, "image/gif"))["outcome"],
                          compare_mod.SIZE_MATCH_VALUE)
@@ -666,6 +666,15 @@ class SizeParityTests(unittest.TestCase):
                          compare_mod.SIZE_DIFF)
         self.assertEqual(compare_mod.compare_size(("64", "48", "image/gif"), None)["outcome"], compare_mod.SIZE_MISSING)
         self.assertEqual(compare_mod.compare_size(None, (64, 48, "image/gif"))["outcome"], compare_mod.SIZE_EXTRA)
+
+    def test_a_header_that_states_no_size_agrees_with_a_summary_that_states_none(self):
+        # The reference prints "Image size : 0 x 0" for a file whose header states no size, which its
+        # summary parser reads as no answer; a SIZE record of zero by zero is the same answer.
+        self.assertEqual(compare_mod.compare_size(None, (0, 0, "image/gif"))["outcome"],
+                         compare_mod.SIZE_NONE_BOTH)
+        # A record that states a size is still extra against a summary that states none.
+        self.assertEqual(compare_mod.compare_size(None, (0, 48, "image/gif"))["outcome"],
+                         compare_mod.SIZE_EXTRA)
 
     def test_a_size_verdict_is_counted_apart_from_the_keys(self):
         entry = compare_mod.compare_file("a.gif", "generated", "gif", "ok", "", {}, {}, [],

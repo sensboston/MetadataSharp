@@ -459,8 +459,10 @@ def detail(files: list[dict[str, Any]]) -> dict[str, Any]:
                 elif outcome == compare_mod.VALUE_DIFF:
                     differing[r["key"]] = differing.get(r["key"], 0) + 1
                     samples.setdefault(r["key"], [r.get("our_value", "")[:SAMPLE_WIDTH], r.get("their_value", "")[:SAMPLE_WIDTH]])
-        # A size that differs is a disagreement about a fact, and it is named with the keys.
-        if "size" in entry and entry["size"]["outcome"] != compare_mod.SIZE_MATCH_VALUE:
+        # A size that differs is a disagreement about a fact, and it is named with the keys. The two
+        # sides agreeing that a file states no size is not a disagreement and is not named.
+        if "size" in entry and entry["size"]["outcome"] not in (compare_mod.SIZE_MATCH_VALUE,
+                                                                 compare_mod.SIZE_NONE_BOTH):
             groups.setdefault(entry["size"]["outcome"], {})["Size"] = 1
         if entry["status"] == "ok" and not entry["detail"] and not groups:
             continue

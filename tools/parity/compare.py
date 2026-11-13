@@ -60,7 +60,8 @@ SIZE_MATCH_VALUE = "size-match-value"
 SIZE_DIFF = "size-diff"
 SIZE_MISSING = "size-missing"
 SIZE_EXTRA = "size-extra"
-SIZE_OUTCOMES = (SIZE_MATCH_VALUE, SIZE_DIFF, SIZE_MISSING, SIZE_EXTRA)
+SIZE_NONE_BOTH = "size-none-both"
+SIZE_OUTCOMES = (SIZE_MATCH_VALUE, SIZE_DIFF, SIZE_MISSING, SIZE_EXTRA, SIZE_NONE_BOTH)
 
 #: Both sides interpret the value and say the same.
 MATCH_INTERPRETED = "match-interpreted"
@@ -210,6 +211,13 @@ def compare_size(theirs: list[tuple[str, str, str]] | None, ours: tuple[int, int
     """
     if theirs is None and ours is None:
         return None
+    # A size of zero by zero is not a measurement, and the reference's summary says the same of it: the
+    # pinned tool prints "Image size : 0 x 0" for a file whose header states no size, and the parser of
+    # its output reads that pair as no answer (parse_summary). A record we print of a file that states
+    # no size is the same answer as that, so it is neither extra nor a value. The two sides agree that
+    # the file states nothing, which is a row of its own and not a silence.
+    if ours is not None and (ours[0], ours[1]) == (0, 0) and theirs is None:
+        return {"outcome": SIZE_NONE_BOTH, "ours": list(ours)}
     if theirs is None:
         return {"outcome": SIZE_EXTRA, "ours": list(ours)}
     if ours is None:
