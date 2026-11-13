@@ -69,3 +69,5 @@ tests/fixtures/b11/owned-tga-full.tga -text
 tests/fixtures/b11/owned-tga-name-only.tga -text
 tests/fixtures/b11/owned-tga-signature-only.targa -text
 tests/fixtures/b11/owned-wav-fmt.wav -text
+# The B11 EPS/PGF fixtures are byte-authored and the manifest hashes the bytes CI checks out.
+tests/fixtures/b11eps/* -text
