@@ -24,7 +24,7 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
 ## Beyond exiv2
 
 - The PSD resource writer can add a checked ICC profile and a JPEG thumbnail, preserving unrelated
-  resource and image bytes ([preservation and round-trip test](tests/MetadataSharp.Tests/Psd/PsdMetadataTests.cs)).
+  resource and image bytes ([preservation and round-trip test](https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Tests/Psd/PsdMetadataTests.cs)).
 
 ## Quick start
 
