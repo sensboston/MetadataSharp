@@ -236,6 +236,13 @@ internal static partial class MakerNoteLabels
         SonyQuality2,
         SonyModelId,
         SonyVariableLowPass,
+        SonyPixelShiftInfo,
+        SonyFocusFrameSize,
+        SonyMisc3cShotNumber,
+        SonyMisc3cQuality2,
+        SonyMisc3cImageHeight,
+        SonyMisc3cReleaseYear,
+        SonyMisc2bZoom,
     }
 
     /// <summary>One field: where it is, what it is called, the labels of its numbers and what the rest read as.</summary>
@@ -423,6 +430,20 @@ internal static partial class MakerNoteLabels
                 return SonyModelId(value);
             case Form.SonyVariableLowPass:
                 return SonyVariableLowPass(value);
+            case Form.SonyPixelShiftInfo:
+                return SonyPixelShiftInfo(value);
+            case Form.SonyFocusFrameSize:
+                return SonyFocusFrameSize(value);
+            case Form.SonyMisc3cShotNumber:
+                return SonyMisc3cShotNumber(value, cameraModel);
+            case Form.SonyMisc3cQuality2:
+                return SonyMisc3cQuality2(value, cameraModel);
+            case Form.SonyMisc3cImageHeight:
+                return SonyMisc3cImageHeight(value, cameraModel);
+            case Form.SonyMisc3cReleaseYear:
+                return SonyMisc3cReleaseYear(value, cameraModel);
+            case Form.SonyMisc2bZoom:
+                return SonyMisc2bZoom(value, cameraModel);
             case Form.SonyAFAreaModeSetting:
                 return SonyAFAreaModeSetting(value, cameraModel);
             case Form.SonyFocusMode2:
@@ -1079,6 +1100,70 @@ internal static partial class MakerNoteLabels
         return Encoding.Latin1.GetString(versionValue.RawBytes).TrimEnd('\0', ' ');
     }
 
+    private static bool SonyMisc3cNewGeneration(string model) =>
+        SonyModelIs(model, "ILCE-1", "ILCE-7M4", "ILCE-7RM5", "ILCE-7SM3", "ILME-FX3");
+
+    private static string? SonyMisc3cShotNumber(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Long || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        string[] valid =
+        [
+            "ILCA-68", "ILCA-77M2", "ILCA-99M2", "ILCE-5000", "ILCE-5100", "ILCE-6000", "ILCE-6300", "ILCE-6500",
+            "ILCE-7", "ILCE-7M2", "ILCE-7R", "ILCE-7RM2", "ILCE-7S", "ILCE-7SM2", "ILCE-7SM5", "ILCE-QX1",
+            "DSC-HX350", "DSC-HX400V", "DSC-HX60V", "DSC-HX80", "DSC-HX90", "DSC-HX90V", "DSC-QX30", "DSC-RX0",
+            "DSC-RX1RM2", "DSC-RX10", "DSC-RX10M2", "DSC-RX10M3", "DSC-RX100M3", "DSC-RX100M4", "DSC-RX100M5",
+            "DSC-WX220", "DSC-WX350", "DSC-WX500",
+        ];
+        return valid.Contains(model, StringComparer.Ordinal) ? Whole(number) : "n/a";
+    }
+
+    private static string? SonyMisc3cQuality2(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        if (SonyMisc3cNewGeneration(model))
+            return number switch { 1 => "JPEG", 2 => "Raw", 3 => "Raw + JPEG", 4 => "HEIF", 6 => "Raw + HEIF", _ => Stored(number) };
+        return number switch { 0 => "JPEG", 1 => "Raw", 2 => "Raw + JPEG", 3 => "Raw + MPO", _ => Stored(number) };
+    }
+
+    private static string? SonyMisc3cImageHeight(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        if (SonyMisc3cNewGeneration(model))
+            return "n/a";
+        return number > 0 ? Whole(8 * number) : "n/a";
+    }
+
+    private static string? SonyMisc3cReleaseYear(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        if (SonyMisc3cNewGeneration(model) || number > 99)
+            return SonyMisc3cNewGeneration(model) ? "n/a" : Stored(number);
+        return (2000 + number).ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static string? SonyMisc2bZoom(ExifValue value, string? model)
+    {
+        if (value.Count != 1 || !ExifTags.TryInteger(value, 0, out long number))
+            return null;
+        if (model is null)
+            return Stored(number);
+        if (SonyModelIs(model, "SLT-", "HV", "ILCA-"))
+            return "n/a";
+        return Whole((long)Math.Round(number / 10.24, MidpointRounding.AwayFromZero)) + "%";
+    }
+
     private static string? SonyQuality2(ExifValue value)
     {
         if (value.Count != 2 || value.FieldType != TiffFieldType.Short ||
@@ -1142,7 +1227,7 @@ internal static partial class MakerNoteLabels
 
     private static string SonyFocusMode2Value(long number, string? model)
     {
-        if (model is null || model.StartsWith("DSC-", StringComparison.Ordinal) &&
+        if (model is not null && model.StartsWith("DSC-", StringComparison.Ordinal) &&
             !SonyModelIs(model, "DSC-RX10M4", "DSC-RX100M6", "DSC-RX100M7", "DSC-RX100M5A", "DSC-HX99", "DSC-RX0M2"))
             return "n/a";
         return number switch { 0 => "Manual", 2 => "AF-S", 3 => "AF-C", 4 => "AF-A", 6 => "DMF", 7 => "AF-D", _ => Stored(number) };
@@ -1156,6 +1241,37 @@ internal static partial class MakerNoteLabels
         if (value.Count != 1 || value.FieldType != TiffFieldType.Short || !ExifTags.TryInteger(value, 0, out long number))
             return null;
         return number switch { 0 => "Manual", 2 => "AF-S", 3 => "AF-C", 5 => "Semi-manual", 6 => "DMF", _ => Stored(number) };
+    }
+
+    private static string? SonyPixelShiftInfo(ExifValue value)
+    {
+        if (value.Count != 6 || value.FieldType != TiffFieldType.Undefined)
+            return null;
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        if (bytes.Length != 6)
+            return null;
+        if (bytes.IndexOfAnyExcept((byte)0) < 0)
+            return "n/a";
+        uint group = (uint)(bytes[3] << 24 | bytes[2] << 16 | bytes[1] << 8 | bytes[0]);
+        return "Group " + ((group >> 17) & 0x1f).ToString("D2", CultureInfo.InvariantCulture) +
+            ((group >> 12) & 0x1f).ToString("D2", CultureInfo.InvariantCulture) +
+            ((group >> 6) & 0x3f).ToString("D2", CultureInfo.InvariantCulture) +
+            (group & 0x3f).ToString("D2", CultureInfo.InvariantCulture) + ", Shot " + Whole(bytes[4]) + "/" +
+            Whole(bytes[5]) + " (0x" + (group >> 22).ToString("x", CultureInfo.InvariantCulture) + ")";
+    }
+
+    private static string? SonyFocusFrameSize(ExifValue value)
+    {
+        if (value.Count != 6 || value.FieldType != TiffFieldType.Undefined)
+            return null;
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        if (bytes.Length != 6)
+            return null;
+        if (bytes[4] == 0 && bytes[5] == 0)
+            return "n/a";
+        int width = bytes[1] << 8 | bytes[0];
+        int height = bytes[3] << 8 | bytes[2];
+        return Whole(width) + "x" + Whole(height);
     }
 
     private static string? SonyLensSpec(ExifValue value)

@@ -425,7 +425,7 @@ internal static class Program
                     // And the Sony pointer to the Minolta directory of the DSLR-A100.
                     bool sony = makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2;
                     bool sonyMinolta = sony && entry.TagId == 0xB028;
-                    bool keepParent = olympusIfd || nikonPreview || sonyMinolta || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
+                    bool keepParent = olympusIfd || nikonPreview || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
                         Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, Render(entry.Value),
                             makerNote.InterpretForModel(entry, cameraModel));

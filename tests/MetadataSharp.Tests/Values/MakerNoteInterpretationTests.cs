@@ -507,7 +507,7 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("iAuto+", Field(format, 0x9404, "ExposureProgram", Bytes(7)));
         Assert.Equal("n/a", Top(format, "HighISONoiseReduction2", Shorts(65535), "DSC-RX100M7"));
         Assert.Equal("DMF", Top(format, "FocusMode2", Bytes(6), "ILCE-6000"));
-        Assert.Equal("Raw + JPEG", Field(format, 0x9400, "Quality2", Bytes(2)));
+        Assert.Equal("Raw + JPEG", Field(format, 0x9400, "Quality2", Bytes(2), cameraModel: "ILCE-6000"));
     }
 
     [Fact]
@@ -545,9 +545,14 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("3 shots", Field(MakerNoteFormat.Sony1, 0x9400, "SequenceLength1", Bytes(3)));
         Assert.Equal("1 file", Field(MakerNoteFormat.Sony1, 0x9400, "SequenceLength2", Bytes(1)));
         Assert.Equal("3 files", Field(MakerNoteFormat.Sony1, 0x9400, "SequenceLength2", Bytes(3)));
-        Assert.Equal("4000", Field(MakerNoteFormat.Sony1, 0x9400, "SonyImageHeight", Shorts(500)));
-        Assert.Equal("2014", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(14)));
-        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(255)));
+        Assert.Equal("4000", Field(MakerNoteFormat.Sony1, 0x9400, "SonyImageHeight", Shorts(500), cameraModel: "ILCE-6000"));
+        Assert.Equal("2014", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(14), cameraModel: "ILCE-6000"));
+        Assert.Equal("(255)", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(255), cameraModel: "ILCE-6000"));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "SonyImageHeight", Shorts(500), cameraModel: "ILCE-7SM3"));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "ModelReleaseYear", Bytes(14), cameraModel: "ILCE-7SM3"));
+        Assert.Equal("Raw + JPEG", Field(MakerNoteFormat.Sony1, 0x9400, "Quality2", Bytes(3), cameraModel: "ILCE-7SM3"));
+        Assert.Equal("Raw + MPO", Field(MakerNoteFormat.Sony1, 0x9400, "Quality2", Bytes(3), cameraModel: "ILCE-6000"));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9400, "ShotNumberSincePowerUp", Longs(7), cameraModel: "ILCE-7SM3"));
         Assert.Equal("176, 242", Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176, 242), "ILCE-6000"));
         Assert.Equal("n/a", Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176, 242), "DSC-R1"));
         Assert.Null(Top(MakerNoteFormat.Sony2, "FlexibleSpotPosition", Shorts(176)));
@@ -559,10 +564,14 @@ public sealed class MakerNoteInterpretationTests
     [InlineData(506, "49%")]
     [InlineData(1013, "99%")]
     [InlineData(1023, "100%")]
-    [InlineData(128, "12%")]     // 12.5: the even one
-    [InlineData(384, "38%")]     // 37.5: the even one
+    [InlineData(128, "13%")]     // 12.5 rounds away from zero
+    [InlineData(384, "38%")]     // 37.5 rounds away from zero
     public void TheSonyZoomPositionIsAWholePercentage(int position, string expected) =>
-        Assert.Equal(expected, Field(MakerNoteFormat.Sony1, 0x9404, "LensZoomPosition", Shorts(position)));
+        Assert.Equal(expected, Field(MakerNoteFormat.Sony1, 0x9404, "LensZoomPosition", Shorts(position), cameraModel: "ILCE-6000"));
+
+    [Fact]
+    public void SonyZoomPositionRefusesModelsThatDoNotUseIt() =>
+        Assert.Equal("n/a", Field(MakerNoteFormat.Sony1, 0x9404, "LensZoomPosition", Shorts(0), cameraModel: "ILCA-68"));
 
     [Fact]
     public void ThePreciseSonyColourShiftIsInThousandths()
@@ -570,6 +579,14 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("A/B: 0, G/M: 0", Top(MakerNoteFormat.Sony1, "WBShiftABGMPrecise", SignedLongs(0, 0)));
         Assert.Equal("A/B: A1.00, G/M: G1.00", Top(MakerNoteFormat.Sony1, "WBShiftABGMPrecise", SignedLongs(-1000, -1000)));
         Assert.Equal("A/B: B1.00, G/M: M2.50", Top(MakerNoteFormat.Sony1, "WBShiftABGMPrecise", SignedLongs(1000, 2500)));
+    }
+
+    [Fact]
+    public void SonyBinaryContextTagsUseTheirByteLayout()
+    {
+        Assert.Equal("450x359", Top(MakerNoteFormat.Sony1, "FocusFrameSize", Undefined(194, 1, 103, 1, 1, 1)));
+        Assert.Equal("n/a", Top(MakerNoteFormat.Sony2, "FocusFrameSize", Undefined(194, 1, 103, 1, 0, 0)));
+        Assert.Equal("n/a", Top(MakerNoteFormat.Sony2, "PixelShiftInfo", Undefined(0, 0, 0, 0, 0, 0)));
     }
 
     [Fact]
