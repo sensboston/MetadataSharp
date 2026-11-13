@@ -159,6 +159,40 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal(expected, Field(MakerNoteFormat.Canon, 0x0005, "PanoramaDirection", Shorts(value), index: 5));
 
     [Fact]
+    public void CanonShotInfoUsesExiv2Conversions()
+    {
+        Assert.Equal("100", Field(MakerNoteFormat.Canon, 0x0004, "AutoISO", Shorts(0), index: 1));
+        Assert.Equal("100", Field(MakerNoteFormat.Canon, 0x0004, "ISOSpeed", Shorts(160), index: 2));
+        Assert.Equal("5.00", Field(MakerNoteFormat.Canon, 0x0004, "MeasuredEV", Shorts(0), index: 3));
+        Assert.Equal("0.00", Field(MakerNoteFormat.Canon, 0x0004, "MeasuredEV2", Shorts(48), index: 23));
+        Assert.Equal("F1", Field(MakerNoteFormat.Canon, 0x0004, "TargetAperture", Shorts(0), index: 4));
+        Assert.Equal("1 s", Field(MakerNoteFormat.Canon, 0x0004, "TargetShutterSpeed", Shorts(0), index: 5));
+        Assert.Equal("--", Field(MakerNoteFormat.Canon, 0x0004, "FlashGuideNumber", Shorts(65535), index: 13));
+        Assert.Equal("3 focus points; center used",
+            Field(MakerNoteFormat.Canon, 0x0004, "AFPointUsed", Shorts(0x3002), index: 14));
+    }
+
+    [Fact]
+    public void CanonSettingsAndFileInfoUseReferenceFormatting()
+    {
+        Assert.Equal("35.0 - 80.0 mm", Field(MakerNoteFormat.Canon, 0x0001, "Lens", Shorts(80, 35, 1), index: 23));
+        Assert.Equal("F2.8", Field(MakerNoteFormat.Canon, 0x0001, "MaxAperture", Shorts(96), index: 26));
+        Assert.Equal("Internal flash, E-TTL",
+            Field(MakerNoteFormat.Canon, 0x0001, "FlashDetails", Shorts(0x2008), index: 29));
+        Assert.Equal("100-5604", Field(MakerNoteFormat.Canon, 0x0093, "FileNumber", Longs(1005604), index: 1));
+    }
+
+    [Fact]
+    public void CanonFocalLengthUsesItsLensUnitSibling()
+    {
+        var lensField = new MakerNoteField(23, "Lens", Shorts(80, 35, 1));
+        var settings = new MakerNoteEntry(0x0001, "CameraSettings", Undefined(0), [lensField]);
+        var focal = new MakerNoteEntry(0x0002, "FocalLength", Shorts(0, 95, 0, 0), []);
+        var note = new MakerNote(MakerNoteFormat.Canon, Little, [settings, focal]);
+        Assert.Equal("95.0 mm", note.Interpret(focal));
+    }
+
+    [Fact]
     public void CanonPictureInfoBitmasksUseTheReferenceLabels()
     {
         Assert.Equal("bottom", Field(MakerNoteFormat.Canon, 0x0012, "AFPointsUsed", Shorts(4), index: 22));
