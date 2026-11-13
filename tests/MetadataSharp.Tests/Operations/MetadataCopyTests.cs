@@ -50,7 +50,7 @@ public sealed class MetadataCopyTests
 
             if (destination.Length >= 2 && destination[0] == 0xFF && destination[1] == 0xD8)
                 Assert.Equal(ScanData(destination), ScanData(result.DestinationBytes));
-            else if (destination.Length >= 8 && destination.AsSpan(0, 8).SequenceEqual([137, 80, 78, 71, 13, 10, 26, 10]))
+            else if (destination.Length >= 8 && destination.AsSpan(0, 8).SequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }))
                 Assert.Contains(ChunkBytes(result.DestinationBytes, "IDAT"), chunk =>
                     chunk.SequenceEqual(PngFixture.Chunk("IDAT", PngFixture.Compress([0, 10, 20, 30]))));
             else if (destination.AsSpan().StartsWith("RIFF"u8))

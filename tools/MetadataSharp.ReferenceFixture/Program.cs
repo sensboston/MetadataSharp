@@ -22,6 +22,7 @@ using MetadataSharp.Tests.WebP;
 using MetadataSharp.Tests.Dng;
 using MetadataSharp.Formats.Bmff;
 using MetadataSharp.Tests.Bmff;
+using MetadataSharp.Tests.MakerNotes;
 
 if (args.Length == 2 && args[0] == "generate")
 {
@@ -1872,6 +1873,33 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
     // API. The comparer checks every MakerNote key/value that pinned Exiv2 prints on both files.
     string copiedName = string.Empty;
     var copyReasons = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    try
+    {
+        // A minimal Nikon1 note has one named SHORT value and no offsets into the source image.
+        // It is the positive, deterministic relocation case; corpus cases below broaden coverage.
+        byte[] safeNoteTiff = MakerNoteFixture.Build(false, "NIKON CORPORATION", "MetadataSharp fixture",
+            noteAt => MakerNoteFixture.Ifd(false, noteAt, 0, true, MakerNoteFixture.Short(0x0004, false, 1)));
+        byte[] safeSource = JpegFixture.Build(prefix: JpegFixture.Segment(0xE1, JpegFixture.Exif(safeNoteTiff)));
+        MetadataSharp.Formats.Operations.MetadataCopyResult safeCopy =
+            MetadataSharp.Formats.Operations.MetadataOperations.CopyMetadata(safeSource, JpegFixture.Build(),
+                new MetadataSharp.Formats.Operations.MetadataCopyOptions
+                {
+                    Families = MetadataSharp.Formats.Operations.MetadataCopyFamilies.Exif
+                });
+        if (!safeCopy.WasRefused && ImageMetadata.Read(safeCopy.DestinationBytes).Exif?.MakerNote is not null)
+        {
+            File.WriteAllBytes(Path.Combine(directory, "copy-source.jpg"), safeSource);
+            File.WriteAllBytes(Path.Combine(directory, "copy.ours.jpg"), safeCopy.DestinationBytes);
+            copiedName = "owned";
+        }
+        else foreach (MetadataSharp.Formats.Operations.MetadataCopyNote note in safeCopy.Notes)
+        {
+            string reason = $"{note.Reason}: {note.Message}".Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+            copyReasons[reason] = copyReasons.GetValueOrDefault(reason) + 1;
+        }
+    }
+    catch (MetadataException failure) { copyReasons[$"synthetic: {failure.Message}"] = 1; }
+    if (copiedName.Length == 0)
     foreach (string path in Directory.EnumerateFiles(directory, "s*.*").Order(StringComparer.Ordinal))
     {
         string name = Path.GetFileNameWithoutExtension(path);

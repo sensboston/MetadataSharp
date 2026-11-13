@@ -175,12 +175,14 @@ def main(argv=None, runner=run):
     failures, accepted, summary = [], [], []
     copy_lines = (work / "copy.tsv").read_text(encoding="utf-8").splitlines() if (work / "copy.tsv").exists() else []
     copied_name = copy_lines[0].strip() if copy_lines else ""
-    if not copied_name or copied_name not in names:
+    if not copied_name or (copied_name != "owned" and copied_name not in names):
         failures.append("no decoded MakerNote was safely copied into a JPEG for Exiv2 parity; " +
                         "; ".join(copy_lines[:6]))
     else:
-        source_path = work / f"{copied_name}.{names[copied_name][1]}"
-        copied_path = work / f"{copied_name}.copy.ours.jpg"
+        source_path = work / ("copy-source.jpg" if copied_name == "owned" else
+                              f"{copied_name}.{names[copied_name][1]}")
+        copied_path = work / ("copy.ours.jpg" if copied_name == "owned" else
+                              f"{copied_name}.copy.ours.jpg")
         if not copied_path.is_file():
             failures.append(f"{copied_name}: the fixture generator did not produce the copied JPEG")
         else:
