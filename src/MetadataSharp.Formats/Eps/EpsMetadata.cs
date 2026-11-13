@@ -83,7 +83,9 @@ public sealed class EpsMetadata
         TiffOffset = tiffOffset;
         TiffLength = tiffLength;
         Xmp = xmp;
-        Packet = packet;
+        // A null byte array would be a Nullable<ReadOnlyMemory<byte>> that has a value - an empty one -
+        // so the absence of a packet is written as the null of the property itself.
+        Packet = packet is null ? null : new ReadOnlyMemory<byte>(packet);
     }
 
     /// <summary>Whether the file is framed by the DOS EPS header.</summary>
@@ -302,8 +304,11 @@ public sealed class EpsMetadata
     {
         foreach (string line in FirstLines)
         {
-            if (!postScript.StartsWith(Encoding.ASCII.GetBytes(line))) continue;
-            if (postScript.Length == line.Length || postScript[line.Length] is (byte)'\r' or (byte)'\n') return true;
+            // The line is ISO-8859-1 throughout, including its one non-ASCII spelling with a trailing
+            // space, so the length of the string is the length of the bytes it stands for.
+            byte[] bytes = Encoding.Latin1.GetBytes(line);
+            if (!postScript.StartsWith(bytes)) continue;
+            if (postScript.Length == bytes.Length || postScript[bytes.Length] is (byte)'\r' or (byte)'\n') return true;
         }
         return false;
     }

@@ -40,6 +40,7 @@ EPS_FIRST = b'%!PS-Adobe-3.0 EPSF-3.0'
 EPS_FIRST_SPACE = b'%!PS-Adobe-3.0 EPSF-3.0 '      # OpenOffice
 EPS_FIRST_31 = b'%!PS-Adobe-3.1 EPSF-3.0'          # Illustrator
 DOS_SIGNATURE = b'\xC5\xD0\xD3\xC6'
+PACKET_TRAILER = b'<?xpacket end="w"?>'
 DOS_HEADER_BYTES = 30
 
 
@@ -53,6 +54,11 @@ def eps_file(packet=None, first=EPS_FIRST, newline=b'\n', trailer=b'<?xpacket en
     """announce: the %ADO_ContainsXMP line, which defaults to the truth about ``packet``."""
     if announce is None:
         announce = b'%ADO_ContainsXMP: MainFirst' if packet is not None else None
+    # The authored packet ends with the writable trailer of its own. A file states its trailer once,
+    # after the packet, so the one the caller asks for is the one that stands there: the reference
+    # reads the first trailer it meets, and a packet with two would be read by the first of them.
+    if packet is not None and packet.endswith(PACKET_TRAILER):
+        packet = packet[:-len(PACKET_TRAILER)]
     """A plain EPS file: first line, comment block, %%EndComments, then a program."""
     comment = first + newline + b'%%BoundingBox: 0 0 100 100' + newline
     if announce is not None:

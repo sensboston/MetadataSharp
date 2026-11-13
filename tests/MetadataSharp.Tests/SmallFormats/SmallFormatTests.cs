@@ -203,9 +203,12 @@ public sealed class SmallFormatTests
         // The reference tells a version 1 file by its name alone, which the library never has.
         Assert.False(TgaMetadata.HasSignature(Tga(320, 240, footer: false)));
         Assert.Equal(MetadataErrorCode.InvalidTga, Assert.Throws<MetadataException>(() => TgaMetadata.Read(Tga(320, 240, footer: false))).Code);
-        // The smallest file that can carry the footer: the twelve bytes before it are read as the
-        // header, and the reference takes the size out of them without looking at what they mean.
-        Assert.Equal(0, TgaMetadata.Read([.. new byte[8], .. Encoding.ASCII.GetBytes("TRUEVISION-XFILE"), 0, 0]).Width);
+        // The smallest file that can carry the footer: the last twenty-six bytes are the footer, so the
+        // eighteen-byte header is there too, and the reference takes the size out of those bytes
+        // without asking what they mean. In a file this short the width falls inside the signature.
+        byte[] smallest = [.. new byte[8], .. Encoding.ASCII.GetBytes("TRUEVISION-XFILE"), 0, 0];
+        Assert.True(TgaMetadata.HasSignature(smallest));
+        Assert.Equal(smallest[12] | (smallest[13] << 8), TgaMetadata.Read(smallest).Width);
         // The footer is what tells the format, and it is the last twenty-six bytes and nothing earlier.
         Assert.False(TgaMetadata.HasSignature([.. Encoding.ASCII.GetBytes("TRUEVISION-XFILE"), .. new byte[10]]));
     }
@@ -267,10 +270,12 @@ public sealed class SmallFormatTests
         // A region whose container no reader of this library knows.
         Assert.Equal(MetadataErrorCode.InvalidPgf, Assert.Throws<MetadataException>(() => PgfMetadata.Read(Pgf(1, 1, "not an image"u8.ToArray()))).Code);
         // A region that holds a container this library reads, and refuses: the carrier's own refusal
-        // travels, because that is what the reference reports of it too.
-        byte[] badGif = [.. Encoding.ASCII.GetBytes("GIF88a"), .. new byte[8]];
-        Assert.Equal(MetadataErrorCode.InvalidGif,
-            Assert.Throws<MetadataException>(() => PgfMetadata.Read(Pgf(1, 1, badGif))).Code);
+        // travels, because that is what the reference reports of it too. A PNG signature with no chunk
+        // after it is told as a PNG and then refused by the PNG reader.
+        byte[] badPng = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+        Assert.Equal(MetadataFormat.Png, ImageMetadata.Detect(badPng));
+        Assert.Equal(MetadataErrorCode.InvalidPng,
+            Assert.Throws<MetadataException>(() => PgfMetadata.Read(Pgf(1, 1, badPng))).Code);
     }
 
     [Fact]
@@ -287,10 +292,21 @@ public sealed class SmallFormatTests
             firstLine + newline + header + newline +
             (announce ? "%ADO_ContainsXMP: MainFirst" + newline : "") +
             "%%EndComments" + newline +
-            packet + newline + trailer + newline +
+            StripTrailer(packet) + newline + trailer + newline +
             "% padding so that no file here ends in the bytes of a TARGA footer" + newline +
             "%%BeginProlog" + newline + "%%EndProlog" + newline +
             "%%PageTrailer" + newline + "%%EOF" + newline);
+
+    /// <summary>
+    /// The packet without the writable trailer it ends with, because a file states its trailer once:
+    /// the trailer is written after the packet, and a second one would be the first the reader meets.
+    /// </summary>
+    private static string StripTrailer(string packet) =>
+        packet.EndsWith(WritableTrailer, StringComparison.Ordinal)
+            ? packet[..^WritableTrailer.Length]
+            : packet;
+
+    private const string WritableTrailer = "<?xpacket end=\"w\"?>";
 
     public const string PacketText =
         "<?xpacket begin=\"\u00ef\u00bb\u00bf\" id=\"W5M0MpCehiHzreSzNTczkc9d\"?>\n" +
@@ -372,7 +388,7 @@ public sealed class SmallFormatTests
     [Fact]
     public void EpsWithAPacketHeaderAndNoTrailerIsRefused()
     {
-        byte[] file = Encoding.Latin1.GetBytes("%!PS-Adobe-3.0 EPSF-3.0\n%%EndComments\n" + PacketText + "\n%%EOF\n");
+        byte[] file = Encoding.Latin1.GetBytes("%!PS-Adobe-3.0 EPSF-3.0\n%%EndComments\n" + StripTrailer(PacketText) + "\n%%EOF\n");
         Assert.Equal(MetadataErrorCode.InvalidEps, Assert.Throws<MetadataException>(() => EpsMetadata.Read(file)).Code);
     }
 

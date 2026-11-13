@@ -78,7 +78,9 @@ class EpsPgfFixtureTests(unittest.TestCase):
         self.assertEqual(struct.unpack("<I", data[4:8])[0], 16)
 
     def test_xmp_variants_carry_the_authored_packet(self):
-        packet = g.xmp_packet()
+        # The file states the trailer once, after the packet, so the packet it holds is the authored one
+        # without the trailer that packet itself ends with.
+        packet = g.xmp_packet()[:-len(g.PACKET_TRAILER)]
         for name in ("eps-xmp.eps", "eps-xmp-space.eps", "eps-xmp-31.eps", "eps-xmp-crlf.eps", "dos-eps-xmp.eps"):
             self.assertIn(packet, g.fixture_bytes(name), name)
         self.assertNotIn(packet, g.fixture_bytes("eps-plain.eps"))

@@ -93,8 +93,14 @@ public sealed class EpsPgfFixtureTests
         Assert.Equal(MetadataFormat.Pgf, metadata.Format);
         Assert.Empty(metadata.Errors);
         Assert.NotNull(metadata.Exif);
-        Assert.Equal("MetadataSharp", metadata.Exif!.Make);
+        // The authored TIFF of the carrier holds the Orientation and the Artist the other fixtures of
+        // this project pin, and it names no camera maker: the region gives what its own reader gives.
+        Assert.Equal(ExifOrientation.TopLeft, metadata.Exif!.Orientation);
+        Assert.True(metadata.Exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x013B), out ExifEntry? artist));
+        Assert.NotNull(artist);
         Assert.NotNull(metadata.Xmp);
+        // The authored packet names its tool in xmp:CreatorTool, which is the one entry here.
+        Assert.Contains(metadata.Xmp!.Entries, entry => entry.Path == "CreatorTool");
 
         PgfMetadata pgf = PgfMetadata.Read(Fixture(name));
         Assert.Equal(width, pgf.Width);

@@ -1,8 +1,8 @@
 [
   {
     "file": "dos-eps-xmp.eps",
-    "length": 700,
-    "sha256": "9925dc389b874985482d6178b7805aadd738cd50a92fc41951d6d7703a30311a",
+    "length": 681,
+    "sha256": "f7f41e23169c4778e182c1c86ae181ce59e69cc23f84840e25593a112282e191",
     "layout": "dos-eps-xmp",
     "recipe": "dos-eps-postscript-and-tiff-sections-v1",
     "rights": "owned-synthetic",
@@ -23,8 +23,8 @@
   },
   {
     "file": "eps-xmp-31.eps",
-    "length": 626,
-    "sha256": "d5460568ec753d61b1658f4b0aaa5cee8da07ed6d4138bddefc9c148635e117b",
+    "length": 607,
+    "sha256": "162f460f3fb8f156f4e564455c0fbbced34338c3b16edae8b00e9ec299ce4e93",
     "layout": "eps-xmp-31",
     "recipe": "eps-xmp-illustrator-first-line-v1",
     "rights": "owned-synthetic",
@@ -34,8 +34,8 @@
   },
   {
     "file": "eps-xmp-crlf.eps",
-    "length": 641,
-    "sha256": "24cca82bd70cd9b005339234b0bab6e56a576ff938b610160d75d3546cf3cacd",
+    "length": 622,
+    "sha256": "4fc2ff441da76f2a8a333f191be3dc143f3aeff35ded74c06d764064bade4752",
     "layout": "eps-xmp-crlf",
     "recipe": "eps-xmp-dos-line-endings-v1",
     "rights": "owned-synthetic",
@@ -45,8 +45,8 @@
   },
   {
     "file": "eps-xmp-nomain.eps",
-    "length": 623,
-    "sha256": "fcf8462b505de65cb10e2386652be3ed611a1013b5233d9f516fb2c6ca595f14",
+    "length": 604,
+    "sha256": "589b9933d4d2cd6b5020f55c9f403e6fcf929d528e0d32ec5fd917261ede1ffb",
     "layout": "eps-xmp-nomain",
     "recipe": "eps-xmp-packet-but-header-says-none-v1",
     "rights": "owned-synthetic",
@@ -56,8 +56,8 @@
   },
   {
     "file": "eps-xmp-readonly.eps",
-    "length": 626,
-    "sha256": "921db5fad4a7851b3a9cb4777014e38a4374f0d66d265e6234c8bf424bb4d79a",
+    "length": 607,
+    "sha256": "bbc89cd80a2ef35ddfab65a501e50a680f3366bfb639f821f469d139109da893",
     "layout": "eps-xmp-readonly",
     "recipe": "eps-xmp-read-only-trailer-v1",
     "rights": "owned-synthetic",
@@ -67,8 +67,8 @@
   },
   {
     "file": "eps-xmp-space.eps",
-    "length": 627,
-    "sha256": "91d9eddf0f32073283b233c10e71739c6eff1bb8d808a3ad777fdb50ebf8bf28",
+    "length": 608,
+    "sha256": "5b30438be10f887985641c16b0c967fe90dd94565778b91b7331fb7fd28526e9",
     "layout": "eps-xmp-space",
     "recipe": "eps-xmp-openoffice-first-line-v1",
     "rights": "owned-synthetic",
@@ -78,8 +78,8 @@
   },
   {
     "file": "eps-xmp.eps",
-    "length": 626,
-    "sha256": "050edae5058ead28d0fd9d9470fe5cc517b7b543229cca76af3eaccb25bb46a4",
+    "length": 607,
+    "sha256": "4e6c4aae33d3f7f362e0c60c6ad879c75c9ff31509db407b6f0c2ce373741239",
     "layout": "eps-xmp",
     "recipe": "eps-xmp-packet-in-comment-block-v1",
     "rights": "owned-synthetic",

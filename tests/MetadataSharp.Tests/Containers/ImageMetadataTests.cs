@@ -240,24 +240,24 @@ public sealed class ImageMetadataTests
     // RIFF that is not WebP, a byte order mark alone, another processing instruction, another
     // element, BMP, and signatures cut short.
     [InlineData("", MetadataFormat.Unknown)]
-    [InlineData("474946383961", MetadataFormat.Unknown)]
     [InlineData("1A45DFA3", MetadataFormat.Unknown)]
-    [InlineData("252150532D41646F6265", MetadataFormat.Unknown)]
     [InlineData("4949525308000000", MetadataFormat.Unknown)]
     [InlineData("524946462400000057415645", MetadataFormat.Unknown)]
     [InlineData("EFBBBF", MetadataFormat.Unknown)]
     [InlineData("3C3F666F6F", MetadataFormat.Unknown)]
     [InlineData("3C737667", MetadataFormat.Unknown)]
-    [InlineData("424D", MetadataFormat.Bmp)]
+    // The signatures of the small group, and the near misses either side of them.
     [InlineData("474946383961", MetadataFormat.Gif)]
     [InlineData("474946383761", MetadataFormat.Gif)]
     [InlineData("4749463838", MetadataFormat.Unknown)]
+    [InlineData("424D", MetadataFormat.Bmp)]
     [InlineData("504746", MetadataFormat.Pgf)]
     [InlineData("50474636", MetadataFormat.Pgf)]
     [InlineData("504647", MetadataFormat.Unknown)]
-    [InlineData("2550532D41646F62652D332E30", MetadataFormat.Eps)]
+    [InlineData("252150532D41646F62652D332E3020455053462D332E30", MetadataFormat.Eps)]
     [InlineData("C5D0D3C6", MetadataFormat.Eps)]
-    [InlineData("2550532D41646F62652D322E30", MetadataFormat.Unknown)]
+    [InlineData("252150532D41646F62652D322E30", MetadataFormat.Unknown)]
+    [InlineData("252150532D41646F6265", MetadataFormat.Unknown)]
     [InlineData("FF", MetadataFormat.Unknown)]
     [InlineData("FFD9", MetadataFormat.Unknown)]
     [InlineData("0000000C", MetadataFormat.Unknown)]
@@ -401,9 +401,11 @@ public sealed class ImageMetadataTests
         }
     }
 
+    // A GIF that stops inside its signature is not a GIF file: it has no format and no metadata, and
+    // reading it is not a refusal either.
     [Theory]
     [InlineData("")]
-    [InlineData("00524742")]
+    [InlineData("4749463838")]
     [InlineData("1A45DFA3A3428681014282840100000000000000")]
     public void AnUnknownFormatGivesAnEmptySnapshot(string hex)
     {
