@@ -120,7 +120,9 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.flush()
         for line in message.splitlines():
             if line.strip() not in {"FAIL", ""}:
-                print("::error title=VideoGate::" + line.strip()[:1500], flush=True)
+                safe_line = line.strip()[:1500]
+                print("::notice title=VideoGate result::" + safe_line, flush=True)
+                print("::error title=VideoGate::" + safe_line, flush=True)
     return 0 if passed else 1
 
 
