@@ -116,7 +116,7 @@ internal static partial class MakerNoteLabels
             (0x060001, "Program Tv Shift"), (0x070001, "Program Av Shift"), (0x080001, "Manual"),
             (0x090001, "Bulb"), (0x0a0001, "Aperture Priority (Off-Auto-Aperture)"),
             (0x0b0001, "Manual (Off-Auto-Aperture)"), (0x0c0001, "Bulb (Off-Auto-Aperture)"),
-            (0x000001, "Program"),
+            (0x100001, "Flash X-Sync Speed AE (1)"), (0x000001, "Program"),
             (0xfe0000, "Video (30 fps)"), (0xff0004, "Video (24 fps)")], Form.PentaxThreeByteEnum),
         new(Top, "DriveMode", [(0x00000000, "Single-frame"), (0x01000000, "Continuous"),
             (0x02000000, "Continuous (Hi)"), (0x03000000, "Burst"), (0xff000000, "Video"),
