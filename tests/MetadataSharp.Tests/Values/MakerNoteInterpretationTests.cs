@@ -392,6 +392,18 @@ public sealed class MakerNoteInterpretationTests
     }
 
     [Fact]
+    public void NikonLensDataThreeNumbersUseTheirEncodedUnits()
+    {
+        Assert.Equal("F2.0", Field(MakerNoteFormat.Nikon3, 0x0098, "AFAperture", Bytes(24)));
+        Assert.Equal("n/a", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance", Bytes(0)));
+        Assert.Equal("1.00 m", Field(MakerNoteFormat.Nikon3, 0x0098, "FocusDistance", Bytes(80)));
+        Assert.Equal("10.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength", Bytes(24)));
+        Assert.Equal("F5.0", Field(MakerNoteFormat.Nikon3, 0x0098, "LensFStops", Bytes(60)));
+        Assert.Equal("32.0 mm", Field(MakerNoteFormat.Nikon3, 0x0098, "ExitPupilPosition", Bytes(64)));
+        Assert.Null(Field(MakerNoteFormat.Nikon3, 0x0098, "FocalLength", Shorts(24)));
+    }
+
+    [Fact]
     public void TheNikonSensitivityIsTheSecondOfItsTwoNumbers()
     {
         Assert.Equal("200", Top(MakerNoteFormat.Nikon3, "ISOSpeed", Shorts(0, 200)));

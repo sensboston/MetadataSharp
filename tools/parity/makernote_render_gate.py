@@ -39,6 +39,10 @@ DOCUMENTED_EXCEPTIONS: dict[str, str] = {
         "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
         "does not add that database and keeps the raw encoded value."
     ),
+    "Exif.NikonLd3.LensIDNumber": (
+        "Exiv2 supplies a lens name from its external lens-ID database; this project intentionally "
+        "does not add that database and keeps the raw encoded value."
+    ),
 }
 
 # The parser deliberately refuses these two damaged/over-budget inputs. These are exact pinned corpus

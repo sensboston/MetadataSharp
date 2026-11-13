@@ -74,6 +74,19 @@ internal static partial class MakerNoteLabels
         new(Top, "FlashBracketComp", [], Form.StopFraction),
         new(Top, "FlashComp", [], Form.StopFraction),
 
+        // Lens Data 3 (the LensData array of the note, tag 0x0098).
+        new(0x0098, "ExitPupilPosition", [], Form.NikonLd3ExitPupil),
+        new(0x0098, "AFAperture", [], Form.NikonLd3Aperture),
+        new(0x0098, "FocusDistance", [], Form.NikonLd3FocusDistance),
+        new(0x0098, "FocalLength", [], Form.NikonLd3FocalLength),
+        new(0x0098, "LensIDNumber", []), // Lens names come from Exiv2's external lens database.
+        new(0x0098, "LensFStops", [], Form.NikonLd3LensFStops),
+        new(0x0098, "MinFocalLength", [], Form.NikonLd3FocalLength),
+        new(0x0098, "MaxFocalLength", [], Form.NikonLd3FocalLength),
+        new(0x0098, "MaxApertureAtMinFocal", [], Form.NikonLd3Aperture),
+        new(0x0098, "MaxApertureAtMaxFocal", [], Form.NikonLd3Aperture),
+        new(0x0098, "EffectiveMaxAperture", [], Form.NikonLd3Aperture),
+
         // The preview directory (0x0011) holds TIFF fields and is read with the EXIF vocabulary.
 
         // VRInfo (0x001F).
