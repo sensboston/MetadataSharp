@@ -31,7 +31,7 @@ internal static class PanasonicMakerNoteInterpretations
                 _ => null,
             };
 
-        if (name is "InternalSerialNumber" or "Country" or "State" or "City" or "City2")
+        if (name is "InternalSerialNumber" or "Country" or "State" or "City" or "City2" or "Landmark")
             return Ascii(value);
         if (name is "BabyAge1" or "BabyAge2")
             return Ascii(value) == "9999:99:99 00:00:00" ? "not set" : null;
@@ -39,7 +39,7 @@ internal static class PanasonicMakerNoteInterpretations
         {
             string? version = Ascii(value);
             if (version is { Length: 4 } && version.All(char.IsAsciiDigit))
-                return version[..2] + "." + version[2..];
+                return int.Parse(version[..2], CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture) + "." + version[2..];
             return null;
         }
         if (!ExifTags.TryInteger(value, 0, out long number))

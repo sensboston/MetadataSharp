@@ -338,7 +338,9 @@ public sealed class MakerNoteInterpretationTests
     {
         Assert.Equal("S000501110223", Top(MakerNoteFormat.Panasonic, "InternalSerialNumber",
             Undefined(Encoding.ASCII.GetBytes("S000501110223\0"))));
-        Assert.Equal("03.90", Top(MakerNoteFormat.Panasonic, "ExifVersion", Undefined(Encoding.ASCII.GetBytes("0390"))));
+        Assert.Equal("3.90", Top(MakerNoteFormat.Panasonic, "ExifVersion", Undefined(Encoding.ASCII.GetBytes("0390"))));
+        Assert.Equal("1.40", Top(MakerNoteFormat.Panasonic, "MakerNoteVersion", Undefined(Encoding.ASCII.GetBytes("0140"))));
+        Assert.Equal("---", Top(MakerNoteFormat.Panasonic, "Landmark", Undefined(Encoding.ASCII.GetBytes("---\0"))));
         Assert.Equal("00:00:17.62", Top(MakerNoteFormat.Panasonic, "TimeSincePowerOn", Longs(1762)));
         Assert.Equal("1.0", Top(MakerNoteFormat.Panasonic, "RollAngle", Shorts(10)));
         Assert.Equal("-1.0", Top(MakerNoteFormat.Panasonic, "PitchAngle", Shorts(10)));
@@ -410,6 +412,8 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("4:3", Field(MakerNoteFormat.Olympus2, 0x2040, "AspectRatio", Bytes(1, 1)));
         Assert.Equal("Off", Field(MakerNoteFormat.Olympus2, 0x2040, "MultipleExposureMode", Shorts(0, 1)));
         Assert.Equal("0.15 m", Field(MakerNoteFormat.Olympus2, 0x2050, "FocusDistance", Rationals((150, 10))));
+        Assert.Equal("0.23 m", Field(MakerNoteFormat.Olympus2, 0x2050, "FocusDistance", Rationals((235, 10))));
+        Assert.Equal("0.70 m", Field(MakerNoteFormat.Olympus2, 0x2050, "FocusDistance", Rationals((705, 10))));
         Assert.Equal("Left (or n/a)", Field(MakerNoteFormat.Olympus2, 0x2050, "AFPoint", Shorts(0)));
         Assert.Equal("Bounce or Off", Field(MakerNoteFormat.Olympus2, 0x2050, "ExternalFlashBounce", Shorts(0)));
     }
