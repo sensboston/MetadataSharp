@@ -124,9 +124,6 @@ internal static partial class MakerNoteLabels
         new(0x0024, "DaylightSavings", [(0, "No"), (1, "Yes")]),
         new(0x0024, "DateDisplayFormat", [(0, "Y/M/D"), (1, "M/D/Y"), (2, "D/M/Y")]),
 
-        // ISOInfo (0x0025).
-        new(0x0025, "ISOExpansion", [(0, "Off")]),
-        new(0x0025, "ISOExpansion2", [(0, "Off")]),
 
         // AFInfo (0x0088).
         new(0x0088, "AFAreaMode", [(0, "Single Area"), (1, "Dynamic Area")]),
