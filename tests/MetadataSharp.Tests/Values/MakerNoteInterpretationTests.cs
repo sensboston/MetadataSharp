@@ -320,6 +320,9 @@ public sealed class MakerNoteInterpretationTests
     [InlineData("ManometerPressure", 65535, "infinite")]
     [InlineData("SceneMode", 29, "Underwater")]
     [InlineData("FlashFired", 1, "No")]
+    [InlineData("FilmMode", 10, "Nostalgic")]
+    [InlineData("BracketSettings", 1, "3 images, Sequence 0/-/+")]
+    [InlineData("FlashCurtain", 2, "2nd")]
     public void APanasonicTagReadsAsItsReferenceRendering(string name, int number, string expected) =>
         Assert.Equal(expected, Top(MakerNoteFormat.Panasonic, name, Longs(number)));
 
