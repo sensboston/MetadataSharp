@@ -158,7 +158,7 @@ internal static class OlympusMakerNoteInterpretations
         ReadOnlySpan<byte> bytes = value.RawBytes;
         if (bytes.Length != 4) return null;
         string version = Encoding.ASCII.GetString(bytes);
-        return version.All(char.IsAsciiDigit) ? version[..2] + "." + version[2..] : null;
+        return version.All(char.IsAsciiDigit) ? int.Parse(version[..2], CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture) + "." + version[2..] : null;
     }
 
     private static string? FocusDistance(ExifValue value)
@@ -174,11 +174,7 @@ internal static class OlympusMakerNoteInterpretations
 
     private static string? CameraSettings(string name, ExifValue value)
     {
-        if (name == "CameraSettingsVersion")
-        {
-            string version = Encoding.ASCII.GetString(value.RawBytes);
-            return version.Length == 4 && version.All(char.IsAsciiDigit) ? version[..2] + "." + version[2..] : null;
-        }
+        if (name == "CameraSettingsVersion") return Version(value);
         if (name == "FocusMode") return CameraFocusMode(value);
         if (name == "Gradation") return Gradation(value);
         if (name == "NoiseFilter") return NoiseFilter(value);
@@ -187,6 +183,7 @@ internal static class OlympusMakerNoteInterpretations
         return name switch
         {
             "PreviewImageValid" => LookupOrStored(number, (0, "No"), (1, "Yes")),
+            "LevelGaugeRoll" or "LevelGaugePitch" => LookupOrStored(number),
             "ExposureMode" => LookupOrStored(number, (1, "Manual"), (2, "Program"), (3, "Aperture-priority AE"),
                 (4, "Shutter speed priority AE"), (5, "Program-shift")),
             "AELock" or "DistortionCorrection" or "ShadingCompensation" or "ExtendedWBDetect" =>
