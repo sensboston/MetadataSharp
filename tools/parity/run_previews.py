@@ -67,8 +67,8 @@ _PREVIEW_FIXTURE_SUFFIXES = frozenset({
 # carrier fixture (owned-vector.eps) is covered by this gate from b8, while these files stay in the
 # focused library tests instead of being submitted to an oracle that rejects their page framing.
 _METADATA_ONLY_EPS_FIXTURE_DIRS = frozenset({"b11eps"})
-# Exiv2 0.28.9 does not identify standalone JPEG XL codestreams (only the container fixture).
-_REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES = frozenset({"owned-codestream.jxl"})
+# Exiv2 0.28.9 does not identify standalone JPEG XL codestreams or the 52-byte minimal PSD fixture.
+_REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES = frozenset({"owned-codestream.jxl", "owned-flat-rgb.psd"})
 
 
 class PreviewParityError(Exception):

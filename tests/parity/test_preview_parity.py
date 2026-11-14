@@ -96,6 +96,7 @@ class OracleTests(unittest.TestCase):
         self.assertNotIn(".wav", run_previews._PREVIEW_FIXTURE_SUFFIXES)
         self.assertIn("b11eps", run_previews._METADATA_ONLY_EPS_FIXTURE_DIRS)
         self.assertIn("owned-codestream.jxl", run_previews._REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES)
+        self.assertIn("owned-flat-rgb.psd", run_previews._REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES)
 
     def test_the_two_sources_of_the_expectation_exclude_each_other(self):
         for arguments in ([], ["--tree", "t", "--fixtures", "f"]):
