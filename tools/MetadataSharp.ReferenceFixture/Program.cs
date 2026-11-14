@@ -1890,6 +1890,41 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
                 Run("short", key, (value ^ 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
             }
         }
+        // The numbers inside an array-valued tag. A note whose tags are all arrays (Minolta, Samsung,
+        // most Sony and Olympus settings) has no other value that can be set where it is, so these are
+        // the in-place edits of that layout: each is one element of the array, written in its place.
+        foreach (MakerNoteEntry entry in note.Entries)
+        {
+            foreach (MakerNoteField field in entry.Fields)
+            {
+                if (numbers >= 4) break;
+                if (field.Fields.Count != 0 || field.Value.Count != 1) continue;
+                int width = field.Value.FieldType switch
+                {
+                    TiffFieldType.Byte or TiffFieldType.SByte => 1,
+                    TiffFieldType.Short or TiffFieldType.SShort => 2,
+                    TiffFieldType.Long or TiffFieldType.SLong => 4,
+                    _ => 0,
+                };
+                if (width == 0) continue;
+                string key;
+                try { key = note.GetKey(entry, field); }
+                catch (ArgumentException) { continue; }
+                numbers++;
+                byte[] raw = new byte[width];
+                field.Value.CopyRawTo(raw);
+                bool big = field.Value.ByteOrder == Endianness.BigEndian;
+                long value = 0;
+                for (int index = 0; index < width; index++)
+                    value = (value << 8) | (uint)(width == 1 ? raw[index] : raw[big ? index : width - 1 - index]);
+                if (field.Value.FieldType is TiffFieldType.SByte or TiffFieldType.SShort or TiffFieldType.SLong)
+                {
+                    int shift = 64 - (8 * width);
+                    value = (value << shift) >> shift;
+                }
+                Run("number", key, (value ^ 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+        }
         if (number == 0) manifest.Add($"{name}\t0\tnone\t\tno tag to set\t");
     }
 
@@ -1967,6 +2002,72 @@ else if (args.Length == 2 && args[0] == "makernote-parity")
     foreach (KeyValuePair<string, int> outcome in outcomes) Console.WriteLine($"{outcome.Key}: {outcome.Value}");
     foreach (string crash in crashes.Take(10)) Console.WriteLine("::error title=MakerNote parity defect::" + crash.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
     return crashes.Count == 0 ? 0 : 1;
+}
+else if (args.Length == 2 && args[0] == "charset-parity")
+{
+    // One JPEG per character set of the matrix, each holding the same text in the two carriers whose
+    // character set is not the file's own: a UNICODE UserComment whose body is the eight-bit code page
+    // the set names (which is what Exiv2 -n reinterprets) and the UCS-2LE Windows title. The comparer
+    // (tools/reference/run_charset.py) prints each file with the pinned tool, with and without -n, and
+    // compares what it prints with what this library reads back: ours.tsv lists the file, the
+    // character set, the key and the text, one row per key, and one row of what was written.
+    string directory = args[1];
+    var rows = new List<string>();
+    var defects = new List<string>();
+    string Clean(string value) => value.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+    byte[] neutral = JpegFixture.Build();
+    const string XpText = "Gr\u00FC\u00DFe \u2014 \u65E5\u672C\u8A9E";
+    var comment = new ExifTagKey(ExifDirectoryKind.Exif, 0x9286);
+    var title = new ExifTagKey(ExifDirectoryKind.Ifd0, 0x9C9B);
+    for (int number = 0; number < MetadataCharsets.All.Count; number++)
+    {
+        MetadataCharset charset = MetadataCharsets.All[number];
+        string? text = null;
+        foreach (string sample in new[] { "Gr\u00FC\u00DFe aus K\u00F6ln", "\u041F\u0440\u0438\u0432\u0435\u0442, \u043C\u0438\u0440", "\u03A4\u03B1 \u03C0\u03AC\u03BD\u03C4\u03B1", "\u4F60\u597D\u4E16\u754C", "Plain text" })
+        {
+            try { charset.Encoding.GetBytes(sample); text = sample; break; }
+            catch (EncoderFallbackException) { }
+        }
+        if (text is null) continue;
+        string name = $"charset-{number:D2}.jpg";
+        byte[] body = charset.Encoding.GetBytes(text);
+        byte[] raw = [.. "UNICODE\0"u8, .. body];
+        try
+        {
+            var edit = new ExifEdit();
+            edit.Set(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F), "MetadataSharp charset fixture");
+            edit.Set(title, MetadataText.Xp(XpText));
+            edit.SetUnchecked(comment, ExifValue.FromRaw(TiffFieldType.Undefined, (uint)raw.Length, Endianness.LittleEndian, raw));
+            using var document = JpegMetadataDocument.Open(new MemoryStream(neutral));
+            document.SaveAs(Path.Combine(directory, name), edit);
+        }
+        catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+        {
+            defects.Add($"{charset.Name}: {defect.GetType().Name}: {defect.Message}");
+            continue;
+        }
+        // Read back what was written, the way a caller reads it: the name of the character set is the
+        // -n of this library, and the comment and the title are interpreted, not sliced.
+        byte[] bytes = File.ReadAllBytes(Path.Combine(directory, name));
+        ImageMetadata metadata = ImageMetadata.Read(bytes);
+        var options = new ExifInterpretationOptions { UserCommentCharset = charset.Name };
+        string? readComment = null, readTitle = null;
+        foreach (ExifEntry entry in metadata.Exif?.Entries ?? [])
+        {
+            if (entry.Key.Directory == ExifDirectoryKind.Exif && entry.Key.TagId == 0x9286)
+                readComment = ExifTags.Interpret(entry.Key, entry.Value, options);
+            else if (entry.Key.Directory == ExifDirectoryKind.Ifd0 && entry.Key.TagId == 0x9C9B)
+                readTitle = ExifTags.Interpret(entry.Key, entry.Value);
+        }
+        rows.Add($"{name}\t{charset.Name}\t{charset.CodePage}\tExif.Photo.UserComment\t{Clean(readComment ?? string.Empty)}");
+        rows.Add($"{name}\t{charset.Name}\t{charset.CodePage}\tExif.Image.XPTitle\t{Clean(readTitle ?? string.Empty)}");
+        rows.Add($"{name}\t{charset.Name}\t{charset.CodePage}\twritten\t{Clean(text)}|{Clean(XpText)}");
+    }
+    File.WriteAllLines(Path.Combine(directory, "ours.tsv"), rows);
+    Console.WriteLine($"charset fixtures: {rows.Count / 3} files");
+    foreach (string defect in defects.Take(10))
+        Console.WriteLine("::error title=Charset fixture defect::" + defect.Replace("%", "%25").Replace("\r", " ").Replace("\n", " "));
+    return defects.Count == 0 ? 0 : 1;
 }
 else if (args.Length == 2 && args[0] == "crw-parity")
 {

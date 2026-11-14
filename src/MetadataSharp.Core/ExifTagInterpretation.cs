@@ -375,6 +375,7 @@ public static partial class ExifTags
 
     private static string? InterpretImage(ExifTagKey key, ExifValue value) => key.TagId switch
     {
+        0x9C9B or 0x9C9C or 0x9C9D or 0x9C9E or 0x9C9F => MetadataText.Xp(value), // the Windows XP tags
         0x00FE or 0x013D => Labelled(key, value),                        // NewSubfileType, Predictor
         0x011A or 0x011B or 0x011E or 0x011F => PlainDecimal(value),    // X/YResolution, X/YPosition
         0x0132 => AsciiText(value),                                      // DateTime
@@ -399,7 +400,7 @@ public static partial class ExifTags
         0x9206 => SubjectDistance(value),
         0x9209 => Flash(value),
         0x920A => FocalLength(value),
-        0x9286 => UserComment(value, options?.UserCommentEncoding),
+        0x9286 => UserComment(value, options?.UserCommentEncoding, options?.UserCommentCharset),
         0x9400 => Measured(value, "\u00B0C"),                            // Temperature
         0x9401 => Measured(value, "%"),                                  // Humidity
         0x9402 => Measured(value, "hPa"),                                // Pressure
@@ -655,28 +656,16 @@ public static partial class ExifTags
     }
 
     /// <summary>
-    /// The comment behind its eight-byte character code. ASCII and Unicode are decoded; an undefined
-    /// code is decoded only when the bytes are valid UTF-8 text; JIS and anything unrecognised is left
-    /// to the caller.
+    /// The comment behind its eight-byte character code, read by
+    /// <see cref="MetadataText.UserComment(ExifValue, string?)"/>: the display options choose the
+    /// character set of a <c>UNICODE</c> body, and a body whose bytes are no text at all is left to
+    /// the raw value.
     /// </summary>
-    private static string? UserComment(ExifValue value, Encoding? unicodeEncoding)
+    private static string? UserComment(ExifValue value, Encoding? unicodeEncoding, string? charset)
     {
-        if (value.FieldType != TiffFieldType.Undefined || value.Count < 8)
-            return null;
-        ReadOnlySpan<byte> bytes = value.RawBytes;
-        ReadOnlySpan<byte> code = bytes.Slice(0, 8);
-        ReadOnlySpan<byte> body = bytes.Slice(8);
-        string? text;
-        if (code.SequenceEqual("ASCII\0\0\0"u8))
-            text = DecodeAscii(body);
-        else if (code.SequenceEqual("UNICODE\0"u8))
-            text = unicodeEncoding is null ? DecodeUtf16(body, value.ByteOrder) : DecodeWith(body, unicodeEncoding);
-        else if (code.SequenceEqual("\0\0\0\0\0\0\0\0"u8))
-            text = DecodeUtf8(body);
-        else
-            return null;
-        // The standard pads the unused part of the comment area with spaces, and writers also use NUL.
-        string? trimmed = text?.TrimEnd(' ', '\0');
+        string? trimmed = charset is null
+            ? MetadataText.DecodeUserComment(value, unicodeEncoding)
+            : MetadataText.UserComment(value, charset);
         if (string.IsNullOrEmpty(trimmed))
             return trimmed;
         // A body whose bytes hold no printable character is not text - cameras also store binary
@@ -685,78 +674,6 @@ public static partial class ExifTags
             if (!char.IsControl(character))
                 return trimmed;
         return null;
-    }
-
-    // Stop at the first NUL and reject non-ASCII bytes instead of replacing them during decoding.
-    private static string? DecodeAscii(ReadOnlySpan<byte> bytes)
-    {
-        int length = bytes.IndexOf((byte)0);
-        if (length >= 0)
-            bytes = bytes.Slice(0, length);
-        foreach (byte b in bytes)
-        {
-            if (b > 0x7F)
-                return null;
-        }
-        return Encoding.ASCII.GetString(bytes);
-    }
-
-    // Decode strictly after removing the terminator so malformed UTF-8 produces no interpretation.
-    private static string? DecodeUtf8(ReadOnlySpan<byte> bytes)
-    {
-        int length = bytes.IndexOf((byte)0);
-        if (length >= 0)
-            bytes = bytes.Slice(0, length);
-        try
-        {
-            return new UTF8Encoding(false, true).GetString(bytes);
-        }
-        catch (DecoderFallbackException)
-        {
-            return null;
-        }
-    }
-
-    // Apply an explicit Exiv2 -n equivalent without replacing bytes that do not decode in that charset.
-    private static string? DecodeWith(ReadOnlySpan<byte> bytes, Encoding encoding)
-    {
-        try
-        {
-            Encoding strict = Encoding.GetEncoding(encoding.CodePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
-            return strict.GetString(bytes).TrimEnd(' ', '\0');
-        }
-        catch (DecoderFallbackException) { return null; }
-        catch (ArgumentException) { return null; }
-    }
-
-    // Honor an embedded byte-order mark, drop an incomplete trailing code unit, and reject invalid UTF-16.
-    private static string? DecodeUtf16(ReadOnlySpan<byte> bytes, Endianness byteOrder)
-    {
-        bool bigEndian = byteOrder == Endianness.BigEndian;
-        if (bytes.Length >= 2)
-        {
-            // A byte order mark overrides the byte order of the file, as it does for any UTF-16 text.
-            if (bytes[0] == 0xFE && bytes[1] == 0xFF)
-            {
-                bigEndian = true;
-                bytes = bytes.Slice(2);
-            }
-            else if (bytes[0] == 0xFF && bytes[1] == 0xFE)
-            {
-                bigEndian = false;
-                bytes = bytes.Slice(2);
-            }
-        }
-        if ((bytes.Length & 1) != 0)
-            bytes = bytes.Slice(0, bytes.Length - 1);
-        try
-        {
-            return new UnicodeEncoding(bigEndian, false, true).GetString(bytes);
-        }
-        catch (DecoderFallbackException)
-        {
-            return null;
-        }
     }
 
     // ---- GPS IFD ---------------------------------------------------------------------------------------

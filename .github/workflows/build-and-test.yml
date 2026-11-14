@@ -399,6 +399,13 @@ jobs:
             --require Exif.OlympusCs --require Exif.OlympusEq --require Exif.OlympusFi --require Exif.OlympusIp \
             --require Exif.OlympusRd --require Exif.Sigma --require Exif.Minolta --require Exif.MinoltaCs5D \
             --require Exif.MinoltaCs7D
+      # A gate over the vocabulary rather than over files: every key of every tag table of the pinned
+      # reference has to exist in the catalog, so a tag no corpus file exercises cannot stay unnamed.
+      - name: Tag key completeness against the pinned reference's own tables (a missing key fails)
+        shell: bash
+        run: |
+          python tools/parity/run_key_catalog.py artifacts/parity/exiv2 \
+            --catalog src/MetadataSharp.Core/tag-catalog-data.json
       - name: Preview parity against upstream expectations (kind "Preview"; exiv2 -pp output read as text)
         shell: bash
         run: |
@@ -841,6 +848,12 @@ jobs:
         shell: bash
         run: |
           python tools/reference/makernote_parity.py artifacts/parity/exiv2/test/data artifacts/parity/makernote \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      - name: Character-set matrix read back by the pinned tool (exiv2 -n NAME -PEkv, exiv2 -PEkv)
+        shell: bash
+        run: |
+          python tools/reference/run_charset.py artifacts/parity/charset \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
             --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
       - name: Upload corpus MakerNote copy disposition report

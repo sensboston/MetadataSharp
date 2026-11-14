@@ -52,6 +52,10 @@ EXTENSIONS = {".jpg": "jpg", ".jpeg": "jpg", ".cr2": "cr2", ".nef": "nef", ".arw
 # The tags whose value is the note itself: its bytes, which an edit changes.
 HOLDERS = ("Exif.Photo.MakerNote", "Exif.Image.DNGPrivateData")
 
+# The makers whose notes the pinned tree keeps only in .exv containers, recognised by the make the
+# container carries as text.
+VENDOR_MARKS = (b"MINOLTA", b"SAMSUNG", b"CASIO", b"SIGMA", b"FOVEON")
+
 # (group of the key, operation, verdict) -> why the difference is accepted. A group is the second
 # part of the key ("Canon" of Exif.Canon.OwnerName); "*" stands for every group.
 EXPECTED = {}
@@ -119,6 +123,44 @@ def sources(corpus):
                   if path.is_file() and path.suffix.lower() in EXTENSIONS and path.stat().st_size <= MAX_BYTES)
 
 
+# The one-byte table and the codes of a 1x1 JPEG: what an .exv source is placed in, so that a note
+# that exists in the reference's test tree only as metadata is edited like any other file.
+def _segment(marker: int, payload: bytes) -> bytes:
+    return bytes([0xFF, marker]) + (len(payload) + 2).to_bytes(2, "big") + payload
+
+
+def neutral_jpeg() -> bytes:
+    quant = bytes([0]) + bytes([1]) * 64
+    huffman = bytearray(36)
+    huffman[1], huffman[18], huffman[19] = 1, 0x10, 1
+    return b"".join([b"\xff\xd8", _segment(0xDB, quant), _segment(0xC4, bytes(huffman)),
+                     _segment(0xC0, bytes([8, 0, 8, 0, 8, 1, 1, 0x11, 0])),
+                     _segment(0xDA, bytes([1, 1, 0, 0, 63, 0])), b"\x3f", b"\xff\xd9"])
+
+
+def as_jpeg(exv: bytes) -> bytes | None:
+    """A JPEG that carries the segments of an .exv file, or None when the file is not one.
+
+    An .exv holds an 8-byte header (FF 01 and "Exiv2") and then the segments an APPn would hold in a
+    JPEG. Its EXIF is placed unchanged in a complete 1x1 JPEG, so the source the library edits is the
+    reference's own bytes and not a copy either tool has rewritten.
+    """
+    if len(exv) < 9 or exv[:2] != b"\xff\x01" or exv[2:7] != b"Exiv2":
+        return None
+    segments, at = [], 7
+    while at + 2 <= len(exv):
+        if exv[at] != 0xFF or exv[at + 1] == 0xD9:
+            break
+        length = int.from_bytes(exv[at + 2:at + 4], "big")
+        if length < 2:
+            break
+        segments.append(exv[at:at + 2 + length])
+        at += 2 + length
+    if not any(segment[1] == 0xE1 for segment in segments):
+        return None
+    return b"".join([b"\xff\xd8", *segments, neutral_jpeg()[2:]])
+
+
 def rows_of(work):
     """(name, number, operation, key, status, value) for every line of ours.tsv."""
     rows = []
@@ -171,7 +213,7 @@ def check(work, names, exiv2, runner=run):
             if name not in prints:
                 prints[name] = printed(exiv2, work / f"{name}.{extension}", runner)
             copy = work / f"{name}.{number}.ours.{extension}"
-            outcome, detail = verdict(prints[name], printed(exiv2, copy, runner), key, value)
+            outcome, detail = verdict(prints[name], printed(exiv2, copy, runner), key, value, operation)
             copy.unlink(missing_ok=True)
         entry = (group_of(key), operation, outcome)
         if outcome == "ok":
@@ -196,6 +238,24 @@ def main(argv=None, runner=run):
         name, extension = f"s{len(names):05d}", EXTENSIONS[path.suffix.lower()]
         shutil.copyfile(path, work / f"{name}.{extension}")
         names[name] = (str(path), extension)
+    # The reference keeps some cameras' notes only in its own .exv containers (the Minolta DSLRs and
+    # a Samsung phone among them). Placed in a JPEG as they are, those notes are edited here too.
+    placed = 0
+    for path in sorted(Path(args.corpus).rglob("*")):
+        if not path.is_file() or path.suffix.lower() != ".exv" or path.stat().st_size > MAX_BYTES:
+            continue
+        data = path.read_bytes()
+        # Only the cameras whose notes the corpus holds nowhere else: an .exv of a camera the corpus
+        # already has as a file would add a second, heavier copy of the same edit.
+        if not any(mark in data for mark in VENDOR_MARKS):
+            continue
+        jpeg = as_jpeg(data)
+        if jpeg is None:
+            continue
+        name = f"s{len(names):05d}"
+        (work / f"{name}.jpg").write_bytes(jpeg)
+        names[name] = (str(path), "jpg")
+        placed += 1
     if not names:
         print("::error title=MakerNote parity::no file of the corpus was prepared")
         return 1
@@ -333,11 +393,14 @@ def main(argv=None, runner=run):
             failures.append(f"{line}; e.g. {examples[(group, operation, outcome)]}")
     passed = sum(count for (_, operation, outcome), count in counts.items() if outcome == "ok" and operation != "files")
     written = {operation: sum(count for (_, op, outcome), count in counts.items() if op == operation and outcome == "ok")
-               for operation in ("same", "grow", "short")}
+               for operation in ("same", "grow", "short", "number")}
     annotate("error", "MakerNote parity - edits the tool does not read back as set", failures, size=2500, limit=8)
     annotate("notice", "MakerNote parity - accepted differences", accepted)
+    if placed:
+        summary.append(f"{placed} .exv source(s) placed in a neutral JPEG and edited as .jpg")
     annotate("notice", f"MakerNote parity - {len(names)} files; {passed} edits read back by the tool "
-             f"(same {written['same']}; grow {written['grow']}; short {written['short']})", summary)
+             f"(same {written['same']}; grow {written['grow']}; short {written['short']}; "
+             f"number {written['number']})", summary)
     if passed == 0:
         print("::error title=MakerNote parity::no edit was written and read back")
         return 1

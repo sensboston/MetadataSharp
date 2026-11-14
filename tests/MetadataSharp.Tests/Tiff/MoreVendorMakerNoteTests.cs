@@ -530,6 +530,42 @@ public sealed class MoreVendorMakerNoteTests
         Assert.Null(VendorMakerNoteNames.Sigma(0x0013));
     }
 
+    // ---- The numbers inside a Minolta settings array are edited where they are -----------------------
+
+    /// <summary>
+    /// The settings of a Minolta DSLR are a run of numbers, not tags of their own, so the only value of
+    /// that note an edit can address in place is an element of the run: it is set where it lies and
+    /// every other byte of the file stays as it was.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AMinoltaSettingsElementIsSetWhereItIs(bool big)
+    {
+        // Settings7D (0x0004): twenty big-endian SHORTs, whatever the byte order of the note is.
+        byte[] tiff = Tiff(big, "KONICA MINOLTA",
+            at => Ifd(big, at, Undefined(0x0004, Elements(20, 2)), Short(0x0115, 7, big)));
+        MakerNote note = Read(tiff) ?? throw new InvalidOperationException("The note is not decoded.");
+        MakerNoteTarget quality = MakerNoteKeys.Enumerate(note).Single(target => target.Key == "Exif.MinoltaCs7D.Quality");
+        Assert.Equal(1003, Number(quality.Value));
+
+        var edit = new ExifEdit();
+        edit.SetTextByKey("Exif.MinoltaCs7D.Quality", "42");
+        byte[] output = MakerNoteWriter.Apply(tiff, edit.Snapshot().MakerNote, new MetadataLimits());
+
+        Assert.Equal(tiff.Length, output.Length);
+        int changed = Enumerable.Range(0, tiff.Length).Count(index => tiff[index] != output[index]);
+        Assert.Equal(2, changed);
+        MakerNote after = Read(output) ?? throw new InvalidOperationException("The edited note is not decoded.");
+        Assert.Equal(42, Number(MakerNoteKeys.Enumerate(after).Single(target => target.Key == "Exif.MinoltaCs7D.Quality").Value));
+        foreach (MakerNoteTarget target in MakerNoteKeys.Enumerate(note))
+        {
+            if (target.Key == "Exif.MinoltaCs7D.Quality") continue;
+            MakerNoteTarget now = MakerNoteKeys.Enumerate(after).Single(other => other.Key == target.Key);
+            Assert.Equal(target.Value.RawBytes.ToArray(), now.Value.RawBytes.ToArray());
+        }
+    }
+
     [Fact]
     public void TheNewFormatsAreAppendedToTheEnum()
     {
