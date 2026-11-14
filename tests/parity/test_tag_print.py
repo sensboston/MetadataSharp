@@ -62,7 +62,7 @@ class TagPrintProtocolTests(unittest.TestCase):
         wrong_value = [{"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "641"}]
         self.assertEqual(1, len(gate.compare_rows(expected, wrong_value)))
 
-    def test_pt_text_difference_requires_exact_independent_pv_raw_value(self) -> None:
+    def test_pt_text_difference_requires_exact_independent_raw_value(self) -> None:
         difference = {"kind": "value-diff",
                       "exiv2": {"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "Hold"},
                       "metadatasharp": {"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "0"}}
@@ -108,7 +108,8 @@ class TagPrintProtocolTests(unittest.TestCase):
             "write2-test", "xmpparser-test",
         })
         self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_EXCEPTIONS.values()))
-        self.assertEqual({"Exif.GPSInfo.GPSAltitudeRef"}, set(gate._TAG_PRINT_KEY_EXCEPTIONS))
+        self.assertEqual({"Exif.GPSInfo.GPSAltitudeRef", "Exif.Canon.Categories", "Exif.Canon.PictureStylePC"},
+                         set(gate._TAG_PRINT_KEY_EXCEPTIONS))
         self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_KEY_EXCEPTIONS.values()))
         self.assertIn("Exif.Image.ImageWidth", gate.CATALOG_KEYS)
         self.assertNotIn("Exif.Canon.0x0019", gate.CATALOG_KEYS)

@@ -62,7 +62,9 @@ IPTC or XMP, and it does not change the encoding used by metadata writers.
 Exiv2 0.28.9 `-pt` output for each available upstream corpus file. Synthetic upstream reference names
 without source media are individually listed with reasons. The exact `Exif.GPSInfo.GPSAltitudeRef`
 translation is also listed as a tag-level exception because the local table follows the expanded Exif
-3.0 wording while the pinned Exiv2 release predates that wording. Exact display rules for
+3.0 wording while the pinned Exiv2 release predates that wording. `Exif.Canon.Categories` and
+`Exif.Canon.PictureStylePC` are retained as exact local-only MakerNote keys because the pinned Exiv2
+0.28.9 table comments them out and omits them from `-pt`. Exact display rules for
 `Exif.Photo.MeteringMode`, `Exif.Photo.ExposureProgram`, `Exif.Photo.SensitivityType`,
 `Exif.Image.CalibrationIlluminant1`, and `Exif.Image.CalibrationIlluminant2` are tracked once per key
 and applied only to the listed display pairs; any other value for those keys still fails. These rules

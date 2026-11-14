@@ -47,13 +47,23 @@ def _is_raw_numeric_tag(key: str) -> bool:
 
 PINNED_EXIV2_COMMIT = "b0859fc61fea5dedfc898aece6b15893ddf4314e"
 
-# Exception keys are upstream test/data basenames, never extensions or directories. Every retained
-# entry must describe why this precise fixture cannot serve as a -pt comparator.
+# Exact EXIF keys omitted from the tag-table comparison for a reviewed, key-specific compatibility
+# reason. Entries remain visible in the report and are not general value/description wildcards.
 _TAG_PRINT_KEY_EXCEPTIONS: dict[str, str] = {
     "Exif.GPSInfo.GPSAltitudeRef": (
         "MetadataSharp follows the expanded Exif 3.0 ellipsoidal/sea-level definitions, while the pinned "
         "Exiv2 0.28.9 print table exposes only its earlier above/below sea-level labels. The raw field and "
         "numeric code remain covered by the other tag/value gates; this exact key's translated wording differs by revision."
+    ),
+    "Exif.Canon.PictureStylePC": (
+        "The pinned Exiv2 0.28.9 Canon tag table leaves this PC-picture-style entry commented out and "
+        "does not include it in -pt; MetadataSharp retains its local MakerNote decoder. This exact local-only "
+        "tag is excluded from the Exiv2 tag-table comparison."
+    ),
+    "Exif.Canon.Categories": (
+        "The pinned Exiv2 0.28.9 Canon tag table leaves this Categories entry commented out and does not "
+        "include it in -pt; MetadataSharp retains its local MakerNote decoder. This exact local-only tag is "
+        "excluded from the Exiv2 tag-table comparison."
     ),
 }
 

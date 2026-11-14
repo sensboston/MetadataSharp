@@ -267,5 +267,7 @@ internal static class NikonMakerNoteArrays
     private static readonly Layout FileInfo = new(
         [new(0, "Version", U, 4), new(6, "DirectoryNumber", S), new(8, "FileNumber", S)]);
 
-    private static readonly Layout AFTune = new([new(0, "AFFineTune"), new(1, "AFFineTuneIndex"), new(2, "AFFineTuneAdj")]);
+    private static readonly Layout AFTune = new([
+        new(0, "AFFineTune"), new(1, "AFFineTuneIndex"), new(2, "AFFineTuneAdj", TiffFieldType.SByte)
+    ]);
 }
