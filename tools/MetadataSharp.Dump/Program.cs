@@ -20,12 +20,12 @@ using MetadataSharp.Formats.Tiff;
 //   TAG     <key>  <type>  <count>  <value>  [<interpreted>]
 //   STATUS  ok | refused | not-attempted | error  <detail>
 // The sixth TAG field is optional. It is what the library makes of the value - ExifTags.Interpret for
-// the standard EXIF directories, MakerNote.Interpret for MakerNote tags and their fields, and
-// IptcDatasetNames.Interpret for IPTC datasets - and it is empty where that is null: an EXIF or
-// MakerNote row always states the field, since the comparison of interpreted values has to see that
-// nothing was made of a value the reference renders as text. A record without the field says no
-// interpretation is offered for the tag at all, which is the case for XMP records and for the
-// elements of an array nested in a MakerNote sub-directory.
+// the standard EXIF directories, MakerNote.Interpret for MakerNote tags and their fields,
+// IptcDatasetNames.Interpret for IPTC datasets and XmpTags.Interpret for XMP properties - and it is
+// empty where that is null: an EXIF, MakerNote or XMP row always states the field, since the
+// comparison of interpreted values has to see that nothing was made of a value the reference renders
+// as text. A record without the field says no interpretation is offered for the tag at all, which is
+// the case for the elements of an array nested in a MakerNote sub-directory.
 // A file whose reader refused or was not attempted simply carries no TAG records. A JPEG, PNG, TIFF or PSD
 // that was read, with one kind of its metadata refused, is ok with the detail exif-refused:<code>,
 // iptc-refused:<code> or xmp-refused:<code>, several of them separated by commas.
@@ -818,17 +818,18 @@ internal static class Program
         foreach (XmpEntry entry in packet.Entries)
         {
             string key = "Xmp." + entry.Prefix + "." + entry.Path;
+            string reading = XmpTags.Interpret(entry) ?? string.Empty;
             if (entry.HasChildEntries)
             {
                 // The reference tool prints a structure, and an array whose items are not plain text,
                 // as a text row naming the form; the fields and the items follow under their own keys.
                 string form = "type=\"" + entry.Kind + "\"";
-                Tag(stdout, key, "XmpText", (uint)form.Length, form);
+                Tag(stdout, key, "XmpText", (uint)form.Length, form, reading);
             }
             else if (entry.Kind is XmpEntryKind.Text)
             {
                 string text = entry.Values.Count == 0 ? string.Empty : entry.Values[0];
-                Tag(stdout, key, "XmpText", (uint)Encoding.UTF8.GetByteCount(text), Escape(text));
+                Tag(stdout, key, "XmpText", (uint)Encoding.UTF8.GetByteCount(text), Escape(text), reading);
             }
             else if (entry.Kind is XmpEntryKind.LangAlt)
             {
@@ -842,11 +843,11 @@ internal static class Program
                     if (language == "x-default") parts.Insert(0, part);
                     else parts.Add(part);
                 }
-                Tag(stdout, key, "LangAlt", (uint)parts.Count, string.Join(", ", parts));
+                Tag(stdout, key, "LangAlt", (uint)parts.Count, string.Join(", ", parts), reading);
             }
             else
             {
-                Tag(stdout, key, "Xmp" + entry.Kind, (uint)entry.Values.Count, Join(entry.Values));
+                Tag(stdout, key, "Xmp" + entry.Kind, (uint)entry.Values.Count, Join(entry.Values), reading);
             }
         }
     }

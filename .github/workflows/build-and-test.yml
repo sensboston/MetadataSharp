@@ -393,6 +393,8 @@ jobs:
             --require Exif.NikonSi02xx --require Exif.Nikon1 --require Exif.Nikon2 --require Exif.NikonLd2 \
             --require Exif.NikonAf --require Exif.NikonFl1 --require Exif.NikonFl3 --require Exif.NikonAFT \
             --require Exif.NikonAf2 --require Exif.NikonAf22 --require Exif.NikonCb2b --require Exif.NikonCb3 \
+            --require Xmp.exif --require Xmp.tiff --require Xmp.iptc --require Xmp.iptcExt \
+            --require Xmp.plus \
             --require Exif.NikonCb4 --require Exif.NikonFi --require Exif.NikonMe --require Exif.NikonPc \
             --require Exif.NikonPreview --require Exif.NikonSi01xx --require Exif.NikonVr --require Exif.NikonWt \
             --require Exif.Fujifilm --require Exif.Panasonic --require Exif.Olympus --require Exif.Olympus2 \

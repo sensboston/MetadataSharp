@@ -42,6 +42,14 @@ internal static class Program
         ["Exif.Sony2.LensID"] = "External lens-ID database is not vendored.",
         ["Exif.SonyMinolta.LensID"] = "External lens-ID database is not vendored.",
         ["Exif.Minolta.LensID"] = "External lens-ID database is not vendored.",
+        // Exiv2 reads these XMP properties through code lists it ships as its own vocabulary
+        // (IPTC subject codes and scene codes, the PLUS and IPTC Extension terms), not through a tag.
+        ["Xmp.iptc.Scene"] = "External IPTC subject-code vocabulary is not vendored.",
+        ["Xmp.iptc.SubjectCode"] = "External IPTC subject-code vocabulary is not vendored.",
+        ["Xmp.iptcExt.DigitalSourceType"] = "External IPTC Extension vocabulary is not vendored.",
+        ["Xmp.plus.MinorModelAgeDisclosure"] = "External PLUS vocabulary is not vendored.",
+        ["Xmp.plus.ModelReleaseStatus"] = "External PLUS vocabulary is not vendored.",
+        ["Xmp.plus.PropertyReleaseStatus"] = "External PLUS vocabulary is not vendored.",
     };
     // Retain RawExtras state required to parse or write parity report data safely.
     private static readonly Dictionary<string, string> RawExtras = new(StringComparer.Ordinal)
@@ -650,6 +658,7 @@ internal static class Program
     // at hand, and a list of what remains is what the work on it is done from.
     private static void EmitGapNotices(Report report, List<string> groups)
     {
+        EmitInterpretedSummary(report, groups);
         foreach (string group in groups)
         {
             var gaps = new SortedDictionary<string, (string Kind, string Ours, string Theirs, int Files)>(StringComparer.Ordinal);
@@ -691,6 +700,52 @@ internal static class Program
                 zlib.Write(Encoding.UTF8.GetBytes(json));
             Console.WriteLine($"::notice title=MakerNote gaps {group}::{Convert.ToBase64String(buffer.ToArray())}");
         }
+    }
+
+    // One notice with the interpreted-value counts of every group, so that a document can be written
+    // from what was measured rather than from a copy of a log.
+    private static void EmitInterpretedSummary(Report report, List<string> groups)
+    {
+        if (groups.Count == 0) return;
+        var summary = new List<object>();
+        foreach (string group in groups)
+        {
+            Dictionary<string, int> interpreted = report.Interpreted.ByFamily.GetValueOrDefault(group) ?? [];
+            Dictionary<string, int> raw = report.ByFamily.GetValueOrDefault(group) ?? [];
+            int offered = 0, skipped = 0;
+            foreach (FileReport file in report.PerFile)
+            {
+                if (file.RowsDropped > 0) continue;
+                foreach (ParityRow row in file.Rows)
+                {
+                    if (!row.Key.StartsWith(group + ".", StringComparison.Ordinal)) continue;
+                    if (row.Interpreted is not null) offered++;
+                    else if (row.InterpretedSkipped is not null) skipped++;
+                }
+            }
+            summary.Add(new
+            {
+                group,
+                translated = interpreted.GetValueOrDefault(MatchInterpreted) + interpreted.GetValueOrDefault(InterpretedDiff) +
+                    interpreted.GetValueOrDefault("not-interpreted-translated"),
+                equal = interpreted.GetValueOrDefault(MatchInterpreted),
+                interpreted_diff = interpreted.GetValueOrDefault(InterpretedDiff),
+                not_interpreted = interpreted.GetValueOrDefault("not-interpreted-translated"),
+                reference_not_interpreted = interpreted.GetValueOrDefault(ReferenceNotInterpreted),
+                not_offered = skipped,
+                rows = offered,
+                raw_equal = raw.GetValueOrDefault(MatchValue),
+                raw_missing = raw.GetValueOrDefault(MissingKey),
+                raw_diff = raw.GetValueOrDefault(ValueDiff) + raw.GetValueOrDefault(MatchKey),
+                not_read = raw.GetValueOrDefault(NotRead),
+                extra = raw.GetValueOrDefault(ExtraKey)
+            });
+        }
+        string json = JsonSerializer.Serialize(summary, JsonOptions);
+        using var buffer = new MemoryStream();
+        using (var zlib = new ZLibStream(buffer, CompressionLevel.SmallestSize, leaveOpen: true))
+            zlib.Write(Encoding.UTF8.GetBytes(json));
+        Console.WriteLine($"::notice title=MakerNote interpreted summary::{Convert.ToBase64String(buffer.ToArray())}");
     }
 
     // Enforce the MakerNote coverage threshold and report the attribution for unread entries.
