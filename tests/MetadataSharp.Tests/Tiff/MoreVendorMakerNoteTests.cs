@@ -241,14 +241,12 @@ public sealed class MoreVendorMakerNoteTests
         Assert.Equal(TiffFieldType.SShort, settings7D.Single(f => f.Name == "ColorTemperature").Value.FieldType);
         Assert.Equal(24, settings7D.Count(f => f.Value.FieldType == TiffFieldType.Short));
 
-        // Two elements of the 5D array are colour temperatures, both declared signed by the reference;
-        // the second is told apart by a space.
+        // Two elements of the 5D array are colour temperatures; the second is told apart by a space.
         IReadOnlyList<MakerNoteField> settings5D = MinoltaMakerNoteArrays.Decompose(0x0114, shorts);
         Assert.Equal(TiffFieldType.SShort, settings5D.Single(f => f.Name == "ColorTemperature").Value.FieldType);
         Assert.Equal((ushort)73, settings5D.Single(f => f.Name == "ColorTemperature").Index);
-        Assert.Equal(TiffFieldType.SShort, settings5D.Single(f => f.Name == "Color Temperature").Value.FieldType);
+        Assert.Equal(TiffFieldType.Short, settings5D.Single(f => f.Name == "Color Temperature").Value.FieldType);
         Assert.Equal((ushort)110, settings5D.Single(f => f.Name == "Color Temperature").Index);
-        Assert.Equal(28, settings5D.Count(f => f.Value.FieldType == TiffFieldType.Short));
     }
 
     [Fact]

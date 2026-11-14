@@ -137,6 +137,18 @@ class TagPrintProtocolTests(unittest.TestCase):
         non_text = [{**expected[0], "type": "Undefined"}]
         self.assertEqual(1, len(gate.compare_rows(non_text, [{**actual[0], "type": "Undefined"}])))
 
+    def test_a_value_that_ends_at_the_reference_line_break_matches_it(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Photo.UserComment", "type": "Undefined", "count": 4980,
+                     "value": "charset=Ascii "}]
+        actual = [{"key": "Exif.Photo.UserComment", "type": "Undefined", "count": 4980,
+                   "value": "charset=Ascii \n"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_line_truncations=accepted))
+        self.assertEqual({"Undefined": 1}, dict(accepted))
+        # Only a line break may continue the reference text; any other continuation still differs.
+        for continuation in ("charset=Ascii x", "charset=Ascii\r"):
+            self.assertEqual(1, len(gate.compare_rows(expected, [{**actual[0], "value": continuation}])))
+
     def test_dump_protocol_unescapes_records_and_rejects_open_or_malformed_blocks(self) -> None:
         parsed = gate.parse_dump("FILE\t/tmp/a\\tb.jpg\nTAG\tExif.Image.Make\tAscii\t2\tA\\\\B\t\nSTATUS\tok\n")
         self.assertEqual("A\\B", parsed["/tmp/a\tb.jpg"]["rows"][0]["raw"])
@@ -188,6 +200,25 @@ class TagPrintProtocolTests(unittest.TestCase):
         self.assertIsNotNone(gate._row_exception("exiv2-bug447.jpg", exact, has_local_exif=True))
         self.assertIsNone(gate._row_exception("exiv2-bug447.jpg", {**exact, "key": "Exif.Photo.MakerNote"},
                                               has_local_exif=True))
+
+    def test_a_repeated_tag_rule_pairs_the_leading_reference_rows_only(self) -> None:
+        name = "exiv2-pr2323_coverage1.exv"
+        self.assertIn((name, "Exif.Sony1.ColorTemperature"), gate._TAG_PRINT_REPEATED_TAG_RULES)
+        self.assertIsNone(gate._row_exception(name, {"key": "Exif.Sony1.ColorTemperature", "type": "Long",
+                                                     "count": 1, "value": "0"}, has_local_exif=True))
+        reference = [{"key": "Exif.Sony1.ColorTemperature", "type": "Long", "count": 1, "value": "0"},
+                     {"key": "Exif.Sony1.ColorTemperature", "type": "Long", "count": 1, "value": "4294967295"}]
+        local = [{**reference[0], "value": "0"}]
+        drops, reason = gate._repeated_tag_drops(name, reference, local)
+        self.assertEqual([reference[1]], drops)
+        self.assertEqual(gate._TAG_PRINT_ROW_EXCEPTIONS[(name, "Exif.Sony1.ColorTemperature")], reason)
+        # A changed local value, a lost row or a second local row returns the file to the comparison.
+        self.assertEqual(([], ""), gate._repeated_tag_drops(name, reference, [{**local[0], "value": "1"}]))
+        self.assertEqual(([], ""), gate._repeated_tag_drops(name, reference, []))
+        self.assertEqual(([], ""), gate._repeated_tag_drops(name, reference, local + local))
+        # The rule names one file and one key.
+        self.assertEqual(([], ""), gate._repeated_tag_drops("other.exv", reference, local))
+        self.assertEqual(([], ""), gate._repeated_tag_drops(name, [{**reference[0], "key": "Exif.Sony1.Foo"}], local))
 
     def test_a_documented_row_rule_is_reported_and_its_local_row_ends_it(self) -> None:
         candidate = gate.corpus.Candidate("BlueSquare.xmp", Path("/tmp/BlueSquare.xmp"), "test")

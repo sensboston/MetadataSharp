@@ -273,8 +273,10 @@ public sealed class CanonMakerNoteArrayTests
     {
         var values = new ushort[62];
         values[61] = 274;
+        // The FileInfo layout reads its elements as signed shorts, which is the type the reference prints
+        // for the split values of this array; the two-byte word is unchanged either way.
         MakerNoteField lens = Split(0x0093, Shorts(false, values)).Single(field => field.Name == "RFLensType");
-        Assert.Equal(TiffFieldType.Short, lens.Value.FieldType);
+        Assert.Equal(TiffFieldType.SShort, lens.Value.FieldType);
         byte[] raw = new byte[2];
         lens.Value.CopyRawTo(raw);
         Assert.Equal((ushort)274, BinaryPrimitives.ReadUInt16LittleEndian(raw));

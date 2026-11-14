@@ -78,8 +78,10 @@ and applied only to the listed display pairs; any other value for those keys sti
 preserve the local vocabulary and raw-code policy rather than copying Exiv2 descriptions. As a print
 format convention, trailing spaces and NUL padding are ignored only at the end of ASCII fields and
 `Exif.Photo.UserComment`; internal whitespace and every non-text value remain exact. For ASCII and
-`Exif.Photo.UserComment` text, the comparator also accepts the exact local first line when the pinned
-`-pt` output ends at a newline; it retains the complete local text and accepts no other prefix match.
+`Exif.Photo.UserComment` text, the comparator also accepts a local value whose text continues after the
+exact reference text with a line break, including a value that ends there; the reference stops the text
+at the first line break of the value, so the complete local text is retained and no other prefix match
+is accepted.
 TIFF IFD fields (type 13) are also compared as `Long` when MetadataSharp represents the same
 32-bit offset using its public `Long` value type; value and count equality are still exact. When Exiv2
 prints a numeric fallback for a catalogued tag, the comparator may match it to the local tag name only when

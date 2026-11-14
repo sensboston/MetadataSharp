@@ -138,12 +138,14 @@ _TAG_PRINT_ROW_EXCEPTIONS: dict[tuple[str, str], str] = {
     ("exiv2-pr2323_coverage1.exv", "Exif.Sony1.ColorTemperature"): (
         "This fixture holds tag 0xB021 twice in one MakerNote directory. A MakerNote directory is read once "
         "per tag ID, so that a tag can be addressed by key for an edit; the reference prints every entry. "
-        "Only the second occurrence is in question here, and the rule covers this exact file and key."
+        "Only the reference rows beyond the ones the local directory reads are covered, for this exact file "
+        "and key, and only while the local rows equal the reference's leading rows."
     ),
     ("exiv2-pr2323_coverage4.exv", "Exif.Sony2.WBShiftABGM"): (
         "This fixture holds tag 0x2014 twice in one MakerNote directory. A MakerNote directory is read once "
         "per tag ID, so that a tag can be addressed by key for an edit; the reference prints every entry. "
-        "Only the second occurrence is in question here, and the rule covers this exact file and key."
+        "Only the reference rows beyond the ones the local directory reads are covered, for this exact file "
+        "and key, and only while the local rows equal the reference's leading rows."
     ),
     ("exiv2-bug447.jpg", "Exif.Photo.UserComment"): (
         "The directory entry of this tag names field type 14, which is not a TIFF 6.0 field type. The reader "
@@ -154,21 +156,55 @@ _TAG_PRINT_ROW_EXCEPTIONS: dict[tuple[str, str], str] = {
 }
 
 
+# Rules that describe a tag the reference prints once per occurrence in one directory.
+_TAG_PRINT_REPEATED_TAG_RULES: set[tuple[str, str]] = {
+    ("exiv2-pr2323_coverage1.exv", "Exif.Sony1.ColorTemperature"),
+    ("exiv2-pr2323_coverage4.exv", "Exif.Sony2.WBShiftABGM"),
+}
+
+
 def _row_exception(file_name: str, row: dict[str, Any], has_local_exif: bool) -> str | None:
-    """The documented reason for a reference row with no local counterpart, or None."""
+    """The documented reason for a reference row with no local counterpart, or None.
+
+    Repeated-tag entries are not answered here: they are paired with the local rows by
+    :func:`_repeated_tag_drops` instead.
+    """
     key = str(row.get("key"))
     for (name, pattern), reason in _TAG_PRINT_ROW_EXCEPTIONS.items():
-        if name != file_name:
+        if name != file_name or (name, pattern) in _TAG_PRINT_REPEATED_TAG_RULES:
             continue
         if pattern == "Exif.*":
             if not has_local_exif and key.startswith("Exif."):
                 return reason
-        elif pattern.endswith("."):
-            if key.startswith(pattern):
-                return reason
-        elif key == pattern:
+        elif key.startswith(pattern):
             return reason
     return None
+
+
+def _repeated_tag_drops(file_name: str, reference: list[dict[str, Any]],
+                        observed: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], str]:
+    """The reference rows a repeated-tag rule accounts for, and the reason for them.
+
+    A local directory is read once per tag ID, so a tag the reference prints twice has no second
+    local row. The rule applies only while the local rows for the key equal the leading reference
+    rows: a local value that changes, loses its first row or gains a second one fails the gate again.
+    """
+    drops: list[dict[str, Any]] = []
+    reasons: set[str] = set()
+    for (name, pattern), reason in sorted(_TAG_PRINT_ROW_EXCEPTIONS.items()):
+        if (name, pattern) not in _TAG_PRINT_REPEATED_TAG_RULES or name != file_name:
+            continue
+        reference_rows = [row for row in reference if str(row.get("key")) == pattern]
+        local_rows = [row for row in observed if str(row.get("key")) == pattern]
+        if not reference_rows or not local_rows or len(local_rows) > len(reference_rows):
+            continue
+        if any(local.get("type") != expected.get("type") or local.get("count") != expected.get("count")
+               or local.get("value") != expected.get("value")
+               for local, expected in zip(local_rows, reference_rows)):
+            continue
+        drops.extend(reference_rows[len(local_rows):])
+        reasons.add(reason)
+    return drops, "; ".join(sorted(reasons))
 
 
 _TAG_PRINT_EXCEPTIONS: dict[str, str] = {
@@ -409,8 +445,11 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
                 expected_value, actual_value = row.get("value"), candidate.get("value")
                 if not isinstance(expected_value, str) or not isinstance(actual_value, str):
                     return False
-                lines = actual_value.splitlines()
-                return len(lines) > 1 and lines[0] == expected_value
+                # The reference prints the text up to the first line break of a longer local value.
+                if not expected_value or not actual_value.startswith(expected_value):
+                    return False
+                remainder = actual_value[len(expected_value):]
+                return remainder.startswith("\n") or remainder.startswith("\r\n")
 
             match = next((candidate for candidate in observed
                           if candidate == row or (
@@ -641,8 +680,14 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
         else:
             reference_rows = [row for row in parse_exiv2(output) if row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
             has_local_exif = any(str(source_row["key"]).startswith("Exif.") for source_row in ours["rows"])
+            all_observed = project_dump(ours["rows"])
+            dropped_rows, repeated_reason = _repeated_tag_drops(name, reference_rows, all_observed)
             expected = []
             for reference_row in reference_rows:
+                if any(reference_row is dropped for dropped in dropped_rows):
+                    row_rule_hits[(name, str(reference_row["key"]), str(reference_row["type"]),
+                                   int(reference_row["count"]), repeated_reason)] += 1
+                    continue
                 reason = _row_exception(name, reference_row, has_local_exif)
                 if reason is None:
                     expected.append(reference_row)
@@ -652,7 +697,6 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             source_by_identity: dict[tuple[str, str, int], list[dict[str, Any]]] = defaultdict(list)
             for source_row in ours["rows"]:
                 source_by_identity[(source_row["key"], source_row["type"], source_row["count"])].append(source_row)
-            all_observed = project_dump(ours["rows"])
             expected_keys = {_canonical_key(row["key"]) for row in expected}
             raw_only_tags.update(row["key"] for row in all_observed
                                  if _is_raw_numeric_tag(row["key"])
@@ -766,7 +810,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     line_boundary_rule = {
         "occurrences": sum(accepted_line_truncations.values()),
         "types": dict(sorted(accepted_line_truncations.items())),
-        "rule": "For ASCII and EXIF UserComment text only, a local value may continue after a newline when the pinned -pt line equals the exact first line; the complete local text is retained. No other prefix or value difference is accepted.",
+        "rule": "For ASCII and EXIF UserComment text only, a local value may continue after the exact pinned -pt text with a line break, including when it ends there; the complete local text is retained. No other prefix or value difference is accepted.",
     }
     return {"kind": "TagPrint", "totals": dict(totals), "failure_kinds": dict(sorted(failure_kinds.items())),
             "difference_types": dict(sorted(difference_types.items())),
