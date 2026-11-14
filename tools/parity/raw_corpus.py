@@ -269,9 +269,9 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
         candidate = corpus_module.Candidate(label=entry.name, path=path, corpus="raw-corpus")
         dumped = harness.run_dump(command, [path])
         report = harness.build_report([candidate], [exiv2], dumped, [])
-        if not report["totals"]["failed_files"]:
+        if not report["totals"].get("failed_files"):
             continue
-        lines = [f"{report['totals']['failed_files']} failing file(s); "
+        lines = [f"{report['totals'].get('failed_files', 1)} failing file(s); "
                  f"kinds={dict(report['failure_kinds'])}, types={dict(report['difference_types'])}"]
         for group in report["mismatch_groups"][:limit]:
             example = group["examples"][0]["difference"] if group.get("examples") else ""
@@ -280,8 +280,8 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
         for item in report["value_diff_by_key"][:12]:
             lines.append(f"value {item['key']}: reference={item['exiv2'][:60]!r} "
                          f"local={item['metadatasharp'][:60]!r}")
-        for problem in report["differing"][:6]:
-            lines.append(f"file {problem.get('kind')}: {str(problem.get('detail'))[:200]}")
+        for refusal in report["refusals"][:4]:
+            lines.append(f"refused {refusal.get('file')}: {refusal.get('kind')} {refusal.get('detail')}")
         print(f"::notice title=RAW corpus explain::{entry.name}::" + "%0A".join(lines))
         explained += 1
         if explained == files:
