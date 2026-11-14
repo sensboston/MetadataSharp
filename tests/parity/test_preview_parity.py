@@ -89,6 +89,18 @@ class OracleTests(unittest.TestCase):
         with self.assertRaises(run_previews.PreviewParityError):
             run_previews.oracle_reference({"raw.cr3": "Preview 1: image/jpeg, 160 by 120"})
 
+    def test_offset_comparison_reports_list_differences_instead_of_aborting(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "sample.jpg"
+            path.write_bytes(b"x" * 20000)
+            dumped = {str(path): {"status": "ok", "previews": [SMALL], "offsets": [64], "sources": ["Exif.Thumbnail"]}}
+            report = run_previews.compare(
+                {"sample.jpg": [SMALL, LARGE]}, dumped, {"sample.jpg": path},
+                {"sample.jpg": [[64], [128]]})
+        self.assertEqual(1, report["totals"]["missing"])
+        self.assertEqual(0, report["totals"].get("offset_mismatch", 0))
+        self.assertEqual([list(LARGE)], report["files"][0]["missing"])
+
     def test_fixture_oracle_only_receives_image_formats_with_preview_loaders(self):
         self.assertIn(".crw", run_previews._PREVIEW_FIXTURE_SUFFIXES)
         self.assertIn(".pgf", run_previews._PREVIEW_FIXTURE_SUFFIXES)

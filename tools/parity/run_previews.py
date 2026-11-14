@@ -402,17 +402,20 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
         offset_mismatch: list[dict[str, Any]] = []
         reference_offsets = (expected_offsets or {}).get(name)
         if status == "ok" and reference_offsets is not None:
-            if len(reference_offsets) != len(expected[name]) or len(block.get("offsets", [])) != len(expected[name]):
-                raise PreviewParityError(f"{name}: offset oracle/dump count differs from the -pp list")
+            if len(reference_offsets) != len(expected[name]):
+                raise PreviewParityError(f"{name}: the offset oracle count differs from the -pp list")
+            actual_offsets = block.get("offsets", [])
+            if len(actual_offsets) != len(listed):
+                raise PreviewParityError(f"{name}: the dump has no offset for every listed preview")
             available: dict[Preview, list[int]] = {}
             for index, preview in enumerate(listed):
                 available.setdefault(preview, []).append(index)
             for index, preview in enumerate(expected[name]):
                 candidates = available.get(preview, [])
                 if not candidates:
-                    continue
+                    continue  # list parity records this as missing; compare offsets for common items only
                 actual_index = candidates.pop(0)
-                actual_offset = block["offsets"][actual_index]
+                actual_offset = actual_offsets[actual_index]
                 allowed = reference_offsets[index]
                 if actual_offset not in allowed:
                     offset_mismatch.append({"preview": list(preview), "actual": actual_offset, "expected_any": allowed})
