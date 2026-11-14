@@ -153,7 +153,7 @@ internal static class ExifBlockEditor
 
     /// <summary>The thumbnail is written where the EXIF block is a unit of its own.</summary>
     internal static MetadataException ThumbnailElsewhere() => new(MetadataErrorCode.UnsupportedFeature,
-        "A thumbnail is set or removed in the EXIF block of a JPEG, PNG or WebP file: in this file the directory after the primary one is not edited as a thumbnail.");
+        "A thumbnail is set or removed in the EXIF block of a JPEG, PNG, WebP or TIFF-based file: the metadata of this container is read only.");
 
     private static byte[]? EditTags(byte[] block, long sourceBase, ExifEdit.EditSnapshot edit, MetadataLimits limits)
     {

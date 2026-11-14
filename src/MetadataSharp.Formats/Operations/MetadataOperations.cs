@@ -62,8 +62,9 @@ public static class MetadataOperations
     /// <summary>
     /// The file without the kinds of metadata named. A kind the file does not have is no change;
     /// <see cref="MetadataFamilies.Thumbnail"/> removes only the thumbnail of the EXIF block, in a
-    /// JPEG, PNG or WebP file (in a TIFF-based file the directory after the primary one is an image
-    /// of the file, and stays).
+    /// JPEG, PNG or WebP file and in a TIFF-based one, where the directory after the primary one is
+    /// unlinked when it only addresses the thumbnail: a directory that is an image of the file, with
+    /// strips, tiles or another directory after it, stays.
     /// </summary>
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a container no document writes, or for a
@@ -92,11 +93,12 @@ public static class MetadataOperations
         }
         else if (metadata.Exif is not null)
         {
-            if (families.HasFlag(MetadataFamilies.Thumbnail))
+            if (families.HasFlag(MetadataFamilies.Thumbnail) &&
+                metadata.Exif.Entries.Any(entry => entry.Key.Directory == ExifDirectoryKind.Thumbnail))
             {
-                if (format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP) edits.Exif.RemoveThumbnail();
-                else if (format != MetadataFormat.Tiff && metadata.Exif.Entries.Any(entry => entry.Key.Directory == ExifDirectoryKind.Thumbnail))
-                    throw ExifBlockEditor.ThumbnailElsewhere();
+                if (format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP or MetadataFormat.Tiff)
+                    edits.Exif.RemoveThumbnail();
+                else throw ExifBlockEditor.ThumbnailElsewhere();
             }
         }
         if (families.HasFlag(MetadataFamilies.Iptc) && Held(MetadataFamily.IptcIim, metadata.Iptc is not null) && HoldsIptc(format)) edits.Iptc.RemoveAllIptc();
@@ -509,6 +511,8 @@ public static class MetadataOperations
         ImageMetadata into = ImageMetadata.Read(bytes);
         MetadataFormat format = Writable(into.Format);
         bool blocks = format is MetadataFormat.Jpeg or MetadataFormat.Png or MetadataFormat.WebP;
+        // The documents of TIFF-based files write the thumbnail too; BMFF, PSD and JP2 write no EXIF.
+        bool thumbnailTarget = blocks || format == MetadataFormat.Tiff;
 
         var clear = new SyncEdits();
         var set = new SyncEdits();
@@ -521,15 +525,15 @@ public static class MetadataOperations
             ReadOnlySpan<byte> thumbnail = Thumbnail(exv, from);
             if (thumbnail.Length != 0)
             {
-                if (blocks)
+                if (thumbnailTarget)
                 {
                     set.Exif.SetThumbnail(thumbnail);
                     carryThumbnailTags = true;
                 }
-                else said.Add("The thumbnail is not carried: it is written to JPEG, PNG and WebP files.");
+                else said.Add("The thumbnail is not carried: it is written to JPEG, PNG, WebP and TIFF-based files.");
             }
         }
-        else if (families.HasFlag(MetadataFamilies.Thumbnail) && blocks && Thumbnail(exv, from) is { Length: > 0 } only)
+        else if (families.HasFlag(MetadataFamilies.Thumbnail) && thumbnailTarget && Thumbnail(exv, from) is { Length: > 0 } only)
         {
             set.Exif.SetThumbnail(only);
         }

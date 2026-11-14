@@ -136,8 +136,15 @@ byte[] filled = MetadataOperations.InsertExv(other, exv, MetadataFamilies.All, o
   `ExifEdit.SetThumbnail`; there is no operation on an arbitrary preview payload in either library.
 - **Thumbnail**: a directory that is created states 72 dpi (XResolution, YResolution,
   ResolutionUnit), which Exif requires; the tool writes the compression and the stream only. A
-  directory that is replaced keeps its other tags. The block has to fit one APP1 segment
-  (`ExifTooLarge` otherwise). JPEG, PNG and WebP; TIFF-based and BMFF documents refuse the edit.
+  directory that is replaced keeps its other tags. In a JPEG file the block has to fit one APP1
+  segment (`ExifTooLarge` otherwise). Written by JPEG, PNG and WebP, where the EXIF block is a unit of
+  its own, and by TIFF-based files, where the directory is appended to the end of the file and the
+  successor link of the primary directory is rewritten: no byte of image data moves, and a directory
+  that is an image of the file, with strips, tiles or another directory after it, is refused with
+  `UnsupportedFeature` rather than replaced or unlinked. A BMFF file refuses the edit, its metadata
+  being read only. The gate is `tools/reference/tiff_thumbnail_parity.py`, which sets and removes the
+  thumbnail of every TIFF-based file of both corpora and compares the tool's print and the tool's
+  extracted stream with this library's.
 - **Extract**: a JPEG or EXV source is copied segment by segment, so the block is byte for byte the
   source's. Any other source is built anew by `ExvFile.Create` (see the MakerNote above); when ICC
   is selected, its validated profile is carried in numbered APP2 segments.
