@@ -87,16 +87,25 @@ public sealed class IptcCodecTests
         Assert.Equal(MetadataErrorCode.LimitExceeded, Assert.Throws<MetadataException>(() => IptcPacket.Parse([0x1c, 2, 25, 0x80, 4, 255, 255, 255, 255])).Code);
     }
     [Fact]
-    public void NoGuessingCharsetAndInvalidUtf8AreDistinct()
+    public void CharsetDetectionAndFallbackMatchExiv2()
     {
         IptcPacket legacy = IptcPacket.Parse(Dataset(2, 25, 0xe9));
         Assert.Equal(IptcCharacterSet.Unspecified, legacy.CharacterSet);
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => legacy.GetText(0)).Code);
-        IptcPacket invalid = IptcPacket.Parse([.. Raw(IptcPacket.CreateEmpty()), .. Dataset(2, 25, 0xc3, 0x28)]);
-        Assert.Equal(MetadataErrorCode.InvalidIptc, Assert.Throws<MetadataException>(() => invalid.GetText(2)).Code);
+        Assert.Equal(IptcTextEncoding.Latin1Fallback, legacy.DetectedTextEncoding);
+        Assert.Equal("é", legacy.GetText(0));
+
+        IptcPacket guessedUtf8 = IptcPacket.Parse(Dataset(2, 25, 0xc3, 0xa9));
+        Assert.Equal(IptcTextEncoding.Utf8, guessedUtf8.DetectedTextEncoding);
+        Assert.Equal("é", guessedUtf8.GetText(0));
+
+        IptcPacket invalidButUnmarked = IptcPacket.Parse(Dataset(2, 25, 0xc3, 0x28));
+        Assert.Equal("Ã(", invalidButUnmarked.GetText(0));
+        IptcPacket invalidDeclared = IptcPacket.Parse([.. Raw(IptcPacket.CreateEmpty()), .. Dataset(2, 25, 0xc3, 0x28)]);
+        Assert.Equal(MetadataErrorCode.InvalidIptc, Assert.Throws<MetadataException>(() => invalidDeclared.GetText(2)).Code);
+
         IptcPacket unknown = IptcPacket.Parse([.. Dataset(1, 90, 0x1b, 0x2e, 0x41), .. Dataset(2, 25, 65)]);
         Assert.Equal(IptcCharacterSet.Unsupported, unknown.CharacterSet);
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => unknown.GetText(1)).Code);
+        Assert.Equal("A", unknown.GetText(1));
         var edit = new IptcEdit(); edit.ReplaceText(Keywords, ["ASCII"]);
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Assert.Throws<MetadataException>(() => unknown.Apply(edit)).Code);
         edit.ReplaceRaw(Keywords, [IptcValue.FromRaw([66])]); Assert.Equal(IptcCharacterSet.Unsupported, unknown.Apply(edit)!.CharacterSet);

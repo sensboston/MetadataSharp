@@ -735,6 +735,20 @@ public sealed class ExifInterpretationTests
     }
 
     [Fact]
+    public void ExplicitCommentCharsetMatchesExiv2NWithoutChangingTheStoredBytes()
+    {
+        ExifValue value = Comment("UNICODE\0", [0x63, 0x61, 0x66, 0xE9]);
+        var options = new ExifInterpretationOptions { UserCommentEncoding = Encoding.Latin1 };
+
+        Assert.Equal("caf\u00E9", ExifTags.Interpret(Photo(0x9286), value, options));
+        Assert.Null(ExifTags.Interpret(Photo(0x9286), value));
+        Assert.Equal(new byte[] { 0x63, 0x61, 0x66, 0xE9 }, value.RawBytes[8..]);
+
+        var invalidUtf8 = new ExifInterpretationOptions { UserCommentEncoding = new UTF8Encoding(false, false) };
+        Assert.Null(ExifTags.Interpret(Photo(0x9286), value, invalidUtf8));
+    }
+
+    [Fact]
     public void ACommentWithAnUndefinedCodeIsReadOnlyWhenItIsText()
     {
         Assert.Equal("Created with GIMP",

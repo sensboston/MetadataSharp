@@ -49,6 +49,14 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
   EXIF/IPTC/XMP for all three, exact ICC bytes both ways for JP2, and Exiv2 ICC insertion/read-back
   for EXV. Exiv2 0.28.9 documents no PSD ICC support and its ICC print path does not expose the
   authored EXV ICC representation; PSD ICC remains on MetadataSharp's format-specific tests.
+- `MetadataTagCatalog` exposes the checked Exif/TIFF and MakerNote group/tag identities plus the
+  registered XMP schema/property names and prefix aliases. Descriptive prose in the catalog is written
+  locally and is not copied from Exiv2. This lookup catalog is not a promise that every Exiv2 `-pt` / `-pv`
+  interpretation is implemented; the pinned `-pt` differential gate reports output gaps separately.
+- IPTC text reads select a packet-wide ASCII, UTF-8 or ISO-8859-1 fallback for display while preserving
+  the source bytes; malformed data under an explicit UTF-8 marker remains an error. EXIF `UserComment`
+  interpretation accepts an optional caller-supplied `Encoding` for Exiv2 `-n`-style decoding; neither
+  option changes the stored metadata. See the [tag catalog and charset limits](docs/usage/TAG_CATALOG_AND_CHARSET_LIMITS.md), the IPTC usage limits and `ExifInterpretationOptions`.
 
 ## Quick start
 

@@ -10,9 +10,14 @@ public sealed partial class IptcPacket
     private readonly IptcLimits limits;
     private readonly MetadataException? refusal;
     private IptcPacket(byte[] bytes, IptcLimits limits, List<IptcDataset> datasets, IptcCharacterSet characterSet, MetadataException? refusal)
-    { this.bytes = bytes; this.limits = limits; Datasets = datasets.AsReadOnly(); CharacterSet = characterSet; this.refusal = refusal; }
-    /// <summary>The character set the stream declares in dataset 1:90.</summary>
+    {
+        this.bytes = bytes; this.limits = limits; Datasets = datasets.AsReadOnly(); CharacterSet = characterSet;
+        DetectedTextEncoding = DetectTextEncoding(datasets, characterSet); this.refusal = refusal;
+    }
+    /// <summary>The character set the stream declares in dataset 1:90, not an inferred encoding.</summary>
     public IptcCharacterSet CharacterSet { get; }
+    /// <summary>The encoding selected by the content-aware Exiv2-compatible display policy.</summary>
+    public IptcTextEncoding DetectedTextEncoding { get; }
     /// <summary>
     /// False when a container returned the stream for reading only: the stream itself, or the
     /// resources that hold it, has a form the editable profile refuses. <see cref="Apply"/> then
@@ -146,12 +151,12 @@ public sealed partial class IptcPacket
     /// <summary>Decodes the dataset at an index of <see cref="Datasets"/> as text.</summary>
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the dataset is not one IIM 4.2 defines
-    /// as text in records 1 and 2 (see <see cref="IptcDatasets"/>), or the stream does not declare
-    /// UTF-8 and the value is not ASCII; <see cref="MetadataErrorCode.InvalidIptc"/> when the value is
-    /// not valid UTF-8.
+    /// as text in records 1 and 2 (see <see cref="IptcDatasets"/>); <see cref="MetadataErrorCode.InvalidIptc"/>
+    /// when a packet declares UTF-8 but the dataset is not valid UTF-8. Otherwise the packet-wide
+    /// detection selects ASCII, UTF-8, or ISO-8859-1 fallback, matching Exiv2's text conversion policy.
     /// </exception>
     /// <param name="datasetIndex">The zero-based index in <see cref="Datasets"/>.</param>
-    /// <returns>The dataset decoded as UTF-8 text.</returns>
+    /// <returns>The text decoded with the packet's detected ASCII, UTF-8, or ISO-8859-1 fallback encoding.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="datasetIndex"/> is outside the dataset list.</exception>
     public string GetText(int datasetIndex)
     {
@@ -159,11 +164,45 @@ public sealed partial class IptcPacket
         IptcDataset dataset = Datasets[datasetIndex];
         if (!IsText(dataset.Key))
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The dataset is not a text dataset of IIM records 1 and 2.");
-        if (CharacterSet == IptcCharacterSet.Unsupported || (CharacterSet == IptcCharacterSet.Unspecified && ContainsHighBit(dataset.Value.Span)))
-            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The text encoding is unsupported or unspecified for non-ASCII data.");
-        try { return IptcText.Utf8.GetString(dataset.Value.Span); }
-        catch (DecoderFallbackException) { throw new MetadataException(MetadataErrorCode.InvalidIptc, "The dataset contains invalid UTF-8 text."); }
+        return DecodeText(dataset);
     }
+
+    // Decode a dataset using the packet-wide Exiv2-compatible charset decision.
+    private string DecodeText(IptcDataset dataset)
+    {
+        try
+        {
+            return DetectedTextEncoding switch
+            {
+                IptcTextEncoding.Ascii => Encoding.ASCII.GetString(dataset.Value.Span),
+                IptcTextEncoding.Utf8 => IptcText.Utf8.GetString(dataset.Value.Span),
+                _ => Encoding.Latin1.GetString(dataset.Value.Span),
+            };
+        }
+        catch (DecoderFallbackException) { throw new MetadataException(MetadataErrorCode.InvalidIptc, "The packet declares UTF-8 but this dataset contains invalid UTF-8 bytes."); }
+    }
+
+    // Match Exiv2's packet-wide charset selection: declared UTF-8 wins; otherwise valid UTF-8 is detected,
+    // and byte sequences that are not UTF-8 use the ISO-8859-1 conversion fallback.
+    private static IptcTextEncoding DetectTextEncoding(IReadOnlyList<IptcDataset> datasets, IptcCharacterSet declared)
+    {
+        if (declared == IptcCharacterSet.Utf8) return IptcTextEncoding.Utf8;
+        bool ascii = true, validUtf8 = true;
+        foreach (IptcDataset dataset in datasets)
+        {
+            ReadOnlySpan<byte> value = dataset.Value.Span;
+            if (ascii && ContainsHighBit(value)) ascii = false;
+            if (validUtf8)
+            {
+                try { _ = IptcText.Utf8.GetString(value); }
+                catch (DecoderFallbackException) { validUtf8 = false; }
+            }
+            if (!ascii && !validUtf8) return IptcTextEncoding.Latin1Fallback;
+        }
+        if (ascii) return IptcTextEncoding.Ascii;
+        return validUtf8 ? IptcTextEncoding.Utf8 : IptcTextEncoding.Latin1Fallback;
+    }
+
     private static bool IsText(IptcDatasetKey key) =>
         IptcDatasets.TryGet(key, out IptcDatasetDefinition? definition) && !definition.IsManaged
         && definition.Rule is not (IptcRule.UInt16 or IptcRule.Binary);

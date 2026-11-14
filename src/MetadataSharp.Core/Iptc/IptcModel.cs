@@ -9,12 +9,23 @@ public readonly record struct IptcDatasetKey(byte Record, byte Dataset);
 /// <summary>The packet's explicit encoding declaration, never a guessed code page.</summary>
 public enum IptcCharacterSet
 {
-    /// <summary>The packet has no 1:90 dataset, or one that declares ASCII (ESC ( B), which says as much.</summary>
+    /// <summary>The packet has no 1:90 dataset, or one that declares ASCII (ESC ( B).</summary>
     Unspecified,
     /// <summary>The packet declares UTF-8 (ESC % G).</summary>
     Utf8,
     /// <summary>The packet declares another character set; its text is not decoded.</summary>
     Unsupported
+}
+
+/// <summary>The charset selected by the Exiv2-compatible IPTC text-detection policy.</summary>
+public enum IptcTextEncoding
+{
+    /// <summary>All inspected bytes are ASCII.</summary>
+    Ascii,
+    /// <summary>The packet declares UTF-8 or its contents are valid UTF-8.</summary>
+    Utf8,
+    /// <summary>Contents are not valid UTF-8; display/conversion uses ISO-8859-1 as Exiv2 does.</summary>
+    Latin1Fallback
 }
 
 /// <summary>An immutable, independently owned raw value.</summary>
