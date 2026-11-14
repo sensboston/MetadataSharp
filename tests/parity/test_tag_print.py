@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import sys
+from collections import Counter
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -30,7 +31,7 @@ class TagPrintProtocolTests(unittest.TestCase):
         self.assertEqual([
             {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "value": "top, left"},
             {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1"},
-            {"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 3, "value": ""},
+            {"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 3, "value": "   "},
         ], gate.project_dump([
             {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "raw": "1", "translated": "top, left"},
             {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "raw": "50/1", "translated": ""},
@@ -48,6 +49,28 @@ class TagPrintProtocolTests(unittest.TestCase):
         differences = gate.compare_rows(expected, changed)
         self.assertEqual(1, len(differences))
         self.assertEqual(["value-diff"], [row["kind"] for row in differences])
+
+    def test_numeric_fallback_matches_only_the_same_catalogued_tag(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Image.0x0100", "type": "Long", "count": 1, "value": "640"}]
+        actual = [{"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "640"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_names=accepted))
+        self.assertEqual({("Exif.Image.0x0100", "Exif.Image.ImageWidth"): 1}, dict(accepted))
+        other_directory = [{"key": "Exif.Photo.0x0100", "type": "Long", "count": 1, "value": "640"}]
+        wrong_directory = gate.compare_rows(other_directory, actual)
+        self.assertEqual(["extra", "missing"], sorted(row["kind"] for row in wrong_directory))
+        wrong_value = [{"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "641"}]
+        self.assertEqual(1, len(gate.compare_rows(expected, wrong_value)))
+
+    def test_only_trailing_ascii_and_user_comment_padding_is_ignored_as_format(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Image.Make", "type": "Ascii", "count": 8, "value": "Camera "}]
+        actual = [{"key": "Exif.Image.Make", "type": "Ascii", "count": 8, "value": "Camera"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_padding=accepted))
+        self.assertEqual({"Ascii": 1}, dict(accepted))
+        expected = [{"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1 "}]
+        actual = [{"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1"}]
+        self.assertEqual(1, len(gate.compare_rows(expected, actual)))
 
     def test_dump_protocol_unescapes_records_and_rejects_open_or_malformed_blocks(self) -> None:
         parsed = gate.parse_dump("FILE\t/tmp/a\\tb.jpg\nTAG\tExif.Image.Make\tAscii\t2\tA\\\\B\t\nSTATUS\tok\n")

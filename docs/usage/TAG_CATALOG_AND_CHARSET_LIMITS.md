@@ -66,10 +66,14 @@ translation is also listed as a tag-level exception because the local table foll
 `Exif.Photo.MeteringMode`, `Exif.Photo.ExposureProgram`, `Exif.Photo.SensitivityType`,
 `Exif.Image.CalibrationIlluminant1`, and `Exif.Image.CalibrationIlluminant2` are tracked once per key
 and applied only to the listed display pairs; any other value for those keys still fails. These rules
-preserve the local vocabulary and raw-code policy rather than copying Exiv2 descriptions. A vendor tag rendered only as an
-unknown numeric key (for example, `Exif.Canon.0x0019`) is not a named catalog entry; if the pinned
-reference does not print that key, the report lists it under `raw_only_tag_exceptions` instead of
-counting its fallback raw value as a named-table mismatch. This does not suppress unknown named keys,
+preserve the local vocabulary and raw-code policy rather than copying Exiv2 descriptions. As a print
+format convention, trailing spaces and NUL padding are ignored only at the end of ASCII fields and
+`Exif.Photo.UserComment`; internal whitespace and every non-text value remain exact. When Exiv2 prints
+a numeric fallback for a catalogued tag, the comparator may match it to the local tag name only when
+the EXIF directory and numeric tag ID agree; values, types, and counts must still match. A vendor tag
+rendered only as an unknown numeric key (for example, `Exif.Canon.0x0019`) is not a named catalog
+entry; if the pinned reference does not print that key, the report lists it under
+`raw_only_tag_exceptions` instead of counting its fallback raw value as a named-table mismatch. This does not suppress unknown named keys,
 keys printed by both tools, raw-value gates, or the separate MakerNote-render parity gate. The gate is
 fail-closed for unlisted missing inputs and other output mismatches. It is not a claim that this table
 or the library currently achieves full parity; the report is the measure of remaining work. The tool also checks that both the source checkout

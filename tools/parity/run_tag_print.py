@@ -20,12 +20,24 @@ import corpus  # noqa: E402
 
 TITLE = "PARITY tag print"
 
-def _catalog_keys() -> set[str]:
+def _catalog_key_ids() -> dict[str, int]:
     data = json.loads((ROOT / "src/MetadataSharp.Core/tag-catalog-data.json").read_text(encoding="utf-8"))
-    return {"Exif." + group["name"] + "." + name
+    return {"Exif." + group["name"] + "." + name: tag["id"]
             for group in data["exifGroups"] for tag in group["tags"] for name in tag["names"]}
 
-CATALOG_KEYS = _catalog_keys()
+CATALOG_KEY_IDS = _catalog_key_ids()
+CATALOG_KEYS = set(CATALOG_KEY_IDS)
+_NUMERIC_KEY = re.compile(r"^(Exif\..+)\.0[xX]([0-9A-Fa-f]+)$")
+
+
+def _canonical_key(key: str) -> tuple[str, int] | tuple[str]:
+    if key in CATALOG_KEY_IDS:
+        group = key.rsplit(".", 1)[0]
+        return group, CATALOG_KEY_IDS[key]
+    match = _NUMERIC_KEY.fullmatch(key)
+    if match:
+        return match.group(1), int(match.group(2), 16)
+    return (key,)
 _RAW_NUMERIC_TAG = re.compile(r"\.0[xX][0-9A-Fa-f]+$")
 
 
@@ -141,15 +153,8 @@ def parse_exiv2(text: str) -> list[dict[str, Any]]:
 
 def project_dump(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Select the text a ``-pt`` style print would show from each dump record."""
-    projected = []
-    for row in rows:
-        if not row["key"].startswith("Exif."):
-            continue
-        value = row["translated"] or row["raw"]
-        if row["type"] == "Ascii" or row["key"] == "Exif.Photo.UserComment":
-            value = value.rstrip(" \0")
-        projected.append({"key": row["key"], "type": row["type"], "count": row["count"], "value": value})
-    return projected
+    return [{"key": row["key"], "type": row["type"], "count": row["count"],
+             "value": row["translated"] or row["raw"]} for row in rows if row["key"].startswith("Exif.")]
 
 
 def parse_dump(text: str) -> dict[str, dict[str, Any]]:
@@ -187,10 +192,12 @@ def parse_dump(text: str) -> dict[str, dict[str, Any]]:
 
 def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
                  description_aliases: dict[str, dict[str, str]] | None = None,
-                 accepted_aliases: Counter[tuple[str, str, str]] | None = None) -> list[dict[str, Any]]:
+                 accepted_aliases: Counter[tuple[str, str, str]] | None = None,
+                 accepted_padding: Counter[str] | None = None,
+                 accepted_names: Counter[tuple[str, str]] | None = None) -> list[dict[str, Any]]:
     """Compare rows as a multiset, allowing only exact, documented display aliases."""
     def identity(row: dict[str, Any]) -> tuple[Any, ...]:
-        return row.get("key"), row.get("type"), row.get("count")
+        return _canonical_key(str(row.get("key"))), row.get("type"), row.get("count")
 
     expected_by_key: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
     actual_by_key: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
@@ -201,14 +208,30 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
         expected = expected_by_key[key].copy()
         observed = actual_by_key[key].copy()
         for row in expected.copy():
+            def is_padding_equivalent(candidate: dict[str, Any]) -> bool:
+                key_name = str(row.get("key"))
+                if row.get("type") != "Ascii" and key_name != "Exif.Photo.UserComment":
+                    return False
+                expected_value, actual_value = row.get("value"), candidate.get("value")
+                return (isinstance(expected_value, str) and isinstance(actual_value, str)
+                        and expected_value.rstrip(" \0") == actual_value.rstrip(" \0"))
+
             match = next((candidate for candidate in observed
                           if candidate == row or (
+                              _canonical_key(str(candidate.get("key"))) == _canonical_key(str(row.get("key")))
+                              and candidate.get("value") == row.get("value")
+                          ) or is_padding_equivalent(candidate) or (
                               description_aliases is not None
                               and description_aliases.get(str(row.get("key")), {}).get(str(row.get("value")))
                                   == candidate.get("value")
                           )), None)
             if match is not None:
-                if match != row and accepted_aliases is not None:
+                if (match.get("key") != row.get("key") and match.get("value") == row.get("value")
+                        and accepted_names is not None):
+                    accepted_names[(str(row.get("key")), str(match.get("key")))] += 1
+                elif match != row and is_padding_equivalent(match) and accepted_padding is not None:
+                    accepted_padding[str(row.get("type"))] += 1
+                elif match != row and accepted_aliases is not None:
                     accepted_aliases[(str(row.get("key")), str(row.get("value")), str(match.get("value")))] += 1
                 expected.remove(row); observed.remove(match)
         while expected and observed:
@@ -251,8 +274,10 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
         samples.append(sample)
     return {"totals": report["totals"], "failure_kinds": report["failure_kinds"],
             "difference_types": report["difference_types"],
-            "mismatch_groups": report["mismatch_groups"][:200],
+            "padding_format_rule": report["padding_format_rule"],
+            "mismatch_groups": report["mismatch_groups"][:150],
             "display_rule_hits": report["display_rule_hits"],
+            "name_rule_hits": report["name_rule_hits"],
             "value_diff_by_key": report["value_diff_by_key"][:40],
             "refusals": report["refusals"],
             "formats": report["formats"],
@@ -277,9 +302,11 @@ def _emit_annotation(payload: dict[str, Any]) -> None:
     refusals = payload.pop("refusals", [])
     value_differences = payload.pop("value_diff_by_key", [])
     alias_hits = payload.pop("display_rule_hits", [])
+    name_hits = payload.pop("name_rule_hits", [])
     emit(f"{TITLE} summary", payload)
-    for label, items, size in (("groups", grouped, 50), ("refusals", refusals, 17),
-                               ("values", value_differences, 40), ("display rules", alias_hits, 20)):
+    for label, items, size in (("groups", grouped, 75), ("refusals", refusals, 17),
+                               ("values", value_differences, 40), ("display rules", alias_hits, 20),
+                               ("key-name rules", name_hits, 20)):
         chunks = [items[i:i + size] for i in range(0, len(items), size)] or [[]]
         for index, chunk in enumerate(chunks, 1):
             emit(f"{TITLE} {label} {index}/{len(chunks)}", {label: chunk})
@@ -324,6 +351,8 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     difference_types: Counter[str] = Counter()
     value_pairs: Counter[tuple[str, str, str]] = Counter()
     accepted_aliases: Counter[tuple[str, str, str]] = Counter()
+    accepted_padding: Counter[str] = Counter()
+    accepted_names: Counter[tuple[str, str]] = Counter()
     mismatch_groups: Counter[tuple[str, str, str, str]] = Counter()
     formats: dict[str, Counter[str]] = defaultdict(Counter)
     for candidate in candidates:
@@ -350,14 +379,14 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             for source_row in ours["rows"]:
                 source_by_identity[(source_row["key"], source_row["type"], source_row["count"])].append(source_row)
             all_observed = project_dump(ours["rows"])
-            expected_keys = {row["key"] for row in expected}
+            expected_keys = {_canonical_key(row["key"]) for row in expected}
             raw_only_tags.update(row["key"] for row in all_observed
-                                 if _is_raw_numeric_tag(row["key"]) and row["key"] not in expected_keys)
+                                 if _is_raw_numeric_tag(row["key"])
+                                 and _canonical_key(row["key"]) not in expected_keys)
             observed = [row for row in all_observed
-                        if (row["key"] in CATALOG_KEYS or row["key"] in expected_keys
-                            or not _is_raw_numeric_tag(row["key"]))
+                        if (_canonical_key(row["key"]) in expected_keys or not _is_raw_numeric_tag(row["key"]))
                         and row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
-            rows = compare_rows(expected, observed, _TAG_PRINT_DISPLAY_ALIASES, accepted_aliases)
+            rows = compare_rows(expected, observed, _TAG_PRINT_DISPLAY_ALIASES, accepted_aliases, accepted_padding, accepted_names)
             if rows:
                 for row in rows:
                     difference_types[row["kind"]] += 1
@@ -407,7 +436,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
         {"category": category, "key": key, "type": type_name, "occurrences": count,
          "examples": [{"difference": detail[:180], "occurrences": occurrences}
                       for detail, occurrences in mismatch_examples[(category, key, type_name)].most_common(3)]}
-        for (category, key, type_name), count in mismatch_by_key.most_common(200)
+        for (category, key, type_name), count in sorted(mismatch_by_key.items(), key=lambda item: (-item[1], item[0]))[:200]
     ]
     refusals = [item for item in differing if item["kind"] in
                 ("metadatasharp-refused", "exiv2-refused", "missing-dump-file")]
@@ -416,10 +445,22 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
          "rule": _TAG_PRINT_DISPLAY_REASONS[key]}
         for (key, reference, local), count in sorted(accepted_aliases.items())
     ]
+    name_rule_hits = [
+        {"exiv2_key": reference, "metadatasharp_key": local, "occurrences": count,
+         "rule": "The keys identify the same tag number in the same EXIF directory; the local catalog supplies the name where Exiv2 prints a numeric fallback."}
+        for (reference, local), count in sorted(accepted_names.items())
+    ]
+    padding_format_rule = {
+        "occurrences": sum(accepted_padding.values()),
+        "types": dict(sorted(accepted_padding.items())),
+        "rule": "Trailing space/NUL padding is ignored only for ASCII fields and EXIF UserComment; internal whitespace and all non-text values remain exact.",
+    }
     return {"kind": "TagPrint", "totals": dict(totals), "failure_kinds": dict(sorted(failure_kinds.items())),
             "difference_types": dict(sorted(difference_types.items())),
             "mismatch_groups": grouped_differences,
             "display_rule_hits": display_rule_hits,
+            "name_rule_hits": name_rule_hits,
+            "padding_format_rule": padding_format_rule,
             "value_diff_by_key": value_diff_by_key,
             "refusals": refusals,
             "formats": {key: dict(value) for key, value in sorted(formats.items())},
@@ -439,6 +480,8 @@ def text_report(report: dict[str, Any]) -> str:
         lines.append(f"  named missing-input exception: {entry['file']}: {entry['reason']}")
     for entry in report["tag_exceptions"]:
         lines.append(f"  named tag exception: {entry['key']}: {entry['reason']}")
+    padding_rule = report["padding_format_rule"]
+    lines.append(f"  padding-format rule: {padding_rule['occurrences']} rows across {padding_rule['types']}: {padding_rule['rule']}")
     for entry in report["display_rule_hits"]:
         lines.append(f"  display rule: {entry['key']} {entry['exiv2']!r} => {entry['metadatasharp']!r} "
                      f"({entry['occurrences']} rows): {entry['rule']}")
