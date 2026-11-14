@@ -71,7 +71,7 @@ public static class Previews
         {
             var scanner = new PreviewScanner(file, limits);
             _ = scanner.Run();
-            if (scanner.TryGetGenerated(preview, out byte[]? generated)) return (byte[])generated.Clone();
+            if (scanner.TryGetGenerated(preview, out byte[]? generated) && generated is not null) return (byte[])generated.Clone();
             throw new MetadataException(MetadataErrorCode.InvalidTiff, "The generated preview no longer matches the file.", preview.Offset);
         }
         bool jpeg = preview.MimeType == JpegType;
@@ -331,13 +331,13 @@ internal ref struct PreviewScanner
         int photoshop = data.IndexOf("%BeginPhotoshop:"u8);
         if (photoshop >= 0)
         {
-            int lineEnd = data[photoshop..].IndexOf((byte)'\n');
-            if (lineEnd >= 0)
+            int photoshopLineEnd = data[photoshop..].IndexOf((byte)'\n');
+            if (photoshopLineEnd >= 0)
             {
-                int hexStart = photoshop + lineEnd + 1;
-                int end = data[hexStart..].IndexOf("%EndPhotoshop"u8);
-                if (end >= 0 && TryDecodeHex(data.Slice(hexStart, end), out byte[] irb))
-                    AddPhotoshopPreview(irb, hexStart);
+                int photoshopHexStart = photoshop + photoshopLineEnd + 1;
+                int end = data[photoshopHexStart..].IndexOf("%EndPhotoshop"u8);
+                if (end >= 0 && TryDecodeHex(data.Slice(photoshopHexStart, end), out byte[] irb))
+                    AddPhotoshopPreview(irb, photoshopHexStart);
             }
         }
         // The plain EPS AI7 hex-thumbnail syntax is a native decoded PNM preview in Exiv2.
@@ -353,7 +353,7 @@ internal ref struct PreviewScanner
         int beginData = marker + lineEnd + 1;
         int dataMarker = data[beginData..].IndexOf("%%BeginData:"u8);
         if (dataMarker < 0) return;
-        int dataLineEnd = data[beginData + dataMarker..].IndexOf((byte)'\n');
+        int dataLineEnd = data[(beginData + dataMarker)..].IndexOf((byte)'\n');
         if (dataLineEnd < 0) return;
         string[] dataFields = Encoding.ASCII.GetString(data.Slice(beginData + dataMarker, dataLineEnd))
             .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
