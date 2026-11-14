@@ -249,7 +249,8 @@ def describe(outcomes: dict) -> str:
             f"formats: {layout}")
 
 
-def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 140) -> int:
+def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
+            files: int = 4, name: str = "") -> int:
     """Print where the first corpus file disagrees with the pinned reference, row by row.
 
     The differential gate reports an aggregate of a whole corpus, which says what differs but not why:
@@ -260,9 +261,10 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 140) 
     import run_tag_print as harness  # imported here: the two modules share the row vocabulary
 
     command = shlex.split(dump_command)
+    explained = 0
     for entry in entries():
         path = destination / entry.name
-        if not path.is_file():
+        if not path.is_file() or (name and name not in entry.name):
             continue
         code, text, error = harness._run_reference([exiv2], path)
         if code != 0:
@@ -282,8 +284,11 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 140) 
         print(f"::notice title=RAW corpus explain::{entry.name}::" +
               "%0A".join([f"{len(lines)} differing row(s); {len(reference)} reference, "
                           f"{len(actual)} local"] + lines[:limit]))
-        return 0
-    print("::notice title=RAW corpus explain::no corpus file differs from the reference")
+        explained += 1
+        if explained == files:
+            return 0
+    print("::notice title=RAW corpus explain::" +
+          (f"no corpus file matches {name}" if name else "no corpus file differs from the reference"))
     return 0
 
 
@@ -317,6 +322,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write", action="store_true", help="pin: record the measured values in the manifest")
     parser.add_argument("--exiv2", help="explain: the pinned reference executable")
     parser.add_argument("--dump-command", help="explain: how to run MetadataSharp.Dump")
+    parser.add_argument("--name", help="explain: only files whose name contains this")
+    parser.add_argument("--files", type=int, default=4, help="explain: how many differing files to print")
     args = parser.parse_args(argv)
     document = load()
     if args.command == "list":
@@ -342,7 +349,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "explain":
         if not args.exiv2 or not args.dump_command:
             parser.error("explain needs --exiv2 and --dump-command")
-        return explain(args.destination, args.exiv2, args.dump_command)
+        return explain(args.destination, args.exiv2, args.dump_command, files=args.files, name=args.name or "")
     if args.command == "verify":
         problems = verify(args.destination, document)
         for problem in problems:

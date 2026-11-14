@@ -1,20 +1,21 @@
 namespace MetadataSharp.Core;
 
-/// <summary>
-/// One image directory of a whole TIFF-based file: a directory its primary directory names with tag
-/// 0x014A (SubIFDs), as Digital Negative and several camera raw files do. The directory holds the
-/// geometry and encoding of a picture, not metadata of the file, so it is read for listing only:
-/// <see cref="ExifMetadata.Entries"/> does not contain it and no edit reaches it.
-/// </summary>
 /// <summary>How a whole TIFF-based file named an image directory.</summary>
 public enum ExifSubImageKind
 {
     /// <summary>An entry of the primary directory's tag 0x014A (SubIFDs), as DNG and several raws do.</summary>
     SubIfd,
-    /// <summary>The next directory of the chain that starts after the primary directory.</summary>
+    /// <summary>A directory of the chain that starts after the primary directory's thumbnail one.</summary>
     ImageDirectory
 }
 
+/// <summary>
+/// One image directory of a whole TIFF-based file: a directory its primary directory names with tag
+/// 0x014A (SubIFDs), as Digital Negative and several camera raw files do, or one it chains after the
+/// thumbnail directory, as Canon CR2 and Pentax PEF do. The directory holds the geometry and encoding
+/// of a picture, not metadata of the file, so it is read for listing only:
+/// <see cref="ExifMetadata.Entries"/> does not contain it and no edit reaches it.
+/// </summary>
 public sealed class ExifSubImage
 {
     internal ExifSubImage(int index, IReadOnlyList<ExifEntry> entries,
