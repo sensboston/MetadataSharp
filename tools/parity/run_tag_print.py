@@ -245,7 +245,8 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
 
 
 def verify_raw_value_differences(differences: list[dict[str, Any]], raw_reference: list[dict[str, Any]],
-                                 source_rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+                                 source_rows: list[dict[str, Any]],
+                                 probes: list[dict[str, Any]] | None = None) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
     """Resolve -pt text differences only when Exiv2 -pv confirms identical raw value and structure."""
     raw_by_identity: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
     source_by_identity: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
@@ -265,11 +266,19 @@ def verify_raw_value_differences(differences: list[dict[str, Any]], raw_referenc
         local_source = next((row for row in source_by_identity.get(local_key, [])
                              if (row.get("translated") or row.get("raw")) == observed.get("value")), None)
         if local_source is None:
+            if probes is not None and len(probes) < 20:
+                probes.append({"key": expected.get("key"), "reason": "no matching local raw source row",
+                               "pt_reference": expected.get("value"), "pt_local": observed.get("value")})
             remaining.append(difference)
             continue
-        raw_match = next((row for row in raw_by_identity.get(identity, [])
-                          if row.get("value") == local_source.get("raw")), None)
+        raw_candidates = raw_by_identity.get(identity, [])
+        raw_match = next((row for row in raw_candidates if row.get("value") == local_source.get("raw")), None)
         if raw_match is None:
+            if probes is not None and len(probes) < 20:
+                probes.append({"key": expected.get("key"), "reason": "raw values differ",
+                               "pt_reference": expected.get("value"), "pt_local": observed.get("value"),
+                               "local_raw": local_source.get("raw"),
+                               "exiv2_pv_raw": [row.get("value") for row in raw_candidates]})
             remaining.append(difference)
             continue
         raw_by_identity[identity].remove(raw_match)
@@ -317,6 +326,7 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
             "display_rule_hits": report["display_rule_hits"],
             "name_rule_hits": report["name_rule_hits"],
             "raw_value_display_hits": report["raw_value_display_hits"],
+            "raw_display_probes": report["raw_display_probes"][:10],
             "value_diff_by_key": report["value_diff_by_key"][:40],
             "refusals": report["refusals"],
             "formats": report["formats"],
@@ -394,6 +404,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     accepted_padding: Counter[str] = Counter()
     accepted_names: Counter[tuple[str, str]] = Counter()
     verified_raw_displays: Counter[tuple[str, str, str, str]] = Counter()
+    raw_display_probes: list[dict[str, Any]] = []
     mismatch_groups: Counter[tuple[str, str, str, str]] = Counter()
     formats: dict[str, Counter[str]] = defaultdict(Counter)
     for candidate in candidates:
@@ -431,7 +442,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             if any(row["kind"] == "value-diff" for row in rows):
                 raw_status, raw_output, _ = _run_reference(reference_command, candidate.path, "-pv")
                 if raw_status == 0:
-                    rows, raw_verified = verify_raw_value_differences(rows, parse_exiv2(raw_output), ours["rows"])
+                    rows, raw_verified = verify_raw_value_differences(rows, parse_exiv2(raw_output), ours["rows"], raw_display_probes)
                     for item in raw_verified:
                         verified_raw_displays[(item["key"], item["exiv2_pt"], item["metadatasharp_pt"], item["raw_value"])] += 1
             if rows:
@@ -514,6 +525,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             "display_rule_hits": display_rule_hits,
             "name_rule_hits": name_rule_hits,
             "raw_value_display_hits": raw_value_display_hits,
+            "raw_display_probes": raw_display_probes,
             "padding_format_rule": padding_format_rule,
             "value_diff_by_key": value_diff_by_key,
             "refusals": refusals,
