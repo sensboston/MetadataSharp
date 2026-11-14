@@ -62,6 +62,10 @@ _PREVIEW_FIXTURE_SUFFIXES = frozenset({
     ".jpg", ".jpeg", ".tif", ".tiff", ".png", ".webp", ".crw", ".mrw", ".raf", ".rw2", ".sr2",
     ".jp2", ".psd", ".eps", ".pgf", ".jxl", ".avif", ".heic", ".heif", ".cr3",
 })
+# This deliberately dual-page DOS EPS sample is rejected by pinned 0.28.9 before it can list previews.
+_EXIV2_PREVIEW_REFUSALS = {
+    "dos-eps-xmp.eps": "Page position conflict between the DOS header and the implicit PostScript page",
+}
 
 
 class PreviewParityError(Exception):
@@ -506,6 +510,8 @@ def main(argv: list[str] | None = None) -> int:
                 continue  # the fixture directories also hold non-image parser tests
             if candidate.label in paths:
                 raise PreviewParityError(f"two files are named {candidate.label}")
+            if candidate.label in _EXIV2_PREVIEW_REFUSALS:
+                continue  # documented oracle limitation; library-side EPS coverage remains in unit tests
             paths[candidate.label] = candidate.path
         if not paths:
             raise PreviewParityError("the fixture directories contain no supported preview images")
