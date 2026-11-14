@@ -546,16 +546,11 @@ internal static class Program
         bool panasonicRaw = false, ISet<string>? printed = null, Func<string, bool>? skip = null)
     {
         if (metadata is null) return;
-        void Row(string key, string type, uint count, string value)
+        void Row(string key, string type, uint count, string value, string? interpreted = null)
         {
             if (skip is not null && skip(key)) return;
-            Tag(stdout, key, type, count, value);
-            printed?.Add(key);
-        }
-        void Row(string key, string type, uint count, string value, string interpreted)
-        {
-            if (skip is not null && skip(key)) return;
-            Tag(stdout, key, type, count, value, interpreted);
+            if (interpreted is null) Tag(stdout, key, type, count, value);
+            else Tag(stdout, key, type, count, value, interpreted);
             printed?.Add(key);
         }
         foreach (ExifEntry entry in metadata.Entries)
