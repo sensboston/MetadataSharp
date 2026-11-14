@@ -29,9 +29,9 @@ class TagPrintProtocolTests(unittest.TestCase):
 
     def test_dump_projection_uses_local_interpretation_or_raw_value_for_pt(self) -> None:
         self.assertEqual([
-            {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "value": "top, left"},
-            {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1"},
-            {"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 3, "value": "   "},
+            {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "value": "top, left", "_raw_value": "1", "_has_translation": True},
+            {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1", "_raw_value": "50/1", "_has_translation": False},
+            {"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 3, "value": "   ", "_raw_value": "   ", "_has_translation": False},
         ], gate.project_dump([
             {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "raw": "1", "translated": "top, left"},
             {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "raw": "50/1", "translated": ""},
@@ -61,6 +61,18 @@ class TagPrintProtocolTests(unittest.TestCase):
         self.assertEqual(["extra", "missing"], sorted(row["kind"] for row in wrong_directory))
         wrong_value = [{"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "641"}]
         self.assertEqual(1, len(gate.compare_rows(expected, wrong_value)))
+
+    def test_pinned_numeric_raw_value_matches_a_local_interpretation_without_copying_text(self) -> None:
+        accepted = Counter()
+        reference = [{"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "0"}]
+        local = [{"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1,
+                  "value": "Hold", "_raw_value": "0", "_has_translation": True}]
+        self.assertEqual([], gate.compare_rows(reference, local, accepted_raw_displays=accepted))
+        self.assertEqual({("Exif.Sony1MltCsA100.AELButton", "0", "Hold"): 1}, dict(accepted))
+        changed_raw = [{**local[0], "_raw_value": "1"}]
+        self.assertEqual(1, len(gate.compare_rows(reference, changed_raw)))
+        uninterpreted = [{**local[0], "_has_translation": False}]
+        self.assertEqual(1, len(gate.compare_rows(reference, uninterpreted)))
 
     def test_only_trailing_ascii_and_user_comment_padding_is_ignored_as_format(self) -> None:
         accepted = Counter()
