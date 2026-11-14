@@ -704,6 +704,12 @@ internal ref struct PreviewScanner
             }
         }
 
+        // A Panasonic RW2 keeps the picture it embeds in its raw directory, as the field the
+        // reference calls PanasonicRaw.PreviewImage, and has no EXIF directory of its own to hold a note.
+        if (panasonicRaw && first && Find(entries, 0x002E) is Entry embedded &&
+            (embedded.Type == 1 || embedded.Type == 7) && embedded.Count != 0)
+            Jpeg(embedded.At, embedded.Count, "Exif.PanasonicRaw.PreviewImage", tableStart, tableEnd);
+
         if (first)
         {
             string make = Text(Find(entries, 0x010F));

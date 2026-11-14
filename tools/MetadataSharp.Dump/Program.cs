@@ -50,6 +50,11 @@ internal static class Program
 {
     private const long MaxWholeFileBytes = 64L * 1024 * 1024;
 
+    // With --refusal-detail the reason a file was refused travels with its STATUS record, after the
+    // code. The comparison harness keys a pinned refusal on the code alone, so this is opt-in: it exists
+    // for diagnosing a refusal, not for the report.
+    private static bool refusalDetail;
+
     private static int Main(string[] args)
     {
         var paths = new List<string>();
@@ -59,12 +64,13 @@ internal static class Program
             string arg = args[i];
             if (arg is "-h" or "--help")
             {
-                Console.Error.WriteLine("usage: MetadataSharp.Dump [--previews|--icc|--comments] [--files-from FILE|-] [file...]");
+                Console.Error.WriteLine("usage: MetadataSharp.Dump [--previews|--icc|--comments] [--refusal-detail] [--files-from FILE|-] [file...]");
                 return 0;
             }
             if (arg == "--previews") { previews = true; continue; }
             if (arg == "--icc") { icc = true; continue; }
             if (arg == "--comments") { comments = true; continue; }
+            if (arg == "--refusal-detail") { refusalDetail = true; continue; }
             if (arg == "--files-from")
             {
                 if (++i == args.Length) { Console.Error.WriteLine("--files-from wants a path or -"); return 2; }
@@ -96,7 +102,13 @@ internal static class Program
                 else if (comments) ListComments(path, stdout);
                 else Dump(path, stdout);
             }
-            catch (MetadataException failure) { Record(stdout, "STATUS", "refused", failure.Code.ToString()); }
+            catch (MetadataException failure)
+            {
+                string detail = failure.Code.ToString();
+                if (refusalDetail)
+                    detail += "\t" + Escape(failure.Message.Split('\n')[0]);
+                Record(stdout, "STATUS", "refused", detail);
+            }
             // A bug in a reader is a fact worth reporting precisely, so the type and the first line of
             // the message travel with the record; the harness counts this status as an unsound run.
             catch (Exception failure)
@@ -518,7 +530,10 @@ internal static class Program
                     // And the Sony pointer to the Minolta directory of the DSLR-A100.
                     bool sony = makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2;
                     bool sonyMinolta = sony && entry.TagId == 0xB028;
-                    bool keepParent = olympusIfd || nikonPreview || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
+                    // And the Samsung pointer to the directory its preview fields live in.
+                    bool samsungPreview = makerNote.Format == MakerNoteFormat.Samsung2 && entry.TagId == 0x0035;
+                    bool keepParent = olympusIfd || nikonPreview || samsungPreview ||
+                        makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
                         Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value), entry.Value.Count, MakerNoteValue(makerNote, entry),
                             makerNote.InterpretForModel(entry, cameraModel));
@@ -529,7 +544,8 @@ internal static class Program
                         : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
                         : sony ? SonyArrayGroup(makerNote.Format, entry.TagId)
                         : makerNote.Format == MakerNoteFormat.Minolta ? MinoltaArrayGroup(entry.TagId)
-                        : makerNote.Format == MakerNoteFormat.Samsung2 ? "SamsungPictureWizard"
+                        : makerNote.Format == MakerNoteFormat.Samsung2
+                            ? entry.TagId == 0x0035 ? "SamsungPreview" : "SamsungPictureWizard"
                         : group + ArrayGroup(entry.TagId);
                     foreach (MakerNoteField field in entry.Fields)
                     {

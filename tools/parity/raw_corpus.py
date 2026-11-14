@@ -260,7 +260,9 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
     import corpus as corpus_module
     import run_tag_print as harness  # imported here: the two modules share the row vocabulary
 
-    command = shlex.split(dump_command)
+    # The reason a refusal gives is what a reader defect is diagnosed from, and the gate's own record
+    # carries only the code.
+    command = shlex.split(dump_command) + ["--refusal-detail"]
     explained = 0
     for entry in entries():
         path = destination / entry.name
@@ -281,7 +283,14 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
             lines.append(f"value {item['key']}: reference={item['exiv2'][:60]!r} "
                          f"local={item['metadatasharp'][:60]!r}")
         for refusal in report["refusals"][:4]:
-            lines.append(f"refused {refusal.get('file')}: {refusal.get('kind')} {refusal.get('detail')}")
+            reason = dumped.get("detail", "") if str(path) == str(candidate.path) else ""
+            lines.append(f"refused {refusal.get('file')}: {refusal.get('kind')} {refusal.get('detail')} "
+                         f"{reason.replace(chr(9), ' ')}")
+        # What the file lists as previews, because a row the reference reads out of an embedded
+        # picture is missing from the dump until the preview itself is found.
+        listing = subprocess.run([part for part in command if part != "--refusal-detail"] + ["--previews", str(path)],
+                                 capture_output=True, text=True).stdout
+        lines.extend([line for line in listing.splitlines() if line.startswith("PREVIEW")][:4])
         print(f"::notice title=RAW corpus explain::{entry.name}::" + "%0A".join(lines))
         explained += 1
         if explained == files:
