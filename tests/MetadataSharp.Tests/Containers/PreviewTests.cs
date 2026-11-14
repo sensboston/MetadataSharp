@@ -523,7 +523,7 @@ public sealed class PreviewTests
             "<x:xmpmeta xmlns:x='adobe:ns:meta/'>" +
             "<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' " +
             "xmlns:xmp='http://ns.adobe.com/xap/1.0/' xmlns:xmpGImg='http://ns.adobe.com/xap/1.0/g/img/'>" +
-            "<rdf:Description rdf:about=''><xmp:Thumbnails><rdf:Seq><rdf:li>" +
+            "<rdf:Description rdf:about=''><xmp:Thumbnails><rdf:Seq><rdf:li rdf:parseType='Resource'>" +
             "<xmpGImg:format>JPEG</xmpGImg:format><xmpGImg:width>13</xmpGImg:width>" +
             "<xmpGImg:height>9</xmpGImg:height><xmpGImg:image>" + encoded +
             "</xmpGImg:image></rdf:li></rdf:Seq></xmp:Thumbnails></rdf:Description></rdf:RDF>" +
@@ -556,13 +556,21 @@ public sealed class PreviewTests
     public void Jp2ExifUuidPreviewOffsetsIncludeTheOuterBoxes()
     {
         byte[] source = Fixture("b8", "owned-rgb.jp2");
-        byte[] image = ThumbnailTiff(true, Picture(16, 12));
-        MetadataSharp.Core.ExifMetadata exif = ImageMetadata.Read(image).Exif!;
-        byte[] file = MetadataSharp.Formats.Jp2.Jp2Metadata.Write(source, exif);
+        byte[] picture = Picture(16, 12);
+        byte[] tiff = ThumbnailTiff(true, picture);
+        int insertAt = 0;
+        while (insertAt < source.Length)
+        {
+            int length = checked((int)BinaryPrimitives.ReadUInt32BigEndian(source.AsSpan(insertAt, 4)));
+            if (source.AsSpan(insertAt + 4, 4).SequenceEqual("jp2c"u8)) break;
+            insertAt = checked(insertAt + length);
+        }
+        byte[] uuid = Join(Be32(24 + tiff.Length), "uuid"u8.ToArray(), "JpgTiffExif->JP2"u8.ToArray(), tiff);
+        byte[] file = Join(source[..insertAt], uuid, source[insertAt..]);
         PreviewImage preview = Assert.Single(Previews.List(file));
         Assert.Equal("Exif.Thumbnail.JPEGInterchangeFormat", preview.Source);
-        Assert.True(preview.Offset > 0);
-        Assert.Equal(Picture(16, 12), Previews.Extract(file, preview));
+        Assert.Equal((long)(insertAt + 24 + 68), preview.Offset);
+        Assert.Equal(picture, Previews.Extract(file, preview));
     }
 
     // ---- refusals ----

@@ -471,7 +471,13 @@ public sealed class ImageMetadata
         if (parts.Comments is not null) comments = parts.Comments;
         IReadOnlyList<PreviewImage> previews = [];
         try { previews = PreviewReader.List(data, limits); }
-        catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Preview); }
+        catch (MetadataException refusal)
+        {
+            // The CRW metadata reader already reports a malformed CIFF heap. Its preview loader
+            // walks that same heap, so do not report the identical refusal a second time as Preview.
+            if (format != MetadataFormat.Crw || !parts.Errors.Any(error => error.Code == refusal.Code))
+                parts.Refuse(refusal, MetadataFamily.Preview);
+        }
         return new ImageMetadata(format, parts, profile, comments, previews);
     }
 
