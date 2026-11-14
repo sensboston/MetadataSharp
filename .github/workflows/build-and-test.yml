@@ -904,6 +904,14 @@ jobs:
           tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
           echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
           artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      # The corpus is 290 MB from a public mirror: a run re-verifies it against the same pins whether it
+      # came from the cache or from the network.
+      - name: Restore the RAW corpus
+        id: raw-corpus-cache
+        uses: actions/cache@v4
+        with:
+          path: artifacts/parity/raw-corpus
+          key: raw-corpus-${{ hashFiles('tools/parity/raw-corpus.json') }}
       # Every sample is fetched from the URL the manifest pins and checked against the pinned size
       # and SHA-256 before any comparison reads it.
       - name: Download the pinned RAW corpus (CC0 1.0, pinned URL and SHA-256)
@@ -923,7 +931,7 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          python tools/parity/raw_corpus.py explain artifacts/parity/raw-corpus \
+          python tools/parity/raw_corpus.py explain artifacts/parity/raw-corpus --files 8 \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP"
       - name: Preview parity on the RAW corpus
         if: always()
