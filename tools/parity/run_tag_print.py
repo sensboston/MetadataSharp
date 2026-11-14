@@ -420,6 +420,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     verified_raw_displays: Counter[tuple[str, str, str, str]] = Counter()
     raw_display_probes: list[dict[str, Any]] = []
     mismatch_groups: Counter[tuple[str, str, str, str]] = Counter()
+    mismatch_locations: Counter[tuple[str, str, str, str]] = Counter()
     formats: dict[str, Counter[str]] = defaultdict(Counter)
     for candidate in candidates:
         name = candidate.label
@@ -476,9 +477,11 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
                             category = "format"
                         mismatch_groups[(category, key, expected_row["type"],
                                          expected_row["value"] + " => " + actual_row["value"])] += 1
+                        mismatch_locations[(category, key, expected_row["type"], name)] += 1
                     else:
                         side = row["exiv2"] or row["metadatasharp"]
                         mismatch_groups[(row["kind"], side["key"], side["type"], str(side["count"]))] += 1
+                        mismatch_locations[(row["kind"], side["key"], side["type"], name)] += 1
                 problem = {"file": name, "kind": "rows-differ", "exiv2_rows": len(expected),
                            "metadatasharp_rows": len(observed), "rows": rows[:8]}
             else:
@@ -507,7 +510,11 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     grouped_differences = [
         {"category": category, "key": key, "type": type_name, "occurrences": count,
          "examples": [{"difference": detail[:180], "occurrences": occurrences}
-                      for detail, occurrences in mismatch_examples[(category, key, type_name)].most_common(3)]}
+                      for detail, occurrences in mismatch_examples[(category, key, type_name)].most_common(3)],
+         "files": [{"file": name, "occurrences": occurrences}
+                   for (file_category, file_key, file_type, name), occurrences in
+                   sorted(mismatch_locations.items(), key=lambda item: (-item[1], item[0][3]))
+                   if (file_category, file_key, file_type) == (category, key, type_name)][:10]}
         for (category, key, type_name), count in sorted(mismatch_by_key.items(), key=lambda item: (-item[1], item[0]))[:200]
     ]
     refusals = [item for item in differing if item["kind"] in
