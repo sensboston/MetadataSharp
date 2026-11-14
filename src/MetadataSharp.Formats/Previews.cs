@@ -53,8 +53,9 @@ public static class Previews
 
     /// <summary>
     /// Return exactly the bytes of one preview. A JPEG preview must begin with SOI and end with EOI
-    /// (zero padding after EOI is tolerated and returned); uncompressed samples must have the
-    /// length their dimensions imply.
+    /// (zero padding after EOI is tolerated and returned); a range that runs past its picture is cut
+    /// at the picture's last end-of-image marker, because the range is a length the container states
+    /// and not the picture itself; uncompressed samples must have the length their dimensions imply.
     /// </summary>
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.InvalidJpeg"/> or <see cref="MetadataErrorCode.InvalidTiff"/> when the
@@ -64,7 +65,7 @@ public static class Previews
     /// <param name="file">Complete input image file bytes starting at the container signature.</param>
     /// <param name="preview">Preview record returned by <see cref="List"/> whose byte range is to extract.</param>
     /// <param name="limits">Resource budgets applied while parsing image file; null selects the default limits.</param>
-    /// <returns>The selected preview bytes, including tolerated zero padding after a JPEG EOI marker.</returns>
+    /// <returns>The selected preview bytes, including tolerated zero padding after a JPEG EOI marker, and cut at the last EOI marker when the stated range runs past it.</returns>
     public static byte[] Extract(ReadOnlySpan<byte> file, PreviewImage preview, MetadataLimits? limits = null)
     {
         ArgumentNullException.ThrowIfNull(preview);
@@ -96,7 +97,15 @@ public static class Previews
             int last = bytes.Length;
             while (last > 4 && bytes[last - 1] == 0) last--;
             if (bytes[last - 2] != 0xFF || bytes[last - 1] != 0xD9)
-                throw new MetadataException(MetadataErrorCode.InvalidJpeg, "The preview does not end with a JPEG end-of-image marker.", preview.Offset + preview.Length);
+            {
+                // A preview's byte range is a length the container states, not the picture itself: a
+                // range can run past its picture into what follows it. The picture ends at its last
+                // end-of-image marker, and a range that holds none is not a JPEG.
+                int end = LastEndOfImage(bytes);
+                if (end < 4)
+                    throw new MetadataException(MetadataErrorCode.InvalidJpeg, "The preview does not end with a JPEG end-of-image marker.", preview.Offset + preview.Length);
+                return bytes[..end].ToArray();
+            }
         }
         else if (rgb && (preview.Width is not int width || preview.Height is not int height || width <= 0 || height <= 0 ||
             (long)width * height * 3 != preview.Length))
@@ -114,6 +123,16 @@ public static class Previews
         if (file.Length > limits.MaxInputBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The file exceeds the input budget.", 0);
         return limits;
+    }
+
+    // The end of the last picture a byte range holds: in entropy-coded data a 0xFF byte is always
+    // followed by 0x00 or a marker, so the last 0xFF 0xD9 pair is an end-of-image marker.
+    private static int LastEndOfImage(ReadOnlySpan<byte> bytes)
+    {
+        for (int i = bytes.Length - 2; i >= 2; i--)
+            if (bytes[i] == 0xFF && bytes[i + 1] == 0xD9)
+                return i + 2;
+        return 0;
     }
 
     private static long Area(PreviewImage preview) =>
