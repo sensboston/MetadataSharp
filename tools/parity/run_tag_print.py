@@ -809,6 +809,9 @@ def verify_oracle(tree: Path, executable: str) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Compare MetadataSharp's tag output with pinned exiv2 -pt.")
     parser.add_argument("--tree", type=Path, required=True, help="pinned Exiv2 checkout")
+    parser.add_argument("--fixtures", type=Path, action="append", default=[],
+                        help="extra files to compare, against the pinned tool's live -pt output "
+                             "(the pinned RAW corpus, tools/parity/raw-corpus.json)")
     parser.add_argument("--exiv2", required=True, help="pinned Exiv2 executable")
     parser.add_argument("--dump-command", required=True, help="MetadataSharp.Dump command")
     parser.add_argument("--out", type=Path, default=ROOT / "artifacts/parity/tag-print")
@@ -816,6 +819,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     verify_oracle(args.tree, args.exiv2)
     candidates, unmatched = corpus.discover_exiv2(args.tree)
+    if args.fixtures:
+        candidates = candidates + corpus.discover_generated(*args.fixtures)
     paths = [candidate.path for candidate in candidates]
     dump = run_dump(shlex.split(args.dump_command), paths)
     expected_paths = {path.as_posix() for path in paths}

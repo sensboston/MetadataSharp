@@ -44,7 +44,10 @@ run, annotate = sync.run, sync.annotate
 
 MAX_BYTES = 24 * 1024 * 1024
 EXTENSIONS = {".jpg": "jpg", ".jpeg": "jpg", ".cr2": "cr2", ".nef": "nef", ".arw": "arw", ".pef": "pef",
-              ".orf": "orf", ".dng": "dng", ".srw": "srw", ".sr2": "sr2", ".nrw": "nrw"}
+              ".orf": "orf", ".dng": "dng", ".srw": "srw", ".sr2": "sr2", ".nrw": "nrw",
+              # Read-only families are read here too: a note this library does not carry has to be a
+              # documented skip with a reason, not a silent loss.
+              ".mrw": "mrw", ".raf": "raf", ".crw": "crw", ".rw2": "rw2"}
 
 # The tags whose value is the note itself: its bytes, which an edit changes.
 HOLDERS = ("Exif.Photo.MakerNote", "Exif.Image.DNGPrivateData")

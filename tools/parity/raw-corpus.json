@@ -1,0 +1,192 @@
+{
+  "provenance": "Raw camera samples from raw.pixls.us, which dedicates every uploaded sample to CC0 1.0 (public domain). The files are never committed to this repository: tools/parity/raw_corpus.py downloads them from the URL recorded here and refuses a file whose size or SHA-256 differs from the pin. Sizes and hashes are taken from the site's own file list (https://raw.pixls.us/data/filelist.sha256) when the entry was pinned.",
+  "license": "CC0-1.0",
+  "license_source": "https://raw.pixls.us/",
+  "mirror": "https://raw.pixls.us/data/",
+  "files": {
+    "canon-eos-10d-crw_7673.crw": {
+      "url": "https://raw.pixls.us/data/Canon/EOS%2010D/CRW_7673.CRW",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Canon EOS 10D",
+      "format": "CRW",
+      "source_file": "CRW_7673.CRW"
+    },
+    "canon-eos-300d-crw_8395.crw": {
+      "url": "https://raw.pixls.us/data/Canon/EOS%20300D/CRW_8395.CRW",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Canon EOS 300D",
+      "format": "CRW",
+      "source_file": "CRW_8395.CRW"
+    },
+    "canon-eos-20d-img_3893.cr2": {
+      "url": "https://raw.pixls.us/data/Canon/EOS%2020D/IMG_3893.CR2",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Canon EOS 20D",
+      "format": "CR2",
+      "source_file": "IMG_3893.CR2"
+    },
+    "canon-eos-350d-img_1707.cr2": {
+      "url": "https://raw.pixls.us/data/Canon/EOS%20350D/IMG_1707.CR2",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Canon EOS 350D",
+      "format": "CR2",
+      "source_file": "IMG_1707.CR2"
+    },
+    "nikon-d50-dsc_5155.nef": {
+      "url": "https://raw.pixls.us/data/Nikon/D50/DSC_5155.NEF",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Nikon D50",
+      "format": "NEF",
+      "source_file": "DSC_5155.NEF"
+    },
+    "nikon-d70-20170902_0047.nef": {
+      "url": "https://raw.pixls.us/data/Nikon/D70/20170902_0047.NEF",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Nikon D70",
+      "format": "NEF",
+      "source_file": "20170902_0047.NEF"
+    },
+    "sony-a100-_dsc0258.arw": {
+      "url": "https://raw.pixls.us/data/Sony/DSLR-A100/_DSC0258.ARW",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Sony DSLR-A100",
+      "format": "ARW",
+      "source_file": "_DSC0258.ARW"
+    },
+    "sony-a700-dsc07249.arw": {
+      "url": "https://raw.pixls.us/data/Sony/DSLR-A700/DSC07249.ARW",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Sony DSLR-A700",
+      "format": "ARW",
+      "source_file": "DSC07249.ARW"
+    },
+    "olympus-e1-e_1__c106743_gredos.orf": {
+      "url": "https://raw.pixls.us/data/Olympus/E-1/E_1__C106743_gredos.ORF",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Olympus E-1",
+      "format": "ORF",
+      "source_file": "E_1__C106743_gredos.ORF"
+    },
+    "olympus-e500-_1010010.orf": {
+      "url": "https://raw.pixls.us/data/Olympus/E-500/_1010010.ORF",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Olympus E-500",
+      "format": "ORF",
+      "source_file": "_1010010.ORF"
+    },
+    "pentax-k10d-_igp7284.pef": {
+      "url": "https://raw.pixls.us/data/Pentax/K10D/_IGP7284.PEF",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Pentax K10D",
+      "format": "PEF",
+      "source_file": "_IGP7284.PEF"
+    },
+    "pentax-k100d-imgp1754.pef": {
+      "url": "https://raw.pixls.us/data/Pentax/K100D/IMGP1754.PEF",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Pentax K100D",
+      "format": "PEF",
+      "source_file": "IMGP1754.PEF"
+    },
+    "panasonic-g1-raw_panasonic_g1.rw2": {
+      "url": "https://raw.pixls.us/data/Panasonic/DMC-G1/RAW_PANASONIC_G1.RW2",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Panasonic DMC-G1",
+      "format": "RW2",
+      "source_file": "RAW_PANASONIC_G1.RW2"
+    },
+    "panasonic-lx3-p1020593.rw2": {
+      "url": "https://raw.pixls.us/data/Panasonic/DMC-LX3/P1020593.RW2",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Panasonic DMC-LX3",
+      "format": "RW2",
+      "source_file": "P1020593.RW2"
+    },
+    "sony-r1-_dsc1477.sr2": {
+      "url": "https://raw.pixls.us/data/Sony/DSC-R1/_DSC1477.SR2",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Sony DSC-R1",
+      "format": "SR2",
+      "source_file": "_DSC1477.SR2"
+    },
+    "samsung-nx10-sam_3630.srw": {
+      "url": "https://raw.pixls.us/data/Samsung/NX10/SAM_3630.SRW",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Samsung NX10",
+      "format": "SRW",
+      "source_file": "SAM_3630.SRW"
+    },
+    "samsung-nx100-raw_samsung_nx100.srw": {
+      "url": "https://raw.pixls.us/data/Samsung/NX100/RAW_SAMSUNG_NX100.SRW",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Samsung NX100",
+      "format": "SRW",
+      "source_file": "RAW_SAMSUNG_NX100.SRW"
+    },
+    "leica-m8-l1030132.dng": {
+      "url": "https://raw.pixls.us/data/Leica/M8/L1030132.DNG",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Leica M8",
+      "format": "DNG",
+      "source_file": "L1030132.DNG"
+    },
+    "pentax-k10d-imgp5398.dng": {
+      "url": "https://raw.pixls.us/data/Pentax/K10D/IMGP5398.DNG",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Pentax K10D",
+      "format": "DNG",
+      "source_file": "IMGP5398.DNG"
+    },
+    "minolta-a1-raw_minolta_a1.mrw": {
+      "url": "https://raw.pixls.us/data/Minolta/DiMAGE%20A1/RAW_MINOLTA_A1.MRW",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Minolta DiMAGE A1",
+      "format": "MRW",
+      "source_file": "RAW_MINOLTA_A1.MRW"
+    },
+    "minolta-a2-pict0881.mrw": {
+      "url": "https://raw.pixls.us/data/Minolta/DiMAGE%20A2/PICT0881.MRW",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Minolta DiMAGE A2",
+      "format": "MRW",
+      "source_file": "PICT0881.MRW"
+    },
+    "fuji-s2pro-dscf0002.raf": {
+      "url": "https://raw.pixls.us/data/Fujifilm/FinePix%20S2Pro/DSCF0002.RAF",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Fujifilm FinePix S2Pro",
+      "format": "RAF",
+      "source_file": "DSCF0002.RAF"
+    },
+    "fuji-s3pro-dscf3694.raf": {
+      "url": "https://raw.pixls.us/data/Fujifilm/FinePix%20S3Pro/DSCF3694.RAF",
+      "bytes": null,
+      "sha256": null,
+      "camera": "Fujifilm FinePix S3Pro",
+      "format": "RAF",
+      "source_file": "DSCF3694.RAF"
+    }
+  }
+}
