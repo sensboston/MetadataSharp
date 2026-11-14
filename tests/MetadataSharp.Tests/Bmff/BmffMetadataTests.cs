@@ -178,7 +178,9 @@ public sealed class BmffMetadataTests
         BmffMetadata metadata = BmffMetadata.Read(Build((uint)(Build(0).Length - item.Length)));
         Assert.NotNull(metadata.Exif);
         Assert.False(metadata.Exif.IsEditable);
-        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), Assert.Single(metadata.Exif.Entries).Key);
+        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), metadata.Exif.Entries[0].Key);
+        Assert.Equal(TiffFieldType.Unknown, metadata.Exif.Entries[1].Value.FieldType);
+        Assert.Equal(14, metadata.Exif.Entries[1].Value.FieldTypeCode);
         Assert.True(BmffMetadata.Read(ExifFile()).Exif!.IsEditable);
     }
 

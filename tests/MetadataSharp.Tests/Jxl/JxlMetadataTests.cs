@@ -120,7 +120,8 @@ public sealed class JxlMetadataTests
     [Fact]
     public void ABlockOnlyTheReadOnlyRulesAcceptIsNotEditable()
     {
-        // Field type 13 is not one of the twelve: the entry is left out, and the block cannot be written back.
+        // Field type 13 is not one of the twelve: the entry is read one byte per element, and the block
+        // cannot be written back.
         byte[] odd = TiffBlock(true, Shorts(0x0112, 6), Raw(0x0200, 13, [1, 2, 3, 4]));
 
         ExifMetadata plain = Exif(Container(ExifBox(Block())));
@@ -128,7 +129,9 @@ public sealed class JxlMetadataTests
 
         Assert.True(plain.IsEditable);
         Assert.False(read.IsEditable);
-        Assert.Equal(new[] { Key(Primary, 0x0112) }, read.Entries.Select(entry => entry.Key));
+        Assert.Equal(new[] { Key(Primary, 0x0112), Key(Primary, 0x0200) }, read.Entries.Select(entry => entry.Key));
+        Assert.Equal(TiffFieldType.Unknown, read.Entries[1].Value.FieldType);
+        Assert.Equal(13, read.Entries[1].Value.FieldTypeCode);
     }
 
     [Fact]

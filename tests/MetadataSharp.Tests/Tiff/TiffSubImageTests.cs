@@ -104,7 +104,7 @@ public sealed class TiffSubImageTests
     }
 
     [Fact]
-    public void AnImageDirectoryThatRepeatsAnotherOffsetIsRefused()
+    public void AnImageDirectoryThatRepeatsAnotherOffsetIsListedOnce()
     {
         var file = new Sample(1024).Header();
         file.Directory(8, 0, (ImageWidth, 4, 1, 32), (SubIfds, 4, 2, 64));
@@ -112,7 +112,9 @@ public sealed class TiffSubImageTests
         file.U32(68, 200);
         file.Directory(200, 0, (ImageWidth, 4, 1, 16));
 
-        MetadataException failure = Assert.Throws<MetadataException>(() => TiffExif.Read(file.Bytes));
-        Assert.Equal(MetadataErrorCode.InvalidExif, failure.Code);
+        // The tag names one picture twice; the picture is listed once and the metadata is unaffected.
+        ExifMetadata metadata = TiffExif.Read(file.Bytes);
+        Assert.Equal(new[] { 1 }, metadata.SubImages.Select(image => image.Index));
+        Assert.Single(metadata.SubImages[0].Entries);
     }
 }
