@@ -56,6 +56,7 @@ jobs:
         run: dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- --root src/MetadataSharp.Core --check-public --report artifacts/doc-inventory/baseline-core.json
       - name: Report Core documentation inventory
         if: always()
+        shell: bash
         run: |
           if [[ -f artifacts/doc-inventory/baseline-core.json ]]; then
             python tools/MetadataSharp.DocInventory/report.py core artifacts/doc-inventory/baseline-core.json

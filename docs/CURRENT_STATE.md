@@ -45,6 +45,13 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - Parity harness: `tools/MetadataSharp.Dump` vs the pinned exiv2 0.28.9 corpus (CI job
   `differential-parity`). Run 42962213342, values agreeing of reference keys: EXIF 29,768 of
   34,821; XMP 1,895 of 2,641; IPTC 68 of 319 (no IPTC API for PNG or sidecars; typed values raw).
+- Tag print parity (PR #129, run 43558329171): the pinned `-pt` gate compares 329 corpus files by the
+  reference's print columns (key 44, field type 9, count 3, then two spaces) and finds no differing
+  row. Reference rows the local reader does not answer are named by file and key in
+  `docs/usage/TAG_PRINT_REFUSAL_CATALOG.md` (the sidecar conversion, the SubIFD directories of a DNG,
+  a repeated MakerNote tag ID, an entry of an unknown field type); code-to-name pairs where the
+  vocabularies differ are listed with their occurrence counts. A `UserComment` body without a
+  printable character is no longer interpreted.
 - Interpreted values: `ExifTags.Interpret` for standard EXIF tags (short labels for enumerated
   values, rationals with units, GPS, Flash, versions, UserComment, `(raw)` for an unreadable value),
   the dump's sixth column, measured apart from raw values. Run 42971951262: 10,975 of 11,382 EXIF

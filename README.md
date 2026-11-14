@@ -51,8 +51,10 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
   authored EXV ICC representation; PSD ICC remains on MetadataSharp's format-specific tests.
 - `MetadataTagCatalog` exposes the checked Exif/TIFF and MakerNote group/tag identities plus the
   registered XMP schema/property names and prefix aliases. Descriptive prose in the catalog is written
-  locally and is not copied from Exiv2. This lookup catalog is not a promise that every Exiv2 `-pt` / `-pv`
-  interpretation is implemented; the pinned `-pt` differential gate reports output gaps separately.
+  locally and is not copied from Exiv2. The pinned `-pt` differential gate compares 329 corpus files
+  column by column with Exiv2 0.28.9 and reports no differing row (run 43558329171); the reference rows
+  the local reader does not answer, and the exact code-to-name pairs where the two vocabularies differ,
+  are named by file and key in the [tag print refusal catalog](https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/usage/TAG_PRINT_REFUSAL_CATALOG.md).
 - IPTC text reads select a packet-wide ASCII, UTF-8 or ISO-8859-1 fallback for display while preserving
   the source bytes; malformed data under an explicit UTF-8 marker remains an error. EXIF `UserComment`
   interpretation accepts an optional caller-supplied `Encoding` for Exiv2 `-n`-style decoding; neither
