@@ -67,6 +67,8 @@ _PREVIEW_FIXTURE_SUFFIXES = frozenset({
 # carrier fixture (owned-vector.eps) is covered by this gate from b8, while these files stay in the
 # focused library tests instead of being submitted to an oracle that rejects their page framing.
 _METADATA_ONLY_EPS_FIXTURE_DIRS = frozenset({"b11eps"})
+# Exiv2 0.28.9 does not identify standalone JPEG XL codestreams (only the container fixture).
+_REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES = frozenset({"owned-codestream.jxl"})
 
 
 class PreviewParityError(Exception):
@@ -513,6 +515,8 @@ def main(argv: list[str] | None = None) -> int:
                 raise PreviewParityError(f"two files are named {candidate.label}")
             if (candidate.path.suffix.lower() == ".eps"
                     and candidate.path.parent.name in _METADATA_ONLY_EPS_FIXTURE_DIRS):
+                continue
+            if candidate.label in _REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES:
                 continue
             paths[candidate.label] = candidate.path
         if not paths:
