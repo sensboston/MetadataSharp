@@ -720,34 +720,26 @@ internal ref struct PreviewScanner
         long compression = Number(frame, entries, 0x0103, 1);
         bool reduced = thumbnail || (Number(frame, entries, 0x00FE, 0) & 1) == 1;
         Entry? strips = Find(entries, 0x0111), counts = Find(entries, 0x0117);
-        // Exiv2's RW2 loader reads PanasonicRaw.PreviewImage, not a generic linked thumbnail IFD.
-        // Keep scanning its EXIF/MakerNote directories, but don't promote the linked IFD1.
-        if (!panasonicRaw || !thumbnail)
+        // The linked directory of an RW2 is the thumbnail the file itself names, in the coordinates of the
+        // file: the picture the raw directory embeds is listed beside it, not instead of it.
+        if (offset >= 0 && length >= 0)
         {
-            if (offset >= 0 && length >= 0)
-            {
-                Jpeg(frame.Origin + offset, length, "Exif." + group + ".JPEGInterchangeFormat", tableStart, tableEnd);
-            }
-            else if (strips is Entry strip && counts is Entry count && strip.Count == count.Count && strip.Count != 0)
-            {
-                // A reduced image, or the old-style JPEG image a CR2 keeps in its first directory.
-                if ((compression == 6 || (compression == 7 && reduced)) && strip.Count == 1)
-                    Jpeg(frame.Origin + Element(frame, strip, 0), Element(frame, count, 0), "Exif." + group + ".StripOffsets", tableStart, tableEnd);
-                else if (compression == 1 && reduced)
-                    Samples(frame, entries, strip, count, "Exif." + group + ".StripOffsets", tableStart, tableEnd);
-            }
+            Jpeg(frame.Origin + offset, length, "Exif." + group + ".JPEGInterchangeFormat", tableStart, tableEnd);
+        }
+        else if (strips is Entry strip && counts is Entry count && strip.Count == count.Count && strip.Count != 0)
+        {
+            // A reduced image, or the old-style JPEG image a CR2 keeps in its first directory.
+            if ((compression == 6 || (compression == 7 && reduced)) && strip.Count == 1)
+                Jpeg(frame.Origin + Element(frame, strip, 0), Element(frame, count, 0), "Exif." + group + ".StripOffsets", tableStart, tableEnd);
+            else if (compression == 1 && reduced)
+                Samples(frame, entries, strip, count, "Exif." + group + ".StripOffsets", tableStart, tableEnd);
         }
 
         // A Panasonic RW2 keeps the picture it embeds in its raw directory, as the field the
         // reference calls PanasonicRaw.PreviewImage, and has no EXIF directory of its own to hold a note.
         if (panasonicRaw && first && Find(entries, 0x002E) is Entry embedded &&
             (embedded.Type == 1 || embedded.Type == 7) && embedded.Count != 0)
-        {
             Jpeg(embedded.At, embedded.Count, "Exif.PanasonicRaw.PreviewImage", tableStart, tableEnd);
-            // The picture is a camera's JPEG, and the addresses in its EXIF are the file's own: the
-            // thumbnail it names is a range of the file, and is listed where the file puts it.
-            PictureThumbnail(embedded.At, (int)embedded.Count);
-        }
 
         if (first)
         {
@@ -1112,10 +1104,12 @@ internal ref struct PreviewScanner
         long offset = Number(frame, entries, 0x0088), length = Number(frame, entries, 0x0089);
         if (offset <= 0 || length <= 0) return;
         // The note counts its thumbnail from the start of the file, which is what the reference reads; a
-        // writer that counts from the structure the note lives in is read that way when the other fails.
+        // writer that counts from the structure the note lives in, or from the note itself, is read that
+        // way when the reading before it holds nothing.
         string source = "Exif." + group + ".ThumbnailOffset";
         if (Jpeg(frame.Pointer + offset, length, source, tableStart, tableEnd)) return;
-        if (frame.Pointer != frame.Origin) Jpeg(frame.Origin + offset, length, source, tableStart, tableEnd);
+        if (frame.Pointer != frame.Origin && Jpeg(frame.Origin + offset, length, source, tableStart, tableEnd)) return;
+        Jpeg(tableStart + offset, length, source, tableStart, tableEnd);
     }
 
     // Resolve a paired TIFF offset/length tag only when its range stays inside the owning table.
@@ -1500,49 +1494,6 @@ internal ref struct PreviewScanner
     {
         if (offset < 0 || length <= 0 || length > int.MaxValue || offset > data.Length - length) return false;
         return offset >= tableEnd || offset + length <= tableStart;
-    }
-
-    /// <summary>
-    /// The thumbnail of a picture embedded in a file, when the picture's own EXIF names one: the range it
-    /// states is read in the coordinates of the file that holds it, which is how the reference reads it,
-    /// and in the coordinates of the picture when the file's own reading holds no stream.
-    /// </summary>
-    private void PictureThumbnail(int at, int length)
-    {
-        if (length < 4 || at < 0 || at > data.Length - length) return;
-        int end = at + length;
-        for (int position = at + 2, count = 0; count < limits.MaxSegments && end - position >= 4 && data[position] == 0xFF; count++)
-        {
-            byte marker = data[position + 1];
-            if (marker == 0xFF) { position++; continue; }
-            if (marker is 0x01 or (>= 0xD0 and <= 0xD7)) { position += 2; continue; }
-            if (marker is 0xD8 or 0xD9 or 0xDA) return;
-            int size = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(position + 2, 2));
-            if (size < 2 || size > end - position - 2) return;
-            int payload = position + 4, segmentEnd = position + 2 + size;
-            if (marker == 0xE1 && segmentEnd - payload >= 14 && data.Slice(payload, 6).SequenceEqual("Exif\0\0"u8))
-            {
-                PictureThumbnailOf(payload + 6, segmentEnd, at);
-                return;
-            }
-            position = segmentEnd;
-        }
-    }
-
-    // The second directory of the EXIF block of an embedded picture, in the coordinates of the file and,
-    // when that reading holds no stream, in the coordinates of the picture.
-    private void PictureThumbnailOf(int tiff, int end, int picture)
-    {
-        if (end - tiff < 8 || !Order(data.Slice(tiff, 2), out bool little)) return;
-        var probe = new Frame(0, data.Length, little);
-        var entries = new List<Entry>();
-        if (!Directory(probe, tiff + U32(tiff + 4, little), entries, out _, out long next) || next == 0) return;
-        var thumbnail = new List<Entry>();
-        if (!Directory(probe, tiff + next, thumbnail, out _, out _)) return;
-        long offset = Number(probe, thumbnail, 0x0201), length = Number(probe, thumbnail, 0x0202);
-        if (offset <= 0 || length <= 0) return;
-        if (Jpeg(offset, length, "Exif.Thumbnail.JPEGInterchangeFormat", 0, 0)) return;
-        Jpeg(picture + offset, length, "Exif.Thumbnail.JPEGInterchangeFormat", 0, 0);
     }
 
     /// <summary>List the JPEG stream a range holds, and say whether it is one.</summary>
