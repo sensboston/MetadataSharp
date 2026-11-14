@@ -9,6 +9,14 @@ namespace MetadataSharp.Core.Iptc;
 /// </summary>
 public sealed class IptcDatasetDefinition
 {
+    /// <summary>Builds one immutable IPTC dataset schema row from the verified local definition table.</summary>
+    /// <param name="key">The record and dataset number.</param>
+    /// <param name="name">The local name for the dataset.</param>
+    /// <param name="rule">The validation rule associated with the dataset.</param>
+    /// <param name="minBytes">The minimum encoded length.</param>
+    /// <param name="maxBytes">The maximum encoded length.</param>
+    /// <param name="repeatable">Whether multiple occurrences are permitted.</param>
+    /// <param name="allowed">The set of restricted values, or an empty array.</param>
     internal IptcDatasetDefinition(IptcDatasetKey key, string name, IptcRule rule, int minBytes, int maxBytes, bool repeatable, string[] allowed)
     {
         Key = key; Name = name; Rule = rule; MinBytes = minBytes; MaxBytes = maxBytes; IsRepeatable = repeatable;

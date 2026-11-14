@@ -129,13 +129,22 @@ def parse_dump(text: str) -> dict[str, dict[str, Any]]:
 
 
 def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Compare tag records as a multiset; iterator order is not a tag-table fact."""
+    def signature(row: dict[str, Any]) -> tuple[Any, ...]:
+        return tuple(row.get(field) for field in ("key", "type", "count", "value"))
+
+    expected_counts = Counter(signature(row) for row in reference)
+    actual_counts = Counter(signature(row) for row in actual)
+    expected_rows = {signature(row): row for row in reference}
+    actual_rows = {signature(row): row for row in actual}
     differences: list[dict[str, Any]] = []
-    width = max(len(reference), len(actual))
-    for index in range(width):
-        expected = reference[index] if index < len(reference) else None
-        observed = actual[index] if index < len(actual) else None
-        if expected != observed:
-            differences.append({"row": index + 1, "exiv2": expected, "metadatasharp": observed})
+    for item in sorted(expected_counts.keys() | actual_counts.keys(), key=repr):
+        missing = expected_counts[item] - actual_counts[item]
+        extra = actual_counts[item] - expected_counts[item]
+        for _ in range(missing):
+            differences.append({"kind": "missing", "exiv2": expected_rows[item], "metadatasharp": None})
+        for _ in range(extra):
+            differences.append({"kind": "extra", "exiv2": None, "metadatasharp": actual_rows[item]})
     return differences
 
 
@@ -156,7 +165,7 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
                                          for key, value in record.items()}
                 sample["rows"].append(compact)
         samples.append(sample)
-    return {"totals": report["totals"], "formats": report["formats"],
+    return {"totals": report["totals"], "failure_kinds": report["failure_kinds"], "formats": report["formats"],
             "exceptions": report["exceptions"], "differing_total": len(report["differing"]),
             "differing_sample": samples}
 
@@ -201,6 +210,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     ]
     differing: list[dict[str, Any]] = []
     totals: Counter[str] = Counter()
+    failure_kinds: Counter[str] = Counter()
     formats: dict[str, Counter[str]] = defaultdict(Counter)
     for candidate in candidates:
         name = candidate.label
@@ -232,9 +242,10 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
                 format_counts["matched_rows"] += len(expected)
         if problem:
             totals["failed_files"] += 1
+            failure_kinds[problem["kind"]] += 1
             format_counts["failed_files"] += 1
             differing.append(problem)
-    return {"kind": "TagPrint", "totals": dict(totals),
+    return {"kind": "TagPrint", "totals": dict(totals), "failure_kinds": dict(sorted(failure_kinds.items())),
             "formats": {key: dict(value) for key, value in sorted(formats.items())},
             "exceptions": exceptions, "differing": differing}
 

@@ -33,6 +33,17 @@ class TagPrintProtocolTests(unittest.TestCase):
             {"key": "Iptc.Application2.Caption", "type": "String", "count": 1, "raw": "x", "translated": "x"},
         ]))
 
+    def test_comparison_ignores_record_iteration_order_but_not_values(self) -> None:
+        expected = [
+            {"key": "Exif.Image.Make", "type": "Ascii", "count": 1, "value": "Camera"},
+            {"key": "Exif.Image.Model", "type": "Ascii", "count": 1, "value": "Body"},
+        ]
+        self.assertEqual([], gate.compare_rows(expected, list(reversed(expected))))
+        changed = [expected[0], {**expected[1], "value": "Other body"}]
+        differences = gate.compare_rows(expected, changed)
+        self.assertEqual(2, len(differences))
+        self.assertEqual({"missing", "extra"}, {row["kind"] for row in differences})
+
     def test_dump_protocol_unescapes_records_and_rejects_open_or_malformed_blocks(self) -> None:
         parsed = gate.parse_dump("FILE\t/tmp/a\\tb.jpg\nTAG\tExif.Image.Make\tAscii\t2\tA\\\\B\t\nSTATUS\tok\n")
         self.assertEqual("A\\B", parsed["/tmp/a\tb.jpg"]["rows"][0]["raw"])

@@ -77,6 +77,10 @@ public static partial class MetadataTagCatalog
     public static string ReferenceVersion => Data.Reference;
 
     /// <summary>Every named tag of a standard Exif/TIFF or MakerNote group, sorted by ID in each group.</summary>
+    /// <param name="group">The Exiv2-compatible group name.</param>
+    /// <returns>The tags listed for the group, or an empty list when the group is not registered.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="group"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="group"/> is empty.</exception>
     public static IReadOnlyList<NumberedTagDefinition> Tags(string group)
     {
         ArgumentException.ThrowIfNullOrEmpty(group);
@@ -89,6 +93,8 @@ public static partial class MetadataTagCatalog
     /// <param name="id">The numeric tag ID.</param>
     /// <param name="definition">Receives the definition, or null if this table has no such tag.</param>
     /// <returns>True when the group and tag ID are listed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="group"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="group"/> is empty.</exception>
     public static bool TryGet(string group, ushort id, out NumberedTagDefinition? definition)
     {
         ArgumentException.ThrowIfNullOrEmpty(group);
@@ -102,6 +108,8 @@ public static partial class MetadataTagCatalog
     /// <param name="propertyName">The local property name.</param>
     /// <param name="definition">Receives the property definition, or null if the pair is not listed.</param>
     /// <returns>True when the schema and property are listed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="prefix"/> or <paramref name="propertyName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="prefix"/> or <paramref name="propertyName"/> is empty.</exception>
     public static bool TryGetXmp(string prefix, string propertyName, out XmpTagDefinition? definition)
     {
         ArgumentException.ThrowIfNullOrEmpty(prefix);
@@ -142,6 +150,7 @@ public static partial class MetadataTagCatalog
         return spaced.Length == 0 ? name : char.ToUpperInvariant(spaced[0]) + spaced[1..];
     }
 
+    /// <summary>The deserialization shape of the owned, pinned registry data.</summary>
     private sealed class CatalogData
     {
         public string Reference { get; set; } = "";
@@ -183,6 +192,7 @@ public static partial class MetadataTagCatalog
         public List<string> Names { get; set; } = [];
     }
 
+    /// <summary>One XMP namespace's URI, prefix aliases and property rows in the embedded catalog.</summary>
     private sealed class CatalogXmpSchema
     {
         public string Uri { get; set; } = "";
