@@ -50,6 +50,8 @@ public static partial class ExifTags
     public static string? Interpret(ExifTagKey key, ExifValue value) => Interpret(key, value, null);
 
     /// <inheritdoc cref="Interpret(ExifTagKey, ExifValue)"/>
+    /// <param name="key">The directory and tag the value was read from.</param>
+    /// <param name="value">The raw value.</param>
     /// <param name="options">Display-time charset choices; null uses the file's own byte-order and charset markers.</param>
     public static string? Interpret(ExifTagKey key, ExifValue value, ExifInterpretationOptions? options)
     {
@@ -83,6 +85,8 @@ public static partial class ExifTags
     public static string? Interpret(ExifMetadata metadata, ExifTagKey key) => Interpret(metadata, key, null);
 
     /// <inheritdoc cref="Interpret(ExifMetadata, ExifTagKey)"/>
+    /// <param name="metadata">The snapshot the tag belongs to.</param>
+    /// <param name="key">The directory and tag to interpret.</param>
     /// <param name="options">Display-time charset choices; null uses the file's own byte-order and charset markers.</param>
     public static string? Interpret(ExifMetadata metadata, ExifTagKey key, ExifInterpretationOptions? options)
     {
