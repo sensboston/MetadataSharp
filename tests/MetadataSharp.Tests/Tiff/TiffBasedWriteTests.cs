@@ -182,8 +182,12 @@ public sealed class TiffBasedWriteTests
         bool big = fixture.Big;
         foreach ((int start, int length) in fixture.Image)
             Assert.True(source.AsSpan(start, length).SequenceEqual(output.AsSpan(start, length)), $"Image data at {start} changed.");
-        Assert.True(source.AsSpan(fixture.Note.Start, fixture.Note.Length)
-            .SequenceEqual(output.AsSpan(fixture.Note.Start, fixture.Note.Length)), "The MakerNote changed.");
+        if (fixture.Note.Length != 0)
+            Assert.True(source.AsSpan(fixture.Note.Start, fixture.Note.Length)
+                .SequenceEqual(output.AsSpan(fixture.Note.Start, fixture.Note.Length)), "The MakerNote changed.");
+        if (fixture.PrivateData.Length != 0)
+            Assert.True(source.AsSpan(fixture.PrivateData.Start, fixture.PrivateData.Length)
+                .SequenceEqual(output.AsSpan(fixture.PrivateData.Start, fixture.PrivateData.Length)), "DNGPrivateData changed.");
 
         ExifMetadata before = TiffExif.Read(source), after = TiffExif.Read(output);
         foreach (ExifEntry entry in before.Entries)
@@ -201,13 +205,19 @@ public sealed class TiffBasedWriteTests
         if (strips >= 0)
             Assert.Equal(TiffBasedFixture.U32(source, big, strips + 8), TiffBasedFixture.U32(output, big, PrimaryEntry(output, big, 0x0111) + 8));
         int exif = (int)TiffBasedFixture.U32(output, big, PrimaryEntry(output, big, 0x8769) + 8);
-        int note = TiffBasedFixture.EntryAt(output, big, exif, 0x927C);
-        if (note < 0) note = TiffBasedFixture.EntryAt(output, big, primary, 0xC634);
         if (fixture.Note.Length != 0)
         {
+            int note = TiffBasedFixture.EntryAt(output, big, exif, 0x927C);
             Assert.True(note >= 0);
             Assert.Equal(fixture.Note.Length, TiffBasedFixture.U32(output, big, note + 4));
             Assert.Equal(fixture.Note.Start, TiffBasedFixture.U32(output, big, note + 8));
+        }
+        if (fixture.PrivateData.Length != 0)
+        {
+            int privateData = PrimaryEntry(output, big, 0xC634);
+            Assert.True(privateData >= 0);
+            Assert.Equal(fixture.PrivateData.Length, TiffBasedFixture.U32(output, big, privateData + 4));
+            Assert.Equal(fixture.PrivateData.Start, TiffBasedFixture.U32(output, big, privateData + 8));
         }
     }
 
