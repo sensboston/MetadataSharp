@@ -282,7 +282,7 @@ def oracle_offsets(exiv2_command: list[str], path: Path, previews: list[Preview]
     """
     with tempfile.TemporaryDirectory(prefix="metadata-preview-") as temporary:
         try:
-            finished = subprocess.run(exiv2_command + ["-f", "-ep", str(path.resolve())], cwd=temporary,
+            finished = subprocess.run(exiv2_command + ["-f", "-l", temporary, "-ep", str(path.resolve())], cwd=temporary,
                                       capture_output=True, text=True, encoding="utf-8", errors="replace",
                                       timeout=300, check=False)
         except FileNotFoundError as error:
