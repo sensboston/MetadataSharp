@@ -1504,7 +1504,8 @@ internal ref struct PreviewScanner
 
     /// <summary>
     /// The thumbnail of a picture embedded in a file, when the picture's own EXIF names one: the range it
-    /// states is read in the coordinates of the file that holds it, which is how the reference reads it.
+    /// states is read in the coordinates of the file that holds it, which is how the reference reads it,
+    /// and in the coordinates of the picture when the file's own reading holds no stream.
     /// </summary>
     private void PictureThumbnail(int at, int length)
     {
@@ -1521,15 +1522,16 @@ internal ref struct PreviewScanner
             int payload = position + 4, segmentEnd = position + 2 + size;
             if (marker == 0xE1 && segmentEnd - payload >= 14 && data.Slice(payload, 6).SequenceEqual("Exif\0\0"u8))
             {
-                PictureThumbnailOf(payload + 6, segmentEnd);
+                PictureThumbnailOf(payload + 6, segmentEnd, at);
                 return;
             }
             position = segmentEnd;
         }
     }
 
-    // The second directory of the EXIF block of an embedded picture, in the coordinates of the file.
-    private void PictureThumbnailOf(int tiff, int end)
+    // The second directory of the EXIF block of an embedded picture, in the coordinates of the file and,
+    // when that reading holds no stream, in the coordinates of the picture.
+    private void PictureThumbnailOf(int tiff, int end, int picture)
     {
         if (end - tiff < 8 || !Order(data.Slice(tiff, 2), out bool little)) return;
         var probe = new Frame(0, data.Length, little);
@@ -1538,8 +1540,9 @@ internal ref struct PreviewScanner
         var thumbnail = new List<Entry>();
         if (!Directory(probe, tiff + next, thumbnail, out _, out _)) return;
         long offset = Number(probe, thumbnail, 0x0201), length = Number(probe, thumbnail, 0x0202);
-        if (offset > 0 && length > 0)
-            Jpeg(offset, length, "Exif.Thumbnail.JPEGInterchangeFormat", 0, 0);
+        if (offset <= 0 || length <= 0) return;
+        if (Jpeg(offset, length, "Exif.Thumbnail.JPEGInterchangeFormat", 0, 0)) return;
+        Jpeg(picture + offset, length, "Exif.Thumbnail.JPEGInterchangeFormat", 0, 0);
     }
 
     /// <summary>List the JPEG stream a range holds, and say whether it is one.</summary>

@@ -455,7 +455,8 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
         totals["files_equal"] += 1 if not outcome["missing"] and not outcome["extra"] else 0
         totals["files_ordered"] += 1 if outcome["ordered"] else 0
         entry = {"file": name, "status": status, "match": outcome["match"], "ordered": outcome["ordered"],
-                 "listed_offsets": block.get("offsets", []) if block is not None else []}
+                 "listed_offsets": block.get("offsets", []) if block is not None else [],
+                 "listed_sources": block.get("sources", []) if block is not None else []}
         if outcome["missing"]:
             entry["missing"] = [list(preview) for preview in outcome["missing"]]
         if outcome["extra"]:
@@ -473,7 +474,7 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
 
 # The rows whose value is an address of a picture: the one a missing preview would be named by.
 _ADDRESS_ROW = re.compile(r"(JPEGInterchangeFormat|PreviewImage|PreviewOffset|PreviewImageStart|Thumbnail"
-                          r"|ThumbnailOffset|StripOffsets|NewSubfileType)$")
+                          r"|ThumbnailOffset|StripOffsets|NewSubfileType|MakerNote.Offset)$")
 
 
 def dump_addresses(dump_command: list[str], paths: list[Path]) -> dict[str, list[str]]:
@@ -497,7 +498,9 @@ def dump_addresses(dump_command: list[str], paths: list[Path]) -> dict[str, list
             current = fields[1]
             addresses.setdefault(current, [])
         elif fields[0] == "TAG" and len(fields) >= 5 and current is not None and _ADDRESS_ROW.search(fields[1]):
-            addresses[current].append(f"{fields[1]}({fields[2]} {fields[3]})")
+            # A small value is the address itself, and it is what a reader that lists nothing was given.
+            value = f" = {fields[4]}" if len(fields[4]) <= 24 else ""
+            addresses[current].append(f"{fields[1]}({fields[2]} {fields[3]}{value})")
     return addresses
 
 
