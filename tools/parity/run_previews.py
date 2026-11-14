@@ -479,7 +479,7 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
 
 # The rows whose value is an address of a picture: the one a missing preview would be named by.
 _ADDRESS_ROW = re.compile(r"(JPEGInterchangeFormat|PreviewImage|PreviewOffset|PreviewImageStart|Thumbnail"
-                          r"|ThumbnailOffset|StripOffsets|NewSubfileType|MakerNote.Offset)$")
+                          r"|ThumbnailOffset|StripOffsets|NewSubfileType|MakerNote.Offset|Diagnostic)[.A-Za-z]*$")
 
 
 def dump_addresses(dump_command: list[str], paths: list[Path]) -> dict[str, list[str]]:

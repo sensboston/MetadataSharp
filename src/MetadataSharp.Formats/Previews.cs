@@ -1543,8 +1543,13 @@ internal ref struct PreviewScanner
         if (!Directory(probe, tiff + next, thumbnail, out _, out _)) return;
         long offset = Number(probe, thumbnail, 0x0201), length = Number(probe, thumbnail, 0x0202);
         if (offset <= 0 || length <= 0) return;
-        if (Jpeg(offset, length, "Exif.Thumbnail.JPEGInterchangeFormat", 0, 0)) return;
-        Jpeg(picture + offset, length, "Exif.Thumbnail.JPEGInterchangeFormat", 0, 0);
+        // The picture's chain counts from its own header, as a TIFF directory does, which is what the
+        // files of the corpus state; a writing that counts from the file or from the picture is read that
+        // way when the reading before it holds nothing.
+        string source = "Exif.Thumbnail.JPEGInterchangeFormat";
+        if (Jpeg(tiff + offset, length, source, 0, 0)) return;
+        if (Jpeg(offset, length, source, 0, 0)) return;
+        Jpeg(picture + offset, length, source, 0, 0);
     }
 
     /// <summary>List the JPEG stream a range holds, and say whether it is one.</summary>
