@@ -58,6 +58,10 @@ _COMMAND = re.compile(r"^Command: exiv2 (?P<arguments>.+)$")
 _PREVIEW = re.compile(r"^Preview \d+: (?P<mime>\S+), (?P<width>\d+)x(?P<height>\d+) pixels, (?P<bytes>\d+) bytes$")
 
 Preview = tuple[str, int, int, int]
+_PREVIEW_FIXTURE_SUFFIXES = frozenset({
+    ".jpg", ".jpeg", ".tif", ".tiff", ".png", ".webp", ".crw", ".mrw", ".raf", ".rw2", ".sr2",
+    ".jp2", ".psd", ".eps", ".pgf", ".jxl", ".avif", ".heic", ".heif", ".cr3",
+})
 
 
 class PreviewParityError(Exception):
@@ -498,9 +502,13 @@ def main(argv: list[str] | None = None) -> int:
         oracle = shlex.split(args.exiv2_command)
         paths = {}
         for candidate in run_parity.corpus_mod.discover_generated(*args.fixtures):
+            if candidate.path.suffix.lower() not in _PREVIEW_FIXTURE_SUFFIXES:
+                continue  # the fixture directories also hold non-image parser tests
             if candidate.label in paths:
                 raise PreviewParityError(f"two files are named {candidate.label}")
             paths[candidate.label] = candidate.path
+        if not paths:
+            raise PreviewParityError("the fixture directories contain no supported preview images")
         expected = oracle_reference({name: run_parity.run_reference(oracle, path, require_success=True)
                                      for name, path in paths.items() if path})
     else:

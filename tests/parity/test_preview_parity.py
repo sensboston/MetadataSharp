@@ -89,6 +89,12 @@ class OracleTests(unittest.TestCase):
         with self.assertRaises(run_previews.PreviewParityError):
             run_previews.oracle_reference({"raw.cr3": "Preview 1: image/jpeg, 160 by 120"})
 
+    def test_fixture_oracle_only_receives_image_formats_with_preview_loaders(self):
+        self.assertIn(".crw", run_previews._PREVIEW_FIXTURE_SUFFIXES)
+        self.assertIn(".pgf", run_previews._PREVIEW_FIXTURE_SUFFIXES)
+        self.assertNotIn(".asf", run_previews._PREVIEW_FIXTURE_SUFFIXES)
+        self.assertNotIn(".wav", run_previews._PREVIEW_FIXTURE_SUFFIXES)
+
     def test_the_two_sources_of_the_expectation_exclude_each_other(self):
         for arguments in ([], ["--tree", "t", "--fixtures", "f"]):
             with self.assertRaises(SystemExit):
