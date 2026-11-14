@@ -198,6 +198,20 @@ internal static class Program
     }
 
     /// <summary>
+    /// Whether the file is a Panasonic RW2, which is a TIFF whose identifier is 0x0055 rather than 42,
+    /// so that its primary directory is named the way the reference names it.
+    /// </summary>
+    private static bool IsRw2(string path)
+    {
+        Span<byte> head = stackalloc byte[4];
+        using var probe = File.OpenRead(path);
+        if (probe.Read(head) != head.Length)
+            return false;
+        return (head[0] == 0x49 && head[1] == 0x49 && head[2] == 0x55 && head[3] == 0x00) ||
+               (head[0] == 0x4D && head[1] == 0x4D && head[2] == 0x00 && head[3] == 0x55);
+    }
+
+    /// <summary>
     /// A JPEG, PNG, WebP, TIFF, PSD, BMFF, CR3 or JPEG XL file, read once through the entry point of
     /// the library and reported under the rules of this tool, which are older and differ by format.
     /// </summary>
@@ -229,7 +243,8 @@ internal static class Program
         }
         // In a CR3 the note is a box of its own, not the value of a tag: the reference prints no
         // rows for where it starts and how it is ordered.
-        Exif(file.Exif, stdout, noteRows: file.Format != MetadataFormat.Cr3);
+        Exif(file.Exif, stdout, noteRows: file.Format != MetadataFormat.Cr3,
+            panasonicRaw: file.Format == MetadataFormat.Tiff && IsRw2(path));
         if (iptc is not null)
         {
             if (!othersInDetail) throw iptc;
@@ -408,13 +423,20 @@ internal static class Program
         Done(stdout);
     }
 
-    private static void Exif(ExifMetadata? metadata, StreamWriter stdout, bool noteRows = true)
+    private static void Exif(ExifMetadata? metadata, StreamWriter stdout, bool noteRows = true,
+        bool panasonicRaw = false)
     {
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
-            Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
+        {
+            // A Panasonic RW2 has no Exif primary directory: its first one is the PanasonicRaw
+            // directory, whose tags the reference prints under that group and this table holds.
+            bool panasonic = panasonicRaw && entry.Key.Directory == ExifDirectoryKind.Ifd0;
+            string group = panasonic ? "PanasonicRaw" : Group(entry.Key.Directory);
+            Tag(stdout, "Exif." + group + "." + Name(entry.Key, group),
                 TypeName(entry.Value), entry.Value.Count, Value(entry),
                 ExifTags.Interpret(entry.Key, entry.Value));
+        }
         // Image directories name their tags with the same vocabulary as the primary one, and only the
         // group says which directory the row was read from: the reference numbers a SubIFD list from
         // one and a directory chain from the second one, after the thumbnail directory.

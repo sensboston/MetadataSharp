@@ -251,13 +251,13 @@ def describe(outcomes: dict) -> str:
 
 def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
             files: int = 4, name: str = "") -> int:
-    """Print where the first corpus file disagrees with the pinned reference, row by row.
+    """Print what the -pt gate still counts against the first corpus files that differ.
 
-    The differential gate reports an aggregate of a whole corpus, which says what differs but not why:
-    one file's rows beside the reference's are what a reader defect is diagnosed from. Only the first
-    file that differs is explained, because a run reports one annotation and a defect is fixed one
-    file at a time.
+    The gate's own report is used rather than a plain row comparison, because a row that the gate
+    accepts as a documented display alias is not a defect and must not be reported as one. Only files
+    that fail are explained: a defect is fixed one file at a time, and a run reports a few.
     """
+    import corpus as corpus_module
     import run_tag_print as harness  # imported here: the two modules share the row vocabulary
 
     command = shlex.split(dump_command)
@@ -266,52 +266,29 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
         path = destination / entry.name
         if not path.is_file() or (name and name not in entry.name):
             continue
-        code, text, error = harness._run_reference([exiv2], path)
-        if code != 0:
-            print(f"::notice title=RAW corpus explain::{entry.name} reference exited {code}: "
-                  f"{(error or text).strip().splitlines()[:1]}")
-            return 0
-        reference = harness.parse_exiv2(text)
-        dumped = harness.run_dump(command, [path])[str(path)]
-        if dumped["status"] not in (None, "ok"):
-            print(f"::notice title=RAW corpus explain::{entry.name} status {dumped['status']} "
-                  f"{dumped['detail']}")
-            return 0
-        actual = harness.project_dump(dumped["rows"])
-        lines = _row_differences(reference, actual)
-        if not lines:
+        candidate = corpus_module.Candidate(label=entry.name, path=path, corpus="raw-corpus")
+        dumped = harness.run_dump(command, [path])
+        report = harness.build_report([candidate], [exiv2], dumped, [])
+        if not report["totals"]["failed_files"]:
             continue
-        print(f"::notice title=RAW corpus explain::{entry.name}::" +
-              "%0A".join([f"{len(lines)} differing row(s); {len(reference)} reference, "
-                          f"{len(actual)} local"] + lines[:limit]))
+        lines = [f"{report['totals']['failed_files']} failing file(s); "
+                 f"kinds={dict(report['failure_kinds'])}, types={dict(report['difference_types'])}"]
+        for group in report["mismatch_groups"][:limit]:
+            example = group["examples"][0]["difference"] if group.get("examples") else ""
+            lines.append(f"{group['category']} {group['key']} {group['type']} "
+                         f"x{group['occurrences']} ({example})")
+        for item in report["value_diff_by_key"][:12]:
+            lines.append(f"value {item['key']}: reference={item['exiv2'][:60]!r} "
+                         f"local={item['metadatasharp'][:60]!r}")
+        for problem in report["differing"][:6]:
+            lines.append(f"file {problem.get('kind')}: {str(problem.get('detail'))[:200]}")
+        print(f"::notice title=RAW corpus explain::{entry.name}::" + "%0A".join(lines))
         explained += 1
         if explained == files:
             return 0
     print("::notice title=RAW corpus explain::" +
           (f"no corpus file matches {name}" if name else "no corpus file differs from the reference"))
     return 0
-
-
-def _row_differences(reference: list[dict], actual: list[dict]) -> list[str]:
-    """Rows the reference prints and this library does not, rows it does not and this one does, and
-    the same row with a different value, in that order."""
-    def index(rows: list[dict]) -> dict[tuple, list[dict]]:
-        table: dict[tuple, list[dict]] = {}
-        for row in rows:
-            table.setdefault((row["key"], row["type"], row["count"]), []).append(row)
-        return table
-
-    theirs, ours = index(reference), index(actual)
-    missing = [f"- {key[0]} {key[1]} {key[2]} = {row['value']}"
-               for key, rows in theirs.items() for row in rows[len(ours.get(key, [])):]]
-    extra = [f"+ {key[0]} {key[1]} {key[2]} = {row['value']}"
-             for key, rows in ours.items() for row in rows[len(theirs.get(key, [])):]]
-    changed = []
-    for key in theirs.keys() & ours.keys():
-        for left, right in zip(theirs[key], ours[key]):
-            if left["value"] != right["value"]:
-                changed.append(f"~ {key[0]} {key[1]} {key[2]}: reference={left['value']!r} local={right['value']!r}")
-    return missing + changed + extra
 
 
 def main(argv: list[str] | None = None) -> int:
