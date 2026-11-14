@@ -262,7 +262,6 @@ public sealed class Cr3ExifTests
         foreach (string box in new[] { "CMT1", "CMT2", "CMT4" })
         {
             data.Add(box, "value beyond the box", Patched(18, (byte)(good.Length - 14)), MetadataErrorCode.InvalidExif);
-            data.Add(box, "tags out of order", TiffBlock(true, Longs(0x0010, 5), Shorts(0x0006, 1)), MetadataErrorCode.InvalidExif);
             data.Add(box, "a tag twice", TiffBlock(true, Shorts(0x0006, 1), Shorts(0x0006, 2)), MetadataErrorCode.AmbiguousMetadata);
             data.Add(box, "BigTIFF", Patched(2, 43), MetadataErrorCode.UnsupportedFeature);
         }
@@ -289,13 +288,14 @@ public sealed class Cr3ExifTests
     [Fact]
     public void ARefusalOfADirectorySaysWhereInTheFile()
     {
-        byte[] tiff = TiffBlock(true, Longs(0x0010, 5), Shorts(0x0006, 1));
+        byte[] tiff = TiffBlock(true, Shorts(0x0006, 1), Shorts(0x0006, 2));
         byte[] file = File(Box("CMT1", Ifd0()), Box("CMT2", tiff));
         int box = 24 + 8 + 8 + 16 + 8 + Ifd0().Length + 8;
 
         MetadataException refusal = Assert.Throws<MetadataException>(() => Cr3Metadata.Read(file));
 
-        // The second entry of the directory: the header, the count and one entry further.
+        // The second entry of the directory, the one that repeats the first tag: the header, the
+        // count and one entry further.
         Assert.Equal(box + 8 + 2 + 12L, refusal.SourceOffset);
         Assert.Equal(tiff, file.AsSpan(box, tiff.Length).ToArray());
     }

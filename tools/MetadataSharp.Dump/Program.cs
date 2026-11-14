@@ -50,6 +50,11 @@ internal static class Program
 {
     private const long MaxWholeFileBytes = 64L * 1024 * 1024;
 
+    // With --refusal-detail the reason a file was refused travels with its STATUS record, after the
+    // code. The comparison harness keys a pinned refusal on the code alone, so this is opt-in: it exists
+    // for diagnosing a refusal, not for the report.
+    private static bool refusalDetail;
+
     private static int Main(string[] args)
     {
         var paths = new List<string>();
@@ -59,12 +64,13 @@ internal static class Program
             string arg = args[i];
             if (arg is "-h" or "--help")
             {
-                Console.Error.WriteLine("usage: MetadataSharp.Dump [--previews|--icc|--comments] [--files-from FILE|-] [file...]");
+                Console.Error.WriteLine("usage: MetadataSharp.Dump [--previews|--icc|--comments] [--refusal-detail] [--files-from FILE|-] [file...]");
                 return 0;
             }
             if (arg == "--previews") { previews = true; continue; }
             if (arg == "--icc") { icc = true; continue; }
             if (arg == "--comments") { comments = true; continue; }
+            if (arg == "--refusal-detail") { refusalDetail = true; continue; }
             if (arg == "--files-from")
             {
                 if (++i == args.Length) { Console.Error.WriteLine("--files-from wants a path or -"); return 2; }
@@ -96,7 +102,13 @@ internal static class Program
                 else if (comments) ListComments(path, stdout);
                 else Dump(path, stdout);
             }
-            catch (MetadataException failure) { Record(stdout, "STATUS", "refused", failure.Code.ToString()); }
+            catch (MetadataException failure)
+            {
+                string detail = failure.Code.ToString();
+                if (refusalDetail)
+                    detail += "\t" + Escape(failure.Message.Split('\n')[0]);
+                Record(stdout, "STATUS", "refused", detail);
+            }
             // A bug in a reader is a fact worth reporting precisely, so the type and the first line of
             // the message travel with the record; the harness counts this status as an unsound run.
             catch (Exception failure)
@@ -197,6 +209,118 @@ internal static class Program
         Record(stdout, "STATUS", "not-attempted", "magic");
     }
 
+    private const string PanasonicRawGroup = "PanasonicRaw";
+
+    /// <summary>
+    /// The rows the reference removes from the embedded picture of an RW2 before it adds what the
+    /// picture holds to the file's own metadata: it reads them and then drops what it says does not
+    /// apply to a raw image. The Panasonic tags of the list are the file's own, which its note holds
+    /// already, and they are not printed twice either.
+    /// </summary>
+    private static readonly HashSet<string> EmbeddedRowsNotForRaw =
+    [
+        "Exif.Photo.ComponentsConfiguration", "Exif.Photo.CompressedBitsPerPixel",
+        "Exif.Panasonic.ColorEffect", "Exif.Panasonic.Contrast", "Exif.Panasonic.NoiseReduction",
+        "Exif.Panasonic.ColorMode", "Exif.Panasonic.OpticalZoomMode", "Exif.Panasonic.Saturation",
+        "Exif.Panasonic.Sharpness", "Exif.Panasonic.FilmMode", "Exif.Panasonic.SceneMode",
+        "Exif.Panasonic.WBRedLevel", "Exif.Panasonic.WBGreenLevel", "Exif.Panasonic.WBBlueLevel",
+        "Exif.Photo.ColorSpace", "Exif.Photo.PixelXDimension", "Exif.Photo.PixelYDimension",
+        "Exif.Photo.SceneType", "Exif.Photo.CustomRendered", "Exif.Photo.DigitalZoomRatio",
+        "Exif.Photo.SceneCaptureType", "Exif.Photo.GainControl", "Exif.Photo.Contrast",
+        "Exif.Photo.Saturation", "Exif.Photo.Sharpness", "Exif.Image.PrintImageMatching",
+        "Exif.Image.YCbCrPositioning",
+    ];
+
+    /// <summary>
+    /// The makers the reference knows a MakerNote owner by, in the order it looks them up.
+    /// </summary>
+    private static readonly string[] ReferenceMakers =
+    [
+        "Canon", "FOVEON", "FUJI", "KONICA MINOLTA", "Minolta", "NIKON", "OLYMPUS", "OM Digital",
+        "Panasonic", "PENTAX", "RICOH", "SAMSUNG", "SIGMA", "SONY", "CASIO",
+    ];
+
+    /// <summary>
+    /// Whether the reference attributes a MakerNote to the camera that wrote it. It looks the owner up
+    /// by the maker's name as the file spells it and compares that name with its own table of makers
+    /// case-sensitively, so a camera whose name differs from the known one in case alone keeps its note
+    /// unread and the rows the note holds unprinted. Konica Minolta's mixed-case "Konica Minolta Camera,
+    /// Inc." is the case the corpus found. This library reads that note; this print follows the reference,
+    /// as it follows it where an RW2's rows come from the picture the file embeds.
+    /// </summary>
+    private static bool ReferenceAttributesNote(ExifMetadata metadata)
+    {
+        string? make = null;
+        foreach (ExifEntry entry in metadata.Entries)
+            if (entry.Key == new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F))
+            {
+                byte[] bytes = new byte[entry.Value.ByteLength];
+                entry.Value.CopyRawTo(bytes);
+                make = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
+            }
+        // A file that names no maker gives the reference nothing to look up and this reader a note it
+        // reached some other way, as a CRW's note comes with the CIFF rather than the EXIF directory.
+        if (string.IsNullOrEmpty(make))
+            return true;
+        foreach (string maker in ReferenceMakers)
+            if (make.StartsWith(maker, StringComparison.Ordinal))
+                return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Whether the file is a Panasonic RW2, which is a TIFF whose identifier is 0x0055 rather than 42.
+    /// </summary>
+    private static bool IsRw2(string path)
+    {
+        Span<byte> head = stackalloc byte[4];
+        using var probe = File.OpenRead(path);
+        if (probe.Read(head) != head.Length)
+            return false;
+        return (head[0] == 0x49 && head[1] == 0x49 && head[2] == 0x55 && head[3] == 0x00) ||
+               (head[0] == 0x4D && head[1] == 0x4D && head[2] == 0x00 && head[3] == 0x55);
+    }
+
+    /// <summary>
+    /// Print the metadata of the image an RW2 embeds, the way the reference merges it into the file's
+    /// own: rows of the embedded image are kept unless the container already holds that key, and the
+    /// container's PanasonicRaw directory never counts as holding one, because it names the raw data
+    /// rather than the embedded picture's tags. This is a rendering rule of the print, not a second
+    /// metadata view of the container: the library keeps the two apart in
+    /// <see cref="EmbeddedImageMetadata"/>.
+    /// </summary>
+    private static string? MergeEmbedded(StreamWriter stdout, string path, long length, ISet<string> printed)
+    {
+        if (!WithinBudget(length, stdout)) return "embedded-over-budget";
+        byte[] file = File.ReadAllBytes(path);
+        EmbeddedImageMetadata? embedded = EmbeddedImageMetadata.Read(file);
+        if (embedded is null)
+        {
+            // Say which step found nothing: a gate that cannot see the rows has to know whether the
+            // picture was not listed, could not be extracted, or carried no metadata.
+            IReadOnlyList<PreviewImage> previews = Previews.List(file);
+            if (previews.Count == 0) return "embedded-none-listed";
+            try
+            {
+                Previews.Extract(file, previews[0]);
+                return "embedded-no-metadata";
+            }
+            catch (MetadataException refusal)
+            {
+                return "embedded-refused:" + refusal.Code;
+            }
+        }
+        if (embedded.Exif is not ExifMetadata exif) return "embedded-no-exif";
+        // The reference reads the picture whole and then removes the rows the file already holds and the
+        // rows it says do not apply to a raw image, so what it adds is what is left.
+        Exif(exif, stdout, printed: printed,
+            skip: key => printed.Contains(key) || EmbeddedRowsNotForRaw.Contains(key));
+        if (refusalDetail)
+            return "embedded-rows=" + printed.Count.ToString(CultureInfo.InvariantCulture) +
+                " note=" + (exif.MakerNote is null ? "none" : exif.MakerNote.Format.ToString());
+        return null;
+    }
+
     /// <summary>
     /// A JPEG, PNG, WebP, TIFF, PSD, BMFF, CR3 or JPEG XL file, read once through the entry point of
     /// the library and reported under the rules of this tool, which are older and differ by format.
@@ -229,7 +353,12 @@ internal static class Program
         }
         // In a CR3 the note is a box of its own, not the value of a tag: the reference prints no
         // rows for where it starts and how it is ordered.
-        Exif(file.Exif, stdout, noteRows: file.Format != MetadataFormat.Cr3);
+        bool panasonicRaw = file.Format == MetadataFormat.Tiff && IsRw2(path);
+        var printed = new HashSet<string>();
+        Exif(file.Exif, stdout, noteRows: file.Format != MetadataFormat.Cr3, panasonicRaw: panasonicRaw,
+            printed: printed);
+        if (panasonicRaw && MergeEmbedded(stdout, path, length, printed) is string merged && refusalDetail)
+            refused.Add(merged);
         if (iptc is not null)
         {
             if (!othersInDetail) throw iptc;
@@ -408,24 +537,57 @@ internal static class Program
         Done(stdout);
     }
 
-    private static void Exif(ExifMetadata? metadata, StreamWriter stdout, bool noteRows = true)
+    /// <param name="printed">
+    /// Receives the key of every row written, so that a caller which prints a second directory after
+    /// this one can leave out what is already there.
+    /// </param>
+    /// <param name="skip">A row to leave out by key, as the reference does for a duplicate or a row it says does not apply.</param>
+    private static void Exif(ExifMetadata? metadata, StreamWriter stdout, bool noteRows = true,
+        bool panasonicRaw = false, ISet<string>? printed = null, Func<string, bool>? skip = null)
     {
         if (metadata is null) return;
+        void Row(string key, string type, uint count, string value, string? interpreted = null)
+        {
+            if (skip is not null && skip(key)) return;
+            if (interpreted is null) Tag(stdout, key, type, count, value);
+            else Tag(stdout, key, type, count, value, interpreted);
+            printed?.Add(key);
+        }
         foreach (ExifEntry entry in metadata.Entries)
-            Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
+        {
+            // A Panasonic RW2's primary directory is the PanasonicRaw one: the reference prints its
+            // tags under that group, and only the ones its own PanasonicRaw table names. The Image
+            // group of an RW2 describes the image it embeds, which is merged in below.
+            if (panasonicRaw && entry.Key.Directory == ExifDirectoryKind.Ifd0)
+            {
+                if (!MetadataTagCatalog.TryGet(PanasonicRawGroup, entry.Key.TagId, out NumberedTagDefinition? raw) ||
+                    raw is null)
+                    continue;
+                Row("Exif.PanasonicRaw." + raw.Name, TypeName(entry.Value), entry.Value.Count,
+                    Value(entry), ExifTags.Interpret(entry.Key, entry.Value));
+                continue;
+            }
+            Row("Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
                 TypeName(entry.Value), entry.Value.Count, Value(entry),
                 ExifTags.Interpret(entry.Key, entry.Value));
+        }
         // Image directories name their tags with the same vocabulary as the primary one, and only the
-        // group says which directory the row was read from.
+        // group says which directory the row was read from: the reference numbers a SubIFD list from
+        // one and a directory chain from the second one, after the thumbnail directory.
         foreach (ExifSubImage image in metadata.SubImages)
         {
-            string imageGroup = "SubImage" + image.Index.ToString(CultureInfo.InvariantCulture);
+            string imageGroup = image.Kind switch
+            {
+                ExifSubImageKind.ImageDirectory => "Image" + image.Index.ToString(CultureInfo.InvariantCulture),
+                ExifSubImageKind.ThumbnailSubIfd => "SubThumb" + image.Index.ToString(CultureInfo.InvariantCulture),
+                _ => "SubImage" + image.Index.ToString(CultureInfo.InvariantCulture)
+            };
             foreach (ExifEntry entry in image.Entries)
-                Tag(stdout, "Exif." + imageGroup + "." + Name(entry.Key, imageGroup),
+                Row("Exif." + imageGroup + "." + Name(entry.Key, imageGroup),
                     TypeName(entry.Value), entry.Value.Count, Value(entry),
                     ExifTags.Interpret(entry.Key, entry.Value));
         }
-        if (metadata.MakerNote is MakerNote makerNote)
+        if (metadata.MakerNote is MakerNote makerNote && ReferenceAttributesNote(metadata))
         {
             string? cameraModel = metadata.Model;
             string group = makerNote.Format switch
@@ -438,8 +600,8 @@ internal static class Program
             // as two rows of a group of their own.
             if (noteRows)
             {
-                Tag(stdout, "Exif.MakerNote.Offset", "Long", 1, makerNote.Offset.ToString(CultureInfo.InvariantCulture));
-                Tag(stdout, "Exif.MakerNote.ByteOrder", "Ascii", 3, makerNote.ByteOrder == Endianness.BigEndian ? "MM" : "II");
+                Row("Exif.MakerNote.Offset", "Long", 1, makerNote.Offset.ToString(CultureInfo.InvariantCulture));
+                Row("Exif.MakerNote.ByteOrder", "Ascii", 3, makerNote.ByteOrder == Endianness.BigEndian ? "MM" : "II");
             }
             foreach (MakerNoteEntry entry in makerNote.Entries)
             {
@@ -454,18 +616,23 @@ internal static class Program
                     // And the Sony pointer to the Minolta directory of the DSLR-A100.
                     bool sony = makerNote.Format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2;
                     bool sonyMinolta = sony && entry.TagId == 0xB028;
-                    bool keepParent = olympusIfd || nikonPreview || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
+                    // And the Samsung pointer to the directory its preview fields live in.
+                    bool samsungPreview = makerNote.Format == MakerNoteFormat.Samsung2 && entry.TagId == 0x0035;
+                    bool keepParent = olympusIfd || nikonPreview || samsungPreview ||
+                        makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
-                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value), entry.Value.Count, MakerNoteValue(makerNote, entry),
+                        Row("Exif." + group + "." + entry.Name, TypeName(entry.Value), entry.Value.Count, MakerNoteValue(makerNote, entry),
                             makerNote.InterpretForModel(entry, cameraModel));
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
                         : nikonPreview ? "NikonPreview"
                         : sonyMinolta ? "SonyMinolta"
+                        : samsungPreview ? "SamsungPreview"
                         : keepParent ? group
                         : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
                         : sony ? SonyArrayGroup(makerNote.Format, entry.TagId)
                         : makerNote.Format == MakerNoteFormat.Minolta ? MinoltaArrayGroup(entry.TagId)
-                        : makerNote.Format == MakerNoteFormat.Samsung2 ? "SamsungPictureWizard"
+                        : makerNote.Format == MakerNoteFormat.Samsung2
+                            ? entry.TagId == 0x0035 ? "SamsungPreview" : "SamsungPictureWizard"
                         : group + ArrayGroup(entry.TagId);
                     foreach (MakerNoteField field in entry.Fields)
                     {
@@ -475,7 +642,7 @@ internal static class Program
                         {
                             byte[] array = new byte[entry.Value.ByteLength];
                             entry.Value.CopyRawTo(array);
-                            Tag(stdout, "Exif.NikonVr." + field.Name, "Byte", 3,
+                            Row("Exif.NikonVr." + field.Name, "Byte", 3,
                                 string.Join(' ', array[4..7].Select(b => b.ToString(CultureInfo.InvariantCulture))),
                                 makerNote.InterpretFieldForModel(entry, field, cameraModel));
                             continue;
@@ -486,17 +653,17 @@ internal static class Program
                         {
                             string elementGroup = (makerNote.Format == MakerNoteFormat.Sony1 ? "Sony1" : "Sony2") + "MltCsA100";
                             foreach (MakerNoteField element in field.Fields)
-                                Tag(stdout, "Exif." + elementGroup + "." + element.Name,
+                                Row("Exif." + elementGroup + "." + element.Name,
                                     TypeName(element.Value.FieldType), element.Value.Count, Render(element.Value));
                             continue;
                         }
-                        Tag(stdout, "Exif." + fieldGroup + "." + field.Name,
+                        Row("Exif." + fieldGroup + "." + field.Name,
                             TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value),
                             makerNote.InterpretFieldForModel(entry, field, cameraModel));
                     }
                     continue;
                 }
-                Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
+                Row("Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
                     TypeName(entry.Value), entry.Value.Count, MakerNoteValue(makerNote, entry), makerNote.InterpretForModel(entry, cameraModel));
             }
         }
@@ -549,7 +716,11 @@ internal static class Program
             0x001F => "Vr", 0x0023 => "Pc", 0x0024 => "Wt", 0x0025 => "Ii", 0x0088 => "Af",
             0x0098 => version switch { "0100" => "Ld1", "0204" => "Ld3", "0800" or "0801" or "0802" => "Ld4", _ => "Ld2" },
             0x0091 => version.StartsWith("01", StringComparison.Ordinal) ? "Si01xx" : "Si02xx",
-            0x0097 => version switch { "0103" => "Cb3", "0212" => "Cb4", _ => "Cb2b" },
+            0x0097 => version switch
+            {
+                "0100" => "Cb1", "0102" => "Cb2", "0103" => "Cb3", "0205" => "Cb2a",
+                "0209" or "0212" or "0214" => "Cb4", _ => "Cb2b"
+            },
             0x00A8 => version switch { "0100" or "0101" => "Fl1", "0102" => "Fl2", "0106" => "Fl6", "0107" or "0108" => "Fl7", _ => "Fl3" },
             0x00B0 => "Me", 0x00B7 => version == "0100" ? "Af2" : "Af22", 0x00B8 => "Fi", 0x00B9 => "AFT",
             _ => "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)

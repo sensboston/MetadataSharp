@@ -53,8 +53,9 @@ public static class Previews
 
     /// <summary>
     /// Return exactly the bytes of one preview. A JPEG preview must begin with SOI and end with EOI
-    /// (zero padding after EOI is tolerated and returned); uncompressed samples must have the
-    /// length their dimensions imply.
+    /// (zero padding after EOI is tolerated and returned); a range that runs past its picture is cut
+    /// at the picture's last end-of-image marker, because the range is a length the container states
+    /// and not the picture itself; uncompressed samples must have the length their dimensions imply.
     /// </summary>
     /// <exception cref="MetadataException">
     /// <see cref="MetadataErrorCode.InvalidJpeg"/> or <see cref="MetadataErrorCode.InvalidTiff"/> when the
@@ -64,7 +65,7 @@ public static class Previews
     /// <param name="file">Complete input image file bytes starting at the container signature.</param>
     /// <param name="preview">Preview record returned by <see cref="List"/> whose byte range is to extract.</param>
     /// <param name="limits">Resource budgets applied while parsing image file; null selects the default limits.</param>
-    /// <returns>The selected preview bytes, including tolerated zero padding after a JPEG EOI marker.</returns>
+    /// <returns>The selected preview bytes, including tolerated zero padding after a JPEG EOI marker, and cut at the last EOI marker when the stated range runs past it.</returns>
     public static byte[] Extract(ReadOnlySpan<byte> file, PreviewImage preview, MetadataLimits? limits = null)
     {
         ArgumentNullException.ThrowIfNull(preview);
@@ -91,12 +92,30 @@ public static class Previews
         ReadOnlySpan<byte> bytes = file.Slice((int)preview.Offset, preview.Length);
         if (jpeg)
         {
+            if (bytes.Length >= 4 && (bytes[0] != 0xFF || bytes[1] != 0xD8) && IsMinoltaSource(preview) &&
+                bytes[1] == 0xD8 && bytes[2] == 0xFF)
+            {
+                // A Minolta note names a thumbnail whose start-of-image marker has a damaged first byte.
+                // The reference repairs that byte before it writes the picture out, and the picture it
+                // returns is the one named here, so the same byte is repaired.
+                byte[] repaired = bytes.ToArray();
+                repaired[0] = 0xFF;
+                bytes = repaired;
+            }
             if (bytes.Length < 4 || bytes[0] != 0xFF || bytes[1] != 0xD8)
                 throw new MetadataException(MetadataErrorCode.InvalidJpeg, "The preview does not begin with a JPEG start-of-image marker.", preview.Offset);
             int last = bytes.Length;
             while (last > 4 && bytes[last - 1] == 0) last--;
             if (bytes[last - 2] != 0xFF || bytes[last - 1] != 0xD9)
-                throw new MetadataException(MetadataErrorCode.InvalidJpeg, "The preview does not end with a JPEG end-of-image marker.", preview.Offset + preview.Length);
+            {
+                // A preview's byte range is a length the container states, not the picture itself: a
+                // range can run past its picture into what follows it. The picture ends at its last
+                // end-of-image marker, and a range that holds none is not a JPEG.
+                int end = LastEndOfImage(bytes);
+                if (end < 4)
+                    throw new MetadataException(MetadataErrorCode.InvalidJpeg, "The preview does not end with a JPEG end-of-image marker.", preview.Offset + preview.Length);
+                return bytes[..end].ToArray();
+            }
         }
         else if (rgb && (preview.Width is not int width || preview.Height is not int height || width <= 0 || height <= 0 ||
             (long)width * height * 3 != preview.Length))
@@ -106,6 +125,9 @@ public static class Previews
         return bytes.ToArray();
     }
 
+    // The reference repairs the first byte of a Minolta thumbnail's start-of-image marker, and only of that.
+    private static bool IsMinoltaSource(PreviewImage preview) => PreviewScanner.IsMinoltaSource(preview.Source);
+
     // Validate preview input limits before traversing any container-specific pointers.
     private static MetadataLimits Checked(ReadOnlySpan<byte> file, MetadataLimits? limits)
     {
@@ -114,6 +136,16 @@ public static class Previews
         if (file.Length > limits.MaxInputBytes)
             throw new MetadataException(MetadataErrorCode.LimitExceeded, "The file exceeds the input budget.", 0);
         return limits;
+    }
+
+    // The end of the last picture a byte range holds: in entropy-coded data a 0xFF byte is always
+    // followed by 0x00 or a marker, so the last 0xFF 0xD9 pair is an end-of-image marker.
+    private static int LastEndOfImage(ReadOnlySpan<byte> bytes)
+    {
+        for (int i = bytes.Length - 2; i >= 2; i--)
+            if (bytes[i] == 0xFF && bytes[i + 1] == 0xD9)
+                return i + 2;
+        return 0;
     }
 
     private static long Area(PreviewImage preview) =>
@@ -145,6 +177,14 @@ internal ref struct PreviewScanner
     private int directories;
     private int subImages;
     private readonly Dictionary<(string Source, long Offset, int Length), byte[]> generated = new();
+    // Where the addresses of a note inside this structure count from, when the container says so.
+    private int pointerBase = -1;
+    // The vendor a container names in its own header when it carries no Make tag.
+    private string containerMake = string.Empty;
+
+    /// <summary>The source of a preview the reference repairs a byte of: the note of a Minolta file.</summary>
+    internal static bool IsMinoltaSource(string source) =>
+        source.StartsWith("Exif.Minolta.", StringComparison.Ordinal);
 
     // Retain the file span and limits while scanning preview pointers.
     internal PreviewScanner(ReadOnlySpan<byte> data, MetadataLimits limits, int nesting = 0)
@@ -157,8 +197,15 @@ internal ref struct PreviewScanner
         subImages = 0;
     }
 
-    /// <summary>A TIFF structure: where offset zero is, where the region ends, and the byte order.</summary>
-    private readonly record struct Frame(int Origin, int End, bool Little);
+    /// <summary>
+    /// A TIFF structure: where offset zero is, where the region ends, and the byte order. A container can
+    /// also state where the addresses a MakerNote carries count from, when that is not where the structure
+    /// itself begins; -1 selects the place where offset zero is.
+    /// </summary>
+    private readonly record struct Frame(int Origin, int End, bool Little, int PointerBase = -1)
+    {
+        public int Pointer => PointerBase >= 0 ? PointerBase : Origin;
+    }
 
     /// <summary>A directory entry whose value lies inside the region; <c>At</c> is the position of the value in the file.</summary>
     private readonly record struct Entry(ushort Tag, ushort Type, uint Count, int At);
@@ -224,6 +271,10 @@ internal ref struct PreviewScanner
     private void Mrw()
     {
         (int start, int length) = MetadataSharp.Formats.Mrw.MrwMetadata.Locate(data);
+        // A Minolta note counts the thumbnail it names from the start of the file, and the container of
+        // this one is Minolta's own: the block states neither of those itself.
+        pointerBase = 0;
+        containerMake = "MINOLTA";
         Tiff(start, start + length);
     }
 
@@ -665,7 +716,7 @@ internal ref struct PreviewScanner
         if (data[origin] == 0x49 && data[origin + 1] == 0x49) little = true;
         else if (data[origin] == 0x4D && data[origin + 1] == 0x4D) little = false;
         else return;
-        var frame = new Frame(origin, end, little);
+        var frame = new Frame(origin, end, little, pointerBase);
         long next = U32(origin + 4, little);
         for (int index = 0; index < limits.MaxDirectories && next != 0; index++)
         {
@@ -704,11 +755,26 @@ internal ref struct PreviewScanner
             }
         }
 
+        // A Panasonic RW2 keeps the picture it embeds in its raw directory, as the field the
+        // reference calls PanasonicRaw.PreviewImage, and has no EXIF directory of its own to hold a note.
+        if (panasonicRaw && first && Find(entries, 0x002E) is Entry embedded &&
+            (embedded.Type == 1 || embedded.Type == 7) && embedded.Count != 0)
+        {
+            Jpeg(embedded.At, embedded.Count, "Exif.PanasonicRaw.PreviewImage", tableStart, tableEnd);
+            // The picture is a camera's JPEG, and the addresses in its EXIF are the file's own: the
+            // thumbnail it names is a range of the file, and is listed where the file puts it.
+            PictureThumbnail(embedded.At, (int)embedded.Count);
+        }
+
         if (first)
         {
             string make = Text(Find(entries, 0x010F));
+            if (make.Length == 0) make = containerMake;
             long exif = Number(frame, entries, 0x8769);
             if (exif > 0) ExifDirectory(frame, frame.Origin + exif, make);
+            // A raw container may keep the note in its primary directory rather than in an EXIF one.
+            if (Find(entries, 0x927C) is Entry note && (note.Type == 1 || note.Type == 7))
+                MakerNote(frame, note.At, (int)note.Count, make);
             // A DNG converted from a Pentax file keeps the original MakerNote here.
             if (Find(entries, 0xC634) is Entry original && (original.Type == 1 || original.Type == 7))
                 MakerNote(frame, original.At, (int)original.Count, make);
@@ -1060,14 +1126,22 @@ internal ref struct PreviewScanner
     {
         if (Find(entries, 0x0081) is Entry thumbnail && (thumbnail.Type == 1 || thumbnail.Type == 7))
             Jpeg(thumbnail.At, thumbnail.Count, "Exif." + group + ".Thumbnail", 0, 0);
-        Pointer(frame, entries, 0x0088, 0x0089, "Exif." + group + ".ThumbnailOffset", tableStart, tableEnd);
+        long offset = Number(frame, entries, 0x0088), length = Number(frame, entries, 0x0089);
+        if (offset <= 0 || length <= 0) return;
+        // The note counts its thumbnail from the start of the file, which is what the reference reads; a
+        // writer that counts from the structure the note lives in, or from the note itself, is read that
+        // way when every reading before it holds nothing.
+        string source = "Exif." + group + ".ThumbnailOffset";
+        if (Jpeg(frame.Pointer + offset, length, source, tableStart, tableEnd)) return;
+        if (frame.Pointer != frame.Origin && Jpeg(frame.Origin + offset, length, source, tableStart, tableEnd)) return;
+        Jpeg(tableStart + offset, length, source, tableStart, tableEnd);
     }
 
     // Resolve a paired TIFF offset/length tag only when its range stays inside the owning table.
-    private void Pointer(Frame frame, List<Entry> entries, ushort offsetTag, ushort lengthTag, string source, int tableStart, int tableEnd)
+    private bool Pointer(Frame frame, List<Entry> entries, ushort offsetTag, ushort lengthTag, string source, int tableStart, int tableEnd)
     {
         long offset = Number(frame, entries, offsetTag), length = Number(frame, entries, lengthTag);
-        if (offset > 0 && length > 0) Jpeg(frame.Origin + offset, length, source, tableStart, tableEnd);
+        return offset > 0 && length > 0 && Jpeg(frame.Pointer + offset, length, source, tableStart, tableEnd);
     }
 
     private static bool Order(ReadOnlySpan<byte> mark, out bool little)
@@ -1447,11 +1521,63 @@ internal ref struct PreviewScanner
         return offset >= tableEnd || offset + length <= tableStart;
     }
 
-    private void Jpeg(long offset, long length, string source, int tableStart, int tableEnd)
+    /// <summary>
+    /// The thumbnail of a picture embedded in a file, when the picture's own EXIF names one: the range it
+    /// states is read in the coordinates of the file that holds it, which is how the reference reads it,
+    /// and in the coordinates of the picture when the file's own reading holds no stream.
+    /// </summary>
+    private void PictureThumbnail(int at, int length)
     {
-        if (length < 4 || !Free(offset, length, tableStart, tableEnd)) return;
+        if (length < 4 || at < 0 || at > data.Length - length) return;
+        int end = at + length;
+        for (int position = at + 2, count = 0; count < limits.MaxSegments && end - position >= 4 && data[position] == 0xFF; count++)
+        {
+            byte marker = data[position + 1];
+            if (marker == 0xFF) { position++; continue; }
+            if (marker is 0x01 or (>= 0xD0 and <= 0xD7)) { position += 2; continue; }
+            if (marker is 0xD8 or 0xD9 or 0xDA) return;
+            int size = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(position + 2, 2));
+            if (size < 2 || size > end - position - 2) return;
+            int payload = position + 4, segmentEnd = position + 2 + size;
+            if (marker == 0xE1 && segmentEnd - payload >= 14 && data.Slice(payload, 6).SequenceEqual("Exif\0\0"u8))
+            {
+                PictureThumbnailOf(payload + 6, segmentEnd, at);
+                return;
+            }
+            position = segmentEnd;
+        }
+    }
+
+    // The second directory of the EXIF block of an embedded picture, in the coordinates of the file and,
+    // when that reading holds no stream, in the coordinates of the picture.
+    private void PictureThumbnailOf(int tiff, int end, int picture)
+    {
+        if (end - tiff < 8 || !Order(data.Slice(tiff, 2), out bool little)) return;
+        var probe = new Frame(0, data.Length, little);
+        var entries = new List<Entry>();
+        if (!Directory(probe, tiff + U32(tiff + 4, little), entries, out _, out long next) || next == 0) return;
+        var thumbnail = new List<Entry>();
+        if (!Directory(probe, tiff + next, thumbnail, out _, out _)) return;
+        long offset = Number(probe, thumbnail, 0x0201), length = Number(probe, thumbnail, 0x0202);
+        if (offset <= 0 || length <= 0) return;
+        // The picture's chain counts from its own header, as a TIFF directory does, which is what the
+        // files of the corpus state; a writing that counts from the file or from the picture is read that
+        // way when the reading before it holds nothing.
+        string source = "Exif.Thumbnail.JPEGInterchangeFormat";
+        if (Jpeg(tiff + offset, length, source, 0, 0)) return;
+        if (Jpeg(offset, length, source, 0, 0)) return;
+        Jpeg(picture + offset, length, source, 0, 0);
+    }
+
+    /// <summary>List the JPEG stream a range holds, and say whether it is one.</summary>
+    private bool Jpeg(long offset, long length, string source, int tableStart, int tableEnd)
+    {
+        if (length < 4 || !Free(offset, length, tableStart, tableEnd)) return false;
         int at = (int)offset, end = at + (int)length;
-        if (data[at] != 0xFF || data[at + 1] != 0xD8 || data[at + 2] != 0xFF) return;
+        // A Minolta note names a thumbnail whose start-of-image marker has a damaged first byte; the
+        // reference repairs that byte before it writes the picture out, so the stream is one.
+        bool damaged = data[at] != 0xFF || data[at + 1] != 0xD8 || data[at + 2] != 0xFF;
+        if (damaged && (!IsMinoltaSource(source) || data[at + 1] != 0xD8 || data[at + 2] != 0xFF)) return false;
         int? width = null, height = null;
         // The frame header states the dimensions. A lossless frame is raw sensor data, not a preview.
         int position = at + 2;
@@ -1464,7 +1590,7 @@ internal ref struct PreviewScanner
             if (size < 2 || size > end - position - 2) break;
             if (marker is >= 0xC0 and <= 0xCF and not (0xC4 or 0xC8 or 0xCC))
             {
-                if (marker is 0xC3 or 0xC7 or 0xCB or 0xCF) return;
+                if (marker is 0xC3 or 0xC7 or 0xCB or 0xCF) return false;
                 if (size >= 7)
                 {
                     height = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(position + 5, 2));
@@ -1474,7 +1600,10 @@ internal ref struct PreviewScanner
             }
             position += 2 + size;
         }
+        // A repaired marker is accepted only when what follows it is a picture: the dimensions are stated.
+        if (damaged && width is null) return false;
         Add(new PreviewImage(Previews.JpegType, width, height, offset, (int)length, source));
+        return true;
     }
 
     // Keep Add focused on metadata and its format-specific validation contract.

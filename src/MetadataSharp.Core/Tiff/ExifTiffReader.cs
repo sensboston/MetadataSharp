@@ -31,7 +31,11 @@ internal ref struct ExifTiffReader
     private readonly List<ExifDirectoryKind> directories;
     // Image directories named by tag 0x014A are listed for reading only, never merged into the entries.
     private readonly List<ExifSubImage> subImages;
-    private readonly Queue<(uint Offset, int Index)> pendingImages;
+    private int subIfdImages;
+    private int thumbnailSubImages;
+    private bool panasonicRaw;
+    private int chainImages;
+    private readonly Queue<(uint Offset, int Index, ExifSubImageKind Kind)> pendingImages;
     private readonly List<(int Start, int Length)> ranges;
     // Breadth-first worklist avoids recursion and carries each directory role and depth into validation.
     private readonly Queue<(uint Offset, ExifDirectoryKind Kind, int Depth)> pending;
@@ -220,6 +224,7 @@ internal ref struct ExifTiffReader
         if (magic == BigTiffMagic)
             throw Error(MetadataErrorCode.UnsupportedFeature, "BigTIFF is not supported.", 2);
         bool vendorMagic = wholeFile && magic is OrfMagic or Rw2Magic or DcpMagic;
+        panasonicRaw = vendorMagic && magic == Rw2Magic;
         if (magic != ClassicMagic && !vendorMagic)
             throw Error(MetadataErrorCode.InvalidExif, "The TIFF identifier is invalid.", 2);
         uint first = U32(4);
@@ -234,7 +239,7 @@ internal ref struct ExifTiffReader
         while (pendingImages.Count != 0)
         {
             var item = pendingImages.Dequeue();
-            ReadSubImage(item.Offset, item.Index);
+            ReadSubImage(item.Offset, item.Index, item.Kind);
         }
         // A read-only result is never planned for writing, so its picture is not taken out either.
         byte[]? thumbnail = readOnly ? null : ReadThumbnail();
@@ -253,7 +258,7 @@ internal ref struct ExifTiffReader
         if (makerNoteLength != 0)
         {
             start = makerNoteStart;
-            note = MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Make(), Model(), limits, budget);
+            note = MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Maker(), Model(), limits, budget);
         }
         else if (dngPrivateLength != 0 && data.Slice(dngPrivateStart, dngPrivateLength).StartsWith("PENTAX \0"u8))
         {
@@ -263,6 +268,17 @@ internal ref struct ExifTiffReader
         }
         if (note is not null) note.Offset = start;
         return note;
+    }
+
+    /// <summary>
+    /// The raw bytes of the 0th IFD ASCII Make tag, or empty. A Panasonic RW2 states the vendor of its
+    /// MakerNote in its header rather than in a tag, and its primary directory is the raw one: the note
+    /// of the Exif directory it reaches from there is Panasonic's by the format, not by a name.
+    /// </summary>
+    private readonly ReadOnlySpan<byte> Maker()
+    {
+        ReadOnlySpan<byte> make = Make();
+        return panasonicRaw && make.IsEmpty ? "Panasonic"u8 : make;
     }
 
     /// <summary>The raw bytes of the 0th IFD ASCII Make tag, or empty.</summary>
@@ -300,7 +316,7 @@ internal ref struct ExifTiffReader
     /// A picture directory the payload does not hold, or one that was already read, is not followed: the
     /// pictures are incidental to the metadata, exactly as the thumbnail is, and the entry stays.
     /// </summary>
-    private void ScheduleSubImages(ExifValue value, int depth)
+    private void ScheduleSubImages(ExifValue value, int depth, ExifSubImageKind kind)
     {
         if (value.FieldType is not (TiffFieldType.Long or TiffFieldType.Short))
             return;
@@ -324,7 +340,9 @@ internal ref struct ExifTiffReader
                 continue; // The offset names a directory this read already visited.
             if (offsets.Count > limits.MaxDirectories || depth > limits.MaxDirectoryDepth)
                 throw Error(MetadataErrorCode.LimitExceeded, "The directory traversal budget was exceeded.", at);
-            pendingImages.Enqueue((at, subImages.Count + pendingImages.Count + 1));
+            pendingImages.Enqueue(kind == ExifSubImageKind.SubIfd
+                ? (at, ++subIfdImages, ExifSubImageKind.SubIfd)
+                : (at, ++thumbnailSubImages, ExifSubImageKind.ThumbnailSubIfd));
         }
     }
 
@@ -334,12 +352,16 @@ internal ref struct ExifTiffReader
     /// field type this reader does not know is left out rather than refused: the rest of the file's
     /// metadata does not depend on it.
     /// </summary>
-    private void ReadSubImage(uint offset, int index)
+    private void ReadSubImage(uint offset, int index, ExifSubImageKind kind)
     {
         int start = RequireRange(offset, 2);
         int count = U16(start);
-        if (count > limits.MaxEntriesPerDirectory || count > limits.MaxTotalEntries - totalEntries)
-            throw Error(MetadataErrorCode.LimitExceeded, "The IFD entry budget was exceeded.", offset);
+        // A picture is incidental to the metadata, so an offset that does not lead to a directory the
+        // payload can hold is not a picture at all: it is dropped rather than failing the read, as an
+        // offset of a SubIFD list that names no directory is.
+        if (count > limits.MaxEntriesPerDirectory || count > limits.MaxTotalEntries - totalEntries ||
+            count * 12L + 6 > data.Length - start)
+            return;
         totalEntries += count;
         int length = 2 + count * 12 + 4;
         RequireRange(offset, length);
@@ -347,7 +369,6 @@ internal ref struct ExifTiffReader
         if (wholeFile)
             ReserveBytes(length, offset);
         var ids = new HashSet<ushort>();
-        ushort previous = 0;
         var imageEntries = new List<ExifEntry>(count);
         for (int i = 0; i < count; i++)
         {
@@ -355,9 +376,9 @@ internal ref struct ExifTiffReader
             ushort tag = U16(p);
             if (!ids.Add(tag))
                 throw Error(MetadataErrorCode.AmbiguousMetadata, "The IFD contains a duplicate tag ID.", p);
-            if (i != 0 && tag < previous)
-                throw Error(MetadataErrorCode.InvalidExif, "IFD tags are not in ascending order.", p);
-            previous = tag;
+            // TIFF asks for ascending tag IDs and cameras break the rule: the Sony raws of the corpus
+            // list their entries out of order, and the reference reads them in the order they come.
+            // Only an ID that appears twice is ambiguous, and that is refused above.
             ushort typeCode = U16(p + 2);
             if (typeCode is < 1 or > 12)
                 continue;
@@ -378,7 +399,12 @@ internal ref struct ExifTiffReader
             imageEntries.Add(new ExifEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, tag),
                 ExifValue.FromRaw(type, valueCount, order, data.Slice(valueStart, byteLength))));
         }
-        subImages.Add(new ExifSubImage(index, imageEntries));
+        subImages.Add(new ExifSubImage(index, imageEntries, kind));
+        bool chain = kind == ExifSubImageKind.ImageDirectory;
+        // A chain continues: the directory after this one is the file's next picture, not metadata.
+        uint following = U32(start + 2 + count * 12);
+        if (chain && following != 0 && offsets.Add(following))
+            pendingImages.Enqueue((following, ++chainImages + 1, ExifSubImageKind.ImageDirectory));
     }
 
     private void ReadDirectory(uint offset, ExifDirectoryKind kind, int depth)
@@ -395,16 +421,15 @@ internal ref struct ExifTiffReader
             ReserveBytes(length, offset);
         directories.Add(kind);
         var ids = new HashSet<ushort>();
-        ushort previous = 0;
         for (int i = 0; i < count; i++)
         {
             int p = start + 2 + i * 12;
             ushort tag = U16(p);
             if (!ids.Add(tag))
                 throw Error(MetadataErrorCode.AmbiguousMetadata, "The IFD contains a duplicate tag ID.", p);
-            if (i != 0 && tag < previous)
-                throw Error(MetadataErrorCode.InvalidExif, "IFD tags are not in ascending order.", p);
-            previous = tag;
+            // TIFF asks for ascending tag IDs and cameras break the rule: the Sony raws of the corpus
+            // list their entries out of order, and the reference reads them in the order they come.
+            // Only an ID that appears twice is ambiguous, and that is refused above.
             ushort typeCode = U16(p + 2);
             if (typeCode is < 1 or > 12)
             {
@@ -462,8 +487,9 @@ internal ref struct ExifTiffReader
             // like any other, and only a SubIFD list is followed, as a list of image directories.
             if (!wholeFile && !readOnly && tag is 0x014A or 0x0111 or 0x0117 or 0x0144 or 0x0145)
                 throw Error(MetadataErrorCode.UnsupportedFeature, "SubIFDs, strips and tiles are outside the EXIF subset.", p);
-            if (wholeFile && tag == 0x014A && kind == ExifDirectoryKind.Ifd0)
-                ScheduleSubImages(entry.Value, depth);
+            if (wholeFile && tag == 0x014A && kind is ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail)
+                ScheduleSubImages(entry.Value, depth,
+                    kind == ExifDirectoryKind.Ifd0 ? ExifSubImageKind.SubIfd : ExifSubImageKind.ThumbnailSubIfd);
             if (tag == 0x927C && kind == ExifDirectoryKind.Exif)
             {
                 if (type != TiffFieldType.Undefined)
@@ -480,10 +506,22 @@ internal ref struct ExifTiffReader
         uint next = U32(start + 2 + count * 12);
         if (next != 0)
         {
-            // A whole file may chain further image directories after the second one (CR2 and PEF do).
-            // Like SubIFDs they hold images, not EXIF: the link is neither followed nor refused.
-            if (wholeFile && kind == ExifDirectoryKind.Thumbnail)
+            // A Panasonic RW2 names no directory after its primary one: that directory is the
+            // PanasonicRaw one, and the reference ignores the link rather than following it. The
+            // Image and thumbnail rows an RW2 prints come from the image it embeds, not from here.
+            if (panasonicRaw && kind == ExifDirectoryKind.Ifd0)
                 return;
+            // A whole file may chain further image directories after the second one (CR2 puts its raw
+            // picture in the second directory and a further reduced one in the third, PEF its preview).
+            // They hold pictures, not EXIF: like SubIFDs they are listed and nothing in them is followed.
+            if (wholeFile && kind == ExifDirectoryKind.Thumbnail)
+            {
+                // A link the payload does not hold names no picture: it is neither read nor refused,
+                // exactly as an offset of a SubIFD list that lies outside it is not.
+                if (CheckedRange.TryGetSpanRange(next, 2, data.Length, out _, out _) && offsets.Add(next))
+                    pendingImages.Enqueue((next, ++chainImages + 1, ExifSubImageKind.ImageDirectory));
+                return;
+            }
             if (kind != ExifDirectoryKind.Ifd0)
                 throw Error(MetadataErrorCode.UnsupportedFeature, "Only the primary IFD may link to a thumbnail IFD.", start + length - 4);
             Schedule(next, ExifDirectoryKind.Thumbnail, depth + 1);

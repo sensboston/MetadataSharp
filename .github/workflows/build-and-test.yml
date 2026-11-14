@@ -860,3 +860,109 @@ jobs:
           python tools/reference/crw_parity.py artifacts/parity/exiv2/test/data artifacts/parity/crw \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
             --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+
+  # The pinned upstream checkout holds one to three raw files for most raw formats, which is too few
+  # to say anything about a camera family. This job reads a wider corpus downloaded from
+  # raw.pixls.us (CC0 1.0, pinned by URL, size and SHA-256 in tools/parity/raw-corpus.json, never
+  # committed) with the same comparisons as the other jobs: -pt rows, previews and MakerNote edits
+  # against the pinned 0.28.9 binary.
+  raw-corpus-parity:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    name: Exiv2 0.28.9 / RAW corpus parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      LC_ALL: C
+      TZ: UTC
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      DUMP: dotnet run --project tools/MetadataSharp.Dump -c Release -f net10.0 --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the dump and the fixture generator
+        run: |
+          dotnet build tools/MetadataSharp.Dump/MetadataSharp.Dump.csproj --configuration Release -f net10.0
+          dotnet build tools/MetadataSharp.ReferenceFixture/MetadataSharp.ReferenceFixture.csproj --configuration Release -f net10.0
+      - name: Checkout pinned upstream corpus (CI-time fetch; never vendored, never executed)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/parity/exiv2
+          persist-credentials: false
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/parity/exiv2.tar.gz https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          echo "10041994  artifacts/parity/exiv2.tar.gz" | python -c "import sys,os; n,f=sys.stdin.read().split(); assert os.path.getsize(f)==int(n), 'unexpected size'"
+          tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
+          artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      # The corpus is 290 MB from a public mirror: a run re-verifies it against the same pins whether it
+      # came from the cache or from the network.
+      - name: Restore the RAW corpus
+        id: raw-corpus-cache
+        uses: actions/cache@v4
+        with:
+          path: artifacts/parity/raw-corpus
+          key: raw-corpus-${{ hashFiles('tools/parity/raw-corpus.json') }}
+      # Every sample is fetched from the URL the manifest pins and checked against the pinned size
+      # and SHA-256 before any comparison reads it.
+      - name: Download the pinned RAW corpus (CC0 1.0, pinned URL and SHA-256)
+        shell: bash
+        run: |
+          python tools/parity/raw_corpus.py download artifacts/parity/raw-corpus \
+            --report artifacts/parity/raw-corpus/download.json
+      - name: Tag table and -pt parity on the RAW corpus
+        shell: bash
+        run: |
+          python tools/parity/run_tag_print.py --tree artifacts/parity/exiv2 \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP" \
+            --fixtures artifacts/parity/raw-corpus --out artifacts/parity/raw-tag-print --annotate
+      # An aggregate of 350 files says what differs, not why. When anything above fails, one file's rows
+      # beside the reference's are what a reader defect is diagnosed from.
+      - name: Explain the first RAW file that differs
+        if: failure()
+        shell: bash
+        run: |
+          python tools/parity/raw_corpus.py explain artifacts/parity/raw-corpus --files 8 \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP"
+      - name: Preview parity on the RAW corpus
+        if: always()
+        shell: bash
+        run: |
+          python tools/parity/run_previews.py \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pp" \
+            --dump-command "$DUMP" --fixtures artifacts/parity/raw-corpus \
+            --out artifacts/parity/raw-preview --annotate --title 'PARITY RAW preview'
+      - name: MakerNote edit and copy parity on the RAW corpus
+        if: always()
+        shell: bash
+        run: |
+          python tools/reference/makernote_parity.py artifacts/parity/raw-corpus artifacts/parity/raw-makernote \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      # The pins are checked last so that a comparison is never reported green for bytes nobody
+      # pinned: `verify` refuses a missing file, a wrong size, a wrong hash and an unpinned entry.
+      - name: Verify the RAW corpus against its pins
+        if: always()
+        shell: bash
+        run: python tools/parity/raw_corpus.py verify artifacts/parity/raw-corpus
+      - name: Keep the RAW corpus reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-corpus-parity
+          path: |
+            artifacts/parity/raw-corpus/download.json
+            artifacts/parity/raw-tag-print/tag-print-report.json
+            artifacts/parity/raw-preview/preview-report.json
+            artifacts/parity/raw-makernote/
+          if-no-files-found: warn
+          retention-days: 30

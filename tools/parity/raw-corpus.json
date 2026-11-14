@@ -1,0 +1,192 @@
+{
+  "provenance": "Raw camera samples from raw.pixls.us, which dedicates every uploaded sample to CC0 1.0 (public domain). The files are never committed to this repository: tools/parity/raw_corpus.py downloads them from the URL recorded here and refuses a file whose size or SHA-256 differs from the pin. Sizes and hashes are taken from the site's own file list (https://raw.pixls.us/data/filelist.sha256) when the entry was pinned.",
+  "license": "CC0-1.0",
+  "license_source": "https://raw.pixls.us/",
+  "mirror": "https://raw.pixls.us/data/",
+  "files": {
+    "canon-eos-10d-crw_7673.crw": {
+      "url": "https://raw.pixls.us/data/Canon/EOS%2010D/CRW_7673.CRW",
+      "bytes": 7787330,
+      "sha256": "b0730eb3a67cc2281a32e0b2ee104199246928d954a68b7e5b72366514c73d02",
+      "camera": "Canon EOS 10D",
+      "format": "CRW",
+      "source_file": "CRW_7673.CRW"
+    },
+    "canon-eos-300d-crw_8395.crw": {
+      "url": "https://raw.pixls.us/data/Canon/EOS%20300D/CRW_8395.CRW",
+      "bytes": 8389842,
+      "sha256": "9e7f62239fe728046af28d0d4a8a722d35d40146a79794a5bda1775306af4383",
+      "camera": "Canon EOS 300D",
+      "format": "CRW",
+      "source_file": "CRW_8395.CRW"
+    },
+    "canon-eos-20d-img_3893.cr2": {
+      "url": "https://raw.pixls.us/data/Canon/EOS%2020D/IMG_3893.CR2",
+      "bytes": 7489116,
+      "sha256": "db78660d48589130d99e0bc621424851eb0f84df052634fb5bc89c7a02fe7033",
+      "camera": "Canon EOS 20D",
+      "format": "CR2",
+      "source_file": "IMG_3893.CR2"
+    },
+    "canon-eos-350d-img_1707.cr2": {
+      "url": "https://raw.pixls.us/data/Canon/EOS%20350D/IMG_1707.CR2",
+      "bytes": 10586467,
+      "sha256": "8cbb84e04d93b005fe082da9c954122a612b5281af00aa088d767850f343fd38",
+      "camera": "Canon EOS 350D",
+      "format": "CR2",
+      "source_file": "IMG_1707.CR2"
+    },
+    "nikon-d50-dsc_5155.nef": {
+      "url": "https://raw.pixls.us/data/Nikon/D50/DSC_5155.NEF",
+      "bytes": 5970470,
+      "sha256": "9f94c27672a63f946c92d43910ef0c266dffaa14dae0007ae00ac72d2c684935",
+      "camera": "Nikon D50",
+      "format": "NEF",
+      "source_file": "DSC_5155.NEF"
+    },
+    "nikon-d70-20170902_0047.nef": {
+      "url": "https://raw.pixls.us/data/Nikon/D70/20170902_0047.NEF",
+      "bytes": 5488179,
+      "sha256": "dd6405aeb33b0cd5bf66c98ba98ccbb478a765450cfd130810e470dab8d1f4b4",
+      "camera": "Nikon D70",
+      "format": "NEF",
+      "source_file": "20170902_0047.NEF"
+    },
+    "sony-a100-_dsc0258.arw": {
+      "url": "https://raw.pixls.us/data/Sony/DSLR-A100/_DSC0258.ARW",
+      "bytes": 10137572,
+      "sha256": "4df7981ac4baec9648b4f106751ea4b09a6e27bc70a15f8ef09bec051fec362d",
+      "camera": "Sony DSLR-A100",
+      "format": "ARW",
+      "source_file": "_DSC0258.ARW"
+    },
+    "sony-a700-dsc07249.arw": {
+      "url": "https://raw.pixls.us/data/Sony/DSLR-A700/DSC07249.ARW",
+      "bytes": 12967424,
+      "sha256": "3159e28892bf0771d01525cd4b6190f9c15bbb19fa2fab6d2515ced0594e8f40",
+      "camera": "Sony DSLR-A700",
+      "format": "ARW",
+      "source_file": "DSC07249.ARW"
+    },
+    "olympus-e1-e_1__c106743_gredos.orf": {
+      "url": "https://raw.pixls.us/data/Olympus/E-1/E_1__C106743_gredos.ORF",
+      "bytes": 10661632,
+      "sha256": "042286653fbae5b085bef4a4e626145385ea6e82e817f166b4904abcef64457c",
+      "camera": "Olympus E-1",
+      "format": "ORF",
+      "source_file": "E_1__C106743_gredos.ORF"
+    },
+    "olympus-e500-_1010010.orf": {
+      "url": "https://raw.pixls.us/data/Olympus/E-500/_1010010.ORF",
+      "bytes": 14127616,
+      "sha256": "fa5a4759b2de2b573f59629ad1baf64ad04a85fb8fe1fb3cbf68e08a42fff4f0",
+      "camera": "Olympus E-500",
+      "format": "ORF",
+      "source_file": "_1010010.ORF"
+    },
+    "pentax-k10d-_igp7284.pef": {
+      "url": "https://raw.pixls.us/data/Pentax/K10D/_IGP7284.PEF",
+      "bytes": 9561139,
+      "sha256": "e35ae4154a468be3154f5f462e884ba5941f010d3e8f23d347fbec14809f44d3",
+      "camera": "Pentax K10D",
+      "format": "PEF",
+      "source_file": "_IGP7284.PEF"
+    },
+    "pentax-k100d-imgp1754.pef": {
+      "url": "https://raw.pixls.us/data/Pentax/K100D/IMGP1754.PEF",
+      "bytes": 11119678,
+      "sha256": "86ec2383dbfda3eda38ca913b02874a70248efba6107aa304781c8d3779de8c9",
+      "camera": "Pentax K100D",
+      "format": "PEF",
+      "source_file": "IMGP1754.PEF"
+    },
+    "panasonic-g1-raw_panasonic_g1.rw2": {
+      "url": "https://raw.pixls.us/data/Panasonic/DMC-G1/RAW_PANASONIC_G1.RW2",
+      "bytes": 14697984,
+      "sha256": "aa3b92d6592744a889d7ea50aaf3ea55e0ec961d04c740d437d3396ca79757be",
+      "camera": "Panasonic DMC-G1",
+      "format": "RW2",
+      "source_file": "RAW_PANASONIC_G1.RW2"
+    },
+    "panasonic-lx3-p1020593.rw2": {
+      "url": "https://raw.pixls.us/data/Panasonic/DMC-LX3/P1020593.RW2",
+      "bytes": 9693184,
+      "sha256": "6663d5b6539de15640ded2b0f422c8affb8cf1bec93e27b3548e970226c063a5",
+      "camera": "Panasonic DMC-LX3",
+      "format": "RW2",
+      "source_file": "P1020593.RW2"
+    },
+    "sony-r1-_dsc1477.sr2": {
+      "url": "https://raw.pixls.us/data/Sony/DSC-R1/_DSC1477.SR2",
+      "bytes": 21035488,
+      "sha256": "921c5f2513dd1671a9089e73fc778fc3573bc4cb70a3a555d0414661d0e62274",
+      "camera": "Sony DSC-R1",
+      "format": "SR2",
+      "source_file": "_DSC1477.SR2"
+    },
+    "samsung-nx10-sam_3630.srw": {
+      "url": "https://raw.pixls.us/data/Samsung/NX10/SAM_3630.SRW",
+      "bytes": 28564528,
+      "sha256": "dead7b4ad83b739ff7b8a1218882589f66cb14efc09f79eeba7a1dcbf7abd29f",
+      "camera": "Samsung NX10",
+      "format": "SRW",
+      "source_file": "SAM_3630.SRW"
+    },
+    "samsung-nx100-raw_samsung_nx100.srw": {
+      "url": "https://raw.pixls.us/data/Samsung/NX100/RAW_SAMSUNG_NX100.SRW",
+      "bytes": 27120224,
+      "sha256": "3149a901d154cc37175166c7ebce559b100e8ba872023c6b159028dcbae5d03b",
+      "camera": "Samsung NX100",
+      "format": "SRW",
+      "source_file": "RAW_SAMSUNG_NX100.SRW"
+    },
+    "leica-m8-l1030132.dng": {
+      "url": "https://raw.pixls.us/data/Leica/M8/L1030132.DNG",
+      "bytes": 10575296,
+      "sha256": "7fdcca2371bb07fbf9483fcb08e3b5ab093eca1ca3924cbc86d6863736c31153",
+      "camera": "Leica M8",
+      "format": "DNG",
+      "source_file": "L1030132.DNG"
+    },
+    "pentax-k10d-imgp5398.dng": {
+      "url": "https://raw.pixls.us/data/Pentax/K10D/IMGP5398.DNG",
+      "bytes": 16913175,
+      "sha256": "e7ea961edfea725ad2753f261d20da5e6addd5d641e5bcbc373999710f27941f",
+      "camera": "Pentax K10D",
+      "format": "DNG",
+      "source_file": "IMGP5398.DNG"
+    },
+    "minolta-a1-raw_minolta_a1.mrw": {
+      "url": "https://raw.pixls.us/data/Minolta/DiMAGE%20A1/RAW_MINOLTA_A1.MRW",
+      "bytes": 7513184,
+      "sha256": "bde1e2cd788e49c9bef20dfdd41be948fb02c2ee198c6b0959a67a3f79fd41c9",
+      "camera": "Minolta DiMAGE A1",
+      "format": "MRW",
+      "source_file": "RAW_MINOLTA_A1.MRW"
+    },
+    "minolta-a2-pict0881.mrw": {
+      "url": "https://raw.pixls.us/data/Minolta/DiMAGE%20A2/PICT0881.MRW",
+      "bytes": 12150304,
+      "sha256": "8655e3428461377dd7c6b28ae98a0b23d659314997ed16333985278f99c9a4b4",
+      "camera": "Minolta DiMAGE A2",
+      "format": "MRW",
+      "source_file": "PICT0881.MRW"
+    },
+    "fuji-s2pro-dscf0002.raf": {
+      "url": "https://raw.pixls.us/data/Fujifilm/FinePix%20S2Pro/DSCF0002.RAF",
+      "bytes": 13211656,
+      "sha256": "9fe1bf1361f015d9db862228e4a26b23d69e81015ed4a032eaefb8242ae9ad42",
+      "camera": "Fujifilm FinePix S2Pro",
+      "format": "RAF",
+      "source_file": "DSCF0002.RAF"
+    },
+    "fuji-s3pro-dscf3694.raf": {
+      "url": "https://raw.pixls.us/data/Fujifilm/FinePix%20S3Pro/DSCF3694.RAF",
+      "bytes": 25760952,
+      "sha256": "038e5a13a22513f53d143e328a66e2de8071809565db696ecac84b4364fcb75b",
+      "camera": "Fujifilm FinePix S3Pro",
+      "format": "RAF",
+      "source_file": "DSCF3694.RAF"
+    }
+  }
+}

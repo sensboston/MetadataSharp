@@ -79,6 +79,20 @@ _FIXTURE_ORACLE_EXCEPTIONS = {
 }
 
 
+# Previews a file holds that the pinned tool does not list. Each entry names one file and one preview
+# exactly, with the reason the pinned tool misses it; a preview that stops being listed fails the gate
+# again, because an entry does not silence a difference, it records the one that remains.
+_LISTED_AND_NOT_IN_REFERENCE = {
+    "minolta-a2-pict0881.mrw": (
+        ("image/jpeg", 640, 480, 56593),
+        "The note of this MRW counts its thumbnail from the start of the block the note lives in, and this "
+        "reader follows that reading: the pinned tool needs it for minolta-a1-raw_minolta_a1.mrw of the same "
+        "corpus, where its own reading holds no stream, and lists nothing here although the file holds this "
+        "picture at the address the note names.",
+    ),
+}
+
+
 class PreviewParityError(Exception):
     """The run cannot be trusted; nothing should be concluded from its numbers."""
 
@@ -263,6 +277,12 @@ def _source_offsets(source: bytes, extracted: bytes, mime: str, width: int, heig
         if first_strip:
             return _find_all(source, first_strip)
     if mime == "image/jpeg":
+        # The reference repairs a thumbnail whose JPEG header is damaged by forcing its first byte to
+        # 0xFF before writing it out, so the bytes after that one, and only those, are the file's own.
+        if len(extracted) > 16 and extracted[0] == 0xFF:
+            repaired = [begin - 1 for begin in _find_all(source, extracted[1:]) if begin > 0]
+            if repaired:
+                return repaired
         # Photoshop EPS stores JPEG data as hexadecimal IRB data; XMP thumbnails use base64.
         start, end = 0, len(source)
         begin = source.find(b"%BeginPhotoshop:")
@@ -321,10 +341,14 @@ def oracle_offsets(exiv2_command: list[str], path: Path, previews: list[Preview]
             raise PreviewParityError(f"exiv2 -ep produced {len(outputs)} previews for {path.name}, but -pp listed {len(previews)}")
         source = path.read_bytes()
         offsets: list[list[int]] = []
-        for ((mime, width, height, _), (_, output)) in zip(previews, outputs):
-            candidates = _source_offsets(source, output.read_bytes(), mime, width, height)
+        for number, ((mime, width, height, _), (_, output)) in enumerate(zip(previews, outputs), 1):
+            extracted = output.read_bytes()
+            candidates = _source_offsets(source, extracted, mime, width, height)
             if not candidates:
-                raise PreviewParityError(f"cannot locate exiv2 preview bytes in {path.name}; offset parity is unprovable")
+                raise PreviewParityError(
+                    f"cannot locate exiv2 preview bytes in {path.name}; offset parity is unprovable "
+                    f"(preview {number} of {len(previews)}: {mime} {width}x{height}, {len(extracted)} bytes, "
+                    f"starts {extracted[:4].hex() or 'empty'}, file {len(source)} bytes)")
             offsets.append(candidates)
         return offsets
 
@@ -408,6 +432,16 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
                         raise PreviewParityError(f"{name}: preview {index} has an invalid file range: "
                                                  f"offset={offset}, length={preview[3]}, file={file_size}, source={source}")
         outcome = compare_file(expected[name], listed if status == "ok" else [])
+        accepted: list[dict[str, Any]] = []
+        if known := _LISTED_AND_NOT_IN_REFERENCE.get(name):
+            pattern, reason = known
+            kept = []
+            for preview in outcome["extra"]:
+                if preview == pattern:
+                    accepted.append({"file": name, "preview": list(preview), "reason": reason})
+                else:
+                    kept.append(preview)
+            outcome["extra"] = kept
         format_name = Path(name).suffix.lstrip(".").upper() or "UNKNOWN"
         format_count = format_totals.setdefault(format_name, Counter())
         format_count["files"] += 1
@@ -445,13 +479,21 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
         totals["files_equal"] += 1 if not outcome["missing"] and not outcome["extra"] else 0
         totals["files_ordered"] += 1 if outcome["ordered"] else 0
         entry = {"file": name, "status": status, "match": outcome["match"], "ordered": outcome["ordered"],
-                 "listed_offsets": block.get("offsets", []) if block is not None else []}
+                 "listed_offsets": block.get("offsets", []) if block is not None else [],
+                 "listed_sources": block.get("sources", []) if block is not None else []}
         if outcome["missing"]:
             entry["missing"] = [list(preview) for preview in outcome["missing"]]
+            if reference_offsets is not None:
+                # Where the reference's own bytes lie: the number a listing that left the preview out needs.
+                entry["missing_at"] = [{"preview": list(preview), "offsets": reference_offsets[index]}
+                                       for index, preview in enumerate(expected[name])
+                                       if preview in outcome["missing"]]
         if outcome["extra"]:
             entry["extra"] = [list(preview) for preview in outcome["extra"]]
         if offset_mismatch:
             entry["offset_mismatch"] = offset_mismatch
+        if accepted:
+            entry["accepted"] = accepted
         if status == "error":
             entry["detail"] = block["detail"] if block is not None else ""
         files.append(entry)
@@ -459,6 +501,41 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
     formats = {name: dict(counts) for name, counts in sorted(format_totals.items())}
     return {"kind": KIND, "totals": dict(totals), "rate": rate, "statuses": dict(statuses),
             "formats": formats, "files": files}
+
+
+# The rows whose value is an address of a picture: the one a missing preview would be named by.
+_ADDRESS_ROW = re.compile(r"(JPEGInterchangeFormat|PreviewImage|PreviewOffset|PreviewImageStart|Thumbnail"
+                          r"|ThumbnailOffset|StripOffsets|NewSubfileType|MakerNote.Offset|Diagnostic)[.A-Za-z]*$")
+
+
+def dump_addresses(dump_command: list[str], paths: list[Path]) -> dict[str, list[str]]:
+    """The rows of a file that can address a picture, for a file whose preview list does not agree.
+
+    A listing that leaves a preview out says which picture is missing, not which structure the reader
+    failed to follow: the rows are read once more, without the preview mode, and the ones whose key
+    names an address are kept beside the difference they explain.
+    """
+    listing = "".join(f"{path}\n" for path in paths)
+    try:
+        finished = subprocess.run(dump_command + ["--refusal-detail", "--files-from", "-"], input=listing,
+                                  capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                  timeout=1800, check=False)
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return {}
+    addresses: dict[str, list[str]] = {}
+    current: str | None = None
+    for line in (finished.stdout or "").splitlines():
+        fields = line.split("\t")
+        if fields[0] == "FILE" and len(fields) == 2:
+            current = fields[1]
+            addresses.setdefault(current, [])
+        elif fields[0] == "STATUS" and len(fields) >= 3 and current is not None:
+            addresses[current].append(f"status: {fields[2]}")
+        elif fields[0] == "TAG" and len(fields) >= 5 and current is not None and _ADDRESS_ROW.search(fields[1]):
+            # A small value is the address itself, and it is what a reader that lists nothing was given.
+            value = f" = {fields[4]}" if len(fields[4]) <= 24 else ""
+            addresses[current].append(f"{fields[1]}({fields[2]} {fields[3]}{value})")
+    return addresses
 
 
 def gate_exit_code(report: dict[str, Any]) -> int:
@@ -490,6 +567,8 @@ def text_report(report: dict[str, Any]) -> str:
             lines.append(f"  {entry['file']} [{entry['status']}] missing={entry.get('missing', [])} "
                          f"extra={entry.get('extra', [])} offset_mismatch={entry.get('offset_mismatch', [])} "
                          f"ordered={entry['ordered']}")
+            if entry.get("addresses"):
+                lines.append(f"    rows that address a picture: {', '.join(entry['addresses'])}")
     return "\n".join(lines) + "\n"
 
 
@@ -574,10 +653,17 @@ def main(argv: list[str] | None = None) -> int:
         for name, path in paths.items():
             if path is not None:
                 expected_offsets[name] = oracle_offsets(extraction_command, path, expected[name])
-    report = compare(expected, run_dump(shlex.split(args.dump_command), present), paths,
+    dump_command = shlex.split(args.dump_command)
+    report = compare(expected, run_dump(dump_command, present), paths,
                      expected_offsets if args.exiv2_command else None)
-    if args.fixtures:
-        report["exceptions"] = fixture_exceptions
+    report["exceptions"] = fixture_exceptions + [item for entry in report["files"] for item in entry.get("accepted", [])]
+    # A file that differs gets its address rows beside the difference: what a reader can see, and what
+    # it made of it, in one place.
+    differs = [entry for entry in report["files"] if entry.get("missing") or entry.get("extra")]
+    if differs:
+        addresses = dump_addresses(dump_command, [paths[entry["file"]] for entry in differs])
+        for entry in differs:
+            entry["addresses"] = addresses.get(str(paths[entry["file"]]), [])
 
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "preview-report.json").write_text(json.dumps(report, indent=1, sort_keys=True) + "\n", encoding="utf-8")

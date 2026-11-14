@@ -26,14 +26,19 @@ if (previews.Count != 0)
 - JPEG and EXV segment readers, TIFF-based raw files, PNG, WebP, PSD and BMFF retain the file ranges
   they can prove are bounded. JPEG APP1, TIFF IFD and MakerNote ranges report absolute offsets in the
   complete input. BMFF item extents include the container's item-location calculations.
-- CRW uses CIFF preview and thumbnail records; MRW scans its bounded TTW TIFF block; RAF scans the
-  embedded JPEG and its separate TIFF block; RW2 reads the Panasonic MakerNote preview (not a generic
-  linked thumbnail IFD); JP2 scans the Exif UUID box; PGF scans its bounded embedded image; XMP
+- CRW uses CIFF preview and thumbnail records; MRW scans its bounded TTW TIFF block and follows the
+  thumbnail address of a Minolta note, which counts from the start of the block the note lives in; RAF
+  scans the embedded JPEG and its separate TIFF block; RW2 reads the `PanasonicRaw.PreviewImage` picture
+  of its raw directory and the thumbnail its own directory chain names; JP2 scans the Exif UUID box; PGF
+  scans its bounded embedded image; XMP
   sidecars and PNG iTXt packets can expose `xmpGImg`/`xapGImg` JPEG thumbnails and compressed
   ImageMagick Raw EXIF profiles.
   EPS exposes DOS EPS WMF/TIFF previews and decodes AI7 hex thumbnails to binary P6 PNM. EPS
   PostScript is never interpreted or executed.
-- JPEG extraction checks SOI/EOI markers. TIFF, WMF, PNM, HEVC and AV1 extraction is byte-preserving
+- JPEG extraction checks SOI/EOI markers, with two repairs the reference tool makes and this reader makes
+  the same way: a stated range that runs past its picture is cut at the picture's last end-of-image
+  marker, and the first byte of a Minolta thumbnail's start-of-image marker is repaired to `FF` when the
+  file lost it. TIFF, WMF, PNM, HEVC and AV1 extraction is byte-preserving
   and does not decode the media; reduced uncompressed TIFF images are re-encoded as standalone TIFF
   thumbnails. EPS AI7, XMP thumbnails and generated TIFF previews are transformed, so their `Offset`
   identifies the source payload (or first strip) while `Length` is the generated output length; use

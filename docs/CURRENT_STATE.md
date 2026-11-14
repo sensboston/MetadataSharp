@@ -1,11 +1,21 @@
 # Current state
 
-Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (read-only).
+Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (read-only).
 
 ## Done (read side unless noted)
 
+- The RAW corpus is pinned, downloaded and verified in CI (`tools/parity/raw-corpus.json`,
+  23 CC0 files from raw.pixls.us, URL + size + SHA-256, nothing committed) and `raw-corpus-parity`
+  compares it with the pinned reference: tag table and `-pt` rows, preview lists and their source
+  offsets, and MakerNote edits and copies. Its first runs found six reader gaps — RW2 read as a plain
+  TIFF, raw files with several top-level directories, Samsung SRW preview directories, refused Sony
+  raws, an unplaceable MRW preview and a Fujifilm note copy losing its thumbnail pointers — and all
+  six are read now, recorded in the [release-readiness audit](RELEASE_READINESS_AUDIT.md); the job
+  passes. One difference is recorded by the gate itself: the 640x480 preview of
+  `minolta-a2-pict0881.mrw` is listed here and not by the reference, with the reason.
 - Format coverage and per-family read/write limits change as source-backed capability rows are
-  added. The maintained matrix is the [release-readiness audit](RELEASE_READINESS_AUDIT.md); the
+  added. The maintained matrix is the [release-readiness audit](RELEASE_READINESS_AUDIT.md) (library
+  capabilities; the command line is the [MetaTool task](usage/METATOOL_CLI_PARITY.md)); the
   executable operation contract is `MetadataCapabilities` and the format readers/writers.
 - JPEG, PNG, WebP, TIFF-based files (including DNG and supported camera raw structures), CRW, MRW,
   RAF, CR3, BMFF still images, PSD, JP2, JXL, EXV, EPS, PGF, XMP sidecars and selected video

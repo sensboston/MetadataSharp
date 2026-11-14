@@ -158,15 +158,21 @@ public sealed class ExifTiffReaderTests
         Assert.Equal(mutation is "cycle" or "shared" ? MetadataErrorCode.InvalidExif : MetadataErrorCode.UnsupportedFeature, error.Code);
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void DuplicateAndUnsortedEntriesAreNotFirstWins(bool duplicate)
+    [Fact]
+    public void AnUnsortedDirectoryIsReadInFileOrderAndARepeatedTagIsNot()
     {
+        // TIFF asks for ascending tag IDs and cameras break the rule; the reference reads the entries
+        // in the order the file gives them, so this read does too. A repeated ID is still ambiguous.
         byte[] data = Graph();
-        Put16(data, 22, duplicate ? (ushort)0x8769 : (ushort)0x0100);
-        MetadataException error = Assert.Throws<MetadataException>(() => ExifTiffReader.Read(data));
-        Assert.Equal(duplicate ? MetadataErrorCode.AmbiguousMetadata : MetadataErrorCode.InvalidExif, error.Code);
+        Put16(data, 22, 0x0100);
+        Assert.Equal(new[] { (ushort)0x8769, (ushort)0x0100 },
+            ExifTiffReader.Read(data).Metadata.Entries
+                .Where(entry => entry.Key.Directory == ExifDirectoryKind.Ifd0)
+                .Select(entry => entry.Key.TagId));
+
+        Put16(data, 22, 0x8769);
+        Assert.Equal(MetadataErrorCode.AmbiguousMetadata,
+            Assert.Throws<MetadataException>(() => ExifTiffReader.Read(data)).Code);
     }
 
     [Theory]
@@ -373,7 +379,6 @@ public sealed class ExifTiffReaderTests
     [InlineData("pointer-type", MetadataErrorCode.InvalidExif)]
     [InlineData("bigtiff", MetadataErrorCode.UnsupportedFeature)]
     [InlineData("duplicate", MetadataErrorCode.AmbiguousMetadata)]
-    [InlineData("unsorted", MetadataErrorCode.InvalidExif)]
     [InlineData("cycle", MetadataErrorCode.InvalidExif)]
     [InlineData("shared", MetadataErrorCode.InvalidExif)]
     [InlineData("nested-next", MetadataErrorCode.UnsupportedFeature)]
@@ -391,7 +396,6 @@ public sealed class ExifTiffReaderTests
             case "pointer-type": Put16(data, 12, 3); break;
             case "bigtiff": Put16(data, 2, 43); break;
             case "duplicate": Put16(data, 22, 0x8769); break;
-            case "unsorted": Put16(data, 22, 0x0100); break;
             case "cycle": Put32(data, 18, 8); break;
             case "shared": Put32(data, 30, 38); break;
             case "nested-next": Put32(data, 64, 80); break;

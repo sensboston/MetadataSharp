@@ -523,6 +523,73 @@ public sealed class PreviewTests
     }
 
     [Fact]
+    public void AMrwNoteCountsItsThumbnailFromTheStartOfTheFile()
+    {
+        byte[] picture = Picture(20, 10);
+        byte[] file = MrwWithNoteThumbnail(picture, out int at);
+
+        PreviewImage preview = Assert.Single(Previews.List(file));
+
+        Assert.Equal(new PreviewImage(Jpeg, 20, 10, at, picture.Length, "Exif.Minolta.ThumbnailOffset"), preview);
+        Assert.Equal(picture, Previews.Extract(file, preview));
+    }
+
+    [Fact]
+    public void AMinoltaThumbnailWithADamagedMarkerIsListedAndItsFirstByteRepaired()
+    {
+        byte[] picture = Picture(20, 10);
+        // The note's address holds a start-of-image marker whose first byte was damaged in the writing.
+        picture[0] = 0x00;
+        byte[] file = MrwWithNoteThumbnail(picture, out int at);
+
+        PreviewImage preview = Assert.Single(Previews.List(file));
+
+        Assert.Equal(new PreviewImage(Jpeg, 20, 10, at, picture.Length, "Exif.Minolta.ThumbnailOffset"), preview);
+        Assert.Equal(Picture(20, 10), Previews.Extract(file, preview));
+    }
+
+    /// <summary>
+    /// An MRW whose TTW block is a TIFF with a Minolta note that names the thumbnail by its position in the
+    /// file; the block states neither where the file starts nor whose note it holds.
+    /// </summary>
+    private static byte[] MrwWithNoteThumbnail(byte[] picture, out int at)
+    {
+        byte[] note = Ifd(true, 0, Long(0x0088, 0), Long(0x0089, picture.Length));
+        byte[] tiff = NoteTiff(true, string.Empty, note);
+        byte[] prd = Join(new byte[] { 0 }, "PRD"u8.ToArray(), Be32(24), "27730001"u8.ToArray(), new byte[16]);
+        at = 8 + prd.Length + 8 + tiff.Length;
+        // The address in the note is where the picture of this file starts, so build the file twice.
+        note = Ifd(true, 0, Long(0x0088, at), Long(0x0089, picture.Length));
+        tiff = NoteTiff(true, string.Empty, note);
+        byte[] blocks = Join(prd, Join(new byte[] { 0 }, "TTW"u8.ToArray(), Be32(tiff.Length), tiff));
+        return Join(new byte[] { 0 }, "MRM"u8.ToArray(), Be32(8 + blocks.Length), blocks, picture);
+    }
+
+    [Fact]
+    public void ARw2ListsTheThumbnailItsEmbeddedPictureNamesInFileCoordinates()
+    {
+        byte[] picture = Join(new byte[] { 0xFF, 0xD8, 0xFF, 0xE1, 0x00, 0x34 }, "Exif\0\0"u8.ToArray(),
+            Header(true), Ifd(true, 14), Ifd(true, 0, Long(0x0201, 0), Long(0x0202, 0)),
+            Picture(20, 10)[2..]);
+        byte[] thumbnail = Picture(8, 6);
+        long thumbAt = 24 + 18 + picture.Length;
+        // The picture an RW2 embeds is a camera's JPEG whose addresses are the file's own.
+        picture = Join(new byte[] { 0xFF, 0xD8, 0xFF, 0xE1, 0x00, 0x34 }, "Exif\0\0"u8.ToArray(),
+            Header(true), Ifd(true, 14), Ifd(true, 0, Long(0x0201, thumbAt), Long(0x0202, thumbnail.Length)),
+            Picture(20, 10)[2..]);
+        byte[] file = Join("IIU\0"u8.ToArray(), Longs(true, 0x18), new byte[16],
+            Ifd(true, 0, new Field(0x002E, 7, picture.Length, 24 + 18)), picture, thumbnail);
+
+        IReadOnlyList<PreviewImage> found = Previews.List(file);
+
+        Assert.Equal(2, found.Count);
+        Assert.Equal(new PreviewImage(Jpeg, 8, 6, thumbAt, thumbnail.Length,
+            "Exif.Thumbnail.JPEGInterchangeFormat"), found[0]);
+        Assert.Equal(new PreviewImage(Jpeg, 20, 10, 24 + 18, picture.Length,
+            "Exif.PanasonicRaw.PreviewImage"), found[1]);
+    }
+
+    [Fact]
     public void RafListsTheEmbeddedJpegAndItsExifThumbnailAtFileOffsets()
     {
         byte[] picture = Picture(64, 48);
@@ -815,7 +882,7 @@ public sealed class PreviewTests
     }
 
     [Fact]
-    public void ZeroPaddingAfterTheEndOfTheJpegIsKeptAndAnythingElseIsRefused()
+    public void ZeroPaddingAfterTheEndOfTheJpegIsKeptAndAnythingElseIsCutAtThePicture()
     {
         byte[] picture = Picture(160, 120);
         byte[] padded = Join(picture, new byte[3]);
@@ -824,10 +891,18 @@ public sealed class PreviewTests
         Assert.Equal(padded.Length, preview.Length);
         Assert.Equal(padded, Previews.Extract(file, preview));
 
+        // A range is a length the container states, not the picture: it can run past the picture into
+        // what follows it, and the picture is what ends at the last end-of-image marker.
         byte[] trailing = Join(picture, new byte[] { 0xFF });
         byte[] other = Wrap("jpeg", ThumbnailTiff(true, trailing), out _);
         PreviewImage listed = Assert.Single(Previews.List(other));
-        Assert.Equal(MetadataErrorCode.InvalidJpeg, Refusal(other, listed));
+        Assert.Equal(picture, Previews.Extract(other, listed));
+
+        // A range that holds no end-of-image marker holds no picture.
+        byte[] cut = picture[..^2];
+        byte[] broken = Wrap("jpeg", ThumbnailTiff(true, cut), out _);
+        PreviewImage unended = Assert.Single(Previews.List(broken));
+        Assert.Equal(MetadataErrorCode.InvalidJpeg, Refusal(broken, unended));
     }
 
     [Fact]

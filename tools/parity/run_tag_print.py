@@ -173,7 +173,7 @@ _TAG_PRINT_EXCEPTIONS: dict[str, str] = {
 # Only the observed result for each exact pinned input is allowed. A changed outcome returns to parity.
 _TAG_PRINT_REFUSAL_EXCEPTIONS: dict[str, tuple[str, str | int, str | None, str]] = {
     '1-string-format.jpg': ('metadatasharp-refused', 'refused', 'InvalidJpeg', 'MetadataSharp rejects the JPEG structure with InvalidJpeg. The exact pinned file 1-string-format.jpg is listed separately; the refusal is not counted as a successful comparison.'),
-    '2018-01-09-exiv2-crash-002.tiff': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file 2018-01-09-exiv2-crash-002.tiff is listed separately; the refusal is not counted as a successful comparison.'),
+    '2018-01-09-exiv2-crash-002.tiff': ('metadatasharp-refused', 'refused', 'AmbiguousMetadata', 'MetadataSharp refuses to resolve ambiguous metadata: the fuzzed directory of this input lists tag 0x9E9E twice, which is what this reader stops at now that an unsorted directory is read. The exact pinned file 2018-01-09-exiv2-crash-002.tiff is listed separately; the refusal is not counted as a successful comparison.'),
     '2018-01-09-exiv2-crash-003.tiff': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file 2018-01-09-exiv2-crash-003.tiff is listed separately; the refusal is not counted as a successful comparison.'),
     'Free_Test_Data_500KB_WAV.wav': ('exiv2-refused', 1, None, 'Pinned Exiv2 0.28.9 exits with status 1 for this exact input; its -pt oracle row set is unavailable. The refusal is named and not counted as a successful comparison.'),
     'FurnaceCreekInn.jpg': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file FurnaceCreekInn.jpg is listed separately; the refusal is not counted as a successful comparison.'),
@@ -519,9 +519,17 @@ def _emit_annotation(payload: dict[str, Any]) -> None:
     def emit(title: str, part: dict[str, Any]) -> None:
         raw = json.dumps(part, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
         encoded = base64.b64encode(zlib.compress(raw)).decode("ascii")
-        if len(encoded) > 3500:
+        if len(encoded) <= 3500:
+            print(f"::notice title={title}::{encoded}")
+            return
+        # A failing run is exactly when the report is large, so an oversized payload is halved
+        # rather than dropped: losing it leaves the failure unexplained.
+        keys = list(part)
+        if len(keys) < 2:
             raise TagPrintError(f"annotation payload too large for {title}: {len(encoded)} characters")
-        print(f"::notice title={title}::{encoded}")
+        half = len(keys) // 2
+        emit(f"{title} 1/2", {key: part[key] for key in keys[:half]})
+        emit(f"{title} 2/2", {key: part[key] for key in keys[half:]})
 
     grouped = payload.pop("mismatch_groups", [])
     refusals = payload.pop("refusals", [])
@@ -809,6 +817,9 @@ def verify_oracle(tree: Path, executable: str) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Compare MetadataSharp's tag output with pinned exiv2 -pt.")
     parser.add_argument("--tree", type=Path, required=True, help="pinned Exiv2 checkout")
+    parser.add_argument("--fixtures", type=Path, action="append", default=[],
+                        help="extra files to compare, against the pinned tool's live -pt output "
+                             "(the pinned RAW corpus, tools/parity/raw-corpus.json)")
     parser.add_argument("--exiv2", required=True, help="pinned Exiv2 executable")
     parser.add_argument("--dump-command", required=True, help="MetadataSharp.Dump command")
     parser.add_argument("--out", type=Path, default=ROOT / "artifacts/parity/tag-print")
@@ -816,6 +827,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     verify_oracle(args.tree, args.exiv2)
     candidates, unmatched = corpus.discover_exiv2(args.tree)
+    if args.fixtures:
+        candidates = candidates + corpus.discover_generated(*args.fixtures)
     paths = [candidate.path for candidate in candidates]
     dump = run_dump(shlex.split(args.dump_command), paths)
     expected_paths = {path.as_posix() for path in paths}

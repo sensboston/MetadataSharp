@@ -44,6 +44,32 @@ long jpegAt = raf.JpegOffset, jpegLength = raf.JpegLength;
   and are no error. Of the TIFF structure, the tags of the primary directory that the JPEG file does
   not have are added when both are of one byte order; the Fujifilm directory (tag 0xF000) is not read.
 
+## The pictures a raw container embeds
+
+A raw file embeds pictures, and those pictures are files with metadata of their own. The container's
+own metadata is what `ImageMetadata.Read` returns; the embedded picture's is a separate read-only
+snapshot, `EmbeddedImageMetadata.Read` (`MetadataSharp.Formats`), which names the preview it came from
+(`Source`) and holds that preview's EXIF, IPTC, XMP and comments. There is no writer: a caller that
+wants to change the embedded picture's metadata extracts the picture and edits it as a file.
+
+This is generic — any container whose preview is a whole image with readable metadata answers it — but
+it matters for **Panasonic RW2**, where the two layers are easy to confuse:
+
+- An RW2's first directory is the `PanasonicRaw` directory. Its tags describe the raw data — sensor
+  geometry, white-balance levels, strip layout, `RawDataOffset`, `PreviewImage` — and the file names no
+  directory after it. Its `ExifTag` (`0x8769`) leads to the EXIF directory and `0x8825` to GPS, and
+  that is all the container itself carries.
+- Exiv2 does not keep the layers apart: it reads the RW2 and then opens the embedded JPEG preview,
+  merges that picture's metadata into the file's, and prints `Exif.Image.*`, `Exif.Thumbnail.*` and
+  `Exif.Iop.*` rows that physically belong to the preview. In `Exiv2 -pt` parity those rows are required
+  and the print merges them the way the reference does (a container key wins over an embedded one, and
+  the `PanasonicRaw` directory never counts as holding one), but that is a rule of the print, not of the
+  library: `ImageMetadata.Read` of an RW2 reports the container's `PanasonicRaw`, `Exif`, GPS and
+  MakerNote entries and nothing from the preview.
+
+The preview's own `ExifTag` value is an offset inside the preview file, so it does not agree with the
+container's — a difference that only exists while the two layers are merged.
+
 ## Writing a CRW file
 
 ```csharp
