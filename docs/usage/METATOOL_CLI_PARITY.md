@@ -1,11 +1,11 @@
 # MetaTool CLI compatibility task
 
 This is the task list for making `samples/MetaTool` behave like the Exiv2 command line. It is not part
-of the library contract and it is not part of the release-readiness audit any more: the audit covers
-what the library can read and write, and a command-line front end is a separate piece of work with its
-own acceptance conditions.
+of the library contract and it is not part of [format and operation
+coverage](FORMAT_AND_OPERATION_COVERAGE.md): that document covers what the library can read and write,
+and a command-line front end is a separate piece of work with its own acceptance conditions.
 
-The library operations behind the rows below already exist and are covered by the audit and by the
+The library operations behind the rows below already exist and are covered by that document and by the
 tests it links. What is missing is Exiv2's argument grammar, its text output and its exit codes.
 
 **Reference:** Exiv2 v0.28.9, commit

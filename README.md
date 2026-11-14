@@ -342,7 +342,7 @@ Every CLI project is smoke-tested in CI; the viewer is built on .NET 10/Linux wi
 - [Build and test][build]
 - [Development policy][development]
 - Usage and preservation limits: [docs/usage][usage]
-- [Release-readiness audit against pinned Exiv2 0.28.9][audit] (format, family, CLI and library gaps)
+- [Format and operation coverage][audit] against pinned Exiv2 0.28.9 (formats, families, library gaps and non-goals)
 - Contributor and agent rules: [METADATASHARP_PROMPT.md][rules]
 - Design history: [docs/archive][archive] (read-only)
 
@@ -356,7 +356,7 @@ MIT, see [LICENSE][license].
 [state]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/CURRENT_STATE.md
 [examples]: https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Examples/QuickStart.cs
 [usage]: https://github.com/sensboston/MetadataSharp/tree/HEAD/docs/usage
-[audit]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/RELEASE_READINESS_AUDIT.md
+[audit]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/usage/FORMAT_AND_OPERATION_COVERAGE.md
 [build]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/BUILD_AND_TEST.md
 [development]: https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/DEVELOPMENT.md
 [rules]: https://github.com/sensboston/MetadataSharp/blob/HEAD/METADATASHARP_PROMPT.md

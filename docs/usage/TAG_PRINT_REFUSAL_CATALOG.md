@@ -82,6 +82,25 @@ field type TIFF does not define are read and compared row by row.
 | A MakerNote directory that states one tag ID twice | Every occurrence is listed, as the reference prints it; the lookup, a key name and an edit address the first one. |
 | An entry whose field type is not one of the twelve TIFF types | The strict read refuses the block and the read-only rules read it: the value is one byte per element, as the reference reads it, the entry keeps the type code the file states, and the block is not editable. |
 
+## Names, numbers and descriptions
+
+Two different questions live in this file, and only one of them is a list of differences.
+
+**A key the reference prints as a number.** `tools/parity/run_key_catalog.py` reads every tag table of
+the pinned checkout - 124 groups, 6 537 keys - and compares it with the generated
+`tag-catalog-data.json`: no key is missing, one is local only (`Exif.Fujifilm.Sharpness`, whose number
+the pinned table does not carry), and no tag number differs. A value printed as `Exif.Canon.0x0019`
+here is therefore a structure the local reader did not reach, never a table entry the catalog lacks.
+`tests/parity/test_key_catalog.py` fails if a table stops being readable, if a group disappears, or if
+the count falls below the pinned floor.
+
+**A description of a value.** The catalog's descriptions are written locally from tag names and a
+small set of hand-authored summaries. They are not Exiv2's texts, they are not compared with them, and
+they are not a parity surface: the `-pt` gate compares printed values and the interpreted-value gate
+measures the codes the corpus exercises. What is compared is listed in this file - the row rules, the
+named refusals, the display pairs and the local-only keys - and everything else that the reference
+prints, this library prints the same.
+
 ## How a reference row is read
 
 The reference prints one record per line with fixed column widths: the key is left-aligned in 44

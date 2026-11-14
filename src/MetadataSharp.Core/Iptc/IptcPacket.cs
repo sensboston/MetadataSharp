@@ -167,6 +167,38 @@ public sealed partial class IptcPacket
         return DecodeText(dataset);
     }
 
+    /// <summary>
+    /// Decodes the dataset at an index of <see cref="Datasets"/> as text in a named character set,
+    /// for a packet whose bytes are in a code page the packet itself does not declare.
+    /// </summary>
+    /// <remarks>
+    /// IIM records have one character-set designation, the UTF-8 marker of dataset 1:90, and a packet
+    /// that carries none says nothing about the code page of its text: this library reads such text as
+    /// ISO-8859-1, which is reversible but is not the language it was written in. A caller who knows
+    /// the code page - from the camera, the news agency or the country of the photographer - names it
+    /// here, using a name of <see cref="MetadataCharsets"/>. The reference tool has no such option for
+    /// IPTC text (its <c>-n</c> names the character set of a <c>UNICODE</c> user comment for the
+    /// <c>fc</c> action), so this is an addition rather than a comparison: it decodes bytes the packet
+    /// leaves undesignated, and it changes none of them. A byte run the character set cannot
+    /// represent raises rather than being replaced.
+    /// </remarks>
+    /// <exception cref="ArgumentException">The name is not a character set of <see cref="MetadataCharsets"/>.</exception>
+    /// <exception cref="MetadataException"><see cref="MetadataErrorCode.UnsupportedFeature"/> when the dataset is not a text dataset.</exception>
+    /// <exception cref="DecoderFallbackException">The bytes are not text in that character set.</exception>
+    /// <param name="datasetIndex">The zero-based index in <see cref="Datasets"/>.</param>
+    /// <param name="charset">The name of a character set of <see cref="MetadataCharsets"/>.</param>
+    /// <returns>The text decoded in the named character set.</returns>
+    public string GetText(int datasetIndex, string charset)
+    {
+        ArgumentNullException.ThrowIfNull(charset);
+        MetadataCharset selected = MetadataCharsets.Get(charset);
+        if ((uint)datasetIndex >= (uint)Datasets.Count) throw new ArgumentOutOfRangeException(nameof(datasetIndex));
+        IptcDataset dataset = Datasets[datasetIndex];
+        if (!IsText(dataset.Key))
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The dataset is not a text dataset of IIM records 1 and 2.");
+        return selected.Encoding.GetString(dataset.Value.Span);
+    }
+
     // Decode a dataset using the packet-wide Exiv2-compatible charset decision.
     private string DecodeText(IptcDataset dataset)
     {

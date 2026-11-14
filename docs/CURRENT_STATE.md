@@ -10,11 +10,11 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   offsets, and MakerNote edits and copies. Its first runs found six reader gaps — RW2 read as a plain
   TIFF, raw files with several top-level directories, Samsung SRW preview directories, refused Sony
   raws, an unplaceable MRW preview and a Fujifilm note copy losing its thumbnail pointers — and all
-  six are read now, recorded in the [release-readiness audit](RELEASE_READINESS_AUDIT.md); the job
+  six are read now, recorded in [format and operation coverage](usage/FORMAT_AND_OPERATION_COVERAGE.md); the job
   passes. One difference is recorded by the gate itself: the 640x480 preview of
   `minolta-a2-pict0881.mrw` is listed here and not by the reference, with the reason.
 - Format coverage and per-family read/write limits change as source-backed capability rows are
-  added. The maintained matrix is the [release-readiness audit](RELEASE_READINESS_AUDIT.md) (library
+  added. The maintained matrix is [format and operation coverage](usage/FORMAT_AND_OPERATION_COVERAGE.md) (library
   capabilities; the command line is the [MetaTool task](usage/METATOOL_CLI_PARITY.md)); the
   executable operation contract is `MetadataCapabilities` and the format readers/writers.
 - JPEG, PNG, WebP, TIFF-based files (including DNG and supported camera raw structures), CRW, MRW,
@@ -27,6 +27,34 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - PNG, WebP: format-specific metadata reads and restricted editing. Standalone TIFF and TIFF-based
   raw files: layout accounting and restricted editing. XMP packets and sidecars use a bounded
   profile. PSD, JP2, EPS and other readers expose only the families listed in the audit.
+- Character sets (PR "charsets"): `MetadataCharsets` is the matrix of the 38 names Exiv2's `-n`
+  accepts - `US-ASCII`, `UTF-8`, `UTF-16LE`/`-BE`, the `ISO-8859-x`, `windows-125x`, IBM, KOI8 and
+  East Asian code pages, with their aliases - resolved to the code pages the .NET runtime carries
+  (`CodePagesEncodingProvider`, no package reference; `ProjectInfrastructureTests` holds the
+  projects to zero `PackageReference`). `MetadataText` reads and writes the two carriers whose
+  character set is not the file's own - a `UserComment` (`Ascii`, `Unicode`, `Undefined`; a `JIS`
+  body is left to its raw bytes, as the reference prints such a body unconverted) and the five
+  Windows XP tags (always UCS-2LE) - and `IptcPacket.GetText(index, charset)` reads one text
+  dataset in a named code page. Naming a character set is read-side only and never converts a byte;
+  every lookup is strict, an unreadable byte raises instead of being replaced. In the reference,
+  `-n` belongs to the `fc` action (read the comment in that set, write it back as UCS-2), and its
+  print sniffs a byte-order mark and otherwise assumes the file's byte order - which is what a null
+  name does here. `MetadataTextTests` (30 tests) covers the matrix, its refusals and both writers;
+  `tools/reference/run_charset.py` writes one fixture per charset, has the pinned binary convert it
+  with `-v -n <name> fc`, and compares the text the tool reports converting with what this library
+  reads. Run 43595572508: all 38 character sets, 37 comments equal the tool's, one by that rule,
+  38 of 38 titles, 38 of 38 round trips. One rule is the reference's own: for `windows-1258` its text
+  is ours without the final character, because glibc's converter for that code page holds the last
+  character until a flush that `convertStringCharsetIconv` never performs.
+- Tag keys (PR "keys"): `tools/parity/run_key_catalog.py` reads every tag table of the pinned
+  checkout (6 537 keys in 124 groups) and finds none missing from `tag-catalog-data.json`, one
+  local-only key (`Exif.Fujifilm.Sharpness`) and no differing numbers; `tests/parity/test_key_catalog.py`
+  covers the script offline.
+- MakerNote edits beyond text (Group F): the parity job sets a number inside an array-valued tag
+  (`number` operation, `verdict` compares it field by field) - which is what the Minolta and
+  Samsung settings arrays need - and places the `.exv`-only notes into a neutral JPEG before
+  editing them. `AMinoltaSettingsElementIsSetWhereItIs` proves the element edit changes exactly two
+  bytes of a big-endian run inside a little-endian note and keeps the file length.
 - EXIF vocabulary: `ExifTags` (names, types, counts, value meanings from CIPA DC-008 / TIFF 6.0;
   names only, marked by `ExifTagDefinition.Source`, from TIFF/EP, DNG 1.7, DCF, Microsoft, PIM).
 - MakerNotes (`ExifMetadata.MakerNote`; read, and edited tag by tag in place, see below): Canon (incl. arrays and AFInfo), Nikon 1/2/3
@@ -263,8 +291,9 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   is a tag without a name of type LONG, SLONG or UNDEFINED unless `allowUnnamed` is passed. The
   result is re-read and every unnamed tag compared byte for byte (`MakerNoteWriter`), and the
   layout around the note is compared (`TiffBasedWriteVerifier.MakerNote`). Parity job
-  "MakerNote edit parity" (run 43316787075): `exiv2 -u -PEkv` reads 178 edits of corpus JPEGs back
-  as set with every other key unchanged (text of the same length 85, grown text 42, SHORT 51).
+  "MakerNote edit parity" (run 43595572508): `exiv2 -u -PEkv` reads 237 edits of 174 corpus files
+  back as set with every other key unchanged (text of the same length 85, grown text 42, SHORT 51,
+  and a number inside an array-valued tag 59 - the Minolta and Samsung settings arrays).
   Not proven by the tool: TIFF-based files (the corpus has no whole raw file with a decodable
   note; synthetic tests only) and growth in notes that count offsets from themselves (code
   present, switched off).
@@ -286,6 +315,9 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - Sync: `SaveAll` has no async twin; PSD and sidecars have no `SaveAll`. Not in the mapping table:
   CFAPattern, OECF, SpatialFrequencyResponse, DeviceSettingDescription. A value of a type or count
   the tag is not defined with is not converted and is listed in `SyncEdits.Notes`.
-- Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
+- Interpreted values cover standard EXIF, IPTC, `UserComment`, the XP tags and part of
+  Canon/Nikon/Sony MakerNotes; not XMP, and no value is ever converted into another character set
+  (naming one is display only). A note of a vendor the reader does not decode, and a tag a decoded
+  note does not list, are carried as raw bytes and refused when an edit would re-encode them.
 - PSD and JP2 writes are complete-set byte-buffer APIs, not the general per-family stream/path document APIs; JP2 XML boxes not parsed as XMP remain opaque. EXIF blocks written for PSD keep the 65,527-byte ceiling. ICC insertion for TIFF-based RAW remains refused unless a layout proves that tag 0x8773 targets the image rather than a thumbnail or raw-sensor IFD. The bounded DNG case is an un-reduced, uncompressed RGB primary with one accounted strip and a separate CFA SubIFD; other DNG and camera-RAW layouts without a validated existing primary ICC target remain refused (valid existing targets permit replacement/removal). Comments are written in JPEG, PNG and CRW only; a PNG profile over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to agree with a written profile. A BMFF item is edited or added, never removed. Previews are not pixel-decoded; no generic preview replacement API is provided (existing EXIF thumbnail and PSD resource writes are format-specific). CR3, JPEG XL, MRW and RAF are read, never written. CRW: no async members; a record outside the directory the reference writes it to is not changed; the Fujifilm directory (0xF000) of a RAF TIFF structure is not read.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.

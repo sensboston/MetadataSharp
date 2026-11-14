@@ -43,6 +43,15 @@ class VerdictTests(unittest.TestCase):
         self.assertEqual(("new warning", "Warning: offset"), x.verdict(self.before, warned, "Exif.Canon.OwnerName", "New"))
 
 
+    def test_a_number_has_to_be_one_field_of_the_value_and_not_a_part_of_one(self):
+        before = side({"Exif.MinoltaCsNew.SomeArray": ["1 2 3 4"]})
+        after = side({"Exif.MinoltaCsNew.SomeArray": ["1 12345 3 4"]})
+        self.assertEqual("value the tool does not print",
+                         x.verdict(before, after, "Exif.MinoltaCsNew.SomeArray", "1234", "number")[0])
+        self.assertEqual(("ok", ""),
+                         x.verdict(before, after, "Exif.MinoltaCsNew.SomeArray", "12345", "number"))
+
+
 class RunTests(unittest.TestCase):
     def test_exiv2_carried_skips_need_a_structured_relocation_refusal(self):
         self.assertTrue(x.documented_copy_skip("UnsafeMakerNoteRelocation", "unknown address-like tag 0x002b"))

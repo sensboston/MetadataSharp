@@ -120,7 +120,7 @@ public static class IptcDatasetNames
     /// <para>
     /// Null means there is nothing to add to the bytes: the dataset is text or binary data, or the
     /// value is not in the form the specification gives the dataset. Text is read with
-    /// <see cref="IptcPacket.GetText" />, which knows the packet's character set, and the character
+    /// <see cref="IptcPacket.GetText(int)" />, which knows the packet's character set, and the character
     /// set a packet declares is <see cref="IptcPacket.CharacterSet" />. Nothing is ever thrown for the
     /// content of a value.
     /// </para>
