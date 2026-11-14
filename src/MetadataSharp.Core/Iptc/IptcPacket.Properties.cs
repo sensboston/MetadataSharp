@@ -14,7 +14,7 @@ public sealed partial class IptcPacket
     /// Every Keywords dataset (2:25) as text, in the order of the stream; empty when there is none.
     /// </summary>
     /// <remarks>
-    /// The text is decoded as <see cref="GetText"/> decodes it, using the charset selected for the whole
+    /// The text is decoded as <see cref="GetText(int)"/> decodes it, using the charset selected for the whole
     /// packet (ASCII, valid UTF-8, or ISO-8859-1 fallback). An occurrence invalid under a declared UTF-8
     /// marker is left out. The raw bytes of every occurrence stay in <see cref="Datasets"/>.
     /// </remarks>
@@ -67,7 +67,7 @@ public sealed partial class IptcPacket
         return found is null ? [] : found.ToArray();
     }
 
-    /// <summary>The conditions of <see cref="GetText" />, answered with false where it throws.</summary>
+    /// <summary>The conditions of <see cref="GetText(int)" />, answered with false where it throws.</summary>
     private bool TryText(IptcDataset dataset, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? text)
     {
         text = null;

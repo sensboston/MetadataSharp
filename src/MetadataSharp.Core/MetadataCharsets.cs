@@ -145,6 +145,7 @@ public static class MetadataCharsets
     /// <summary>The character set a name stands for.</summary>
     /// <exception cref="ArgumentException">The name is not one of the matrix; the message lists the names it holds.</exception>
     /// <param name="name">The name: <c>latin1</c>, <c>windows-1251</c>, <c>UCS-2LE</c>.</param>
+    /// <returns>The character set the name stands for.</returns>
     public static MetadataCharset Get(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
@@ -156,6 +157,7 @@ public static class MetadataCharsets
     }
 
     /// <summary>The name this library prints for an encoding, when the encoding is one of the matrix.</summary>
+    /// <exception cref="ArgumentNullException"><paramref name="encoding"/> is null.</exception>
     /// <param name="encoding">The encoding to look up.</param>
     /// <param name="name">The name of the character set the encoding is, when it is one of the matrix.</param>
     /// <returns><see langword="true"/> when the encoding is one of the matrix; otherwise, <see langword="false"/>.</returns>

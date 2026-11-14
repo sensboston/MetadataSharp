@@ -116,6 +116,7 @@ public static class MetadataText
     }
 
     /// <summary>The text of an XP tag: UCS-2 little-endian, without its trailing NULs.</summary>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
     /// <param name="value">The stored value of <see cref="IsXpTag"/>.</param>
     /// <returns>The text, or <see langword="null"/> when the value is not a byte run or does not decode.</returns>
     public static string? Xp(ExifValue value)
