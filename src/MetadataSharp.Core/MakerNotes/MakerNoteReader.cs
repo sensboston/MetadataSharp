@@ -103,8 +103,9 @@ internal static class MakerNoteReader
                     ? Directory(MakerNoteFormat.Pentax, tiff, start + 6, end, 0, order, 0, limits, retainedBudget,
                         VendorMakerNoteNames.Pentax, null)
                     : null;
-            return Directory(MakerNoteFormat.Samsung2, tiff, start, end, start, order, 0, limits, retainedBudget,
-                VendorMakerNoteNames.Samsung2, SamsungPictureWizard);
+            MakerNote? samsung = Directory(MakerNoteFormat.Samsung2, tiff, start, end, start, order, 0, limits,
+                retainedBudget, VendorMakerNoteNames.Samsung2, SamsungPictureWizard);
+            return samsung is null ? null : SamsungPreview(samsung, tiff, start, end, limits, retainedBudget);
         }
         if (make.StartsWith("SIGMA"u8) || make.StartsWith("FOVEON"u8))
         {
@@ -132,6 +133,29 @@ internal static class MakerNoteReader
                 return false;
         }
         return true;
+    }
+
+    /// <summary>
+    /// Reads the directory that Samsung2 tag 0x0035 points to, as the fields of that tag. It describes
+    /// the picture the note embeds with ordinary TIFF fields, so they carry the TIFF names; its offsets
+    /// count from the start of the note, like the rest of the note. An offset that does not lead to a
+    /// directory inside the note leaves the tag as the number it is.
+    /// </summary>
+    private static MakerNote SamsungPreview(MakerNote note, ReadOnlySpan<byte> tiff, int start, int end,
+        MetadataLimits limits, long retainedBudget)
+    {
+        if (!note.TryGetEntry(0x0035, out MakerNoteEntry? pointer) || pointer.Fields.Count != 0 ||
+            pointer.Value.FieldType != TiffFieldType.Long || pointer.Value.Count != 1)
+            return note;
+        ReadOnlySpan<byte> raw = pointer.Value.RawBytes;
+        uint offset = note.ByteOrder == Endianness.LittleEndian
+            ? BinaryPrimitives.ReadUInt32LittleEndian(raw) : BinaryPrimitives.ReadUInt32BigEndian(raw);
+        if (offset < 8 || offset >= (uint)(end - start))
+            return note;
+        MakerNote? preview = Directory(MakerNoteFormat.Samsung2, tiff, start + (int)offset, end, start,
+            note.ByteOrder, 0, limits, retainedBudget,
+            static tag => ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Ifd0, tag))?.Name, null);
+        return preview is null ? note : WithDirectoryFields(note, pointer, preview);
     }
 
     /// <summary>Samsung's PictureWizard, five SHORTs in the MakerNote's byte order.</summary>
@@ -191,8 +215,17 @@ internal static class MakerNoteReader
             limits, retainedBudget, static tag => ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Ifd0, tag))?.Name, null);
         if (preview is null)
             return note;
-        var fields = new List<MakerNoteField>(preview.Entries.Count);
-        foreach (MakerNoteEntry field in preview.Entries)
+        return WithDirectoryFields(note, pointer, preview);
+    }
+
+    /// <summary>
+    /// Replaces a pointer tag with the directory it leads to, as that tag's fields. The directory's own
+    /// entries keep their names, and the note keeps every other entry as it was.
+    /// </summary>
+    private static MakerNote WithDirectoryFields(MakerNote note, MakerNoteEntry pointer, MakerNote directory)
+    {
+        var fields = new List<MakerNoteField>(directory.Entries.Count);
+        foreach (MakerNoteEntry field in directory.Entries)
             fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value) { Slot = field.Slot });
         var entries = new List<MakerNoteEntry>(note.Entries.Count);
         foreach (MakerNoteEntry entry in note.Entries)

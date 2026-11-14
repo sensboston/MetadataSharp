@@ -32,9 +32,10 @@ internal ref struct ExifTiffReader
     // Image directories named by tag 0x014A are listed for reading only, never merged into the entries.
     private readonly List<ExifSubImage> subImages;
     private int subIfdImages;
+    private int thumbnailSubImages;
     private bool panasonicRaw;
     private int chainImages;
-    private readonly Queue<(uint Offset, int Index, bool Chain)> pendingImages;
+    private readonly Queue<(uint Offset, int Index, ExifSubImageKind Kind)> pendingImages;
     private readonly List<(int Start, int Length)> ranges;
     // Breadth-first worklist avoids recursion and carries each directory role and depth into validation.
     private readonly Queue<(uint Offset, ExifDirectoryKind Kind, int Depth)> pending;
@@ -238,7 +239,7 @@ internal ref struct ExifTiffReader
         while (pendingImages.Count != 0)
         {
             var item = pendingImages.Dequeue();
-            ReadSubImage(item.Offset, item.Index, item.Chain);
+            ReadSubImage(item.Offset, item.Index, item.Kind);
         }
         // A read-only result is never planned for writing, so its picture is not taken out either.
         byte[]? thumbnail = readOnly ? null : ReadThumbnail();
@@ -304,7 +305,7 @@ internal ref struct ExifTiffReader
     /// A picture directory the payload does not hold, or one that was already read, is not followed: the
     /// pictures are incidental to the metadata, exactly as the thumbnail is, and the entry stays.
     /// </summary>
-    private void ScheduleSubImages(ExifValue value, int depth)
+    private void ScheduleSubImages(ExifValue value, int depth, ExifSubImageKind kind)
     {
         if (value.FieldType is not (TiffFieldType.Long or TiffFieldType.Short))
             return;
@@ -328,7 +329,9 @@ internal ref struct ExifTiffReader
                 continue; // The offset names a directory this read already visited.
             if (offsets.Count > limits.MaxDirectories || depth > limits.MaxDirectoryDepth)
                 throw Error(MetadataErrorCode.LimitExceeded, "The directory traversal budget was exceeded.", at);
-            pendingImages.Enqueue((at, ++subIfdImages, false));
+            pendingImages.Enqueue(kind == ExifSubImageKind.SubIfd
+                ? (at, ++subIfdImages, ExifSubImageKind.SubIfd)
+                : (at, ++thumbnailSubImages, ExifSubImageKind.ThumbnailSubIfd));
         }
     }
 
@@ -338,7 +341,7 @@ internal ref struct ExifTiffReader
     /// field type this reader does not know is left out rather than refused: the rest of the file's
     /// metadata does not depend on it.
     /// </summary>
-    private void ReadSubImage(uint offset, int index, bool chain)
+    private void ReadSubImage(uint offset, int index, ExifSubImageKind kind)
     {
         int start = RequireRange(offset, 2);
         int count = U16(start);
@@ -382,12 +385,12 @@ internal ref struct ExifTiffReader
             imageEntries.Add(new ExifEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, tag),
                 ExifValue.FromRaw(type, valueCount, order, data.Slice(valueStart, byteLength))));
         }
-        subImages.Add(new ExifSubImage(index, imageEntries,
-            chain ? ExifSubImageKind.ImageDirectory : ExifSubImageKind.SubIfd));
+        subImages.Add(new ExifSubImage(index, imageEntries, kind));
+        bool chain = kind == ExifSubImageKind.ImageDirectory;
         // A chain continues: the directory after this one is the file's next picture, not metadata.
         uint following = U32(start + 2 + count * 12);
         if (chain && following != 0 && offsets.Add(following))
-            pendingImages.Enqueue((following, ++chainImages + 1, true));
+            pendingImages.Enqueue((following, ++chainImages + 1, ExifSubImageKind.ImageDirectory));
     }
 
     private void ReadDirectory(uint offset, ExifDirectoryKind kind, int depth)
@@ -471,8 +474,9 @@ internal ref struct ExifTiffReader
             // like any other, and only a SubIFD list is followed, as a list of image directories.
             if (!wholeFile && !readOnly && tag is 0x014A or 0x0111 or 0x0117 or 0x0144 or 0x0145)
                 throw Error(MetadataErrorCode.UnsupportedFeature, "SubIFDs, strips and tiles are outside the EXIF subset.", p);
-            if (wholeFile && tag == 0x014A && kind == ExifDirectoryKind.Ifd0)
-                ScheduleSubImages(entry.Value, depth);
+            if (wholeFile && tag == 0x014A && kind is ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail)
+                ScheduleSubImages(entry.Value, depth,
+                    kind == ExifDirectoryKind.Ifd0 ? ExifSubImageKind.SubIfd : ExifSubImageKind.ThumbnailSubIfd);
             if (tag == 0x927C && kind == ExifDirectoryKind.Exif)
             {
                 if (type != TiffFieldType.Undefined)
@@ -500,7 +504,7 @@ internal ref struct ExifTiffReader
             if (wholeFile && kind == ExifDirectoryKind.Thumbnail)
             {
                 if (offsets.Add(next))
-                    pendingImages.Enqueue((next, ++chainImages + 1, true));
+                    pendingImages.Enqueue((next, ++chainImages + 1, ExifSubImageKind.ImageDirectory));
                 return;
             }
             if (kind != ExifDirectoryKind.Ifd0)

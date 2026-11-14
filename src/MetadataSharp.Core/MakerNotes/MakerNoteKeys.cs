@@ -79,6 +79,7 @@ internal static class MakerNoteKeys
                 : note.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
                 : sony ? SonyArrayGroup(note.Format, entry.TagId)
                 : note.Format == MakerNoteFormat.Minolta ? MinoltaArrayGroup(entry.TagId)
+                : note.Format == MakerNoteFormat.Samsung2 && entry.TagId == 0x0035 ? "SamsungPreview"
                 : note.Format == MakerNoteFormat.Samsung2 ? "SamsungPictureWizard"
                 : group + CanonArrayGroup(entry.TagId);
             foreach (MakerNoteField field in entry.Fields)
@@ -109,6 +110,7 @@ internal static class MakerNoteKeys
                 if (field.Slot is not null) return true;
             ushort tag = target.Entry.TagId;
             if (format == MakerNoteFormat.Nikon3 && tag is 0x0011 or 0x001D or 0x00A7) return true;
+            if (format == MakerNoteFormat.Samsung2 && tag == 0x0035) return true;
             if (format is MakerNoteFormat.Olympus2 or MakerNoteFormat.OMSystem &&
                 tag is 0x2010 or 0x2020 or 0x2030 or 0x2031 or 0x2040 or 0x2050 or 0x3000 or 0x4000 or 0x5000) return true;
             if (format is MakerNoteFormat.Sony1 or MakerNoteFormat.Sony2 && tag == 0xB028) return true;

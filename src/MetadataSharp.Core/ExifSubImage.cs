@@ -6,7 +6,9 @@ public enum ExifSubImageKind
     /// <summary>An entry of the primary directory's tag 0x014A (SubIFDs), as DNG and several raws do.</summary>
     SubIfd,
     /// <summary>A directory of the chain that starts after the primary directory's thumbnail one.</summary>
-    ImageDirectory
+    ImageDirectory,
+    /// <summary>An entry of the thumbnail directory's tag 0x014A, as a Samsung raw file keeps its preview.</summary>
+    ThumbnailSubIfd
 }
 
 /// <summary>

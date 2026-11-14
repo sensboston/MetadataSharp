@@ -478,8 +478,12 @@ internal static class Program
         // one and a directory chain from the second one, after the thumbnail directory.
         foreach (ExifSubImage image in metadata.SubImages)
         {
-            string imageGroup = (image.Kind == ExifSubImageKind.ImageDirectory ? "Image" : "SubImage") +
-                image.Index.ToString(CultureInfo.InvariantCulture);
+            string imageGroup = image.Kind switch
+            {
+                ExifSubImageKind.ImageDirectory => "Image" + image.Index.ToString(CultureInfo.InvariantCulture),
+                ExifSubImageKind.ThumbnailSubIfd => "SubThumb" + image.Index.ToString(CultureInfo.InvariantCulture),
+                _ => "SubImage" + image.Index.ToString(CultureInfo.InvariantCulture)
+            };
             foreach (ExifEntry entry in image.Entries)
                 Tag(stdout, "Exif." + imageGroup + "." + Name(entry.Key, imageGroup),
                     TypeName(entry.Value), entry.Value.Count, Value(entry),
