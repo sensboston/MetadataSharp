@@ -275,6 +275,20 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
             continue
         lines = [f"{report['totals'].get('failed_files', 1)} failing file(s); "
                  f"kinds={dict(report['failure_kinds'])}, types={dict(report['difference_types'])}"]
+        # Which camera the file comes from decides which MakerNote is looked for, and the two sides
+        # can disagree on the make without any row showing it.
+        local_rows = dumped.get(str(path), {}).get("rows", [])
+        reference_rows = harness.parse_exiv2(harness._run_reference([exiv2], path)[1])
+
+        def value(rows, key):
+            for row in rows:
+                if row["key"] == key:
+                    return row["raw"]
+            return ""
+
+        lines.append(f"camera local={value(local_rows, 'Exif.Image.Make')!r}/{value(local_rows, 'Exif.Image.Model')!r} "
+                     f"reference={value(reference_rows, 'Exif.Image.Make')!r}/"
+                     f"{value(reference_rows, 'Exif.Image.Model')!r}")
         for group in report["mismatch_groups"][:limit]:
             example = group["examples"][0]["difference"] if group.get("examples") else ""
             lines.append(f"{group['category']} {group['key']} {group['type']} "
@@ -283,7 +297,7 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
             lines.append(f"value {item['key']}: reference={item['exiv2'][:60]!r} "
                          f"local={item['metadatasharp'][:60]!r}")
         for refusal in report["refusals"][:4]:
-            reason = dumped.get("detail", "") if str(path) == str(candidate.path) else ""
+            reason = dumped.get(str(path), {}).get("detail", "") if str(path) == str(candidate.path) else ""
             lines.append(f"refused {refusal.get('file')}: {refusal.get('kind')} {refusal.get('detail')} "
                          f"{reason.replace(chr(9), ' ')}")
         # What the file lists as previews, because a row the reference reads out of an embedded
