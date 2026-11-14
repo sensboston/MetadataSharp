@@ -212,6 +212,26 @@ internal static class Program
     private const string PanasonicRawGroup = "PanasonicRaw";
 
     /// <summary>
+    /// The rows the reference removes from the embedded picture of an RW2 before it adds what the
+    /// picture holds to the file's own metadata: it reads them and then drops what it says does not
+    /// apply to a raw image. The Panasonic tags of the list are the file's own, which its note holds
+    /// already, and they are not printed twice either.
+    /// </summary>
+    private static readonly HashSet<string> EmbeddedRowsNotForRaw =
+    [
+        "Exif.Photo.ComponentsConfiguration", "Exif.Photo.CompressedBitsPerPixel",
+        "Exif.Panasonic.ColorEffect", "Exif.Panasonic.Contrast", "Exif.Panasonic.NoiseReduction",
+        "Exif.Panasonic.ColorMode", "Exif.Panasonic.OpticalZoomMode", "Exif.Panasonic.Saturation",
+        "Exif.Panasonic.Sharpness", "Exif.Panasonic.FilmMode", "Exif.Panasonic.SceneMode",
+        "Exif.Panasonic.WBRedLevel", "Exif.Panasonic.WBGreenLevel", "Exif.Panasonic.WBBlueLevel",
+        "Exif.Photo.ColorSpace", "Exif.Photo.PixelXDimension", "Exif.Photo.PixelYDimension",
+        "Exif.Photo.SceneType", "Exif.Photo.CustomRendered", "Exif.Photo.DigitalZoomRatio",
+        "Exif.Photo.SceneCaptureType", "Exif.Photo.GainControl", "Exif.Photo.Contrast",
+        "Exif.Photo.Saturation", "Exif.Photo.Sharpness", "Exif.Image.PrintImageMatching",
+        "Exif.Image.YCbCrPositioning",
+    ];
+
+    /// <summary>
     /// The makers the reference knows a MakerNote owner by, in the order it looks them up.
     /// </summary>
     private static readonly string[] ReferenceMakers =
@@ -297,7 +317,8 @@ internal static class Program
                 if (entry.Key.Directory != ExifDirectoryKind.Ifd0)
                     taken.Add(entry.Key);
         foreach (ExifEntry entry in exif.Entries)
-            if (!taken.Contains(entry.Key))
+            if (!taken.Contains(entry.Key) &&
+                !EmbeddedRowsNotForRaw.Contains("Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key)))
                 Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
                     TypeName(entry.Value), entry.Value.Count, Value(entry),
                     ExifTags.Interpret(entry.Key, entry.Value));

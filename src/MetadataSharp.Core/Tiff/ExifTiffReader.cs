@@ -258,7 +258,7 @@ internal ref struct ExifTiffReader
         if (makerNoteLength != 0)
         {
             start = makerNoteStart;
-            note = MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Make(), Model(), limits, budget);
+            note = MakerNotes.MakerNoteReader.TryRead(data, makerNoteStart, makerNoteLength, order, Maker(), Model(), limits, budget);
         }
         else if (dngPrivateLength != 0 && data.Slice(dngPrivateStart, dngPrivateLength).StartsWith("PENTAX \0"u8))
         {
@@ -268,6 +268,17 @@ internal ref struct ExifTiffReader
         }
         if (note is not null) note.Offset = start;
         return note;
+    }
+
+    /// <summary>
+    /// The raw bytes of the 0th IFD ASCII Make tag, or empty. A Panasonic RW2 states the vendor of its
+    /// MakerNote in its header rather than in a tag, and its primary directory is the raw one: the note
+    /// of the Exif directory it reaches from there is Panasonic's by the format, not by a name.
+    /// </summary>
+    private readonly ReadOnlySpan<byte> Maker()
+    {
+        ReadOnlySpan<byte> make = Make();
+        return panasonicRaw && make.IsEmpty ? "Panasonic"u8 : make;
     }
 
     /// <summary>The raw bytes of the 0th IFD ASCII Make tag, or empty.</summary>

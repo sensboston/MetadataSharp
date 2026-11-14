@@ -815,7 +815,7 @@ public sealed class PreviewTests
     }
 
     [Fact]
-    public void ZeroPaddingAfterTheEndOfTheJpegIsKeptAndAnythingElseIsRefused()
+    public void ZeroPaddingAfterTheEndOfTheJpegIsKeptAndAnythingElseIsCutAtThePicture()
     {
         byte[] picture = Picture(160, 120);
         byte[] padded = Join(picture, new byte[3]);
@@ -824,10 +824,18 @@ public sealed class PreviewTests
         Assert.Equal(padded.Length, preview.Length);
         Assert.Equal(padded, Previews.Extract(file, preview));
 
+        // A range is a length the container states, not the picture: it can run past the picture into
+        // what follows it, and the picture is what ends at the last end-of-image marker.
         byte[] trailing = Join(picture, new byte[] { 0xFF });
         byte[] other = Wrap("jpeg", ThumbnailTiff(true, trailing), out _);
         PreviewImage listed = Assert.Single(Previews.List(other));
-        Assert.Equal(MetadataErrorCode.InvalidJpeg, Refusal(other, listed));
+        Assert.Equal(picture, Previews.Extract(other, listed));
+
+        // A range that holds no end-of-image marker holds no picture.
+        byte[] cut = picture[..^2];
+        byte[] broken = Wrap("jpeg", ThumbnailTiff(true, cut), out _);
+        PreviewImage unended = Assert.Single(Previews.List(broken));
+        Assert.Equal(MetadataErrorCode.InvalidJpeg, Refusal(broken, unended));
     }
 
     [Fact]
