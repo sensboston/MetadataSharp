@@ -345,8 +345,12 @@ internal ref struct ExifTiffReader
     {
         int start = RequireRange(offset, 2);
         int count = U16(start);
-        if (count > limits.MaxEntriesPerDirectory || count > limits.MaxTotalEntries - totalEntries)
-            throw Error(MetadataErrorCode.LimitExceeded, "The IFD entry budget was exceeded.", offset);
+        // A picture is incidental to the metadata, so an offset that does not lead to a directory the
+        // payload can hold is not a picture at all: it is dropped rather than failing the read, as an
+        // offset of a SubIFD list that names no directory is.
+        if (count > limits.MaxEntriesPerDirectory || count > limits.MaxTotalEntries - totalEntries ||
+            count * 12L + 6 > data.Length - start)
+            return;
         totalEntries += count;
         int length = 2 + count * 12 + 4;
         RequireRange(offset, length);
@@ -354,7 +358,6 @@ internal ref struct ExifTiffReader
         if (wholeFile)
             ReserveBytes(length, offset);
         var ids = new HashSet<ushort>();
-        ushort previous = 0;
         var imageEntries = new List<ExifEntry>(count);
         for (int i = 0; i < count; i++)
         {
@@ -362,9 +365,9 @@ internal ref struct ExifTiffReader
             ushort tag = U16(p);
             if (!ids.Add(tag))
                 throw Error(MetadataErrorCode.AmbiguousMetadata, "The IFD contains a duplicate tag ID.", p);
-            if (i != 0 && tag < previous)
-                throw Error(MetadataErrorCode.InvalidExif, "IFD tags are not in ascending order.", p);
-            previous = tag;
+            // TIFF asks for ascending tag IDs and cameras break the rule: the Sony raws of the corpus
+            // list their entries out of order, and the reference reads them in the order they come.
+            // Only an ID that appears twice is ambiguous, and that is refused above.
             ushort typeCode = U16(p + 2);
             if (typeCode is < 1 or > 12)
                 continue;
@@ -407,16 +410,15 @@ internal ref struct ExifTiffReader
             ReserveBytes(length, offset);
         directories.Add(kind);
         var ids = new HashSet<ushort>();
-        ushort previous = 0;
         for (int i = 0; i < count; i++)
         {
             int p = start + 2 + i * 12;
             ushort tag = U16(p);
             if (!ids.Add(tag))
                 throw Error(MetadataErrorCode.AmbiguousMetadata, "The IFD contains a duplicate tag ID.", p);
-            if (i != 0 && tag < previous)
-                throw Error(MetadataErrorCode.InvalidExif, "IFD tags are not in ascending order.", p);
-            previous = tag;
+            // TIFF asks for ascending tag IDs and cameras break the rule: the Sony raws of the corpus
+            // list their entries out of order, and the reference reads them in the order they come.
+            // Only an ID that appears twice is ambiguous, and that is refused above.
             ushort typeCode = U16(p + 2);
             if (typeCode is < 1 or > 12)
             {

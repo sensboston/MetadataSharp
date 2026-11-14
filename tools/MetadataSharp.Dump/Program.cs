@@ -212,6 +212,37 @@ internal static class Program
     private const string PanasonicRawGroup = "PanasonicRaw";
 
     /// <summary>
+    /// The makers the reference knows a MakerNote owner by, in the order it looks them up.
+    /// </summary>
+    private static readonly string[] ReferenceMakers =
+    [
+        "Canon", "FOVEON", "FUJI", "KONICA MINOLTA", "Minolta", "NIKON", "OLYMPUS", "OM Digital",
+        "Panasonic", "PENTAX", "RICOH", "SAMSUNG", "SIGMA", "SONY", "CASIO",
+    ];
+
+    /// <summary>
+    /// Whether the reference attributes a MakerNote to the camera that wrote it. It looks the owner up
+    /// by the maker's name as the file spells it and compares that name with its own table of makers
+    /// case-sensitively, so a camera whose name differs from the known one in case alone keeps its note
+    /// unread and the rows the note holds unprinted. Konica Minolta's mixed-case "Konica Minolta Camera,
+    /// Inc." is the case the corpus found. This library reads that note; this print follows the reference,
+    /// as it follows it where an RW2's rows come from the picture the file embeds.
+    /// </summary>
+    private static bool ReferenceAttributesNote(ExifMetadata metadata)
+    {
+        string? make = null;
+        foreach (ExifEntry entry in metadata.Entries)
+            if (entry.Key == new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F))
+                make = Encoding.ASCII.GetString(entry.Value.RawBytes).TrimEnd('\0');
+        if (string.IsNullOrEmpty(make))
+            return false;
+        foreach (string maker in ReferenceMakers)
+            if (make.StartsWith(maker, StringComparison.Ordinal))
+                return true;
+        return false;
+    }
+
+    /// <summary>
     /// Whether the file is a Panasonic RW2, which is a TIFF whose identifier is 0x0055 rather than 42.
     /// </summary>
     private static bool IsRw2(string path)
@@ -232,11 +263,28 @@ internal static class Program
     /// metadata view of the container: the library keeps the two apart in
     /// <see cref="EmbeddedImageMetadata"/>.
     /// </summary>
-    private static void MergeEmbedded(StreamWriter stdout, string path, long length, ExifMetadata? container)
+    private static string? MergeEmbedded(StreamWriter stdout, string path, long length, ExifMetadata? container)
     {
-        if (!WithinBudget(length, stdout)) return;
-        EmbeddedImageMetadata? embedded = EmbeddedImageMetadata.Read(File.ReadAllBytes(path));
-        if (embedded?.Exif is not ExifMetadata exif) return;
+        if (!WithinBudget(length, stdout)) return "embedded-over-budget";
+        byte[] file = File.ReadAllBytes(path);
+        EmbeddedImageMetadata? embedded = EmbeddedImageMetadata.Read(file);
+        if (embedded is null)
+        {
+            // Say which step found nothing: a gate that cannot see the rows has to know whether the
+            // picture was not listed, could not be extracted, or carried no metadata.
+            IReadOnlyList<PreviewImage> previews = Previews.List(file);
+            if (previews.Count == 0) return "embedded-none-listed";
+            try
+            {
+                Previews.Extract(file, previews[0]);
+                return "embedded-no-metadata";
+            }
+            catch (MetadataException refusal)
+            {
+                return "embedded-refused:" + refusal.Code;
+            }
+        }
+        if (embedded.Exif is not ExifMetadata exif) return "embedded-no-exif";
         var taken = new HashSet<ExifTagKey>();
         if (container is not null)
             foreach (ExifEntry entry in container.Entries)
@@ -247,6 +295,7 @@ internal static class Program
                 Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
                     TypeName(entry.Value), entry.Value.Count, Value(entry),
                     ExifTags.Interpret(entry.Key, entry.Value));
+        return null;
     }
 
     /// <summary>
@@ -283,8 +332,8 @@ internal static class Program
         // rows for where it starts and how it is ordered.
         bool panasonicRaw = file.Format == MetadataFormat.Tiff && IsRw2(path);
         Exif(file.Exif, stdout, noteRows: file.Format != MetadataFormat.Cr3, panasonicRaw: panasonicRaw);
-        if (panasonicRaw)
-            MergeEmbedded(stdout, path, length, file.Exif);
+        if (panasonicRaw && MergeEmbedded(stdout, path, length, file.Exif) is string merged && refusalDetail)
+            refused.Add(merged);
         if (iptc is not null)
         {
             if (!othersInDetail) throw iptc;
@@ -501,7 +550,7 @@ internal static class Program
                     TypeName(entry.Value), entry.Value.Count, Value(entry),
                     ExifTags.Interpret(entry.Key, entry.Value));
         }
-        if (metadata.MakerNote is MakerNote makerNote)
+        if (metadata.MakerNote is MakerNote makerNote && ReferenceAttributesNote(metadata))
         {
             string? cameraModel = metadata.Model;
             string group = makerNote.Format switch
@@ -540,6 +589,7 @@ internal static class Program
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
                         : nikonPreview ? "NikonPreview"
                         : sonyMinolta ? "SonyMinolta"
+                        : samsungPreview ? "SamsungPreview"
                         : keepParent ? group
                         : makerNote.Format == MakerNoteFormat.Nikon3 ? "Nikon" + NikonArrayGroup(entry)
                         : sony ? SonyArrayGroup(makerNote.Format, entry.TagId)
