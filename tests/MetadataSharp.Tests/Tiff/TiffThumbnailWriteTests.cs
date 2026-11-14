@@ -29,6 +29,9 @@ public sealed class TiffThumbnailWriteTests
     private static MetadataErrorCode Code(byte[] file, Action<ExifEdit> change) =>
         Assert.Throws<MetadataException>(() => Save(file, change)).Code;
 
+    private static MetadataErrorCode Code(byte[] file, Action<ExifEdit> change, TiffReadOptions options) =>
+        Assert.Throws<MetadataException>(() => Save(file, change, options)).Code;
+
     private static ExifMetadata Read(byte[] file) => ExifTiffReader.InspectFile(file);
 
     private static TiffBasedDirectory? Directory(byte[] file) =>
