@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shlex
 import subprocess
 import sys
@@ -18,6 +19,20 @@ if str(HERE) not in sys.path:
 import corpus  # noqa: E402
 
 TITLE = "PARITY tag print"
+
+def _catalog_keys() -> set[str]:
+    data = json.loads((ROOT / "src/MetadataSharp.Core/tag-catalog-data.json").read_text(encoding="utf-8"))
+    return {"Exif." + group["name"] + "." + name
+            for group in data["exifGroups"] for tag in group["tags"] for name in tag["names"]}
+
+CATALOG_KEYS = _catalog_keys()
+_RAW_NUMERIC_TAG = re.compile(r"\.0[xX][0-9A-Fa-f]+$")
+
+
+def _is_raw_numeric_tag(key: str) -> bool:
+    return bool(_RAW_NUMERIC_TAG.search(key))
+
+
 PINNED_EXIV2_COMMIT = "b0859fc61fea5dedfc898aece6b15893ddf4314e"
 
 # Exception keys are upstream test/data basenames, never extensions or directories. Every retained
@@ -177,9 +192,6 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
         if len(selected) >= 8: break
         selected.append(item)
     samples = []
-    difference_types: Counter[str] = Counter()
-    for item in report["differing"]:
-        for row in item.get("rows", []): difference_types[row["kind"]] += 1
     for item in selected:
         sample = {key: value for key, value in item.items() if key != "rows"}
         if "rows" in item:
@@ -194,8 +206,11 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
                 sample["rows"].append(compact)
         samples.append(sample)
     return {"totals": report["totals"], "failure_kinds": report["failure_kinds"],
-            "difference_types": dict(sorted(difference_types.items())), "formats": report["formats"],
+            "difference_types": report["difference_types"], "value_diff_by_key": report["value_diff_by_key"][:40],
+            "formats": report["formats"],
             "exceptions": report["exceptions"], "tag_exceptions": report["tag_exceptions"],
+            "raw_only_tag_exception_total": len(report["raw_only_tag_exceptions"]),
+            "raw_only_tag_exceptions": report["raw_only_tag_exceptions"][:30],
             "differing_total": len(report["differing"]),
             "differing_sample": samples}
 
@@ -239,9 +254,12 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
         for name in sorted(unmatched_names)
     ]
     tag_exceptions = [{"key": key, "reason": reason} for key, reason in sorted(_TAG_PRINT_KEY_EXCEPTIONS.items())]
+    raw_only_tags: Counter[str] = Counter()
     differing: list[dict[str, Any]] = []
     totals: Counter[str] = Counter()
     failure_kinds: Counter[str] = Counter()
+    difference_types: Counter[str] = Counter()
+    value_pairs: Counter[tuple[str, str, str]] = Counter()
     formats: dict[str, Counter[str]] = defaultdict(Counter)
     for candidate in candidates:
         name = candidate.label
@@ -263,9 +281,20 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             problem = {"file": name, "kind": "metadatasharp-refused", "status": ours["status"], "detail": ours["detail"]}
         else:
             expected = [row for row in parse_exiv2(output) if row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
-            observed = [row for row in project_dump(ours["rows"]) if row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
+            all_observed = project_dump(ours["rows"])
+            expected_keys = {row["key"] for row in expected}
+            raw_only_tags.update(row["key"] for row in all_observed
+                                 if _is_raw_numeric_tag(row["key"]) and row["key"] not in expected_keys)
+            observed = [row for row in all_observed
+                        if (row["key"] in CATALOG_KEYS or row["key"] in expected_keys
+                            or not _is_raw_numeric_tag(row["key"]))
+                        and row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
             rows = compare_rows(expected, observed)
             if rows:
+                for row in rows:
+                    difference_types[row["kind"]] += 1
+                    if row["kind"] == "value-diff":
+                        value_pairs[(row["exiv2"]["key"], row["exiv2"]["value"], row["metadatasharp"]["value"])] += 1
                 problem = {"file": name, "kind": "rows-differ", "exiv2_rows": len(expected),
                            "metadatasharp_rows": len(observed), "rows": rows[:8]}
             else:
@@ -276,9 +305,21 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             failure_kinds[problem["kind"]] += 1
             format_counts["failed_files"] += 1
             differing.append(problem)
+    raw_only_exceptions = [
+        {"key": key, "occurrences": count,
+         "reason": "This exact numeric/vendor key is absent from the pinned Exiv2 0.28.9 tag registry; the raw-only MetadataSharp value is outside the -pt named-tag table comparison."}
+        for key, count in sorted(raw_only_tags.items())
+    ]
+    value_diff_by_key = [
+        {"key": key, "exiv2": expected[:100], "metadatasharp": actual[:100], "occurrences": count}
+        for (key, expected, actual), count in value_pairs.most_common(100)
+    ]
     return {"kind": "TagPrint", "totals": dict(totals), "failure_kinds": dict(sorted(failure_kinds.items())),
+            "difference_types": dict(sorted(difference_types.items())),
+            "value_diff_by_key": value_diff_by_key,
             "formats": {key: dict(value) for key, value in sorted(formats.items())},
-            "exceptions": exceptions, "tag_exceptions": tag_exceptions, "differing": differing}
+            "exceptions": exceptions, "tag_exceptions": tag_exceptions,
+            "raw_only_tag_exceptions": raw_only_exceptions, "differing": differing}
 
 
 def text_report(report: dict[str, Any]) -> str:
@@ -293,6 +334,8 @@ def text_report(report: dict[str, Any]) -> str:
         lines.append(f"  named missing-input exception: {entry['file']}: {entry['reason']}")
     for entry in report["tag_exceptions"]:
         lines.append(f"  named tag exception: {entry['key']}: {entry['reason']}")
+    for entry in report["raw_only_tag_exceptions"]:
+        lines.append(f"  named raw-only tag exception: {entry['key']} ({entry['occurrences']} rows): {entry['reason']}")
     for entry in report["differing"]:
         lines.append(f"  {entry['file']}: {entry['kind']} {json.dumps(entry, ensure_ascii=False)[:900]}")
     return "\n".join(lines) + "\n"

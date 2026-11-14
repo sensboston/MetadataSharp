@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools" / "parity"))
@@ -63,6 +64,31 @@ class TagPrintProtocolTests(unittest.TestCase):
         self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_EXCEPTIONS.values()))
         self.assertEqual({"Exif.GPSInfo.GPSAltitudeRef"}, set(gate._TAG_PRINT_KEY_EXCEPTIONS))
         self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_KEY_EXCEPTIONS.values()))
+        self.assertIn("Exif.Image.ImageWidth", gate.CATALOG_KEYS)
+        self.assertNotIn("Exif.Canon.0x0019", gate.CATALOG_KEYS)
+
+    def test_only_numeric_raw_tags_without_a_pinned_named_row_are_reported_as_raw_only(self) -> None:
+        self.assertTrue(gate._is_raw_numeric_tag("Exif.Canon.0x0019"))
+        self.assertFalse(gate._is_raw_numeric_tag("Exif.Photo.ImageWidth"))
+        self.assertTrue(gate._is_raw_numeric_tag("Exif.Canon.0X0019"))
+
+    def test_unregistered_numeric_fallback_is_reported_but_unknown_named_key_still_fails(self) -> None:
+        candidate = gate.corpus.Candidate("sample.jpg", Path("/tmp/sample.jpg"), "test")
+        dump = {"/tmp/sample.jpg": {"status": "ok", "rows": [
+            {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "raw": "160", "translated": ""},
+            {"key": "Exif.Canon.0x0019", "type": "Short", "count": 1, "raw": "1", "translated": "1"},
+        ]}}
+        with patch.object(gate, "_run_reference", return_value=(0, "Exif.Image.ImageWidth Long 1 160\n", "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual(0, report["totals"].get("failed_files", 0))
+        self.assertEqual("Exif.Canon.0x0019", report["raw_only_tag_exceptions"][0]["key"])
+
+        dump["/tmp/sample.jpg"]["rows"].append(
+            {"key": "Exif.Canon.CameraSerialNumber", "type": "Ascii", "count": 1, "raw": "x", "translated": "x"})
+        with patch.object(gate, "_run_reference", return_value=(0, "Exif.Image.ImageWidth Long 1 160\n", "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual(1, report["totals"]["failed_files"])
+        self.assertEqual("extra", report["differing"][0]["rows"][0]["kind"])
 
 
 if __name__ == "__main__":

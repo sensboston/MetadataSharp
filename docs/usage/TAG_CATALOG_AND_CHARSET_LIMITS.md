@@ -62,7 +62,11 @@ IPTC or XMP, and it does not change the encoding used by metadata writers.
 Exiv2 0.28.9 `-pt` output for each available upstream corpus file. Synthetic upstream reference names
 without source media are individually listed with reasons. The exact `Exif.GPSInfo.GPSAltitudeRef`
 translation is also listed as a tag-level exception because the local table follows the expanded Exif
-3.0 wording while the pinned Exiv2 release predates that wording. The gate is fail-closed for unlisted
-missing inputs and other output mismatches. It is not a claim that this table or the library currently achieves full
-parity; the report is the measure of remaining work. The tool also checks that both the source checkout
+3.0 wording while the pinned Exiv2 release predates that wording. A vendor tag rendered only as an
+unknown numeric key (for example, `Exif.Canon.0x0019`) is not a named catalog entry; if the pinned
+reference does not print that key, the report lists it under `raw_only_tag_exceptions` instead of
+counting its fallback raw value as a named-table mismatch. This does not suppress unknown named keys,
+keys printed by both tools, raw-value gates, or the separate MakerNote-render parity gate. The gate is
+fail-closed for unlisted missing inputs and other output mismatches. It is not a claim that this table
+or the library currently achieves full parity; the report is the measure of remaining work. The tool also checks that both the source checkout
 and binary identify as the pin before comparing output.

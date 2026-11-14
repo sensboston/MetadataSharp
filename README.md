@@ -56,7 +56,7 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
 - IPTC text reads select a packet-wide ASCII, UTF-8 or ISO-8859-1 fallback for display while preserving
   the source bytes; malformed data under an explicit UTF-8 marker remains an error. EXIF `UserComment`
   interpretation accepts an optional caller-supplied `Encoding` for Exiv2 `-n`-style decoding; neither
-  option changes the stored metadata. See the [tag catalog and charset limits](docs/usage/TAG_CATALOG_AND_CHARSET_LIMITS.md), the IPTC usage limits and `ExifInterpretationOptions`.
+  option changes the stored metadata. See the [tag catalog and charset limits](https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/usage/TAG_CATALOG_AND_CHARSET_LIMITS.md), the IPTC usage limits and `ExifInterpretationOptions`.
 
 ## Quick start
 
