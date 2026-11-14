@@ -423,6 +423,22 @@ jobs:
           tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
           echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
           artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      - name: Preview source-offset parity by reversing pinned exiv2 -ep outputs
+        shell: bash
+        run: |
+          python tools/parity/run_previews.py --tree artifacts/parity/exiv2 \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pp" \
+            --dump-command "$DUMP" --out artifacts/parity/preview-offsets --annotate \
+            --title 'PARITY preview offsets'
+      - name: Preview parity for raw, JP2, EPS, XMP and BMFF fixtures (pinned exiv2 -pp/-ep)
+        shell: bash
+        run: |
+          python tools/parity/run_previews.py \
+            --fixtures tests/fixtures/b10 --fixtures tests/fixtures/b11 --fixtures tests/fixtures/b11eps \
+            --fixtures tests/fixtures/b7 --fixtures tests/fixtures/b8 \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pp" \
+            --dump-command "$DUMP" --out artifacts/parity/group-c-preview --annotate \
+            --title 'PARITY group C preview'
       - name: Bidirectional PSD, JP2 and EXV write parity
         shell: bash
         run: |

@@ -109,7 +109,7 @@ internal static class Program
         return 0;
     }
 
-    // Emit preview dimensions, MIME types, lengths, and source labels in the dump protocol.
+    // Emit preview dimensions, MIME types, absolute byte offsets, lengths, and source labels in the dump protocol.
     private static void ListPreviews(string path, StreamWriter stdout)
     {
         if (!WithinBudget(new FileInfo(path).Length, stdout)) return;
@@ -119,7 +119,7 @@ internal static class Program
             PreviewImage preview = found[i];
             string size = (preview.Width ?? 0).ToString(CultureInfo.InvariantCulture) + "x" + (preview.Height ?? 0).ToString(CultureInfo.InvariantCulture);
             Record(stdout, "PREVIEW", (i + 1).ToString(CultureInfo.InvariantCulture), preview.MimeType, size,
-                preview.Length.ToString(CultureInfo.InvariantCulture), preview.Source);
+                preview.Length.ToString(CultureInfo.InvariantCulture), preview.Offset.ToString(CultureInfo.InvariantCulture), preview.Source);
         }
         Done(stdout);
     }

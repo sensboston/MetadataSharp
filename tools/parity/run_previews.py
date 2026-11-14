@@ -29,11 +29,13 @@ is how a file is measured that the pinned tree holds but its preview test does n
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import re
 import shlex
 import subprocess
 import sys
+import tempfile
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -100,6 +102,122 @@ def oracle_reference(outputs: dict[str, str]) -> dict[str, list[Preview]]:
     return parse_reference("".join(blocks))
 
 
+def _find_all(haystack: bytes, needle: bytes) -> list[int]:
+    if not needle:
+        return []
+    result: list[int] = []
+    at = 0
+    while (at := haystack.find(needle, at)) >= 0:
+        result.append(at)
+        at += 1
+    return result
+
+
+def _compact_hex_offsets(source: bytes, start: int, end: int, encoded: bytes) -> list[int]:
+    digits = bytearray()
+    offsets: list[int] = []
+    for at in range(start, end):
+        value = source[at]
+        if chr(value).isspace():
+            continue
+        if value not in b"0123456789abcdefABCDEF":
+            digits.clear()
+            offsets.clear()
+            continue
+        digits.append(value)
+        offsets.append(at)
+    token = encoded.upper()
+    found = _find_all(bytes(digits).upper(), token)
+    return [offsets[at] for at in found]
+
+
+def _compact_base64_offsets(source: bytes, encoded: bytes) -> list[int]:
+    token = base64.b64encode(encoded)
+    compact = bytearray()
+    offsets: list[int] = []
+    found: list[int] = []
+    for at, value in enumerate(source):
+        if chr(value).isspace():
+            continue
+        if value not in b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=":
+            found.extend(offsets[index] for index in _find_all(bytes(compact), token))
+            compact.clear()
+            offsets.clear()
+            continue
+        compact.append(value)
+        offsets.append(at)
+    found.extend(offsets[index] for index in _find_all(bytes(compact), token))
+    return found
+
+
+def _source_offsets(source: bytes, extracted: bytes, mime: str, width: int, height: int) -> list[int]:
+    exact = _find_all(source, extracted)
+    if exact:
+        return exact
+    if mime == "image/jpeg":
+        # Photoshop EPS stores JPEG data as hexadecimal IRB data; XMP thumbnails use base64.
+        start, end = 0, len(source)
+        begin = source.find(b"%BeginPhotoshop:")
+        if begin >= 0:
+            line = source.find(b"\n", begin)
+            finish = source.find(b"%EndPhotoshop", line + 1) if line >= 0 else -1
+            if finish >= 0:
+                found = _compact_hex_offsets(source, line + 1, finish, extracted.hex().encode("ascii"))
+                if found:
+                    return [line + 1]
+        found = _compact_base64_offsets(source, extracted)
+        if found:
+            return found
+    elif mime == "image/x-portable-anymap" and extracted.startswith(b"P6\n"):
+        header = f"P6\n{width} {height}\n255\n".encode("ascii")
+        if extracted.startswith(header):
+            begin = source.find(b"%%BeginData:")
+            line = source.find(b"\n", begin) if begin >= 0 else -1
+            finish = source.find(b"%%EndData", line + 1) if line >= 0 else -1
+            if finish >= 0:
+                found = _compact_hex_offsets(source, line + 1, finish, extracted[len(header):].hex().encode("ascii"))
+                if found:
+                    return [line + 1]
+    return []
+
+
+def oracle_offsets(exiv2_command: list[str], path: Path, previews: list[Preview]) -> list[list[int]]:
+    """Infer file-relative source offsets from Exiv2's own -ep byte outputs.
+
+    The pinned -pp text has no offset column. Direct items are found byte-for-byte; XMP and EPS
+    filters are reversed as base64/hex at their source payload. Ambiguous repeated bytes are kept as
+    a set and the MetadataSharp offset must be one of those positions.
+    """
+    with tempfile.TemporaryDirectory(prefix="metadata-preview-") as temporary:
+        try:
+            finished = subprocess.run(exiv2_command + ["-f", "-ep", str(path)], cwd=temporary,
+                                      capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                      timeout=300, check=False)
+        except FileNotFoundError as error:
+            raise PreviewParityError(f"the pinned extraction command is not runnable: {error}") from error
+        except subprocess.TimeoutExpired as error:
+            raise PreviewParityError(f"the pinned extraction command timed out on {path.name}") from error
+        if finished.returncode != 0:
+            detail = (finished.stderr or finished.stdout or "").strip().replace("\n", " ")[:400]
+            raise PreviewParityError(f"pinned exiv2 -ep failed on {path.name}: {detail}")
+        outputs: list[tuple[int, Path]] = []
+        for output in Path(temporary).iterdir():
+            match = re.search(r"-preview(\d+)(?:\.|$)", output.name, re.IGNORECASE)
+            if match and output.is_file():
+                outputs.append((int(match.group(1)), output))
+        outputs.sort(key=lambda item: item[0])
+        if [number for number, _ in outputs] != list(range(1, len(previews) + 1)):
+            raise PreviewParityError(f"exiv2 -ep produced {len(outputs)} previews for {path.name}, but -pp listed {len(previews)}")
+        source = path.read_bytes()
+        offsets: list[list[int]] = []
+        for ((mime, width, height, _), (_, output)) in zip(previews, outputs):
+            candidates = _source_offsets(source, output.read_bytes(), mime, width, height)
+            if not candidates:
+                raise PreviewParityError(f"cannot locate exiv2 preview bytes in {path.name}; offset parity is unprovable")
+            offsets.append(candidates)
+        return offsets
+
+
 def parse_dump(text: str) -> dict[str, dict[str, Any]]:
     """``FILE`` / ``PREVIEW`` / ``STATUS`` records of ``MetadataSharp.Dump --previews``, by path."""
     blocks: dict[str, dict[str, Any]] = {}
@@ -111,14 +229,17 @@ def parse_dump(text: str) -> dict[str, dict[str, Any]]:
         if fields[0] == "FILE" and len(fields) == 2:
             if current is not None and current["status"] is None:
                 raise PreviewParityError(f"dump:{number}: FILE record before the previous one was closed")
-            current = {"previews": [], "sources": [], "status": None, "detail": ""}
+            current = {"previews": [], "offsets": [], "sources": [], "status": None, "detail": ""}
+            if fields[1] in blocks:
+                raise PreviewParityError(f"dump:{number}: duplicate FILE record {fields[1]!r}")
             blocks[fields[1]] = current
-        elif fields[0] == "PREVIEW" and len(fields) == 6 and current is not None and current["status"] is None:
+        elif fields[0] == "PREVIEW" and len(fields) == 7 and current is not None and current["status"] is None:
             size = re.fullmatch(r"(\d+)x(\d+)", fields[3])
-            if size is None or not fields[4].isdigit():
+            if size is None or not fields[4].isdigit() or not fields[5].isdigit():
                 raise PreviewParityError(f"dump:{number}: PREVIEW record does not parse: {line!r}")
             current["previews"].append((fields[2], int(size.group(1)), int(size.group(2)), int(fields[4])))
-            current["sources"].append(fields[5])
+            current["offsets"].append(int(fields[5]))
+            current["sources"].append(fields[6])
         elif fields[0] == "STATUS" and len(fields) >= 2 and current is not None and current["status"] is None:
             current["status"] = fields[1]
             current["detail"] = fields[2] if len(fields) > 2 else ""
@@ -150,7 +271,8 @@ def compare_file(expected: list[Preview], listed: list[Preview]) -> dict[str, An
     return {"match": len(matched), "missing": missing, "extra": extra, "ordered": ours == matched}
 
 
-def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]], paths: dict[str, Path | None]) -> dict[str, Any]:
+def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]], paths: dict[str, Path | None],
+            expected_offsets: dict[str, list[list[int]]] | None = None) -> dict[str, Any]:
     totals = Counter()
     statuses = Counter()
     files: list[dict[str, Any]] = []
@@ -163,7 +285,35 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
             raise PreviewParityError(f"the dump has no block for {name}")
         else:
             status, listed = block["status"], block["previews"]
+            if status == "ok":
+                file_size = path.stat().st_size
+                offsets, sources = block.get("offsets", []), block.get("sources", [])
+                if len(offsets) != len(listed) or len(sources) != len(listed):
+                    raise PreviewParityError(f"{name}: the dump has no offset/source for every listed preview")
+                for index, (preview, offset, source) in enumerate(zip(listed, offsets, sources), 1):
+                    generated = source in {"EPS.AI7.Hex", "EPS.Photoshop.Hex"} or source.startswith("Xmp.Thumbnail")
+                    if offset < 0 or offset >= file_size or preview[3] <= 0 or (not generated and offset + preview[3] > file_size):
+                        raise PreviewParityError(f"{name}: preview {index} has an invalid file range: "
+                                                 f"offset={offset}, length={preview[3]}, file={file_size}, source={source}")
         outcome = compare_file(expected[name], listed if status == "ok" else [])
+        offset_mismatch: list[dict[str, Any]] = []
+        reference_offsets = (expected_offsets or {}).get(name)
+        if status == "ok" and reference_offsets is not None:
+            if len(reference_offsets) != len(expected[name]) or len(block.get("offsets", [])) != len(expected[name]):
+                raise PreviewParityError(f"{name}: offset oracle/dump count differs from the -pp list")
+            available: dict[Preview, list[int]] = {}
+            for index, preview in enumerate(listed):
+                available.setdefault(preview, []).append(index)
+            for index, preview in enumerate(expected[name]):
+                candidates = available.get(preview, [])
+                if not candidates:
+                    continue
+                actual_index = candidates.pop(0)
+                actual_offset = block["offsets"][actual_index]
+                allowed = reference_offsets[index]
+                if actual_offset not in allowed:
+                    offset_mismatch.append({"preview": list(preview), "actual": actual_offset, "expected_any": allowed})
+            totals["offset_mismatch"] += len(offset_mismatch)
         statuses[status] += 1
         totals["expected"] += len(expected[name])
         totals["match"] += outcome["match"]
@@ -172,16 +322,26 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
         totals["files"] += 1
         totals["files_equal"] += 1 if not outcome["missing"] and not outcome["extra"] else 0
         totals["files_ordered"] += 1 if outcome["ordered"] else 0
-        entry = {"file": name, "status": status, "match": outcome["match"], "ordered": outcome["ordered"]}
+        entry = {"file": name, "status": status, "match": outcome["match"], "ordered": outcome["ordered"],
+                 "listed_offsets": block.get("offsets", []) if block is not None else []}
         if outcome["missing"]:
             entry["missing"] = [list(preview) for preview in outcome["missing"]]
         if outcome["extra"]:
             entry["extra"] = [list(preview) for preview in outcome["extra"]]
+        if offset_mismatch:
+            entry["offset_mismatch"] = offset_mismatch
         if status == "error":
             entry["detail"] = block["detail"] if block is not None else ""
         files.append(entry)
     rate = round(totals["match"] / totals["expected"], 6) if totals["expected"] else None
     return {"kind": KIND, "totals": dict(totals), "rate": rate, "statuses": dict(statuses), "files": files}
+
+
+def gate_exit_code(report: dict[str, Any]) -> int:
+    """Fail closed for list mismatches, missing corpus input, or reader refusals."""
+    return 1 if (report["statuses"].get("error") or report["totals"].get("missing") or
+                 report["totals"].get("extra") or report["totals"].get("offset_mismatch") or
+                 report["statuses"].get("refused") or report["statuses"].get("no-input")) else 0
 
 
 def text_report(report: dict[str, Any]) -> str:
@@ -191,19 +351,21 @@ def text_report(report: dict[str, Any]) -> str:
         f"  files: {totals.get('files', 0)} ({totals.get('files_equal', 0)} with the same previews, "
         f"{totals.get('files_ordered', 0)} in the same order); statuses: {report['statuses']}",
         f"  previews: {totals.get('expected', 0)} expected, {totals.get('match', 0)} match, "
-        f"{totals.get('missing', 0)} missing, {totals.get('extra', 0)} extra; rate {report['rate']}",
+        f"{totals.get('missing', 0)} missing, {totals.get('extra', 0)} extra, "
+        f"{totals.get('offset_mismatch', 0)} offset mismatches; rate {report['rate']}",
     ]
     for entry in report["files"]:
-        if "missing" in entry or "extra" in entry or not entry["ordered"] or entry["status"] != "ok":
+        if "missing" in entry or "extra" in entry or "offset_mismatch" in entry or not entry["ordered"] or entry["status"] != "ok":
             lines.append(f"  {entry['file']} [{entry['status']}] missing={entry.get('missing', [])} "
-                         f"extra={entry.get('extra', [])} ordered={entry['ordered']}")
+                         f"extra={entry.get('extra', [])} offset_mismatch={entry.get('offset_mismatch', [])} "
+                         f"ordered={entry['ordered']}")
     return "\n".join(lines) + "\n"
 
 
 def summary(report: dict[str, Any]) -> dict[str, Any]:
     """The part of the report that travels as annotations: the totals and every file that differs."""
     differing = [entry for entry in report["files"]
-                 if "missing" in entry or "extra" in entry or not entry["ordered"] or entry["status"] != "ok"]
+                 if "missing" in entry or "extra" in entry or "offset_mismatch" in entry or not entry["ordered"] or entry["status"] != "ok"]
     return {"kind": KIND, "totals": report["totals"], "rate": report["rate"], "statuses": report["statuses"],
             "differing": differing}
 
@@ -227,8 +389,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--tree", type=Path, help="root of a pinned exiv2 checkout, for its preview expectation")
     parser.add_argument("--fixtures", type=Path, action="append", default=[],
                         help="a directory of files the pinned tool lists in this run instead; repeatable")
-    parser.add_argument("--exiv2-command", help="the pinned tool with its listing option (exiv2 -pp), split "
-                                                "POSIX-style; the oracle for --fixtures, its output is never stored")
+    parser.add_argument("--exiv2-command", help="pinned exiv2 command (normally 'exiv2 -pp'); used as the list oracle "
+                                                "for --fixtures and as -ep source-offset oracle when supplied")
     parser.add_argument("--dump-command", required=True, help="how to run MetadataSharp.Dump, split POSIX-style on spaces")
     parser.add_argument("--out", type=Path, default=ROOT / "artifacts/parity/preview", help="report directory")
     parser.add_argument("--annotate", action="store_true", help="emit the summary as chunked workflow annotations")
@@ -247,7 +409,8 @@ def main(argv: list[str] | None = None) -> int:
             if candidate.label in paths:
                 raise PreviewParityError(f"two files are named {candidate.label}")
             paths[candidate.label] = candidate.path
-        expected = oracle_reference({name: run_parity.run_reference(oracle, path) for name, path in paths.items() if path})
+        expected = oracle_reference({name: run_parity.run_reference(oracle, path, require_success=True)
+                                     for name, path in paths.items() if path})
     else:
         reference = args.tree / REFERENCE
         if not reference.is_file():
@@ -260,7 +423,16 @@ def main(argv: list[str] | None = None) -> int:
     present = [path for path in paths.values() if path is not None]
     if not present:
         raise PreviewParityError("none of the files the expectation names is in the tree")
-    report = compare(expected, run_dump(shlex.split(args.dump_command), present), paths)
+    expected_offsets: dict[str, list[list[int]]] = {}
+    if args.exiv2_command:
+        extraction_command = [part for part in shlex.split(args.exiv2_command) if part != "-pp"]
+        if not extraction_command:
+            raise PreviewParityError("--exiv2-command must name the pinned exiv2 executable")
+        for name, path in paths.items():
+            if path is not None:
+                expected_offsets[name] = oracle_offsets(extraction_command, path, expected[name])
+    report = compare(expected, run_dump(shlex.split(args.dump_command), present), paths,
+                     expected_offsets if args.exiv2_command else None)
 
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "preview-report.json").write_text(json.dumps(report, indent=1, sort_keys=True) + "\n", encoding="utf-8")
@@ -269,8 +441,7 @@ def main(argv: list[str] | None = None) -> int:
     print(text, end="")
     if args.annotate:
         run_parity.emit_annotations(summary(report), args.title)
-    # A reader that failed on a file is a defect; a preview we do not list is a measurement.
-    return 1 if report["statuses"].get("error") else 0
+    return gate_exit_code(report)
 
 
 if __name__ == "__main__":

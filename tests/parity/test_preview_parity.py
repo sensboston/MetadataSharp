@@ -1,8 +1,10 @@
 """Offline rules of the preview comparison: how the expectation and the dump are read, and how a
 file's previews are judged. No external tool runs here."""
+import base64
 import contextlib
 import io
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -96,19 +98,20 @@ class OracleTests(unittest.TestCase):
 
 class DumpTests(unittest.TestCase):
     def test_records_are_grouped_by_file(self):
-        text = ("FILE\t/c/one.jpg\nPREVIEW\t1\timage/jpeg\t160x120\t4158\tExif.Thumbnail.JPEGInterchangeFormat\n"
-                "PREVIEW\t2\tvideo/H265\t0x0\t77\tBmff.thmb\nSTATUS\tok\n"
+        text = ("FILE\t/c/one.jpg\nPREVIEW\t1\timage/jpeg\t160x120\t4158\t64\tExif.Thumbnail.JPEGInterchangeFormat\n"
+                "PREVIEW\t2\tvideo/H265\t0x0\t77\t128\tBmff.thmb\nSTATUS\tok\n"
                 "FILE\t/c/two.jpg\nSTATUS\trefused\tLimitExceeded\n")
         blocks = run_previews.parse_dump(text)
         self.assertEqual([SMALL, ("video/H265", 0, 0, 77)], blocks["/c/one.jpg"]["previews"])
+        self.assertEqual([64, 128], blocks["/c/one.jpg"]["offsets"])
         self.assertEqual(["Exif.Thumbnail.JPEGInterchangeFormat", "Bmff.thmb"], blocks["/c/one.jpg"]["sources"])
         self.assertEqual("ok", blocks["/c/one.jpg"]["status"])
         self.assertEqual(("refused", "LimitExceeded", []),
                          (blocks["/c/two.jpg"]["status"], blocks["/c/two.jpg"]["detail"], blocks["/c/two.jpg"]["previews"]))
 
     def test_a_malformed_dump_is_refused(self):
-        for text in ("PREVIEW\t1\timage/jpeg\t1x1\t9\tx\n", "FILE\t/a\n", "FILE\t/a\nPREVIEW\t1\timage/jpeg\t1by1\t9\tx\nSTATUS\tok\n",
-                     "FILE\t/a\nSTATUS\tok\nPREVIEW\t1\timage/jpeg\t1x1\t9\tx\n", "FILE\t/a\nFILE\t/b\nSTATUS\tok\n"):
+        for text in ("PREVIEW\t1\timage/jpeg\t1x1\t9\t8\tx\n", "FILE\t/a\n", "FILE\t/a\nPREVIEW\t1\timage/jpeg\t1by1\t9\t8\tx\nSTATUS\tok\n",
+                     "FILE\t/a\nSTATUS\tok\nPREVIEW\t1\timage/jpeg\t1x1\t9\t8\tx\n", "FILE\t/a\nFILE\t/b\nSTATUS\tok\n"):
             with self.assertRaises(run_previews.PreviewParityError, msg=text):
                 run_previews.parse_dump(text)
 
@@ -133,13 +136,17 @@ class ComparisonTests(unittest.TestCase):
 
     def test_totals_count_every_expected_preview_and_only_ok_files_contribute(self):
         expected = run_previews.parse_reference(REFERENCE)
-        root = Path("/c")
-        dumped = {
-            str(root / "one.jpg"): {"previews": [SMALL, LARGE], "sources": ["a", "b"], "status": "ok", "detail": ""},
-            str(root / "two.jpg"): {"previews": [("image/tiff", 96, 72, 20916)], "sources": ["a"], "status": "refused", "detail": "InvalidJpeg"},
-        }
-        paths = {"one.jpg": root / "one.jpg", "two.jpg": root / "two.jpg", "none.jpg": None}
-        report = run_previews.compare(expected, dumped, paths)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "one.jpg").write_bytes(bytes(30000))
+            dumped = {
+                str(root / "one.jpg"): {"previews": [SMALL, LARGE], "offsets": [100, 200],
+                                         "sources": ["a", "b"], "status": "ok", "detail": ""},
+                str(root / "two.jpg"): {"previews": [("image/tiff", 96, 72, 20916)], "sources": ["a"],
+                                         "status": "refused", "detail": "InvalidJpeg"},
+            }
+            paths = {"one.jpg": root / "one.jpg", "two.jpg": root / "two.jpg", "none.jpg": None}
+            report = run_previews.compare(expected, dumped, paths)
         self.assertEqual("Preview", report["kind"])
         self.assertEqual({"expected": 3, "match": 2, "missing": 1, "extra": 0, "files": 3, "files_equal": 2, "files_ordered": 3},
                          report["totals"])
@@ -153,6 +160,55 @@ class ComparisonTests(unittest.TestCase):
         expected = run_previews.parse_reference(REFERENCE)
         with self.assertRaises(run_previews.PreviewParityError):
             run_previews.compare(expected, {}, {"one.jpg": Path("/c/one.jpg"), "two.jpg": None, "none.jpg": None})
+
+    def test_a_differing_source_offset_fails_even_when_the_preview_list_matches(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "file.jpg"
+            path.write_bytes(bytes(30000))
+            expected = {"file.jpg": [SMALL, LARGE]}
+            dumped = {str(path): {"previews": [SMALL, LARGE], "offsets": [100, 200], "sources": ["Exif", "Exif"],
+                                  "status": "ok", "detail": ""}}
+            report = run_previews.compare(expected, dumped, {"file.jpg": path}, {"file.jpg": [[99], [200]]})
+        self.assertEqual(1, report["totals"]["offset_mismatch"])
+        self.assertEqual([{"preview": list(SMALL), "actual": 100, "expected_any": [99]}],
+                         report["files"][0]["offset_mismatch"])
+        self.assertEqual(1, run_previews.gate_exit_code(report))
+
+    def test_source_offsets_are_recovered_from_direct_hex_and_base64_preview_bytes(self):
+        jpeg = b"\xff\xd8sample\xff\xd9"
+        self.assertEqual([3], run_previews._source_offsets(b"xx:" + jpeg + b":yy", jpeg, "image/jpeg", 1, 1))
+        hex_jpeg = jpeg.hex().encode()
+        photoshop = b"%BeginPhotoshop: 1\n" + hex_jpeg + b"\n%EndPhotoshop"
+        self.assertEqual([len(b"%BeginPhotoshop: 1\n")],
+                         run_previews._source_offsets(photoshop, jpeg, "image/jpeg", 1, 1))
+        xmp = b"<image>" + base64.b64encode(jpeg) + b"</image>"
+        self.assertEqual([len(b"<image>")], run_previews._source_offsets(xmp, jpeg, "image/jpeg", 1, 1))
+        rgb = bytes((1, 2, 3))
+        pnm = b"P6\n1 1\n255\n" + rgb
+        eps = b"%%BeginData: 6 Hex Bytes\n 010203\n%%EndData"
+        self.assertEqual([len(b"%%BeginData: 6 Hex Bytes\n")],
+                         run_previews._source_offsets(eps, pnm, "image/x-portable-anymap", 1, 1))
+
+    def test_a_reported_offset_outside_its_source_file_is_a_structural_failure(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "file.jpg"
+            path.write_bytes(bytes(10))
+            expected = {"file.jpg": [SMALL]}
+            dumped = {str(path): {"previews": [SMALL], "offsets": [11], "sources": ["EXIF"],
+                                  "status": "ok", "detail": ""}}
+            with self.assertRaises(run_previews.PreviewParityError):
+                run_previews.compare(expected, dumped, {"file.jpg": path})
+
+    def test_any_unexplained_preview_mismatch_or_refusal_fails_the_gate(self):
+        matching = {"statuses": {"ok": 1}, "totals": {"missing": 0, "extra": 0}}
+        self.assertEqual(0, run_previews.gate_exit_code(matching))
+        for report in (
+            {"statuses": {"ok": 1}, "totals": {"missing": 1, "extra": 0}},
+            {"statuses": {"ok": 1}, "totals": {"missing": 0, "extra": 1}},
+            {"statuses": {"refused": 1}, "totals": {"missing": 0, "extra": 0}},
+            {"statuses": {"no-input": 1}, "totals": {"missing": 0, "extra": 0}},
+        ):
+            self.assertEqual(1, run_previews.gate_exit_code(report), report)
 
 
 if __name__ == "__main__":

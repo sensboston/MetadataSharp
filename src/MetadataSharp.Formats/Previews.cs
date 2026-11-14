@@ -10,7 +10,7 @@ namespace MetadataSharp.Formats;
 /// <param name="MimeType">
 /// <c>image/jpeg</c> for a JPEG stream; <c>image/x-raw-rgb</c> for uncompressed strips of interleaved
 /// 8-bit RGB samples, rows top to bottom; <c>video/H265</c> or <c>video/AV1</c> for a coded BMFF
-/// thumbnail item, which is listed and not extracted.
+/// thumbnail item, whose encoded item bytes can be extracted without decoding.
 /// </param>
 /// <param name="Width">Width in pixels, when the preview or its container states it.</param>
 /// <param name="Height">Height in pixels, when the preview or its container states it.</param>
@@ -66,10 +66,20 @@ public static class Previews
     public static byte[] Extract(ReadOnlySpan<byte> file, PreviewImage preview, MetadataLimits? limits = null)
     {
         ArgumentNullException.ThrowIfNull(preview);
-        Checked(file, limits);
+        limits = Checked(file, limits);
+        if ((preview.Source is "EPS.AI7.Hex" or "EPS.Photoshop.Hex") || preview.Source.StartsWith("Xmp.Thumbnail", StringComparison.Ordinal))
+        {
+            var scanner = new PreviewScanner(file, limits);
+            _ = scanner.Run();
+            if (scanner.TryGetGenerated(preview, out byte[]? generated)) return (byte[])generated.Clone();
+            throw new MetadataException(MetadataErrorCode.InvalidTiff, "The generated preview no longer matches the file.", preview.Offset);
+        }
         bool jpeg = preview.MimeType == JpegType;
-        if (!jpeg && preview.MimeType != RawRgbType)
-            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "Only JPEG previews and uncompressed RGB samples can be extracted.", preview.Offset);
+        bool rgb = preview.MimeType == RawRgbType;
+        bool direct = preview.MimeType is "image/tiff" or "image/x-wmf" or "image/x-portable-anymap" or
+            "application/octet-stream" or "video/H265" or "video/AV1";
+        if (!jpeg && !rgb && !direct)
+            throw new MetadataException(MetadataErrorCode.UnsupportedFeature, "The preview media type has no extractor.", preview.Offset);
         MetadataErrorCode invalid = jpeg ? MetadataErrorCode.InvalidJpeg : MetadataErrorCode.InvalidTiff;
         if (preview.Offset < 0 || preview.Length <= 0 || preview.Offset > (long)file.Length - preview.Length)
             throw new MetadataException(invalid, "The preview lies outside the file.", preview.Offset);
@@ -83,8 +93,8 @@ public static class Previews
             if (bytes[last - 2] != 0xFF || bytes[last - 1] != 0xD9)
                 throw new MetadataException(MetadataErrorCode.InvalidJpeg, "The preview does not end with a JPEG end-of-image marker.", preview.Offset + preview.Length);
         }
-        else if (preview.Width is not int width || preview.Height is not int height || width <= 0 || height <= 0 ||
-            (long)width * height * 3 != preview.Length)
+        else if (rgb && (preview.Width is not int width || preview.Height is not int height || width <= 0 || height <= 0 ||
+            (long)width * height * 3 != preview.Length))
         {
             throw new MetadataException(MetadataErrorCode.InvalidTiff, "The sample count does not match the dimensions of the preview.", preview.Offset);
         }
@@ -128,6 +138,7 @@ internal ref struct PreviewScanner
     private readonly List<PreviewImage> found;
     private int directories;
     private int subImages;
+    private readonly Dictionary<(string Source, long Offset, int Length), byte[]> generated = new();
 
     // Retain the file span and limits while scanning preview pointers.
     internal PreviewScanner(ReadOnlySpan<byte> data, MetadataLimits limits)
@@ -146,15 +157,26 @@ internal ref struct PreviewScanner
     private readonly record struct Entry(ushort Tag, ushort Type, uint Count, int At);
 
     // Keep Run focused on metadata and its format-specific validation contract.
+    internal bool TryGetGenerated(PreviewImage preview, out byte[]? bytes) =>
+        generated.TryGetValue((preview.Source, preview.Offset, preview.Length), out bytes);
+
     internal List<PreviewImage> Run()
     {
         if (data.Length >= 2 && data[0] == 0xFF && data[1] == 0xD8) Segments(2);
         else if (data.Length >= 7 && data[0] == 0xFF && data[1] == 0x01 && data.Slice(2, 5).SequenceEqual("Exiv2"u8)) Segments(7);
+        else if (IsCrwHeader()) Crw();
+        else if (data.Length >= 4 && data[..4].SequenceEqual("\0MRM"u8)) Mrw();
+        else if (data.Length >= 8 && data[..8].SequenceEqual("FUJIFILM"u8)) Raf();
+        else if (IsJp2Header()) Jp2();
         else if (IsTiffHeader()) Tiff(0, data.Length, data.Length >= 4 && data[2] == 0x55);
         else if (data.Length >= 4 && data[..4].SequenceEqual("8BPS"u8)) Psd();
         else if (data.Length >= 8 && data[0] == 0x89 && data.Slice(1, 3).SequenceEqual("PNG"u8)) Png();
         else if (data.Length >= 12 && data[..4].SequenceEqual("RIFF"u8) && data.Slice(8, 4).SequenceEqual("WEBP"u8)) WebP();
         else if (data.Length >= 12 && data.Slice(4, 4).SequenceEqual("ftyp"u8)) Bmff();
+        else if (data.Length >= 4 && (data[..4].SequenceEqual("IIRC"u8) || data[..4].SequenceEqual("MMCR"u8))) Tiff(0, data.Length, false);
+        else if (data.Length >= 11 && data[..11].SequenceEqual("%!PS-Adobe-"u8)) Eps();
+        else if (data.Length >= 4 && data[..4].SequenceEqual(new byte[] { 0xC5, 0xD0, 0xD3, 0xC6 })) Eps();
+        else if (LooksLikeXmp()) XmpThumbnail();
         return found;
     }
 
@@ -164,15 +186,286 @@ internal ref struct PreviewScanner
     {
         if (data.Length < 8) return false;
         ReadOnlySpan<byte> head = data[..4];
-        return head.SequenceEqual("II*\0"u8) || head.SequenceEqual("MM\0*"u8) || head.SequenceEqual("IIRO"u8) ||
+        return head.SequenceEqual("II*\0"u8) || head.SequenceEqual("MM\0*"u8) || head.SequenceEqual("IIRC"u8) ||
+            head.SequenceEqual("MMCR"u8) || head.SequenceEqual("IIRO"u8) ||
             head.SequenceEqual("IIRS"u8) || head.SequenceEqual("MMOR"u8) || head.SequenceEqual("IIU\0"u8);
+    }
+
+    // CRW and RAF expose their preview byte ranges through dedicated bounded readers.
+    private bool IsCrwHeader() => data.Length >= 14 && data[0] == data[1] &&
+        (data[0] == (byte)'I' || data[0] == (byte)'M') && data.Slice(6, 8).SequenceEqual("HEAPCCDR"u8);
+
+    private static bool IsJp2Header(ReadOnlySpan<byte> bytes) => bytes.Length >= 12 &&
+        bytes[..4].SequenceEqual(new byte[] { 0, 0, 0, 12 }) && bytes.Slice(4, 4).SequenceEqual("jP  "u8) &&
+        bytes.Slice(8, 4).SequenceEqual(new byte[] { 13, 10, 135, 10 });
+
+    private bool IsJp2Header() => IsJp2Header(data);
+
+    private void Crw()
+    {
+        MetadataSharp.Formats.Crw.CrwMetadata metadata = MetadataSharp.Formats.Crw.CrwMetadata.Read(data, limits);
+        if (metadata.ThumbnailOffset is long thumbnail)
+            Jpeg(thumbnail, metadata.ThumbnailLength, "Exif.Thumbnail.JPEGInterchangeFormat", 0, 0);
+        if (metadata.PreviewOffset is long preview)
+            Jpeg(preview, metadata.PreviewLength, "Exif.Image2.JPEGInterchangeFormat", 0, 0);
+    }
+
+    private void Mrw()
+    {
+        (int start, int length) = MetadataSharp.Formats.Mrw.MrwMetadata.Locate(data);
+        Tiff(start, start + length, false);
+    }
+
+    private void Raf()
+    {
+        MetadataSharp.Formats.Raf.RafMetadata metadata = MetadataSharp.Formats.Raf.RafMetadata.Read(data, limits);
+        int jpegStart = checked((int)metadata.JpegOffset);
+        int jpegEnd = checked(jpegStart + (int)metadata.JpegLength);
+        if (jpegEnd <= data.Length && jpegEnd - jpegStart >= 4 && data[jpegStart] == 0xFF && data[jpegStart + 1] == 0xD8)
+        {
+            Segments(jpegStart + 2, jpegEnd);
+            Jpeg(jpegStart, metadata.JpegLength, "Exif.Image2.JPEGInterchangeFormat", 0, 0);
+        }
+        if (metadata.TiffOffset is long tiff && metadata.TiffLength >= 8)
+        {
+            int start = checked((int)tiff);
+            Tiff(start, checked(start + (int)metadata.TiffLength), false);
+        }
+    }
+
+    private void Jp2()
+    {
+        // The JP2 Exif UUID payload contains a TIFF header (or an Exif prefix before it).
+        ReadOnlySpan<byte> exifUuid = "JpgTiffExif->JP2"u8;
+        int at = 0;
+        for (int boxes = 0; boxes < 1024 && data.Length - at >= 8; boxes++)
+        {
+            uint shortLength = Be32(at);
+            uint type = Be32(at + 4);
+            int headerLength = 8;
+            long length = shortLength;
+            if (shortLength == 1)
+            {
+                if (data.Length - at < 16) return;
+                ulong extendedLength = BinaryPrimitives.ReadUInt64BigEndian(data.Slice(at + 8, 8));
+                if (extendedLength > int.MaxValue) return;
+                length = (long)extendedLength;
+                headerLength = 16;
+            }
+            else if (shortLength == 0) length = data.Length - at;
+            if (length < headerLength || length > data.Length - at) return;
+            int end = at + (int)length;
+            int uuidAt = at + headerLength;
+            if (type == 0x75756964 && end - uuidAt >= 16 && data.Slice(uuidAt, 16).SequenceEqual(exifUuid))
+            {
+                int payload = uuidAt + 16;
+                int tiff = payload;
+                if (!HasTiffAt(tiff, end) && end - payload >= 4)
+                {
+                    uint relative = Be32(payload);
+                    if (relative <= end - payload - 4) tiff = payload + 4 + (int)relative;
+                }
+                if (!HasTiffAt(tiff, end))
+                {
+                    int prefix = data.Slice(payload, end - payload).IndexOf("Exif\0\0"u8);
+                    if (prefix >= 0) tiff = payload + prefix + 6;
+                }
+                if (HasTiffAt(tiff, end)) Tiff(tiff, end, false);
+            }
+            at = end;
+        }
+    }
+
+    private bool HasTiffAt(int at, int end) => at >= 0 && end - at >= 8 &&
+        (data.Slice(at, 4).SequenceEqual(new byte[] { 0x49, 0x49, 42, 0 }) ||
+         data.Slice(at, 4).SequenceEqual(new byte[] { 0x4D, 0x4D, 0, 42 }));
+
+    private bool LooksLikeXmp() => data.StartsWith("<?xpacket"u8) || data.StartsWith("<?xml"u8) ||
+        (data.Length >= 10 && data[..10].SequenceEqual("<x:xmpmeta"u8));
+
+    private void XmpThumbnail()
+    {
+        MetadataSharp.Core.Xmp.XmpPacket packet;
+        try { packet = MetadataSharp.Core.Xmp.XmpPacket.Parse(data); }
+        catch (MetadataException) { return; }
+        var entries = packet.Entries.ToDictionary(entry => entry.Key, StringComparer.Ordinal);
+        foreach (string prefix in new[] { "xmpGImg", "xapGImg" })
+        {
+            string root = "Xmp.xmp.Thumbnails[1]/" + prefix + ":";
+            if (!entries.TryGetValue(root + "image", out MetadataSharp.Core.Xmp.XmpEntry? image) || image.Values.Count == 0 ||
+                !entries.TryGetValue(root + "format", out MetadataSharp.Core.Xmp.XmpEntry? format) || format.Values.Count == 0 ||
+                format.Values[0] != "JPEG" ||
+                !entries.TryGetValue(root + "width", out MetadataSharp.Core.Xmp.XmpEntry? width) || width.Values.Count == 0 ||
+                !entries.TryGetValue(root + "height", out MetadataSharp.Core.Xmp.XmpEntry? height) || height.Values.Count == 0 ||
+                !int.TryParse(width.Values[0], out int w) || !int.TryParse(height.Values[0], out int h) || w <= 0 || h <= 0)
+                continue;
+            byte[] jpeg;
+            try { jpeg = Convert.FromBase64String(image.Values[0]); }
+            catch (FormatException) { continue; }
+            if (jpeg.Length < 4 || jpeg[0] != 0xFF || jpeg[1] != 0xD8 || jpeg[^2] != 0xFF || jpeg[^1] != 0xD9) continue;
+            int storedAt = data.IndexOf(Encoding.ASCII.GetBytes(image.Values[0]));
+            if (storedAt < 0) continue;
+            var preview = new PreviewImage(Previews.JpegType, w, h, storedAt, jpeg.Length, "Xmp.Thumbnail[1]");
+            generated[(preview.Source, preview.Offset, preview.Length)] = jpeg;
+            Add(preview);
+            return;
+        }
+    }
+
+    private void Eps()
+    {
+        // DOS EPS sections are byte-preserving native previews; the PostScript body is never executed.
+        if (data.Length >= 30 && data[..4].SequenceEqual(new byte[] { 0xC5, 0xD0, 0xD3, 0xC6 }))
+        {
+            uint wmStart = BinaryPrimitives.ReadUInt32LittleEndian(data[12..]);
+            uint wmLength = BinaryPrimitives.ReadUInt32LittleEndian(data[16..]);
+            uint tiffStart = BinaryPrimitives.ReadUInt32LittleEndian(data[20..]);
+            uint tiffLength = BinaryPrimitives.ReadUInt32LittleEndian(data[24..]);
+            if (wmLength > 0 && wmStart <= data.Length && wmLength <= data.Length - wmStart)
+                Add(new PreviewImage("image/x-wmf", null, null, wmStart, (int)wmLength, "EPS.WMF"));
+            if (tiffLength > 0 && tiffStart <= data.Length && tiffLength <= data.Length - tiffStart)
+                Add(new PreviewImage("image/tiff", null, null, tiffStart, (int)tiffLength, "EPS.TIFF"));
+        }
+        // Photoshop EPS stores a hex-encoded sequence of image-resource blocks; Exiv2 selects
+        // resource 0x0409 and returns the JPEG after its 28-byte thumbnail header.
+        int photoshop = data.IndexOf("%BeginPhotoshop:"u8);
+        if (photoshop >= 0)
+        {
+            int lineEnd = data[photoshop..].IndexOf((byte)'\n');
+            if (lineEnd >= 0)
+            {
+                int hexStart = photoshop + lineEnd + 1;
+                int end = data[hexStart..].IndexOf("%EndPhotoshop"u8);
+                if (end >= 0 && TryDecodeHex(data.Slice(hexStart, end), out byte[] irb))
+                    AddPhotoshopPreview(irb, hexStart);
+            }
+        }
+        // The plain EPS AI7 hex-thumbnail syntax is a native decoded PNM preview in Exiv2.
+        int marker = data.IndexOf("%AI7_Thumbnail"u8);
+        if (marker < 0) return;
+        int lineEnd = data[marker..].IndexOf((byte)'\n');
+        if (lineEnd < 0) return;
+        ReadOnlySpan<byte> header = data.Slice(marker, lineEnd);
+        string text = Encoding.ASCII.GetString(header);
+        string[] parts = text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 4 || !int.TryParse(parts[1], out int width) || !int.TryParse(parts[2], out int height) ||
+            parts[3] != "8" || width <= 0 || height <= 0 || (long)width * height * 3 > 256L * 1024 * 1024) return;
+        int beginData = marker + lineEnd + 1;
+        int dataMarker = data[beginData..].IndexOf("%%BeginData:"u8);
+        if (dataMarker < 0) return;
+        int dataLineEnd = data[beginData + dataMarker..].IndexOf((byte)'\n');
+        if (dataLineEnd < 0) return;
+        string[] dataFields = Encoding.ASCII.GetString(data.Slice(beginData + dataMarker, dataLineEnd))
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        if (dataFields.Length < 3 || dataFields[0] != "%%BeginData:" || dataFields[2] != "Hex") return;
+        int hexStart = beginData + dataMarker + dataLineEnd + 1;
+        int endData = data[hexStart..].IndexOf("%%EndData"u8);
+        if (endData < 0 || endData > limits.MaxInputBytes) return;
+        if (!TryDecodeHex(data.Slice(hexStart, endData), out byte[] rgb)) return;
+        int expected = checked(width * height * 3);
+        if (rgb.Length != expected) return;
+        byte[] pnmHeader = Encoding.ASCII.GetBytes($"P6\n{width} {height}\n255\n");
+        byte[] pnm = new byte[pnmHeader.Length + rgb.Length];
+        pnmHeader.CopyTo(pnm, 0); rgb.CopyTo(pnm, pnmHeader.Length);
+        var preview = new PreviewImage("image/x-portable-anymap", width, height, hexStart, pnm.Length, "EPS.AI7.Hex");
+        generated[(preview.Source, preview.Offset, preview.Length)] = pnm;
+        Add(preview);
+    }
+
+    private bool TryDecodeHex(ReadOnlySpan<byte> source, out byte[] decoded)
+    {
+        decoded = [];
+        const int maxDecodedBytes = 256 * 1024 * 1024;
+        if (source.Length > Math.Min(limits.MaxInputBytes, 2L * maxDecodedBytes)) return false;
+        int digits = 0;
+        foreach (byte value in source)
+        {
+            if (Nibble(value) >= 0) digits++;
+            else if (!HexWhitespace(value)) return false;
+        }
+        if ((digits & 1) != 0 || digits / 2 > maxDecodedBytes) return false;
+        byte[] result = new byte[digits / 2];
+        int high = -1, written = 0;
+        foreach (byte value in source)
+        {
+            int nibble = Nibble(value);
+            if (nibble < 0) continue;
+            if (high < 0) high = nibble;
+            else { result[written++] = (byte)((high << 4) | nibble); high = -1; }
+        }
+        decoded = result;
+        return true;
+    }
+
+    private static int Nibble(byte value) => value >= (byte)'0' && value <= (byte)'9' ? value - '0' :
+        value >= (byte)'A' && value <= (byte)'F' ? value - 'A' + 10 :
+        value >= (byte)'a' && value <= (byte)'f' ? value - 'a' + 10 : -1;
+
+    private static bool HexWhitespace(byte value) =>
+        value == (byte)' ' || value == (byte)'\t' || value == (byte)'\r' || value == (byte)'\n' || value == (byte)'\f';
+
+    private static (int? Width, int? Height) JpegDimensions(ReadOnlySpan<byte> jpeg)
+    {
+        int at = 2;
+        for (int count = 0; count < 4096 && jpeg.Length - at >= 4 && jpeg[at] == 0xFF; count++)
+        {
+            byte marker = jpeg[at + 1];
+            if (marker == 0xFF) { at++; continue; }
+            if (marker is 0xD8 or 0xD9 or 0xDA) return (null, null);
+            int size = BinaryPrimitives.ReadUInt16BigEndian(jpeg.Slice(at + 2, 2));
+            if (size < 2 || size > jpeg.Length - at - 2) return (null, null);
+            if (marker is >= 0xC0 and <= 0xCF and not (0xC4 or 0xC8 or 0xCC))
+            {
+                if (size < 7 || marker is 0xC3 or 0xC7 or 0xCB or 0xCF) return (null, null);
+                return (BinaryPrimitives.ReadUInt16BigEndian(jpeg.Slice(at + 7, 2)),
+                    BinaryPrimitives.ReadUInt16BigEndian(jpeg.Slice(at + 5, 2)));
+            }
+            at += size + 2;
+        }
+        return (null, null);
+    }
+
+    private void AddPhotoshopPreview(ReadOnlySpan<byte> irb, int sourceOffset)
+    {
+        int at = 0;
+        for (int count = 0; count < limits.MaxSegments && irb.Length - at >= 12; count++)
+        {
+            if (!irb.Slice(at, 4).SequenceEqual("8BIM"u8)) return;
+            ushort id = BinaryPrimitives.ReadUInt16BigEndian(irb.Slice(at + 4, 2));
+            int nameLength = irb[at + 6] + 1;
+            nameLength += nameLength & 1;
+            int sizeAt = at + 6 + nameLength;
+            if (sizeAt > irb.Length - 4) return;
+            uint size = BinaryPrimitives.ReadUInt32BigEndian(irb.Slice(sizeAt, 4));
+            int payload = sizeAt + 4;
+            if (size > irb.Length - payload) return;
+            if (id == 0x0409 && size >= 32)
+            {
+                int jpegStart = payload + 28;
+                int jpegLength = checked((int)size - 28);
+                if (jpegLength >= 4 && irb[jpegStart] == 0xFF && irb[jpegStart + 1] == 0xD8 &&
+                    irb[jpegStart + jpegLength - 2] == 0xFF && irb[jpegStart + jpegLength - 1] == 0xD9)
+                {
+                    ReadOnlySpan<byte> jpeg = irb.Slice(jpegStart, jpegLength);
+                    (int? width, int? height) = JpegDimensions(jpeg);
+                    var preview = new PreviewImage(Previews.JpegType, width, height, sourceOffset, jpegLength, "EPS.Photoshop.Hex");
+                    generated[(preview.Source, preview.Offset, preview.Length)] = jpeg.ToArray();
+                    Add(preview);
+                }
+                return;
+            }
+            at = payload + (int)size + ((int)size & 1);
+        }
     }
 
     // ---- containers that carry an Exif block ----
 
-    private void Segments(int at)
+    private void Segments(int at) => Segments(at, data.Length);
+
+    private void Segments(int at, int limit)
     {
-        for (int count = 0; count < limits.MaxSegments && data.Length - at >= 4; count++)
+        if (at < 0 || limit < at || limit > data.Length) return;
+        for (int count = 0; count < limits.MaxSegments && limit - at >= 4; count++)
         {
             if (data[at] != 0xFF) return;
             byte marker = data[at + 1];
@@ -180,7 +473,7 @@ internal ref struct PreviewScanner
             if (marker is 0x01 or (>= 0xD0 and <= 0xD7)) { at += 2; continue; }
             if (marker is 0xD9 or 0xDA) return;
             int length = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(at + 2, 2));
-            if (length < 2 || length > data.Length - at - 2) return;
+            if (length < 2 || length > limit - at - 2) return;
             int payload = at + 4, end = at + 2 + length;
             if (marker == 0xE1 && end - payload >= 14 && data.Slice(payload, 6).SequenceEqual("Exif\0\0"u8))
             {
@@ -368,6 +661,34 @@ internal ref struct PreviewScanner
             var pentax = new Frame(at, frame.End, frame.Little);
             if (Directory(pentax, at + 10, entries, out int tableEnd, out _))
                 Pointer(pentax, entries, 0x0004, 0x0003, "Exif.PentaxDng.PreviewOffset", at + 10, tableEnd);
+            return;
+        }
+        if (note.StartsWith("QVC\0\0\0"u8))
+        {
+            var casio = new Frame(frame.Origin, frame.End, false);
+            if (Directory(casio, at + 6, entries, out int tableEnd, out _))
+            {
+                Pointer(casio, entries, 0x0004, 0x0003, "Exif.Casio2.PreviewImageStart", at + 6, tableEnd);
+                if (Find(entries, 0x2000) is Entry image && (image.Type == 1 || image.Type == 7))
+                    Jpeg(image.At, image.Count, "Exif.Casio2.PreviewImage", 0, 0);
+            }
+            return;
+        }
+        if (note.StartsWith("Panasonic\0\0\0"u8))
+        {
+            if (Directory(frame, at + 12, entries, out _, out _) &&
+                Find(entries, 0x002E) is Entry image && (image.Type == 1 || image.Type == 7))
+                Jpeg(image.At, image.Count, "Exif.PanasonicRaw.PreviewImage", 0, 0);
+            return;
+        }
+        if (make.StartsWith("SAMSUNG", StringComparison.OrdinalIgnoreCase))
+        {
+            var samsung = new Frame(at, checked(at + length), frame.Little);
+            if (!Directory(samsung, at, entries, out _, out _) || Find(entries, 0x0035) is not Entry subIfd) return;
+            long position = samsung.Origin + Element(samsung, subIfd, 0);
+            var previewEntries = new List<Entry>();
+            if (position >= at && position < samsung.End && Directory(samsung, position, previewEntries, out int tableEnd, out _))
+                Pointer(samsung, previewEntries, 0x0201, 0x0202, "Exif.SamsungPreview.JPEGInterchangeFormat", (int)position, tableEnd);
             return;
         }
         if (note.StartsWith("OLYMPUS\0"u8))
