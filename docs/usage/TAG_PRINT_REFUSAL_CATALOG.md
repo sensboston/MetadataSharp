@@ -55,3 +55,33 @@ These files have no usable Exiv2 `-pt` row set at the pinned version; they are l
 | `sample_960x540.asf` | `exiv2-refused / exit 1` | Exiv2 0.28.9 reports an unknown image type. |
 
 The executable exception table is in `tools/parity/run_tag_print.py`; tests require every entry to name a reason and require its observed status to remain unchanged. The report continues to emit these entries with all remaining differences so the exception set cannot silently stand in for parity.
+
+## Documented row rules
+
+A row rule names one reference row that no local row can answer, because the reference reads something
+this library deliberately does not. The gate keeps such a row visible in its report, counts it in no
+matched-row total, and requires the exact pinned file and key listed below: a different file, a
+different key, or a local row that starts answering the same key fails the comparison again.
+
+| Exact pinned input | Exact key or group prefix | Why the reference row has no local counterpart |
+| --- | --- | --- |
+| `BlueSquare.xmp` | `Exif.*` | The reference's XMP sidecar reader converts the packet into an EXIF block and prints the converted tags. A sidecar is read as a packet here, and `MetadataSync.XmpToExif` is the explicit conversion. The rule applies only while the file prints no EXIF row at all. |
+| `StaffPhotographer-Example.xmp` | `Exif.*` | Same sidecar conversion rule. |
+| `exiv2-bug1112.xmp` | `Exif.*` | Same sidecar conversion rule. |
+| `issue_1959_poc.xmp` | `Exif.*` | Same sidecar conversion rule. |
+| `issue_1998.xmp` | `Exif.*` | Same sidecar conversion rule. |
+| `IMG_1361.dng` | `Exif.SubImage1.` | The 0th directory points at image directories with tag 0x014A (SubIFDs). A whole TIFF or DNG is read for its metadata directories: strip, tile and SubIFD tags are entries and are never followed. |
+| `IMG_1361.dng` | `Exif.SubImage2.` | Same image-directory rule, second SubIFD. |
+| `exiv2-pr2323_coverage1.exv` | `Exif.Sony1.ColorTemperature` | The fixture holds tag 0xB021 twice in one MakerNote directory, and a MakerNote directory is read once per tag ID so that a tag can be addressed by key for an edit. Only the second occurrence is in question. |
+| `exiv2-pr2323_coverage4.exv` | `Exif.Sony2.WBShiftABGM` | The fixture holds tag 0x2014 twice in one MakerNote directory, under the same one-entry-per-tag rule. Only the second occurrence is in question. |
+| `exiv2-bug447.jpg` | `Exif.Photo.UserComment` | The entry names field type 14, which is not a TIFF 6.0 field type. The reader leaves an entry of unknown type out, as TIFF 6.0 tells a reader to do, and marks the block not editable. |
+
+## How a reference row is read
+
+The reference prints one record per line with fixed column widths: the key is left-aligned in 44
+characters, the field type in 9, the count is right-aligned in 3, and the printed value follows two
+spaces of its own. The gate reads those columns rather than splitting on whitespace, because a stored
+value may begin with spaces and one MakerNote group names a tag with a space in its name. The value
+column keeps its exact text, including leading and internal whitespace; only trailing space and NUL
+padding of an ASCII field is accepted as a print difference, since the reference stops an ASCII value
+at its first NUL.

@@ -56,6 +56,10 @@ choose the `Encoding` explicitly. If the body is invalid under that encoding, in
 `null`; the original bytes remain accessible on the value. This option is not a global override for
 IPTC or XMP, and it does not change the encoding used by metadata writers.
 
+A comment body that holds no printable character is not interpreted at all: cameras also store binary
+structures behind the character code, and only the raw value can describe those bytes. A body that
+holds text with a line break or another control character of its own is still interpreted as text.
+
 ## Differential evidence
 
 `tools/parity/run_tag_print.py` compares the ordered `MetadataSharp.Dump` tag records with the pinned
@@ -87,10 +91,12 @@ catalog. Any difference in raw value or structure still fails. A vendor tag
 rendered only as an unknown numeric key (for example, `Exif.Canon.0x0019`) is not a named catalog
 entry; if the pinned reference does not print that key, the report lists it under
 `raw_only_tag_exceptions` instead of counting its fallback raw value as a named-table mismatch. This does not suppress unknown named keys,
-keys printed by both tools, raw-value gates, or the separate MakerNote-render parity gate. Named reader
-refusals are inventoried by exact corpus filename and status in
-[`TAG_PRINT_REFUSAL_CATALOG.md`](TAG_PRINT_REFUSAL_CATALOG.md); they are reported as refusals, not
-matched rows, and any changed outcome fails. The gate is fail-closed for unlisted missing inputs and
+keys printed by both tools, raw-value gates, or the separate MakerNote-render parity gate.
+The reference's print columns are read by their widths, so a stored value that begins with spaces and
+a MakerNote tag name that contains a space are compared exactly. Named reader refusals and the
+reference rows the comparison cannot answer are inventoried by exact corpus filename, key or group
+prefix and reason in [`TAG_PRINT_REFUSAL_CATALOG.md`](TAG_PRINT_REFUSAL_CATALOG.md); they are reported
+apart from the matched rows, and any changed outcome fails. The gate is fail-closed for unlisted missing inputs and
 other output mismatches. It is not a claim that this table
 or the library currently achieves full parity; the report is the measure of remaining work. The tool also checks that both the source checkout
 and binary identify as the pin before comparing output.

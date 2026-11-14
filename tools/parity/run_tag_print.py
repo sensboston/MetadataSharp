@@ -105,7 +105,74 @@ _TAG_PRINT_DISPLAY_REASONS = {
     "Exif.Photo.SensitivityType": "MetadataSharp renders the assigned EXIF meaning; Exiv2 0.28.9 prints the stored numeric code for this tag. Exact code-to-label pairs are listed and checked, not generalized to arbitrary values.",
 }
 
+# Exact reference rows that no local row can answer, because the reference reads something the library
+# deliberately does not. The key is (pinned file name, key pattern): a pattern ending with "." covers
+# that group prefix, the pattern "Exif.*" covers every EXIF key of a file that has no EXIF block of its
+# own, and any other pattern must equal the key exactly. Only reference-only rows can be covered: a
+# documented row that the library starts printing fails the comparison until the entry is removed, and
+# so does every row the patterns do not name.
+_SIDECAR_CONVERSION_RULE = (
+    "Exiv2's XMP sidecar reader converts the packet into an EXIF block and prints the converted tags; "
+    "MetadataSharp reads a sidecar as a packet and offers that conversion explicitly through "
+    "MetadataSync.XmpToExif instead. The file has no EXIF block of its own (the gate requires that the "
+    "library prints no EXIF row for it), so these rows measure the reference's conversion, not its tag table."
+)
+_TAG_PRINT_ROW_EXCEPTIONS: dict[tuple[str, str], str] = {
+    ("BlueSquare.xmp", "Exif.*"): _SIDECAR_CONVERSION_RULE,
+    ("StaffPhotographer-Example.xmp", "Exif.*"): _SIDECAR_CONVERSION_RULE,
+    ("exiv2-bug1112.xmp", "Exif.*"): _SIDECAR_CONVERSION_RULE,
+    ("issue_1959_poc.xmp", "Exif.*"): _SIDECAR_CONVERSION_RULE,
+    ("issue_1998.xmp", "Exif.*"): _SIDECAR_CONVERSION_RULE,
+    ("IMG_1361.dng", "Exif.SubImage1."): (
+        "The 0th directory of this file points at two image directories with tag 0x014A (SubIFDs). A whole "
+        "TIFF or DNG is read for its metadata directories only: strip, tile and SubIFD tags are entries and "
+        "are never followed, so the reference's SubImage group has no local counterpart. The rule covers "
+        "this exact file and group prefix only."
+    ),
+    ("IMG_1361.dng", "Exif.SubImage2."): (
+        "The 0th directory of this file points at two image directories with tag 0x014A (SubIFDs). A whole "
+        "TIFF or DNG is read for its metadata directories only: strip, tile and SubIFD tags are entries and "
+        "are never followed, so the reference's SubImage group has no local counterpart. The rule covers "
+        "this exact file and group prefix only."
+    ),
+    ("exiv2-pr2323_coverage1.exv", "Exif.Sony1.ColorTemperature"): (
+        "This fixture holds tag 0xB021 twice in one MakerNote directory. A MakerNote directory is read once "
+        "per tag ID, so that a tag can be addressed by key for an edit; the reference prints every entry. "
+        "Only the second occurrence is in question here, and the rule covers this exact file and key."
+    ),
+    ("exiv2-pr2323_coverage4.exv", "Exif.Sony2.WBShiftABGM"): (
+        "This fixture holds tag 0x2014 twice in one MakerNote directory. A MakerNote directory is read once "
+        "per tag ID, so that a tag can be addressed by key for an edit; the reference prints every entry. "
+        "Only the second occurrence is in question here, and the rule covers this exact file and key."
+    ),
+    ("exiv2-bug447.jpg", "Exif.Photo.UserComment"): (
+        "The directory entry of this tag names field type 14, which is not a TIFF 6.0 field type. The reader "
+        "leaves an entry of unknown type out, as TIFF 6.0 tells a reader to do, and marks the block not "
+        "editable; the reference prints the numeric type and keeps the entry. The rule covers this exact "
+        "file and key."
+    ),
+}
+
+
+def _row_exception(file_name: str, row: dict[str, Any], has_local_exif: bool) -> str | None:
+    """The documented reason for a reference row with no local counterpart, or None."""
+    key = str(row.get("key"))
+    for (name, pattern), reason in _TAG_PRINT_ROW_EXCEPTIONS.items():
+        if name != file_name:
+            continue
+        if pattern == "Exif.*":
+            if not has_local_exif and key.startswith("Exif."):
+                return reason
+        elif pattern.endswith("."):
+            if key.startswith(pattern):
+                return reason
+        elif key == pattern:
+            return reason
+    return None
+
+
 _TAG_PRINT_EXCEPTIONS: dict[str, str] = {
+
     # These are upstream expectation basenames for command-line/unit tests, not metadata files.
     # corpus.discover_exiv2 deliberately does not guess an image for a *_test input.
     "addmoddel": "Synthetic command-line test expectation; no corresponding media input is present in the pinned test/data tree.",
@@ -212,18 +279,56 @@ def _decode(value: str) -> str:
     return "".join(result)
 
 
+# The reference prints one record per line and gives each column a width: the key is left-aligned in
+# 44 characters, the field type in 9, the count is right-aligned in 3, and the printed value follows
+# two spaces of its own (app/actions.cpp, printMetadatum). A column is a minimum width, so a longer key
+# or count pushes the rest of the line right. Both details matter here: collapsing runs of spaces would
+# drop the leading spaces of a stored value, and a key of the Minolta camera-settings groups contains a
+# space of its own, which a whitespace split reads as the start of the type column.
+_PRINT_KEY_WIDTH = 44
+_PRINT_TYPE_WIDTH = 9
+_PRINT_COUNT_WIDTH = 3
+_TYPE_NAMES = ("Byte", "Ascii", "Short", "Long", "Rational", "SByte", "Undefined", "SShort", "SLong",
+               "SRational", "Float", "Double", "Ifd")
+# An unknown field type is printed as its four-digit hexadecimal code.
+_TYPE_ALTERNATION = "(?:" + "|".join(_TYPE_NAMES) + r"|0[xX][0-9a-fA-F]{4})"
+# The count is right-aligned in three characters and the value follows two spaces; a recorded row
+# without a value (a value of no bytes) ends after the count.
+_COUNT_AND_VALUE = re.compile(r" *(?P<count>\d+)(?:  (?P<value>.*))?\Z")
+_WIDE_ROW = re.compile(r"(?P<key>.*?) +(?P<type>" + _TYPE_ALTERNATION + r") *(?P<tail>.*)\Z")
+
+
+def parse_pt_row(line: str) -> dict[str, Any] | None:
+    """Split one printed row into its key, type, count and the exact text of the value column."""
+    type_start = _PRINT_KEY_WIDTH + 1
+    type_end = type_start + _PRINT_TYPE_WIDTH
+    if len(line) > type_end and line[_PRINT_KEY_WIDTH] == " " and line[type_end] == " ":
+        key = line[:_PRINT_KEY_WIDTH].rstrip(" ")
+        type_name = line[type_start:type_end].rstrip(" ")
+        count = _COUNT_AND_VALUE.match(line[type_end + 1:])
+        if type_name and count is not None:
+            return {"key": key, "type": type_name, "count": int(count.group("count")),
+                    "value": count.group("value") or ""}
+    # A key longer than its column, or a count wider than its own: read the columns by their content.
+    wide = _WIDE_ROW.match(line)
+    if wide is None:
+        return None
+    count = _COUNT_AND_VALUE.match(wide.group("tail"))
+    if count is None:
+        return None
+    return {"key": wide.group("key"), "type": wide.group("type"), "count": int(count.group("count")),
+            "value": count.group("value") or ""}
+
+
 def parse_exiv2(text: str) -> list[dict[str, Any]]:
     """Parse ``-pt`` rows: key, type, count and the one value Exiv2 prints (translated when known)."""
     rows: list[dict[str, Any]] = []
     for line in text.splitlines():
-        pieces = line.split(None, 3)
-        if len(pieces) < 3 or not pieces[0].startswith("Exif."):
+        if not line.startswith("Exif."):
             continue
-        key, type_name, count_text = pieces[:3]
-        if not count_text.isdecimal():
-            continue
-        rows.append({"key": key, "type": type_name, "count": int(count_text),
-                     "value": pieces[3] if len(pieces) == 4 else ""})
+        row = parse_pt_row(line)
+        if row is not None:
+            rows.append(row)
     return rows
 
 
@@ -420,6 +525,7 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
             "name_rule_hits": report["name_rule_hits"],
             "type_rule_hits": report["type_rule_hits"],
             "raw_value_display_hits": report["raw_value_display_hits"],
+            "row_rule_hits": report["row_rule_hits"],
             "raw_display_probes": [
                 {key: (value[:3] if isinstance(value, list) else value[:120] if isinstance(value, str) else value)
                  for key, value in probe.items()}
@@ -452,11 +558,13 @@ def _emit_annotation(payload: dict[str, Any]) -> None:
     name_hits = payload.pop("name_rule_hits", [])
     type_hits = payload.pop("type_rule_hits", [])
     raw_value_hits = payload.pop("raw_value_display_hits", [])
+    row_rules = payload.pop("row_rule_hits", [])
     emit(f"{TITLE} summary", payload)
     for label, items, size in (("groups", grouped, 75), ("refusals", refusals, 17),
                                ("values", value_differences, 40), ("display rules", alias_hits, 20),
                                ("key-name rules", name_hits, 20), ("type rules", type_hits, 20),
-                               ("raw-value display rules", raw_value_hits, 20)):
+                               ("raw-value display rules", raw_value_hits, 20),
+                               ("row rules", row_rules, 25)):
         chunks = [items[i:i + size] for i in range(0, len(items), size)] or [[]]
         for index, chunk in enumerate(chunks, 1):
             emit(f"{TITLE} {label} {index}/{len(chunks)}", {label: chunk})
@@ -509,6 +617,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     verified_raw_displays: Counter[tuple[str, str, str, str]] = Counter()
     raw_display_probes: list[dict[str, Any]] = []
     mismatch_groups: Counter[tuple[str, str, str, str]] = Counter()
+    row_rule_hits: Counter[tuple[str, str, str, int, str]] = Counter()
     mismatch_locations: Counter[tuple[str, str, str, str]] = Counter()
     formats: dict[str, Counter[str]] = defaultdict(Counter)
     for candidate in candidates:
@@ -530,7 +639,16 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
         elif ours["status"] != "ok":
             problem = {"file": name, "kind": "metadatasharp-refused", "status": ours["status"], "detail": ours["detail"]}
         else:
-            expected = [row for row in parse_exiv2(output) if row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
+            reference_rows = [row for row in parse_exiv2(output) if row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
+            has_local_exif = any(str(source_row["key"]).startswith("Exif.") for source_row in ours["rows"])
+            expected = []
+            for reference_row in reference_rows:
+                reason = _row_exception(name, reference_row, has_local_exif)
+                if reason is None:
+                    expected.append(reference_row)
+                else:
+                    row_rule_hits[(name, str(reference_row["key"]), str(reference_row["type"]),
+                                   int(reference_row["count"]), reason)] += 1
             source_by_identity: dict[tuple[str, str, int], list[dict[str, Any]]] = defaultdict(list)
             for source_row in ours["rows"]:
                 source_by_identity[(source_row["key"], source_row["type"], source_row["count"])].append(source_row)
@@ -635,6 +753,11 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
          "rule": "The pinned Exiv2 -Pkycv and MetadataSharp dump report the same raw value with the same type and count; only -pt presentation text differs."}
         for (key, reference, local, raw), count in sorted(verified_raw_displays.items())
     ]
+    row_rules = [
+        {"file": file_name, "key": key, "type": type_name, "count": count, "occurrences": occurrences,
+         "rule": reason}
+        for (file_name, key, type_name, count, reason), occurrences in sorted(row_rule_hits.items())
+    ]
     padding_format_rule = {
         "occurrences": sum(accepted_padding.values()),
         "types": dict(sorted(accepted_padding.items())),
@@ -652,6 +775,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             "name_rule_hits": name_rule_hits,
             "type_rule_hits": type_rule_hits,
             "raw_value_display_hits": raw_value_display_hits,
+            "row_rule_hits": row_rules,
             "raw_display_probes": raw_display_probes,
             "padding_format_rule": padding_format_rule,
             "line_boundary_rule": line_boundary_rule,
@@ -681,6 +805,9 @@ def text_report(report: dict[str, Any]) -> str:
     lines.append(f"  line-boundary text rule: {line_boundary_rule['occurrences']} rows across {line_boundary_rule['types']}: {line_boundary_rule['rule']}")
     for entry in report["display_rule_hits"]:
         lines.append(f"  display rule: {entry['key']} {entry['exiv2']!r} => {entry['metadatasharp']!r} "
+                     f"({entry['occurrences']} rows): {entry['rule']}")
+    for entry in report["row_rule_hits"]:
+        lines.append(f"  row rule: {entry['file']} {entry['key']} [{entry['type']} {entry['count']}] "
                      f"({entry['occurrences']} rows): {entry['rule']}")
     for entry in report["raw_only_tag_exceptions"]:
         lines.append(f"  named raw-only tag exception: {entry['key']} ({entry['occurrences']} rows): {entry['reason']}")

@@ -74,8 +74,9 @@ internal static class MinoltaMakerNoteArrays
         new(117, "ZoneMatchingOn"),
     ];
 
-    /// <summary>CameraSettings5D (0x0114): SHORTs. Two elements carry a colour temperature, and the reference
-    /// tool tells them apart only by a space in the second name; the names are kept as it prints them.</summary>
+    /// <summary>CameraSettings5D (0x0114): SHORTs, and the two colour temperatures among them are read as
+    /// signed, as the reference declares them. The reference tells the two apart only by a space in the
+    /// second name; the names are kept as it prints them.</summary>
     private static readonly Element[] Settings5D =
     [
         new(10, "ExposureMode"), new(12, "ImageSize"), new(13, "Quality"), new(14, "WhiteBalance"),
@@ -84,7 +85,7 @@ internal static class MinoltaMakerNoteArrays
         new(50, "Saturation"), new(53, "ExposureTime"), new(54, "FNumber"), new(55, "FreeMemoryCardImages"),
         new(56, "ExposureRevision"), new(72, "FocusMode"), new(73, "ColorTemperature", Signed: true),
         new(80, "Rotation"), new(83, "ExposureCompensation"), new(84, "FreeMemoryCardImages2"),
-        new(101, "Rotation2"), new(110, "Color Temperature"), new(113, "PictureFinish"),
+        new(101, "Rotation2"), new(110, "Color Temperature", Signed: true), new(113, "PictureFinish"),
         new(145, "ExposureManualBias"), new(158, "AFMode"), new(174, "ImageNumber"), new(176, "NoiseReduction"),
         new(189, "ImageStabilization"),
     ];

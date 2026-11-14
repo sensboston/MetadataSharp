@@ -13,19 +13,44 @@ sys.path.insert(0, str(ROOT / "tools" / "parity"))
 import run_tag_print as gate
 
 
+def pt_line(key: str, type_name: str, count: int, value: str) -> str:
+    """One row of the reference's -pt output, laid out as its print columns do."""
+    return f"{key:<44} {type_name:<9} {count:>3}  {value}"
+
+
 class TagPrintProtocolTests(unittest.TestCase):
     def test_exiv2_pt_rows_have_key_type_count_and_one_printed_value(self) -> None:
         text = (
-            "Exif.Image.NewSubfileType                    Long        1  Thumbnail/Preview image\n"
-            "Exif.Image.ImageWidth                        Long        1  160\n"
-            "Exif.Image.Make                              Ascii      18  NIKON CORPORATION\n"
-            "Iptc.Application2.Caption                     String      1  not part of -pt\n"
+            pt_line("Exif.Image.NewSubfileType", "Long", 1, "Thumbnail/Preview image") + "\n"
+            + pt_line("Exif.Image.ImageWidth", "Long", 1, "160") + "\n"
+            + pt_line("Exif.Image.Make", "Ascii", 18, "NIKON CORPORATION") + "\n"
+            + pt_line("Iptc.Application2.Caption", "String", 1, "not part of -pt") + "\n"
         )
         self.assertEqual([
             {"key": "Exif.Image.NewSubfileType", "type": "Long", "count": 1, "value": "Thumbnail/Preview image"},
             {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "160"},
             {"key": "Exif.Image.Make", "type": "Ascii", "count": 18, "value": "NIKON CORPORATION"},
         ], gate.parse_exiv2(text))
+
+    def test_pt_columns_keep_leading_value_spaces_and_a_key_with_a_space(self) -> None:
+        # Real bytes: the stored value starts with spaces, and one MakerNote group names a tag with a
+        # space in it, so a whitespace split would lose both facts.
+        self.assertEqual([
+            {"key": "Exif.Photo.OffsetTime", "type": "Ascii", "count": 7, "value": "   :  "},
+            {"key": "Exif.MinoltaCs5D.Color Temperature", "type": "SShort", "count": 1, "value": "5500"},
+            {"key": "Exif.SubImage1.LinearizationTable", "type": "Short", "count": 4096, "value": "0 0 0"},
+            {"key": "Exif.Photo.UserComment", "type": "0x000e", "count": 125, "value": ""},
+        ], gate.parse_exiv2(
+            pt_line("Exif.Photo.OffsetTime", "Ascii", 7, "   :  ") + "\n"
+            + pt_line("Exif.MinoltaCs5D.Color Temperature", "SShort", 1, "5500") + "\n"
+            + pt_line("Exif.SubImage1.LinearizationTable", "Short", 4096, "0 0 0") + "\n"
+            + "Exif.Photo.UserComment                      0x000e    125\n"))
+
+    def test_pt_rows_of_a_wide_key_are_read_by_their_content(self) -> None:
+        key = "Exif.NikonFl7.FlashSourceAndMasterControlGroupSettings"
+        self.assertGreater(len(key), gate._PRINT_KEY_WIDTH)
+        self.assertEqual([{"key": key, "type": "Byte", "count": 3, "value": "1 2 3"}],
+                         gate.parse_exiv2(key + " Byte         3  1 2 3\n"))
 
     def test_dump_projection_uses_local_interpretation_or_raw_value_for_pt(self) -> None:
         self.assertEqual([
@@ -134,6 +159,55 @@ class TagPrintProtocolTests(unittest.TestCase):
         self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_KEY_EXCEPTIONS.values()))
         self.assertIn("Exif.Image.ImageWidth", gate.CATALOG_KEYS)
         self.assertNotIn("Exif.Canon.0x0019", gate.CATALOG_KEYS)
+        self.assertEqual({
+            ("BlueSquare.xmp", "Exif.*"),
+            ("StaffPhotographer-Example.xmp", "Exif.*"),
+            ("exiv2-bug1112.xmp", "Exif.*"),
+            ("issue_1959_poc.xmp", "Exif.*"),
+            ("issue_1998.xmp", "Exif.*"),
+            ("IMG_1361.dng", "Exif.SubImage1."),
+            ("IMG_1361.dng", "Exif.SubImage2."),
+            ("exiv2-pr2323_coverage1.exv", "Exif.Sony1.ColorTemperature"),
+            ("exiv2-pr2323_coverage4.exv", "Exif.Sony2.WBShiftABGM"),
+            ("exiv2-bug447.jpg", "Exif.Photo.UserComment"),
+        }, set(gate._TAG_PRINT_ROW_EXCEPTIONS))
+        self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_ROW_EXCEPTIONS.values()))
+
+    def test_row_rules_cover_only_their_named_file_key_and_reference_row(self) -> None:
+        sidecar = {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "1"}
+        self.assertIsNotNone(gate._row_exception("BlueSquare.xmp", sidecar, has_local_exif=False))
+        self.assertIsNone(gate._row_exception("BlueSquare.xmp", sidecar, has_local_exif=True))
+        self.assertIsNone(gate._row_exception("issue_1713_poc.xmp", sidecar, has_local_exif=False))
+        sub_image = {"key": "Exif.SubImage1.LinearizationTable", "type": "Short", "count": 4096, "value": "0"}
+        self.assertIsNotNone(gate._row_exception("IMG_1361.dng", sub_image, has_local_exif=True))
+        self.assertIsNone(gate._row_exception("IMG_1361.dng", {"key": "Exif.SubImage3.ImageWidth"},
+                                              has_local_exif=True))
+        self.assertIsNone(gate._row_exception("IMG_1361.dng", {"key": "Exif.Image.ImageWidth"},
+                                              has_local_exif=True))
+        exact = {"key": "Exif.Photo.UserComment", "type": "0x000e", "count": 125, "value": ""}
+        self.assertIsNotNone(gate._row_exception("exiv2-bug447.jpg", exact, has_local_exif=True))
+        self.assertIsNone(gate._row_exception("exiv2-bug447.jpg", {**exact, "key": "Exif.Photo.MakerNote"},
+                                              has_local_exif=True))
+
+    def test_a_documented_row_rule_is_reported_and_its_local_row_ends_it(self) -> None:
+        candidate = gate.corpus.Candidate("BlueSquare.xmp", Path("/tmp/BlueSquare.xmp"), "test")
+        reference = pt_line("Exif.Image.ImageWidth", "Long", 1, "1") + "\n"
+        dump = {"/tmp/BlueSquare.xmp": {"status": "ok", "rows": []}}
+        with patch.object(gate, "_run_reference", return_value=(0, reference, "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual(0, report["totals"].get("failed_files", 0))
+        self.assertEqual([{"file": "BlueSquare.xmp", "key": "Exif.Image.ImageWidth", "type": "Long",
+                           "count": 1, "occurrences": 1,
+                           "rule": gate._TAG_PRINT_ROW_EXCEPTIONS[("BlueSquare.xmp", "Exif.*")]}],
+                         report["row_rule_hits"])
+        # A file that does print EXIF rows is not the case the rule was reviewed for: its rows are
+        # compared, and a difference between them still fails the gate.
+        dump["/tmp/BlueSquare.xmp"]["rows"] = [
+            {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "raw": "2", "translated": ""}]
+        with patch.object(gate, "_run_reference", return_value=(0, reference, "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual(1, report["totals"].get("failed_files", 0))
+        self.assertEqual([], report["row_rule_hits"])
 
     def test_every_observed_refusal_is_named_and_requires_the_same_result(self) -> None:
         self.assertEqual(38, len(gate._TAG_PRINT_REFUSAL_EXCEPTIONS))
@@ -158,14 +232,14 @@ class TagPrintProtocolTests(unittest.TestCase):
             {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "raw": "160", "translated": ""},
             {"key": "Exif.Canon.0x0019", "type": "Short", "count": 1, "raw": "1", "translated": "1"},
         ]}}
-        with patch.object(gate, "_run_reference", return_value=(0, "Exif.Image.ImageWidth Long 1 160\n", "")):
+        with patch.object(gate, "_run_reference", return_value=(0, pt_line("Exif.Image.ImageWidth", "Long", 1, "160") + "\n", "")):
             report = gate.build_report([candidate], [], dump)
         self.assertEqual(0, report["totals"].get("failed_files", 0))
         self.assertEqual("Exif.Canon.0x0019", report["raw_only_tag_exceptions"][0]["key"])
 
         dump["/tmp/sample.jpg"]["rows"].append(
             {"key": "Exif.Canon.CameraSerialNumber", "type": "Ascii", "count": 1, "raw": "x", "translated": "x"})
-        with patch.object(gate, "_run_reference", return_value=(0, "Exif.Image.ImageWidth Long 1 160\n", "")):
+        with patch.object(gate, "_run_reference", return_value=(0, pt_line("Exif.Image.ImageWidth", "Long", 1, "160") + "\n", "")):
             report = gate.build_report([candidate], [], dump)
         self.assertEqual(1, report["totals"]["failed_files"])
         self.assertEqual("extra", report["differing"][0]["rows"][0]["kind"])
@@ -196,7 +270,7 @@ class TagPrintProtocolTests(unittest.TestCase):
         dump = {"/tmp/metering.jpg": {"status": "ok", "rows": [
             {"key": "Exif.Photo.MeteringMode", "type": "Short", "count": 1, "raw": "5", "translated": "Pattern"},
         ]}}
-        with patch.object(gate, "_run_reference", return_value=(0, "Exif.Photo.MeteringMode Short 1 Multi-segment\n", "")):
+        with patch.object(gate, "_run_reference", return_value=(0, pt_line("Exif.Photo.MeteringMode", "Short", 1, "Multi-segment") + "\n", "")):
             report = gate.build_report([candidate], [], dump)
         self.assertEqual([{"key": "Exif.Photo.MeteringMode", "exiv2": "Multi-segment", "metadatasharp": "Pattern",
                            "occurrences": 1, "rule": gate._TAG_PRINT_DISPLAY_REASONS["Exif.Photo.MeteringMode"]}],

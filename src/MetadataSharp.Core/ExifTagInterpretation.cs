@@ -676,7 +676,15 @@ public static partial class ExifTags
         else
             return null;
         // The standard pads the unused part of the comment area with spaces, and writers also use NUL.
-        return text?.TrimEnd(' ', '\0');
+        string? trimmed = text?.TrimEnd(' ', '\0');
+        if (string.IsNullOrEmpty(trimmed))
+            return trimmed;
+        // A body whose bytes hold no printable character is not text - cameras also store binary
+        // structures behind the character code - so it is left to the raw value.
+        foreach (char character in trimmed)
+            if (!char.IsControl(character))
+                return trimmed;
+        return null;
     }
 
     // Stop at the first NUL and reject non-ASCII bytes instead of replacing them during decoding.

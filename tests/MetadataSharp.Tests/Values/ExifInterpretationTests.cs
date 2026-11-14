@@ -738,6 +738,18 @@ public sealed class ExifInterpretationTests
     }
 
     [Fact]
+    public void ACommentBodyWithoutAPrintableCharacterIsNotText()
+    {
+        // Cameras also store a binary structure behind the character code; the bytes up to the first
+        // NUL hold a line break and nothing else, so there is no text to interpret.
+        Assert.Null(ExifTags.Interpret(Photo(0x9286),
+            Comment("ASCII\0\0\0", [0x0A, 0x00, 0x00, 0x00, 0x4A, 0x4B])));
+        // Text that holds control characters of its own, such as a line break, is still text.
+        Assert.Equal("line 1\nline 2",
+            ExifTags.Interpret(Photo(0x9286), Comment("ASCII\0\0\0", Encoding.ASCII.GetBytes("line 1\nline 2"))));
+    }
+
+    [Fact]
     public void AUnicodeCommentIsReadInTheByteOrderOfTheFileOrOfItsMark()
     {
         const string text = "\u0423\u043A\u0440\u0430\u0457\u043D\u0430";
