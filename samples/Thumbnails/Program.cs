@@ -31,7 +31,7 @@ try
             try
             {
                 byte[] content = Previews.Extract(bytes, p);
-                string extension = p.MimeType switch { "image/jpeg" => ".jpg", "image/x-raw-rgb" => ".rgb", _ => ".bin" };
+                string extension = p.MimeType switch { "image/jpeg" => ".jpg", "image/tiff" => ".tif", _ => ".bin" };
                 string path = Path.Combine(args[2], $"preview-{i + 1:00}{extension}");
                 SampleSupport.WriteAtomic(path, content);
                 Console.WriteLine($"{path} ({p.MimeType}, {p.Width}x{p.Height}, {content.Length} bytes)");
