@@ -23,7 +23,8 @@ public sealed record PreviewImage(string MimeType, int? Width, int? Height, long
 /// <summary>
 /// Read-only access to the preview images a file carries: the EXIF thumbnail, the JPEG previews
 /// a MakerNote points at, the reduced images of a TIFF-based raw file, the thumbnail items of a
-/// BMFF file and the thumbnail resource of a PSD. Nothing is decoded and nothing is written.
+/// BMFF file and the thumbnail resource of a PSD. Pixels are not decoded and the input is never mutated;
+/// encoded preview forms such as base64 or hex thumbnails can be transformed by <see cref="Extract"/>.
 /// </summary>
 public static class Previews
 {
@@ -175,6 +176,7 @@ internal ref struct PreviewScanner
         else if (data.Length >= 8 && data[..8].SequenceEqual("FUJIFILM"u8)) Raf();
         else if (IsJp2Header()) Jp2();
         else if (MetadataSharp.Formats.Pgf.PgfMetadata.HasSignature(data)) Pgf();
+        else if (IsRw2Header()) Tiff(0, data.Length, panasonicRaw: true);
         else if (IsTiffHeader()) Tiff(0, data.Length);
         else if (data.Length >= 4 && data[..4].SequenceEqual("8BPS"u8)) Psd();
         else if (data.Length >= 8 && data[0] == 0x89 && data.Slice(1, 3).SequenceEqual("PNG"u8)) Png();
@@ -188,8 +190,9 @@ internal ref struct PreviewScanner
     }
 
     // TIFF itself, and the raw formats Exiv2 exposes as TIFF for preview discovery:
-    // ORF ("IIRO", "IIRS", "MMOR"). Panasonic RW2 metadata uses a separate header and does not
-    // expose the linked IFD JPEG as a preview in the pinned reference behavior.
+    // ORF ("IIRO", "IIRS", "MMOR"). RW2 has its own bounded path for Panasonic MakerNote previews.
+    private bool IsRw2Header() => data.Length >= 8 && data[..4].SequenceEqual("IIU\0"u8);
+
     private bool IsTiffHeader()
     {
         if (data.Length < 8) return false;
@@ -655,7 +658,7 @@ internal ref struct PreviewScanner
     // ---- TIFF ----
 
     // Keep Tiff focused on metadata and its format-specific validation contract.
-    private void Tiff(int origin, int end)
+    private void Tiff(int origin, int end, bool panasonicRaw = false)
     {
         if (origin < 0 || end > data.Length || end - origin < 8) return;
         bool little;
@@ -664,15 +667,16 @@ internal ref struct PreviewScanner
         else return;
         var frame = new Frame(origin, end, little);
         long next = U32(origin + 4, little);
-        for (int index = 0; index < 4 && next != 0; index++)
+        for (int index = 0; index < limits.MaxDirectories && next != 0; index++)
         {
-            string group = index == 0 ? "Image" : index == 1 ? "Thumbnail" : "Image" + (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
-            next = ImageDirectory(frame, origin + next, group, index == 1, index == 0, 0);
+            string group = index == 0 ? "Image" : index == 1 ? "Thumbnail" :
+                "Image" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            next = ImageDirectory(frame, origin + next, group, index == 1, index == 0, panasonicRaw, 0);
         }
     }
 
     /// <summary>Read one image directory, list what it holds, and return the offset of the next one in its chain.</summary>
-    private long ImageDirectory(Frame frame, long position, string group, bool thumbnail, bool first, int depth)
+    private long ImageDirectory(Frame frame, long position, string group, bool thumbnail, bool first, bool panasonicRaw, int depth)
     {
         var entries = new List<Entry>();
         if (!Directory(frame, position, entries, out int tableEnd, out long next)) return 0;
@@ -682,17 +686,22 @@ internal ref struct PreviewScanner
         long compression = Number(frame, entries, 0x0103, 1);
         bool reduced = thumbnail || (Number(frame, entries, 0x00FE, 0) & 1) == 1;
         Entry? strips = Find(entries, 0x0111), counts = Find(entries, 0x0117);
-        if (offset >= 0 && length >= 0)
+        // Exiv2's RW2 loader reads PanasonicRaw.PreviewImage, not a generic linked thumbnail IFD.
+        // Keep scanning its EXIF/MakerNote directories, but don't promote the linked IFD1.
+        if (!panasonicRaw || !thumbnail)
         {
-            Jpeg(frame.Origin + offset, length, "Exif." + group + ".JPEGInterchangeFormat", tableStart, tableEnd);
-        }
-        else if (strips is Entry strip && counts is Entry count && strip.Count == count.Count && strip.Count != 0)
-        {
-            // A reduced image, or the old-style JPEG image a CR2 keeps in its first directory.
-            if ((compression == 6 || (compression == 7 && reduced)) && strip.Count == 1)
-                Jpeg(frame.Origin + Element(frame, strip, 0), Element(frame, count, 0), "Exif." + group + ".StripOffsets", tableStart, tableEnd);
-            else if (compression == 1 && reduced)
-                Samples(frame, entries, strip, count, "Exif." + group + ".StripOffsets", tableStart, tableEnd);
+            if (offset >= 0 && length >= 0)
+            {
+                Jpeg(frame.Origin + offset, length, "Exif." + group + ".JPEGInterchangeFormat", tableStart, tableEnd);
+            }
+            else if (strips is Entry strip && counts is Entry count && strip.Count == count.Count && strip.Count != 0)
+            {
+                // A reduced image, or the old-style JPEG image a CR2 keeps in its first directory.
+                if ((compression == 6 || (compression == 7 && reduced)) && strip.Count == 1)
+                    Jpeg(frame.Origin + Element(frame, strip, 0), Element(frame, count, 0), "Exif." + group + ".StripOffsets", tableStart, tableEnd);
+                else if (compression == 1 && reduced)
+                    Samples(frame, entries, strip, count, "Exif." + group + ".StripOffsets", tableStart, tableEnd);
+            }
         }
 
         if (first)
@@ -713,7 +722,7 @@ internal ref struct PreviewScanner
                 if (child <= 0) continue;
                 subImages++;
                 string name = "SubImage" + subImages.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                ImageDirectory(frame, frame.Origin + child, name, false, false, depth + 1);
+                ImageDirectory(frame, frame.Origin + child, name, false, false, panasonicRaw, depth + 1);
             }
         }
         return next;

@@ -100,15 +100,26 @@ class OracleTests(unittest.TestCase):
         self.assertEqual(1, report["totals"]["missing"])
         self.assertEqual(0, report["totals"].get("offset_mismatch", 0))
         self.assertEqual([list(LARGE)], report["files"][0]["missing"])
+        self.assertEqual({"files": 1, "found": 2, "matched": 1, "missing": 1, "extra": 0}, report["formats"]["JPG"])
+        self.assertIn("JPG: 2/1", run_previews.text_report(report))
 
     def test_fixture_oracle_only_receives_image_formats_with_preview_loaders(self):
         self.assertIn(".crw", run_previews._PREVIEW_FIXTURE_SUFFIXES)
         self.assertIn(".pgf", run_previews._PREVIEW_FIXTURE_SUFFIXES)
         self.assertNotIn(".asf", run_previews._PREVIEW_FIXTURE_SUFFIXES)
         self.assertNotIn(".wav", run_previews._PREVIEW_FIXTURE_SUFFIXES)
-        self.assertIn("b11eps", run_previews._METADATA_ONLY_EPS_FIXTURE_DIRS)
-        self.assertIn("owned-codestream.jxl", run_previews._REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES)
-        self.assertIn("owned-flat-rgb.psd", run_previews._REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES)
+        exceptions = run_previews._FIXTURE_ORACLE_EXCEPTIONS
+        self.assertEqual({
+            "b11eps/dos-eps-xmp.eps", "b11eps/eps-plain.eps", "b11eps/eps-reference-write.eps",
+            "b11eps/eps-xmp-31.eps", "b11eps/eps-xmp-crlf.eps", "b11eps/eps-xmp-nomain.eps",
+            "b11eps/eps-xmp-readonly.eps", "b11eps/eps-xmp-space.eps", "b11eps/eps-xmp.eps",
+            "b7/owned-codestream.jxl", "b8/owned-flat-rgb.psd",
+        }, set(exceptions))
+        for relative, reason in exceptions.items():
+            self.assertTrue((run_previews.ROOT / "tests" / "fixtures" / relative).is_file(), relative)
+            self.assertTrue(reason.strip(), relative)
+        self.assertNotIn("b11eps/*", exceptions)
+        self.assertNotIn("*.eps", exceptions)
 
     def test_the_two_sources_of_the_expectation_exclude_each_other(self):
         for arguments in ([], ["--tree", "t", "--fixtures", "f"]):

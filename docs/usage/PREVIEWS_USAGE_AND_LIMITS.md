@@ -27,8 +27,10 @@ if (previews.Count != 0)
   they can prove are bounded. JPEG APP1, TIFF IFD and MakerNote ranges report absolute offsets in the
   complete input. BMFF item extents include the container's item-location calculations.
 - CRW uses CIFF preview and thumbnail records; MRW scans its bounded TTW TIFF block; RAF scans the
-  embedded JPEG and its separate TIFF block; JP2 scans the Exif UUID box; PGF scans its bounded
-  embedded image; XMP sidecars and PNG iTXt packets can expose `xmpGImg`/`xapGImg` JPEG thumbnails and compressed ImageMagick Raw EXIF profiles.
+  embedded JPEG and its separate TIFF block; RW2 reads the Panasonic MakerNote preview (not a generic
+  linked thumbnail IFD); JP2 scans the Exif UUID box; PGF scans its bounded embedded image; XMP
+  sidecars and PNG iTXt packets can expose `xmpGImg`/`xapGImg` JPEG thumbnails and compressed
+  ImageMagick Raw EXIF profiles.
   EPS exposes DOS EPS WMF/TIFF previews and decodes AI7 hex thumbnails to binary P6 PNM. EPS
   PostScript is never interpreted or executed.
 - JPEG extraction checks SOI/EOI markers. TIFF, WMF, PNM, HEVC and AV1 extraction is byte-preserving
@@ -43,12 +45,13 @@ if (previews.Count != 0)
 
 ## Editing
 
-There is no general-purpose preview replacement API. `ExifEdit.SetThumbnail` and
-`ExifEdit.RemoveThumbnail` update an existing EXIF thumbnail directory; they do not synthesize a
-missing directory. PSD's complete-set `PsdMetadata.Write` can write its JPEG thumbnail resource.
-Other preview-loader formats, including CRW, MRW, RAF, JP2, EPS and BMFF, remain read/extract-only
-through this preview API. Their container writers do not promise to preserve or rewrite a preview
-unless their format-specific writer contract says so.
+There is no general-purpose replacement API for every `PreviewImage`. `ExifEdit.SetThumbnail` and
+`ExifEdit.RemoveThumbnail` update an existing EXIF thumbnail directory where the format writer supports
+it; they do not synthesize a missing directory. `CrwMetadataDocument` also writes/removes the CIFF
+thumbnail record, and the complete-set `PsdMetadata.Write` writes/removes PSD thumbnail resources
+0x0409/0x040C. These are the explicit preview write paths. Other format-specific preview loaders,
+including MRW, RAF, RW2, JP2, EPS and BMFF, are read/extract-only; their writers do not promise to
+preserve or rewrite preview bytes.
 
 ## Tests and differential checks
 
@@ -62,4 +65,20 @@ emits each preview's dimensions, MIME type, byte length, absolute offset and sou
 does not print offsets, the dynamic parity pass runs pinned `exiv2 -ep`, reverses direct, EPS-hex,
 XMP-base64, compressed PNG Raw EXIF and generated-TIFF strip output bytes to their source positions,
 and requires our reported offset to be one of those oracle positions. The gate fails on an unprovable offset, any type/dimension/length/offset mismatch,
-or reader refusal; fixture tests independently pin range offsets.
+or reader refusal; fixture tests independently pin range offsets. The group-C preview step is a gate:
+any unlisted/extra preview, field mismatch, offset mismatch, or reader refusal fails CI. No directory or
+extension is globally excluded. The fixture-only exceptions are explicit:
+
+| Fixture | Reason for excluding it from the Exiv2 preview oracle |
+| --- | --- |
+| `b11eps/dos-eps-xmp.eps` | Exiv2 0.28.9 rejects the explicit page after its implicit page; the DOS TIFF carrier is covered by the EPS unit test. |
+| `b11eps/eps-plain.eps` | Metadata-only EPS fixture; Exiv2 0.28.9 rejects its minimal DSC page framing before listing previews. |
+| `b11eps/eps-reference-write.eps` | Writer-parity fixture with no preview payload; covered by the dedicated EPS write/read gate. |
+| `b11eps/eps-xmp.eps` | XMP metadata-parser fixture with no native preview; Exiv2 0.28.9 rejects its minimal DSC page framing. |
+| `b11eps/eps-xmp-31.eps` | Illustrator 3.1/XMP parser variant with no native preview payload. |
+| `b11eps/eps-xmp-crlf.eps` | CRLF/XMP parser variant with no native preview payload. |
+| `b11eps/eps-xmp-nomain.eps` | NoMain/XMP parser variant with no native preview payload. |
+| `b11eps/eps-xmp-readonly.eps` | Read-only XMP parser variant with no native preview payload. |
+| `b11eps/eps-xmp-space.eps` | OpenOffice/XMP parser variant with no native preview payload. |
+| `b7/owned-codestream.jxl` | Standalone JPEG XL codestream is not recognized as an image type by Exiv2 0.28.9; the container JXL sample is gated. |
+| `b8/owned-flat-rgb.psd` | 52-byte minimal PSD parser fixture is not recognized as an image by Exiv2 0.28.9; metadata-bearing PSD remains gated. |

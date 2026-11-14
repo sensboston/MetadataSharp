@@ -217,6 +217,19 @@ public sealed class PreviewTests
         Assert.Equal(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, extracted[144..]);
     }
 
+    [Fact]
+    public void AThirdTiffDirectoryUsesTheImage2PreviewLoaderName()
+    {
+        byte[] picture = Picture(10, 6);
+        byte[] file = Join(Header(true), Ifd(true, 26), new byte[12], Ifd(true, 32),
+            Ifd(true, 0, Long(0x0201, 62), Long(0x0202, picture.Length)), picture);
+
+        PreviewImage preview = Assert.Single(Previews.List(file));
+        Assert.Equal("Exif.Image2.JPEGInterchangeFormat", preview.Source);
+        Assert.Equal(62, preview.Offset);
+        Assert.Equal(picture, Previews.Extract(file, preview));
+    }
+
     [Theory]
     [InlineData(165L)] // the second strip starts inside the first
     [InlineData(169L)] // a gap between the strips
@@ -237,10 +250,18 @@ public sealed class PreviewTests
     [InlineData("pentax-dng", false)]
     [InlineData("olympus", true)]
     [InlineData("olympus", false)]
+    [InlineData("olympus2", true)]
+    [InlineData("olympus2", false)]
     [InlineData("olympus-settings", true)]
     [InlineData("olympus-settings", false)]
     [InlineData("sony", true)]
     [InlineData("sony", false)]
+    [InlineData("sony-minolta", true)]
+    [InlineData("sony-minolta", false)]
+    [InlineData("samsung", true)]
+    [InlineData("samsung", false)]
+    [InlineData("casio", true)]
+    [InlineData("casio", false)]
     [InlineData("minolta", true)]
     [InlineData("minolta", false)]
     [InlineData("canon", true)]
@@ -285,6 +306,13 @@ public sealed class PreviewTests
                 where = NoteAt + 26;
                 note = Join("OLYMP\0"u8.ToArray(), new byte[] { 1, 0 }, Ifd(little, 0, new Field(0x0100, 7, size, where)), picture);
                 break;
+            case "olympus2":
+                make = "OLYMPUS";
+                source = "Exif.Olympus2.ThumbnailImage";
+                where = NoteAt + 30;
+                note = Join("OLYMPUS\0"u8.ToArray(), mark, new byte[] { 3, 0 },
+                    Ifd(little, 0, new Field(0x0100, 7, size, 30)), picture);
+                break;
             case "olympus-settings":
                 // The directory at 12 (to 30) points at the camera settings at 30 (to 60); offsets count from the note.
                 make = "OLYMPUS";
@@ -299,6 +327,27 @@ public sealed class PreviewTests
                 source = "Exif.Sony1.PreviewImage";
                 where = NoteAt + 18 + 32;
                 note = Join(Ifd(little, 0, new Field(0x2001, 7, 32 + size, NoteAt + 18)), new byte[32], picture);
+                break;
+            case "sony-minolta":
+                make = "SONY";
+                source = "Exif.SonyMinolta.ThumbnailOffset";
+                where = NoteAt + 60;
+                note = Join("SONY DSC \0"u8.ToArray(), new byte[2],
+                    Ifd(little, 0, Long(0xB028, 30)),
+                    Ifd(little, 0, Long(0x0088, 60), Long(0x0089, size)), picture);
+                break;
+            case "samsung":
+                make = "SAMSUNG";
+                source = "Exif.SamsungPreview.JPEGInterchangeFormat";
+                where = NoteAt + 48;
+                note = Join(Ifd(little, 0, Long(0x0035, 18)),
+                    Ifd(little, 0, Long(0x0201, 48), Long(0x0202, size)), picture);
+                break;
+            case "casio":
+                make = "CASIO";
+                source = "Exif.Casio2.PreviewImage";
+                where = NoteAt + 24;
+                note = Join("QVC\0\0\0"u8.ToArray(), Ifd(little, 0, new Field(0x2000, 7, size, where)), picture);
                 break;
             case "minolta":
                 make = "MINOLTA";
@@ -380,13 +429,13 @@ public sealed class PreviewTests
 
     // ---- BMFF ----
 
-    private static byte[] Heif(long jpegAt, long jpegLength, long codedAt, long codedLength)
+    private static byte[] Heif(long jpegAt, long jpegLength, long codedAt, long codedLength, string codedType = "hvc1")
     {
         byte[] full = new byte[4];
         byte[] information = Box("iinf", full, Be16(3),
-            Box("infe", new byte[] { 2, 0, 0, 0 }, Be16(1), Be16(0), "hvc1"u8.ToArray(), new byte[1]),
+            Box("infe", new byte[] { 2, 0, 0, 0 }, Be16(1), Be16(0), Encoding.ASCII.GetBytes(codedType), new byte[1]),
             Box("infe", new byte[] { 2, 0, 0, 0 }, Be16(2), Be16(0), "jpeg"u8.ToArray(), new byte[1]),
-            Box("infe", new byte[] { 2, 0, 0, 0 }, Be16(3), Be16(0), "hvc1"u8.ToArray(), new byte[1]));
+            Box("infe", new byte[] { 2, 0, 0, 0 }, Be16(3), Be16(0), Encoding.ASCII.GetBytes(codedType), new byte[1]));
         // Items 2 and 3 are thumbnails of item 1.
         byte[] references = Box("iref", full, Box("thmb", Be16(2), Be16(1), Be16(1)), Box("thmb", Be16(3), Be16(1), Be16(1)));
         // Offsets and lengths of four bytes, no base offset; one extent for each of the two items.
@@ -413,6 +462,18 @@ public sealed class PreviewTests
         Assert.Equal(new PreviewImage("video/H265", 160, 120, at + picture.Length, coded.Length, "Bmff.thmb"), found[1]);
         Assert.Equal(picture, Previews.Extract(file, found[0]));
         Assert.Equal(coded, Previews.Extract(file, found[1]));
+    }
+
+    [Fact]
+    public void Av1ThumbnailItemsAreListedAndEncodedBytesAreExtractable()
+    {
+        byte[] coded = { 0x12, 0x00, 0x34, 0x56 };
+        int at = Heif(0, 0, 0, 0, "av01").Length;
+        byte[] file = Join(Heif(0, 0, at, coded.Length, "av01"), coded);
+
+        PreviewImage preview = Assert.Single(Previews.List(file));
+        Assert.Equal("video/AV1", preview.MimeType);
+        Assert.Equal(coded, Previews.Extract(file, preview));
     }
 
     [Fact]
@@ -484,6 +545,35 @@ public sealed class PreviewTests
             "Exif.Image2.JPEGInterchangeFormat"), found[1]);
         Assert.Equal(thumb, Previews.Extract(file, found[0]));
         Assert.Equal(jpeg, Previews.Extract(file, found[1]));
+    }
+
+    [Fact]
+    public void DosEpsWmfAndTiffSectionsAreListedAndExtractedAsNativeBytes()
+    {
+        byte[] postscript = "%!PS-Adobe-3.0 EPSF-3.0\n%%EOF\n"u8.ToArray();
+        byte[] wmf = { 0xD7, 0xCD, 0xC6, 0x9A, 0x01 };
+        byte[] tiff = { 0x49, 0x49, 0x2A, 0x00, 0x08, 0x00, 0x00, 0x00 };
+        int wmfAt = 30 + postscript.Length;
+        int tiffAt = wmfAt + wmf.Length;
+        byte[] file = new byte[tiffAt + tiff.Length];
+        new byte[] { 0xC5, 0xD0, 0xD3, 0xC6 }.CopyTo(file, 0);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(4), 30);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(8), (uint)postscript.Length);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(12), (uint)wmfAt);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(16), (uint)wmf.Length);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(20), (uint)tiffAt);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(24), (uint)tiff.Length);
+        postscript.CopyTo(file, 30);
+        wmf.CopyTo(file, wmfAt);
+        tiff.CopyTo(file, tiffAt);
+
+        IReadOnlyList<PreviewImage> previews = Previews.List(file);
+        PreviewImage wmfPreview = Assert.Single(previews, preview => preview.Source == "EPS.WMF");
+        PreviewImage tiffPreview = Assert.Single(previews, preview => preview.Source == "EPS.TIFF");
+        Assert.Equal(wmfAt, wmfPreview.Offset);
+        Assert.Equal(tiffAt, tiffPreview.Offset);
+        Assert.Equal(wmf, Previews.Extract(file, wmfPreview));
+        Assert.Equal(tiff, Previews.Extract(file, tiffPreview));
     }
 
     [Fact]
@@ -576,6 +666,44 @@ public sealed class PreviewTests
         byte[] file = Fixture("b10", "owned-rw2-root24.rw2");
 
         Assert.Empty(Previews.List(file));
+    }
+
+    [Fact]
+    public void Rw2UsesThePanasonicMakerNotePreviewInsteadOfTheLinkedThumbnailIfd()
+    {
+        byte[] jpeg = Picture(12, 8);
+        byte[] file = new byte[112 + jpeg.Length];
+        "IIU\0"u8.CopyTo(file);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(4), 24);
+        "RW2-PREVIEW-TEST"u8.CopyTo(file.AsSpan(8));
+
+        static void WriteEntry(byte[] target, int at, ushort tag, ushort type, uint count, uint value)
+        {
+            BinaryPrimitives.WriteUInt16LittleEndian(target.AsSpan(at), tag);
+            BinaryPrimitives.WriteUInt16LittleEndian(target.AsSpan(at + 2), type);
+            BinaryPrimitives.WriteUInt32LittleEndian(target.AsSpan(at + 4), count);
+            BinaryPrimitives.WriteUInt32LittleEndian(target.AsSpan(at + 8), value);
+        }
+
+        BinaryPrimitives.WriteUInt16LittleEndian(file.AsSpan(24), 2);
+        WriteEntry(file, 26, 0x010F, 2, 10, 54);
+        WriteEntry(file, 38, 0x8769, 4, 1, 64);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(50), 0);
+        "Panasonic\0"u8.CopyTo(file.AsSpan(54));
+
+        BinaryPrimitives.WriteUInt16LittleEndian(file.AsSpan(64), 1);
+        WriteEntry(file, 66, 0x927C, 7, (uint)(30 + jpeg.Length), 82);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(78), 0);
+        "Panasonic\0\0\0"u8.CopyTo(file.AsSpan(82));
+        BinaryPrimitives.WriteUInt16LittleEndian(file.AsSpan(94), 1);
+        WriteEntry(file, 96, 0x002E, 7, (uint)jpeg.Length, 112);
+        BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(108), 0);
+        jpeg.CopyTo(file, 112);
+
+        PreviewImage preview = Assert.Single(Previews.List(file));
+        Assert.Equal("Exif.PanasonicRaw.PreviewImage", preview.Source);
+        Assert.Equal(112, preview.Offset);
+        Assert.Equal(jpeg, Previews.Extract(file, preview));
     }
 
     [Fact]

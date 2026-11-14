@@ -62,13 +62,21 @@ _PREVIEW_FIXTURE_SUFFIXES = frozenset({
     ".jpg", ".jpeg", ".tif", ".tiff", ".png", ".webp", ".crw", ".mrw", ".raf", ".rw2", ".sr2",
     ".jp2", ".psd", ".eps", ".pgf", ".jxl", ".avif", ".heic", ".heif", ".cr3",
 })
-# b11eps contains minimal authored EPS/XMP parser and writer fixtures, including intentionally
-# conflicting or empty DSC page layouts. They are not preview-image samples; the actual EPS preview
-# carrier fixture (owned-vector.eps) is covered by this gate from b8, while these files stay in the
-# focused library tests instead of being submitted to an oracle that rejects their page framing.
-_METADATA_ONLY_EPS_FIXTURE_DIRS = frozenset({"b11eps"})
-# Exiv2 0.28.9 does not identify standalone JPEG XL codestreams or the 52-byte minimal PSD fixture.
-_REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES = frozenset({"owned-codestream.jxl", "owned-flat-rgb.psd"})
+# Explicit, reviewable exceptions for authored fixtures that Exiv2 0.28.9 cannot use as preview
+# parity inputs. Do not replace these entries with directory- or extension-wide exclusions.
+_FIXTURE_ORACLE_EXCEPTIONS = {
+    "b11eps/dos-eps-xmp.eps": "Exiv2 0.28.9 rejects this DOS EPS layout: explicit %%Page conflicts with its implicit page; its TIFF carrier remains covered by the EPS unit test.",
+    "b11eps/eps-plain.eps": "Metadata-only EPS parser fixture with no native preview; Exiv2 0.28.9 rejects its minimal DSC page layout before listing previews.",
+    "b11eps/eps-reference-write.eps": "Writer-parity EPS fixture with no preview payload; retained for the dedicated EPS write/read gate, not preview parity.",
+    "b11eps/eps-xmp-31.eps": "Metadata-only Illustrator 3.1/XMP parser fixture with no native preview; retained in EPS metadata tests.",
+    "b11eps/eps-xmp-crlf.eps": "Metadata-only CRLF/XMP parser fixture with no native preview; retained in EPS metadata tests.",
+    "b11eps/eps-xmp-nomain.eps": "Metadata-only NoMain/XMP parser fixture with no native preview; retained in EPS metadata tests.",
+    "b11eps/eps-xmp-readonly.eps": "Metadata-only read-only XMP parser fixture with no native preview; retained in EPS metadata tests.",
+    "b11eps/eps-xmp-space.eps": "Metadata-only OpenOffice/XMP parser fixture with no native preview; retained in EPS metadata tests.",
+    "b11eps/eps-xmp.eps": "Metadata-only XMP parser fixture with no native preview; Exiv2 0.28.9 rejects its minimal DSC page layout before listing previews.",
+    "b7/owned-codestream.jxl": "Standalone JPEG XL codestream, not a container image type recognized by Exiv2 0.28.9; the JXL container fixture remains gated.",
+    "b8/owned-flat-rgb.psd": "52-byte minimal PSD parser fixture is not recognized as an image by Exiv2 0.28.9; the metadata-bearing PSD fixture remains gated.",
+}
 
 
 class PreviewParityError(Exception):
@@ -378,6 +386,7 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
             expected_offsets: dict[str, list[list[int]]] | None = None) -> dict[str, Any]:
     totals = Counter()
     statuses = Counter()
+    format_totals: dict[str, Counter[str]] = {}
     files: list[dict[str, Any]] = []
     for name in sorted(expected):
         path = paths.get(name)
@@ -399,6 +408,13 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
                         raise PreviewParityError(f"{name}: preview {index} has an invalid file range: "
                                                  f"offset={offset}, length={preview[3]}, file={file_size}, source={source}")
         outcome = compare_file(expected[name], listed if status == "ok" else [])
+        format_name = Path(name).suffix.lstrip(".").upper() or "UNKNOWN"
+        format_count = format_totals.setdefault(format_name, Counter())
+        format_count["files"] += 1
+        format_count["found"] += len(expected[name])
+        format_count["matched"] += outcome["match"]
+        format_count["missing"] += len(outcome["missing"])
+        format_count["extra"] += len(outcome["extra"])
         offset_mismatch: list[dict[str, Any]] = []
         reference_offsets = (expected_offsets or {}).get(name)
         if status == "ok" and reference_offsets is not None:
@@ -440,7 +456,9 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
             entry["detail"] = block["detail"] if block is not None else ""
         files.append(entry)
     rate = round(totals["match"] / totals["expected"], 6) if totals["expected"] else None
-    return {"kind": KIND, "totals": dict(totals), "rate": rate, "statuses": dict(statuses), "files": files}
+    formats = {name: dict(counts) for name, counts in sorted(format_totals.items())}
+    return {"kind": KIND, "totals": dict(totals), "rate": rate, "statuses": dict(statuses),
+            "formats": formats, "files": files}
 
 
 def gate_exit_code(report: dict[str, Any]) -> int:
@@ -460,6 +478,13 @@ def text_report(report: dict[str, Any]) -> str:
         f"{totals.get('missing', 0)} missing, {totals.get('extra', 0)} extra, "
         f"{totals.get('offset_mismatch', 0)} offset mismatches; rate {report['rate']}",
     ]
+    if report.get("formats"):
+        lines.append("  format: Exiv2 found / MetadataSharp matched previews")
+        for format_name, counts in report["formats"].items():
+            lines.append(f"    {format_name}: {counts['found']}/{counts['matched']} "
+                         f"({counts['files']} files; missing {counts['missing']}, extra {counts['extra']})")
+    for exception in report.get("exceptions", []):
+        lines.append(f"  oracle exception: {exception['file']}: {exception['reason']}")
     for entry in report["files"]:
         if "missing" in entry or "extra" in entry or "offset_mismatch" in entry or not entry["ordered"] or entry["status"] != "ok":
             lines.append(f"  {entry['file']} [{entry['status']}] missing={entry.get('missing', [])} "
@@ -473,7 +498,7 @@ def summary(report: dict[str, Any]) -> dict[str, Any]:
     differing = [entry for entry in report["files"]
                  if "missing" in entry or "extra" in entry or "offset_mismatch" in entry or not entry["ordered"] or entry["status"] != "ok"]
     return {"kind": KIND, "totals": report["totals"], "rate": report["rate"], "statuses": report["statuses"],
-            "differing": differing}
+            "formats": report.get("formats", {}), "exceptions": report.get("exceptions", []), "differing": differing}
 
 
 def run_dump(dump_command: list[str], paths: list[Path]) -> dict[str, dict[str, Any]]:
@@ -506,6 +531,7 @@ def main(argv: list[str] | None = None) -> int:
     if (args.tree is None) == (not args.fixtures):
         parser.error("pass either --tree or --fixtures")
     paths: dict[str, Path | None]
+    fixture_exceptions: list[dict[str, str]] = []
     if args.fixtures:
         if not args.exiv2_command:
             raise PreviewParityError("--fixtures needs --exiv2-command: the files have no stored expectation")
@@ -516,10 +542,9 @@ def main(argv: list[str] | None = None) -> int:
                 continue  # the fixture directories also hold non-image parser tests
             if candidate.label in paths:
                 raise PreviewParityError(f"two files are named {candidate.label}")
-            if (candidate.path.suffix.lower() == ".eps"
-                    and candidate.path.parent.name in _METADATA_ONLY_EPS_FIXTURE_DIRS):
-                continue
-            if candidate.label in _REFERENCE_UNSUPPORTED_PREVIEW_FIXTURES:
+            exception_name = f"{candidate.path.parent.name}/{candidate.label}"
+            if exception_name in _FIXTURE_ORACLE_EXCEPTIONS:
+                fixture_exceptions.append({"file": exception_name, "reason": _FIXTURE_ORACLE_EXCEPTIONS[exception_name]})
                 continue
             paths[candidate.label] = candidate.path
         if not paths:
@@ -551,6 +576,8 @@ def main(argv: list[str] | None = None) -> int:
                 expected_offsets[name] = oracle_offsets(extraction_command, path, expected[name])
     report = compare(expected, run_dump(shlex.split(args.dump_command), present), paths,
                      expected_offsets if args.exiv2_command else None)
+    if args.fixtures:
+        report["exceptions"] = fixture_exceptions
 
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "preview-report.json").write_text(json.dumps(report, indent=1, sort_keys=True) + "\n", encoding="utf-8")
