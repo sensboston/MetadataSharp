@@ -23,6 +23,7 @@ import argparse
 import importlib.util
 import shlex
 import sys
+import traceback
 from collections import Counter
 from pathlib import Path
 
@@ -55,7 +56,7 @@ def comment_text(printed_value: str) -> str:
     return printed_value.split(" ", 1)[1] if printed_value.startswith("charset=") else printed_value
 
 
-def main(argv=None, runner=run) -> int:
+def compare(argv=None, runner=run) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("work")
     parser.add_argument("--exiv2", required=True)
@@ -72,7 +73,11 @@ def main(argv=None, runner=run) -> int:
                  (errors or output).strip().splitlines()[-12:] or ["no output"])
         return 1
 
-    rows = [line.split("\t") for line in (work / "ours.tsv").read_text(encoding="utf-8").splitlines() if line.count("\t") == 4]
+    manifest = work / "ours.tsv"
+    if not manifest.is_file():
+        annotate("error", "PARITY charset - the fixture wrote no manifest", [f"{manifest} does not exist"])
+        return 1
+    rows = [line.split("\t") for line in manifest.read_text(encoding="utf-8").splitlines() if line.count("\t") == 4]
     if not rows:
         annotate("error", "PARITY charset - the fixture wrote no row", ["ours.tsv is empty"])
         return 1
@@ -130,11 +135,16 @@ def main(argv=None, runner=run) -> int:
             counts["title matched"] += 1
 
     if iconv_missing:
+        # Nothing can be compared with the tool here, but what was compared without it still counts:
+        # a text the fixture wrote and this library does not read back is a failure on its own.
+        if failures:
+            annotate("error", "PARITY charset - texts the fixture wrote that do not read back", failures)
         annotate("notice", "PARITY charset - the pinned build has no iconv, so -n is not compared",
-                 ["The fixture wrote " + str(len(by_file)) + " files and this library read every one of "
-                  "them back; the matrix, its encodings and its round trips are covered by the unit tests "
-                  "(MetadataTextTests). The pinned build cannot convert text encodings, which is what -n "
-                  "is behind, so this gate has nothing to compare."])
+                 [f"The fixture wrote {len(by_file)} files and this library read {counts['round trip']} of "
+                  "their comments and titles back as written; the matrix, its encodings and its round "
+                  "trips are covered by the unit tests (MetadataTextTests). The pinned build cannot "
+                  "convert text encodings, which is what -n is behind, so the tool's reading of them is "
+                  "not compared here."])
         return 0 if not failures else 1
 
     annotate("error", "PARITY charset - texts the tool and this library read differently", failures)
@@ -142,6 +152,18 @@ def main(argv=None, runner=run) -> int:
                        f"comments matched {counts['comment matched']}, titles matched {counts['title matched']}",
              [f"{key}: {count}" for key, count in sorted(counts.items())])
     return 1 if failures else 0
+
+
+def main(argv=None, runner=run) -> int:
+    """The comparison, with its own failures reported as annotations: a traceback in the log is not."""
+    try:
+        return compare(argv, runner)
+    except SystemExit:
+        raise
+    except Exception:  # noqa: BLE001 - a gate that crashes has to say so where the run can be read
+        annotate("error", "PARITY charset - the comparison itself failed",
+                 [line for line in traceback.format_exc().splitlines() if line.strip()][-12:])
+        return 1
 
 
 if __name__ == "__main__":

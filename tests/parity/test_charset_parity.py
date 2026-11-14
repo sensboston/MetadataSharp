@@ -69,6 +69,12 @@ class CharsetParityTest(unittest.TestCase):
         result, _ = self.run_gate()
         self.assertEqual(1, result)
 
+    def test_a_manifest_that_is_missing_or_unreadable_is_reported_and_not_a_traceback(self):
+        (self.work / "ours.tsv").unlink()
+        self.assertEqual(1, self.run_gate()[0])
+        (self.work / "ours.tsv").write_bytes(b"charset-00.jpg\twindows-1252\t1252\tExif.Image.XPTitle\t\xff\n")
+        self.assertEqual(1, self.run_gate()[0])
+
     def test_a_build_without_iconv_says_so_rather_than_passing_quietly(self):
         result, _ = self.run_gate(tool_code=1, tool_errors="exiv2: Cannot convert text encoding from 'windows-1252' to 'UTF-8'")
         self.assertEqual(0, result)

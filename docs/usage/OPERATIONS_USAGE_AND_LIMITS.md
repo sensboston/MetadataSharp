@@ -2,7 +2,7 @@
 
 This document maps selected Exiv2 0.28.9 operations to MetadataSharp APIs; it is not a claim of
 command-line compatibility. What the library itself reads and writes is the
-[release-readiness audit](../RELEASE_READINESS_AUDIT.md); the blocked flags, print modes and targets
+[format and operation coverage](FORMAT_AND_OPERATION_COVERAGE.md); the blocked flags, print modes and targets
 are the [MetaTool CLI compatibility task](METATOOL_CLI_PARITY.md). MetadataSharp's `MetaTool` is a
 small sample, not a drop-in `exiv2` executable.
 
@@ -19,7 +19,7 @@ small sample, not a drop-in `exiv2` executable.
 | `in -i X` (`-i XX`) | `MetadataOperations.InsertXmpSidecar(file, sidecar, convert)` |
 | `in -i t` | `ExifEdit.SetThumbnail(jpeg)`; `ExifEdit.RemoveThumbnail()` |
 | `fi` | `MetadataOperations.FixIso(exif)` → `ExifEdit?` |
-| `fc -n charset` | `MetadataOperations.FixUserComment(exif, encoding)` → `ExifEdit?` |
+| `fc -n charset` | `MetadataOperations.FixUserComment(exif, encoding)` → `ExifEdit?`; the name is `MetadataCharsets.Get(charset).Encoding` |
 | EXV files | `ExvFile.Create(exif, iptc, xmp, comment, thumbnail, iccProfile)`; read by `ImageMetadata.Read` |
 
 `ExvFile.Create(..., iccProfile: profile)` accepts an exact ICC profile (128-byte minimum,
@@ -123,6 +123,17 @@ byte[] filled = MetadataOperations.InsertExv(other, exv, MetadataFamilies.All, o
   or of a field type TIFF does not define is not written. The XMP packet is carried whole
   (`XmpEdit.ReplaceWith`), with its structures. In a TIFF-based file the tags are set over the
   existing ones, since the tags that describe its image cannot be removed.
+- **ICC profile**: written into JPEG, PNG, WebP, a PSD or JP2 complete-set write and an EXV file this
+  library creates. In a TIFF-based file it is written into the proven DNG layout only - an un-reduced,
+  uncompressed RGB primary with one accounted strip and a separate CFA SubIFD - and every other raw
+  layout is refused unless a valid primary tag `0x8773` already provides a replace/remove target. The
+  reason is the preservation contract: a strip or tile layout the writer cannot account for byte for
+  byte is not rewritten. This is a documented limit, not a missing reader - see the
+  [non-goals](FORMAT_AND_OPERATION_COVERAGE.md#non-goals).
+- **Preview**: a preview is listed and extracted, not replaced. The tool's two insertion paths are
+  `-ie` (a preview out of an EXV sidecar or metadata copy) and `-it` (a JPEG thumbnail read from
+  `<path>-thumb.jpg`), and both are covered above by `MetadataOperations.InsertExv` and
+  `ExifEdit.SetThumbnail`; there is no operation on an arbitrary preview payload in either library.
 - **Thumbnail**: a directory that is created states 72 dpi (XResolution, YResolution,
   ResolutionUnit), which Exif requires; the tool writes the compression and the stream only. A
   directory that is replaced keeps its other tags. The block has to fit one APP1 segment

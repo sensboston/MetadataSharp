@@ -94,8 +94,9 @@ public sealed class MetadataTextTests
     [Fact]
     public void ACharsetRefusesAByteItCannotRepresentRatherThanReplacingIt()
     {
-        // 0x98 is undefined in windows-1252 and a byte of Windows-1251's own alphabet.
-        Assert.Throws<DecoderFallbackException>(() => MetadataCharsets.Get("windows-1251").Encoding.GetString([0x98]));
+        // 0xFF is not a byte of UTF-8, and no byte of ISO-8859-1 is the Cyrillic letter.
+        Assert.Throws<DecoderFallbackException>(() => MetadataCharsets.Get("UTF-8").Encoding.GetString([0xFF]));
+        Assert.Throws<DecoderFallbackException>(() => MetadataCharsets.Get("Shift_JIS").Encoding.GetString([0x81]));
         Assert.Throws<EncoderFallbackException>(() => MetadataCharsets.Get("ISO-8859-1").Encoding.GetBytes("Я"));
     }
 

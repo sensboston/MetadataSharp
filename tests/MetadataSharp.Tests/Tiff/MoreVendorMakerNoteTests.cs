@@ -558,11 +558,13 @@ public sealed class MoreVendorMakerNoteTests
         Assert.Equal(2, changed);
         MakerNote after = Read(output) ?? throw new InvalidOperationException("The edited note is not decoded.");
         Assert.Equal(42, Number(MakerNoteKeys.Enumerate(after).Single(target => target.Key == "Exif.MinoltaCs7D.Quality").Value));
+        // The elements share the bytes of the array they belong to, so what has to hold is that every
+        // other element still reads its own number; the two changed bytes above are the element itself.
         foreach (MakerNoteTarget target in MakerNoteKeys.Enumerate(note))
         {
             if (target.Key == "Exif.MinoltaCs7D.Quality") continue;
             MakerNoteTarget now = MakerNoteKeys.Enumerate(after).Single(other => other.Key == target.Key);
-            Assert.Equal(target.Value.RawBytes.ToArray(), now.Value.RawBytes.ToArray());
+            Assert.Equal(Number(target.Value), Number(now.Value));
         }
     }
 
