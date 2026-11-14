@@ -26,7 +26,7 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
 - `Previews.List` reports bounded absolute offsets, lengths, MIME types and dimensions; `Previews.Extract`
   returns validated JPEG/RGB data, encoded BMFF HEVC/AV1 bytes, native EPS/TIFF/WMF data, and the
   generated EPS/XMP thumbnail forms without decoding image pixels. The usage and limits, including
-  the transformations and write scope, are in [PREVIEWS_USAGE_AND_LIMITS.md](docs/usage/PREVIEWS_USAGE_AND_LIMITS.md).
+  the transformations and write scope, are in [PREVIEWS_USAGE_AND_LIMITS.md](https://github.com/sensboston/MetadataSharp/blob/HEAD/docs/usage/PREVIEWS_USAGE_AND_LIMITS.md).
   Range assertions live in [PreviewTests.cs](tests/MetadataSharp.Tests/Containers/PreviewTests.cs);
   the strict pinned `exiv2 -pp` list gate and `-ep`-derived offset comparison are in
   [run_previews.py](tools/parity/run_previews.py) and [test_preview_parity.py](tests/parity/test_preview_parity.py).
