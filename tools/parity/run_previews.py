@@ -321,10 +321,14 @@ def oracle_offsets(exiv2_command: list[str], path: Path, previews: list[Preview]
             raise PreviewParityError(f"exiv2 -ep produced {len(outputs)} previews for {path.name}, but -pp listed {len(previews)}")
         source = path.read_bytes()
         offsets: list[list[int]] = []
-        for ((mime, width, height, _), (_, output)) in zip(previews, outputs):
-            candidates = _source_offsets(source, output.read_bytes(), mime, width, height)
+        for number, ((mime, width, height, _), (_, output)) in enumerate(zip(previews, outputs), 1):
+            extracted = output.read_bytes()
+            candidates = _source_offsets(source, extracted, mime, width, height)
             if not candidates:
-                raise PreviewParityError(f"cannot locate exiv2 preview bytes in {path.name}; offset parity is unprovable")
+                raise PreviewParityError(
+                    f"cannot locate exiv2 preview bytes in {path.name}; offset parity is unprovable "
+                    f"(preview {number} of {len(previews)}: {mime} {width}x{height}, {len(extracted)} bytes, "
+                    f"starts {extracted[:4].hex() or 'empty'}, file {len(source)} bytes)")
             offsets.append(candidates)
         return offsets
 
