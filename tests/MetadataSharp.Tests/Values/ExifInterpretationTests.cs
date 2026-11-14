@@ -20,6 +20,8 @@ public sealed class ExifInterpretationTests
 
     private static ExifTagKey Gps(ushort id) => new(ExifDirectoryKind.Gps, id);
 
+    private static ExifTagKey Interop(ushort id) => new(ExifDirectoryKind.Interop, id);
+
     /// <summary>"1/250" or "16/1 50/1 35/10 56/10" as an unsigned RATIONAL value.</summary>
     private static ExifValue Rational(string text, Endianness order = Endianness.LittleEndian)
     {
@@ -186,6 +188,24 @@ public sealed class ExifInterpretationTests
         Assert.Equal(expected, ExifTags.Interpret(new ExifTagKey(directory, tag), Short(number)));
     }
 
+    [Theory]
+    [InlineData("0100", "1.00")]
+    [InlineData("0231", "2.31")]
+    public void InteroperabilityVersionIsDecodedFromItsFourAsciiDigits(string bytes, string expected)
+    {
+        ExifValue value = ExifValue.FromRaw(TiffFieldType.Undefined, 4, Endianness.LittleEndian,
+            Encoding.ASCII.GetBytes(bytes));
+        Assert.Equal(expected, ExifTags.Interpret(Interop(0x0002), value));
+    }
+
+    [Fact]
+    public void InvalidInteroperabilityVersionRemainsUninterpreted()
+    {
+        ExifValue value = ExifValue.FromRaw(TiffFieldType.Undefined, 4, Endianness.LittleEndian,
+            new byte[] { (byte)'0', (byte)'1', (byte)'x', (byte)'0' });
+        Assert.Null(ExifTags.Interpret(Interop(0x0002), value));
+    }
+
     [Fact]
     public void WhereTheStandardHasItsOwnTermTheLabelKeepsIt()
     {
@@ -194,7 +214,7 @@ public sealed class ExifInterpretationTests
         Assert.Equal("Pattern", ExifTags.Interpret(Photo(0x9207), Short(5)));
         Assert.Equal("Normal program", ExifTags.Interpret(Photo(0x8822), Short(2)));
         Assert.Equal("Recommended exposure index (REI)", ExifTags.Interpret(Photo(0x8830), Short(2)));
-        Assert.Equal("General composite image", ExifTags.Interpret(Photo(0xA460), Short(2)));
+        Assert.Equal("GeneralComposite", ExifTags.Interpret(Photo(0xA460), Short(2)));
         Assert.Equal("Positive ellipsoidal height (at or above ellipsoidal surface)",
             ExifTags.Interpret(Gps(0x0005), Bytes(TiffFieldType.Byte, 0)));
     }
@@ -718,6 +738,18 @@ public sealed class ExifInterpretationTests
     }
 
     [Fact]
+    public void ACommentBodyWithoutAPrintableCharacterIsNotText()
+    {
+        // Cameras also store a binary structure behind the character code; the bytes up to the first
+        // NUL hold a line break and nothing else, so there is no text to interpret.
+        Assert.Null(ExifTags.Interpret(Photo(0x9286),
+            Comment("ASCII\0\0\0", [0x0A, 0x00, 0x00, 0x00, 0x4A, 0x4B])));
+        // Text that holds control characters of its own, such as a line break, is still text.
+        Assert.Equal("line 1\nline 2",
+            ExifTags.Interpret(Photo(0x9286), Comment("ASCII\0\0\0", Encoding.ASCII.GetBytes("line 1\nline 2"))));
+    }
+
+    [Fact]
     public void AUnicodeCommentIsReadInTheByteOrderOfTheFileOrOfItsMark()
     {
         const string text = "\u0423\u043A\u0440\u0430\u0457\u043D\u0430";
@@ -732,6 +764,20 @@ public sealed class ExifInterpretationTests
         // An unpaired surrogate is not text, so there is nothing to show.
         byte[] broken = [0x00, 0xD8, 0x41, 0x00];
         Assert.Null(ExifTags.Interpret(Photo(0x9286), Comment("UNICODE\0", broken)));
+    }
+
+    [Fact]
+    public void ExplicitCommentCharsetMatchesExiv2NWithoutChangingTheStoredBytes()
+    {
+        ExifValue value = Comment("UNICODE\0", [0x63, 0x61, 0x66, 0xE9]);
+        var options = new ExifInterpretationOptions { UserCommentEncoding = Encoding.Latin1 };
+
+        Assert.Equal("caf\u00E9", ExifTags.Interpret(Photo(0x9286), value, options));
+        Assert.Equal("\u6163\uE966", ExifTags.Interpret(Photo(0x9286), value));
+        Assert.Equal(new byte[] { 0x63, 0x61, 0x66, 0xE9 }, value.RawBytes[8..]);
+
+        var invalidUtf8 = new ExifInterpretationOptions { UserCommentEncoding = new UTF8Encoding(false, false) };
+        Assert.Null(ExifTags.Interpret(Photo(0x9286), value, invalidUtf8));
     }
 
     [Fact]

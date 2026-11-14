@@ -1,10 +1,7 @@
-using System.Text.Unicode;
-
 namespace MetadataSharp.Core.Iptc;
 
-// Six common text datasets, read by the rules of GetText and without its exceptions: where
-// GetText would refuse an occurrence, the occurrence is left out. Nothing is decoded that GetText does
-// not decode, and no character set is guessed.
+// Six common text datasets, read by the same packet-wide charset policy as GetText. Invalid text
+// declared as UTF-8 is left out of convenience properties; raw dataset bytes always remain available.
 public sealed partial class IptcPacket
 {
     /// <summary>
@@ -17,10 +14,9 @@ public sealed partial class IptcPacket
     /// Every Keywords dataset (2:25) as text, in the order of the stream; empty when there is none.
     /// </summary>
     /// <remarks>
-    /// The text is decoded as <see cref="GetText" /> decodes it, and an occurrence that method refuses
-    /// is left out instead: one with bytes above 0x7F in a stream that does not declare UTF-8, any in a
-    /// stream that declares another character set, and one that is not valid UTF-8. The raw bytes of
-    /// every occurrence stay in <see cref="Datasets" />.
+    /// The text is decoded as <see cref="GetText"/> decodes it, using the charset selected for the whole
+    /// packet (ASCII, valid UTF-8, or ISO-8859-1 fallback). An occurrence invalid under a declared UTF-8
+    /// marker is left out. The raw bytes of every occurrence stay in <see cref="Datasets"/>.
     /// </remarks>
     public IReadOnlyList<string> Keywords => All(new IptcDatasetKey(2, 25));
 
@@ -75,12 +71,7 @@ public sealed partial class IptcPacket
     private bool TryText(IptcDataset dataset, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? text)
     {
         text = null;
-        ReadOnlySpan<byte> bytes = dataset.Value.Span;
-        if (CharacterSet == IptcCharacterSet.Unsupported ||
-            (CharacterSet == IptcCharacterSet.Unspecified && ContainsHighBit(bytes)) ||
-            !Utf8.IsValid(bytes))
-            return false;
-        text = IptcText.Utf8.GetString(bytes);
-        return true;
+        try { text = DecodeText(dataset); return true; }
+        catch (MetadataException failure) when (failure.Code == MetadataErrorCode.InvalidIptc) { return false; }
     }
 }

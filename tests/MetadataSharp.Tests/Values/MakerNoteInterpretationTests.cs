@@ -212,6 +212,12 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("Standard", Field(MakerNoteFormat.Canon, 0x00A0, "PictureStyle", Shorts(129, 129, 129), index: 5));
         Assert.Equal("Auto", Top(MakerNoteFormat.Canon, "PictureStyleUserDef", Shorts(135, 135, 135)));
         Assert.Equal("(16191)", Field(MakerNoteFormat.Canon, 0x4028, "SelectAFAreaSelectionMode", SignedLongs(16191), index: 12));
+        int[] fileInfoValues = new int[62];
+        fileInfoValues[61] = -1;
+        var rfLensType = CanonMakerNoteArrays.Decompose(0x0093, SignedShorts(fileInfoValues))
+            .Single(field => field.Name == "RFLensType");
+        Assert.Equal(TiffFieldType.SShort, rfLensType.Value.FieldType);
+        Assert.Equal(new byte[] { 0xFF, 0xFF }, rfLensType.Value.RawBytes.ToArray());
     }
 
     [Theory]
@@ -639,6 +645,12 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("7.8 x 7.8 um", Top(MakerNoteFormat.Nikon3, "SensorPixelSize", Rationals((78, 10), (78, 10))));
         Assert.Equal("1583", Top(MakerNoteFormat.Nikon3, "BarometerInfo", Undefined(0, 0, 0, 0, 0, 0, 0x2F, 0x06, 0, 0, 0, 0)));
         Assert.Equal("0", Field(MakerNoteFormat.Nikon3, 0x00B9, "AFFineTuneAdj", Bytes(0)));
+        var fineTuneFields = NikonMakerNoteArrays.Decompose(0x00B9, Bytes(0, 0, 0xFF));
+        Assert.Equal(TiffFieldType.SByte, fineTuneFields[2].Value.FieldType);
+        Assert.Equal(new byte[] { 0xFF }, fineTuneFields[2].Value.RawBytes.ToArray());
+        var fineTuneEntry = new MakerNoteEntry(0x00B9, "AFTune", Bytes(0, 0, 0xFF), fineTuneFields);
+        var fineTuneNote = new MakerNote(MakerNoteFormat.Nikon3, Little, [fineTuneEntry]);
+        Assert.Equal("255", fineTuneNote.Interpret(fineTuneEntry, fineTuneFields[2]));
         Assert.Equal("Lower-right", Field(MakerNoteFormat.Nikon3, 0x0088, "AFPointsInFocus", Shorts(0x0100), 2));
         Assert.Equal("Lower-right", Field(MakerNoteFormat.Nikon3, 0x0088, "AFPointsInFocus", Shorts(1), 2, "NIKON D70"));
         Assert.Equal("Fired", Field(MakerNoteFormat.Nikon3, 0x00A8, "ExternalFlashFlags", Bytes(0), 8));

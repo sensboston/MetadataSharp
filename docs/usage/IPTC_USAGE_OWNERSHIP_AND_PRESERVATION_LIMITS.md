@@ -75,13 +75,15 @@ nonminimal extended-length descriptors. Last operation per key wins. Empty
 replacement means removal. Missing-key removal alone is an exact no-op.
 (Operations now run in order instead of the last one per key winning; see the first section.)
 
-Text encoding is never guessed. A unique ESC % G declaration means UTF-8; absence
-permits ASCII-only convenience reads/writes, not implicit Latin-1. Unknown declarations
-refuse text operations, even for ASCII (`ESC ( B` is not unknown: it reads as no declaration). Existing charset/version controls are not
-silently repaired, added or changed; explicit transcoding is outside this scope.
-New IPTC packets use a UTF-8 declaration and record-2 version 4. GetText decodes
-without trimming or write-time field repairs; malformed UTF-8 is InvalidIptc.
-Raw fields may be read/copied even when their text cannot be interpreted.
+Raw declaration and display decoding are separate. `CharacterSet` reports the 1:90 declaration:
+`ESC % G` is UTF-8, `ESC ( B` is ASCII, and other designations are reported as unsupported. `DetectedTextEncoding`
+implements Exiv2's packet-wide detection: a UTF-8 declaration selects strict UTF-8; without it, the
+whole packet is tested for ASCII and valid UTF-8, and invalid UTF-8 byte sequences use the ISO-8859-1
+fallback for display and conversion. Thus unmarked UTF-8 is detected and legacy high bytes have a
+stable one-byte mapping; raw bytes are never changed. A declared UTF-8 stream with malformed UTF-8
+still fails `GetText` as `InvalidIptc`. Text edits remain more conservative: they preserve existing
+bytes and refuse a UTF-8 declaration change if it could relabel retained high bytes. Other declared
+character sets are not rewritten. New IPTC packets use a UTF-8 declaration and record-2 version 4.
 
 ## Owned raw packets and repetitions
 

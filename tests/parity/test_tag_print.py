@@ -1,0 +1,285 @@
+from __future__ import annotations
+
+import io
+import sys
+from collections import Counter
+import unittest
+from contextlib import redirect_stdout
+from pathlib import Path
+from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "tools" / "parity"))
+import run_tag_print as gate
+
+
+def pt_line(key: str, type_name: str, count: int, value: str) -> str:
+    """One row of the reference's -pt output, laid out as its print columns do."""
+    return f"{key:<44} {type_name:<9} {count:>3}  {value}"
+
+
+class TagPrintProtocolTests(unittest.TestCase):
+    def test_exiv2_pt_rows_have_key_type_count_and_one_printed_value(self) -> None:
+        text = (
+            pt_line("Exif.Image.NewSubfileType", "Long", 1, "Thumbnail/Preview image") + "\n"
+            + pt_line("Exif.Image.ImageWidth", "Long", 1, "160") + "\n"
+            + pt_line("Exif.Image.Make", "Ascii", 18, "NIKON CORPORATION") + "\n"
+            + pt_line("Iptc.Application2.Caption", "String", 1, "not part of -pt") + "\n"
+        )
+        self.assertEqual([
+            {"key": "Exif.Image.NewSubfileType", "type": "Long", "count": 1, "value": "Thumbnail/Preview image"},
+            {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "160"},
+            {"key": "Exif.Image.Make", "type": "Ascii", "count": 18, "value": "NIKON CORPORATION"},
+        ], gate.parse_exiv2(text))
+
+    def test_pt_columns_keep_leading_value_spaces_and_a_key_with_a_space(self) -> None:
+        # Real bytes: the stored value starts with spaces, and one MakerNote group names a tag with a
+        # space in it, so a whitespace split would lose both facts.
+        self.assertEqual([
+            {"key": "Exif.Photo.OffsetTime", "type": "Ascii", "count": 7, "value": "   :  "},
+            {"key": "Exif.MinoltaCs5D.Color Temperature", "type": "SShort", "count": 1, "value": "5500"},
+            {"key": "Exif.SubImage1.LinearizationTable", "type": "Short", "count": 4096, "value": "0 0 0"},
+            {"key": "Exif.Photo.UserComment", "type": "0x000e", "count": 125, "value": ""},
+        ], gate.parse_exiv2(
+            pt_line("Exif.Photo.OffsetTime", "Ascii", 7, "   :  ") + "\n"
+            + pt_line("Exif.MinoltaCs5D.Color Temperature", "SShort", 1, "5500") + "\n"
+            + pt_line("Exif.SubImage1.LinearizationTable", "Short", 4096, "0 0 0") + "\n"
+            + "Exif.Photo.UserComment                      0x000e    125\n"))
+
+    def test_pt_rows_of_a_wide_key_are_read_by_their_content(self) -> None:
+        key = "Exif.NikonFl7.FlashSourceAndMasterControlGroupSettings"
+        self.assertGreater(len(key), gate._PRINT_KEY_WIDTH)
+        self.assertEqual([{"key": key, "type": "Byte", "count": 3, "value": "1 2 3"}],
+                         gate.parse_exiv2(key + " Byte         3  1 2 3\n"))
+
+    def test_dump_projection_uses_local_interpretation_or_raw_value_for_pt(self) -> None:
+        self.assertEqual([
+            {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "value": "top, left", "_raw_value": "1", "_has_translation": True},
+            {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1", "_raw_value": "50/1", "_has_translation": False},
+            {"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 3, "value": "   ", "_raw_value": "   ", "_has_translation": False},
+        ], gate.project_dump([
+            {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "raw": "1", "translated": "top, left"},
+            {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "raw": "50/1", "translated": ""},
+            {"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 3, "raw": "   ", "translated": ""},
+            {"key": "Iptc.Application2.Caption", "type": "String", "count": 1, "raw": "x", "translated": "x"},
+        ]))
+
+    def test_comparison_ignores_record_iteration_order_but_not_values(self) -> None:
+        expected = [
+            {"key": "Exif.Image.Make", "type": "Ascii", "count": 1, "value": "Camera"},
+            {"key": "Exif.Image.Model", "type": "Ascii", "count": 1, "value": "Body"},
+        ]
+        self.assertEqual([], gate.compare_rows(expected, list(reversed(expected))))
+        changed = [expected[0], {**expected[1], "value": "Other body"}]
+        differences = gate.compare_rows(expected, changed)
+        self.assertEqual(1, len(differences))
+        self.assertEqual(["value-diff"], [row["kind"] for row in differences])
+
+    def test_numeric_fallback_matches_only_the_same_catalogued_tag(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Image.0x0100", "type": "Long", "count": 1, "value": "640"}]
+        actual = [{"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "640"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_names=accepted))
+        self.assertEqual({("Exif.Image.0x0100", "Exif.Image.ImageWidth"): 1}, dict(accepted))
+        other_directory = [{"key": "Exif.Photo.0x0100", "type": "Long", "count": 1, "value": "640"}]
+        wrong_directory = gate.compare_rows(other_directory, actual)
+        self.assertEqual(["extra", "missing"], sorted(row["kind"] for row in wrong_directory))
+        wrong_value = [{"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "641"}]
+        self.assertEqual(1, len(gate.compare_rows(expected, wrong_value)))
+
+    def test_pt_text_difference_requires_exact_independent_raw_value(self) -> None:
+        difference = {"kind": "value-diff",
+                      "exiv2": {"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "Hold"},
+                      "metadatasharp": {"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "0"}}
+        raw_reference = [{"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "0"}]
+        source_rows = [{"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1,
+                        "raw": "0", "translated": ""}]
+        remaining, verified = gate.verify_raw_value_differences([difference], raw_reference, source_rows)
+        self.assertEqual([], remaining)
+        self.assertEqual("0", verified[0]["raw_value"])
+        changed_raw = [{**raw_reference[0], "value": "1"}]
+        remaining, verified = gate.verify_raw_value_differences([difference], changed_raw, source_rows)
+        self.assertEqual([difference], remaining)
+        self.assertEqual([], verified)
+        wrong_type = [{**raw_reference[0], "type": "SShort"}]
+        remaining, verified = gate.verify_raw_value_differences([difference], wrong_type, source_rows)
+        self.assertEqual([difference], remaining)
+        self.assertEqual([], verified)
+
+    def test_only_trailing_ascii_and_user_comment_padding_is_ignored_as_format(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Image.Make", "type": "Ascii", "count": 8, "value": "Camera "}]
+        actual = [{"key": "Exif.Image.Make", "type": "Ascii", "count": 8, "value": "Camera"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_padding=accepted))
+        self.assertEqual({"Ascii": 1}, dict(accepted))
+        expected = [{"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1 "}]
+        actual = [{"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1"}]
+        self.assertEqual(1, len(gate.compare_rows(expected, actual)))
+
+    def test_tiff_ifd_offsets_match_the_same_long_value(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Olympus2.CameraSettings", "type": "Ifd", "count": 1, "value": "512"}]
+        actual = [{"key": "Exif.Olympus2.CameraSettings", "type": "Long", "count": 1, "value": "512"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_type_aliases=accepted))
+        self.assertEqual({("Ifd", "Long"): 1}, dict(accepted))
+        self.assertEqual(1, len(gate.compare_rows(expected, [{**actual[0], "value": "513"}])))
+
+    def test_multiline_text_only_accepts_exact_pinned_first_line(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 20,
+                     "value": "caption"}]
+        actual = [{"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 20,
+                  "value": "caption\nlonger description"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_line_truncations=accepted))
+        self.assertEqual({"Ascii": 1}, dict(accepted))
+        changed_first_line = [{**actual[0], "value": "different\nlonger description"}]
+        self.assertEqual(1, len(gate.compare_rows(expected, changed_first_line)))
+        non_text = [{**expected[0], "type": "Undefined"}]
+        self.assertEqual(1, len(gate.compare_rows(non_text, [{**actual[0], "type": "Undefined"}])))
+
+    def test_a_value_that_ends_at_the_reference_line_break_matches_it(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Photo.UserComment", "type": "Undefined", "count": 4980,
+                     "value": "charset=Ascii "}]
+        actual = [{"key": "Exif.Photo.UserComment", "type": "Undefined", "count": 4980,
+                   "value": "charset=Ascii \n"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_line_truncations=accepted))
+        self.assertEqual({"Undefined": 1}, dict(accepted))
+        # Only a line break may continue the reference text; any other continuation still differs.
+        for continuation in ("charset=Ascii x", "charset=Ascii\r"):
+            self.assertEqual(1, len(gate.compare_rows(expected, [{**actual[0], "value": continuation}])))
+
+    def test_dump_protocol_unescapes_records_and_rejects_open_or_malformed_blocks(self) -> None:
+        parsed = gate.parse_dump("FILE\t/tmp/a\\tb.jpg\nTAG\tExif.Image.Make\tAscii\t2\tA\\\\B\t\nSTATUS\tok\n")
+        self.assertEqual("A\\B", parsed["/tmp/a\tb.jpg"]["rows"][0]["raw"])
+        with self.assertRaises(gate.TagPrintError):
+            gate.parse_dump("FILE\ta\nFILE\tb\nSTATUS\tok\n")
+        with self.assertRaises(gate.TagPrintError):
+            gate.parse_dump("FILE\ta\nTAG\tExif.Image.Width\tLong\tbad\t1\nSTATUS\tok\n")
+
+    def test_each_unmatched_reference_requires_a_named_reason(self) -> None:
+        self.assertEqual(set(gate._TAG_PRINT_EXCEPTIONS), {
+            "addmoddel", "conversions", "crw-test", "exifdata-test", "exiv2-bug1145a.exv_test",
+            "exiv2-test", "geotag-test", "icc-test", "iotest", "iso65k-test", "modify-test",
+            "nls-test", "png-test", "preview-test", "stdin-test", "stringto-test",
+            "test_pr_1905_poc1_ref", "tiff-test", "webp-test", "write-test-debug", "write-test",
+            "write2-test", "xmpparser-test",
+        })
+        self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_EXCEPTIONS.values()))
+        self.assertEqual({"Exif.GPSInfo.GPSAltitudeRef", "Exif.Canon.Categories", "Exif.Canon.PictureStylePC",
+                          "Exif.Canon.FilterInfo"}, set(gate._TAG_PRINT_KEY_EXCEPTIONS))
+        self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_KEY_EXCEPTIONS.values()))
+        self.assertIn("Exif.Image.ImageWidth", gate.CATALOG_KEYS)
+        self.assertNotIn("Exif.Canon.0x0019", gate.CATALOG_KEYS)
+        self.assertEqual({
+            ("BlueSquare.xmp", "Exif.*"),
+            ("StaffPhotographer-Example.xmp", "Exif.*"),
+            ("exiv2-bug1112.xmp", "Exif.*"),
+            ("issue_1959_poc.xmp", "Exif.*"),
+            ("issue_1998.xmp", "Exif.*"),
+        }, set(gate._TAG_PRINT_ROW_EXCEPTIONS))
+        self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_ROW_EXCEPTIONS.values()))
+
+    def test_row_rules_cover_only_their_named_file_key_and_reference_row(self) -> None:
+        sidecar = {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "1"}
+        self.assertIsNotNone(gate._row_exception("BlueSquare.xmp", sidecar, has_local_exif=False))
+        self.assertIsNone(gate._row_exception("BlueSquare.xmp", sidecar, has_local_exif=True))
+        self.assertIsNone(gate._row_exception("issue_1713_poc.xmp", sidecar, has_local_exif=False))
+        # Only the sidecar conversion remains: every other file is compared row by row.
+        self.assertIsNone(gate._row_exception("IMG_1361.dng", {"key": "Exif.SubImage1.ImageWidth"},
+                                              has_local_exif=True))
+        self.assertIsNone(gate._row_exception("exiv2-bug447.jpg",
+                                              {"key": "Exif.Photo.UserComment", "type": "0x000e", "count": 125,
+                                               "value": ""}, has_local_exif=True))
+
+    def test_a_documented_row_rule_is_reported_and_its_local_row_ends_it(self) -> None:
+        candidate = gate.corpus.Candidate("BlueSquare.xmp", Path("/tmp/BlueSquare.xmp"), "test")
+        reference = pt_line("Exif.Image.ImageWidth", "Long", 1, "1") + "\n"
+        dump = {"/tmp/BlueSquare.xmp": {"status": "ok", "rows": []}}
+        with patch.object(gate, "_run_reference", return_value=(0, reference, "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual(0, report["totals"].get("failed_files", 0))
+        self.assertEqual([{"file": "BlueSquare.xmp", "key": "Exif.Image.ImageWidth", "type": "Long",
+                           "count": 1, "occurrences": 1,
+                           "rule": gate._TAG_PRINT_ROW_EXCEPTIONS[("BlueSquare.xmp", "Exif.*")]}],
+                         report["row_rule_hits"])
+        # A file that does print EXIF rows is not the case the rule was reviewed for: its rows are
+        # compared, and a difference between them still fails the gate.
+        dump["/tmp/BlueSquare.xmp"]["rows"] = [
+            {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "raw": "2", "translated": ""}]
+        with patch.object(gate, "_run_reference", return_value=(0, reference, "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual(1, report["totals"].get("failed_files", 0))
+        self.assertEqual([], report["row_rule_hits"])
+
+    def test_every_observed_refusal_is_named_and_requires_the_same_result(self) -> None:
+        self.assertEqual(38, len(gate._TAG_PRINT_REFUSAL_EXCEPTIONS))
+        for name, (kind, status, detail, reason) in gate._TAG_PRINT_REFUSAL_EXCEPTIONS.items():
+            self.assertTrue(reason.strip(), name)
+            problem = {"kind": kind, "status": status, "detail": detail or "observed exiv2 detail"}
+            self.assertIsNotNone(gate._document_refusal(name, problem), name)
+            changed = {**problem, "status": "changed"}
+            self.assertIsNone(gate._document_refusal(name, changed), name)
+            if detail is not None:
+                changed_detail = {**problem, "detail": "different-code"}
+                self.assertIsNone(gate._document_refusal(name, changed_detail), name)
+
+    def test_only_numeric_raw_tags_without_a_pinned_named_row_are_reported_as_raw_only(self) -> None:
+        self.assertTrue(gate._is_raw_numeric_tag("Exif.Canon.0x0019"))
+        self.assertFalse(gate._is_raw_numeric_tag("Exif.Photo.ImageWidth"))
+        self.assertTrue(gate._is_raw_numeric_tag("Exif.Canon.0X0019"))
+
+    def test_unregistered_numeric_fallback_is_reported_but_unknown_named_key_still_fails(self) -> None:
+        candidate = gate.corpus.Candidate("sample.jpg", Path("/tmp/sample.jpg"), "test")
+        dump = {"/tmp/sample.jpg": {"status": "ok", "rows": [
+            {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "raw": "160", "translated": ""},
+            {"key": "Exif.Canon.0x0019", "type": "Short", "count": 1, "raw": "1", "translated": "1"},
+        ]}}
+        with patch.object(gate, "_run_reference", return_value=(0, pt_line("Exif.Image.ImageWidth", "Long", 1, "160") + "\n", "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual(0, report["totals"].get("failed_files", 0))
+        self.assertEqual("Exif.Canon.0x0019", report["raw_only_tag_exceptions"][0]["key"])
+
+        dump["/tmp/sample.jpg"]["rows"].append(
+            {"key": "Exif.Canon.CameraSerialNumber", "type": "Ascii", "count": 1, "raw": "x", "translated": "x"})
+        with patch.object(gate, "_run_reference", return_value=(0, pt_line("Exif.Image.ImageWidth", "Long", 1, "160") + "\n", "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual(1, report["totals"]["failed_files"])
+        self.assertEqual("extra", report["differing"][0]["rows"][0]["kind"])
+
+    def test_annotation_chunks_keep_all_failure_groups_and_refusals_under_github_limit(self) -> None:
+        payload = {
+            "totals": {"files": 40},
+            "mismatch_groups": [{"category": "description", "key": f"Exif.Photo.Tag{i}",
+                                 "type": "Short", "occurrences": i,
+                                 "examples": [{"difference": "text differs", "occurrences": i}]}
+                                for i in range(40)],
+            "refusals": [{"file": f"failed-{i}.jpg", "kind": "metadatasharp-refused",
+                          "detail": "a" * 160} for i in range(34)],
+            "value_diff_by_key": [{"key": f"Exif.Photo.Tag{i}", "exiv2": "x", "metadatasharp": "y",
+                                   "occurrences": i} for i in range(30)],
+            "display_rule_hits": [],
+        }
+        output = io.StringIO()
+        with redirect_stdout(output):
+            gate._emit_annotation(payload)
+        lines = output.getvalue().splitlines()
+        self.assertGreater(len(lines), 1)
+        self.assertTrue(all(len(line) < 4000 for line in lines))
+        self.assertEqual(2, sum("refusals " in line for line in lines))
+
+    def test_report_groups_text_only_differences_by_key_and_category(self) -> None:
+        candidate = gate.corpus.Candidate("metering.jpg", Path("/tmp/metering.jpg"), "test")
+        dump = {"/tmp/metering.jpg": {"status": "ok", "rows": [
+            {"key": "Exif.Photo.MeteringMode", "type": "Short", "count": 1, "raw": "5", "translated": "Pattern"},
+        ]}}
+        with patch.object(gate, "_run_reference", return_value=(0, pt_line("Exif.Photo.MeteringMode", "Short", 1, "Multi-segment") + "\n", "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual([{"key": "Exif.Photo.MeteringMode", "exiv2": "Multi-segment", "metadatasharp": "Pattern",
+                           "occurrences": 1, "rule": gate._TAG_PRINT_DISPLAY_REASONS["Exif.Photo.MeteringMode"]}],
+                         report["display_rule_hits"])
+        self.assertEqual([], report["mismatch_groups"])
+
+
+if __name__ == "__main__":
+    unittest.main()

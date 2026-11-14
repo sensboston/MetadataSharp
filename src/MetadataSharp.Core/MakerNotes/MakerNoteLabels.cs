@@ -1584,12 +1584,14 @@ internal static partial class MakerNoteLabels
         return reading.ToString(CultureInfo.InvariantCulture);
     }
 
-    // Render one BYTE-valued Nikon field as its exact stored integer.
+    // Render one byte-valued Nikon field as its exact stored octet. AFTune's adjustment has a signed
+    // field type in the decomposed view, but Exiv2's interpreted presentation remains the raw octet.
     private static string? NikonRawNumeric(ExifValue value)
     {
-        if (value.Count != 1 || value.FieldType != TiffFieldType.Byte || !ExifTags.TryInteger(value, 0, out long number))
+        if (value.Count != 1 || value.RawBytes.Length != 1 ||
+            value.FieldType is not (TiffFieldType.Byte or TiffFieldType.SByte))
             return null;
-        return Whole(number);
+        return Whole(value.RawBytes[0]);
     }
 
     // Normalize Nikon D-series byte order, then require every set bit to have a known AF-point label.

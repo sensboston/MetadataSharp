@@ -47,7 +47,13 @@ public static partial class ExifTags
     /// <param name="value">The raw value.</param>
     /// <returns>The display form of the value, or <see langword="null"/> when this tag has no interpretation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="value" /> is null.</exception>
-    public static string? Interpret(ExifTagKey key, ExifValue value)
+    public static string? Interpret(ExifTagKey key, ExifValue value) => Interpret(key, value, null);
+
+    /// <inheritdoc cref="Interpret(ExifTagKey, ExifValue)"/>
+    /// <param name="key">The directory and tag the value was read from.</param>
+    /// <param name="value">The raw value.</param>
+    /// <param name="options">Display-time charset choices; null uses the file's own byte-order and charset markers.</param>
+    public static string? Interpret(ExifTagKey key, ExifValue value, ExifInterpretationOptions? options)
     {
         ArgumentNullException.ThrowIfNull(value);
         if (Find(key) is not ExifTagDefinition definition)
@@ -57,8 +63,9 @@ public static partial class ExifTags
         return key.Directory switch
         {
             ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail => InterpretImage(key, value),
-            ExifDirectoryKind.Exif => InterpretPhoto(key.TagId, value),
+            ExifDirectoryKind.Exif => InterpretPhoto(key.TagId, value, options),
             ExifDirectoryKind.Gps => InterpretGps(key.TagId, value),
+            ExifDirectoryKind.Interop => InterpretInterop(key.TagId, value),
             _ => null,
         };
     }
@@ -76,12 +83,18 @@ public static partial class ExifTags
     /// <param name="key">The directory and tag to interpret.</param>
     /// <returns>The display form of the tag, or <see langword="null"/> when it is absent or has no interpretation.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="metadata" /> is null.</exception>
-    public static string? Interpret(ExifMetadata metadata, ExifTagKey key)
+    public static string? Interpret(ExifMetadata metadata, ExifTagKey key) => Interpret(metadata, key, null);
+
+    /// <inheritdoc cref="Interpret(ExifMetadata, ExifTagKey)"/>
+    /// <param name="metadata">The snapshot the tag belongs to.</param>
+    /// <param name="key">The directory and tag to interpret.</param>
+    /// <param name="options">Display-time charset choices; null uses the file's own byte-order and charset markers.</param>
+    public static string? Interpret(ExifMetadata metadata, ExifTagKey key, ExifInterpretationOptions? options)
     {
         ArgumentNullException.ThrowIfNull(metadata);
         if (!metadata.TryGetEntry(key, out ExifEntry? entry))
             return null;
-        string? text = Interpret(key, entry.Value);
+        string? text = Interpret(key, entry.Value, options);
         if (text is null || key.Directory != ExifDirectoryKind.Gps)
             return text;
 
@@ -282,6 +295,7 @@ public static partial class ExifTags
             },
             // YCbCrPositioning
             0x0213 => number switch { 1 => "Centered", 2 => "Co-sited", _ => null },
+
             _ => null,
         },
         ExifDirectoryKind.Exif => key.TagId switch
@@ -342,6 +356,23 @@ public static partial class ExifTags
 
     // ---- 0th IFD and thumbnail -------------------------------------------------------------------------
 
+    private static string? InterpretInterop(ushort tag, ExifValue value)
+    {
+        if (tag != 0x0002 || value.FieldType != TiffFieldType.Undefined || value.Count != 4
+            || value.RawBytes.Length != 4)
+            return null;
+
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        foreach (byte b in bytes)
+        {
+            if (b is < (byte)'0' or > (byte)'9')
+                return null;
+        }
+        string digits = Encoding.ASCII.GetString(bytes);
+        int majorMinor = (digits[0] - '0') * 10 + digits[1] - '0';
+        return majorMinor.ToString(CultureInfo.InvariantCulture) + "." + digits[2..];
+    }
+
     private static string? InterpretImage(ExifTagKey key, ExifValue value) => key.TagId switch
     {
         0x00FE or 0x013D => Labelled(key, value),                        // NewSubfileType, Predictor
@@ -354,7 +385,7 @@ public static partial class ExifTags
     // ---- Exif IFD --------------------------------------------------------------------------------------
 
     // Dispatch EXIF Photo IFD tags to their unit-aware conversions; unlisted tags remain uninterpreted.
-    private static string? InterpretPhoto(ushort tag, ExifValue value) => tag switch
+    private static string? InterpretPhoto(ushort tag, ExifValue value, ExifInterpretationOptions? options) => tag switch
     {
         0x829A => ExposureTime(value),
         0x829D => FNumber(value),
@@ -368,7 +399,7 @@ public static partial class ExifTags
         0x9206 => SubjectDistance(value),
         0x9209 => Flash(value),
         0x920A => FocalLength(value),
-        0x9286 => UserComment(value),
+        0x9286 => UserComment(value, options?.UserCommentEncoding),
         0x9400 => Measured(value, "\u00B0C"),                            // Temperature
         0x9401 => Measured(value, "%"),                                  // Humidity
         0x9402 => Measured(value, "hPa"),                                // Pressure
@@ -628,7 +659,7 @@ public static partial class ExifTags
     /// code is decoded only when the bytes are valid UTF-8 text; JIS and anything unrecognised is left
     /// to the caller.
     /// </summary>
-    private static string? UserComment(ExifValue value)
+    private static string? UserComment(ExifValue value, Encoding? unicodeEncoding)
     {
         if (value.FieldType != TiffFieldType.Undefined || value.Count < 8)
             return null;
@@ -639,13 +670,21 @@ public static partial class ExifTags
         if (code.SequenceEqual("ASCII\0\0\0"u8))
             text = DecodeAscii(body);
         else if (code.SequenceEqual("UNICODE\0"u8))
-            text = DecodeUtf16(body, value.ByteOrder);
+            text = unicodeEncoding is null ? DecodeUtf16(body, value.ByteOrder) : DecodeWith(body, unicodeEncoding);
         else if (code.SequenceEqual("\0\0\0\0\0\0\0\0"u8))
             text = DecodeUtf8(body);
         else
             return null;
         // The standard pads the unused part of the comment area with spaces, and writers also use NUL.
-        return text?.TrimEnd(' ', '\0');
+        string? trimmed = text?.TrimEnd(' ', '\0');
+        if (string.IsNullOrEmpty(trimmed))
+            return trimmed;
+        // A body whose bytes hold no printable character is not text - cameras also store binary
+        // structures behind the character code - so it is left to the raw value.
+        foreach (char character in trimmed)
+            if (!char.IsControl(character))
+                return trimmed;
+        return null;
     }
 
     // Stop at the first NUL and reject non-ASCII bytes instead of replacing them during decoding.
@@ -676,6 +715,18 @@ public static partial class ExifTags
         {
             return null;
         }
+    }
+
+    // Apply an explicit Exiv2 -n equivalent without replacing bytes that do not decode in that charset.
+    private static string? DecodeWith(ReadOnlySpan<byte> bytes, Encoding encoding)
+    {
+        try
+        {
+            Encoding strict = Encoding.GetEncoding(encoding.CodePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+            return strict.GetString(bytes).TrimEnd(' ', '\0');
+        }
+        catch (DecoderFallbackException) { return null; }
+        catch (ArgumentException) { return null; }
     }
 
     // Honor an embedded byte-order mark, drop an incomplete trailing code unit, and reject invalid UTF-16.

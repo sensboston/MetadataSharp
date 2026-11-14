@@ -102,7 +102,30 @@ internal static class Program
             {
                 (bool passed, string gateText) = MakerNoteGate(report, options.RequiredGroups, options.RequireAllMakerNotes, options.Inventory);
                 Console.Write(gateText);
-                if (!passed) return 1;
+                if (!passed)
+                {
+                    // Keep a concise copy of the failing gate in GitHub's check annotations. This is
+                    // important when Actions log/artifact downloads are unavailable to CI consumers.
+                    int failAt = gateText.IndexOf("FAIL\n", StringComparison.Ordinal);
+                    string[] failureLines = failAt < 0 ? [] : gateText[(failAt + 5)..]
+                        .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(line => line.Trim())
+                        .Where(line => line.Contains(':'))
+                        .ToArray();
+                    string detail = string.Join("\n", failureLines
+                        .GroupBy(line => line[..line.IndexOf(':')], StringComparer.Ordinal)
+                        .Select(group => new { Group = group.Key, Count = group.Count(), Examples = group.Take(2).ToArray() })
+                        .OrderByDescending(group => group.Count)
+                        .ThenBy(group => group.Group, StringComparer.Ordinal)
+                        .Select(group => $"{group.Group}: {group.Count} failure(s); {string.Join("; ", group.Examples)}"));
+                    if (detail.Length == 0) detail = gateText;
+                    if (detail.Length > 3500) detail = detail[..3500] + "…";
+                    detail = detail.Replace("%", "%25", StringComparison.Ordinal)
+                        .Replace("\r", "%0D", StringComparison.Ordinal)
+                        .Replace("\n", "%0A", StringComparison.Ordinal);
+                    Console.Error.WriteLine($"::error title=MakerNote parity gate::{detail}");
+                    return 1;
+                }
             }
             return 0;
         }

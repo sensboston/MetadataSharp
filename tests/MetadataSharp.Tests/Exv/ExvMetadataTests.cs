@@ -42,7 +42,7 @@ public sealed class ExvMetadataTests
     }
 
     [Fact]
-    public void ExifWithAFieldOfUnknownTypeIsReadAsNotEditable()
+    public void ExifWithAFieldOfUnknownTypeIsReadOneBytePerElement()
     {
         // Orientation followed by an entry of field type 14, which TIFF 6.0 does not define.
         byte[] tiff = [0x49, 0x49, 42, 0, 8, 0, 0, 0, 2, 0, 0x12, 1, 3, 0, 1, 0, 0, 0, 6, 0, 0, 0,
@@ -50,7 +50,9 @@ public sealed class ExvMetadataTests
         ExvMetadata metadata = ExvMetadata.Read([.. Signature, .. Segment(0xE1, [.. "Exif\0\0"u8, .. tiff]), .. Eoi]);
         Assert.NotNull(metadata.Exif);
         Assert.False(metadata.Exif.IsEditable);
-        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), Assert.Single(metadata.Exif.Entries).Key);
+        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), metadata.Exif.Entries[0].Key);
+        Assert.Equal(TiffFieldType.Unknown, metadata.Exif.Entries[1].Value.FieldType);
+        Assert.Equal(14, metadata.Exif.Entries[1].Value.FieldTypeCode);
         Assert.True(ExvMetadata.Read([.. Signature, .. Exif(), .. Eoi]).Exif!.IsEditable);
     }
 

@@ -27,8 +27,14 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   EXIF values (Minolta 90, Sigma 23); the corpus has no Casio or Samsung file, so unit tests only.
 - Reading tolerates unaligned TIFF offsets. EXIF that the editable profile refuses for an unknown
   field type, strip/tile/SubIFD tags or values sharing bytes is read with
-  `ExifMetadata.IsEditable` false (the entry of unknown type is left out) and is still refused for
-  editing; malformed EXIF is still refused for reading too.
+  `ExifMetadata.IsEditable` false and is still refused for editing; a value of an unknown field type
+  is read one byte per element and keeps the type code the file states; malformed EXIF is still
+  refused for reading too.
+- Whole TIFF-based files list the image directories their primary directory names with tag 0x014A
+  (SubIFDs) as `Exif.SubImage1.*`, `Exif.SubImage2.*` in `ExifMetadata.SubImages`, apart from the
+  metadata; nothing inside them is followed and no edit reaches them, and a picture directory the
+  payload does not hold, or one the read already visited, is skipped rather than refused. A MakerNote
+  directory that states one tag ID twice lists both entries, as the reference prints them.
 - XMP: `XmpPacket.Entries` lists every property of any packet (structures, arrays of structures,
   qualifiers) as read-only path rows; editing stays on the bounded profile. NUL padding is ignored.
 - TIFF-based files: IPTC read (`TiffIptc.Read`, tag 0x83BB or the resource in 0x8649).
@@ -45,6 +51,12 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 - Parity harness: `tools/MetadataSharp.Dump` vs the pinned exiv2 0.28.9 corpus (CI job
   `differential-parity`). Run 42962213342, values agreeing of reference keys: EXIF 29,768 of
   34,821; XMP 1,895 of 2,641; IPTC 68 of 319 (no IPTC API for PNG or sidecars; typed values raw).
+- Tag print parity (PR #129): the pinned `-pt` gate compares 329 corpus files by the reference's print
+  columns (key 44, field type 9, count 3, then two spaces) and finds no differing row. The only row
+  rule left is the reference's XMP sidecar conversion, named by file and key in
+  `docs/usage/TAG_PRINT_REFUSAL_CATALOG.md`; code-to-name pairs where the vocabularies differ are
+  listed with their occurrence counts. A `UserComment` body without a printable character is no
+  longer interpreted.
 - Interpreted values: `ExifTags.Interpret` for standard EXIF tags (short labels for enumerated
   values, rationals with units, GPS, Flash, versions, UserComment, `(raw)` for an unreadable value),
   the dump's sixth column, measured apart from raw values. Run 42971951262: 10,975 of 11,382 EXIF

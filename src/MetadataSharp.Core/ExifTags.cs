@@ -659,10 +659,10 @@ public static partial class ExifTags
                 Id = 0xA460, Name = "CompositeImage", Types = [Short], Counts = [1U], Default = "0",
                 ValueMeanings =
                 [
-                    new(0, "unknown"),
-                    new(1, "non-composite image"),
-                    new(2, "General composite image"),
-                    new(3, "Composite image captured when shooting"),
+                    new(0, "Unknown"),
+                    new(1, "NonComposite"),
+                    new(2, "GeneralComposite"),
+                    new(3, "CompositeCapturedWhenShooting"),
                 ],
             },
             new() { Id = 0xA461, Name = "SourceImageNumberOfCompositeImage", Types = [Short], Counts = [2U] },

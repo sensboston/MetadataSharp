@@ -11,7 +11,10 @@ namespace MetadataSharp.Tests.Values;
 /// </summary>
 public sealed class ExifValueAccessorTests
 {
-    private static readonly TiffFieldType[] AllTypes = Enum.GetValues<TiffFieldType>();
+    // An entry of an unknown field type is read one byte per element; its elements are not numbers a
+    // typed accessor can read, so only the twelve TIFF types are exercised here.
+    private static readonly TiffFieldType[] AllTypes =
+        [.. Enum.GetValues<TiffFieldType>().Where(type => type != TiffFieldType.Unknown)];
 
     /// <summary>The elements written one after another in the given byte order.</summary>
     private static byte[] Pack(Endianness order, int width, params ulong[] elements)

@@ -390,7 +390,6 @@ internal static class MakerNoteReader
         if (count == 0 || count > limits.MaxEntriesPerDirectory || 2L + count * 12L > highest - ifd)
             return null;
         var entries = new List<MakerNoteEntry>(count);
-        var seen = new HashSet<ushort>();
         long decoded = 0;
         for (int i = 0; i < count; i++)
         {
@@ -415,8 +414,6 @@ internal static class MakerNoteReader
             decoded += 2L * byteLength; // The value and, at most, its split fields.
             if (decoded > retainedBudget)
                 return null;
-            if (!seen.Add(tag))
-                continue;
             ExifValue value = ExifValue.FromRaw(type, valueCount, order, tiff.Slice((int)valueStart, byteLength));
             entries.Add(new MakerNoteEntry(tag, name(tag), value, split?.Invoke(tag, value) ?? [])
             {

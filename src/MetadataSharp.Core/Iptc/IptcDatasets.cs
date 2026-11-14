@@ -9,15 +9,32 @@ namespace MetadataSharp.Core.Iptc;
 /// </summary>
 public sealed class IptcDatasetDefinition
 {
+    /// <summary>Builds one immutable IPTC dataset schema row from the verified local definition table.</summary>
+    /// <param name="key">The record and dataset number.</param>
+    /// <param name="name">The local name for the dataset.</param>
+    /// <param name="rule">The validation rule associated with the dataset.</param>
+    /// <param name="minBytes">The minimum encoded length.</param>
+    /// <param name="maxBytes">The maximum encoded length.</param>
+    /// <param name="repeatable">Whether multiple occurrences are permitted.</param>
+    /// <param name="allowed">The set of restricted values, or an empty array.</param>
     internal IptcDatasetDefinition(IptcDatasetKey key, string name, IptcRule rule, int minBytes, int maxBytes, bool repeatable, string[] allowed)
     {
         Key = key; Name = name; Rule = rule; MinBytes = minBytes; MaxBytes = maxBytes; IsRepeatable = repeatable;
         AllowedValues = Array.AsReadOnly(allowed); Format = IptcDatasetNames.FormatOf(key);
+        Label = IptcDatasetNames.LabelOf(name); Description = IptcDatasetNames.DescriptionOf(key, name);
+        Aliases = Array.AsReadOnly(IptcDatasetNames.AliasesOf(key));
+        ValueMeanings = Array.AsReadOnly(IptcDatasetNames.ValueMeaningsOf(key));
     }
     /// <summary>The record and dataset number.</summary>
     public IptcDatasetKey Key { get; }
     /// <summary>The name <see cref="IptcDatasetNames"/> gives the dataset.</summary>
     public string Name { get; }
+    /// <summary>A short display label written in this library's own wording.</summary>
+    public string Label { get; }
+    /// <summary>A concise description written for this library; it does not reproduce upstream prose.</summary>
+    public string Description { get; }
+    /// <summary>Other local names accepted for this record and dataset ID.</summary>
+    public IReadOnlyList<string> Aliases { get; }
     /// <summary>The form of the value.</summary>
     public IptcValueFormat Format { get; }
     /// <summary>The shortest value, in octets.</summary>
@@ -28,6 +45,8 @@ public sealed class IptcDatasetDefinition
     public bool IsRepeatable { get; }
     /// <summary>The values an enumerated dataset is limited to; empty for every other dataset.</summary>
     public IReadOnlyList<string> AllowedValues { get; }
+    /// <summary>The locally authored display meaning for enumerated values; empty for non-enumerated datasets.</summary>
+    public IReadOnlyList<IptcDatasetValueMeaning> ValueMeanings { get; }
     /// <summary>
     /// True for the two datasets the writer owns and an edit cannot address: CodedCharacterSet (1:90)
     /// and RecordVersion (2:0).

@@ -292,7 +292,7 @@ public sealed class ExifTiffReaderTests
     // The read-only rules accept three structures the specifications allow and the editable profile
     // cannot write back. The strict read keeps refusing each of them.
     [Fact]
-    public void TheReadOnlyRulesLeaveOutAnEntryOfUnknownTypeAndKeepTheRest()
+    public void TheReadOnlyRulesReadAnEntryOfUnknownTypeOneBytePerElement()
     {
         byte[] data = Graph();
         Put16(data, 84, 14); // the interoperability entry now has a field type TIFF 6.0 does not define
@@ -300,10 +300,17 @@ public sealed class ExifTiffReaderTests
 
         ExifMetadata metadata = ExifTiffReader.ReadRelaxed(data);
         Assert.False(metadata.IsEditable);
-        Assert.Equal(7, metadata.Entries.Count);
-        Assert.False(metadata.TryGetEntry(new(ExifDirectoryKind.Interop, 0xFFFF), out _));
+        Assert.Equal(8, metadata.Entries.Count);
+        Assert.True(metadata.TryGetEntry(new(ExifDirectoryKind.Interop, 0xFFFF), out ExifEntry? unknown));
+        Assert.Equal(TiffFieldType.Unknown, unknown.Value.FieldType);
+        Assert.Equal((ushort)14, unknown.Value.FieldTypeCode);
+        Assert.Equal(1u, unknown.Value.Count);
         Assert.True(metadata.TryGetEntry(new(ExifDirectoryKind.Exif, 0xA005), out _));
         Assert.True(metadata.TryGetEntry(new(ExifDirectoryKind.Thumbnail, 0x0202), out _));
+        // Reading it as one byte per element is what the reference prints; changing it is refused.
+        Assert.Throws<ArgumentOutOfRangeException>(() => ExifValue.FromRaw(TiffFieldType.Unknown, 1,
+            Endianness.LittleEndian, [0]));
+        Assert.Throws<ArgumentOutOfRangeException>(() => ExifValue.FromRawUnknown(4, 1, Endianness.LittleEndian, [0]));
     }
 
     [Fact]
@@ -352,7 +359,10 @@ public sealed class ExifTiffReaderTests
         Put16(data, 84, 14);
         ExifMetadata relaxed = ExifTiffReader.Inspect(data);
         Assert.False(relaxed.IsEditable);
-        Assert.Equal(7, relaxed.Entries.Count);
+        // The entry of the type the file states outside the twelve is read one byte per element.
+        Assert.Equal(8, relaxed.Entries.Count);
+        Assert.Equal(TiffFieldType.Unknown, relaxed.Entries[7].Value.FieldType);
+        Assert.Equal(14, relaxed.Entries[7].Value.FieldTypeCode);
     }
 
     // Malformed input is refused by the read-only rules exactly as by the strict ones.

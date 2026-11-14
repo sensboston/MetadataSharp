@@ -19,6 +19,11 @@ public enum IptcValueFormat
     Binary,
 }
 
+/// <summary>One locally authored display meaning for a coded IPTC IIM value.</summary>
+/// <param name="Code">The stored code.</param>
+/// <param name="Meaning">The short display meaning.</param>
+public readonly record struct IptcDatasetValueMeaning(string Code, string Meaning);
+
 /// <summary>
 /// The names of the datasets that IPTC IIM 4.2 defines in record 1 (Envelope) and record 2
 /// (Application), each written as a single PascalCase word. A name is a label for display: it says
@@ -52,6 +57,41 @@ public static class IptcDatasetNames
         (2, 152, "AudioResolution"), (2, 153, "AudioDuration"), (2, 154, "AudioOutcue"),
         (2, 200, "PreviewFormat"), (2, 201, "PreviewVersion"), (2, 202, "Preview"),
     ];
+
+    /// <summary>A short display label derived from the locally maintained dataset name.</summary>
+    internal static string LabelOf(string name) => name;
+
+    /// <summary>A concise description in this project's wording, keyed by the dataset's own identifier.</summary>
+    internal static string DescriptionOf(IptcDatasetKey key, string name) => key switch
+    {
+        (2, 10) => "Editorial urgency, from the highest priority to a user-defined value.",
+        (2, 42) => "The action to take when this record is handled.",
+        (2, 75) => "The portion of the day associated with the object's creation.",
+        (2, 120) => "A written caption or abstract describing the image content.",
+        (1, 90) => "The character-set designation carried by the IIM envelope.",
+        _ => "The " + name + " dataset in IPTC IIM record " + key.Record.ToString(CultureInfo.InvariantCulture) + ".",
+    };
+
+    /// <summary>Alternative names used for a dataset ID; aliases never change its stored number.</summary>
+    internal static string[] AliasesOf(IptcDatasetKey key) => key switch
+    {
+        (2, 92) => ["Sublocation"],
+        (2, 95) => ["State"],
+        (2, 100) => ["CountryPrimaryLocationCode"],
+        (2, 120) => ["CaptionAbstract"],
+        _ => [],
+    };
+
+    /// <summary>Local display text for standard-coded values; the original code is always retained.</summary>
+    internal static IptcDatasetValueMeaning[] ValueMeaningsOf(IptcDatasetKey key) => key switch
+    {
+        (1, 60) => [new("1", "Highest priority"), new("5", "Normal priority"), new("8", "Lowest priority"), new("9", "User-defined priority")],
+        (2, 10) => [new("1", "Highest urgency"), new("5", "Normal urgency"), new("8", "Lowest urgency")],
+        (2, 42) => [new("01", "Object kill"), new("02", "Object replace"), new("03", "Object append"), new("04", "Object reference")],
+        (2, 75) => [new("a", "Morning"), new("p", "Evening"), new("b", "Both")],
+        (2, 131) => [new("P", "Portrait"), new("L", "Landscape"), new("S", "Square")],
+        _ => [],
+    };
 
     /// <summary>
     /// The form the specification gives the value of a record 1 or record 2 dataset. It describes the

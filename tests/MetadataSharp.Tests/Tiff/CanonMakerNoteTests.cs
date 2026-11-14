@@ -273,11 +273,32 @@ public sealed class CanonMakerNoteArrayTests
     {
         var values = new ushort[62];
         values[61] = 274;
+        // The FileInfo layout reads its elements as signed shorts, which is the type the reference prints
+        // for the split values of this array; the two-byte word is unchanged either way.
         MakerNoteField lens = Split(0x0093, Shorts(false, values)).Single(field => field.Name == "RFLensType");
-        Assert.Equal(TiffFieldType.Short, lens.Value.FieldType);
+        Assert.Equal(TiffFieldType.SShort, lens.Value.FieldType);
         byte[] raw = new byte[2];
         lens.Value.CopyRawTo(raw);
         Assert.Equal((ushort)274, BinaryPrimitives.ReadUInt16LittleEndian(raw));
+    }
+
+    [Fact]
+    public void ARepeatedMakerNoteTagIsListedTwiceAndAddressedByItsFirstEntry()
+    {
+        // A directory may state one tag ID twice; the reference prints both entries, and a key edit
+        // reaches the first, so both are kept and the lookup is unambiguous.
+        ExifValue first = Shorts(false, 1), second = Shorts(false, 2);
+        var note = new MakerNote(MakerNoteFormat.Canon, Endianness.LittleEndian,
+        [
+            new MakerNoteEntry(0x0001, "Settings", first, []),
+            new MakerNoteEntry(0x0001, "Settings", second, []),
+        ]);
+
+        Assert.Equal(2, note.Entries.Count);
+        Assert.Same(first, note.Entries[0].Value);
+        Assert.Same(second, note.Entries[1].Value);
+        Assert.True(note.TryGetEntry(0x0001, out MakerNoteEntry? entry));
+        Assert.Same(note.Entries[0], entry);
     }
 
     [Fact]

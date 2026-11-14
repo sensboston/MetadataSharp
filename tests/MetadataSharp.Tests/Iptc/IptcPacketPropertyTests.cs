@@ -75,34 +75,34 @@ public sealed class IptcPacketPropertyTests
     }
 
     [Fact]
-    public void WithoutADeclarationOnlyAsciiIsRead()
+    public void WithoutADeclarationUsesOnePacketWideFallbackEncoding()
     {
-        // No 1:90: bytes above 0x7F could be any code page, and none is guessed.
+        // One invalid UTF-8 text occurrence selects ISO-8859-1 for every IPTC text occurrence.
         IptcPacket packet = Packet(Version,
             Text(25, "plain"), IptcCodecTests.Dataset(2, 25, 0x5A, 0xFC, 0x72, 0x69, 0x63, 0x68), Text(25, "Z\u00FCrich"), Text(25, "also plain"),
             Text(80, "B. Ortega"),
             IptcCodecTests.Dataset(2, 120, 0x63, 0x61, 0x66, 0xE9), Text(120, "second caption"),
             Text(116, "(c) 2024"));
         Assert.Equal(IptcCharacterSet.Unspecified, packet.CharacterSet);
-        Assert.Equal(new[] { "plain", "also plain" }, packet.Keywords);
+        Assert.Equal(new[] { "plain", "Z\u00FCrich", "Z\u00C3\u00BCrich", "also plain" }, packet.Keywords);
         Assert.Equal(new[] { "B. Ortega" }, packet.Bylines);
         Assert.Equal("(c) 2024", packet.Copyright);
-        // The first occurrence is the caption; it is not replaced by a later one that happens to be readable.
-        Assert.Null(packet.Caption);
+        Assert.Equal("caf\u00E9", packet.Caption);
     }
 
     [Fact]
-    public void AnotherDeclaredCharacterSetIsNotDecodedAtAll()
+    public void AnotherDeclaredCharacterSetDoesNotOverrideContentDetection()
     {
         IptcPacket packet = Packet(DeclaresLatin1, Version, Text(5, "title"), Text(25, "plain"), Text(80, "name"),
             Text(105, "headline"), Text(116, "notice"), Text(120, "caption"));
         Assert.Equal(IptcCharacterSet.Unsupported, packet.CharacterSet);
-        Assert.Null(packet.ObjectName);
-        Assert.Empty(packet.Keywords);
-        Assert.Empty(packet.Bylines);
-        Assert.Null(packet.Headline);
-        Assert.Null(packet.Copyright);
-        Assert.Null(packet.Caption);
+        Assert.Equal(IptcTextEncoding.Ascii, packet.DetectedTextEncoding);
+        Assert.Equal("title", packet.ObjectName);
+        Assert.Equal(new[] { "plain" }, packet.Keywords);
+        Assert.Equal(new[] { "name" }, packet.Bylines);
+        Assert.Equal("headline", packet.Headline);
+        Assert.Equal("notice", packet.Copyright);
+        Assert.Equal("caption", packet.Caption);
     }
 
     [Fact]
