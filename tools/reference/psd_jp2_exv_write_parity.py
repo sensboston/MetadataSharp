@@ -3,9 +3,10 @@
 
 PSD's documented Exiv2 capability deliberately excludes ICC; the shared PSD gate therefore
 compares EXIF/IPTC/XMP only. JP2 additionally compares exact ICC bytes in both write directions.
-EXV ICC creation/read-back remains covered by MetadataSharp's format tests; Exiv2's binary ICC
-print path does not recognize ICC in the authored EXV container. This is a narrow interoperability
-gate, not whole-format equivalence.
+The reverse EXV ICC insertion is checked by reading its exact bytes back through MetadataSharp;
+Exiv2's binary ICC print path does not expose an ICC from the authored EXV representation. PSD ICC
+is outside the pinned Exiv2 format support. This is a narrow interoperability gate, not whole-format
+equivalence.
 """
 from __future__ import annotations
 
@@ -30,9 +31,9 @@ EXIV2_EXPECTED = {
     "Xmp.xmp.CreatorTool": "Exiv2Creator",
 }
 FORMATS = (
-    ("psd", ".psd", False),
-    ("jp2", ".jp2", True),
-    ("exv", ".exv", False),
+    ("psd", ".psd", False, False),  # The pinned Exiv2 matrix excludes PSD ICC.
+    ("jp2", ".jp2", True, True),
+    ("exv", ".exv", False, True),  # Exiv2 writes ICC, but its -pC path does not expose authored EXV ICC.
 )
 
 
@@ -92,9 +93,9 @@ def main() -> int:
 
     # MetadataSharp-authored outputs must be consumable by Exiv2. The binary ICC assertion is kept
     # to JP2; PSD and EXV ICC are independently pinned by MetadataSharp's format-specific tests.
-    for name, extension, supports_icc in FORMATS:
+    for name, extension, reads_icc, _writes_icc in FORMATS:
         image = root / f"ours-{name}{extension}"
-        check_exiv2_read(exiv2, image, icc=supports_icc, profile=profile if supports_icc else None)
+        check_exiv2_read(exiv2, image, icc=reads_icc, profile=profile if reads_icc else None)
         passed += 1
 
     # Exiv2-authored outputs must be consumable by MetadataSharp. Keep metadata edits and the ICC
@@ -103,13 +104,13 @@ def main() -> int:
     # the pinned format matrix.
     with tempfile.TemporaryDirectory(prefix="metadatasharp-exiv2-write-") as temporary:
         work = Path(temporary)
-        for name, extension, supports_icc in FORMATS:
+        for name, extension, _reads_icc, writes_icc in FORMATS:
             target = work / f"theirs-{name}{extension}"
             shutil.copyfile(root / f"base-{name}{extension}", target)
             run(exiv2 + ["-m", str(root / "modify.txt"), "mo", str(target)])
             check_dump(dump, target)
             passed += 1
-            if supports_icc:
+            if writes_icc:
                 icc_target = work / f"theirs-{name}-icc{extension}"
                 shutil.copyfile(root / f"base-{name}{extension}", icc_target)
                 (work / f"{icc_target.stem}.icc").write_bytes(profile)
@@ -117,7 +118,7 @@ def main() -> int:
                 check_dump_icc(dump, icc_target, profile)
                 passed += 1
     print(f"PSD/JP2/EXV bidirectional write parity: {passed} checks passed; "
-          "EXIF/IPTC/XMP all formats, exact ICC JP2; PSD/EXV ICC stays on MetadataSharp format tests.")
+          "EXIF/IPTC/XMP all formats, exact ICC both ways JP2 and Exiv2-to-MetadataSharp for EXV.")
     return 0
 
 

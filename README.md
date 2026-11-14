@@ -32,9 +32,9 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
   MakerNote bytes fixed. DNG and camera RAW support here is this narrow ICC case, not general DNG
   write support.
 - `PSD/JP2/EXV` common-metadata writer parity is gated both ways against pinned Exiv2 0.28.9:
-  EXIF/IPTC/XMP for all three, and exact ICC bytes for JP2. Exiv2 0.28.9 documents no PSD ICC
-  support and its ICC print path does not expose the authored EXV ICC representation, so PSD/EXV
-  ICC are pinned by MetadataSharp's own format-specific tests.
+  EXIF/IPTC/XMP for all three, exact ICC bytes both ways for JP2, and Exiv2 ICC insertion/read-back
+  for EXV. Exiv2 0.28.9 documents no PSD ICC support and its ICC print path does not expose the
+  authored EXV ICC representation; PSD ICC remains on MetadataSharp's format-specific tests.
 
 ## Quick start
 
