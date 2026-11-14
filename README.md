@@ -267,7 +267,9 @@ into edits for `SaveAll`.
 Also: shifting timestamps (`MetadataTimestamps.Adjust`), file names from the date taken
 (`MetadataFileNames.Format`), thumbnails (`ExifEdit.SetThumbnail`), XMP sidecars, `FixIso`,
 `FixUserComment`. The table of operations, the differences from exiv2 and the measured parity:
-`docs/usage/OPERATIONS_USAGE_AND_LIMITS.md`.
+`docs/usage/OPERATIONS_USAGE_AND_LIMITS.md`. The `exiv2` command line itself — actions, `-p`/`-P`
+modes, targets and options — is not reproduced by the library or the sample tool; that work is
+`docs/usage/METATOOL_CLI_PARITY.md`.
 
 ### Edit a TIFF, a DNG or a raw file
 

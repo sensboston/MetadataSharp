@@ -5,7 +5,8 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 ## Done (read side unless noted)
 
 - Format coverage and per-family read/write limits change as source-backed capability rows are
-  added. The maintained matrix is the [release-readiness audit](RELEASE_READINESS_AUDIT.md); the
+  added. The maintained matrix is the [release-readiness audit](RELEASE_READINESS_AUDIT.md) (library
+  capabilities; the command line is the [MetaTool task](usage/METATOOL_CLI_PARITY.md)); the
   executable operation contract is `MetadataCapabilities` and the format readers/writers.
 - JPEG, PNG, WebP, TIFF-based files (including DNG and supported camera raw structures), CRW, MRW,
   RAF, CR3, BMFF still images, PSD, JP2, JXL, EXV, EPS, PGF, XMP sidecars and selected video

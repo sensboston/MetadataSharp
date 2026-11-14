@@ -1,10 +1,10 @@
 # Operations of the exiv2 command line: usage and limits
 
 This document maps selected Exiv2 0.28.9 operations to MetadataSharp APIs; it is not a claim of
-command-line compatibility. The complete pinned-source inventory—including unimplemented flags,
-print modes and targets, plus estimates for remaining gaps—is in the
-[release-readiness audit](../RELEASE_READINESS_AUDIT.md). MetadataSharp's `MetaTool` is a small
-sample, not a drop-in `exiv2` executable.
+command-line compatibility. What the library itself reads and writes is the
+[release-readiness audit](../RELEASE_READINESS_AUDIT.md); the blocked flags, print modes and targets
+are the [MetaTool CLI compatibility task](METATOOL_CLI_PARITY.md). MetadataSharp's `MetaTool` is a
+small sample, not a drop-in `exiv2` executable.
 
 | exiv2 | Here |
 | --- | --- |
