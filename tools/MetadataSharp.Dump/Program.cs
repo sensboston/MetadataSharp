@@ -238,8 +238,10 @@ internal static class Program
                 entry.Value.CopyRawTo(bytes);
                 make = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
             }
+        // A file that names no maker gives the reference nothing to look up and this reader a note it
+        // reached some other way, as a CRW's note comes with the CIFF rather than the EXIF directory.
         if (string.IsNullOrEmpty(make))
-            return false;
+            return true;
         foreach (string maker in ReferenceMakers)
             if (make.StartsWith(maker, StringComparison.Ordinal))
                 return true;

@@ -166,7 +166,9 @@ public sealed class ExifTiffReaderTests
         byte[] data = Graph();
         Put16(data, 22, 0x0100);
         Assert.Equal(new[] { (ushort)0x8769, (ushort)0x0100 },
-            ExifTiffReader.Read(data).Metadata.Entries.Select(entry => entry.Key.TagId));
+            ExifTiffReader.Read(data).Metadata.Entries
+                .Where(entry => entry.Key.Directory == ExifDirectoryKind.Ifd0)
+                .Select(entry => entry.Key.TagId));
 
         Put16(data, 22, 0x8769);
         Assert.Equal(MetadataErrorCode.AmbiguousMetadata,

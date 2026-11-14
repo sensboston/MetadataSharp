@@ -297,6 +297,9 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
         for item in report["value_diff_by_key"][:12]:
             lines.append(f"value {item['key']}: reference={item['exiv2'][:60]!r} "
                          f"local={item['metadatasharp'][:60]!r}")
+        detail = dumped.get(str(path), {}).get("detail", "")
+        if detail and not report["refusals"]:
+            lines.append(f"detail {detail}")
         for refusal in report["refusals"][:4]:
             reason = dumped.get(str(path), {}).get("detail", "") if str(path) == str(candidate.path) else ""
             lines.append(f"refused {refusal.get('file')}: {refusal.get('kind')} {refusal.get('detail')} "
