@@ -22,6 +22,14 @@ PINNED_EXIV2_COMMIT = "b0859fc61fea5dedfc898aece6b15893ddf4314e"
 
 # Exception keys are upstream test/data basenames, never extensions or directories. Every retained
 # entry must describe why this precise fixture cannot serve as a -pt comparator.
+_TAG_PRINT_KEY_EXCEPTIONS: dict[str, str] = {
+    "Exif.GPSInfo.GPSAltitudeRef": (
+        "MetadataSharp follows the expanded Exif 3.0 ellipsoidal/sea-level definitions, while the pinned "
+        "Exiv2 0.28.9 print table exposes only its earlier above/below sea-level labels. The raw field and "
+        "numeric code remain covered by the other tag/value gates; this exact key's translated wording differs by revision."
+    ),
+}
+
 _TAG_PRINT_EXCEPTIONS: dict[str, str] = {
     # These are upstream expectation basenames for command-line/unit tests, not metadata files.
     # corpus.discover_exiv2 deliberately does not guess an image for a *_test input.
@@ -129,34 +137,54 @@ def parse_dump(text: str) -> dict[str, dict[str, Any]]:
 
 
 def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Compare tag records as a multiset; iterator order is not a tag-table fact."""
-    def signature(row: dict[str, Any]) -> tuple[Any, ...]:
-        return tuple(row.get(field) for field in ("key", "type", "count", "value"))
+    """Compare rows as a multiset; iterator order is not a tag-table fact."""
+    def identity(row: dict[str, Any]) -> tuple[Any, ...]:
+        return row.get("key"), row.get("type"), row.get("count")
 
-    expected_counts = Counter(signature(row) for row in reference)
-    actual_counts = Counter(signature(row) for row in actual)
-    expected_rows = {signature(row): row for row in reference}
-    actual_rows = {signature(row): row for row in actual}
+    expected_by_key: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
+    actual_by_key: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
+    for row in reference: expected_by_key[identity(row)].append(row)
+    for row in actual: actual_by_key[identity(row)].append(row)
     differences: list[dict[str, Any]] = []
-    for item in sorted(expected_counts.keys() | actual_counts.keys(), key=repr):
-        missing = expected_counts[item] - actual_counts[item]
-        extra = actual_counts[item] - expected_counts[item]
-        for _ in range(missing):
-            differences.append({"kind": "missing", "exiv2": expected_rows[item], "metadatasharp": None})
-        for _ in range(extra):
-            differences.append({"kind": "extra", "exiv2": None, "metadatasharp": actual_rows[item]})
+    for key in sorted(expected_by_key.keys() | actual_by_key.keys(), key=repr):
+        expected = expected_by_key[key].copy()
+        observed = actual_by_key[key].copy()
+        for row in expected.copy():
+            if row in observed:
+                expected.remove(row); observed.remove(row)
+        while expected and observed:
+            differences.append({"kind": "value-diff", "exiv2": expected.pop(), "metadatasharp": observed.pop()})
+        differences.extend({"kind": "missing", "exiv2": row, "metadatasharp": None} for row in expected)
+        differences.extend({"kind": "extra", "exiv2": None, "metadatasharp": row} for row in observed)
     return differences
 
 
 def _summary(report: dict[str, Any]) -> dict[str, Any]:
     # Keep the one-line workflow annotation below GitHub's annotation payload limit while making
     # the first discrepancies actionable; the full report is written to the JSON artifact.
+    selected: list[dict[str, Any]] = []
+    refusal_counts: Counter[str] = Counter()
+    sampled_extensions: set[str] = set()
+    for item in report["differing"]:
+        kind = item["kind"]
+        extension = Path(item["file"]).suffix.lower()
+        if kind in ("metadatasharp-refused", "exiv2-refused"):
+            if refusal_counts[kind] >= 2: continue
+            refusal_counts[kind] += 1
+        elif kind == "rows-differ":
+            if extension in sampled_extensions: continue
+            sampled_extensions.add(extension)
+        if len(selected) >= 8: break
+        selected.append(item)
     samples = []
-    for item in report["differing"][:4]:
+    difference_types: Counter[str] = Counter()
+    for item in report["differing"]:
+        for row in item.get("rows", []): difference_types[row["kind"]] += 1
+    for item in selected:
         sample = {key: value for key, value in item.items() if key != "rows"}
         if "rows" in item:
             sample["rows"] = []
-            for row in item["rows"][:3]:
+            for row in item["rows"][:5]:
                 compact = dict(row)
                 for side in ("exiv2", "metadatasharp"):
                     record = compact.get(side)
@@ -165,8 +193,10 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
                                          for key, value in record.items()}
                 sample["rows"].append(compact)
         samples.append(sample)
-    return {"totals": report["totals"], "failure_kinds": report["failure_kinds"], "formats": report["formats"],
-            "exceptions": report["exceptions"], "differing_total": len(report["differing"]),
+    return {"totals": report["totals"], "failure_kinds": report["failure_kinds"],
+            "difference_types": dict(sorted(difference_types.items())), "formats": report["formats"],
+            "exceptions": report["exceptions"], "tag_exceptions": report["tag_exceptions"],
+            "differing_total": len(report["differing"]),
             "differing_sample": samples}
 
 
@@ -208,6 +238,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
         {"file": name, "reason": _TAG_PRINT_EXCEPTIONS[name]}
         for name in sorted(unmatched_names)
     ]
+    tag_exceptions = [{"key": key, "reason": reason} for key, reason in sorted(_TAG_PRINT_KEY_EXCEPTIONS.items())]
     differing: list[dict[str, Any]] = []
     totals: Counter[str] = Counter()
     failure_kinds: Counter[str] = Counter()
@@ -231,8 +262,8 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
         elif ours["status"] != "ok":
             problem = {"file": name, "kind": "metadatasharp-refused", "status": ours["status"], "detail": ours["detail"]}
         else:
-            expected = parse_exiv2(output)
-            observed = project_dump(ours["rows"])
+            expected = [row for row in parse_exiv2(output) if row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
+            observed = [row for row in project_dump(ours["rows"]) if row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
             rows = compare_rows(expected, observed)
             if rows:
                 problem = {"file": name, "kind": "rows-differ", "exiv2_rows": len(expected),
@@ -247,7 +278,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             differing.append(problem)
     return {"kind": "TagPrint", "totals": dict(totals), "failure_kinds": dict(sorted(failure_kinds.items())),
             "formats": {key: dict(value) for key, value in sorted(formats.items())},
-            "exceptions": exceptions, "differing": differing}
+            "exceptions": exceptions, "tag_exceptions": tag_exceptions, "differing": differing}
 
 
 def text_report(report: dict[str, Any]) -> str:
@@ -259,7 +290,9 @@ def text_report(report: dict[str, Any]) -> str:
         lines.append(f"  {format_name}: {counts.get('matched_rows', 0)} rows matched / "
                      f"{counts['files']} files ({counts.get('failed_files', 0)} failed)")
     for entry in report["exceptions"]:
-        lines.append(f"  named exception: {entry['file']}: {entry['reason']}")
+        lines.append(f"  named missing-input exception: {entry['file']}: {entry['reason']}")
+    for entry in report["tag_exceptions"]:
+        lines.append(f"  named tag exception: {entry['key']}: {entry['reason']}")
     for entry in report["differing"]:
         lines.append(f"  {entry['file']}: {entry['kind']} {json.dumps(entry, ensure_ascii=False)[:900]}")
     return "\n".join(lines) + "\n"

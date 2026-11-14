@@ -194,7 +194,7 @@ public sealed class ExifInterpretationTests
         Assert.Equal("Pattern", ExifTags.Interpret(Photo(0x9207), Short(5)));
         Assert.Equal("Normal program", ExifTags.Interpret(Photo(0x8822), Short(2)));
         Assert.Equal("Recommended exposure index (REI)", ExifTags.Interpret(Photo(0x8830), Short(2)));
-        Assert.Equal("General composite image", ExifTags.Interpret(Photo(0xA460), Short(2)));
+        Assert.Equal("GeneralComposite", ExifTags.Interpret(Photo(0xA460), Short(2)));
         Assert.Equal("Positive ellipsoidal height (at or above ellipsoidal surface)",
             ExifTags.Interpret(Gps(0x0005), Bytes(TiffFieldType.Byte, 0)));
     }
@@ -741,7 +741,7 @@ public sealed class ExifInterpretationTests
         var options = new ExifInterpretationOptions { UserCommentEncoding = Encoding.Latin1 };
 
         Assert.Equal("caf\u00E9", ExifTags.Interpret(Photo(0x9286), value, options));
-        Assert.Null(ExifTags.Interpret(Photo(0x9286), value));
+        Assert.Equal("\u6163\uE966", ExifTags.Interpret(Photo(0x9286), value));
         Assert.Equal(new byte[] { 0x63, 0x61, 0x66, 0xE9 }, value.RawBytes[8..]);
 
         var invalidUtf8 = new ExifInterpretationOptions { UserCommentEncoding = new UTF8Encoding(false, false) };

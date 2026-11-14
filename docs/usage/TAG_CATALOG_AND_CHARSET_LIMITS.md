@@ -60,7 +60,9 @@ IPTC or XMP, and it does not change the encoding used by metadata writers.
 
 `tools/parity/run_tag_print.py` compares the ordered `MetadataSharp.Dump` tag records with the pinned
 Exiv2 0.28.9 `-pt` output for each available upstream corpus file. Synthetic upstream reference names
-without source media are individually listed with reasons. The gate is fail-closed for unlisted missing
-inputs and output mismatches. It is not a claim that this table or the library currently achieves full
+without source media are individually listed with reasons. The exact `Exif.GPSInfo.GPSAltitudeRef`
+translation is also listed as a tag-level exception because the local table follows the expanded Exif
+3.0 wording while the pinned Exiv2 release predates that wording. The gate is fail-closed for unlisted
+missing inputs and other output mismatches. It is not a claim that this table or the library currently achieves full
 parity; the report is the measure of remaining work. The tool also checks that both the source checkout
 and binary identify as the pin before comparing output.

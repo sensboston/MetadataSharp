@@ -41,8 +41,8 @@ class TagPrintProtocolTests(unittest.TestCase):
         self.assertEqual([], gate.compare_rows(expected, list(reversed(expected))))
         changed = [expected[0], {**expected[1], "value": "Other body"}]
         differences = gate.compare_rows(expected, changed)
-        self.assertEqual(2, len(differences))
-        self.assertEqual({"missing", "extra"}, {row["kind"] for row in differences})
+        self.assertEqual(1, len(differences))
+        self.assertEqual(["value-diff"], [row["kind"] for row in differences])
 
     def test_dump_protocol_unescapes_records_and_rejects_open_or_malformed_blocks(self) -> None:
         parsed = gate.parse_dump("FILE\t/tmp/a\\tb.jpg\nTAG\tExif.Image.Make\tAscii\t2\tA\\\\B\t\nSTATUS\tok\n")
@@ -61,6 +61,8 @@ class TagPrintProtocolTests(unittest.TestCase):
             "write2-test", "xmpparser-test",
         })
         self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_EXCEPTIONS.values()))
+        self.assertEqual({"Exif.GPSInfo.GPSAltitudeRef"}, set(gate._TAG_PRINT_KEY_EXCEPTIONS))
+        self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_KEY_EXCEPTIONS.values()))
 
 
 if __name__ == "__main__":
