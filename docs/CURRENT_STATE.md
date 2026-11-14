@@ -42,7 +42,9 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   name does here. `MetadataTextTests` (30 tests) covers the matrix, its refusals and both writers;
   `tools/reference/run_charset.py` writes one fixture per charset, has the pinned binary convert it
   with `-v -n <name> fc`, and compares the text the tool reports converting with what this library
-  reads.
+  reads. One rule is the reference's own: for `windows-1258` its text is ours without the final
+  character, because glibc's converter for that code page holds the last character until a flush
+  that `convertStringCharsetIconv` never performs.
 - Tag keys (PR "keys"): `tools/parity/run_key_catalog.py` reads every tag table of the pinned
   checkout (6 537 keys in 124 groups) and finds none missing from `tag-catalog-data.json`, one
   local-only key (`Exif.Fujifilm.Sharpness`) and no differing numbers; `tests/parity/test_key_catalog.py`

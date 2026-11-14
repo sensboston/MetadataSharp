@@ -63,6 +63,22 @@ class CharsetParityTest(unittest.TestCase):
         self.assertIn(["exiv2", "-PEkt", "-K", "Exif.Image.XPTitle", str(self.work / "charset-00.jpg")], commands)
         self.assertFalse((self.work / "charset-00.jpg.fc.jpg").exists())
 
+    def test_the_one_code_page_the_tool_does_not_flush_is_compared_without_its_last_character(self):
+        # glibc's windows-1258 converter holds the final character until a flush the tool never does.
+        short = 'Setting Exif UNICODE user comment to "Grüße aus Köl"\n'
+        self.use_charset("windows-1258")
+        self.assertEqual(0, self.run_gate(converted_text=short)[0])
+        # The same text one character short in any other code page is still a difference.
+        self.use_charset("windows-1252")
+        self.assertEqual(1, self.run_gate(converted_text=short)[0])
+
+    def use_charset(self, name):
+        code_page = "1258" if name == "windows-1258" else "1252"
+        rows = [row.replace("windows-1252", name).replace("windows-1258", name)
+                   .replace("\t1252\t", "\t" + code_page + "\t").replace("\t1258\t", "\t" + code_page + "\t")
+                for row in self.rows]
+        (self.work / "ours.tsv").write_text("\n".join(rows) + "\n", encoding="utf-8")
+
     def test_a_comment_the_tool_reads_differently_fails(self):
         result, _ = self.run_gate(converted_text='Setting Exif UNICODE user comment to "Gruesse"\n')
         self.assertEqual(1, result)

@@ -44,6 +44,13 @@ COMMENT = "Exif.Photo.UserComment"
 TITLE = "Exif.Image.XPTitle"
 NO_ICONV = "Cannot convert text encoding"
 
+# glibc's converter for windows-1258 holds the last character of a text until the conversion is
+# flushed, and the reference never flushes - convertStringCharsetIconv (src/convert.cpp) stops as
+# soon as the input is consumed - so the tool's text is this library's without its final character.
+# Every other character set of the matrix hands over everything without a flush, which the run shows
+# by comparing all of them. The rule is by name and by exact shape: the rest must be equal.
+UNFLUSHED = {"windows-1258"}
+
 
 def printed(exiv2, path, flags="-PEkv", runner=run, key=None):
     """(key -> the value the tool prints, exit code, stderr) for one file, or for one tag of it."""
@@ -137,14 +144,16 @@ def compare(argv=None, runner=run) -> int:
             failures.append(f"{name} ({charset}): the tool converted no comment in that character set "
                             f"(exit {convert_code}): {((convert_errors or '') + ('' if convert_errors else '')).strip()[:300]}")
             continue
-        if tool_text != values.get(COMMENT, ""):
-            ours = values.get(COMMENT, "")
+        ours = values.get(COMMENT, "")
+        if tool_text == ours:
+            counts["comment matched"] += 1
+        elif charset in UNFLUSHED and ours and tool_text == ours[:-1]:
+            counts["comment matched but for the last character"] += 1
+        else:
             failures.append(f"{name} ({charset}): the tool reads {tool_text!r} ({len(tool_text)} characters, "
                             f"{tool_text.encode('utf-8').hex()}), this library {ours!r} ({len(ours)}, "
                             f"{ours.encode('utf-8').hex()})")
             counts["comment differs"] += 1
-        else:
-            counts["comment matched"] += 1
         # Only the title: the translated print of the file would also render the comment, whose
         # bytes are deliberately a code page rather than the UCS-2 its marker promises.
         title, title_code, title_errors = printed(args.exiv2, path, "-PEkt", runner, key=TITLE)
@@ -174,7 +183,9 @@ def compare(argv=None, runner=run) -> int:
     annotate("error", "PARITY charset - texts the tool and this library read differently", failures)
     annotate("notice", f"PARITY charset - {len(by_file)} character sets; "
                        f"comments matched {counts['comment matched']}, titles matched {counts['title matched']}",
-             [f"{key}: {count}" for key, count in sorted(counts.items())])
+             [f"{key}: {count}" for key, count in sorted(counts.items())] +
+             [f"rule: a {name} text is the tool's without its last character - glibc's converter for that "
+              f"code page holds it until a flush the reference never does" for name in sorted(UNFLUSHED)])
     return 1 if failures else 0
 
 

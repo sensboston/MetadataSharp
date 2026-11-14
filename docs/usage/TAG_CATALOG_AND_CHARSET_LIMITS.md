@@ -150,7 +150,12 @@ copy converts the comment from that code page, and the text the tool says it con
 thrown away: 0.28.9 writes the converted value in big-endian UCS-2 whatever the file's order is
 (`CommentValue::read`, `src/value.cpp`), so its own print of the result is not what is compared. The title is compared through the tool's translated print (`-PEkt`), where
 its `printUcs2` runs. A comment or title the tool reads differently fails the job, and so does a text
-this library cannot read back with the character set it was written in. The conversion is iconv, an
+this library cannot read back with the character set it was written in. One rule is recorded by the
+gate rather than by an exception list: for `windows-1258` the tool's text is this library's without
+its final character, because glibc's converter for that code page holds the last character until the
+conversion is flushed and `convertStringCharsetIconv` stops as soon as the input is consumed. The
+rule is by name and by exact shape - the rest of the text must still be equal, and every other
+character set of the matrix hands over everything without a flush, which the same run shows. The conversion is iconv, an
 optional dependency of the reference: a build without it says so in the gate's notice instead of
 passing quietly, and the round trips are still failed. The matrix itself, its aliases, its refusals
 and the writers are covered offline by `MetadataTextTests`.
