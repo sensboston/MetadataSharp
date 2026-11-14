@@ -440,7 +440,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
                         and row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
             rows = compare_rows(expected, observed, _TAG_PRINT_DISPLAY_ALIASES, accepted_aliases, accepted_padding, accepted_names)
             if any(row["kind"] == "value-diff" for row in rows):
-                raw_status, raw_output, _ = _run_reference(reference_command, candidate.path, "-pv")
+                raw_status, raw_output, _ = _run_reference(reference_command, candidate.path, "-Pkycv")
                 if raw_status == 0:
                     rows, raw_verified = verify_raw_value_differences(rows, parse_exiv2(raw_output), ours["rows"], raw_display_probes)
                     for item in raw_verified:
@@ -511,7 +511,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     raw_value_display_hits = [
         {"key": key, "exiv2_pt": reference, "metadatasharp_pt": local, "raw_value": raw,
          "occurrences": count,
-         "rule": "The pinned Exiv2 -pv and MetadataSharp dump report the same raw value with the same type and count; only -pt presentation text differs."}
+         "rule": "The pinned Exiv2 -Pkycv and MetadataSharp dump report the same raw value with the same type and count; only -pt presentation text differs."}
         for (key, reference, local, raw), count in sorted(verified_raw_displays.items())
     ]
     padding_format_rule = {
