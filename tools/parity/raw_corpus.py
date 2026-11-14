@@ -224,7 +224,9 @@ def annotate(outcomes: dict) -> None:
     lines = [f"{item['name']} {item['bytes']} {item['sha256']} ({item['status']})"
              for item in outcomes["files"] if item.get("sha256")]
     if lines:
-        print("::notice title=raw corpus pins::" + "\n".join(lines))
+        # A workflow command is one line: a literal newline would end the annotation after the first
+        # pin, so it is escaped as %0A.
+        print("::notice title=raw corpus pins::" + "%0A".join(lines))
     failures = [item for item in outcomes["files"] if item["status"] in ("failed", "mismatch")]
     for item in failures[:10]:
         print(f"::error title=raw corpus {item['status']}::{item['name']} {item.get('detail', '')}")

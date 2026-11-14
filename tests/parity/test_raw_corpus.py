@@ -127,6 +127,18 @@ class DownloadTests(unittest.TestCase):
             self.assertEqual(4, updated["files"][name]["bytes"])
             self.assertEqual(raw_corpus.hashlib.sha256(b"good").hexdigest(), updated["files"][name]["sha256"])
 
+    def test_the_pin_report_fits_in_one_workflow_command(self) -> None:
+        import contextlib, io
+        outcomes = {"files": [{"name": f"s{i}.rw2", "bytes": i, "sha256": f"{i:064x}", "status": "downloaded"}
+                              for i in range(23)]}
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            raw_corpus.annotate(outcomes)
+        lines = [line for line in buffer.getvalue().splitlines() if line.strip()]
+        self.assertEqual(1, len(lines), "a workflow command is one line")
+        self.assertIn("%0A", lines[0])
+        self.assertNotIn("\n", lines[0])
+
     def _one(self) -> dict:
         return {"license": self.document["license"], "provenance": self.document["provenance"],
                 "files": {self.entry.name: self.document["files"][self.entry.name]}}
