@@ -2190,6 +2190,63 @@ else if (args.Length == 2 && args[0] == "operations-parity-blank")
     // A JPEG file without metadata, for the comparer to insert into, and to insert as a thumbnail.
     File.WriteAllBytes(args[1], JpegFixture.Build());
 }
+else if (args.Length == 2 && args[0] == "tiff-thumbnails")
+{
+    // The thumbnail operations of this library on TIFF-based files the comparer
+    // (tools/reference/tiff_thumbnail_parity.py) prepared in the directory: for every NAME.src,
+    // NAME.set.ours and NAME.remove.ours are what ExifEdit.SetThumbnail and ExifEdit.RemoveThumbnail
+    // make of it. Nothing is compared here. A refusal writes no file, the source being unchanged.
+    // ours-tiff.tsv lists NAME, OPERATION, the status ("written", "unchanged" or "refused CODE") and
+    // a text. An exception that is no refusal is a defect and fails the run.
+    string directory = args[1];
+    byte[] thumb = File.ReadAllBytes(Path.Combine(directory, "thumb.jpg"));
+    var manifest = new List<string>();
+    var crashes = new List<string>();
+    var outcomes = new SortedDictionary<string, int>(StringComparer.Ordinal);
+    string Flat(string text) => text.Replace('\t', ' ').Replace('\r', ' ').Replace('\n', ' ');
+    foreach (string path in Directory.EnumerateFiles(directory, "*.src").Order(StringComparer.Ordinal))
+    {
+        string name = Path.GetFileNameWithoutExtension(path);
+        byte[] source = File.ReadAllBytes(path);
+        foreach (string operation in new[] { "set", "remove" })
+        {
+            string status, text = "";
+            try
+            {
+                byte[] output;
+                using (TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(new MemoryStream(source)))
+                {
+                    var edit = new ExifEdit();
+                    if (operation == "set") edit.SetThumbnail(thumb);
+                    else edit.RemoveThumbnail();
+                    var written = new MemoryStream();
+                    document.SaveExif(written, edit);
+                    output = written.ToArray();
+                }
+                if (output.AsSpan().SequenceEqual(source)) status = "unchanged";
+                else
+                {
+                    status = "written";
+                    File.WriteAllBytes(Path.Combine(directory, $"{name}.{operation}.ours"), output);
+                }
+            }
+            catch (MetadataException refusal) { status = "refused " + refusal.Code; text = refusal.Message; }
+            catch (Exception defect) when (defect is not IOException and not UnauthorizedAccessException)
+            {
+                crashes.Add($"{name} {operation}: {defect.GetType().Name}: {defect.Message}");
+                continue;
+            }
+            manifest.Add($"{name}\t{operation}\t{status}\t{Flat(text)}");
+            string counted = operation + " " + status;
+            outcomes[counted] = outcomes.GetValueOrDefault(counted) + 1;
+        }
+    }
+    File.WriteAllLines(Path.Combine(directory, "ours-tiff.tsv"), manifest);
+    foreach ((string outcome, int count) in outcomes) Console.WriteLine($"{outcome}: {count}");
+    if (crashes.Count == 0) return 0;
+    foreach (string crash in crashes) Console.Error.WriteLine(crash);
+    return 1;
+}
 else if (args.Length == 2 && args[0] == "operations-parity")
 {
     // The operations of this library on the files the comparer (tools/reference/operations_parity.py)
@@ -2357,7 +2414,7 @@ else if (args.Length == 2 && args[0] == "psd-jp2-exv-write-parity")
         "set Iptc.Application2.Headline Exiv2Headline\n" +
         "set Xmp.xmp.CreatorTool Exiv2Creator\n", new UTF8Encoding(false));
 }
-else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | bmff-edits DIRECTORY | jpeg-embedded-edits DIRECTORY | png-webp-embedded-edits DIRECTORY | tiff-based-icc-edits DIRECTORY | bmff-icc-edits DIRECTORY | psd-jp2-exv-write-parity DIRECTORY | sync-parity DIRECTORY | operations-parity DIRECTORY | inspect[-xmp|-iptc] FILE"); return 2; }
+else { Console.Error.WriteLine("Usage: generate DIRECTORY | tiff-based-edits DIRECTORY | bmff-edits DIRECTORY | jpeg-embedded-edits DIRECTORY | png-webp-embedded-edits DIRECTORY | tiff-based-icc-edits DIRECTORY | bmff-icc-edits DIRECTORY | psd-jp2-exv-write-parity DIRECTORY | sync-parity DIRECTORY | operations-parity DIRECTORY | tiff-thumbnails DIRECTORY | inspect[-xmp|-iptc] FILE"); return 2; }
 return 0;
 
 
