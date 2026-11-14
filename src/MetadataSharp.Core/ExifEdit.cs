@@ -211,19 +211,23 @@ public sealed class ExifEdit
 
     /// <summary>
     /// Sets the thumbnail of the EXIF block: a JPEG stream in the directory after the primary one
-    /// (IFD1), which is created when the block has none, with Compression 6, a resolution of 72 dpi
-    /// and the address and length of the stream. A thumbnail the block has is replaced: the other
+    /// (IFD1), which is created when the file has none, with Compression 6, a resolution of 72 dpi
+    /// and the address and length of the stream. A thumbnail the file has is replaced: the other
     /// tags of its directory stay, and the bytes of the old stream are cleared where nothing else
     /// addresses them. A file without an EXIF block gets one. This is <c>exiv2 -it</c>.
     /// </summary>
     /// <remarks>
-    /// Written by the documents of JPEG, PNG and WebP, where the EXIF block is a unit of its own.
-    /// The documents of TIFF-based files and of BMFF files refuse it with
-    /// <see cref="MetadataErrorCode.UnsupportedFeature"/>: in a TIFF-based file the directory after
-    /// the primary one is an image of the file, not a thumbnail of an EXIF block. The stream has
-    /// to be one the reader takes for a JPEG (it is checked when the block is written) and no longer
-    /// than <see cref="MetadataLimits.MaxThumbnailBytes"/>; with the rest of the block it has to fit
-    /// the 64 KiB of a JPEG APP1 segment.
+    /// <para>Written by the documents of JPEG, PNG and WebP, where the EXIF block is a unit of its
+    /// own, and by the documents of TIFF-based files, where the directory is appended to the end of
+    /// the file: nothing moves, and only the successor link of the primary directory is rewritten.
+    /// A file whose directory after the primary one is an image of the file, with strips, tiles or
+    /// another directory after it, is refused with
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/>: that directory is a picture, and it is
+    /// neither replaced nor removed. The documents of BMFF files refuse it with the same code, the
+    /// format being read-only.</para>
+    /// <para>The stream has to be one the reader takes for a JPEG (it is checked when it is
+    /// written) and no longer than <see cref="MetadataLimits.MaxThumbnailBytes"/>; in a JPEG file
+    /// it has to fit with the rest of the block into the 64 KiB of an APP1 segment.</para>
     /// </remarks>
     /// <exception cref="ArgumentException">The bytes do not start as a JPEG stream does, or the edit removes the whole block.</exception>
     /// <param name="jpeg">The JPEG-encoded thumbnail bytes to store.</param>

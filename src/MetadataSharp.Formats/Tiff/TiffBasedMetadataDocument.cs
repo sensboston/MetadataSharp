@@ -555,6 +555,19 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
             }
         }
 
+        // The thumbnail: the directory the primary one's successor link names. It is written apart
+        // from the plan of tag changes, which never reaches it.
+        if (!exifEmpty && exif!.HasThumbnailChange)
+        {
+            byte[] thumbed = TiffThumbnailWriter.Apply(start, layout, exif.Thumbnail, limits, options.MaxAccountedRanges);
+            if (!thumbed.AsSpan().SequenceEqual(start))
+            {
+                start = thumbed;
+                layout = TiffBasedFileMap.Read(start, limits, options.MaxAccountedRanges);
+                before = ExifTiffReader.InspectFile(start, limits);
+            }
+        }
+
         var changes = new Dictionary<(TiffBasedRole Role, ushort Tag), TiffBasedChange?>();
         if (!exifEmpty) AddExif(exif!, layout, changes);
         if (!xmpEmpty) AddXmp(xmp!, layout, changes);
@@ -639,8 +652,8 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         if (edit.RemoveAll)
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
                 "The EXIF of a TIFF-based file is part of the directories that describe its image and cannot be removed as a whole.");
-        // The tags of the MakerNote were changed before the plan.
-        ExifBlockEditor.AddChanges(edit, layout.Order, changes, makerNoteApart: true);
+        // The tags of the MakerNote and the thumbnail were written before the plan.
+        ExifBlockEditor.AddChanges(edit, layout.Order, changes, thumbnailApart: true, makerNoteApart: true);
     }
 
     /// <summary>The padding of a packet that is appended, so that the next edit is written over it.</summary>

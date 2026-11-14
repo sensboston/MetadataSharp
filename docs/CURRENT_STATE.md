@@ -300,17 +300,27 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 
 ## Next (in order)
 
-1. Publish 1.0 to NuGet: a version and a release workflow (packages are ready; nothing is published).
-2. Write side: the thumbnail in TIFF-based and BMFF files; MakerNote-safe rules per vendor (so an
-   insert can carry the MakerNote); removal of a whole BMFF item.
-3. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the other vendors
-   (1,906 corpus texts), XMP.
-4. Rewrite the Python parity harness and fixture generators in C# (one toolchain).
+1. Interpreted values: logarithmic MakerNote codes, model-dependent fields, the vendors whose
+   interpretations are partial (the counted corpus texts), and XMP properties.
+
+That is the only parity item left. The write side has nothing the pinned reference does and this
+library does not: the two write-side items the reference has no operation for are excluded with the
+reason read from its sources, and are listed as such in
+`docs/usage/FORMAT_AND_OPERATION_COVERAGE.md` (BMFF is read-only there; the MakerNote is copied as a
+datum into a block the tool rebuilds, offsets and all, so there is no per-vendor rule to follow).
+The thumbnail of a TIFF-based file is written now, which closes the third write-side item.
+
+Publication is the owner's: a 1.0 to NuGet after full parity. No workflow here packs or publishes.
+
+Tooling, not parity: rewrite the Python parity harness and the fixture generators in C# (one
+toolchain).
 
 ## Known limits
 
 - Writes refuse when safety is not established; MakerNotes are never moved; their tags are edited in place, and a grown value is appended for four layouts only. EXIF takes any
-  tag; the thumbnail (IFD1) is edited in JPEG, PNG and WebP only. The PSD complete-set writer omits EXIF MakerNote/image-address/thumbnail-directory tags and drops IPTC digest resource 0x0425; sidecars have no IPTC write. XMP and
+  tag; the thumbnail (IFD1) is edited in JPEG, PNG, WebP and TIFF-based files, where it is appended,
+  replaced or unlinked in place, and is refused where the directory after the primary one is an image
+  of the file; BMFF metadata is read only. The PSD complete-set writer omits EXIF MakerNote/image-address/thumbnail-directory tags and drops IPTC digest resource 0x0425; sidecars have no IPTC write. XMP and
   IPTC agree only when asked (`MetadataSync`); an independent `SaveIptc` leaves the digest stale.
 - Sync: `SaveAll` has no async twin; PSD and sidecars have no `SaveAll`. Not in the mapping table:
   CFAPattern, OECF, SpatialFrequencyResponse, DeviceSettingDescription. A value of a type or count
@@ -319,5 +329,7 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   Canon/Nikon/Sony MakerNotes; not XMP, and no value is ever converted into another character set
   (naming one is display only). A note of a vendor the reader does not decode, and a tag a decoded
   note does not list, are carried as raw bytes and refused when an edit would re-encode them.
-- PSD and JP2 writes are complete-set byte-buffer APIs, not the general per-family stream/path document APIs; JP2 XML boxes not parsed as XMP remain opaque. EXIF blocks written for PSD keep the 65,527-byte ceiling. ICC insertion for TIFF-based RAW remains refused unless a layout proves that tag 0x8773 targets the image rather than a thumbnail or raw-sensor IFD. The bounded DNG case is an un-reduced, uncompressed RGB primary with one accounted strip and a separate CFA SubIFD; other DNG and camera-RAW layouts without a validated existing primary ICC target remain refused (valid existing targets permit replacement/removal). Comments are written in JPEG, PNG and CRW only; a PNG profile over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to agree with a written profile. A BMFF item is edited or added, never removed. Previews are not pixel-decoded; no generic preview replacement API is provided (existing EXIF thumbnail and PSD resource writes are format-specific). CR3, JPEG XL, MRW and RAF are read, never written. CRW: no async members; a record outside the directory the reference writes it to is not changed; the Fujifilm directory (0xF000) of a RAF TIFF structure is not read.
+- PSD and JP2 writes are complete-set byte-buffer APIs, not the general per-family stream/path document APIs; JP2 XML boxes not parsed as XMP remain opaque. EXIF blocks written for PSD keep the 65,527-byte ceiling. ICC insertion for TIFF-based RAW remains refused unless a layout proves that tag 0x8773 targets the image rather than a thumbnail or raw-sensor IFD. The bounded DNG case is an un-reduced, uncompressed RGB primary with one accounted strip and a separate CFA SubIFD; other DNG and camera-RAW layouts without a validated existing primary ICC target remain refused (valid existing targets permit replacement/removal). Comments are written in JPEG, PNG and CRW only; a PNG profile over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to agree with a written profile. A BMFF item is edited or added, never removed, and a whole item cannot be removed because the pinned
+  reference writes no BMFF at all (its `setExifData`, `setXmpData`, `setIptcData` and
+  `writeMetadata` refuse), so there is no operation to match. Previews are not pixel-decoded; no generic preview replacement API is provided (existing EXIF thumbnail and PSD resource writes are format-specific). CR3, JPEG XL, MRW and RAF are read, never written. CRW: no async members; a record outside the directory the reference writes it to is not changed; the Fujifilm directory (0xF000) of a RAF TIFF structure is not read.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.

@@ -51,8 +51,12 @@ if (previews.Count != 0)
 ## Editing
 
 There is no general-purpose replacement API for every `PreviewImage`. `ExifEdit.SetThumbnail` and
-`ExifEdit.RemoveThumbnail` update an existing EXIF thumbnail directory where the format writer supports
-it; they do not synthesize a missing directory. `CrwMetadataDocument` also writes/removes the CIFF
+`ExifEdit.RemoveThumbnail` write the EXIF thumbnail directory where the format writer supports it: a
+JPEG file creates it when the block has none, and a TIFF-based file appends it to the end of the file
+and rewrites the successor link of the primary directory, so nothing moves; a directory that is an
+image of the file, with strips, tiles or another directory after it, is refused rather than replaced
+or unlinked. `MetadataOperations.Delete` with `MetadataFamilies.Thumbnail` and
+`MetadataOperations.InsertExv` reach the same writer, so a TIFF-based file answers them too. `CrwMetadataDocument` also writes/removes the CIFF
 thumbnail record, and the complete-set `PsdMetadata.Write` writes/removes PSD thumbnail resources
 0x0409/0x040C. These are the explicit preview write paths. Other format-specific preview loaders,
 including MRW, RAF, RW2, JP2, EPS and BMFF, are read/extract-only; their writers do not promise to
