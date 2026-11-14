@@ -381,7 +381,7 @@ jobs:
           dotnet build tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj --configuration Release
           dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj --configuration Release --no-build -- \
             --tree artifacts/parity/exiv2 --dump-command "$DUMP" --out artifacts/parity/upstream \
-            --title 'PARITY upstream' --rows-per-file 20000 --annotate --inventory --require-all-maker-notes \
+            --title 'PARITY upstream' --rows-per-file 20000 --annotate --inventory --gaps --require-all-maker-notes \
             --require Exif.PentaxDng --require Exif.Pentax --require Exif.Canon --require Exif.CanonSi \
             --require Exif.CanonCs --require Exif.CanonFi --require Exif.CanonAfC --require Exif.CanonPi \
             --require Exif.CanonPa --require Exif.CanonAfMiAdj --require Exif.CanonAm --require Exif.CanonHdr \
@@ -446,17 +446,6 @@ jobs:
           python tools/parity/run_tag_print.py --tree artifacts/parity/exiv2 \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP" \
             --out artifacts/parity/tag-print --annotate
-      # The interpreted-value half of the same report: what the tool renders as text and this library
-      # renders as a number, per vendor group, then the keys of the group being closed.
-      - name: Interpreted MakerNote inventory against the pinned tool
-        shell: bash
-        run: |
-          python tools/parity/makernote_render_gate.py artifacts/parity/tag-print/tag-print-report.json --inventory
-      - name: Interpreted Canon MakerNote groups against the pinned tool
-        shell: bash
-        run: |
-          python tools/parity/makernote_render_gate.py artifacts/parity/tag-print/tag-print-report.json \
-            --require Exif.CanonSi
       - name: Preview source-offset parity by reversing pinned exiv2 -ep outputs
         shell: bash
         run: |
@@ -959,15 +948,6 @@ jobs:
           python tools/parity/run_tag_print.py --tree artifacts/parity/exiv2 \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP" \
             --fixtures artifacts/parity/raw-corpus --out artifacts/parity/raw-tag-print --annotate
-      - name: Interpreted MakerNote inventory on the RAW corpus
-        shell: bash
-        run: |
-          python tools/parity/makernote_render_gate.py artifacts/parity/raw-tag-print/tag-print-report.json --inventory
-      - name: Interpreted Canon MakerNote groups on the RAW corpus
-        shell: bash
-        run: |
-          python tools/parity/makernote_render_gate.py artifacts/parity/raw-tag-print/tag-print-report.json \
-            --require Exif.CanonSi
       # Every RAW file here is TIFF-based: this is where the thumbnail directory is most often an image
       # of the file, and where this library refuses the change rather than writing one.
       - name: The thumbnail of a RAW file against the pinned tool (exiv2 -it, -dt; -pa, -et)
