@@ -523,6 +523,52 @@ public sealed class PreviewTests
     }
 
     [Fact]
+    public void AMrwNoteCountsItsThumbnailFromTheStartOfTheFile()
+    {
+        byte[] picture = Picture(20, 10);
+        // The note names the thumbnail by its position in the file, and the container names the vendor of
+        // the note it holds: the block states neither of the two.
+        byte[] note = Ifd(true, 0, Long(0x0088, 0), Long(0x0089, picture.Length));
+        byte[] tiff = NoteTiff(true, string.Empty, note);
+        byte[] prd = Join(new byte[] { 0 }, "PRD"u8.ToArray(), Be32(24), "27730001"u8.ToArray(), new byte[16]);
+        int at = 8 + prd.Length + 8 + tiff.Length;
+        // The address in the note is where the picture of this file starts, so build the file twice.
+        note = Ifd(true, 0, Long(0x0088, at), Long(0x0089, picture.Length));
+        tiff = NoteTiff(true, string.Empty, note);
+        byte[] blocks = Join(prd, Join(new byte[] { 0 }, "TTW"u8.ToArray(), Be32(tiff.Length), tiff));
+        byte[] file = Join(new byte[] { 0 }, "MRM"u8.ToArray(), Be32(8 + blocks.Length), blocks, picture);
+
+        PreviewImage preview = Assert.Single(Previews.List(file));
+
+        Assert.Equal(new PreviewImage(Jpeg, 20, 10, at, picture.Length, "Exif.Minolta.ThumbnailOffset"), preview);
+        Assert.Equal(picture, Previews.Extract(file, preview));
+    }
+
+    [Fact]
+    public void ARw2ListsTheThumbnailItsEmbeddedPictureNamesInFileCoordinates()
+    {
+        byte[] picture = Join(new byte[] { 0xFF, 0xD8, 0xFF, 0xE1, 0x00, 0x34 }, "Exif\0\0"u8.ToArray(),
+            Header(true), Ifd(true, 14), Ifd(true, 0, Long(0x0201, 0), Long(0x0202, 0)),
+            Picture(20, 10)[2..]);
+        byte[] thumbnail = Picture(8, 6);
+        long thumbAt = 24 + 18 + picture.Length;
+        // The picture an RW2 embeds is a camera's JPEG whose addresses are the file's own.
+        picture = Join(new byte[] { 0xFF, 0xD8, 0xFF, 0xE1, 0x00, 0x34 }, "Exif\0\0"u8.ToArray(),
+            Header(true), Ifd(true, 14), Ifd(true, 0, Long(0x0201, thumbAt), Long(0x0202, thumbnail.Length)),
+            Picture(20, 10)[2..]);
+        byte[] file = Join("IIU\0"u8.ToArray(), Longs(true, 0x18), new byte[16],
+            Ifd(true, 0, new Field(0x002E, 7, picture.Length, 24 + 18)), picture, thumbnail);
+
+        IReadOnlyList<PreviewImage> found = Previews.List(file);
+
+        Assert.Equal(2, found.Count);
+        Assert.Equal(new PreviewImage(Jpeg, 8, 6, thumbAt, thumbnail.Length,
+            "Exif.Thumbnail.JPEGInterchangeFormat"), found[0]);
+        Assert.Equal(new PreviewImage(Jpeg, 20, 10, 24 + 18, picture.Length,
+            "Exif.PanasonicRaw.PreviewImage"), found[1]);
+    }
+
+    [Fact]
     public void RafListsTheEmbeddedJpegAndItsExifThumbnailAtFileOffsets()
     {
         byte[] picture = Picture(64, 48);
