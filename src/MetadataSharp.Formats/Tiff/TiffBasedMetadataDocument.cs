@@ -11,12 +11,13 @@ using MetadataSharp.Formats.Jpeg;
 namespace MetadataSharp.Formats.Tiff;
 
 /// <summary>
-/// A TIFF-based file opened for editing its EXIF, GPS, IPTC, XMP and ICC profile: TIFF, DNG and the
-/// raw formats that are TIFF structures (CR2, NEF, ARW, PEF, ORF, RW2).
+/// A TIFF-based file opened for editing its EXIF, GPS, IPTC, XMP and, where applicable, ICC profile: TIFF, DNG,
+/// DCP profiles (EXIF/IPTC/XMP), and raw formats that are TIFF structures (CR2, NEF, ARW, PEF, ORF, RW2).
 /// </summary>
 /// <remarks>
 /// <para>A save never moves a byte of the source. A value that fits where the old one is, is written
-/// there. Whatever grows - a longer value, a directory that gains a tag, a new GPS directory, a new
+/// there. For a DCP profile, an effective metadata edit changes its `0x4352` identifier to classic
+/// TIFF magic, as Exiv2 0.28.9 does; an exact no-op save preserves the source bytes. Whatever grows - a longer value, a directory that gains a tag, a new GPS directory, a new
 /// XMP packet, IPTC stream or ICC profile - is appended after the last byte of the file, and the one pointer that
 /// leads to it is changed. The bytes it replaces stay in the file, no longer addressed: an edit is
 /// not an erasure. Image data, SubIFDs and the MakerNote are never written to and keep their
@@ -68,18 +69,17 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
 
     /// <summary>Reads the whole stream, from its start when it can seek, and leaves it open.</summary>
     /// <exception cref="MetadataException">
-    /// <see cref="MetadataErrorCode.InvalidTiff"/> when the data does not begin with a TIFF, ORF or
-    /// RW2 header; <see cref="MetadataErrorCode.LimitExceeded"/> when it exceeds the input budget.
+    /// <see cref="MetadataErrorCode.InvalidTiff"/> when the data does not begin with a TIFF, ORF, RW2 or DCP header; <see cref="MetadataErrorCode.LimitExceeded"/> when it exceeds the input budget.
     /// </exception>
-    /// <param name="source">Readable, seekable TIFF/DNG input stream positioned at the start; it remains open after the read.</param>
-    /// <param name="options">Settings for TIFF/DNG parsing; null selects the defaults.</param>
+    /// <param name="source">Readable, seekable TIFF/DNG/DCP input stream positioned at the start; it remains open after the read.</param>
+    /// <param name="options">Settings for TIFF/DNG/DCP parsing; null selects the defaults.</param>
     /// <returns>An open TiffBasedMetadataDocument bound to the source and captured read options.</returns>
     public static TiffBasedMetadataDocument Open(Stream source, TiffReadOptions? options = null) =>
         OpenCore(source, null, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
 
     /// <summary>Reads the whole file and closes it.</summary>
-    /// <param name="path">Path of the TIFF/DNG file to identify or open.</param>
-    /// <param name="options">Settings for TIFF/DNG parsing; null selects the defaults.</param>
+    /// <param name="path">Path of the TIFF/DNG/DCP file to identify or open.</param>
+    /// <param name="options">Settings for TIFF/DNG/DCP parsing; null selects the defaults.</param>
     /// <returns>An open TiffBasedMetadataDocument bound to the source and captured read options.</returns>
     public static TiffBasedMetadataDocument Open(string path, TiffReadOptions? options = null) =>
         OpenPath(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
@@ -125,7 +125,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         TiffEditOptions options, bool asynchronous, CancellationToken token, bool ownsStream = false) =>
         OpenCore(source, path, options.ReadOptions, asynchronous, token, options, ownsStream);
 
-    // Open a TIFF/DNG path using the configured parser limits.
+    // Open a TIFF/DNG/DCP path using the configured parser limits.
     private static async Task<TiffBasedMetadataDocument> OpenPath(string path, TiffReadOptions options,
         bool asynchronous, CancellationToken token)
     {
@@ -138,7 +138,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         finally { await file.DisposeAsync().ConfigureAwait(false); }
     }
 
-    // Parse the TIFF/DNG stream and record the path needed for safe publication.
+    // Parse the TIFF/DNG/DCP stream and record the path needed for safe publication.
     private static async Task<TiffBasedMetadataDocument> OpenCore(Stream source, string? path,
         TiffReadOptions options, bool asynchronous, CancellationToken token,
         TiffEditOptions? legacyOptions = null, bool ownsLegacyStream = false)
@@ -201,7 +201,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         return TiffExif.Read(source, options.Limits);
     }
 
-    /// <summary>The IPTC of the file, as <see cref="TiffIptc.Read"/> returns it, or null.</summary>
+    /// <summary>The IPTC of the file, as <see cref="TiffIptc.Read(ReadOnlySpan{byte}, MetadataLimits, IptcReadOptions)"/> returns it, or null.</summary>
     /// <param name="options">IPTC read settings; null selects the defaults.</param>
     /// <returns>The parsed IPTC packet, or null when the file has no IPTC data.</returns>
     /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
@@ -334,7 +334,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// gigabytes a TIFF offset addresses; otherwise the code the reader reports for the file.
     /// </exception>
     /// <param name="destination">Empty writable, seekable destination stream for the EXIF edit; it must not be the source stream.</param>
-    /// <param name="edit">EXIF changes to apply to this TIFF/DNG document.</param>
+    /// <param name="edit">EXIF changes to apply to this TIFF/DNG/DCP document.</param>
     public void SaveExif(Stream destination, ExifEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveExif(Stream, ExifEdit)"/>
     public Task SaveExifAsync(Stream destination, ExifEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
@@ -345,7 +345,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for a packet outside the editable profile.
     /// </summary>
     /// <param name="destination">Empty writable, seekable destination stream for the XMP edit; it must not be the source stream.</param>
-    /// <param name="edit">XMP changes to apply to this TIFF/DNG document.</param>
+    /// <param name="edit">XMP changes to apply to this TIFF/DNG/DCP document.</param>
     public void SaveXmp(Stream destination, XmpEdit edit) => SaveCore(destination, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveXmp(Stream, XmpEdit)"/>
     public Task SaveXmpAsync(Stream destination, XmpEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit), true, cancellationToken);
@@ -360,13 +360,13 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// whose stream is the value of tag 0x83BB are not touched. Fails as <see cref="SaveExif"/> does.
     /// </summary>
     /// <param name="destination">Empty writable, seekable destination stream for the IPTC edit; it must not be the source stream.</param>
-    /// <param name="edit">IPTC changes to apply to this TIFF/DNG document.</param>
+    /// <param name="edit">IPTC changes to apply to this TIFF/DNG/DCP document.</param>
     public void SaveIptc(Stream destination, IptcEdit edit) => SaveCore(destination, Edit(edit, null), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit)"/>
     public Task SaveIptcAsync(Stream destination, IptcEdit edit, CancellationToken cancellationToken = default) => SaveCore(destination, Edit(edit, null), true, cancellationToken);
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, with options; null options are the defaults.</summary>
     /// <param name="destination">Empty writable, seekable destination stream for the IPTC edit; it must not be the source stream.</param>
-    /// <param name="edit">IPTC changes to apply to this TIFF/DNG document.</param>
+    /// <param name="edit">IPTC changes to apply to this TIFF/DNG/DCP document.</param>
     /// <param name="options">IPTC write settings; null selects the defaults.</param>
     public void SaveIptc(Stream destination, IptcEdit edit, IptcWriteOptions? options) => SaveCore(destination, Edit(edit, options), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptc(Stream, IptcEdit, IptcWriteOptions)"/>
@@ -421,26 +421,26 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     public Task SaveIccProfileAsAsync(string destinationPath, byte[]? profile, CancellationToken cancellationToken = default) => SavePath(destinationPath, Icc(profile), true, cancellationToken);
 
     /// <summary>Writes the edited file to a new path; the file appears there complete or not at all.</summary>
-    /// <param name="destinationPath">Path for publishing EXIF edits in TIFF/DNG format.</param>
-    /// <param name="edit">EXIF changes to apply to this TIFF/DNG document.</param>
+    /// <param name="destinationPath">Path for the output; an effective edit of a DCP input is written with classic TIFF magic.</param>
+    /// <param name="edit">EXIF changes to apply to this TIFF/DNG/DCP document.</param>
     public void SaveExifAs(string destinationPath, ExifEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveExifAs(string, ExifEdit)"/>
     public Task SaveExifAsAsync(string destinationPath, ExifEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
     /// <summary>As <see cref="SaveXmp(Stream, XmpEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
-    /// <param name="destinationPath">Path for publishing XMP edits in TIFF/DNG format.</param>
-    /// <param name="edit">XMP changes to apply to this TIFF/DNG document.</param>
+    /// <param name="destinationPath">Path for the output; an effective edit of a DCP input is written with classic TIFF magic.</param>
+    /// <param name="edit">XMP changes to apply to this TIFF/DNG/DCP document.</param>
     public void SaveXmpAs(string destinationPath, XmpEdit edit) => SavePath(destinationPath, Edit(edit), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveXmpAs(string, XmpEdit)"/>
     public Task SaveXmpAsAsync(string destinationPath, XmpEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit), true, cancellationToken);
     /// <summary>As <see cref="SaveIptc(Stream, IptcEdit)"/>, to a new path; the file appears there complete or not at all.</summary>
-    /// <param name="destinationPath">Path for publishing IPTC edits in TIFF/DNG format.</param>
-    /// <param name="edit">IPTC changes to apply to this TIFF/DNG document.</param>
+    /// <param name="destinationPath">Path for the output; an effective edit of a DCP input is written with classic TIFF magic.</param>
+    /// <param name="edit">IPTC changes to apply to this TIFF/DNG/DCP document.</param>
     public void SaveIptcAs(string destinationPath, IptcEdit edit) => SavePath(destinationPath, Edit(edit, null), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit)"/>
     public Task SaveIptcAsAsync(string destinationPath, IptcEdit edit, CancellationToken cancellationToken = default) => SavePath(destinationPath, Edit(edit, null), true, cancellationToken);
     /// <summary>As <see cref="SaveIptcAs(string, IptcEdit)"/>, with options; null options are the defaults.</summary>
-    /// <param name="destinationPath">Path for publishing IPTC edits in TIFF/DNG format.</param>
-    /// <param name="edit">IPTC changes to apply to this TIFF/DNG document.</param>
+    /// <param name="destinationPath">Path for the output; an effective edit of a DCP input is written with classic TIFF magic.</param>
+    /// <param name="edit">IPTC changes to apply to this TIFF/DNG/DCP document.</param>
     /// <param name="options">IPTC write settings; null selects the defaults.</param>
     public void SaveIptcAs(string destinationPath, IptcEdit edit, IptcWriteOptions? options) => SavePath(destinationPath, Edit(edit, options), false, default).GetAwaiter().GetResult();
     /// <inheritdoc cref="SaveIptcAs(string, IptcEdit, IptcWriteOptions)"/>
@@ -455,11 +455,11 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// do, before anything is written. Edits without a change copy the file.
     /// </summary>
     /// <param name="destination">Empty writable, seekable destination stream for the combined metadata edit; it must not be the source stream.</param>
-    /// <param name="edits">EXIF, IPTC and XMP changes to apply together to this TIFF/DNG image.</param>
+    /// <param name="edits">EXIF, IPTC and XMP changes to apply together to this TIFF/DNG/DCP image.</param>
     public void SaveAll(Stream destination, SyncEdits edits) => SaveCore(destination, Edit(edits), false, default).GetAwaiter().GetResult();
     /// <summary>As <see cref="SaveAll(Stream, SyncEdits)"/>, to a new file.</summary>
-    /// <param name="destinationPath">Path for publishing combined metadata edits in TIFF/DNG format.</param>
-    /// <param name="edits">EXIF, IPTC and XMP changes to apply together to this TIFF/DNG image.</param>
+    /// <param name="destinationPath">Path for the output; an effective edit of a DCP input is written with classic TIFF magic.</param>
+    /// <param name="edits">EXIF, IPTC and XMP changes to apply together to this TIFF/DNG/DCP image.</param>
     public void SaveAllAs(string destinationPath, SyncEdits edits) => SavePath(destinationPath, Edit(edits), false, default).GetAwaiter().GetResult();
     private static Pending Edit(SyncEdits edits)
     {
@@ -479,7 +479,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     private static Pending Edit(IptcEdit edit, IptcWriteOptions? write) { ArgumentNullException.ThrowIfNull(edit); return new(null, null, edit.Capture(), null, write?.UpdateDigest ?? false); }
     private static Pending Icc(byte[]? profile) => new(null, null, null, new IccChange(profile is null ? null : (byte[])profile.Clone()));
 
-    // Build and verify the updated TIFF/DNG layout before streaming its write plan.
+    // Build and verify the updated TIFF/DNG/DCP layout before streaming its write plan.
     private async Task SaveCore(Stream destination, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -488,7 +488,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         await ContainerIo.Write(destination, output, asynchronous, token).ConfigureAwait(false);
     }
 
-    // Publish a validated TIFF/DNG edit to a separate destination path.
+    // Publish a validated TIFF/DNG/DCP edit to a separate destination path.
     private async Task SavePath(string destinationPath, Pending edit, bool asynchronous, CancellationToken token)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
@@ -566,18 +566,32 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
             catch (MetadataException) { }
         }
         if (icc is not null) AddIcc(icc.Profile, layout, changes);
-        if (changes.Count == 0) return start;
+        if (changes.Count == 0)
+            return ReferenceEquals(start, source) ? start : DcpClassicTiff(start, layout, limits);
 
         token.ThrowIfCancellationRequested();
         bool makerNoteCopy = exif?.MakerNoteCopy is not null;
         TiffBasedWritePlan plan = TiffBasedWritePlanner.Create(start, layout, changes, limits, allowMakerNoteCopy: makerNoteCopy);
-        if (plan.IsEmpty) return start;
+        if (plan.IsEmpty)
+            return ReferenceEquals(start, source) ? start : DcpClassicTiff(start, layout, limits);
         byte[] output = plan.Apply(start);
         TiffBasedWriteVerifier.Verify(start, layout, before, output, plan, limits, options.MaxAccountedRanges,
             allowMakerNoteCopy: makerNoteCopy);
         if (makerNoteCopy) output = ExifBlockEditor.RelocateMakerNote(output, exif!.MakerNoteCopy!, limits);
         if (icc is not null) HoldIcc(output, icc.Profile, limits);
+        output = DcpClassicTiff(output, layout, limits);
         token.ThrowIfCancellationRequested();
+        return output;
+    }
+
+    // Exiv2's pinned TiffImage writer emits classic TIFF magic when it writes a DCP input.
+    // Preserve the source for exact no-op saves; changed outputs adopt the same observable header.
+    private static byte[] DcpClassicTiff(byte[] output, TiffBasedFileMap layout, MetadataLimits limits)
+    {
+        if (!layout.IsDcp) return output;
+        if (layout.Order == Endianness.LittleEndian) { output[2] = 42; output[3] = 0; }
+        else { output[2] = 0; output[3] = 42; }
+        _ = ExifTiffReader.InspectFile(output, limits);
         return output;
     }
 

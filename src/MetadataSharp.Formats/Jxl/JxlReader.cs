@@ -2,10 +2,12 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.IO.Compression;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
 using MetadataSharp.Formats.Internal;
+using MetadataSharp.Formats.Tiff;
 
 namespace MetadataSharp.Formats.Jxl;
 
@@ -151,10 +153,17 @@ internal ref struct JxlReader
         ExifMetadata? metadata = null;
         try { metadata = layout.Exif.Present ? Exif(layout.Exif) : null; }
         catch (MetadataException refusal) when (refusals is not null) { refusals.Exif = refusal; }
+        IptcPacket? iptc = null;
+        try
+        {
+            if (refusals?.Exif is MetadataException exifRefusal) refusals.Iptc = exifRefusal;
+            else if (metadata is not null) iptc = TiffIptc.Read(metadata);
+        }
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Iptc = refusal; }
         XmpPacket? packet = null;
         try { packet = layout.Xmp.Present ? Xmp(layout.Xmp, xmpOptions) : null; }
         catch (MetadataException refusal) when (refusals is not null) { refusals.Xmp = refusal; }
-        return new JxlMetadata(metadata, packet, layout.HasJumbf);
+        return new JxlMetadata(metadata, iptc, packet, layout.HasJumbf);
     }
 
     /// <summary>
@@ -198,7 +207,7 @@ internal ref struct JxlReader
     }
 
     /// <summary>The bytes of a metadata box, once the retained budget is known to have room for them.</summary>
-    private readonly ReadOnlySpan<byte> Payload(JxlBlock block)
+    private ReadOnlySpan<byte> Payload(JxlBlock block)
     {
         if (block.Compressed) return Inflate(block);
         if (block.Length > limits.MaxRetainedMetadataBytes - retained)

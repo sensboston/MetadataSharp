@@ -1,5 +1,8 @@
+using System.Buffers.Binary;
 using System.Text;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
+using MetadataSharp.Tests.Iptc;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
 using Xunit;
@@ -27,6 +30,31 @@ public sealed class BmffMetadataTests
         entry.Value.CopyRawTo(value);
         Assert.Equal(new byte[] { 6, 0 }, value);
         Assert.Null(metadata.Xmp);
+    }
+
+    [Fact]
+    public void IptcNaaInTheExifItemIsRead()
+    {
+        byte[] stream = IptcCodecTests.Raw(IptcPacket.CreateEmpty());
+        byte[] tiff = new byte[26 + stream.Length];
+        "II*\0"u8.CopyTo(tiff);
+        BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(4), 8);
+        BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(8), 1);
+        BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(10), 0x83BB);
+        BinaryPrimitives.WriteUInt16LittleEndian(tiff.AsSpan(12), 7);
+        BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(14), (uint)stream.Length);
+        BinaryPrimitives.WriteUInt32LittleEndian(tiff.AsSpan(18), 26);
+        stream.CopyTo(tiff, 26);
+        BmffFixture.Layout layout = BmffFixture.LayoutOf("heic", false);
+        BmffFixture.Item item = Assert.Single(layout.Items, item => item.Id == BmffFixture.ExifId);
+        layout.Items.Remove(item);
+        layout.Items.Add(new BmffFixture.Item(BmffFixture.ExifId, "Exif", BmffFixture.Concat(BmffFixture.U32(0), tiff)) { Hidden = true });
+        byte[] file = BmffFixture.Build("heic", false, layout).Bytes;
+
+        BmffMetadata metadata = BmffMetadata.Read(file);
+
+        Assert.NotNull(metadata.Iptc);
+        Assert.Equal(stream.Length, metadata.Iptc.ByteLength);
     }
 
     [Fact]

@@ -110,5 +110,8 @@ public enum MetadataFormat
     QuickTime,
 
     /// <summary>RIFF AVI/WAVE family: the four-byte <c>RIFF</c> marker; the form is validated by the reader.</summary>
-    Riff
+    Riff,
+
+    /// <summary>Adobe DNG Camera Profile: TIFF byte order followed by the DCP identifier <c>0x4352</c>.</summary>
+    Dcp
 }

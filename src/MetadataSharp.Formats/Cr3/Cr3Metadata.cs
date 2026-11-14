@@ -1,19 +1,21 @@
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
 
 namespace MetadataSharp.Formats.Cr3;
 
 /// <summary>
 /// Read-only metadata of a Canon CR3 file (ISO BMFF, major brand <c>crx </c>): the EXIF directories
-/// of the CMT boxes and the XMP packet. The image tracks are never read and nothing is written. The
+/// of the CMT boxes, IPTC IIM in their TIFF tags and the XMP packet. The image tracks are never read and nothing is written. The
 /// previews of the file are listed and extracted by <see cref="Previews"/>.
 /// </summary>
 public sealed class Cr3Metadata
 {
     // Internal rather than private: the box walk that produces the parts is a separate type.
-    internal Cr3Metadata(ExifMetadata? exif, XmpPacket? xmp)
+    internal Cr3Metadata(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp)
     {
         Exif = exif;
+        Iptc = iptc;
         Xmp = xmp;
     }
 
@@ -25,6 +27,9 @@ public sealed class Cr3Metadata
     /// block has no ExifTag, GPSTag or MakerNote entry. <see cref="ExifMetadata.IsEditable"/> is false.
     /// </summary>
     public ExifMetadata? Exif { get; }
+
+    /// <summary>IPTC IIM carried in a TIFF IPTC-NAA tag of the Canon directories, or null when absent.</summary>
+    public IptcPacket? Iptc { get; }
 
     /// <summary>The XMP packet of the XMP box at the top level of the file, or null when there is none.</summary>
     public XmpPacket? Xmp { get; }
@@ -42,7 +47,7 @@ public sealed class Cr3Metadata
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded;
     /// <see cref="MetadataErrorCode.AmbiguousMetadata"/> when two boxes declare the same directory;
     /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the directories differ in byte order;
-    /// otherwise the code the EXIF directory reader or the XMP reader reports for what it refused.
+    /// otherwise the code the EXIF directory, IPTC or XMP reader reports for what it refused.
     /// </exception>
     /// <param name="data">Complete input file bytes, beginning at the container signature.</param>
     /// <param name="limits">Resource budgets for parsing; null selects the default limits.</param>

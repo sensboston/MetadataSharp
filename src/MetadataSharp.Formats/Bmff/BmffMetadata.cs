@@ -1,24 +1,27 @@
 using System.Buffers.Binary;
 using System.Text;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Internal;
+using MetadataSharp.Formats.Tiff;
 
 namespace MetadataSharp.Formats.Bmff;
 
 /// <summary>
 /// Read-only ISO BMFF (HEIC, HEIF, AVIF) metadata: the major brand of the file type box and the
-/// EXIF and XMP items the top-level <c>meta</c> box declares. Image items are never decoded and
+/// EXIF and XMP items and IPTC IIM in the TIFF EXIF item declared by the top-level <c>meta</c> box. Image items are never decoded and
 /// nothing is written; <see cref="BmffMetadataDocument"/> edits the two items.
 /// </summary>
 public sealed class BmffMetadata
 {
     // Internal rather than private: the box walk that produces the parts is a separate type.
-    internal BmffMetadata(string majorBrand, ExifMetadata? exif, XmpPacket? xmp)
+    internal BmffMetadata(string majorBrand, ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp)
     {
         MajorBrand = majorBrand;
         Exif = exif;
+        Iptc = iptc;
         Xmp = xmp;
     }
 
@@ -28,12 +31,15 @@ public sealed class BmffMetadata
     /// <summary>The EXIF item the file declares, or null when there is none.</summary>
     public ExifMetadata? Exif { get; }
 
+    /// <summary>IPTC IIM carried in the TIFF Exif item, or null when there is none.</summary>
+    public IptcPacket? Iptc { get; }
+
     /// <summary>The XMP item of mime type <c>application/rdf+xml</c>, or null when there is none.</summary>
     public XmpPacket? Xmp { get; }
 
     /// <summary>
     /// Reads one complete BMFF buffer. Boxes other than the file type box and <c>meta</c> are
-    /// skipped, and items other than EXIF and XMP are never interpreted. Without
+    /// skipped, and items other than EXIF and XMP are never interpreted; IPTC is read from the EXIF TIFF tag. Without
     /// <paramref name="limits"/> the budgets are the defaults of <see cref="BmffReadOptions"/>; the
     /// EXIF block of an item may be longer than a JPEG APP1 segment holds.
     /// </summary>
@@ -132,15 +138,22 @@ internal ref struct BmffReader
         }
         // A file without a meta box carries no item metadata; it is not a malformed file. A .mov or
         // a bare AVIF sequence has a brand and nothing of ours, and that is what the caller gets.
-        if (!hasMeta) return new BmffMetadata(brand, null, null);
+        if (!hasMeta) return new BmffMetadata(brand, null, null, null);
         if (!hasHandler) throw Fail("The meta box declares no handler box.", 0);
         ExifMetadata? exif = null;
         try { exif = ExifItem(); }
         catch (MetadataException refusal) when (refusals is not null) { refusals.Exif = refusal; }
+        IptcPacket? iptc = null;
+        try
+        {
+            if (refusals?.Exif is MetadataException exifRefusal) refusals.Iptc = exifRefusal;
+            else if (exif is not null) iptc = TiffIptc.Read(exif);
+        }
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Iptc = refusal; }
         XmpPacket? xmp = null;
         try { xmp = XmpItem(); }
         catch (MetadataException refusal) when (refusals is not null) { refusals.Xmp = refusal; }
-        return new BmffMetadata(brand, exif, xmp);
+        return new BmffMetadata(brand, exif, iptc, xmp);
     }
 
     // Resolve BMFF using the format-defined identifiers and naming rules.
@@ -394,7 +407,8 @@ internal ref struct BmffReader
         long start = 4L + skip;
         if (start >= bytes.Length) throw Fail("The EXIF TIFF header lies past its item.", source);
         // The 65,527 bytes of a JPEG APP1 segment are no rule of this container: the budgets bound the block.
-        return ExifTiffReader.Inspect(bytes.AsSpan((int)start), limits, source + start, ExifTiffReader.NoCeiling);
+        ExifMetadata result = ExifTiffReader.Inspect(bytes.AsSpan((int)start), limits, source + start, ExifTiffReader.NoCeiling);
+        return result;
     }
 
     // Keep XmpItem focused on BMFF and its format-specific validation contract.

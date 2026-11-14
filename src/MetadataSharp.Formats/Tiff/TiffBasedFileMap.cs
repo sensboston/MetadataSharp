@@ -89,6 +89,7 @@ internal sealed class TiffBasedFileMap
 {
     private const ushort BigTiffMagic = 43;
     private const ushort Rw2Magic = 0x0055;
+    private const ushort DcpMagic = 0x4352;
 
     private readonly byte[] file;
     private readonly MetadataLimits limits;
@@ -115,6 +116,8 @@ internal sealed class TiffBasedFileMap
     internal Endianness Order { get; }
     /// <summary>The header carries the identifier of a Panasonic RW2 file, whose tag 0x0118 is an address.</summary>
     internal bool IsRw2 => rw2;
+    /// <summary>The input uses the TIFF/DCP profile identifier rather than classic TIFF magic.</summary>
+    internal bool IsDcp => U16(2) == DcpMagic;
     internal int SourceLength => file.Length;
     internal IReadOnlyList<TiffBasedDirectory> Directories => directories;
     internal IReadOnlyList<TiffBasedRange> Ranges => ranges;

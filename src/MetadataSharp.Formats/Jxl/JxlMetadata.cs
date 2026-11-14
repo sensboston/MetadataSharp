@@ -1,19 +1,21 @@
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Xmp;
 
 namespace MetadataSharp.Formats.Jxl;
 
 /// <summary>
 /// Read-only metadata of a JPEG XL file. A file in the container form (ISO BMFF boxes after a
-/// signature box, major brand <c>jxl </c>) can hold an EXIF block, an XMP packet and JUMBF boxes; a
+/// signature box, major brand <c>jxl </c>) can hold an EXIF block (including IPTC IIM), an XMP packet and JUMBF boxes; a
 /// bare codestream holds none of them. The codestream is never decoded and nothing is written.
 /// </summary>
 public sealed class JxlMetadata
 {
     // Internal rather than private: the box walk that produces the parts is a separate type.
-    internal JxlMetadata(ExifMetadata? exif, XmpPacket? xmp, bool hasJumbf)
+    internal JxlMetadata(ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp, bool hasJumbf)
     {
         Exif = exif;
+        Iptc = iptc;
         Xmp = xmp;
         HasJumbf = hasJumbf;
     }
@@ -24,6 +26,9 @@ public sealed class JxlMetadata
     /// with <see cref="ExifMetadata.IsEditable"/> false.
     /// </summary>
     public ExifMetadata? Exif { get; }
+
+    /// <summary>IPTC IIM carried in the TIFF EXIF block, or null when there is none.</summary>
+    public IptcPacket? Iptc { get; }
 
     /// <summary>
     /// The XMP packet of the <c>xml </c> box, plain or Brotli-compressed in a <c>brob</c> box, or
@@ -52,7 +57,7 @@ public sealed class JxlMetadata
     /// does not hold, the major brand is not <c>jxl </c>, a metadata box appears twice or a
     /// compressed metadata box does not hold one whole Brotli stream;
     /// <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded; otherwise the code
-    /// the EXIF reader or the XMP reader reports for what it refused.
+    /// the EXIF, IPTC or XMP reader reports for what it refused.
     /// </exception>
     /// <param name="data">Complete input file bytes, beginning at the container signature.</param>
     /// <param name="limits">Resource budgets for parsing; null selects the default limits.</param>

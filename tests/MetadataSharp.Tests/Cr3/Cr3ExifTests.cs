@@ -1,5 +1,7 @@
 using System.Text;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
+using MetadataSharp.Tests.Iptc;
 using MetadataSharp.Formats.Cr3;
 using Xunit;
 using static MetadataSharp.Tests.Cr3.Cr3Fixture;
@@ -45,6 +47,18 @@ public sealed class Cr3ExifTests
         Join(FileType(), Box("moov", Uuid(CanonBox, boxes), Box("mvhd", new byte[100])), Box("mdat", new byte[16]));
 
     private static byte[] Ifd0(bool little = true) => TiffBlock(little, Text(0x010F, "Canon"), Shorts(0x0112, 6));
+
+    [Fact]
+    public void IptcNaaInThePrimaryCanonDirectoryIsRead()
+    {
+        byte[] iptc = IptcCodecTests.Raw(IptcPacket.CreateEmpty());
+        Cr3Fixture.Layout layout = new() { Ifd0 = TiffBlock(true, Raw(0x83BB, 7, iptc)) };
+
+        Cr3Metadata metadata = Cr3Metadata.Read(Cr3Fixture.Create(layout).Bytes);
+
+        Assert.NotNull(metadata.Iptc);
+        Assert.Equal(iptc.Length, metadata.Iptc.ByteLength);
+    }
 
     [Fact]
     public void TheFourBoxesAreReadAsOneBlock()
