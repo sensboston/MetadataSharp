@@ -482,7 +482,10 @@ public sealed class ImageMetadataTests
         ImageMetadata metadata = ImageMetadata.Read(Sample(name, badExif: true));
         Assert.Equal(good.Format, metadata.Format);
         Assert.Null(metadata.Exif);
-        Assert.Equal(MetadataFamily.Exif, Assert.Single(metadata.Errors).Family);
+        MetadataFamily[] expectedErrors = name is "cr3" or "heic" or "jxl"
+            ? [MetadataFamily.Exif, MetadataFamily.IptcIim]
+            : [MetadataFamily.Exif];
+        Assert.Equal(expectedErrors, metadata.Errors.Select(error => error.Family));
         Assert.NotNull(metadata.Xmp);
         Assert.Equal(good.Xmp!.ByteLength, metadata.Xmp.ByteLength);
         Assert.Equal(good.Iptc is not null, metadata.Iptc is not null);
@@ -498,8 +501,11 @@ public sealed class ImageMetadataTests
             ImageMetadata metadata = ImageMetadata.Read(Sample(name, badExif: true, badXmp: true));
             Assert.Null(metadata.Exif);
             Assert.Null(metadata.Xmp);
-            Assert.Equal(new[] { MetadataFamily.Exif, MetadataFamily.Xmp }, metadata.Errors.Select(error => error.Family));
-            Assert.NotSame(metadata.Errors[0].Exception, metadata.Errors[1].Exception);
+            MetadataFamily[] expected = name is "cr3" or "heic" or "jxl"
+                ? [MetadataFamily.Exif, MetadataFamily.IptcIim, MetadataFamily.Xmp]
+                : [MetadataFamily.Exif, MetadataFamily.Xmp];
+            Assert.Equal(expected, metadata.Errors.Select(error => error.Family));
+            Assert.NotSame(metadata.Errors[0].Exception, metadata.Errors[^1].Exception);
         }
     }
 
@@ -569,14 +575,15 @@ public sealed class ImageMetadataTests
         Assert.All(errors, error => Assert.Equal(MetadataErrorCode.InvalidPng, error.Code));
         Assert.Same(errors[0].Exception, errors[2].Exception);
 
-        // A BMFF file whose second box is longer than the file. The format carries no IPTC, so none is listed.
+        // A BMFF file whose second box is longer than the file. All metadata kinds from its TIFF-backed profile are refused.
         byte[] cut = [.. BmffFixture.Box("ftyp", BmffFixture.Ascii("heic"), new byte[4], BmffFixture.Ascii("mif1heic")), 0, 0, 1, 0, .. "meta"u8];
         ImageMetadata heic = ImageMetadata.Read(cut);
         Assert.Equal(MetadataFormat.Bmff, heic.Format);
         errors = OfTheContainer(heic);
-        Assert.Equal(new[] { MetadataFamily.Exif, MetadataFamily.Xmp }, errors.Select(error => error.Family));
+        Assert.Equal(new[] { MetadataFamily.Exif, MetadataFamily.IptcIim, MetadataFamily.Xmp }, errors.Select(error => error.Family));
         Assert.All(errors, error => Assert.Equal(MetadataErrorCode.InvalidBmff, error.Code));
         Assert.Same(errors[0].Exception, errors[1].Exception);
+        Assert.Same(errors[0].Exception, errors[2].Exception);
 
         // A TIFF whose first directory lies past its end: no directories, so no packet to look for.
         ImageMetadata tiff = ImageMetadata.Read(new byte[] { 0x49, 0x49, 42, 0, 0xF0, 0xFF, 0xFF, 0x7F });
