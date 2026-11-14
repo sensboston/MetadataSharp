@@ -471,6 +471,36 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
             "formats": formats, "files": files}
 
 
+# The rows whose value is an address of a picture: the one a missing preview would be named by.
+_ADDRESS_ROW = re.compile(r"(JPEGInterchangeFormat|PreviewImage|PreviewOffset|PreviewImageStart|Thumbnail"
+                          r"|ThumbnailOffset|StripOffsets|NewSubfileType)$")
+
+
+def dump_addresses(dump_command: list[str], paths: list[Path]) -> dict[str, list[str]]:
+    """The rows of a file that can address a picture, for a file whose preview list does not agree.
+
+    A listing that leaves a preview out says which picture is missing, not which structure the reader
+    failed to follow: the rows are read once more, without the preview mode, and the ones whose key
+    names an address are kept beside the difference they explain.
+    """
+    listing = "".join(f"{path}\n" for path in paths)
+    try:
+        finished = subprocess.run(dump_command + ["--files-from", "-"], input=listing, capture_output=True,
+                                  text=True, encoding="utf-8", errors="replace", timeout=1800, check=False)
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return {}
+    addresses: dict[str, list[str]] = {}
+    current: str | None = None
+    for line in (finished.stdout or "").splitlines():
+        fields = line.split("\t")
+        if fields[0] == "FILE" and len(fields) == 2:
+            current = fields[1]
+            addresses.setdefault(current, [])
+        elif fields[0] == "TAG" and len(fields) >= 5 and current is not None and _ADDRESS_ROW.search(fields[1]):
+            addresses[current].append(f"{fields[1]}({fields[2]} {fields[3]})")
+    return addresses
+
+
 def gate_exit_code(report: dict[str, Any]) -> int:
     """Fail closed for list mismatches, missing corpus input, or reader refusals."""
     return 1 if (report["statuses"].get("error") or report["totals"].get("missing") or
@@ -500,6 +530,8 @@ def text_report(report: dict[str, Any]) -> str:
             lines.append(f"  {entry['file']} [{entry['status']}] missing={entry.get('missing', [])} "
                          f"extra={entry.get('extra', [])} offset_mismatch={entry.get('offset_mismatch', [])} "
                          f"ordered={entry['ordered']}")
+            if entry.get("addresses"):
+                lines.append(f"    rows that address a picture: {', '.join(entry['addresses'])}")
     return "\n".join(lines) + "\n"
 
 
@@ -584,10 +616,18 @@ def main(argv: list[str] | None = None) -> int:
         for name, path in paths.items():
             if path is not None:
                 expected_offsets[name] = oracle_offsets(extraction_command, path, expected[name])
-    report = compare(expected, run_dump(shlex.split(args.dump_command), present), paths,
+    dump_command = shlex.split(args.dump_command)
+    report = compare(expected, run_dump(dump_command, present), paths,
                      expected_offsets if args.exiv2_command else None)
     if args.fixtures:
         report["exceptions"] = fixture_exceptions
+    # A file that differs gets its address rows beside the difference: what a reader can see, and what
+    # it made of it, in one place.
+    differs = [entry for entry in report["files"] if entry.get("missing") or entry.get("extra")]
+    if differs:
+        addresses = dump_addresses(dump_command, [paths[entry["file"]] for entry in differs])
+        for entry in differs:
+            entry["addresses"] = addresses.get(str(paths[entry["file"]]), [])
 
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "preview-report.json").write_text(json.dumps(report, indent=1, sort_keys=True) + "\n", encoding="utf-8")
