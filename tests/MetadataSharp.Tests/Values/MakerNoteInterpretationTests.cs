@@ -642,6 +642,9 @@ public sealed class MakerNoteInterpretationTests
         var fineTuneFields = NikonMakerNoteArrays.Decompose(0x00B9, Bytes(0, 0, 0xFF));
         Assert.Equal(TiffFieldType.SByte, fineTuneFields[2].Value.FieldType);
         Assert.Equal(new byte[] { 0xFF }, fineTuneFields[2].Value.RawBytes.ToArray());
+        var fineTuneEntry = new MakerNoteEntry(0x00B9, "AFTune", Bytes(0, 0, 0xFF), fineTuneFields);
+        var fineTuneNote = new MakerNote(MakerNoteFormat.Nikon3, Little, [fineTuneEntry]);
+        Assert.Equal("255", fineTuneNote.Interpret(fineTuneEntry, fineTuneFields[2]));
         Assert.Equal("Lower-right", Field(MakerNoteFormat.Nikon3, 0x0088, "AFPointsInFocus", Shorts(0x0100), 2));
         Assert.Equal("Lower-right", Field(MakerNoteFormat.Nikon3, 0x0088, "AFPointsInFocus", Shorts(1), 2, "NIKON D70"));
         Assert.Equal("Fired", Field(MakerNoteFormat.Nikon3, 0x00A8, "ExternalFlashFlags", Bytes(0), 8));
