@@ -78,7 +78,7 @@ field type TIFF does not define are read and compared row by row.
 
 | Structure | How it is read |
 | --- | --- |
-| Image directories named by tag 0x014A (SubIFDs) | A whole TIFF-based file lists them as `Exif.SubImage1.*`, `Exif.SubImage2.*` in the order the tag lists them, next to the metadata. `ExifMetadata.SubImages` holds them, `ExifMetadata.Entries` does not: they describe pictures, so no edit and no layout plan reaches them. Nothing inside them is followed. |
+| Image directories named by tag 0x014A (SubIFDs) | A whole TIFF-based file lists them as `Exif.SubImage1.*`, `Exif.SubImage2.*` in the order the tag lists them, next to the metadata. `ExifMetadata.SubImages` holds them, `ExifMetadata.Entries` does not: they describe pictures, so no edit and no layout plan reaches them. Nothing inside them is followed, and an offset the payload does not hold, or one the read already visited, is not followed either: the tag stays an ordinary entry. |
 | A MakerNote directory that states one tag ID twice | Every occurrence is listed, as the reference prints it; the lookup, a key name and an edit address the first one. |
 | An entry whose field type is not one of the twelve TIFF types | The strict read refuses the block and the read-only rules read it: the value is one byte per element, as the reference reads it, the entry keeps the type code the file states, and the block is not editable. |
 

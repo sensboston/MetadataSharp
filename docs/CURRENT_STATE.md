@@ -32,8 +32,9 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   refused for reading too.
 - Whole TIFF-based files list the image directories their primary directory names with tag 0x014A
   (SubIFDs) as `Exif.SubImage1.*`, `Exif.SubImage2.*` in `ExifMetadata.SubImages`, apart from the
-  metadata; nothing inside them is followed and no edit reaches them. A MakerNote directory that
-  states one tag ID twice lists both entries, as the reference prints them.
+  metadata; nothing inside them is followed and no edit reaches them, and a picture directory the
+  payload does not hold, or one the read already visited, is skipped rather than refused. A MakerNote
+  directory that states one tag ID twice lists both entries, as the reference prints them.
 - XMP: `XmpPacket.Entries` lists every property of any packet (structures, arrays of structures,
   qualifiers) as read-only path rows; editing stays on the bounded profile. NUL padding is ignored.
 - TIFF-based files: IPTC read (`TiffIptc.Read`, tag 0x83BB or the resource in 0x8649).
