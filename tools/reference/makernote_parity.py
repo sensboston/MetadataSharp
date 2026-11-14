@@ -134,12 +134,26 @@ def group_of(key):
     return parts[1] if len(parts) > 2 else "?"
 
 
+def _is_image_directory(group: str) -> bool:
+    """A second or later image directory of the container, which no copy of a MakerNote can hold.
+
+    Exiv2 names the directories a file chains after its first Image and Thumbnail ones Image2,
+    Image3 and so on, and the sub-images of a TIFF SubImage and SubThumb. They are rows of the
+    picture's own directories, not of the MakerNote: a copy that carries the note over cannot
+    keep them, so leaving them in this comparison would ask the copy to carry the container.
+    """
+    if group.startswith("SubImage") or group.startswith("SubThumb"):
+        return True
+    return group.startswith("Image") and group[5:].isdigit()
+
+
 def maker_note_printed(exiv2, path, runner=run):
-    """The decoded MakerNote keys and values, excluding standard EXIF directories."""
+    """The decoded MakerNote keys and values, excluding the container's own directories."""
     values, code, warnings = printed(exiv2, path, runner)
     standard = {"Image", "Photo", "GPSInfo", "Iop", "Thumbnail", "MakerNote"}
     return OrderedDict((key, value) for key, value in values.items()
-                       if len(key.split(".")) > 2 and key.split(".")[1] not in standard), code, warnings
+                       if len(key.split(".")) > 2 and key.split(".")[1] not in standard
+                       and not _is_image_directory(key.split(".")[1])), code, warnings
 
 
 def check(work, names, exiv2, runner=run):
