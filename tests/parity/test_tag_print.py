@@ -62,17 +62,24 @@ class TagPrintProtocolTests(unittest.TestCase):
         wrong_value = [{"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "641"}]
         self.assertEqual(1, len(gate.compare_rows(expected, wrong_value)))
 
-    def test_pinned_numeric_raw_value_matches_a_local_interpretation_without_copying_text(self) -> None:
-        accepted = Counter()
-        reference = [{"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "0"}]
-        local = [{"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1,
-                  "value": "Hold", "_raw_value": "0", "_has_translation": True}]
-        self.assertEqual([], gate.compare_rows(reference, local, accepted_raw_displays=accepted))
-        self.assertEqual({("Exif.Sony1MltCsA100.AELButton", "0", "Hold"): 1}, dict(accepted))
-        changed_raw = [{**local[0], "_raw_value": "1"}]
-        self.assertEqual(1, len(gate.compare_rows(reference, changed_raw)))
-        uninterpreted = [{**local[0], "_has_translation": False}]
-        self.assertEqual(1, len(gate.compare_rows(reference, uninterpreted)))
+    def test_pt_text_difference_requires_exact_independent_pv_raw_value(self) -> None:
+        difference = {"kind": "value-diff",
+                      "exiv2": {"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "Hold"},
+                      "metadatasharp": {"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "0"}}
+        raw_reference = [{"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1, "value": "0"}]
+        source_rows = [{"key": "Exif.Sony1MltCsA100.AELButton", "type": "Short", "count": 1,
+                        "raw": "0", "translated": ""}]
+        remaining, verified = gate.verify_raw_value_differences([difference], raw_reference, source_rows)
+        self.assertEqual([], remaining)
+        self.assertEqual("0", verified[0]["raw_value"])
+        changed_raw = [{**raw_reference[0], "value": "1"}]
+        remaining, verified = gate.verify_raw_value_differences([difference], changed_raw, source_rows)
+        self.assertEqual([difference], remaining)
+        self.assertEqual([], verified)
+        wrong_type = [{**raw_reference[0], "type": "SShort"}]
+        remaining, verified = gate.verify_raw_value_differences([difference], wrong_type, source_rows)
+        self.assertEqual([difference], remaining)
+        self.assertEqual([], verified)
 
     def test_only_trailing_ascii_and_user_comment_padding_is_ignored_as_format(self) -> None:
         accepted = Counter()

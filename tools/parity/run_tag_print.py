@@ -196,8 +196,7 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
                  description_aliases: dict[str, dict[str, str]] | None = None,
                  accepted_aliases: Counter[tuple[str, str, str]] | None = None,
                  accepted_padding: Counter[str] | None = None,
-                 accepted_names: Counter[tuple[str, str]] | None = None,
-                 accepted_raw_displays: Counter[tuple[str, str, str]] | None = None) -> list[dict[str, Any]]:
+                 accepted_names: Counter[tuple[str, str]] | None = None) -> list[dict[str, Any]]:
     """Compare rows as a multiset, allowing only exact, documented display aliases."""
     def identity(row: dict[str, Any]) -> tuple[Any, ...]:
         return _canonical_key(str(row.get("key"))), row.get("type"), row.get("count")
@@ -217,18 +216,11 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
                     return False
                 expected_value, actual_value = row.get("value"), candidate.get("value")
                 return (isinstance(expected_value, str) and isinstance(actual_value, str)
+                        and expected_value != actual_value
                         and expected_value.rstrip(" \0") == actual_value.rstrip(" \0"))
 
-            def is_same_raw_value(candidate: dict[str, Any]) -> bool:
-                raw_value = candidate.get("_raw_value")
-                return (candidate.get("_has_translation") is True
-                        and isinstance(raw_value, str)
-                        and re.fullmatch(r"[+-]?\d+(?:\s+[+-]?\d+)*", raw_value) is not None
-                        and row.get("value") == raw_value
-                        and row.get("value") != candidate.get("value"))
-
             match = next((candidate for candidate in observed
-                          if candidate == row or is_same_raw_value(candidate) or (
+                          if candidate == row or (
                               _canonical_key(str(candidate.get("key"))) == _canonical_key(str(row.get("key")))
                               and candidate.get("value") == row.get("value")
                           ) or is_padding_equivalent(candidate) or (
@@ -237,9 +229,7 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
                                   == candidate.get("value")
                           )), None)
             if match is not None:
-                if is_same_raw_value(match) and accepted_raw_displays is not None:
-                    accepted_raw_displays[(str(row.get("key")), str(row.get("value")), str(match.get("value")))] += 1
-                elif (match.get("key") != row.get("key") and match.get("value") == row.get("value")
+                if (match.get("key") != row.get("key") and match.get("value") == row.get("value")
                         and accepted_names is not None):
                     accepted_names[(str(row.get("key")), str(match.get("key")))] += 1
                 elif match != row and is_padding_equivalent(match) and accepted_padding is not None:
@@ -252,6 +242,41 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
         differences.extend({"kind": "missing", "exiv2": row, "metadatasharp": None} for row in expected)
         differences.extend({"kind": "extra", "exiv2": None, "metadatasharp": row} for row in observed)
     return differences
+
+
+def verify_raw_value_differences(differences: list[dict[str, Any]], raw_reference: list[dict[str, Any]],
+                                 source_rows: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """Resolve -pt text differences only when Exiv2 -pv confirms identical raw value and structure."""
+    raw_by_identity: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
+    source_by_identity: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
+    for row in raw_reference:
+        raw_by_identity[( _canonical_key(str(row.get("key"))), row.get("type"), row.get("count"))].append(row)
+    for row in source_rows:
+        source_by_identity[(row.get("key"), row.get("type"), row.get("count"))].append(row)
+    remaining: list[dict[str, Any]] = []
+    verified: list[dict[str, str]] = []
+    for difference in differences:
+        if difference.get("kind") != "value-diff":
+            remaining.append(difference)
+            continue
+        expected, observed = difference["exiv2"], difference["metadatasharp"]
+        identity = (_canonical_key(str(expected.get("key"))), expected.get("type"), expected.get("count"))
+        local_key = (observed.get("key"), observed.get("type"), observed.get("count"))
+        local_source = next((row for row in source_by_identity.get(local_key, [])
+                             if (row.get("translated") or row.get("raw")) == observed.get("value")), None)
+        if local_source is None:
+            remaining.append(difference)
+            continue
+        raw_match = next((row for row in raw_by_identity.get(identity, [])
+                          if row.get("value") == local_source.get("raw")), None)
+        if raw_match is None:
+            remaining.append(difference)
+            continue
+        raw_by_identity[identity].remove(raw_match)
+        verified.append({"key": str(expected.get("key")), "exiv2_pt": str(expected.get("value")),
+                         "metadatasharp_pt": str(observed.get("value")),
+                         "raw_value": str(raw_match.get("value"))})
+    return remaining, verified
 
 
 def _summary(report: dict[str, Any]) -> dict[str, Any]:
@@ -339,9 +364,9 @@ def run_dump(command: list[str], paths: list[Path]) -> dict[str, dict[str, Any]]
     return parse_dump(result.stdout or "")
 
 
-def _run_reference(command: list[str], path: Path) -> tuple[int, str, str]:
+def _run_reference(command: list[str], path: Path, mode: str = "-pt") -> tuple[int, str, str]:
     try:
-        result = subprocess.run(command + ["-pt", str(path)], capture_output=True, text=True,
+        result = subprocess.run(command + [mode, str(path)], capture_output=True, text=True,
                                 encoding="utf-8", errors="replace", timeout=120, check=False)
     except (FileNotFoundError, subprocess.TimeoutExpired) as error:
         raise TagPrintError(f"Exiv2 -pt failed for {path.name}: {error}") from error
@@ -368,7 +393,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     accepted_aliases: Counter[tuple[str, str, str]] = Counter()
     accepted_padding: Counter[str] = Counter()
     accepted_names: Counter[tuple[str, str]] = Counter()
-    accepted_raw_displays: Counter[tuple[str, str, str]] = Counter()
+    verified_raw_displays: Counter[tuple[str, str, str, str]] = Counter()
     mismatch_groups: Counter[tuple[str, str, str, str]] = Counter()
     formats: dict[str, Counter[str]] = defaultdict(Counter)
     for candidate in candidates:
@@ -402,7 +427,13 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             observed = [row for row in all_observed
                         if (_canonical_key(row["key"]) in expected_keys or not _is_raw_numeric_tag(row["key"]))
                         and row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
-            rows = compare_rows(expected, observed, _TAG_PRINT_DISPLAY_ALIASES, accepted_aliases, accepted_padding, accepted_names, accepted_raw_displays)
+            rows = compare_rows(expected, observed, _TAG_PRINT_DISPLAY_ALIASES, accepted_aliases, accepted_padding, accepted_names)
+            if any(row["kind"] == "value-diff" for row in rows):
+                raw_status, raw_output, _ = _run_reference(reference_command, candidate.path, "-pv")
+                if raw_status == 0:
+                    rows, raw_verified = verify_raw_value_differences(rows, parse_exiv2(raw_output), ours["rows"])
+                    for item in raw_verified:
+                        verified_raw_displays[(item["key"], item["exiv2_pt"], item["metadatasharp_pt"], item["raw_value"])] += 1
             if rows:
                 for row in rows:
                     difference_types[row["kind"]] += 1
@@ -467,9 +498,10 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
         for (reference, local), count in sorted(accepted_names.items())
     ]
     raw_value_display_hits = [
-        {"key": key, "exiv2": reference, "metadatasharp": local, "occurrences": count,
-         "rule": "Exiv2 prints the exact underlying numeric raw value; MetadataSharp retains its interpretation without importing Exiv2 display text."}
-        for (key, reference, local), count in sorted(accepted_raw_displays.items())
+        {"key": key, "exiv2_pt": reference, "metadatasharp_pt": local, "raw_value": raw,
+         "occurrences": count,
+         "rule": "The pinned Exiv2 -pv and MetadataSharp dump report the same raw value with the same type and count; only -pt presentation text differs."}
+        for (key, reference, local, raw), count in sorted(verified_raw_displays.items())
     ]
     padding_format_rule = {
         "occurrences": sum(accepted_padding.values()),

@@ -70,10 +70,11 @@ preserve the local vocabulary and raw-code policy rather than copying Exiv2 desc
 format convention, trailing spaces and NUL padding are ignored only at the end of ASCII fields and
 `Exif.Photo.UserComment`; internal whitespace and every non-text value remain exact. When Exiv2 prints
 a numeric fallback for a catalogued tag, the comparator may match it to the local tag name only when
-the EXIF directory and numeric tag ID agree; values, types, and counts must still match. If a pinned
-numeric value is exactly the local tag's underlying integer value while the library has an
-interpretation, the comparator records that print-only difference and preserves the library's
-interpretation instead of copying Exiv2 wording; any changed raw integer still fails. A vendor tag
+the EXIF directory and numeric tag ID agree; values, types, and counts must still match. For a
+remaining `-pt` value difference, the comparator accepts it as presentation-only only if the pinned
+Exiv2 `-pv` raw value exactly equals MetadataSharp's raw value for the same key, type, and count. The
+tools' text remains distinct and is reported by key; no Exiv2 wording is copied into the local
+catalog. Any difference in raw value or structure still fails. A vendor tag
 rendered only as an unknown numeric key (for example, `Exif.Canon.0x0019`) is not a named catalog
 entry; if the pinned reference does not print that key, the report lists it under
 `raw_only_tag_exceptions` instead of counting its fallback raw value as a named-table mismatch. This does not suppress unknown named keys,
