@@ -157,6 +157,31 @@ internal sealed class TiffBasedFixture
     }
 
     /// <summary>
+    /// A bounded DNG layout with a full-colour RGB IFD0 and a separate CFA SubIFD. The primary
+    /// strip is the only ICC target; the CFA strip is retained as raw sensor data.
+    /// </summary>
+    internal static TiffBasedFixture DngColourPreview(bool big)
+    {
+        long version = big ? 0x01040000 : 0x00000401;
+        var layout = new Layout(676, big).Header()
+            .Directory(8, 0,
+                (0x00FE, 4, 1, 0), (0x0100, 4, 1, 4), (0x0101, 4, 1, 4), (0x0102, 3, 3, 400),
+                (0x0103, 3, 1, 1), (0x0106, 3, 1, 2), (0x0111, 4, 1, 500), (0x0115, 3, 1, 3),
+                (0x0116, 4, 1, 4), (0x0117, 4, 1, 48), (0x014A, 4, 1, 240), (0x8769, 4, 1, 180),
+                (0xC612, 1, 4, version))
+            .U16(400, 8).U16(402, 8).U16(404, 8)
+            .Directory(180, 0, (0x9003, 2, 20, 210))
+            .Ascii(210, "2020:01:02 03:04:05\0")
+            .Directory(240, 0,
+                (0x0100, 4, 1, 8), (0x0101, 4, 1, 8), (0x0103, 3, 1, 1), (0x0106, 3, 1, 32803),
+                (0x0111, 4, 1, 548), (0x0115, 3, 1, 1), (0x0116, 4, 1, 8), (0x0117, 4, 1, 128),
+                (0xC612, 1, 4, version))
+            .Pattern(500, 48, 17)
+            .Pattern(548, 128, 19);
+        return new("dng-colour-preview", big, layout.Bytes) { Image = [(500, 48), (548, 128)] };
+    }
+
+    /// <summary>
     /// A NEF-like layout. IFD0 at 8 (Make at 120, Model at 138, a thumbnail strip at 600 of 32
     /// bytes, two SubIFDs listed at 150, ExifIFD, GPS); SubIFD 160 addresses a JPEG at 640 of 20
     /// bytes, SubIFD 230 the raw strip at 660 of 100 bytes; the Exif IFD at 300 has ExposureTime at

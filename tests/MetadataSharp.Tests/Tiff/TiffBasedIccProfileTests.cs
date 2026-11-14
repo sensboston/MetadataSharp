@@ -12,10 +12,10 @@ namespace MetadataSharp.Tests.Tiff;
 /// <summary>
 /// Writing the ICC profile of a plain TIFF: tag 0x8773 of the primary directory, through the
 /// writer that moves no byte of the source. Every case runs on a baseline TIFF, a TIFF of several
-/// pages with a reduced image and a TIFF as a camera writes it, in both byte orders. A DNG or raw
-/// layout without an existing valid primary ICC field is refused: insertion would assign a profile
-/// to a directory whose image role is not proven. A valid existing field is an explicit target for
-/// replacement or removal.
+/// pages with a reduced image and a TIFF as a camera writes it, in both byte orders. RAW layouts
+/// without a proven colour primary are refused; the one bounded DNG preview-root layout has an RGB
+/// primary strip and a separate CFA SubIFD. A valid existing primary field is also an explicit
+/// target for replacement or removal.
 /// </summary>
 public sealed class TiffBasedIccProfileTests
 {
@@ -381,6 +381,28 @@ public sealed class TiffBasedIccProfileTests
         byte[] removed = Save(source, null);
         Assert.Null(IccProfiles.Read(removed));
         TiffBasedWriteTests.AssertImageAndMakerNoteUntouched(fixture, removed);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AFullColourDngPrimaryWithASeparateRawSubIfdAcceptsIccInsertion(bool big)
+    {
+        TiffBasedFixture fixture = TiffBasedFixture.DngColourPreview(big);
+        byte[] source = fixture.Bytes, profile = Profile(560);
+
+        byte[] output = Save(source, profile);
+
+        Assert.Equal(profile, IccProfiles.Read(output));
+        Assert.True(HasTag(output, big));
+        TiffBasedWriteTests.AssertSourceKeptExcept(source, output, (4, 4));
+        TiffBasedWriteTests.AssertImageAndMakerNoteUntouched(fixture, output);
+
+        // A compressed or raw-sensor primary is not covered by this narrow proof.
+        byte[] compressed = WithEntry(source, big, 8, 0x0103, 0x0103, 3, 8);
+        Assert.Contains("not a proven full-colour", Unsuitable(compressed));
+        byte[] cfaPrimary = WithEntry(source, big, 8, 0x0106, 0x0106, 3, 32803);
+        Assert.Contains("not a proven full-colour", Unsuitable(cfaPrimary));
     }
 
     [Theory]

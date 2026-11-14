@@ -92,8 +92,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Dng, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; any property by path, in any namespace."),
         (MetadataContainer.Dng, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; any property by path; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.Dng, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
-        (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace only a valid existing primary tag 0x8773 in a TIFF-based RAW; insertion without one is refused."),
-        (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove only a valid existing primary tag 0x8773 in a TIFF-based RAW; a missing target is refused."),
+        (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: insert tag 0x8773 only when an un-reduced, uncompressed RGB primary has one accounted strip and a separate CFA SubIFD; other DNG/raw layouts fail closed."),
+        (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace a valid existing primary tag 0x8773, or a proven full-colour DNG primary; other DNG/raw targets fail closed."),
+        (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove a valid existing primary tag 0x8773; a missing target is refused except for a proven full-colour DNG primary."),
         (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
         (MetadataContainer.Arw, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Arw, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); new data is appended, image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -376,7 +377,6 @@ public sealed class MetadataCapabilitiesTests
     [InlineData(MetadataContainer.Jxl, MetadataFamily.IptcIim, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Jxl, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Gif, MetadataFamily.Icc, MetadataOperation.Extract)]
-    [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Insert)]
     [InlineData(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Read)]
     [InlineData(MetadataContainer.WebP, MetadataFamily.Comment, MetadataOperation.Insert)]
     [InlineData(MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Remove)]
