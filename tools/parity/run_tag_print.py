@@ -33,6 +33,11 @@ def _is_raw_numeric_tag(key: str) -> bool:
     return bool(_RAW_NUMERIC_TAG.search(key))
 
 
+def _is_text_display(value: str) -> bool:
+    """Whether a printed value is a label/string rather than a numeric rendering."""
+    return bool(value.strip()) and not bool(re.fullmatch(r"[+\\-]?(?:\\d+(?:/\\d+)?)(?:\\s+[+\\-]?(?:\\d+(?:/\\d+)?))*", value.strip()))
+
+
 PINNED_EXIV2_COMMIT = "b0859fc61fea5dedfc898aece6b15893ddf4314e"
 
 # Exception keys are upstream test/data basenames, never extensions or directories. Every retained
@@ -206,7 +211,10 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
                 sample["rows"].append(compact)
         samples.append(sample)
     return {"totals": report["totals"], "failure_kinds": report["failure_kinds"],
-            "difference_types": report["difference_types"], "value_diff_by_key": report["value_diff_by_key"][:40],
+            "difference_types": report["difference_types"],
+            "mismatch_groups": report["mismatch_groups"][:200],
+            "value_diff_by_key": report["value_diff_by_key"][:40],
+            "refusals": report["refusals"],
             "formats": report["formats"],
             "exceptions": report["exceptions"], "tag_exceptions": report["tag_exceptions"],
             "raw_only_tag_exception_total": len(report["raw_only_tag_exceptions"]),
@@ -260,6 +268,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     failure_kinds: Counter[str] = Counter()
     difference_types: Counter[str] = Counter()
     value_pairs: Counter[tuple[str, str, str]] = Counter()
+    mismatch_groups: Counter[tuple[str, str, str, str]] = Counter()
     formats: dict[str, Counter[str]] = defaultdict(Counter)
     for candidate in candidates:
         name = candidate.label
@@ -294,7 +303,16 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
                 for row in rows:
                     difference_types[row["kind"]] += 1
                     if row["kind"] == "value-diff":
-                        value_pairs[(row["exiv2"]["key"], row["exiv2"]["value"], row["metadatasharp"]["value"])] += 1
+                        expected_row, actual_row = row["exiv2"], row["metadatasharp"]
+                        key = expected_row["key"]
+                        value_pairs[(key, expected_row["value"], actual_row["value"])] += 1
+                        category = ("description" if _is_text_display(expected_row["value"])
+                                    and _is_text_display(actual_row["value"]) else "value/format")
+                        mismatch_groups[(category, key, expected_row["type"],
+                                         expected_row["value"] + " => " + actual_row["value"])] += 1
+                    else:
+                        side = row["exiv2"] or row["metadatasharp"]
+                        mismatch_groups[(row["kind"], side["key"], side["type"], str(side["count"]))] += 1
                 problem = {"file": name, "kind": "rows-differ", "exiv2_rows": len(expected),
                            "metadatasharp_rows": len(observed), "rows": rows[:8]}
             else:
@@ -314,9 +332,25 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
         {"key": key, "exiv2": expected[:100], "metadatasharp": actual[:100], "occurrences": count}
         for (key, expected, actual), count in value_pairs.most_common(100)
     ]
+    mismatch_by_key: Counter[tuple[str, str, str]] = Counter()
+    mismatch_examples: dict[tuple[str, str, str], Counter[str]] = defaultdict(Counter)
+    for (category, key, type_name, detail), count in mismatch_groups.items():
+        group = (category, key, type_name)
+        mismatch_by_key[group] += count
+        mismatch_examples[group][detail] += count
+    grouped_differences = [
+        {"category": category, "key": key, "type": type_name, "occurrences": count,
+         "examples": [{"difference": detail[:180], "occurrences": occurrences}
+                      for detail, occurrences in mismatch_examples[(category, key, type_name)].most_common(3)]}
+        for (category, key, type_name), count in mismatch_by_key.most_common(200)
+    ]
+    refusals = [item for item in differing if item["kind"] in
+                ("metadatasharp-refused", "exiv2-refused", "missing-dump-file")]
     return {"kind": "TagPrint", "totals": dict(totals), "failure_kinds": dict(sorted(failure_kinds.items())),
             "difference_types": dict(sorted(difference_types.items())),
+            "mismatch_groups": grouped_differences,
             "value_diff_by_key": value_diff_by_key,
+            "refusals": refusals,
             "formats": {key: dict(value) for key, value in sorted(formats.items())},
             "exceptions": exceptions, "tag_exceptions": tag_exceptions,
             "raw_only_tag_exceptions": raw_only_exceptions, "differing": differing}
