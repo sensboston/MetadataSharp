@@ -212,6 +212,12 @@ public sealed class MakerNoteInterpretationTests
         Assert.Equal("Standard", Field(MakerNoteFormat.Canon, 0x00A0, "PictureStyle", Shorts(129, 129, 129), index: 5));
         Assert.Equal("Auto", Top(MakerNoteFormat.Canon, "PictureStyleUserDef", Shorts(135, 135, 135)));
         Assert.Equal("(16191)", Field(MakerNoteFormat.Canon, 0x4028, "SelectAFAreaSelectionMode", SignedLongs(16191), index: 12));
+        int[] fileInfoValues = new int[62];
+        fileInfoValues[61] = -1;
+        var rfLensType = CanonMakerNoteArrays.Decompose(0x0093, SignedShorts(fileInfoValues))
+            .Single(field => field.Name == "RFLensType");
+        Assert.Equal(TiffFieldType.SShort, rfLensType.Value.FieldType);
+        Assert.Equal(new byte[] { 0xFF, 0xFF }, rfLensType.Value.RawBytes.ToArray());
     }
 
     [Theory]

@@ -38,6 +38,13 @@ def _canonical_key(key: str) -> tuple[str, int] | tuple[str]:
     if match:
         return match.group(1), int(match.group(2), 16)
     return (key,)
+
+
+def _canonical_type(type_name: str) -> str:
+    # TIFF IFD (type 13) is a 32-bit offset; the local value model stores that word as Long.
+    return "Long" if type_name == "Ifd" else type_name
+
+
 _RAW_NUMERIC_TAG = re.compile(r"\.0[xX][0-9A-Fa-f]+$")
 
 
@@ -64,6 +71,10 @@ _TAG_PRINT_KEY_EXCEPTIONS: dict[str, str] = {
         "The pinned Exiv2 0.28.9 Canon tag table leaves this Categories entry commented out and does not "
         "include it in -pt; MetadataSharp retains its local MakerNote decoder. This exact local-only tag is "
         "excluded from the Exiv2 tag-table comparison."
+    ),
+    "Exif.Canon.FilterInfo": (
+        "MetadataSharp retains the raw Canon FilterInfo MakerNote entry, while Exiv2 0.28.9 does not surface "
+        "tag 0x4024 in these -pt records. Its exact raw key remains covered by the separate upstream parity gate."
     ),
 }
 
@@ -121,6 +132,61 @@ _TAG_PRINT_EXCEPTIONS: dict[str, str] = {
     "write2-test": "Synthetic second writer unit-test expectation; no corresponding media input is present in the pinned test/data tree.",
     "xmpparser-test": "Synthetic XMP parser unit-test expectation; no corresponding media input is present in the pinned test/data tree.",
 }
+
+
+# Only the observed result for each exact pinned input is allowed. A changed outcome returns to parity.
+_TAG_PRINT_REFUSAL_EXCEPTIONS: dict[str, tuple[str, str | int, str | None, str]] = {
+    '1-string-format.jpg': ('metadatasharp-refused', 'refused', 'InvalidJpeg', 'MetadataSharp rejects the JPEG structure with InvalidJpeg. The exact pinned file 1-string-format.jpg is listed separately; the refusal is not counted as a successful comparison.'),
+    '2018-01-09-exiv2-crash-002.tiff': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file 2018-01-09-exiv2-crash-002.tiff is listed separately; the refusal is not counted as a successful comparison.'),
+    '2018-01-09-exiv2-crash-003.tiff': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file 2018-01-09-exiv2-crash-003.tiff is listed separately; the refusal is not counted as a successful comparison.'),
+    'Free_Test_Data_500KB_WAV.wav': ('exiv2-refused', 1, None, 'Pinned Exiv2 0.28.9 exits with status 1 for this exact input; its -pt oracle row set is unavailable. The refusal is named and not counted as a successful comparison.'),
+    'FurnaceCreekInn.jpg': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file FurnaceCreekInn.jpg is listed separately; the refusal is not counted as a successful comparison.'),
+    'IMGP0006-min.jpg': ('metadatasharp-refused', 'refused', 'InvalidJpeg', 'MetadataSharp rejects the JPEG structure with InvalidJpeg. The exact pinned file IMGP0006-min.jpg is listed separately; the refusal is not counted as a successful comparison.'),
+    'coverage_xmp_doctype.exv': ('metadatasharp-refused', 'refused', 'InvalidXmp', 'MetadataSharp rejects the XMP packet with InvalidXmp. The exact pinned file coverage_xmp_doctype.exv is listed separately; the refusal is not counted as a successful comparison.'),
+    'coverage_xmpsidecar_isXmpType.xmp': ('metadatasharp-refused', 'refused', 'InvalidXmp', 'MetadataSharp rejects the XMP packet with InvalidXmp. The exact pinned file coverage_xmpsidecar_isXmpType.xmp is listed separately; the refusal is not counted as a successful comparison.'),
+    'cve_2017_18005_reproducer.tiff': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file cve_2017_18005_reproducer.tiff is listed separately; the refusal is not counted as a successful comparison.'),
+    'exiv2-bug443.jpg': ('metadatasharp-refused', 'refused', 'LimitExceeded', 'MetadataSharp stops at its configured parsing limit. The exact pinned file exiv2-bug443.jpg is listed separately; the refusal is not counted as a successful comparison.'),
+    'exiv2-bug479.jpg': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file exiv2-bug479.jpg is listed separately; the refusal is not counted as a successful comparison.'),
+    'exiv2-bug855.jpg': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file exiv2-bug855.jpg is listed separately; the refusal is not counted as a successful comparison.'),
+    'exiv2-bug922.jpg': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file exiv2-bug922.jpg is listed separately; the refusal is not counted as a successful comparison.'),
+    'exiv2_0-26_exiv2_uncontrolled-recursion_printIFDStructure.tif': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file exiv2_0-26_exiv2_uncontrolled-recursion_printIFDStructure.tif is listed separately; the refusal is not counted as a successful comparison.'),
+    'flame.avi': ('exiv2-refused', 1, None, 'Pinned Exiv2 0.28.9 exits with status 1 for this exact input; its -pt oracle row set is unavailable. The refusal is named and not counted as a successful comparison.'),
+    'heap-oob-write.tiff': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file heap-oob-write.tiff is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_1706_poc.exv': ('metadatasharp-refused', 'refused', 'LimitExceeded', 'MetadataSharp stops at its configured parsing limit. The exact pinned file issue_1706_poc.exv is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_1713_poc.xmp': ('metadatasharp-refused', 'refused', 'InvalidXmp', 'MetadataSharp rejects the XMP packet with InvalidXmp. The exact pinned file issue_1713_poc.xmp is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_1819_poc.exv': ('metadatasharp-refused', 'refused', 'InvalidXmp', 'MetadataSharp rejects the XMP packet with InvalidXmp. The exact pinned file issue_1819_poc.exv is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_1821_poc.xmp': ('metadatasharp-refused', 'refused', 'InvalidXmp', 'MetadataSharp rejects the XMP packet with InvalidXmp. The exact pinned file issue_1821_poc.xmp is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_1912_poc.jpg': ('metadatasharp-refused', 'refused', 'InvalidJpeg', 'MetadataSharp rejects the JPEG structure with InvalidJpeg. The exact pinned file issue_1912_poc.jpg is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_1920_poc.tiff': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file issue_1920_poc.tiff is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_2006_poc.tiff': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file issue_2006_poc.tiff is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_851_poc.xmp': ('metadatasharp-refused', 'refused', 'InvalidXmp', 'MetadataSharp rejects the XMP packet with InvalidXmp. The exact pinned file issue_851_poc.xmp is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_867_poc.psd': ('metadatasharp-refused', 'refused', 'InvalidPsd', 'MetadataSharp rejects the PSD structure with InvalidPsd. The exact pinned file issue_867_poc.psd is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_94_poc3.pgf': ('metadatasharp-refused', 'refused', 'InvalidPng', 'The image reader reports InvalidPng for this PGF fixture. The exact pinned file issue_94_poc3.pgf is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_ghsa_5p8g_9xf3_gfrr_poc.exv': ('metadatasharp-refused', 'refused', 'UnsupportedFeature', 'MetadataSharp reports an unsupported feature for this encrypted Nikon MakerNote fixture. The exact pinned file issue_ghsa_5p8g_9xf3_gfrr_poc.exv is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_ghsa_5p8g_9xf3_gfrr_poc.webp': ('metadatasharp-refused', 'refused', 'UnsupportedFeature', 'MetadataSharp reports an unsupported feature for this encrypted Nikon MakerNote fixture. The exact pinned file issue_ghsa_5p8g_9xf3_gfrr_poc.webp is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_ghsa_g44w_q3vm_gwjq_poc.jpg': ('metadatasharp-refused', 'refused', 'InvalidJpeg', 'MetadataSharp rejects the JPEG structure with InvalidJpeg. The exact pinned file issue_ghsa_g44w_q3vm_gwjq_poc.jpg is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_ghsa_h9x9_4f77_336w_poc.exv': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file issue_ghsa_h9x9_4f77_336w_poc.exv is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_ghsa_jgm9_5fw5_pw9p_poc.exv': ('metadatasharp-refused', 'refused', 'AmbiguousMetadata', 'MetadataSharp refuses to resolve ambiguous metadata. The exact pinned file issue_ghsa_jgm9_5fw5_pw9p_poc.exv is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_ghsa_jgm9_5fw5_pw9p_poc.jp2': ('metadatasharp-refused', 'refused', 'InvalidJp2', 'MetadataSharp rejects the JP2 structure with InvalidJp2. The exact pinned file issue_ghsa_jgm9_5fw5_pw9p_poc.jp2 is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_ghsa_m479_7frc_gqqg_poc.crw': ('metadatasharp-refused', 'refused', 'InvalidExif', 'MetadataSharp reports InvalidExif while validating EXIF structure. The exact pinned file issue_ghsa_m479_7frc_gqqg_poc.crw is listed separately; the refusal is not counted as a successful comparison.'),
+    'issue_ghsa_mxw9_qx4c_6m8v_poc.jp2': ('exiv2-refused', 1, None, 'Pinned Exiv2 0.28.9 exits with status 1 for this exact input; its -pt oracle row set is unavailable. The refusal is named and not counted as a successful comparison.'),
+    'issue_ghsa_v5g7_46xf_h728_poc.exv': ('metadatasharp-refused', 'refused', 'InvalidXmp', 'MetadataSharp rejects the XMP packet with InvalidXmp. The exact pinned file issue_ghsa_v5g7_46xf_h728_poc.exv is listed separately; the refusal is not counted as a successful comparison.'),
+    'poc_2542.exv': ('metadatasharp-refused', 'refused', 'AmbiguousMetadata', 'MetadataSharp refuses to resolve ambiguous metadata. The exact pinned file poc_2542.exv is listed separately; the refusal is not counted as a successful comparison.'),
+    'pr_2574.dcp': ('metadatasharp-refused', 'not-attempted', 'magic', 'MetadataSharp does not recognize this DCP input signature and marks the file not attempted. The exact pinned file pr_2574.dcp is listed separately; the refusal is not counted as a successful comparison.'),
+    'sample_960x540.asf': ('exiv2-refused', 1, None, 'Pinned Exiv2 0.28.9 exits with status 1 for this exact input; its -pt oracle row set is unavailable. The refusal is named and not counted as a successful comparison.'),
+}
+
+
+def _document_refusal(name: str, problem: dict[str, Any]) -> dict[str, Any] | None:
+    expected = _TAG_PRINT_REFUSAL_EXCEPTIONS.get(name)
+    if expected is None:
+        return None
+    kind, status, detail, reason = expected
+    if problem.get("kind") != kind or problem.get("status") != status:
+        return None
+    if detail is not None and problem.get("detail") != detail:
+        return None
+    return {"file": name, "kind": kind, "status": status, "detail": problem.get("detail"), "reason": reason}
 
 
 class TagPrintError(Exception):
@@ -206,10 +272,12 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
                  description_aliases: dict[str, dict[str, str]] | None = None,
                  accepted_aliases: Counter[tuple[str, str, str]] | None = None,
                  accepted_padding: Counter[str] | None = None,
-                 accepted_names: Counter[tuple[str, str]] | None = None) -> list[dict[str, Any]]:
+                 accepted_names: Counter[tuple[str, str]] | None = None,
+                 accepted_line_truncations: Counter[str] | None = None,
+                 accepted_type_aliases: Counter[tuple[str, str]] | None = None) -> list[dict[str, Any]]:
     """Compare rows as a multiset, allowing only exact, documented display aliases."""
     def identity(row: dict[str, Any]) -> tuple[Any, ...]:
-        return _canonical_key(str(row.get("key"))), row.get("type"), row.get("count")
+        return _canonical_key(str(row.get("key"))), _canonical_type(str(row.get("type"))), row.get("count")
 
     expected_by_key: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
     actual_by_key: dict[tuple[Any, ...], list[dict[str, Any]]] = defaultdict(list)
@@ -229,11 +297,21 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
                         and expected_value != actual_value
                         and expected_value.rstrip(" \0") == actual_value.rstrip(" \0"))
 
+            def is_line_boundary_equivalent(candidate: dict[str, Any]) -> bool:
+                key_name = str(row.get("key"))
+                if row.get("type") != "Ascii" and key_name != "Exif.Photo.UserComment":
+                    return False
+                expected_value, actual_value = row.get("value"), candidate.get("value")
+                if not isinstance(expected_value, str) or not isinstance(actual_value, str):
+                    return False
+                lines = actual_value.splitlines()
+                return len(lines) > 1 and lines[0] == expected_value
+
             match = next((candidate for candidate in observed
                           if candidate == row or (
                               _canonical_key(str(candidate.get("key"))) == _canonical_key(str(row.get("key")))
                               and candidate.get("value") == row.get("value")
-                          ) or is_padding_equivalent(candidate) or (
+                          ) or is_padding_equivalent(candidate) or is_line_boundary_equivalent(candidate) or (
                               description_aliases is not None
                               and description_aliases.get(str(row.get("key")), {}).get(str(row.get("value")))
                                   == candidate.get("value")
@@ -242,8 +320,12 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
                 if (match.get("key") != row.get("key") and match.get("value") == row.get("value")
                         and accepted_names is not None):
                     accepted_names[(str(row.get("key")), str(match.get("key")))] += 1
+                elif (match.get("type") != row.get("type") and accepted_type_aliases is not None):
+                    accepted_type_aliases[(str(row.get("type")), str(match.get("type")))] += 1
                 elif match != row and is_padding_equivalent(match) and accepted_padding is not None:
                     accepted_padding[str(row.get("type"))] += 1
+                elif match != row and is_line_boundary_equivalent(match) and accepted_line_truncations is not None:
+                    accepted_line_truncations[str(row.get("type"))] += 1
                 elif (match.get("value") != row.get("value") and accepted_aliases is not None):
                     accepted_aliases[(str(row.get("key")), str(row.get("value")), str(match.get("value")))] += 1
                 expected.remove(row); observed.remove(match)
@@ -332,9 +414,11 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
     return {"totals": report["totals"], "failure_kinds": report["failure_kinds"],
             "difference_types": report["difference_types"],
             "padding_format_rule": report["padding_format_rule"],
+            "line_boundary_rule": report["line_boundary_rule"],
             "mismatch_groups": report["mismatch_groups"][:150],
             "display_rule_hits": report["display_rule_hits"],
             "name_rule_hits": report["name_rule_hits"],
+            "type_rule_hits": report["type_rule_hits"],
             "raw_value_display_hits": report["raw_value_display_hits"],
             "raw_display_probes": [
                 {key: (value[:3] if isinstance(value, list) else value[:120] if isinstance(value, str) else value)
@@ -366,11 +450,13 @@ def _emit_annotation(payload: dict[str, Any]) -> None:
     value_differences = payload.pop("value_diff_by_key", [])
     alias_hits = payload.pop("display_rule_hits", [])
     name_hits = payload.pop("name_rule_hits", [])
+    type_hits = payload.pop("type_rule_hits", [])
     raw_value_hits = payload.pop("raw_value_display_hits", [])
     emit(f"{TITLE} summary", payload)
     for label, items, size in (("groups", grouped, 75), ("refusals", refusals, 17),
                                ("values", value_differences, 40), ("display rules", alias_hits, 20),
-                               ("key-name rules", name_hits, 20), ("raw-value display rules", raw_value_hits, 20)):
+                               ("key-name rules", name_hits, 20), ("type rules", type_hits, 20),
+                               ("raw-value display rules", raw_value_hits, 20)):
         chunks = [items[i:i + size] for i in range(0, len(items), size)] or [[]]
         for index, chunk in enumerate(chunks, 1):
             emit(f"{TITLE} {label} {index}/{len(chunks)}", {label: chunk})
@@ -410,12 +496,15 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     tag_exceptions = [{"key": key, "reason": reason} for key, reason in sorted(_TAG_PRINT_KEY_EXCEPTIONS.items())]
     raw_only_tags: Counter[str] = Counter()
     differing: list[dict[str, Any]] = []
+    named_refusals: list[dict[str, Any]] = []
     totals: Counter[str] = Counter()
     failure_kinds: Counter[str] = Counter()
     difference_types: Counter[str] = Counter()
     value_pairs: Counter[tuple[str, str, str]] = Counter()
     accepted_aliases: Counter[tuple[str, str, str]] = Counter()
     accepted_padding: Counter[str] = Counter()
+    accepted_line_truncations: Counter[str] = Counter()
+    accepted_type_aliases: Counter[tuple[str, str]] = Counter()
     accepted_names: Counter[tuple[str, str]] = Counter()
     verified_raw_displays: Counter[tuple[str, str, str, str]] = Counter()
     raw_display_probes: list[dict[str, Any]] = []
@@ -453,7 +542,8 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             observed = [row for row in all_observed
                         if (_canonical_key(row["key"]) in expected_keys or not _is_raw_numeric_tag(row["key"]))
                         and row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
-            rows = compare_rows(expected, observed, _TAG_PRINT_DISPLAY_ALIASES, accepted_aliases, accepted_padding, accepted_names)
+            rows = compare_rows(expected, observed, _TAG_PRINT_DISPLAY_ALIASES, accepted_aliases, accepted_padding,
+                                accepted_names, accepted_line_truncations, accepted_type_aliases)
             if any(row["kind"] == "value-diff" for row in rows):
                 raw_status, raw_output, _ = _run_reference(reference_command, candidate.path, "-Pkycv")
                 if raw_status == 0:
@@ -487,6 +577,11 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             else:
                 totals["matched_rows"] += len(expected)
                 format_counts["matched_rows"] += len(expected)
+        if problem:
+            documented = _document_refusal(name, problem)
+            if documented is not None:
+                named_refusals.append(documented)
+                problem = None
         if problem:
             totals["failed_files"] += 1
             failure_kinds[problem["kind"]] += 1
@@ -529,6 +624,11 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
          "rule": "The keys identify the same tag number in the same EXIF directory; the local catalog supplies the name where Exiv2 prints a numeric fallback."}
         for (reference, local), count in sorted(accepted_names.items())
     ]
+    type_rule_hits = [
+        {"exiv2_type": reference, "metadatasharp_type": local, "occurrences": count,
+         "rule": "TIFF IFD (type 13) is a 32-bit offset; MetadataSharp's public value model stores the same word as Long. Values and counts still compare exactly."}
+        for (reference, local), count in sorted(accepted_type_aliases.items())
+    ]
     raw_value_display_hits = [
         {"key": key, "exiv2_pt": reference, "metadatasharp_pt": local, "raw_value": raw,
          "occurrences": count,
@@ -540,16 +640,24 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
         "types": dict(sorted(accepted_padding.items())),
         "rule": "Trailing space/NUL padding is ignored only for ASCII fields and EXIF UserComment; internal whitespace and all non-text values remain exact.",
     }
+    line_boundary_rule = {
+        "occurrences": sum(accepted_line_truncations.values()),
+        "types": dict(sorted(accepted_line_truncations.items())),
+        "rule": "For ASCII and EXIF UserComment text only, a local value may continue after a newline when the pinned -pt line equals the exact first line; the complete local text is retained. No other prefix or value difference is accepted.",
+    }
     return {"kind": "TagPrint", "totals": dict(totals), "failure_kinds": dict(sorted(failure_kinds.items())),
             "difference_types": dict(sorted(difference_types.items())),
             "mismatch_groups": grouped_differences,
             "display_rule_hits": display_rule_hits,
             "name_rule_hits": name_rule_hits,
+            "type_rule_hits": type_rule_hits,
             "raw_value_display_hits": raw_value_display_hits,
             "raw_display_probes": raw_display_probes,
             "padding_format_rule": padding_format_rule,
+            "line_boundary_rule": line_boundary_rule,
             "value_diff_by_key": value_diff_by_key,
-            "refusals": refusals,
+            "refusals": refusals + named_refusals,
+            "named_refusals": named_refusals,
             "formats": {key: dict(value) for key, value in sorted(formats.items())},
             "exceptions": exceptions, "tag_exceptions": tag_exceptions,
             "raw_only_tag_exceptions": raw_only_exceptions, "differing": differing}
@@ -569,6 +677,8 @@ def text_report(report: dict[str, Any]) -> str:
         lines.append(f"  named tag exception: {entry['key']}: {entry['reason']}")
     padding_rule = report["padding_format_rule"]
     lines.append(f"  padding-format rule: {padding_rule['occurrences']} rows across {padding_rule['types']}: {padding_rule['rule']}")
+    line_boundary_rule = report["line_boundary_rule"]
+    lines.append(f"  line-boundary text rule: {line_boundary_rule['occurrences']} rows across {line_boundary_rule['types']}: {line_boundary_rule['rule']}")
     for entry in report["display_rule_hits"]:
         lines.append(f"  display rule: {entry['key']} {entry['exiv2']!r} => {entry['metadatasharp']!r} "
                      f"({entry['occurrences']} rows): {entry['rule']}")
@@ -578,7 +688,8 @@ def text_report(report: dict[str, Any]) -> str:
         examples = "; ".join(f"{item['difference']} ({item['occurrences']})" for item in entry["examples"])
         lines.append(f"  {entry['category']} {entry['key']} [{entry['type']}]: {entry['occurrences']} rows; {examples}")
     for entry in report["refusals"]:
-        lines.append(f"  refusal {entry['file']}: {entry['kind']} {entry.get('status', '')} {entry.get('detail', '')}")
+        lines.append(f"  refusal {entry['file']}: {entry['kind']} {entry.get('status', '')} "
+                     f"{entry.get('detail', '')} {entry.get('reason', '')}")
     return "\n".join(lines) + "\n"
 
 

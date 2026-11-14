@@ -91,6 +91,27 @@ class TagPrintProtocolTests(unittest.TestCase):
         actual = [{"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1"}]
         self.assertEqual(1, len(gate.compare_rows(expected, actual)))
 
+    def test_tiff_ifd_offsets_match_the_same_long_value(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Olympus2.CameraSettings", "type": "Ifd", "count": 1, "value": "512"}]
+        actual = [{"key": "Exif.Olympus2.CameraSettings", "type": "Long", "count": 1, "value": "512"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_type_aliases=accepted))
+        self.assertEqual({("Ifd", "Long"): 1}, dict(accepted))
+        self.assertEqual(1, len(gate.compare_rows(expected, [{**actual[0], "value": "513"}])))
+
+    def test_multiline_text_only_accepts_exact_pinned_first_line(self) -> None:
+        accepted = Counter()
+        expected = [{"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 20,
+                     "value": "caption"}]
+        actual = [{"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 20,
+                  "value": "caption\nlonger description"}]
+        self.assertEqual([], gate.compare_rows(expected, actual, accepted_line_truncations=accepted))
+        self.assertEqual({"Ascii": 1}, dict(accepted))
+        changed_first_line = [{**actual[0], "value": "different\nlonger description"}]
+        self.assertEqual(1, len(gate.compare_rows(expected, changed_first_line)))
+        non_text = [{**expected[0], "type": "Undefined"}]
+        self.assertEqual(1, len(gate.compare_rows(non_text, [{**actual[0], "type": "Undefined"}])))
+
     def test_dump_protocol_unescapes_records_and_rejects_open_or_malformed_blocks(self) -> None:
         parsed = gate.parse_dump("FILE\t/tmp/a\\tb.jpg\nTAG\tExif.Image.Make\tAscii\t2\tA\\\\B\t\nSTATUS\tok\n")
         self.assertEqual("A\\B", parsed["/tmp/a\tb.jpg"]["rows"][0]["raw"])
@@ -108,11 +129,23 @@ class TagPrintProtocolTests(unittest.TestCase):
             "write2-test", "xmpparser-test",
         })
         self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_EXCEPTIONS.values()))
-        self.assertEqual({"Exif.GPSInfo.GPSAltitudeRef", "Exif.Canon.Categories", "Exif.Canon.PictureStylePC"},
-                         set(gate._TAG_PRINT_KEY_EXCEPTIONS))
+        self.assertEqual({"Exif.GPSInfo.GPSAltitudeRef", "Exif.Canon.Categories", "Exif.Canon.PictureStylePC",
+                          "Exif.Canon.FilterInfo"}, set(gate._TAG_PRINT_KEY_EXCEPTIONS))
         self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_KEY_EXCEPTIONS.values()))
         self.assertIn("Exif.Image.ImageWidth", gate.CATALOG_KEYS)
         self.assertNotIn("Exif.Canon.0x0019", gate.CATALOG_KEYS)
+
+    def test_every_observed_refusal_is_named_and_requires_the_same_result(self) -> None:
+        self.assertEqual(38, len(gate._TAG_PRINT_REFUSAL_EXCEPTIONS))
+        for name, (kind, status, detail, reason) in gate._TAG_PRINT_REFUSAL_EXCEPTIONS.items():
+            self.assertTrue(reason.strip(), name)
+            problem = {"kind": kind, "status": status, "detail": detail or "observed exiv2 detail"}
+            self.assertIsNotNone(gate._document_refusal(name, problem), name)
+            changed = {**problem, "status": "changed"}
+            self.assertIsNone(gate._document_refusal(name, changed), name)
+            if detail is not None:
+                changed_detail = {**problem, "detail": "different-code"}
+                self.assertIsNone(gate._document_refusal(name, changed_detail), name)
 
     def test_only_numeric_raw_tags_without_a_pinned_named_row_are_reported_as_raw_only(self) -> None:
         self.assertTrue(gate._is_raw_numeric_tag("Exif.Canon.0x0019"))

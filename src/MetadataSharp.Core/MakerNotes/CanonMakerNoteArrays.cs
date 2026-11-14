@@ -178,7 +178,7 @@ internal static class CanonMakerNoteArrays
         new(14, "FilterEffect"), new(15, "ToningEffect"), new(16, "MacroMagnification"),
         new(19, "LiveViewShooting"), new(20, "FocusDistanceUpper"), new(21, "FocusDistanceLower"),
         new(23, "ShutterMode"), new(25, "FlashExposureLock"), new(32, "AntiFlicker"),
-        new(61, "RFLensType", TiffFieldType.Short),
+        new(61, "RFLensType", TiffFieldType.SShort),
     ]);
 
     private static readonly Layout TimeInfo = new(TiffFieldType.SLong,

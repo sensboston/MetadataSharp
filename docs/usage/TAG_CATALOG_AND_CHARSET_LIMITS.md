@@ -64,14 +64,21 @@ without source media are individually listed with reasons. The exact `Exif.GPSIn
 translation is also listed as a tag-level exception because the local table follows the expanded Exif
 3.0 wording while the pinned Exiv2 release predates that wording. `Exif.Canon.Categories` and
 `Exif.Canon.PictureStylePC` are retained as exact local-only MakerNote keys because the pinned Exiv2
-0.28.9 table comments them out and omits them from `-pt`. Exact display rules for
+0.28.9 table comments them out and omits them from `-pt`. `Exif.Canon.FilterInfo` is another exact
+key: MetadataSharp keeps the raw Canon MakerNote entry, while Exiv2 0.28.9 does not surface tag
+`0x4024` in the affected `-pt` records; its raw value remains covered by the separate upstream gate.
+Exact display rules for
 `Exif.Photo.MeteringMode`, `Exif.Photo.ExposureProgram`, `Exif.Photo.SensitivityType`,
 `Exif.Image.CalibrationIlluminant1`, and `Exif.Image.CalibrationIlluminant2` are tracked once per key
 and applied only to the listed display pairs; any other value for those keys still fails. These rules
 preserve the local vocabulary and raw-code policy rather than copying Exiv2 descriptions. As a print
 format convention, trailing spaces and NUL padding are ignored only at the end of ASCII fields and
-`Exif.Photo.UserComment`; internal whitespace and every non-text value remain exact. When Exiv2 prints
-a numeric fallback for a catalogued tag, the comparator may match it to the local tag name only when
+`Exif.Photo.UserComment`; internal whitespace and every non-text value remain exact. For ASCII and
+`Exif.Photo.UserComment` text, the comparator also accepts the exact local first line when the pinned
+`-pt` output ends at a newline; it retains the complete local text and accepts no other prefix match.
+TIFF IFD fields (type 13) are also compared as `Long` when MetadataSharp represents the same
+32-bit offset using its public `Long` value type; value and count equality are still exact. When Exiv2
+prints a numeric fallback for a catalogued tag, the comparator may match it to the local tag name only when
 the EXIF directory and numeric tag ID agree; values, types, and counts must still match. For a
 remaining `-pt` value difference, the comparator accepts it as presentation-only only if the pinned
 Exiv2 `-Pkycv` raw value exactly equals MetadataSharp's raw value for the same key, type, and count. The
@@ -80,7 +87,10 @@ catalog. Any difference in raw value or structure still fails. A vendor tag
 rendered only as an unknown numeric key (for example, `Exif.Canon.0x0019`) is not a named catalog
 entry; if the pinned reference does not print that key, the report lists it under
 `raw_only_tag_exceptions` instead of counting its fallback raw value as a named-table mismatch. This does not suppress unknown named keys,
-keys printed by both tools, raw-value gates, or the separate MakerNote-render parity gate. The gate is
-fail-closed for unlisted missing inputs and other output mismatches. It is not a claim that this table
+keys printed by both tools, raw-value gates, or the separate MakerNote-render parity gate. Named reader
+refusals are inventoried by exact corpus filename and status in
+[`TAG_PRINT_REFUSAL_CATALOG.md`](TAG_PRINT_REFUSAL_CATALOG.md); they are reported as refusals, not
+matched rows, and any changed outcome fails. The gate is fail-closed for unlisted missing inputs and
+other output mismatches. It is not a claim that this table
 or the library currently achieves full parity; the report is the measure of remaining work. The tool also checks that both the source checkout
 and binary identify as the pin before comparing output.
