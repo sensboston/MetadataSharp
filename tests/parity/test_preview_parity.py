@@ -94,7 +94,7 @@ class OracleTests(unittest.TestCase):
         self.assertIn(".pgf", run_previews._PREVIEW_FIXTURE_SUFFIXES)
         self.assertNotIn(".asf", run_previews._PREVIEW_FIXTURE_SUFFIXES)
         self.assertNotIn(".wav", run_previews._PREVIEW_FIXTURE_SUFFIXES)
-        self.assertIn("dos-eps-xmp.eps", run_previews._EXIV2_PREVIEW_REFUSALS)
+        self.assertIn("b11eps", run_previews._METADATA_ONLY_EPS_FIXTURE_DIRS)
 
     def test_the_two_sources_of_the_expectation_exclude_each_other(self):
         for arguments in ([], ["--tree", "t", "--fixtures", "f"]):

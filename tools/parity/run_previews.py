@@ -62,10 +62,11 @@ _PREVIEW_FIXTURE_SUFFIXES = frozenset({
     ".jpg", ".jpeg", ".tif", ".tiff", ".png", ".webp", ".crw", ".mrw", ".raf", ".rw2", ".sr2",
     ".jp2", ".psd", ".eps", ".pgf", ".jxl", ".avif", ".heic", ".heif", ".cr3",
 })
-# This deliberately dual-page DOS EPS sample is rejected by pinned 0.28.9 before it can list previews.
-_EXIV2_PREVIEW_REFUSALS = {
-    "dos-eps-xmp.eps": "Page position conflict between the DOS header and the implicit PostScript page",
-}
+# b11eps contains minimal authored EPS/XMP parser and writer fixtures, including intentionally
+# conflicting or empty DSC page layouts. They are not preview-image samples; the actual EPS preview
+# carrier fixture (owned-vector.eps) is covered by this gate from b8, while these files stay in the
+# focused library tests instead of being submitted to an oracle that rejects their page framing.
+_METADATA_ONLY_EPS_FIXTURE_DIRS = frozenset({"b11eps"})
 
 
 class PreviewParityError(Exception):
@@ -510,8 +511,9 @@ def main(argv: list[str] | None = None) -> int:
                 continue  # the fixture directories also hold non-image parser tests
             if candidate.label in paths:
                 raise PreviewParityError(f"two files are named {candidate.label}")
-            if candidate.label in _EXIV2_PREVIEW_REFUSALS:
-                continue  # documented oracle limitation; library-side EPS coverage remains in unit tests
+            if (candidate.path.suffix.lower() == ".eps"
+                    and candidate.path.parent.name in _METADATA_ONLY_EPS_FIXTURE_DIRS):
+                continue
             paths[candidate.label] = candidate.path
         if not paths:
             raise PreviewParityError("the fixture directories contain no supported preview images")
