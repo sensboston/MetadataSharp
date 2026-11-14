@@ -38,9 +38,26 @@ public sealed class XmpTagsTests
     }
 
     [Fact]
-    public void AValueTheTagCannotHoldReadsAsNothing()
+    public void ACodeTheReferenceDoesNotNameReadsAsTheBareNumber()
     {
-        // Orientation is a SHORT: the reference prints nothing of a text that is not a number.
-        Assert.Null(Reading(Packet("tiff:Orientation='sideways'"), "Xmp.tiff.Orientation"));
+        // Orientation is a code: a text that names none is read as the zero it is given, in brackets.
+        Assert.Equal("(0)", Reading(Packet("tiff:Orientation='sideways'"), "Xmp.tiff.Orientation"));
+        Assert.Equal("(9)", Reading(Packet("tiff:Orientation='9'"), "Xmp.tiff.Orientation"));
+    }
+
+    [Fact]
+    public void TheReferenceReadsADateAndAVersionItsOwnWay()
+    {
+        XmpPacket packet = Packet("exif:DateTimeOriginal='2002-07-13T15:58:28Z' exif:ExifVersion='0220'");
+        Assert.Equal("2002:07:13 15:58:28", Reading(packet, "Xmp.exif.DateTimeOriginal"));
+        Assert.Equal("2.20", Reading(packet, "Xmp.exif.ExifVersion"));
+    }
+
+    [Fact]
+    public void APropertyOutsideTheReferencesTableReadsAsNothing()
+    {
+        // The reference prints a reading for the properties of its own table only, and a text
+        // property with an EXIF counterpart is not one of them.
+        Assert.Null(Reading(Packet("tiff:Make='Canon'"), "Xmp.tiff.Make"));
     }
 }

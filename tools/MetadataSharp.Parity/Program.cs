@@ -666,6 +666,10 @@ internal static class Program
             foreach (ParityRow row in file.Rows)
             {
                 if (!groups.Exists(group => row.Key.StartsWith(group + ".", StringComparison.Ordinal))) continue;
+                // An XMP group is gated on its reading alone: the text of a packet is compared by the
+                // XMP gates, and what this one asks of a property is that it reads as the reference's.
+                bool reading = row.Translated && row.Interpreted != MatchInterpreted;
+                if (row.Key.StartsWith("Xmp.", StringComparison.Ordinal) && !reading) continue;
                 string? kind = row.Outcome switch
                 {
                     ExtraKey => OpaqueTag.IsMatch(row.Key) || RawExtras.ContainsKey(row.Key) ? null : "raw-extra",
@@ -673,8 +677,7 @@ internal static class Program
                     MissingKey or ValueDiff or MatchKey => "raw-" + row.Outcome,
                     _ => null
                 };
-                if (row.Translated && row.Interpreted != MatchInterpreted)
-                    kind = row.Interpreted is null or NotInterpreted ? "not-interpreted" : InterpretedDiff;
+                if (reading) kind = row.Interpreted is null or NotInterpreted ? "not-interpreted" : InterpretedDiff;
                 if (kind is null) continue;
                 if (InterpretationAllowances.ContainsKey(row.Key)) kind = "allowed: " + kind;
                 string signature = row.Key + "|" + kind + "|" + (row.OurInterpreted ?? "") + "|" + (row.TheirInterpreted ?? "") +
@@ -686,16 +689,19 @@ internal static class Program
             }
         }
         if (gaps.Count == 0) return;
+        // A step may post only a handful of notices, and an annotation message is cut at 4 KiB, so the
+        // list is chunked by the size of what it compresses to rather than by a guess at its length.
         List<string> parts = [];
         var current = new List<GapRow>();
-        int length = 0;
         foreach (GapRow gap in gaps.Values)
         {
-            // An annotation message holds 64 KiB, and the payload is base64 of a compressed list.
-            int size = gap.Key.Length + gap.Kind.Length + gap.Ours.Length + gap.Exiv2.Length + gap.Detail.Length + gap.Label.Length + 120;
-            if (current.Count != 0 && length + size > 24000) { parts.Add(Payload(current)); current = []; length = 0; }
             current.Add(gap);
-            length += size;
+            if (current.Count > 1 && Payload(current).Length > 3000)
+            {
+                current.RemoveAt(current.Count - 1);
+                parts.Add(Payload(current));
+                current = [gap];
+            }
         }
         if (current.Count != 0) parts.Add(Payload(current));
         for (int index = 0; index < parts.Count; index++)
@@ -801,7 +807,8 @@ internal static class Program
             Dictionary<string, int> raw = report.ByFamily.GetValueOrDefault(group) ?? [];
             Dictionary<string, int> interpreted = report.Interpreted.ByFamily.GetValueOrDefault(group) ?? [];
             text.AppendLine($"  {group}: interpreted found/equal={interpreted.GetValueOrDefault(MatchInterpreted) + interpreted.GetValueOrDefault(InterpretedDiff) + interpreted.GetValueOrDefault("not-interpreted-translated")}/{interpreted.GetValueOrDefault(MatchInterpreted)}; raw found/equal={raw.GetValueOrDefault(MatchValue) + raw.GetValueOrDefault(MatchKey) + raw.GetValueOrDefault(ValueDiff)}/{raw.GetValueOrDefault(MatchValue)}");
-            if (raw.GetValueOrDefault(MissingKey) > 0 || raw.GetValueOrDefault(ValueDiff) + raw.GetValueOrDefault(MatchKey) > 0)
+            bool packet = group.StartsWith("Xmp.", StringComparison.Ordinal);
+            if (!packet && (raw.GetValueOrDefault(MissingKey) > 0 || raw.GetValueOrDefault(ValueDiff) + raw.GetValueOrDefault(MatchKey) > 0))
                 failures.Add($"{group}: raw parity missing={raw.GetValueOrDefault(MissingKey)}, value-diff={raw.GetValueOrDefault(ValueDiff) + raw.GetValueOrDefault(MatchKey)}");
             int seen = 0;
             foreach (FileReport file in report.PerFile)
@@ -814,6 +821,8 @@ internal static class Program
                 foreach (ParityRow row in file.Rows.Where(r => r.Key.StartsWith(group + ".", StringComparison.Ordinal)))
                 {
                     seen++;
+                    // An XMP group asks only that a value the reference reads is read the same way.
+                    if (packet && !(row.Translated && row.Interpreted != MatchInterpreted)) continue;
                     if (row.Outcome == ExtraKey)
                     {
                         if (!OpaqueTag.IsMatch(row.Key) && !RawExtras.ContainsKey(row.Key)) failures.Add($"{group}: {file.Label} {row.Key}: raw outcome {ExtraKey}");
