@@ -42,9 +42,10 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   name does here. `MetadataTextTests` (30 tests) covers the matrix, its refusals and both writers;
   `tools/reference/run_charset.py` writes one fixture per charset, has the pinned binary convert it
   with `-v -n <name> fc`, and compares the text the tool reports converting with what this library
-  reads. One rule is the reference's own: for `windows-1258` its text is ours without the final
-  character, because glibc's converter for that code page holds the last character until a flush
-  that `convertStringCharsetIconv` never performs.
+  reads. Run 43595572508: all 38 character sets, 37 comments equal the tool's, one by that rule,
+  38 of 38 titles, 38 of 38 round trips. One rule is the reference's own: for `windows-1258` its text
+  is ours without the final character, because glibc's converter for that code page holds the last
+  character until a flush that `convertStringCharsetIconv` never performs.
 - Tag keys (PR "keys"): `tools/parity/run_key_catalog.py` reads every tag table of the pinned
   checkout (6 537 keys in 124 groups) and finds none missing from `tag-catalog-data.json`, one
   local-only key (`Exif.Fujifilm.Sharpness`) and no differing numbers; `tests/parity/test_key_catalog.py`
@@ -290,8 +291,9 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   is a tag without a name of type LONG, SLONG or UNDEFINED unless `allowUnnamed` is passed. The
   result is re-read and every unnamed tag compared byte for byte (`MakerNoteWriter`), and the
   layout around the note is compared (`TiffBasedWriteVerifier.MakerNote`). Parity job
-  "MakerNote edit parity" (run 43316787075): `exiv2 -u -PEkv` reads 178 edits of corpus JPEGs back
-  as set with every other key unchanged (text of the same length 85, grown text 42, SHORT 51).
+  "MakerNote edit parity" (run 43595572508): `exiv2 -u -PEkv` reads 237 edits of 174 corpus files
+  back as set with every other key unchanged (text of the same length 85, grown text 42, SHORT 51,
+  and a number inside an array-valued tag 59 - the Minolta and Samsung settings arrays).
   Not proven by the tool: TIFF-based files (the corpus has no whole raw file with a decodable
   note; synthetic tests only) and growth in notes that count offsets from themselves (code
   present, switched off).

@@ -155,7 +155,9 @@ gate rather than by an exception list: for `windows-1258` the tool's text is thi
 its final character, because glibc's converter for that code page holds the last character until the
 conversion is flushed and `convertStringCharsetIconv` stops as soon as the input is consumed. The
 rule is by name and by exact shape - the rest of the text must still be equal, and every other
-character set of the matrix hands over everything without a flush, which the same run shows. The conversion is iconv, an
+character set of the matrix hands over everything without a flush, which the same run shows. Run
+43595572508: all 38 character sets, 37 comments equal to the tool's and one by that rule, 38 of 38
+titles, 38 of 38 round trips. The conversion is iconv, an
 optional dependency of the reference: a build without it says so in the gate's notice instead of
 passing quietly, and the round trips are still failed. The matrix itself, its aliases, its refusals
 and the writers are covered offline by `MetadataTextTests`.
