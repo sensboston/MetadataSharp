@@ -11,17 +11,19 @@ namespace MetadataSharp.Formats.Tiff;
 /// <remarks>
 /// <para>The file is copied and the directory is appended to its end, so nothing moves: no offset the
 /// file already holds changes, and every byte of the image data stays where it is. Only the four
-/// bytes of the primary directory's successor link are rewritten, and, where a picture is replaced or
-/// removed, the ranges that only the old thumbnail addressed are cleared. This is
-/// <c>exiv2 -it</c> and <c>exiv2 -dt</c>, which re-encode the whole file; here nothing else is
-/// written at all.</para>
+/// bytes of the primary directory's successor link are rewritten. This is <c>exiv2 -it</c> and
+/// <c>exiv2 -dt</c>, which re-encode the whole file; here nothing else is written at all.</para>
+/// <para>The directory a replaced or removed thumbnail leaves behind, and its stream, are not
+/// cleared: a stream of a raw file is often the one a MakerNote holds inside itself (the Olympus
+/// and Canon notes do), and a byte cleared there would be a byte of the note. They stay in the file,
+/// no longer addressed by anything.</para>
 /// <para>A directory that is appended states the three tags Exif requires of a JPEG thumbnail
 /// (XResolution, YResolution and ResolutionUnit of 72 dpi) when it is created and keeps the other
 /// tags of the directory it replaces as they are, at the offsets where their values already lie.</para>
 /// <para>The result is read back before it is returned: the strict reader of the file has to return
 /// the new stream as the thumbnail (or none), every tag outside the thumbnail directory has to read
-/// byte for byte as before, and the bytes of the source have to be unchanged but where the link and
-/// the cleared ranges are.</para>
+/// byte for byte as before, and the bytes of the source have to be unchanged but where the successor
+/// link is.</para>
 /// </remarks>
 internal static class TiffThumbnailWriter
 {
@@ -80,6 +82,11 @@ internal static class TiffThumbnailWriter
         {
             if (jpeg.Length > limits.MaxThumbnailBytes)
                 throw new MetadataException(MetadataErrorCode.LimitExceeded, "The thumbnail exceeds its budget.");
+            // The reader of the file takes a stream that begins with FF D8 and ends with FF D9. A
+            // stream that would be written and then not be read back as the thumbnail is refused here.
+            if (jpeg.Length < 4 || jpeg[0] != 0xFF || jpeg[1] != 0xD8 || jpeg[^2] != 0xFF || jpeg[^1] != 0xD9)
+                throw new MetadataException(MetadataErrorCode.UnsupportedFeature,
+                    "The thumbnail is not a JPEG stream the reader takes: it starts with FF D8 and ends with FF D9.");
             // Appended bytes have to land outside every range the file accounts for.
             if (map.HasRangePastEnd || map.HasOpenEndedImageData)
                 throw new MetadataException(MetadataErrorCode.UnsafeRelocation,
@@ -110,22 +117,6 @@ internal static class TiffThumbnailWriter
 
         byte[] output = new byte[length];
         file.CopyTo(output, 0);
-        var cleared = new List<(long Start, long Length)>();
-        if (old is not null)
-        {
-            TiffBasedField? at = old.Find(JpegInterchangeFormat), count = old.Find(JpegInterchangeFormatLength);
-            if (Scalar(file, at, little) is uint offset && Scalar(file, count, little) is uint bytes &&
-                offset <= file.Length && (long)offset + bytes <= file.Length && map.IsExclusive(offset, bytes))
-            {
-                output.AsSpan((int)offset, (int)bytes).Clear();
-                cleared.Add((offset, bytes));
-            }
-            if (map.IsExclusive(old.Offset, old.Length))
-            {
-                output.AsSpan((int)old.Offset, old.Length).Clear();
-                cleared.Add((old.Offset, old.Length));
-            }
-        }
 
         void Put16(int at, ushort value)
         {
@@ -172,15 +163,14 @@ internal static class TiffThumbnailWriter
             Put32((int)link, (uint)start);
         }
 
-        Verify(file, output, (int)link, cleared, jpeg, limits, maxRanges);
+        Verify(file, output, (int)link, jpeg, limits, maxRanges);
         return output;
     }
 
     // The file has to read back as planned: the directory after the primary one is the stream that
     // was asked for, or none; every tag outside it reads as before; and the bytes of the source are
-    // unchanged but at the successor link and the ranges that were cleared.
-    private static void Verify(byte[] source, byte[] output, int link, List<(long Start, long Length)> cleared,
-        byte[]? jpeg, MetadataLimits limits, int maxRanges)
+    // unchanged but at the successor link.
+    private static void Verify(byte[] source, byte[] output, int link, byte[]? jpeg, MetadataLimits limits, int maxRanges)
     {
         ExifMetadata before, after;
         TiffBasedFileMap afterMap;
@@ -227,7 +217,6 @@ internal static class TiffThumbnailWriter
         {
             if (source[at] == output[at]) continue;
             if (at >= link && at < link + 4) continue;
-            if (cleared.Exists(range => at >= range.Start && at < range.Start + range.Length)) continue;
             throw new MetadataException(MetadataErrorCode.UnsafeRelocation,
                 "The thumbnail change was not written: a byte of the source that is no part of the change would differ.", at);
         }

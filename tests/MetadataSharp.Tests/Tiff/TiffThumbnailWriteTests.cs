@@ -41,12 +41,16 @@ public sealed class TiffThumbnailWriteTests
     {
         if (!metadata.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Thumbnail, tag), out ExifEntry? entry)) return null;
         byte[] raw = entry.Value.RawBytes.ToArray();
+        bool little = metadata.ByteOrder == Endianness.LittleEndian;
         return entry.Value.FieldType switch
         {
-            TiffFieldType.Short => metadata.ByteOrder == Endianness.LittleEndian
+            TiffFieldType.Short => little
                 ? System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(raw)
                 : System.Buffers.Binary.BinaryPrimitives.ReadUInt16BigEndian(raw),
-            TiffFieldType.Long => (int)(metadata.ByteOrder == Endianness.LittleEndian
+            TiffFieldType.Long => (int)(little
+                ? System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw)
+                : System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(raw)),
+            TiffFieldType.Rational => (int)(little
                 ? System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw)
                 : System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(raw)),
             _ => null
@@ -108,11 +112,13 @@ public sealed class TiffThumbnailWriteTests
         Assert.Null(Directory(removed));
         Assert.Equal("TestCompany", Read(removed).Make);
         Assert.Equal(withThumbnail.Length, removed.Length);
-        // The link of the primary directory, the old directory and the old stream are what differs.
+        // The successor link of the primary directory is the only byte that differs: the directory and
+        // the stream the unlinked one leaves behind are not cleared, a stream often being the one a
+        // MakerNote holds inside itself.
         int differing = 0;
         for (int at = 0; at < removed.Length; at++)
             if (removed[at] != withThumbnail[at]) differing++;
-        Assert.True(differing >= 4, $"{differing} bytes differ");
+        Assert.Equal(4, differing);
 
         // Removing it again is no change at all.
         Assert.Equal(removed, Save(removed, edit => edit.RemoveThumbnail()));
@@ -147,7 +153,11 @@ public sealed class TiffThumbnailWriteTests
     public void AStreamThatIsNoJpegIsRefusedAndOneOverItsBudgetToo(bool big)
     {
         byte[] file = TiffBasedFixture.Tiff(big).Bytes;
-        Assert.Equal(MetadataErrorCode.UnsupportedFeature, Code(file, edit => edit.SetThumbnail([0x00, 0x01, 0x02, 0x03])));
+        // A stream that is no JPEG is refused where it is set, and one the reader does not take is
+        // refused where the file is written.
+        Assert.Throws<ArgumentException>(() => new ExifEdit().SetThumbnail([0x00, 0x01, 0x02, 0x03]));
+        Assert.Equal(MetadataErrorCode.UnsupportedFeature,
+            Code(file, edit => edit.SetThumbnail([0xFF, 0xD8, 0xFF, 0xD8, 0x00])));
         Assert.Equal(MetadataErrorCode.LimitExceeded,
             Code(file, edit => edit.SetThumbnail(Picture), new TiffReadOptions { Limits = new() { MaxThumbnailBytes = 4 } }));
     }
