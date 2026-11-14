@@ -7,7 +7,6 @@ using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats;
 using MetadataSharp.Formats.Exv;
 using MetadataSharp.Formats.Jp2;
-using MetadataSharp.Formats.Mrw;
 using MetadataSharp.Formats.Pgf;
 using MetadataSharp.Formats.SmallFormats;
 using MetadataSharp.Formats.Tiff;
@@ -317,27 +316,8 @@ internal static class Program
         Exif(exif, stdout, printed: printed,
             skip: key => printed.Contains(key) || EmbeddedRowsNotForRaw.Contains(key));
         if (refusalDetail)
-        {
-            string token = "embedded-rows=" + printed.Count.ToString(CultureInfo.InvariantCulture) +
+            return "embedded-rows=" + printed.Count.ToString(CultureInfo.InvariantCulture) +
                 " note=" + (exif.MakerNote is null ? "none" : exif.MakerNote.Format.ToString());
-            // Where the picture's own chain says its thumbnail is, and which of the two readings of that
-            // address the file holds a stream at: the number a scan that lists nothing was given.
-            if (exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0201), out ExifEntry? at) &&
-                exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0202), out ExifEntry? size) &&
-                long.TryParse(Value(at), NumberStyles.Integer, CultureInfo.InvariantCulture, out long thumbAt) &&
-                long.TryParse(Value(size), NumberStyles.Integer, CultureInfo.InvariantCulture, out long thumbLength))
-            {
-                PreviewImage? picture = Previews.List(file)
-                    .FirstOrDefault(found => found.Source == "Exif.PanasonicRaw.PreviewImage");
-                bool inFile = thumbAt >= 0 && thumbAt + 2 <= file.Length && file[thumbAt] == 0xFF && file[thumbAt + 1] == 0xD8;
-                bool inPicture = picture is not null && thumbAt >= 0 && picture.Offset + thumbAt + 2 <= file.Length &&
-                    file[picture.Offset + thumbAt] == 0xFF && file[picture.Offset + thumbAt + 1] == 0xD8;
-                token += " thumb=" + thumbAt.ToString(CultureInfo.InvariantCulture) + "/" +
-                    thumbLength.ToString(CultureInfo.InvariantCulture) + " file=" + (inFile ? "yes" : "no") +
-                    " picture=" + (inPicture ? "yes" : "no");
-            }
-            return token;
-        }
         return null;
     }
 
@@ -484,33 +464,7 @@ internal static class Program
     private static void MrwFile(string path, StreamWriter stdout, long length)
     {
         if (!WithinBudget(length, stdout)) return;
-        byte[] data = File.ReadAllBytes(path);
-        Kinds(data, stdout, refusalDetail ? () => MrwDetail(data, stdout) : null);
-    }
-
-    /// <summary>
-    /// What a scan that lists no preview of an MRW was given: where the block that holds the note starts,
-    /// where the note starts, and which reading of the address it carries holds a stream.
-    /// </summary>
-    private static void MrwDetail(byte[] data, StreamWriter stdout)
-    {
-        MrwMetadata metadata = MrwMetadata.Read(data, null);
-        if (metadata.Exif?.MakerNote is not MakerNote note) return;
-        MakerNoteEntry? offset = note.Entries.FirstOrDefault(entry => entry.TagId == 0x0088);
-        MakerNoteEntry? count = note.Entries.FirstOrDefault(entry => entry.TagId == 0x0089);
-        if (offset is null || count is null ||
-            !long.TryParse(Render(offset.Value), NumberStyles.Integer, CultureInfo.InvariantCulture, out long at) ||
-            !long.TryParse(Render(count.Value), NumberStyles.Integer, CultureInfo.InvariantCulture, out long size))
-            return;
-        static bool Holds(byte[] bytes, long position) =>
-            position >= 0 && position + 2 <= bytes.Length && bytes[position] == 0xFF && bytes[position + 1] == 0xD8;
-        Tag(stdout, "Diagnostic.Mrw.ThumbnailOffset", "Long", 1, at.ToString(CultureInfo.InvariantCulture));
-        Tag(stdout, "Diagnostic.Mrw.ThumbnailLength", "Long", 1, size.ToString(CultureInfo.InvariantCulture));
-        Tag(stdout, "Diagnostic.Mrw.Block", "Long", 1, metadata.TiffOffset.ToString(CultureInfo.InvariantCulture));
-        Tag(stdout, "Diagnostic.Mrw.Note", "Long", 1, note.Offset.ToString(CultureInfo.InvariantCulture));
-        Tag(stdout, "Diagnostic.Mrw.AtFile", "Long", 1, Holds(data, at) ? "yes" : "no");
-        Tag(stdout, "Diagnostic.Mrw.AtBlock", "Long", 1, Holds(data, metadata.TiffOffset + at) ? "yes" : "no");
-        Tag(stdout, "Diagnostic.Mrw.AtNote", "Long", 1, Holds(data, note.Offset + at) ? "yes" : "no");
+        Kinds(File.ReadAllBytes(path), stdout, null);
     }
 
     /// <summary>A Fujifilm RAF file: its JPEG file, where that lies, and the tags only its TIFF structure has.</summary>

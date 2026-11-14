@@ -79,6 +79,20 @@ _FIXTURE_ORACLE_EXCEPTIONS = {
 }
 
 
+# Previews a file holds that the pinned tool does not list. Each entry names one file and one preview
+# exactly, with the reason the pinned tool misses it; a preview that stops being listed fails the gate
+# again, because an entry does not silence a difference, it records the one that remains.
+_LISTED_AND_NOT_IN_REFERENCE = {
+    "minolta-a2-pict0881.mrw": (
+        ("image/jpeg", 640, 480, 56593),
+        "The note of this MRW counts its thumbnail from the start of the block the note lives in, and this "
+        "reader follows that reading: the pinned tool needs it for minolta-a1-raw_minolta_a1.mrw of the same "
+        "corpus, where its own reading holds no stream, and lists nothing here although the file holds this "
+        "picture at the address the note names.",
+    ),
+}
+
+
 class PreviewParityError(Exception):
     """The run cannot be trusted; nothing should be concluded from its numbers."""
 
@@ -418,6 +432,16 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
                         raise PreviewParityError(f"{name}: preview {index} has an invalid file range: "
                                                  f"offset={offset}, length={preview[3]}, file={file_size}, source={source}")
         outcome = compare_file(expected[name], listed if status == "ok" else [])
+        accepted: list[dict[str, Any]] = []
+        if known := _LISTED_AND_NOT_IN_REFERENCE.get(name):
+            pattern, reason = known
+            kept = []
+            for preview in outcome["extra"]:
+                if preview == pattern:
+                    accepted.append({"file": name, "preview": list(preview), "reason": reason})
+                else:
+                    kept.append(preview)
+            outcome["extra"] = kept
         format_name = Path(name).suffix.lstrip(".").upper() or "UNKNOWN"
         format_count = format_totals.setdefault(format_name, Counter())
         format_count["files"] += 1
@@ -468,6 +492,8 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
             entry["extra"] = [list(preview) for preview in outcome["extra"]]
         if offset_mismatch:
             entry["offset_mismatch"] = offset_mismatch
+        if accepted:
+            entry["accepted"] = accepted
         if status == "error":
             entry["detail"] = block["detail"] if block is not None else ""
         files.append(entry)
@@ -630,8 +656,7 @@ def main(argv: list[str] | None = None) -> int:
     dump_command = shlex.split(args.dump_command)
     report = compare(expected, run_dump(dump_command, present), paths,
                      expected_offsets if args.exiv2_command else None)
-    if args.fixtures:
-        report["exceptions"] = fixture_exceptions
+    report["exceptions"] = fixture_exceptions + [item for entry in report["files"] for item in entry.get("accepted", [])]
     # A file that differs gets its address rows beside the difference: what a reader can see, and what
     # it made of it, in one place.
     differs = [entry for entry in report["files"] if entry.get("missing") or entry.get("extra")]
