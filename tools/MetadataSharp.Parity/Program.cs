@@ -654,52 +654,77 @@ internal static class Program
         return groups;
     }
 
-    // One notice per group with every row that is no parity, compressed: the log of a job is not always
-    // at hand, and a list of what remains is what the work on it is done from.
+    // Every row that is no parity, compressed into as few notices as the size of an annotation allows:
+    // the log of a job is not always at hand, and a list of what remains is what the work is done from.
     private static void EmitGapNotices(Report report, List<string> groups)
     {
         EmitInterpretedSummary(report, groups);
-        foreach (string group in groups)
+        var gaps = new SortedDictionary<string, GapRow>(StringComparer.Ordinal);
+        foreach (FileReport file in report.PerFile)
         {
-            var gaps = new SortedDictionary<string, (string Kind, string Ours, string Theirs, int Files)>(StringComparer.Ordinal);
-            foreach (FileReport file in report.PerFile)
+            if (file.RowsDropped > 0) continue;
+            foreach (ParityRow row in file.Rows)
             {
-                if (file.RowsDropped > 0) continue;
-                foreach (ParityRow row in file.Rows)
+                if (!groups.Exists(group => row.Key.StartsWith(group + ".", StringComparison.Ordinal))) continue;
+                string? kind = row.Outcome switch
                 {
-                    if (!row.Key.StartsWith(group + ".", StringComparison.Ordinal)) continue;
-                    string? kind = row.Outcome switch
-                    {
-                        ExtraKey => OpaqueTag.IsMatch(row.Key) || RawExtras.ContainsKey(row.Key) ? null : "raw-extra",
-                        NotRead => "not-read",
-                        MissingKey or ValueDiff or MatchKey => "raw-" + row.Outcome,
-                        _ => null
-                    };
-                    if (row.Translated && row.Interpreted != MatchInterpreted)
-                        kind = row.Interpreted is null or NotInterpreted ? "not-interpreted" : InterpretedDiff;
-                    if (kind is null) continue;
-                    if (InterpretationAllowances.ContainsKey(row.Key)) kind = "allowed: " + kind;
-                    string signature = kind + "\t" + (row.OurInterpreted ?? "") + "\t" + (row.TheirInterpreted ?? "");
-                    (string Kind, string Ours, string Theirs, int Files) held =
-                        gaps.TryGetValue(row.Key + "|" + signature, out var existing) ? existing : (kind, row.OurInterpreted ?? "", row.TheirInterpreted ?? "", 0);
-                    gaps[row.Key + "|" + signature] = (held.Kind, held.Ours, held.Theirs, held.Files + 1);
-                }
+                    ExtraKey => OpaqueTag.IsMatch(row.Key) || RawExtras.ContainsKey(row.Key) ? null : "raw-extra",
+                    NotRead => Excused(file) ? "excused: not-read" : "not-read",
+                    MissingKey or ValueDiff or MatchKey => "raw-" + row.Outcome,
+                    _ => null
+                };
+                if (row.Translated && row.Interpreted != MatchInterpreted)
+                    kind = row.Interpreted is null or NotInterpreted ? "not-interpreted" : InterpretedDiff;
+                if (kind is null) continue;
+                if (InterpretationAllowances.ContainsKey(row.Key)) kind = "allowed: " + kind;
+                string signature = row.Key + "|" + kind + "|" + (row.OurInterpreted ?? "") + "|" + (row.TheirInterpreted ?? "") +
+                    "|" + file.Detail;
+                if (gaps.TryGetValue(signature, out GapRow? held)) held.Files++;
+                else
+                    gaps[signature] = new GapRow(row.Key, kind, row.OurInterpreted ?? "", row.TheirInterpreted ?? "",
+                        file.Detail, file.Label);
             }
-            if (gaps.Count == 0) continue;
-            var payload = gaps.Select(pair => new
-            {
-                key = pair.Key[..pair.Key.IndexOf('|')],
-                kind = pair.Value.Kind,
-                ours = pair.Value.Ours,
-                exiv2 = pair.Value.Theirs,
-                files = pair.Value.Files
-            }).ToList();
-            string json = JsonSerializer.Serialize(payload, JsonOptions);
-            using var buffer = new MemoryStream();
-            using (var zlib = new ZLibStream(buffer, CompressionLevel.SmallestSize, leaveOpen: true))
-                zlib.Write(Encoding.UTF8.GetBytes(json));
-            Console.WriteLine($"::notice title=MakerNote gaps {group}::{Convert.ToBase64String(buffer.ToArray())}");
         }
+        if (gaps.Count == 0) return;
+        List<string> parts = [];
+        var current = new List<GapRow>();
+        int length = 0;
+        foreach (GapRow gap in gaps.Values)
+        {
+            // An annotation message holds 64 KiB, and the payload is base64 of a compressed list.
+            int size = gap.Key.Length + gap.Kind.Length + gap.Ours.Length + gap.Exiv2.Length + gap.Detail.Length + gap.Label.Length + 120;
+            if (current.Count != 0 && length + size > 24000) { parts.Add(Payload(current)); current = []; length = 0; }
+            current.Add(gap);
+            length += size;
+        }
+        if (current.Count != 0) parts.Add(Payload(current));
+        for (int index = 0; index < parts.Count; index++)
+            Console.WriteLine($"::notice title=MakerNote gaps {index + 1}/{parts.Count}::{parts[index]}");
+    }
+
+    // A file the reference read and this library refused is no reading difference when the refusal is
+    // one the corpus records: the gate takes the same view.
+    private static bool Excused(FileReport file) =>
+        Refusals.TryGetValue(file.Label, out var refusal) && file.Status == "refused" && refusal.Code == file.Detail;
+
+    private static string Payload(List<GapRow> rows)
+    {
+        string json = JsonSerializer.Serialize(rows, JsonOptions);
+        using var buffer = new MemoryStream();
+        using (var zlib = new ZLibStream(buffer, CompressionLevel.SmallestSize, leaveOpen: true))
+            zlib.Write(Encoding.UTF8.GetBytes(json));
+        return Convert.ToBase64String(buffer.ToArray());
+    }
+
+    private sealed class GapRow(string key, string kind, string ours, string exiv2, string detail, string label)
+    {
+        public string Key { get; } = key;
+        public string Kind { get; } = kind;
+        public string Ours { get; } = ours;
+        public string Exiv2 { get; } = exiv2;
+        public string Detail { get; } = detail;
+        public string Label { get; } = label;
+        public int Files { get; set; } = 1;
     }
 
     // One notice with the interpreted-value counts of every group, so that a document can be written
