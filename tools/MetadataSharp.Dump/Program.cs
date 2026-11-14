@@ -233,7 +233,11 @@ internal static class Program
         string? make = null;
         foreach (ExifEntry entry in metadata.Entries)
             if (entry.Key == new ExifTagKey(ExifDirectoryKind.Ifd0, 0x010F))
-                make = Encoding.ASCII.GetString(entry.Value.RawBytes).TrimEnd('\0');
+            {
+                byte[] bytes = new byte[entry.Value.ByteLength];
+                entry.Value.CopyRawTo(bytes);
+                make = Encoding.ASCII.GetString(bytes).TrimEnd('\0');
+            }
         if (string.IsNullOrEmpty(make))
             return false;
         foreach (string maker in ReferenceMakers)
