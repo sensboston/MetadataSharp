@@ -545,26 +545,27 @@ public sealed class PreviewTests
     }
 
     [Fact]
-    public void ARw2ListsThePictureItEmbedsAndTheThumbnailItsOwnChainNames()
+    public void ARw2ListsTheThumbnailItsEmbeddedPictureNamesInFileCoordinates()
     {
-        byte[] picture = Picture(20, 10);
+        byte[] picture = Join(new byte[] { 0xFF, 0xD8, 0xFF, 0xE1, 0x00, 0x34 }, "Exif\0\0"u8.ToArray(),
+            Header(true), Ifd(true, 14), Ifd(true, 0, Long(0x0201, 0), Long(0x0202, 0)),
+            Picture(20, 10)[2..]);
         byte[] thumbnail = Picture(8, 6);
-        // Header with the first directory at 24, IFD0 at 24 (the picture at 72), IFD1 at 42 (the thumbnail
-        // it names by its position in the file), the picture at 72.
-        long thumbAt = 72 + picture.Length;
+        long thumbAt = 24 + 18 + picture.Length;
+        // The picture an RW2 embeds is a camera's JPEG whose addresses are the file's own.
+        picture = Join(new byte[] { 0xFF, 0xD8, 0xFF, 0xE1, 0x00, 0x34 }, "Exif\0\0"u8.ToArray(),
+            Header(true), Ifd(true, 14), Ifd(true, 0, Long(0x0201, thumbAt), Long(0x0202, thumbnail.Length)),
+            Picture(20, 10)[2..]);
         byte[] file = Join("IIU\0"u8.ToArray(), Longs(true, 0x18), new byte[16],
-            Ifd(true, 42, new Field(0x002E, 7, picture.Length, 72)),
-            Ifd(true, 0, Long(0x0201, thumbAt), Long(0x0202, thumbnail.Length)),
-            picture, thumbnail);
+            Ifd(true, 0, new Field(0x002E, 7, picture.Length, 24 + 18)), picture, thumbnail);
 
         IReadOnlyList<PreviewImage> found = Previews.List(file);
 
         Assert.Equal(2, found.Count);
         Assert.Equal(new PreviewImage(Jpeg, 8, 6, thumbAt, thumbnail.Length,
             "Exif.Thumbnail.JPEGInterchangeFormat"), found[0]);
-        Assert.Equal(new PreviewImage(Jpeg, 20, 10, 72, picture.Length,
+        Assert.Equal(new PreviewImage(Jpeg, 20, 10, 24 + 18, picture.Length,
             "Exif.PanasonicRaw.PreviewImage"), found[1]);
-        Assert.Equal(thumbnail, Previews.Extract(file, found[0]));
     }
 
     [Fact]

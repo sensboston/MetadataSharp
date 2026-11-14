@@ -316,8 +316,27 @@ internal static class Program
         Exif(exif, stdout, printed: printed,
             skip: key => printed.Contains(key) || EmbeddedRowsNotForRaw.Contains(key));
         if (refusalDetail)
-            return "embedded-rows=" + printed.Count.ToString(CultureInfo.InvariantCulture) +
+        {
+            string token = "embedded-rows=" + printed.Count.ToString(CultureInfo.InvariantCulture) +
                 " note=" + (exif.MakerNote is null ? "none" : exif.MakerNote.Format.ToString());
+            // Where the picture's own chain says its thumbnail is, and which of the two readings of that
+            // address the file holds a stream at: the number a scan that lists nothing was given.
+            if (exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0201), out ExifEntry? at) &&
+                exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0202), out ExifEntry? size) &&
+                long.TryParse(Value(at), NumberStyles.Integer, CultureInfo.InvariantCulture, out long offset) &&
+                long.TryParse(Value(size), NumberStyles.Integer, CultureInfo.InvariantCulture, out long length))
+            {
+                PreviewImage? picture = Previews.List(file)
+                    .FirstOrDefault(found => found.Source == "Exif.PanasonicRaw.PreviewImage");
+                bool inFile = offset >= 0 && offset + 2 <= file.Length && file[offset] == 0xFF && file[offset + 1] == 0xD8;
+                bool inPicture = picture is not null && offset >= 0 && picture.Offset + offset + 2 <= file.Length &&
+                    file[picture.Offset + offset] == 0xFF && file[picture.Offset + offset + 1] == 0xD8;
+                token += " thumb=" + offset.ToString(CultureInfo.InvariantCulture) + "/" +
+                    length.ToString(CultureInfo.InvariantCulture) + " file=" + (inFile ? "yes" : "no") +
+                    " picture=" + (inPicture ? "yes" : "no");
+            }
+            return token;
+        }
         return null;
     }
 

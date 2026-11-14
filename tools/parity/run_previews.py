@@ -486,8 +486,9 @@ def dump_addresses(dump_command: list[str], paths: list[Path]) -> dict[str, list
     """
     listing = "".join(f"{path}\n" for path in paths)
     try:
-        finished = subprocess.run(dump_command + ["--files-from", "-"], input=listing, capture_output=True,
-                                  text=True, encoding="utf-8", errors="replace", timeout=1800, check=False)
+        finished = subprocess.run(dump_command + ["--refusal-detail", "--files-from", "-"], input=listing,
+                                  capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                  timeout=1800, check=False)
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return {}
     addresses: dict[str, list[str]] = {}
@@ -497,6 +498,8 @@ def dump_addresses(dump_command: list[str], paths: list[Path]) -> dict[str, list
         if fields[0] == "FILE" and len(fields) == 2:
             current = fields[1]
             addresses.setdefault(current, [])
+        elif fields[0] == "STATUS" and len(fields) >= 3 and current is not None:
+            addresses[current].append(f"status: {fields[2]}")
         elif fields[0] == "TAG" and len(fields) >= 5 and current is not None and _ADDRESS_ROW.search(fields[1]):
             # A small value is the address itself, and it is what a reader that lists nothing was given.
             value = f" = {fields[4]}" if len(fields[4]) <= 24 else ""
