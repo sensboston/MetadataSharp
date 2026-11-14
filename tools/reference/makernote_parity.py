@@ -91,14 +91,23 @@ def printed(exiv2, path, runner=run):
     return found, code, warnings
 
 
-def verdict(source, result, key, value):
-    """"ok", or what is wrong with the print-out of an edited copy, and the detail."""
+def verdict(source, result, key, value, operation="same"):
+    """"ok", or what is wrong with the print-out of an edited copy, and the detail.
+
+    A text has to be one of the values the tool prints for the key. A number is one field of such a
+    value, since an array tag prints all of its elements on the line: the value has to be one of the
+    fields and not a part of one, so 1234 must not match 12345.
+    """
     (before, code_before, warned_before), (after, code_after, warned_after) = source, result
     if key not in before:
         return "key the tool does not print", key
     if key not in after:
         return "key gone for the tool", key
-    if value not in after[key]:
+    if operation == "number":
+        found = any(value in text.replace(",", " ").split() for text in after[key])
+    else:
+        found = value in after[key]
+    if not found:
         return "value the tool does not print", f"{key}: wanted {value!r}, printed {after[key][:2]!r}"
     for other in before:
         if other == key:
