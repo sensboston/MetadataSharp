@@ -692,7 +692,7 @@ public static partial class ExifTags
         try
         {
             Encoding strict = Encoding.GetEncoding(encoding.CodePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
-            return strict.GetString(bytes).TrimEnd(' ', '\\0');
+            return strict.GetString(bytes).TrimEnd(' ', '\0');
         }
         catch (ArgumentException) { return null; }
         catch (DecoderFallbackException) { return null; }
