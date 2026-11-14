@@ -102,6 +102,38 @@ compatibility work, with the full option inventory and the data-target DSL, is
 | BMFF and video | Build-conditional BMFF and read-only video containers; format handlers vary by build | CR3 and HEIC/HEIF/AVIF metadata readers, limited safe edits where declared; bounded read-only video property readers for ASF, Matroska, QuickTime and RIFF | Partial | Exiv2 `src/image.cpp` conditional registry and `exiv2.md` build note; `src/MetadataSharp.Formats/Bmff`, `VideoContainerReader.cs`, tests `Bmff`/`Video`; no general video writer |
 | Safety limits and preservation | Exiv2 validates format structures; behavior and error policy differ by handler | Explicit byte/count/depth budgets, checked ranges, preservation-oriented writers, read-back verification and typed `MetadataErrorCode`; unsupported/unsafe edits are refused | Different by design | `MetadataLimits`, `MetadataErrorCode`, capability notes, format usage contracts and hostile-input tests; compare per-operation contracts, not permissive write parity |
 
+## What the widened RAW corpus found
+
+The corpus described in [build and test](BUILD_AND_TEST.md) added 23 camera raw files from raw.pixls.us
+(CC0 1.0), two cameras per raw format. Reading them against the pinned 0.28.9 binary changed the picture
+this document had: 352 files and 34 764 matched rows, with 13 raw files still failing, and the failures
+group into six reader gaps that the one-to-three-file-per-format corpus could not show.
+
+1. **RW2 is not read as a Panasonic raw.** In a `.RW2` the first directory is the `PanasonicRaw`
+   directory: its tags name the sensor geometry, white-balance levels and strip layout, and its `ExifTag`
+   points at the EXIF directory. Both corpus files (DMC-G1, DMC-LX3) are read as if that directory were
+   `Exif.Image`, so about a hundred keys per file are reported under the wrong group and the EXIF,
+   Makernote, Interoperability and thumbnail directories behind it are not reached at all.
+2. **A raw file with more than one top-level image directory loses the later ones.** Canon CR2 keeps the
+   raw image in the second directory and a second reduced image in the third, Pentax PEF keeps its
+   preview in the second; those entries (`Exif.Image2.*`, `Exif.Image3.*`) are missing while the first
+   directory matches row for row.
+3. **Samsung SRW preview directories are not synthesized.** Exiv2 publishes `Exif.SamsungPreview.*` and
+   `Exif.SubThumb1.*` for the pointers inside a Samsung note; nothing is reported for the NX10 and NX100
+   files here.
+4. **Two Sony raws are refused outright.** The A100 `.ARW` stops at `LimitExceeded`, the A700 `.ARW` and
+   the R1 `.SR2` at `InvalidExif`, where the reference prints their tables. All three are TIFF-based and
+   should read with the same code as the other raws.
+5. **One MRW preview cannot be placed.** `exiv2 -pp` lists previews for the DiMAGE A1 that the extraction
+   oracle cannot locate in the file, so the offset comparison of the preview gate has nothing to compare
+   against.
+6. **A Fujifilm note copy loses its thumbnail pointers.** Copying the note out of the S2Pro and S3Pro
+   files drops `Exif.Image2.JPEGInterchangeFormat` and its length, which the reference keeps.
+
+These are the work items the corpus was added to expose, and they are listed here rather than in an
+exception table: `raw-corpus-parity` fails on all six, and it has to pass on its whole corpus before
+this document claims the raw read paths are established.
+
 ## Open library gaps
 
 Everything below is a real difference from Exiv2 that remains after this PR. Each item states what is
