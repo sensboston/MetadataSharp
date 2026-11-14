@@ -34,9 +34,11 @@ public enum UserCommentCharset
 /// trailing NULs that carry no text, and a body with an unknown prefix is left to the raw value.
 /// </para>
 /// <para>
-/// A character set is named as <see cref="MetadataCharsets"/> names it. Passing one is the
-/// equivalent of Exiv2's <c>-n</c>: it says how to read the bytes of a <c>UNICODE</c> comment, and it
-/// never changes the bytes. Without one, the byte order of the file decides.
+/// A character set is named as <see cref="MetadataCharsets"/> names it. Naming one says what the
+/// bytes of a <c>UNICODE</c> comment are written in - the statement Exiv2's <c>-n</c> option makes
+/// for its <c>fc</c> action - and never changes a byte. Without a name, the byte order of the file
+/// decides, with a byte-order mark honored, which is what the reference tool's print does
+/// (<c>CommentValue::detectCharset</c>).
 /// </para>
 /// </remarks>
 public static class MetadataText
@@ -103,8 +105,10 @@ public static class MetadataText
     /// </summary>
     /// <param name="value">The stored value.</param>
     /// <param name="charset">
-    /// The character set to read the <c>UNICODE</c> body in, as Exiv2's <c>-n</c> does; null reads it as
-    /// UCS-2 in the byte order of the value, with a byte-order mark honored.
+    /// The character set the <c>UNICODE</c> body is written in, named as <see cref="MetadataCharsets"/>
+    /// names it - what Exiv2's <c>-n</c> states for its <c>fc</c> action; null reads the body as UCS-2
+    /// in the byte order of the value, with a byte-order mark honored, which is what the reference
+    /// tool's print does.
     /// </param>
     /// <returns>The text, or <see langword="null"/> when there is none to read.</returns>
     /// <exception cref="ArgumentException">The name is not a character set of <see cref="MetadataCharsets"/>.</exception>

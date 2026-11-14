@@ -72,7 +72,7 @@ using MetadataSharp.Core;
 
 ExifValue comment = MetadataText.UserComment("Grüße aus Köln", UserCommentCharset.Unicode, Endianness.BigEndian);
 string? text = MetadataText.UserComment(comment);                            // UCS-2 in the file's byte order
-string? other = MetadataText.UserComment(comment, MetadataCharsets.Utf8);    // an -n-style override
+string? other = MetadataText.UserComment(comment, "windows-1251");           // the body is in that code page
 ```
 
 `MetadataText.UserComment(text, charset, byteOrder)` writes UTF-16 in the byte order of the file
@@ -80,8 +80,16 @@ without a byte-order mark for `Unicode`, seven-bit ASCII for `Ascii`, and UTF-8 
 `JIS` body - the fourth prefix Exiv2 knows - is deliberately not written and is not decoded as
 text: the reference prints such a body's bytes without converting them, so a text produced here
 would not be what that tool shows. Those bytes stay available as the raw value, the same way a body
-with an unknown prefix does. The `-n`-style override is display only: it selects how a `UNICODE`
-body is read and never changes the bytes, so nothing written by this library depends on it.
+with an unknown prefix does.
+
+Naming a character set for the reader says what the bytes of a `UNICODE` body are written in. That
+is exactly what Exiv2's `-n` option states, and in the reference it belongs to one action: `fc`
+(`fixcom`) reads the comment in that set, converts it to UCS-2 and writes it back
+(`app/actions.cpp`, `FixCom::run`). Printing does not consult `-n` at all - `CommentValue::write`
+sniffs a byte-order mark and otherwise assumes the byte order of the file (`src/value.cpp`,
+`detectCharset`) - and that sniffing is what this library does when no name is passed. Naming a
+character set is a read-side statement: it changes no byte, and nothing this library writes depends
+on it.
 
 A comment body that holds no printable character is not interpreted at all: cameras also store
 binary structures behind the character code, and only the raw value can describe those bytes. A
@@ -102,8 +110,8 @@ IIM records have one character-set designation, the UTF-8 marker of dataset 1:90
 carries none says nothing about the code page of its text. `IptcPacket.DetectedTextEncoding` is the
 packet-wide display choice: a declared UTF-8 marker selects strict UTF-8, otherwise the packet is
 tested for ASCII and valid UTF-8, and ISO-8859-1 supplies a reversible one-byte fallback.
-`GetText(index)` uses that choice. `GetText(index, charset)` is the `-n` equivalent for a caller who
-knows the code page - from the camera, the agency, or the country of the photographer - and raises
+`GetText(index)` uses that choice. `GetText(index, charset)` is for a caller who knows the code page -
+from the camera, the agency, or the country of the photographer - and raises
 `DecoderFallbackException` instead of replacing a byte it cannot read:
 
 ```csharp
@@ -114,28 +122,36 @@ string declared = packet.GetText(0);                       // ASCII, UTF-8 or IS
 string cyrillic = packet.GetText(0, "windows-1251");        // strict, in the named character set
 ```
 
+The reference has no such option for IPTC text: its `-n` names the character set of a `UNICODE`
+user comment for the `fc` action, and nothing else. `GetText(index, charset)` is therefore an
+addition to what that tool offers, not a comparison with it.
+
 Neither call changes a byte. Display fallback does not make an edit safe: IPTC edits preserve
 original bytes and refuse relabeling retained high-bit values when their prior encoding cannot be
 established. See [IPTC usage and ownership limits](IPTC_USAGE_OWNERSHIP_AND_PRESERVATION_LIMITS.md).
 
 ### What is not converted
 
-`-n` affects the reading of these two carriers only. XMP is UTF-8 by its own specification, an
-Exif ASCII field is not converted, and a value of any other tag keeps the bytes the file states.
-No writer converts an existing value into another character set: an edit either sets a value this
-library produced or leaves the bytes as they were, which is why an unknown or unconvertible
-character set is refused rather than round-tripped through a guess.
+Naming a character set affects the reading of these two carriers only. XMP is UTF-8 by its own
+specification, an Exif ASCII field is not converted, and a value of any other tag keeps the bytes the
+file states. No writer converts an existing value into another character set: an edit either sets a
+value this library produced or leaves the bytes as they were, which is why an unknown character set
+is refused rather than round-tripped through a guess. (The reference's `fc` action *does* rewrite a
+comment; `MetadataOperations.FixUserComment` is the equivalent here and takes the encoding the text
+is in.)
 
 ## Differential evidence
 
 `tools/reference/run_charset.py` writes one JPEG for every entry of the matrix - a `UNICODE`
-`UserComment` whose body is written in that code page, and an `XPTitle` in text that stresses it -
-has the pinned Exiv2 print each file with and without `-n <name>`, and compares both prints with the
-text this library reads back. A file whose comment or title the tool reads differently fails the job,
-and so does a text this library cannot read back with the character set it was written in. The
-pinned build resolves `-n` through iconv; when the build it is compared with has none, the gate says
-so in a notice instead of passing quietly. The matrix itself, its aliases, its refusals and the
-writers are covered offline by `MetadataTextTests`.
+`UserComment` whose body is the text in that code page, and an `XPTitle` in text that stresses it -
+and asks the pinned Exiv2 to make the same statement the name makes: `exiv2 -n <name> fc` on a copy
+converts the comment from that code page to UCS-2, and the tool's print of the copy has to be the
+text this library reads. The title is compared through the tool's translated print (`-PEkt`), where
+its `printUcs2` runs. A comment or title the tool reads differently fails the job, and so does a text
+this library cannot read back with the character set it was written in. The conversion is iconv, an
+optional dependency of the reference: a build without it says so in the gate's notice instead of
+passing quietly, and the round trips are still failed. The matrix itself, its aliases, its refusals
+and the writers are covered offline by `MetadataTextTests`.
 
 `tools/parity/run_tag_print.py` compares the ordered `MetadataSharp.Dump` tag records with the pinned
 Exiv2 0.28.9 `-pt` output for each available upstream corpus file. Synthetic upstream reference names

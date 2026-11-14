@@ -35,25 +35,30 @@ class CharsetParityTest(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def run_gate(self, tool_output=PRINTED, tool_code=0, tool_errors=""):
+    def run_gate(self, tool_output=PRINTED, tool_code=0, tool_errors="", convert_code=0, convert_errors=""):
         commands = []
 
         def runner(command, timeout=None):
             commands.append(list(command))
             if command[0] == "fixture":
                 return 0, "", ""
+            if "fc" in command:
+                return convert_code, "", convert_errors
             return tool_code, tool_output, tool_errors
 
         result = run_charset.main([str(self.work), "--exiv2", "exiv2", "--fixture", "fixture"],
                                   runner=runner)
         return result, commands
 
-    def test_the_tools_text_and_this_librarys_text_have_to_be_equal(self):
+    def test_the_tool_is_asked_what_n_means_for_the_comment_and_prints_the_title_translated(self):
         result, commands = self.run_gate()
         self.assertEqual(0, result)
-        # One print with -n for the comment, one without for the title.
-        self.assertIn(["exiv2", "-n", "windows-1252", "-PEkv", str(self.work / "charset-00.jpg")], commands)
-        self.assertIn(["exiv2", "-PEkv", str(self.work / "charset-00.jpg")], commands)
+        # -n belongs to the fc action: the tool converts a copy, and its own print of that copy is
+        # what has to equal this library's text. The title is read through the translated print.
+        self.assertIn(["exiv2", "-n", "windows-1252", "fc", str(self.work / "charset-00.jpg.fc.jpg")], commands)
+        self.assertIn(["exiv2", "-PEkv", str(self.work / "charset-00.jpg.fc.jpg")], commands)
+        self.assertIn(["exiv2", "-PEkt", str(self.work / "charset-00.jpg")], commands)
+        self.assertFalse((self.work / "charset-00.jpg.fc.jpg").exists())
 
     def test_a_comment_the_tool_reads_differently_fails(self):
         result, _ = self.run_gate(tool_output=PRINTED.replace("Grüße aus Köln", "Gruesse"))
@@ -76,8 +81,13 @@ class CharsetParityTest(unittest.TestCase):
         self.assertEqual(1, self.run_gate()[0])
 
     def test_a_build_without_iconv_says_so_rather_than_passing_quietly(self):
-        result, _ = self.run_gate(tool_code=1, tool_errors="exiv2: Cannot convert text encoding from 'windows-1252' to 'UTF-8'")
+        result, _ = self.run_gate(convert_code=1,
+                                  convert_errors="exiv2: Cannot convert text encoding from 'windows-1252' to 'UCS-2LE'")
         self.assertEqual(0, result)
+
+    def test_a_conversion_that_fails_for_another_reason_fails_the_gate(self):
+        result, _ = self.run_gate(convert_code=1, convert_errors="exiv2: Failed to open the file")
+        self.assertEqual(1, result)
 
 
 if __name__ == "__main__":

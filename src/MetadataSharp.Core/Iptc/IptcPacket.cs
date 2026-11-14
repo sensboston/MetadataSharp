@@ -176,8 +176,11 @@ public sealed partial class IptcPacket
     /// that carries none says nothing about the code page of its text: this library reads such text as
     /// ISO-8859-1, which is reversible but is not the language it was written in. A caller who knows
     /// the code page - from the camera, the news agency or the country of the photographer - names it
-    /// here the way Exiv2's <c>-n</c> names it. The bytes are not changed, and a byte run the
-    /// character set cannot represent raises rather than being replaced.
+    /// here, using a name of <see cref="MetadataCharsets"/>. The reference tool has no such option for
+    /// IPTC text (its <c>-n</c> names the character set of a <c>UNICODE</c> user comment for the
+    /// <c>fc</c> action), so this is an addition rather than a comparison: it decodes bytes the packet
+    /// leaves undesignated, and it changes none of them. A byte run the character set cannot
+    /// represent raises rather than being replaced.
     /// </remarks>
     /// <exception cref="ArgumentException">The name is not a character set of <see cref="MetadataCharsets"/>.</exception>
     /// <exception cref="MetadataException"><see cref="MetadataErrorCode.UnsupportedFeature"/> when the dataset is not a text dataset.</exception>

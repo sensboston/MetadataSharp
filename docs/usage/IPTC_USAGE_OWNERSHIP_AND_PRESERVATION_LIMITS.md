@@ -87,11 +87,12 @@ character sets are not rewritten. New IPTC packets use a UTF-8 declaration and r
 
 A packet that declares nothing says nothing about the code page of its text, and the ISO-8859-1
 fallback is reversible but is not the language the text was written in. A caller who knows the code
-page names it the way Exiv2's `-n` does: `GetText(index, charset)` decodes one text dataset in a
-character set of `MetadataCharsets` (`"windows-1251"`, `"CP1251"` and `"MS-CYRL"` all name the same
-one) and raises `DecoderFallbackException` instead of replacing a byte it cannot read. Naming a
-character set is display only; it changes no byte, and the edits described above stay the only way
-to change one. The list of names and the limits of the matrix are in
+page can say so: `GetText(index, charset)` decodes one text dataset in a character set of
+`MetadataCharsets` (`"windows-1251"`, `"CP1251"` and `"MS-CYRL"` all name the same one) and raises
+`DecoderFallbackException` instead of replacing a byte it cannot read. The reference tool has no
+counterpart for IPTC text - its `-n` names the character set of a `UNICODE` user comment for the
+`fc` action only - so this is an addition, not a comparison. Naming a character set is read-side
+only; it changes no byte, and the edits described above stay the only way to change one. The list of names and the limits of the matrix are in
 [tag catalog and charset limits](TAG_CATALOG_AND_CHARSET_LIMITS.md#character-sets).
 
 ## Owned raw packets and repetitions

@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
-"""The character-set matrix against the pinned Exiv2, with and without ``-n``.
+"""The character-set matrix against the pinned Exiv2, through ``-n`` as the reference really uses it.
 
     run_charset.py WORK --exiv2 PATH --fixture "COMMAND"
 
 The fixture generator (``charset-parity``) writes one JPEG per character set of
-``MetadataSharp.MetadataCharsets``: a ``UNICODE`` UserComment whose body is the eight-bit code page
-the set names - which is exactly what Exiv2's ``-n`` reinterprets - and a UCS-2 little-endian
-``XPTitle``. It reads every file back through the public API and writes ``ours.tsv``: the file, the
-character set, the key and the text this library shows, plus the text that was written.
+``MetadataSharp.MetadataCharsets``: a ``UNICODE`` UserComment whose body is the text in that code
+page, and a UCS-2 little-endian ``XPTitle``. It reads every file back through the public API and
+writes ``ours.tsv``: the file, the character set, the key and the text this library shows, plus the
+text that was written.
 
-The comparison prints each file with the pinned tool twice, once with ``-n <name>`` for the comment
-and once without it for the title, and requires the tool's text to be the text this library shows,
-character for character. A round-trip row (``written``) must read back as it was written.
+``-n`` in Exiv2 0.28.9 names the character set of a ``UNICODE`` user comment for the ``fc`` action
+only (``app/actions.cpp``, ``FixCom::run``): the comment is read in that set, converted to UCS-2 and
+written back. Printing does not consult it - ``CommentValue::write`` sniffs a byte-order mark and
+otherwise assumes the file's own byte order (``src/value.cpp``, ``detectCharset``). So the gate
+asks the pinned tool to do what ``-n`` does: ``exiv2 -n <name> fc`` on a copy of the file, then
+``-PEkv`` of the copy, whose comment must be the text this library reads. The title is compared
+through the tool's translated print, ``-PEkt``, which is where its ``printUcs2`` runs.
 
-``-n`` is behind Exiv2's own optional iconv support. When the pinned build cannot convert, the run
-says so in a notice and compares nothing - the matrix's own round trips are proved by the unit
-tests, and a gate that silently passed would be worse than one that says what it could not check.
+A round-trip row (``written``) must read back as it was written. ``-n`` is behind Exiv2's optional
+iconv support: when the pinned build cannot convert, the run says so in a notice, compares no text
+with the tool, and still fails a text that does not read back.
 """
 from __future__ import annotations
 
 import argparse
 import importlib.util
 import shlex
+import shutil
 import sys
 import traceback
 from collections import Counter
@@ -37,11 +42,9 @@ TITLE = "Exif.Image.XPTitle"
 NO_ICONV = "Cannot convert text encoding"
 
 
-def printed(exiv2, path, charset=None, runner=run):
+def printed(exiv2, path, flags="-PEkv", runner=run):
     """(key -> the value the tool prints, exit code, stderr) for one file."""
-    command = [exiv2, "-PEkv"]
-    if charset is not None:
-        command = [exiv2, "-n", charset, "-PEkv"]
+    command = [exiv2, flags]
     code, output, errors = runner(command + [str(path)])
     values = {}
     for line in output.splitlines():
@@ -108,10 +111,22 @@ def compare(argv=None, runner=run) -> int:
             failures.append(f"{name} ({charset}): the title reads back as {values.get(TITLE)!r}, "
                             f"written {written[1]!r}")
         path = work / name
-        tool, tool_code, tool_errors = printed(args.exiv2, path, charset, runner)
-        if tool_code != 0 and NO_ICONV in (tool_errors or ""):
+        # What -n does in the reference: the comment is read in that character set and written back
+        # as UCS-2, so the tool's own print of the result is the statement being compared.
+        converted = work / (name + ".fc.jpg")
+        shutil.copyfile(path, converted)
+        convert_code, _, convert_errors = runner([args.exiv2, "-n", charset, "fc", str(converted)])
+        if convert_code != 0 and NO_ICONV in (convert_errors or ""):
             iconv_missing = True
+            converted.unlink(missing_ok=True)
             break
+        if convert_code != 0:
+            failures.append(f"{name} ({charset}): the tool's -n {charset} fc failed (exit {convert_code}): "
+                            f"{(convert_errors or '').strip()[:300]}")
+            converted.unlink(missing_ok=True)
+            continue
+        tool, tool_code, tool_errors = printed(args.exiv2, converted, "-PEkv", runner)
+        converted.unlink(missing_ok=True)
         if tool_code != 0:
             failures.append(f"{name}: the tool failed (exit {tool_code}): {(tool_errors or '').strip()[:300]}")
             continue
@@ -123,9 +138,9 @@ def compare(argv=None, runner=run) -> int:
             counts["comment differs"] += 1
         else:
             counts["comment matched"] += 1
-        title, title_code, title_errors = printed(args.exiv2, path, None, runner)
+        title, title_code, title_errors = printed(args.exiv2, path, "-PEkt", runner)
         if title_code != 0:
-            failures.append(f"{name}: the tool failed without -n (exit {title_code}): "
+            failures.append(f"{name}: the tool failed (exit {title_code}): "
                             f"{(title_errors or '').strip()[:300]}")
         elif title.get(TITLE, "") != values.get(TITLE, ""):
             failures.append(f"{name}: the tool prints the title as {title.get(TITLE)!r}, this library "

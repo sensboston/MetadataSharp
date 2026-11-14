@@ -58,6 +58,13 @@ thumbnail record, and the complete-set `PsdMetadata.Write` writes/removes PSD th
 including MRW, RAF, RW2, JP2, EPS and BMFF, are read/extract-only; their writers do not promise to
 preserve or rewrite preview bytes.
 
+The absence of a general replacement API is deliberate and matches what the reference tool does: its
+two insertion paths are `-ie` (a preview out of an EXV sidecar or a metadata copy) and `-it` (a JPEG
+thumbnail read from `<path>-thumb.jpg`), both per-target command-line actions rather than a library
+operation on an arbitrary preview. Here the first is `MetadataOperations.InsertExv` and the second is
+`ExifEdit.SetThumbnail`; an arbitrary preview payload has no insertion path in either library. It is
+listed as a [non-goal](FORMAT_AND_OPERATION_COVERAGE.md#non-goals) rather than as an open gap.
+
 ## Tests and differential checks
 
 The synthetic range/offset tests are in
