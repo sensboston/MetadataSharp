@@ -201,7 +201,7 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         return TiffExif.Read(source, options.Limits);
     }
 
-    /// <summary>The IPTC of the file, as <see cref="TiffIptc.Read"/> returns it, or null.</summary>
+    /// <summary>The IPTC of the file, as <see cref="TiffIptc.Read(ReadOnlySpan{byte}, MetadataLimits, IptcReadOptions)"/> returns it, or null.</summary>
     /// <param name="options">IPTC read settings; null selects the defaults.</param>
     /// <returns>The parsed IPTC packet, or null when the file has no IPTC data.</returns>
     /// <exception cref="ObjectDisposedException">The document has been disposed.</exception>
