@@ -16,7 +16,7 @@ public sealed class TiffSubImageTests
     {
         internal byte[] Bytes { get; } = new byte[length];
 
-        internal Sample Header(long first = 8)
+        internal Sample Header(uint first = 8)
         {
             Bytes[0] = Bytes[1] = 0x49; // little endian
             U16(2, 42);
@@ -24,7 +24,7 @@ public sealed class TiffSubImageTests
             return this;
         }
 
-        internal Sample Directory(int at, long next, params (ushort Tag, ushort Type, uint Count, uint Value)[] entries)
+        internal Sample Directory(int at, uint next, params (ushort Tag, ushort Type, uint Count, uint Value)[] entries)
         {
             U16(at, (ushort)entries.Length);
             for (int i = 0; i < entries.Length; i++)
@@ -38,7 +38,7 @@ public sealed class TiffSubImageTests
                 else
                     U32(p + 8, entries[i].Value);
             }
-            U32(at + 2 + entries.Length * 12, (uint)next);
+            U32(at + 2 + entries.Length * 12, next);
             return this;
         }
 
