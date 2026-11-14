@@ -326,7 +326,11 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
             "display_rule_hits": report["display_rule_hits"],
             "name_rule_hits": report["name_rule_hits"],
             "raw_value_display_hits": report["raw_value_display_hits"],
-            "raw_display_probes": report["raw_display_probes"][:10],
+            "raw_display_probes": [
+                {key: (value[:3] if isinstance(value, list) else value[:120] if isinstance(value, str) else value)
+                 for key, value in probe.items()}
+                for probe in report["raw_display_probes"][:3]
+            ],
             "value_diff_by_key": report["value_diff_by_key"][:40],
             "refusals": report["refusals"],
             "formats": report["formats"],
