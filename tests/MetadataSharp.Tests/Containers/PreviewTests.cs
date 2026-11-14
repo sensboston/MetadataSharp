@@ -333,8 +333,8 @@ public sealed class PreviewTests
                 source = "Exif.SonyMinolta.ThumbnailOffset";
                 where = NoteAt + 60;
                 note = Join("SONY DSC \0"u8.ToArray(), new byte[2],
-                    Ifd(little, 0, Long(0xB028, 30)),
-                    Ifd(little, 0, Long(0x0088, 60), Long(0x0089, size)), picture);
+                    Ifd(little, 0, Long(0xB028, NoteAt + 30)),
+                    Ifd(little, 0, Long(0x0088, NoteAt + 60), Long(0x0089, size)), picture);
                 break;
             case "samsung":
                 make = "SAMSUNG";
@@ -347,7 +347,7 @@ public sealed class PreviewTests
                 make = "CASIO";
                 source = "Exif.Casio2.PreviewImage";
                 where = NoteAt + 24;
-                note = Join("QVC\0\0\0"u8.ToArray(), Ifd(little, 0, new Field(0x2000, 7, size, where)), picture);
+                note = Join("QVC\0\0\0"u8.ToArray(), Ifd(false, 0, new Field(0x2000, 7, size, where)), picture);
                 break;
             case "minolta":
                 make = "MINOLTA";
