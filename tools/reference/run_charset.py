@@ -63,9 +63,12 @@ SETTING = "Setting Exif UNICODE user comment to"
 def converted(exiv2, path, charset, runner=run):
     """The text the tool reads out of the comment in the named character set, and its exit and errors."""
     code, output, errors = runner([exiv2, "-v", "-n", charset, "fc", str(path)])
-    for line in output.splitlines():
+    # split("\n") rather than splitlines(): a converted text may hold a character Python counts as a
+    # line boundary, and the text is everything between the marker and the closing quote.
+    for line in output.split("\n"):
         if SETTING in line:
-            return line.split(SETTING, 1)[1].strip().strip('"'), code, errors
+            text = line.split(SETTING, 1)[1].strip()
+            return (text[1:-1] if len(text) >= 2 and text[0] == '"' and text[-1] == '"' else text), code, errors
     return None, code, errors
 
 
@@ -135,9 +138,10 @@ def compare(argv=None, runner=run) -> int:
                             f"(exit {convert_code}): {((convert_errors or '') + ('' if convert_errors else '')).strip()[:300]}")
             continue
         if tool_text != values.get(COMMENT, ""):
-            failures.append(f"{name} ({charset}): the tool reads {tool_text!r} "
-                            f"({len(tool_text)} characters), this library {values.get(COMMENT)!r} "
-                            f"({len(values.get(COMMENT, ''))})")
+            ours = values.get(COMMENT, "")
+            failures.append(f"{name} ({charset}): the tool reads {tool_text!r} ({len(tool_text)} characters, "
+                            f"{tool_text.encode('utf-8').hex()}), this library {ours!r} ({len(ours)}, "
+                            f"{ours.encode('utf-8').hex()})")
             counts["comment differs"] += 1
         else:
             counts["comment matched"] += 1
