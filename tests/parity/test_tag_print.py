@@ -10,22 +10,28 @@ import run_tag_print as gate
 
 
 class TagPrintProtocolTests(unittest.TestCase):
-    def test_exiv2_tag_rows_keep_raw_and_translated_fields(self) -> None:
+    def test_exiv2_pt_rows_have_key_type_count_and_one_printed_value(self) -> None:
         text = (
-            "Exif.Image.NewSubfileType                    Long        1  1  Thumbnail/Preview image\n"
-            "Exif.Image.ImageWidth                        Long        1  160  160\n"
-            "Exif.Image.Make                              Ascii      18  NIKON CORPORATION  NIKON CORPORATION\n"
+            "Exif.Image.NewSubfileType                    Long        1  Thumbnail/Preview image\n"
+            "Exif.Image.ImageWidth                        Long        1  160\n"
+            "Exif.Image.Make                              Ascii      18  NIKON CORPORATION\n"
+            "Iptc.Application2.Caption                     String      1  not part of -pt\n"
         )
         self.assertEqual([
-            {"key": "Exif.Image.NewSubfileType", "type": "Long", "count": 1, "raw": "1", "translated": "Thumbnail/Preview image"},
-            {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "raw": "160", "translated": "160"},
-            {"key": "Exif.Image.Make", "type": "Ascii", "count": 18, "raw": "NIKON CORPORATION", "translated": "NIKON CORPORATION"},
+            {"key": "Exif.Image.NewSubfileType", "type": "Long", "count": 1, "value": "Thumbnail/Preview image"},
+            {"key": "Exif.Image.ImageWidth", "type": "Long", "count": 1, "value": "160"},
+            {"key": "Exif.Image.Make", "type": "Ascii", "count": 18, "value": "NIKON CORPORATION"},
         ], gate.parse_exiv2(text))
 
-    def test_reference_parser_preserves_single_spaces_inside_printed_values(self) -> None:
-        rows = gate.parse_exiv2("Exif.Image.ImageDescription               Ascii       5  A B  A B")
-        self.assertEqual("A B", rows[0]["raw"])
-        self.assertEqual("A B", rows[0]["translated"])
+    def test_dump_projection_uses_local_interpretation_or_raw_value_for_pt(self) -> None:
+        self.assertEqual([
+            {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "value": "top, left"},
+            {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1"},
+        ], gate.project_dump([
+            {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "raw": "1", "translated": "top, left"},
+            {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "raw": "50/1", "translated": ""},
+            {"key": "Iptc.Application2.Caption", "type": "String", "count": 1, "raw": "x", "translated": "x"},
+        ]))
 
     def test_dump_protocol_unescapes_records_and_rejects_open_or_malformed_blocks(self) -> None:
         parsed = gate.parse_dump("FILE\t/tmp/a\\tb.jpg\nTAG\tExif.Image.Make\tAscii\t2\tA\\\\B\t\nSTATUS\tok\n")

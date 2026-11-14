@@ -75,23 +75,24 @@ def _decode(value: str) -> str:
 
 
 def parse_exiv2(text: str) -> list[dict[str, Any]]:
+    """Parse ``-pt`` rows: key, type, count and the one value Exiv2 prints (translated when known)."""
     rows: list[dict[str, Any]] = []
     for line in text.splitlines():
         pieces = line.split(None, 3)
-        if len(pieces) < 3 or not pieces[0].startswith(("Exif.", "Iptc.", "Xmp.")):
+        if len(pieces) < 3 or not pieces[0].startswith("Exif."):
             continue
         key, type_name, count_text = pieces[:3]
         if not count_text.isdecimal():
             continue
-        rest = pieces[3] if len(pieces) == 4 else ""
-        raw, separator, translated = rest.rpartition("  ")
-        if not separator:
-            raw, translated = rest, ""
         rows.append({"key": key, "type": type_name, "count": int(count_text),
-                     # Exiv2's two-space delimiter separates value from translated text. Preserve
-                     # any spaces inside either field; trimming would hide a real print difference.
-                     "raw": raw, "translated": translated})
+                     "value": pieces[3] if len(pieces) == 4 else ""})
     return rows
+
+
+def project_dump(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Select the text a ``-pt`` style print would show from each dump record."""
+    return [{"key": row["key"], "type": row["type"], "count": row["count"],
+             "value": row["translated"] or row["raw"]} for row in rows if row["key"].startswith("Exif.")]
 
 
 def parse_dump(text: str) -> dict[str, dict[str, Any]]:
@@ -139,7 +140,25 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]]) 
 
 
 def _summary(report: dict[str, Any]) -> dict[str, Any]:
-    return {key: report[key] for key in ("totals", "formats", "exceptions", "differing")}
+    # Keep the one-line workflow annotation below GitHub's annotation payload limit while making
+    # the first discrepancies actionable; the full report is written to the JSON artifact.
+    samples = []
+    for item in report["differing"][:4]:
+        sample = {key: value for key, value in item.items() if key != "rows"}
+        if "rows" in item:
+            sample["rows"] = []
+            for row in item["rows"][:3]:
+                compact = dict(row)
+                for side in ("exiv2", "metadatasharp"):
+                    record = compact.get(side)
+                    if isinstance(record, dict):
+                        compact[side] = {key: value[:160] + "…" if isinstance(value, str) and len(value) > 160 else value
+                                         for key, value in record.items()}
+                sample["rows"].append(compact)
+        samples.append(sample)
+    return {"totals": report["totals"], "formats": report["formats"],
+            "exceptions": report["exceptions"], "differing_total": len(report["differing"]),
+            "differing_sample": samples}
 
 
 def _emit_annotation(payload: dict[str, Any]) -> None:
@@ -203,7 +222,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             problem = {"file": name, "kind": "metadatasharp-refused", "status": ours["status"], "detail": ours["detail"]}
         else:
             expected = parse_exiv2(output)
-            observed = ours["rows"]
+            observed = project_dump(ours["rows"])
             rows = compare_rows(expected, observed)
             if rows:
                 problem = {"file": name, "kind": "rows-differ", "exiv2_rows": len(expected),
