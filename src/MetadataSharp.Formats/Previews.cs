@@ -180,11 +180,11 @@ internal ref struct PreviewScanner
         subImages = 0;
     }
 
-    /// <summary>A TIFF structure: where offset zero is, where the region ends, and the byte order.</summary>
-    /// <param name="PointerBase">
-    /// Where the addresses a MakerNote states count from, when the container says that is not where the
-    /// structure itself begins; -1 selects <paramref name="Origin"/>.
-    /// </param>
+    /// <summary>
+    /// A TIFF structure: where offset zero is, where the region ends, and the byte order. A container can
+    /// also state where the addresses a MakerNote carries count from, when that is not where the structure
+    /// itself begins; -1 selects the place where offset zero is.
+    /// </summary>
     private readonly record struct Frame(int Origin, int End, bool Little, int PointerBase = -1)
     {
         public int Pointer => PointerBase >= 0 ? PointerBase : Origin;
