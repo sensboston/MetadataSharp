@@ -272,7 +272,8 @@ public sealed class ExifTagsTests
                 foreach (TiffFieldType type in definition.Types)
                     edit.Set(key, Value(type, count));
 
-                TiffFieldType other = Enum.GetValues<TiffFieldType>().First(type => !definition.Types.Contains(type));
+                TiffFieldType other = Enum.GetValues<TiffFieldType>()
+                    .First(type => type != TiffFieldType.Unknown && !definition.Types.Contains(type));
                 Assert.Throws<ArgumentException>(() => edit.Set(key, Value(other, count)));
                 edit.SetUnchecked(key, Value(other, count));
                 if (definition.Counts.IsEmpty) continue;

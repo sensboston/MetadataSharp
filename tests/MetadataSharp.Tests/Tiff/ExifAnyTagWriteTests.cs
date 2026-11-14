@@ -24,7 +24,10 @@ namespace MetadataSharp.Tests.Tiff;
 public sealed class ExifAnyTagWriteTests
 {
     private static readonly ExifDirectoryKind[] Directories = Enum.GetValues<ExifDirectoryKind>();
-    private static readonly TiffFieldType[] Types = Enum.GetValues<TiffFieldType>();
+    // An entry of an unknown field type is read one byte per element but never written: this is the
+    // list of field types a value can be set with.
+    private static readonly TiffFieldType[] Types =
+        [.. Enum.GetValues<TiffFieldType>().Where(type => type != TiffFieldType.Unknown)];
     private static readonly byte[] Note = ExifBlockFixture.Note;
     private static readonly byte[] Picture = ExifBlockFixture.Picture;
 

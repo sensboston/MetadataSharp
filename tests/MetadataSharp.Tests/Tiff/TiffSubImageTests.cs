@@ -55,7 +55,7 @@ public sealed class TiffSubImageTests
     private static Sample TwoImages()
     {
         var file = new Sample(1024).Header();
-        file.Directory(8, 0, (ImageWidth, 4, 1, 32), (SubIfds, 4, 2, 64), (NewSubfileType, 4, 1, 0));
+        file.Directory(8, 0, (NewSubfileType, 4, 1, 0), (ImageWidth, 4, 1, 32), (SubIfds, 4, 2, 64));
         file.U32(64, 200); // the first SubIFD offset
         file.U32(68, 300); // the second one
         file.Directory(200, 0, (NewSubfileType, 4, 1, 0), (Compression, 3, 1, 7));

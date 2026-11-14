@@ -359,7 +359,10 @@ public sealed class ExifTiffReaderTests
         Put16(data, 84, 14);
         ExifMetadata relaxed = ExifTiffReader.Inspect(data);
         Assert.False(relaxed.IsEditable);
-        Assert.Equal(7, relaxed.Entries.Count);
+        // The entry of the type the file states outside the twelve is read one byte per element.
+        Assert.Equal(8, relaxed.Entries.Count);
+        Assert.Equal(TiffFieldType.Unknown, relaxed.Entries[7].Value.FieldType);
+        Assert.Equal(14, relaxed.Entries[7].Value.FieldTypeCode);
     }
 
     // Malformed input is refused by the read-only rules exactly as by the strict ones.

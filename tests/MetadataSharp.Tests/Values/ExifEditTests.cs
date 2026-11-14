@@ -10,7 +10,10 @@ namespace MetadataSharp.Tests.Values;
 public sealed class ExifEditTests
 {
     private static readonly ExifDirectoryKind[] Directories = Enum.GetValues<ExifDirectoryKind>();
-    private static readonly TiffFieldType[] Types = Enum.GetValues<TiffFieldType>();
+    // An entry of an unknown field type is read one byte per element but never written: this is the
+    // list of field types a value can be set with.
+    private static readonly TiffFieldType[] Types =
+        [.. Enum.GetValues<TiffFieldType>().Where(type => type != TiffFieldType.Unknown)];
 
     /// <summary>A tag number no publication uses in any of the five directories.</summary>
     private const ushort Unlisted = 0xFDE8;

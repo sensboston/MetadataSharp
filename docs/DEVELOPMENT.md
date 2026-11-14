@@ -50,7 +50,9 @@ refuse edits requiring relocation or other changes that could invalidate the blo
 Unknown tags must retain their ID, type, count, and raw payload where interpretable;
 unknown field types must not be assigned invented widths when a block is written or
 relocated: a block that holds one is read for listing only, one byte per element as the
-reference reads it, and is never editable. Unknown pointer-bearing
+reference reads it, and is never editable. An entry of such a type whose stated count the
+payload or the value budget does not hold has no bytes to read, so it is left out of the
+listing rather than filled with invented data. Unknown pointer-bearing
 payloads cannot automatically be considered safely relocatable. An explicit future
 lossy policy must be separately approved; it is not part of the safe default.
 

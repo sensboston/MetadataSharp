@@ -443,14 +443,20 @@ public sealed class TiffExifTests
     }
 
     [Fact]
-    public void AFieldOfUnknownTypeIsLeftOutAndTheFileIsReadAsNotEditable()
+    public void AFieldOfUnknownTypeIsReadOneBytePerElementAndTheFileIsNotEditable()
     {
         byte[] file = new Layout(40, false).Header().Directory(8, 0, (0x0112, 3, 1, 6), (0x0128, 13, 1, 2)).Bytes;
 
         Assert.Equal(MetadataErrorCode.UnsupportedFeature, Code(() => ExifTiffReader.ReadFile(file)));
         ExifMetadata metadata = TiffExif.Read(file);
         Assert.False(metadata.IsEditable);
-        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), Assert.Single(metadata.Entries).Key);
+        Assert.Equal(2, metadata.Entries.Count);
+        ExifValue unknown = metadata.Entries[1].Value;
+        Assert.Equal(TiffFieldType.Unknown, unknown.FieldType);
+        Assert.Equal(13, unknown.FieldTypeCode);
+        Assert.Equal(1u, unknown.Count);
+        Assert.Equal(1, unknown.ByteLength);
+        Assert.False(unknown.TryGetUInt32(out _)); // not one of the numeric types
         Assert.True(TiffExif.Read(Orientation()).IsEditable);
     }
 

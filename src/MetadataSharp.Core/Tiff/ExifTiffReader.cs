@@ -406,18 +406,19 @@ internal ref struct ExifTiffReader
             {
                 // TIFF 6.0: a reader skips a field whose type it does not expect, and its width is unknown,
                 // so the entry cannot be written back. For reading the value is one byte per element, as
-                // the reference reads it, and the entry is kept with the type code the file states.
+                // the reference reads it, and the entry is kept with the type code the file states. A
+                // stated count the file or the budget does not hold has no bytes to read, so the entry is
+                // left out: the reference prints such an entry with an empty value, and a value that is
+                // not in the payload is not made up.
                 if (!readOnly)
                     throw Error(MetadataErrorCode.UnsupportedFeature, "The TIFF field type has no supported width.", p + 2);
                 uint unknownCount = U32(p + 4);
-                if (unknownCount > (uint)limits.MaxValueBytes)
-                    throw Error(MetadataErrorCode.LimitExceeded, "The TIFF value exceeds the value budget.", p + 4);
                 int unknownStart = p + 8;
-                if (unknownCount > 4)
-                {
-                    uint valueOffset = U32(p + 8);
-                    unknownStart = RequireRange(valueOffset, unknownCount);
-                }
+                if (unknownCount > (uint)limits.MaxValueBytes)
+                    continue;
+                if (unknownCount > 4 &&
+                    !CheckedRange.TryGetSpanRange(U32(p + 8), unknownCount, data.Length, out unknownStart, out _))
+                    continue;
                 ReserveBytes((int)unknownCount, p);
                 entries.Add(new ExifEntry(new ExifTagKey(kind, tag),
                     ExifValue.FromRawUnknown(typeCode, unknownCount, order, data.Slice(unknownStart, (int)unknownCount))));

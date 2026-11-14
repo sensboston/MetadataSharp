@@ -172,7 +172,7 @@ public sealed class PsdMetadataTests
     }
 
     [Fact]
-    public void AnExifResourceWithAFieldOfUnknownTypeIsReadAsNotEditable()
+    public void AnExifResourceWithAFieldOfUnknownTypeIsReadOneBytePerElement()
     {
         // Orientation followed by an entry of field type 14, which TIFF 6.0 does not define.
         byte[] tiff = [0x49, 0x49, 42, 0, 8, 0, 0, 0, 2, 0, 0x12, 1, 3, 0, 1, 0, 0, 0, 6, 0, 0, 0,
@@ -183,7 +183,11 @@ public sealed class PsdMetadataTests
             0, 0, 0, (byte)tiff.Length, .. tiff, .. flat[34..]];
         ExifMetadata exif = Assert.IsType<ExifMetadata>(PsdMetadata.Read(x).ReadExif());
         Assert.False(exif.IsEditable);
-        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), Assert.Single(exif.Entries).Key);
+        Assert.Equal(2, exif.Entries.Count);
+        Assert.Equal(new ExifTagKey(ExifDirectoryKind.Ifd0, 0x0112), exif.Entries[0].Key);
+        Assert.Equal(TiffFieldType.Unknown, exif.Entries[1].Value.FieldType);
+        Assert.Equal(14, exif.Entries[1].Value.FieldTypeCode);
+        Assert.Equal(1, exif.Entries[1].Value.ByteLength);
     }
 
     [Theory]
