@@ -66,14 +66,17 @@ internal static class TiffBasedIccTarget
                 uint flags = type switch { 3 => U16(file, at + 8, big), 4 => U32(file, at + 8, big), _ => 0u };
                 reduced |= (flags & 1) != 0;
             }
-            if (reduced) return Because("the first directory is that of a reduced image (NewSubfileType)");
+            if (reduced)
+                return dng
+                    ? Because("the file is a DNG (DNGVersion) whose primary directory is marked reduced")
+                    : Because("the first directory is that of a reduced image (NewSubfileType)");
         }
 
         if (map is null) return dng ? Because("the file is a DNG whose primary image layout is not accounted for") : null;
         if (dng)
             return HasProvenDngColourPrimary(file, map, big)
                 ? null
-                : Because("the DNG primary directory is not a proven full-colour image ahead of a raw SubIFD");
+                : Because("the DNG (DNGVersion) primary directory is not a proven full-colour image ahead of a raw SubIFD");
 
         foreach (TiffBasedDirectory directory in map.Directories)
         {

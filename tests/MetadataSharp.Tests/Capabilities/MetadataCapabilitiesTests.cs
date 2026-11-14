@@ -586,8 +586,22 @@ public sealed class MetadataCapabilitiesTests
         Assert.False(MetadataCapabilities.TryGet(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Remove, out _));
     }
 
+    [Fact]
+    public void DngIccInsertionIsPartialForTheProvenColourPrimaryLayout()
+    {
+        Assert.True(MetadataCapabilities.TryGet(MetadataContainer.Dng, MetadataFamily.Icc,
+            MetadataOperation.Insert, out CapabilityDescriptor insert));
+        Assert.Equal(CapabilityStatus.Partial, insert.Status);
+        Assert.Contains("un-reduced, uncompressed RGB primary", insert.Note!);
+        Assert.True(MetadataCapabilities.TryGet(MetadataContainer.Dng, MetadataFamily.Icc,
+            MetadataOperation.Replace, out CapabilityDescriptor replace));
+        Assert.Equal(CapabilityStatus.Partial, replace.Status);
+        Assert.True(MetadataCapabilities.TryGet(MetadataContainer.Dng, MetadataFamily.Icc,
+            MetadataOperation.Remove, out CapabilityDescriptor remove));
+        Assert.Equal(CapabilityStatus.Partial, remove.Status);
+    }
+
     [Theory]
-    [InlineData(MetadataContainer.Dng)]
     [InlineData(MetadataContainer.Arw)]
     [InlineData(MetadataContainer.Cr2)]
     [InlineData(MetadataContainer.Nef)]
