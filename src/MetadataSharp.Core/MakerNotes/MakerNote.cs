@@ -193,7 +193,10 @@ public sealed class MakerNote
     /// </summary>
     public long Offset { get; internal set; }
 
-    /// <summary>Entries in directory order.</summary>
+    /// <summary>
+    /// Entries in directory order. A directory that states the same tag ID twice is listed twice, as the
+    /// reference prints it; <see cref="TryGetEntry"/> and a key name the first one.
+    /// </summary>
     public IReadOnlyList<MakerNoteEntry> Entries { get; }
 
     /// <summary>Looks up an entry by tag ID; the first one when the directory repeats a tag.</summary>

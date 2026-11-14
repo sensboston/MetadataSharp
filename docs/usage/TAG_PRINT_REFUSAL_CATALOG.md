@@ -58,10 +58,13 @@ The executable exception table is in `tools/parity/run_tag_print.py`; tests requ
 
 ## Documented row rules
 
-A row rule names one reference row that no local row can answer, because the reference reads something
-this library deliberately does not. The gate keeps such a row visible in its report, counts it in no
-matched-row total, and requires the exact pinned file and key listed below: a different file, a
-different key, or a local row that starts answering the same key fails the comparison again.
+A row rule names one reference row that no local row answers, because the reference reads something
+this library deliberately does not: the conversion its sidecar reader performs. The gate keeps such a
+row visible in its report, counts it in no matched-row total, and requires the exact pinned file and
+key listed below: a different file, a different key, or a local row that starts answering the same key
+fails the comparison again. There is no rule for a structure the local reader lacked: image
+directories named by tag 0x014A, a MakerNote directory that states one tag ID twice and an entry whose
+field type TIFF does not define are read and compared row by row.
 
 | Exact pinned input | Exact key or group prefix | Why the reference row has no local counterpart |
 | --- | --- | --- |
@@ -70,16 +73,14 @@ different key, or a local row that starts answering the same key fails the compa
 | `exiv2-bug1112.xmp` | `Exif.*` | Same sidecar conversion rule. |
 | `issue_1959_poc.xmp` | `Exif.*` | Same sidecar conversion rule. |
 | `issue_1998.xmp` | `Exif.*` | Same sidecar conversion rule. |
-| `IMG_1361.dng` | `Exif.SubImage1.` | The 0th directory points at image directories with tag 0x014A (SubIFDs). A whole TIFF or DNG is read for its metadata directories: strip, tile and SubIFD tags are entries and are never followed. |
-| `IMG_1361.dng` | `Exif.SubImage2.` | Same image-directory rule, second SubIFD. |
-| `exiv2-pr2323_coverage1.exv` | `Exif.Sony1.ColorTemperature` | The fixture holds tag 0xB021 twice in one MakerNote directory, and a MakerNote directory is read once per tag ID so that a tag can be addressed by key for an edit. Only the reference rows beyond the local ones are covered, and only while the local rows equal the reference's leading rows. |
-| `exiv2-pr2323_coverage4.exv` | `Exif.Sony2.WBShiftABGM` | The fixture holds tag 0x2014 twice in one MakerNote directory, under the same one-entry-per-tag rule and the same leading-row condition. |
-| `exiv2-bug447.jpg` | `Exif.Photo.UserComment` | The entry names field type 14, which is not a TIFF 6.0 field type. The reader leaves an entry of unknown type out, as TIFF 6.0 tells a reader to do, and marks the block not editable. |
 
-A rule that names one exact key of a repeated tag is applied by pairing rather than by dropping: the
-reference rows for that key are kept while the local rows for it are identical to the reference's
-leading rows, and the rows the reference prints beyond them are the ones the rule accounts for. A
-changed local value, a missing local row or a second local row returns the key to the comparison.
+## What the comparison covers without a rule
+
+| Structure | How it is read |
+| --- | --- |
+| Image directories named by tag 0x014A (SubIFDs) | A whole TIFF-based file lists them as `Exif.SubImage1.*`, `Exif.SubImage2.*` in the order the tag lists them, next to the metadata. `ExifMetadata.SubImages` holds them, `ExifMetadata.Entries` does not: they describe pictures, so no edit and no layout plan reaches them. Nothing inside them is followed. |
+| A MakerNote directory that states one tag ID twice | Every occurrence is listed, as the reference prints it; the lookup, a key name and an edit address the first one. |
+| An entry whose field type is not one of the twelve TIFF types | The strict read refuses the block and the read-only rules read it: the value is one byte per element, as the reference reads it, the entry keeps the type code the file states, and the block is not editable. |
 
 ## How a reference row is read
 

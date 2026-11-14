@@ -283,6 +283,25 @@ public sealed class CanonMakerNoteArrayTests
     }
 
     [Fact]
+    public void ARepeatedMakerNoteTagIsListedTwiceAndAddressedByItsFirstEntry()
+    {
+        // A directory may state one tag ID twice; the reference prints both entries, and a key edit
+        // reaches the first, so both are kept and the lookup is unambiguous.
+        ExifValue first = Shorts(false, 1), second = Shorts(false, 2);
+        var note = new MakerNote(MakerNoteFormat.Canon, Endianness.LittleEndian,
+        [
+            new MakerNoteEntry(0x0001, "Settings", first, []),
+            new MakerNoteEntry(0x0001, "Settings", second, []),
+        ]);
+
+        Assert.Equal(2, note.Entries.Count);
+        Assert.Same(first, note.Entries[0].Value);
+        Assert.Same(second, note.Entries[1].Value);
+        Assert.True(note.TryGetEntry(0x0001, out MakerNoteEntry? entry));
+        Assert.Same(note.Entries[0], entry);
+    }
+
+    [Fact]
     public void LayoutIndexesAscendAndAreUnique()
     {
         foreach (var (_, indexes) in Core.MakerNotes.CanonMakerNoteArrays.LayoutsForTests())

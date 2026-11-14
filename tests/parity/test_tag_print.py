@@ -177,11 +177,6 @@ class TagPrintProtocolTests(unittest.TestCase):
             ("exiv2-bug1112.xmp", "Exif.*"),
             ("issue_1959_poc.xmp", "Exif.*"),
             ("issue_1998.xmp", "Exif.*"),
-            ("IMG_1361.dng", "Exif.SubImage1."),
-            ("IMG_1361.dng", "Exif.SubImage2."),
-            ("exiv2-pr2323_coverage1.exv", "Exif.Sony1.ColorTemperature"),
-            ("exiv2-pr2323_coverage4.exv", "Exif.Sony2.WBShiftABGM"),
-            ("exiv2-bug447.jpg", "Exif.Photo.UserComment"),
         }, set(gate._TAG_PRINT_ROW_EXCEPTIONS))
         self.assertTrue(all(reason.strip() for reason in gate._TAG_PRINT_ROW_EXCEPTIONS.values()))
 
@@ -190,35 +185,12 @@ class TagPrintProtocolTests(unittest.TestCase):
         self.assertIsNotNone(gate._row_exception("BlueSquare.xmp", sidecar, has_local_exif=False))
         self.assertIsNone(gate._row_exception("BlueSquare.xmp", sidecar, has_local_exif=True))
         self.assertIsNone(gate._row_exception("issue_1713_poc.xmp", sidecar, has_local_exif=False))
-        sub_image = {"key": "Exif.SubImage1.LinearizationTable", "type": "Short", "count": 4096, "value": "0"}
-        self.assertIsNotNone(gate._row_exception("IMG_1361.dng", sub_image, has_local_exif=True))
-        self.assertIsNone(gate._row_exception("IMG_1361.dng", {"key": "Exif.SubImage3.ImageWidth"},
+        # Only the sidecar conversion remains: every other file is compared row by row.
+        self.assertIsNone(gate._row_exception("IMG_1361.dng", {"key": "Exif.SubImage1.ImageWidth"},
                                               has_local_exif=True))
-        self.assertIsNone(gate._row_exception("IMG_1361.dng", {"key": "Exif.Image.ImageWidth"},
-                                              has_local_exif=True))
-        exact = {"key": "Exif.Photo.UserComment", "type": "0x000e", "count": 125, "value": ""}
-        self.assertIsNotNone(gate._row_exception("exiv2-bug447.jpg", exact, has_local_exif=True))
-        self.assertIsNone(gate._row_exception("exiv2-bug447.jpg", {**exact, "key": "Exif.Photo.MakerNote"},
-                                              has_local_exif=True))
-
-    def test_a_repeated_tag_rule_pairs_the_leading_reference_rows_only(self) -> None:
-        name = "exiv2-pr2323_coverage1.exv"
-        self.assertIn((name, "Exif.Sony1.ColorTemperature"), gate._TAG_PRINT_REPEATED_TAG_RULES)
-        self.assertIsNone(gate._row_exception(name, {"key": "Exif.Sony1.ColorTemperature", "type": "Long",
-                                                     "count": 1, "value": "0"}, has_local_exif=True))
-        reference = [{"key": "Exif.Sony1.ColorTemperature", "type": "Long", "count": 1, "value": "0"},
-                     {"key": "Exif.Sony1.ColorTemperature", "type": "Long", "count": 1, "value": "4294967295"}]
-        local = [{**reference[0], "value": "0"}]
-        drops, reason = gate._repeated_tag_drops(name, reference, local)
-        self.assertEqual([reference[1]], drops)
-        self.assertEqual(gate._TAG_PRINT_ROW_EXCEPTIONS[(name, "Exif.Sony1.ColorTemperature")], reason)
-        # A changed local value, a lost row or a second local row returns the file to the comparison.
-        self.assertEqual(([], ""), gate._repeated_tag_drops(name, reference, [{**local[0], "value": "1"}]))
-        self.assertEqual(([], ""), gate._repeated_tag_drops(name, reference, []))
-        self.assertEqual(([], ""), gate._repeated_tag_drops(name, reference, local + local))
-        # The rule names one file and one key.
-        self.assertEqual(([], ""), gate._repeated_tag_drops("other.exv", reference, local))
-        self.assertEqual(([], ""), gate._repeated_tag_drops(name, [{**reference[0], "key": "Exif.Sony1.Foo"}], local))
+        self.assertIsNone(gate._row_exception("exiv2-bug447.jpg",
+                                              {"key": "Exif.Photo.UserComment", "type": "0x000e", "count": 125,
+                                               "value": ""}, has_local_exif=True))
 
     def test_a_documented_row_rule_is_reported_and_its_local_row_ends_it(self) -> None:
         candidate = gate.corpus.Candidate("BlueSquare.xmp", Path("/tmp/BlueSquare.xmp"), "test")

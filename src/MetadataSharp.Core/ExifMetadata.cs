@@ -9,11 +9,17 @@ public sealed partial class ExifMetadata
 
     // Preserve the parsed MakerNote for read access even when the enclosing block cannot be safely edited.
     internal ExifMetadata(Endianness byteOrder, IReadOnlyList<ExifEntry> entries, MakerNote? makerNote,
-        bool editable = true)
+        bool editable = true, IReadOnlyList<ExifSubImage>? subImages = null)
         : this(byteOrder, entries)
     {
         MakerNote = makerNote;
         IsEditable = editable;
+        if (subImages is null || subImages.Count == 0)
+            return;
+        var copied = new ExifSubImage[subImages.Count];
+        for (int i = 0; i < copied.Length; i++)
+            copied[i] = subImages[i] ?? throw new ArgumentException("Sub-image directories cannot be null.", nameof(subImages));
+        SubImages = Array.AsReadOnly(copied);
     }
 
     // Validate before publishing either view so the ordered entries and keyed lookup describe one immutable block.
@@ -55,6 +61,14 @@ public sealed partial class ExifMetadata
     /// Null after an edit: the decoded view describes the bytes as read, not a planned output.
     /// </summary>
     public MakerNote? MakerNote { get; }
+
+    /// <summary>
+    /// The image directories of a whole TIFF-based file that its primary directory names with tag
+    /// 0x014A (SubIFDs), in the order that tag lists them, empty when the file has none. Their tags are
+    /// listed by <see cref="ExifSubImage.Entries"/> and are not part of <see cref="Entries"/>: they
+    /// describe pictures, and neither an edit nor the layout planner reaches them.
+    /// </summary>
+    public IReadOnlyList<ExifSubImage> SubImages { get; } = Array.Empty<ExifSubImage>();
 
     /// <summary>Looks up a directory/tag pair without interpreting the tag ID.</summary>
     /// <param name="key">The directory and tag ID to find.</param>

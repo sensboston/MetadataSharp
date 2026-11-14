@@ -413,8 +413,18 @@ internal static class Program
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
             Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
-                TypeName(entry.Value.FieldType), entry.Value.Count, Value(entry),
+                TypeName(entry.Value), entry.Value.Count, Value(entry),
                 ExifTags.Interpret(entry.Key, entry.Value));
+        // Image directories name their tags with the same vocabulary as the primary one, and only the
+        // group says which directory the row was read from.
+        foreach (ExifSubImage image in metadata.SubImages)
+        {
+            string imageGroup = "SubImage" + image.Index.ToString(CultureInfo.InvariantCulture);
+            foreach (ExifEntry entry in image.Entries)
+                Tag(stdout, "Exif." + imageGroup + "." + Name(entry.Key, imageGroup),
+                    TypeName(entry.Value), entry.Value.Count, Value(entry),
+                    ExifTags.Interpret(entry.Key, entry.Value));
+        }
         if (metadata.MakerNote is MakerNote makerNote)
         {
             string? cameraModel = metadata.Model;
@@ -446,7 +456,7 @@ internal static class Program
                     bool sonyMinolta = sony && entry.TagId == 0xB028;
                     bool keepParent = olympusIfd || nikonPreview || makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
-                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value.FieldType), entry.Value.Count, MakerNoteValue(makerNote, entry),
+                        Tag(stdout, "Exif." + group + "." + entry.Name, TypeName(entry.Value), entry.Value.Count, MakerNoteValue(makerNote, entry),
                             makerNote.InterpretForModel(entry, cameraModel));
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
                         : nikonPreview ? "NikonPreview"
@@ -487,7 +497,7 @@ internal static class Program
                     continue;
                 }
                 Tag(stdout, "Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
-                    TypeName(entry.Value.FieldType), entry.Value.Count, MakerNoteValue(makerNote, entry), makerNote.InterpretForModel(entry, cameraModel));
+                    TypeName(entry.Value), entry.Value.Count, MakerNoteValue(makerNote, entry), makerNote.InterpretForModel(entry, cameraModel));
             }
         }
     }
@@ -724,12 +734,19 @@ internal static class Program
         return groups;
     }
 
-    /// <summary>The field name the standards give a tag, or its numeric ID when this release does not
-    /// name it: an unnamed tag is reported as a gap, never as a plausible-looking invented label.</summary>
-    private static string Name(ExifTagKey key)
+    /// <summary>
+    /// The field name the standards give a tag: the spelling the comparison agreed on, else the name of the
+    /// EXIF vocabulary, else the name the checked tag catalog holds. A tag none of them names keeps its
+    /// numeric ID: it is reported as a gap, never as a plausible-looking invented label.
+    /// </summary>
+    private static string Name(ExifTagKey key, string? group = null)
     {
-        ExifTagDefinition? definition = ExifTags.Find(key);
-        return definition is null ? "0x" + Hex(key.TagId) : ReferenceSpelling(key) ?? definition.Name;
+        string? name = ReferenceSpelling(key) ?? ExifTags.Find(key)?.Name;
+        if (name is not null)
+            return name;
+        return MetadataTagCatalog.TryGet(group ?? Group(key.Directory), key.TagId, out NumberedTagDefinition? catalogued)
+            ? catalogued?.Name ?? "0x" + Hex(key.TagId)
+            : "0x" + Hex(key.TagId);
     }
 
     /// <summary>The key the reference prints for a tag it spells differently from Exif 3.0. The library
@@ -763,6 +780,11 @@ internal static class Program
     };
 
     // Render a TIFF field type using its stable public-facing name.
+    /// <summary>The printed field type: its name, or the code the entry states for a type the reader does not know.</summary>
+    private static string TypeName(ExifValue value) => value.FieldType == TiffFieldType.Unknown
+        ? "0x" + value.FieldTypeCode.ToString("x4", CultureInfo.InvariantCulture)
+        : TypeName(value.FieldType);
+
     private static string TypeName(TiffFieldType type) => type switch
     {
         TiffFieldType.Byte => "Byte",
@@ -783,7 +805,7 @@ internal static class Program
     // Return the encoded byte width of a TIFF field type, or zero when unsupported.
     private static int Size(TiffFieldType type) => type switch
     {
-        TiffFieldType.Byte or TiffFieldType.Ascii or TiffFieldType.SByte or TiffFieldType.Undefined => 1,
+        TiffFieldType.Unknown or TiffFieldType.Byte or TiffFieldType.Ascii or TiffFieldType.SByte or TiffFieldType.Undefined => 1,
         TiffFieldType.Short or TiffFieldType.SShort => 2,
         TiffFieldType.Long or TiffFieldType.SLong or TiffFieldType.Float => 4,
         TiffFieldType.Rational or TiffFieldType.SRational or TiffFieldType.Double => 8,
@@ -859,7 +881,7 @@ internal static class Program
             {
                 TiffFieldType.Byte => bytes[at].ToString(CultureInfo.InvariantCulture),
                 TiffFieldType.SByte => unchecked((sbyte)bytes[at]).ToString(CultureInfo.InvariantCulture),
-                TiffFieldType.Undefined => bytes[at].ToString(CultureInfo.InvariantCulture),
+                TiffFieldType.Undefined or TiffFieldType.Unknown => bytes[at].ToString(CultureInfo.InvariantCulture),
                 TiffFieldType.Short => U16(bytes, at, order).ToString(CultureInfo.InvariantCulture),
                 TiffFieldType.SShort => S16(bytes, at, order).ToString(CultureInfo.InvariantCulture),
                 TiffFieldType.Long => U32(bytes, at, order).ToString(CultureInfo.InvariantCulture),

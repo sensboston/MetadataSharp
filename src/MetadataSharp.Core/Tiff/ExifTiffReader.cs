@@ -29,6 +29,9 @@ internal ref struct ExifTiffReader
     private readonly Endianness order;
     private readonly List<ExifEntry> entries;
     private readonly List<ExifDirectoryKind> directories;
+    // Image directories named by tag 0x014A are listed for reading only, never merged into the entries.
+    private readonly List<ExifSubImage> subImages;
+    private readonly Queue<(uint Offset, int Index)> pendingImages;
     private readonly List<(int Start, int Length)> ranges;
     // Breadth-first worklist avoids recursion and carries each directory role and depth into validation.
     private readonly Queue<(uint Offset, ExifDirectoryKind Kind, int Depth)> pending;
@@ -53,8 +56,10 @@ internal ref struct ExifTiffReader
         order = data[0] == 0x49 ? Endianness.LittleEndian : Endianness.BigEndian;
         entries = [];
         directories = [];
+        subImages = [];
         ranges = [(0, 8)];
         pending = new();
+        pendingImages = new();
         offsets = [];
         roles = [];
         totalEntries = 0;
@@ -226,10 +231,16 @@ internal ref struct ExifTiffReader
             var item = pending.Dequeue();
             ReadDirectory(item.Offset, item.Kind, item.Depth);
         }
+        while (pendingImages.Count != 0)
+        {
+            var item = pendingImages.Dequeue();
+            ReadSubImage(item.Offset, item.Index);
+        }
         // A read-only result is never planned for writing, so its picture is not taken out either.
         byte[]? thumbnail = readOnly ? null : ReadThumbnail();
         MakerNote? makerNote = ReadMakerNote();
-        return new TiffReadResult(new ExifMetadata(order, entries, makerNote, editable: !readOnly),
+        return new TiffReadResult(
+            new ExifMetadata(order, entries, makerNote, editable: !readOnly, subImages.AsReadOnly()),
             directories.AsReadOnly(), thumbnail);
     }
 
@@ -283,6 +294,89 @@ internal ref struct ExifTiffReader
         pending.Enqueue((offset, kind, depth));
     }
 
+    /// <summary>
+    /// Queues the image directories a whole file names with tag 0x014A. The tag holds file offsets, one
+    /// per picture, in the type its entry declares; an entry of another shape is left as an entry only.
+    /// </summary>
+    private void ScheduleSubImages(ExifValue value, int depth)
+    {
+        if (value.FieldType is not (TiffFieldType.Long or TiffFieldType.Short))
+            return;
+        int width = ExifValue.GetWidth(value.FieldType);
+        byte[] bytes = new byte[value.ByteLength];
+        value.CopyRawTo(bytes);
+        for (int i = 0; i < value.Count; i++)
+        {
+            uint at = width == 4
+                ? (order == Endianness.LittleEndian
+                    ? BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(i * 4, 4))
+                    : BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(i * 4, 4)))
+                : (order == Endianness.LittleEndian
+                    ? BinaryPrimitives.ReadUInt16LittleEndian(bytes.AsSpan(i * 2, 2))
+                    : BinaryPrimitives.ReadUInt16BigEndian(bytes.AsSpan(i * 2, 2)));
+            if (at == 0)
+                continue; // A slot the file leaves empty is not a directory.
+            if (!offsets.Add(at))
+                throw Error(MetadataErrorCode.InvalidExif, "An IFD offset is cyclic or shared.", at);
+            if (offsets.Count > limits.MaxDirectories || depth > limits.MaxDirectoryDepth)
+                throw Error(MetadataErrorCode.LimitExceeded, "The directory traversal budget was exceeded.", at);
+            pendingImages.Enqueue((at, subImages.Count + pendingImages.Count + 1));
+        }
+    }
+
+    /// <summary>
+    /// Reads one image directory for listing. It holds pictures, not metadata, so its entries are
+    /// collected apart from <see cref="entries"/>, nothing it points at is followed, and an entry of a
+    /// field type this reader does not know is left out rather than refused: the rest of the file's
+    /// metadata does not depend on it.
+    /// </summary>
+    private void ReadSubImage(uint offset, int index)
+    {
+        int start = RequireRange(offset, 2);
+        int count = U16(start);
+        if (count > limits.MaxEntriesPerDirectory || count > limits.MaxTotalEntries - totalEntries)
+            throw Error(MetadataErrorCode.LimitExceeded, "The IFD entry budget was exceeded.", offset);
+        totalEntries += count;
+        int length = 2 + count * 12 + 4;
+        RequireRange(offset, length);
+        ClaimRange(start, length);
+        if (wholeFile)
+            ReserveBytes(length, offset);
+        var ids = new HashSet<ushort>();
+        ushort previous = 0;
+        var imageEntries = new List<ExifEntry>(count);
+        for (int i = 0; i < count; i++)
+        {
+            int p = start + 2 + i * 12;
+            ushort tag = U16(p);
+            if (!ids.Add(tag))
+                throw Error(MetadataErrorCode.AmbiguousMetadata, "The IFD contains a duplicate tag ID.", p);
+            if (i != 0 && tag < previous)
+                throw Error(MetadataErrorCode.InvalidExif, "IFD tags are not in ascending order.", p);
+            previous = tag;
+            ushort typeCode = U16(p + 2);
+            if (typeCode is < 1 or > 12)
+                continue;
+            var type = (TiffFieldType)typeCode;
+            uint valueCount = U32(p + 4);
+            if (!CheckedRange.TryMultiply(valueCount, ExifValue.GetWidth(type), out int byteLength))
+                throw Error(MetadataErrorCode.InvalidExif, "The TIFF value length is not representable.", p + 4);
+            if (byteLength > limits.MaxValueBytes)
+                throw Error(MetadataErrorCode.LimitExceeded, "The TIFF value exceeds the value budget.", p + 4);
+            int valueStart = p + 8;
+            if (byteLength > 4)
+            {
+                uint valueOffset = U32(p + 8);
+                valueStart = RequireRange(valueOffset, byteLength);
+                ClaimRange(valueStart, byteLength);
+            }
+            ReserveBytes(byteLength, p);
+            imageEntries.Add(new ExifEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, tag),
+                ExifValue.FromRaw(type, valueCount, order, data.Slice(valueStart, byteLength))));
+        }
+        subImages.Add(new ExifSubImage(index, imageEntries));
+    }
+
     private void ReadDirectory(uint offset, ExifDirectoryKind kind, int depth)
     {
         int start = RequireRange(offset, 2);
@@ -310,11 +404,24 @@ internal ref struct ExifTiffReader
             ushort typeCode = U16(p + 2);
             if (typeCode is < 1 or > 12)
             {
-                // TIFF 6.0: a reader skips a field whose type it does not expect. Its width is unknown,
-                // so the entry cannot be written back; reading leaves it out and keeps the rest.
-                if (readOnly)
-                    continue;
-                throw Error(MetadataErrorCode.UnsupportedFeature, "The TIFF field type has no supported width.", p + 2);
+                // TIFF 6.0: a reader skips a field whose type it does not expect, and its width is unknown,
+                // so the entry cannot be written back. For reading the value is one byte per element, as
+                // the reference reads it, and the entry is kept with the type code the file states.
+                if (!readOnly)
+                    throw Error(MetadataErrorCode.UnsupportedFeature, "The TIFF field type has no supported width.", p + 2);
+                uint unknownCount = U32(p + 4);
+                if (unknownCount > (uint)limits.MaxValueBytes)
+                    throw Error(MetadataErrorCode.LimitExceeded, "The TIFF value exceeds the value budget.", p + 4);
+                int unknownStart = p + 8;
+                if (unknownCount > 4)
+                {
+                    uint valueOffset = U32(p + 8);
+                    unknownStart = RequireRange(valueOffset, unknownCount);
+                }
+                ReserveBytes((int)unknownCount, p);
+                entries.Add(new ExifEntry(new ExifTagKey(kind, tag),
+                    ExifValue.FromRawUnknown(typeCode, unknownCount, order, data.Slice(unknownStart, (int)unknownCount))));
+                continue;
             }
             var type = (TiffFieldType)typeCode;
             uint valueCount = U32(p + 4);
@@ -347,9 +454,11 @@ internal ref struct ExifTiffReader
                 Schedule(U32(p + 8), target, depth + 1);
             }
             // In a whole file these describe image data and further image directories: the entry is kept
-            // like any other, and nothing it points at is read.
+            // like any other, and only a SubIFD list is followed, as a list of image directories.
             if (!wholeFile && !readOnly && tag is 0x014A or 0x0111 or 0x0117 or 0x0144 or 0x0145)
                 throw Error(MetadataErrorCode.UnsupportedFeature, "SubIFDs, strips and tiles are outside the EXIF subset.", p);
+            if (wholeFile && tag == 0x014A && kind == ExifDirectoryKind.Ifd0)
+                ScheduleSubImages(entry.Value, depth);
             if (tag == 0x927C && kind == ExifDirectoryKind.Exif)
             {
                 if (type != TiffFieldType.Undefined)

@@ -95,7 +95,11 @@ entry; if the pinned reference does not print that key, the report lists it unde
 `raw_only_tag_exceptions` instead of counting its fallback raw value as a named-table mismatch. This does not suppress unknown named keys,
 keys printed by both tools, raw-value gates, or the separate MakerNote-render parity gate.
 The reference's print columns are read by their widths, so a stored value that begins with spaces and
-a MakerNote tag name that contains a space are compared exactly. Named reader refusals and the
+a MakerNote tag name that contains a space are compared exactly. Structures the comparison used to step
+around are read and compared row by row: the image directories a whole TIFF-based file names with tag
+0x014A are listed as `Exif.SubImageN.*` (`ExifMetadata.SubImages`), a MakerNote directory that states
+one tag ID twice lists both entries, and an entry of an unknown field type is read one byte per element
+with the type code the file states. Named reader refusals and the
 reference rows the comparison cannot answer are inventoried by exact corpus filename, key or group
 prefix and reason in [`TAG_PRINT_REFUSAL_CATALOG.md`](TAG_PRINT_REFUSAL_CATALOG.md); they are reported
 apart from the matched rows, and any changed outcome fails. The gate is fail-closed for unlisted missing inputs and

@@ -123,55 +123,14 @@ _TAG_PRINT_ROW_EXCEPTIONS: dict[tuple[str, str], str] = {
     ("exiv2-bug1112.xmp", "Exif.*"): _SIDECAR_CONVERSION_RULE,
     ("issue_1959_poc.xmp", "Exif.*"): _SIDECAR_CONVERSION_RULE,
     ("issue_1998.xmp", "Exif.*"): _SIDECAR_CONVERSION_RULE,
-    ("IMG_1361.dng", "Exif.SubImage1."): (
-        "The 0th directory of this file points at two image directories with tag 0x014A (SubIFDs). A whole "
-        "TIFF or DNG is read for its metadata directories only: strip, tile and SubIFD tags are entries and "
-        "are never followed, so the reference's SubImage group has no local counterpart. The rule covers "
-        "this exact file and group prefix only."
-    ),
-    ("IMG_1361.dng", "Exif.SubImage2."): (
-        "The 0th directory of this file points at two image directories with tag 0x014A (SubIFDs). A whole "
-        "TIFF or DNG is read for its metadata directories only: strip, tile and SubIFD tags are entries and "
-        "are never followed, so the reference's SubImage group has no local counterpart. The rule covers "
-        "this exact file and group prefix only."
-    ),
-    ("exiv2-pr2323_coverage1.exv", "Exif.Sony1.ColorTemperature"): (
-        "This fixture holds tag 0xB021 twice in one MakerNote directory. A MakerNote directory is read once "
-        "per tag ID, so that a tag can be addressed by key for an edit; the reference prints every entry. "
-        "Only the reference rows beyond the ones the local directory reads are covered, for this exact file "
-        "and key, and only while the local rows equal the reference's leading rows."
-    ),
-    ("exiv2-pr2323_coverage4.exv", "Exif.Sony2.WBShiftABGM"): (
-        "This fixture holds tag 0x2014 twice in one MakerNote directory. A MakerNote directory is read once "
-        "per tag ID, so that a tag can be addressed by key for an edit; the reference prints every entry. "
-        "Only the reference rows beyond the ones the local directory reads are covered, for this exact file "
-        "and key, and only while the local rows equal the reference's leading rows."
-    ),
-    ("exiv2-bug447.jpg", "Exif.Photo.UserComment"): (
-        "The directory entry of this tag names field type 14, which is not a TIFF 6.0 field type. The reader "
-        "leaves an entry of unknown type out, as TIFF 6.0 tells a reader to do, and marks the block not "
-        "editable; the reference prints the numeric type and keeps the entry. The rule covers this exact "
-        "file and key."
-    ),
-}
-
-
-# Rules that describe a tag the reference prints once per occurrence in one directory.
-_TAG_PRINT_REPEATED_TAG_RULES: set[tuple[str, str]] = {
-    ("exiv2-pr2323_coverage1.exv", "Exif.Sony1.ColorTemperature"),
-    ("exiv2-pr2323_coverage4.exv", "Exif.Sony2.WBShiftABGM"),
 }
 
 
 def _row_exception(file_name: str, row: dict[str, Any], has_local_exif: bool) -> str | None:
-    """The documented reason for a reference row with no local counterpart, or None.
-
-    Repeated-tag entries are not answered here: they are paired with the local rows by
-    :func:`_repeated_tag_drops` instead.
-    """
+    """The documented reason for a reference row with no local counterpart, or None."""
     key = str(row.get("key"))
     for (name, pattern), reason in _TAG_PRINT_ROW_EXCEPTIONS.items():
-        if name != file_name or (name, pattern) in _TAG_PRINT_REPEATED_TAG_RULES:
+        if name != file_name:
             continue
         if pattern == "Exif.*":
             if not has_local_exif and key.startswith("Exif."):
@@ -179,32 +138,6 @@ def _row_exception(file_name: str, row: dict[str, Any], has_local_exif: bool) ->
         elif key.startswith(pattern):
             return reason
     return None
-
-
-def _repeated_tag_drops(file_name: str, reference: list[dict[str, Any]],
-                        observed: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], str]:
-    """The reference rows a repeated-tag rule accounts for, and the reason for them.
-
-    A local directory is read once per tag ID, so a tag the reference prints twice has no second
-    local row. The rule applies only while the local rows for the key equal the leading reference
-    rows: a local value that changes, loses its first row or gains a second one fails the gate again.
-    """
-    drops: list[dict[str, Any]] = []
-    reasons: set[str] = set()
-    for (name, pattern), reason in sorted(_TAG_PRINT_ROW_EXCEPTIONS.items()):
-        if (name, pattern) not in _TAG_PRINT_REPEATED_TAG_RULES or name != file_name:
-            continue
-        reference_rows = [row for row in reference if str(row.get("key")) == pattern]
-        local_rows = [row for row in observed if str(row.get("key")) == pattern]
-        if not reference_rows or not local_rows or len(local_rows) > len(reference_rows):
-            continue
-        if any(local.get("type") != expected.get("type") or local.get("count") != expected.get("count")
-               or local.get("value") != expected.get("value")
-               for local, expected in zip(local_rows, reference_rows)):
-            continue
-        drops.extend(reference_rows[len(local_rows):])
-        reasons.add(reason)
-    return drops, "; ".join(sorted(reasons))
 
 
 _TAG_PRINT_EXCEPTIONS: dict[str, str] = {
@@ -681,13 +614,8 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             reference_rows = [row for row in parse_exiv2(output) if row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
             has_local_exif = any(str(source_row["key"]).startswith("Exif.") for source_row in ours["rows"])
             all_observed = project_dump(ours["rows"])
-            dropped_rows, repeated_reason = _repeated_tag_drops(name, reference_rows, all_observed)
             expected = []
             for reference_row in reference_rows:
-                if any(reference_row is dropped for dropped in dropped_rows):
-                    row_rule_hits[(name, str(reference_row["key"]), str(reference_row["type"]),
-                                   int(reference_row["count"]), repeated_reason)] += 1
-                    continue
                 reason = _row_exception(name, reference_row, has_local_exif)
                 if reason is None:
                     expected.append(reference_row)
