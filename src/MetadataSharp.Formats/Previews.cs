@@ -1112,10 +1112,12 @@ internal ref struct PreviewScanner
         long offset = Number(frame, entries, 0x0088), length = Number(frame, entries, 0x0089);
         if (offset <= 0 || length <= 0) return;
         // The note counts its thumbnail from the start of the file, which is what the reference reads; a
-        // writer that counts from the structure the note lives in is read that way when the other fails.
+        // writer that counts from the structure the note lives in, or from the note itself, is read that
+        // way when every reading before it holds nothing.
         string source = "Exif." + group + ".ThumbnailOffset";
         if (Jpeg(frame.Pointer + offset, length, source, tableStart, tableEnd)) return;
-        if (frame.Pointer != frame.Origin) Jpeg(frame.Origin + offset, length, source, tableStart, tableEnd);
+        if (frame.Pointer != frame.Origin && Jpeg(frame.Origin + offset, length, source, tableStart, tableEnd)) return;
+        Jpeg(tableStart + offset, length, source, tableStart, tableEnd);
     }
 
     // Resolve a paired TIFF offset/length tag only when its range stays inside the owning table.

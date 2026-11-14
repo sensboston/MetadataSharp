@@ -459,6 +459,11 @@ def compare(expected: dict[str, list[Preview]], dumped: dict[str, dict[str, Any]
                  "listed_sources": block.get("sources", []) if block is not None else []}
         if outcome["missing"]:
             entry["missing"] = [list(preview) for preview in outcome["missing"]]
+            if reference_offsets is not None:
+                # Where the reference's own bytes lie: the number a listing that left the preview out needs.
+                entry["missing_at"] = [{"preview": list(preview), "offsets": reference_offsets[index]}
+                                       for index, preview in enumerate(expected[name])
+                                       if preview in outcome["missing"]]
         if outcome["extra"]:
             entry["extra"] = [list(preview) for preview in outcome["extra"]]
         if offset_mismatch:
