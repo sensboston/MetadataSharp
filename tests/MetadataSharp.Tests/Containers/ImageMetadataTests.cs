@@ -351,7 +351,7 @@ public sealed class ImageMetadataTests
         ImageMetadata metadata = ImageMetadata.Read(profile);
 
         Assert.Equal(MetadataFormat.Dcp, metadata.Format);
-        Assert.Equal(new[] { 0x010F, 0x02BC, 0x83BB }, metadata.Exif!.Entries.Select(entry => (int)entry.Key.Tag));
+        Assert.Equal(new[] { 0x010F, 0x02BC, 0x83BB }, metadata.Exif!.Entries.Select(entry => (int)entry.Key.TagId));
         Assert.NotNull(metadata.Iptc);
         Assert.Equal(IptcStream.Length, metadata.Iptc.ByteLength);
         Assert.Equal(GoodPacket.Length, metadata.Xmp!.ByteLength);
