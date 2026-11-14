@@ -65,6 +65,7 @@ public static partial class ExifTags
             ExifDirectoryKind.Ifd0 or ExifDirectoryKind.Thumbnail => InterpretImage(key, value),
             ExifDirectoryKind.Exif => InterpretPhoto(key.TagId, value, options),
             ExifDirectoryKind.Gps => InterpretGps(key.TagId, value),
+            ExifDirectoryKind.Interop => InterpretInterop(key.TagId, value),
             _ => null,
         };
     }
@@ -294,6 +295,8 @@ public static partial class ExifTags
             },
             // YCbCrPositioning
             0x0213 => number switch { 1 => "Centered", 2 => "Co-sited", _ => null },
+            // DNG CalibrationIlluminant tags share the EXIF LightSource value domain.
+            0xC65A or 0xC65B => DngIlluminant(number),
             _ => null,
         },
         ExifDirectoryKind.Exif => key.TagId switch
@@ -354,9 +357,32 @@ public static partial class ExifTags
 
     // ---- 0th IFD and thumbnail -------------------------------------------------------------------------
 
+    private static string? InterpretInterop(ushort tag, ExifValue value)
+    {
+        if (tag != 0x0002 || value.FieldType != TiffFieldType.Undefined || value.Count != 4
+            || value.RawBytes.Length != 4)
+            return null;
+
+        ReadOnlySpan<byte> bytes = value.RawBytes;
+        foreach (byte b in bytes)
+        {
+            if (b is < (byte)'0' or > (byte)'9')
+                return null;
+        }
+        string digits = Encoding.ASCII.GetString(bytes);
+        int majorMinor = (digits[0] - '0') * 10 + digits[1] - '0';
+        return majorMinor.ToString(CultureInfo.InvariantCulture) + "." + digits[2..];
+    }
+
+    private static string? DngIlluminant(long number)
+    {
+        ExifTagKey lightSourceKey = new(ExifDirectoryKind.Exif, 0x9208);
+        return Find(lightSourceKey) is { } definition ? Meaning(definition, number) : null;
+    }
+
     private static string? InterpretImage(ExifTagKey key, ExifValue value) => key.TagId switch
     {
-        0x00FE or 0x013D => Labelled(key, value),                        // NewSubfileType, Predictor
+        0x00FE or 0x013D or 0xC65A or 0xC65B => Labelled(key, value),                        // NewSubfileType, Predictor
         0x011A or 0x011B or 0x011E or 0x011F => PlainDecimal(value),    // X/YResolution, X/YPosition
         0x0132 => AsciiText(value),                                      // DateTime
         0x0153 => SampleFormat(key, value),

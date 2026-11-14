@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import io
 import sys
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
@@ -28,9 +30,11 @@ class TagPrintProtocolTests(unittest.TestCase):
         self.assertEqual([
             {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "value": "top, left"},
             {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "value": "50/1"},
+            {"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 3, "value": ""},
         ], gate.project_dump([
             {"key": "Exif.Image.Orientation", "type": "Short", "count": 1, "raw": "1", "translated": "top, left"},
             {"key": "Exif.Photo.FocalLength", "type": "Rational", "count": 1, "raw": "50/1", "translated": ""},
+            {"key": "Exif.Image.ImageDescription", "type": "Ascii", "count": 3, "raw": "   ", "translated": ""},
             {"key": "Iptc.Application2.Caption", "type": "String", "count": 1, "raw": "x", "translated": "x"},
         ]))
 
@@ -89,6 +93,39 @@ class TagPrintProtocolTests(unittest.TestCase):
             report = gate.build_report([candidate], [], dump)
         self.assertEqual(1, report["totals"]["failed_files"])
         self.assertEqual("extra", report["differing"][0]["rows"][0]["kind"])
+
+    def test_annotation_chunks_keep_all_failure_groups_and_refusals_under_github_limit(self) -> None:
+        payload = {
+            "totals": {"files": 40},
+            "mismatch_groups": [{"category": "description", "key": f"Exif.Photo.Tag{i}",
+                                 "type": "Short", "occurrences": i,
+                                 "examples": [{"difference": "text differs", "occurrences": i}]}
+                                for i in range(40)],
+            "refusals": [{"file": f"failed-{i}.jpg", "kind": "metadatasharp-refused",
+                          "detail": "a" * 160} for i in range(34)],
+            "value_diff_by_key": [{"key": f"Exif.Photo.Tag{i}", "exiv2": "x", "metadatasharp": "y",
+                                   "occurrences": i} for i in range(30)],
+            "description_alias_hits": [],
+        }
+        output = io.StringIO()
+        with redirect_stdout(output):
+            gate._emit_annotation(payload)
+        lines = output.getvalue().splitlines()
+        self.assertGreater(len(lines), 1)
+        self.assertTrue(all(len(line) < 4000 for line in lines))
+        self.assertEqual(6, sum("refusals " in line for line in lines))
+
+    def test_report_groups_text_only_differences_by_key_and_category(self) -> None:
+        candidate = gate.corpus.Candidate("metering.jpg", Path("/tmp/metering.jpg"), "test")
+        dump = {"/tmp/metering.jpg": {"status": "ok", "rows": [
+            {"key": "Exif.Photo.MeteringMode", "type": "Short", "count": 1, "raw": "5", "translated": "Pattern"},
+        ]}}
+        with patch.object(gate, "_run_reference", return_value=(0, "Exif.Photo.MeteringMode Short 1 Multi-segment\n", "")):
+            report = gate.build_report([candidate], [], dump)
+        self.assertEqual([{"key": "Exif.Photo.MeteringMode", "exiv2": "Multi-segment", "metadatasharp": "Pattern",
+                           "occurrences": 1, "rule": gate._TAG_PRINT_DESCRIPTION_REASONS["Exif.Photo.MeteringMode"]}],
+                         report["description_alias_hits"])
+        self.assertEqual([], report["mismatch_groups"])
 
 
 if __name__ == "__main__":

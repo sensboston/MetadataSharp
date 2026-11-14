@@ -20,6 +20,8 @@ public sealed class ExifInterpretationTests
 
     private static ExifTagKey Gps(ushort id) => new(ExifDirectoryKind.Gps, id);
 
+    private static ExifTagKey Interop(ushort id) => new(ExifDirectoryKind.Interop, id);
+
     /// <summary>"1/250" or "16/1 50/1 35/10 56/10" as an unsigned RATIONAL value.</summary>
     private static ExifValue Rational(string text, Endianness order = Endianness.LittleEndian)
     {
@@ -184,6 +186,32 @@ public sealed class ExifInterpretationTests
     public void AnEnumeratedValueReadsAsAShortLabel(ExifDirectoryKind directory, ushort tag, ushort number, string expected)
     {
         Assert.Equal(expected, ExifTags.Interpret(new ExifTagKey(directory, tag), Short(number)));
+    }
+
+    [Theory]
+    [InlineData("0100", "1.00")]
+    [InlineData("0231", "2.31")]
+    public void InteroperabilityVersionIsDecodedFromItsFourAsciiDigits(string bytes, string expected)
+    {
+        ExifValue value = ExifValue.FromRaw(TiffFieldType.Undefined, 4, Endianness.LittleEndian,
+            Encoding.ASCII.GetBytes(bytes));
+        Assert.Equal(expected, ExifTags.Interpret(Interop(0x0002), value));
+    }
+
+    [Theory]
+    [InlineData(0xC65A, 17, "Standard light A")]
+    [InlineData(0xC65B, 21, "D65")]
+    public void DngCalibrationIlluminantsUseTheExifLightSourceMeaningTable(ushort tag, ushort code, string expected)
+    {
+        Assert.Equal(expected, ExifTags.Interpret(Image(tag), Short(code)));
+    }
+
+    [Fact]
+    public void InvalidInteroperabilityVersionRemainsUninterpreted()
+    {
+        ExifValue value = ExifValue.FromRaw(TiffFieldType.Undefined, 4, Endianness.LittleEndian,
+            new byte[] { (byte)'0', (byte)'1', (byte)'x', (byte)'0' });
+        Assert.Null(ExifTags.Interpret(Interop(0x0002), value));
     }
 
     [Fact]

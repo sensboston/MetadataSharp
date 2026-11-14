@@ -35,7 +35,8 @@ def _is_raw_numeric_tag(key: str) -> bool:
 
 def _is_text_display(value: str) -> bool:
     """Whether a printed value is a label/string rather than a numeric rendering."""
-    return bool(value.strip()) and not bool(re.fullmatch(r"[+\\-]?(?:\\d+(?:/\\d+)?)(?:\\s+[+\\-]?(?:\\d+(?:/\\d+)?))*", value.strip()))
+    numeric = r"[+-]?(?:\d+(?:\.\d+)?|\d+/\d+)(?:\s+[+-]?(?:\d+(?:\.\d+)?|\d+/\d+))*"
+    return bool(value.strip()) and re.fullmatch(numeric, value.strip()) is None
 
 
 PINNED_EXIV2_COMMIT = "b0859fc61fea5dedfc898aece6b15893ddf4314e"
@@ -48,6 +49,29 @@ _TAG_PRINT_KEY_EXCEPTIONS: dict[str, str] = {
         "Exiv2 0.28.9 print table exposes only its earlier above/below sea-level labels. The raw field and "
         "numeric code remain covered by the other tag/value gates; this exact key's translated wording differs by revision."
     ),
+}
+
+# Exact display aliases, not descriptions copied from Exiv2. These pairs represent the same assigned
+# values in the local Exif vocabulary and Exiv2 0.28.9's shorter/older print terminology. Any other
+# value for these keys still fails comparison.
+_TAG_PRINT_DESCRIPTION_ALIASES: dict[str, dict[str, str]] = {
+    "Exif.Photo.MeteringMode": {"Multi-segment": "Pattern"},
+    "Exif.Photo.ExposureProgram": {"Auto": "Normal program"},
+    "Exif.Photo.SensitivityType": {
+        "0": "Unknown",
+        "1": "Standard output sensitivity (SOS)",
+        "2": "Recommended exposure index (REI)",
+        "3": "ISO speed",
+        "4": "Standard output sensitivity (SOS) and recommended exposure index (REI)",
+        "5": "Standard output sensitivity (SOS) and ISO speed",
+        "6": "Recommended exposure index (REI) and ISO speed",
+        "7": "Standard output sensitivity (SOS) and recommended exposure index (REI) and ISO speed",
+    },
+}
+_TAG_PRINT_DESCRIPTION_REASONS = {
+    "Exif.Photo.MeteringMode": "The same EXIF metering code is called Pattern by the local vocabulary and Multi-segment by Exiv2; these terms describe the same assigned mode.",
+    "Exif.Photo.ExposureProgram": "The same EXIF exposure-program code is called Normal program by the local vocabulary and Auto by Exiv2; this is a terminology-only difference.",
+    "Exif.Photo.SensitivityType": "MetadataSharp renders the assigned EXIF meaning; Exiv2 0.28.9 prints the stored numeric code for this tag. Exact code-to-label pairs are listed and checked, not generalized to arbitrary values.",
 }
 
 _TAG_PRINT_EXCEPTIONS: dict[str, str] = {
@@ -119,8 +143,15 @@ def parse_exiv2(text: str) -> list[dict[str, Any]]:
 
 def project_dump(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Select the text a ``-pt`` style print would show from each dump record."""
-    return [{"key": row["key"], "type": row["type"], "count": row["count"],
-             "value": row["translated"] or row["raw"]} for row in rows if row["key"].startswith("Exif.")]
+    projected = []
+    for row in rows:
+        if not row["key"].startswith("Exif."):
+            continue
+        value = row["translated"] or row["raw"]
+        if row["type"] == "Ascii" or row["key"] == "Exif.Photo.UserComment":
+            value = value.rstrip(" \0")
+        projected.append({"key": row["key"], "type": row["type"], "count": row["count"], "value": value})
+    return projected
 
 
 def parse_dump(text: str) -> dict[str, dict[str, Any]]:
@@ -156,8 +187,10 @@ def parse_dump(text: str) -> dict[str, dict[str, Any]]:
     return files
 
 
-def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Compare rows as a multiset; iterator order is not a tag-table fact."""
+def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]],
+                 description_aliases: dict[str, dict[str, str]] | None = None,
+                 accepted_aliases: Counter[tuple[str, str, str]] | None = None) -> list[dict[str, Any]]:
+    """Compare rows as a multiset, allowing only exact, documented display aliases."""
     def identity(row: dict[str, Any]) -> tuple[Any, ...]:
         return row.get("key"), row.get("type"), row.get("count")
 
@@ -170,8 +203,16 @@ def compare_rows(reference: list[dict[str, Any]], actual: list[dict[str, Any]]) 
         expected = expected_by_key[key].copy()
         observed = actual_by_key[key].copy()
         for row in expected.copy():
-            if row in observed:
-                expected.remove(row); observed.remove(row)
+            match = next((candidate for candidate in observed
+                          if candidate == row or (
+                              description_aliases is not None
+                              and description_aliases.get(str(row.get("key")), {}).get(str(row.get("value")))
+                                  == candidate.get("value")
+                          )), None)
+            if match is not None:
+                if match != row and accepted_aliases is not None:
+                    accepted_aliases[(str(row.get("key")), str(row.get("value")), str(match.get("value")))] += 1
+                expected.remove(row); observed.remove(match)
         while expected and observed:
             differences.append({"kind": "value-diff", "exiv2": expected.pop(), "metadatasharp": observed.pop()})
         differences.extend({"kind": "missing", "exiv2": row, "metadatasharp": None} for row in expected)
@@ -213,6 +254,7 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
     return {"totals": report["totals"], "failure_kinds": report["failure_kinds"],
             "difference_types": report["difference_types"],
             "mismatch_groups": report["mismatch_groups"][:200],
+            "description_alias_hits": report["description_alias_hits"],
             "value_diff_by_key": report["value_diff_by_key"][:40],
             "refusals": report["refusals"],
             "formats": report["formats"],
@@ -225,9 +267,24 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
 
 def _emit_annotation(payload: dict[str, Any]) -> None:
     import base64, zlib
-    raw = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-    encoded = base64.b64encode(zlib.compress(raw)).decode("ascii")
-    print(f"::notice title={TITLE} summary 1/1::{encoded}")
+
+    def emit(title: str, part: dict[str, Any]) -> None:
+        raw = json.dumps(part, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+        encoded = base64.b64encode(zlib.compress(raw)).decode("ascii")
+        if len(encoded) > 3500:
+            raise TagPrintError(f"annotation payload too large for {title}: {len(encoded)} characters")
+        print(f"::notice title={title}::{encoded}")
+
+    grouped = payload.pop("mismatch_groups", [])
+    refusals = payload.pop("refusals", [])
+    value_differences = payload.pop("value_diff_by_key", [])
+    alias_hits = payload.pop("description_alias_hits", [])
+    emit(f"{TITLE} summary", payload)
+    for label, items, size in (("groups", grouped, 12), ("refusals", refusals, 6),
+                               ("values", value_differences, 8), ("description rules", alias_hits, 4)):
+        chunks = [items[i:i + size] for i in range(0, len(items), size)] or [[]]
+        for index, chunk in enumerate(chunks, 1):
+            emit(f"{TITLE} {label} {index}/{len(chunks)}", {label: chunk})
 
 
 def run_dump(command: list[str], paths: list[Path]) -> dict[str, dict[str, Any]]:
@@ -268,6 +325,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     failure_kinds: Counter[str] = Counter()
     difference_types: Counter[str] = Counter()
     value_pairs: Counter[tuple[str, str, str]] = Counter()
+    accepted_aliases: Counter[tuple[str, str, str]] = Counter()
     mismatch_groups: Counter[tuple[str, str, str, str]] = Counter()
     formats: dict[str, Counter[str]] = defaultdict(Counter)
     for candidate in candidates:
@@ -290,6 +348,9 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
             problem = {"file": name, "kind": "metadatasharp-refused", "status": ours["status"], "detail": ours["detail"]}
         else:
             expected = [row for row in parse_exiv2(output) if row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
+            source_by_identity: dict[tuple[str, str, int], list[dict[str, Any]]] = defaultdict(list)
+            for source_row in ours["rows"]:
+                source_by_identity[(source_row["key"], source_row["type"], source_row["count"])].append(source_row)
             all_observed = project_dump(ours["rows"])
             expected_keys = {row["key"] for row in expected}
             raw_only_tags.update(row["key"] for row in all_observed
@@ -298,7 +359,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
                         if (row["key"] in CATALOG_KEYS or row["key"] in expected_keys
                             or not _is_raw_numeric_tag(row["key"]))
                         and row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
-            rows = compare_rows(expected, observed)
+            rows = compare_rows(expected, observed, _TAG_PRINT_DESCRIPTION_ALIASES, accepted_aliases)
             if rows:
                 for row in rows:
                     difference_types[row["kind"]] += 1
@@ -306,8 +367,14 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
                         expected_row, actual_row = row["exiv2"], row["metadatasharp"]
                         key = expected_row["key"]
                         value_pairs[(key, expected_row["value"], actual_row["value"])] += 1
-                        category = ("description" if _is_text_display(expected_row["value"])
-                                    and _is_text_display(actual_row["value"]) else "value/format")
+                        local_source = next((candidate for candidate in source_by_identity[
+                            (actual_row["key"], actual_row["type"], actual_row["count"])]
+                            if project_dump([candidate])[0]["value"] == actual_row["value"]), {})
+                        local_is_interpreted = bool(local_source.get("translated"))
+                        category = "description" if local_is_interpreted else "value"
+                        if (expected_row["type"] == "Undefined" and not local_is_interpreted
+                                and re.fullmatch(r"\d+(?:\s+\d+)+", actual_row["value"].strip())):
+                            category = "format"
                         mismatch_groups[(category, key, expected_row["type"],
                                          expected_row["value"] + " => " + actual_row["value"])] += 1
                     else:
@@ -346,9 +413,15 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     ]
     refusals = [item for item in differing if item["kind"] in
                 ("metadatasharp-refused", "exiv2-refused", "missing-dump-file")]
+    description_alias_hits = [
+        {"key": key, "exiv2": reference, "metadatasharp": local, "occurrences": count,
+         "rule": _TAG_PRINT_DESCRIPTION_REASONS[key]}
+        for (key, reference, local), count in sorted(accepted_aliases.items())
+    ]
     return {"kind": "TagPrint", "totals": dict(totals), "failure_kinds": dict(sorted(failure_kinds.items())),
             "difference_types": dict(sorted(difference_types.items())),
             "mismatch_groups": grouped_differences,
+            "description_alias_hits": description_alias_hits,
             "value_diff_by_key": value_diff_by_key,
             "refusals": refusals,
             "formats": {key: dict(value) for key, value in sorted(formats.items())},
@@ -368,10 +441,16 @@ def text_report(report: dict[str, Any]) -> str:
         lines.append(f"  named missing-input exception: {entry['file']}: {entry['reason']}")
     for entry in report["tag_exceptions"]:
         lines.append(f"  named tag exception: {entry['key']}: {entry['reason']}")
+    for entry in report["description_alias_hits"]:
+        lines.append(f"  description alias: {entry['key']} {entry['exiv2']!r} => {entry['metadatasharp']!r} "
+                     f"({entry['occurrences']} rows): {entry['rule']}")
     for entry in report["raw_only_tag_exceptions"]:
         lines.append(f"  named raw-only tag exception: {entry['key']} ({entry['occurrences']} rows): {entry['reason']}")
-    for entry in report["differing"]:
-        lines.append(f"  {entry['file']}: {entry['kind']} {json.dumps(entry, ensure_ascii=False)[:900]}")
+    for entry in report["mismatch_groups"]:
+        examples = "; ".join(f"{item['difference']} ({item['occurrences']})" for item in entry["examples"])
+        lines.append(f"  {entry['category']} {entry['key']} [{entry['type']}]: {entry['occurrences']} rows; {examples}")
+    for entry in report["refusals"]:
+        lines.append(f"  refusal {entry['file']}: {entry['kind']} {entry.get('status', '')} {entry.get('detail', '')}")
     return "\n".join(lines) + "\n"
 
 
