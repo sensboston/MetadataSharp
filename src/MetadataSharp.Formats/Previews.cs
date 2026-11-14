@@ -187,15 +187,16 @@ internal ref struct PreviewScanner
         return found;
     }
 
-    // TIFF itself, and the raw formats that keep the structure under their own identifier:
-    // ORF ("IIRO", "IIRS", "MMOR") and RW2 ("IIU\0").
+    // TIFF itself, and the raw formats Exiv2 exposes as TIFF for preview discovery:
+    // ORF ("IIRO", "IIRS", "MMOR"). Panasonic RW2 metadata uses a separate header and does not
+    // expose the linked IFD JPEG as a preview in the pinned reference behavior.
     private bool IsTiffHeader()
     {
         if (data.Length < 8) return false;
         ReadOnlySpan<byte> head = data[..4];
         return head.SequenceEqual("II*\0"u8) || head.SequenceEqual("MM\0*"u8) || head.SequenceEqual("IIRC"u8) ||
             head.SequenceEqual("MMCR"u8) || head.SequenceEqual("IIRO"u8) ||
-            head.SequenceEqual("IIRS"u8) || head.SequenceEqual("MMOR"u8) || head.SequenceEqual("IIU\0"u8);
+            head.SequenceEqual("IIRS"u8) || head.SequenceEqual("MMOR"u8);
     }
 
     // CRW and RAF expose their preview byte ranges through dedicated bounded readers.
