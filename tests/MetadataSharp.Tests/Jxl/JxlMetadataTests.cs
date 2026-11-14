@@ -1,5 +1,7 @@
 using System.Text;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
+using MetadataSharp.Tests.Iptc;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Jxl;
 using Xunit;
@@ -53,6 +55,18 @@ public sealed class JxlMetadataTests
         Assert.Null(metadata.Exif);
         Assert.Null(metadata.Xmp);
         Assert.False(metadata.HasJumbf);
+    }
+
+    [Fact]
+    public void IptcNaaInTheExifTiffIsRead()
+    {
+        byte[] iptc = IptcCodecTests.Raw(IptcPacket.CreateEmpty());
+        byte[] tiff = TiffBlock(true, Raw(0x83BB, 7, iptc));
+
+        JxlMetadata metadata = JxlMetadata.Read(Container(ExifBox(tiff)));
+
+        Assert.NotNull(metadata.Iptc);
+        Assert.Equal(iptc.Length, metadata.Iptc.ByteLength);
     }
 
     [Theory]

@@ -1,10 +1,12 @@
 using System.Buffers.Binary;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.MakerNotes;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Bmff;
 using MetadataSharp.Formats.Internal;
+using MetadataSharp.Formats.Tiff;
 
 namespace MetadataSharp.Formats.Cr3;
 
@@ -214,10 +216,17 @@ internal ref struct Cr3Reader
             bool any = layout.Ifd0.Present || layout.Exif.Present || layout.MakerNote.Present || layout.Gps.Present;
             if (any) metadata = new ExifMetadata(order ?? note?.ByteOrder ?? Endianness.LittleEndian, entries, note, editable: false);
         }
+        IptcPacket? iptc = null;
+        try
+        {
+            if (refusals?.Exif is MetadataException exifRefusal) refusals.Iptc = exifRefusal;
+            else if (metadata is not null) iptc = TiffIptc.Read(metadata);
+        }
+        catch (MetadataException refusal) when (refusals is not null) { refusals.Iptc = refusal; }
         XmpPacket? packet = null;
         try { packet = packetFits ? XmpPacket.Parse(data.Slice(layout.Xmp.Start, layout.Xmp.Length), xmpOptions) : null; }
         catch (MetadataException refusal) when (refusals is not null) { refusals.Xmp = refusal; }
-        return new Cr3Metadata(metadata, packet);
+        return new Cr3Metadata(metadata, iptc, packet);
     }
 
     private void Directory(Cr3Block block, ExifDirectoryKind kind, List<ExifEntry> entries,

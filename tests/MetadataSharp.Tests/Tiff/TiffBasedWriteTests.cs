@@ -5,6 +5,7 @@ using MetadataSharp.Core.Iptc;
 using MetadataSharp.Core.Tiff;
 using MetadataSharp.Core.Xmp;
 using MetadataSharp.Formats.Jpeg;
+using MetadataSharp.Formats;
 using MetadataSharp.Formats.Tiff;
 using MetadataSharp.Tests.Iptc;
 using Xunit;
@@ -219,6 +220,40 @@ public sealed class TiffBasedWriteTests
             Assert.Equal(fixture.PrivateData.Length, TiffBasedFixture.U32(output, big, privateData + 4));
             Assert.Equal(fixture.PrivateData.Start, TiffBasedFixture.U32(output, big, privateData + 8));
         }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DcpProfileWritesExifWithExiv2ClassicTiffOutputMagic(bool big)
+    {
+        byte[] profile = TiffBasedFixture.Tiff(big).Bytes;
+        profile[2] = big ? (byte)0x43 : (byte)0x52;
+        profile[3] = big ? (byte)0x52 : (byte)0x43;
+        Assert.Equal(profile, Save(profile, new ExifEdit()));
+
+        byte[] output = Save(profile, Edit(edit => edit.Set(DateTimeOriginal, Ascii(NewDate, big))));
+
+        Assert.Equal(big ? new byte[] { 0x4D, 0x4D, 0x00, 0x2A } : new byte[] { 0x49, 0x49, 0x2A, 0x00 }, output[..4]);
+        Assert.Equal(MetadataFormat.Tiff, ImageMetadata.Detect(output));
+        Assert.Equal(NewDate, Text(TiffExif.Read(output), DateTimeOriginal));
+    }
+
+    [Fact]
+    public void DcpProfileWritesIptcAndXmpWithExiv2ClassicTiffOutputMagic()
+    {
+        byte[] profile = TiffBasedFixture.Tiff(false).Bytes;
+        profile[2] = 0x52;
+        profile[3] = 0x43;
+
+        byte[] iptcOutput = Save(profile, Iptc("profile caption"));
+        Assert.Equal(new byte[] { 0x49, 0x49, 0x2A, 0x00 }, iptcOutput[..4]);
+        Assert.Equal("profile caption", CaptionOf(TiffIptc.Read(iptcOutput)!));
+
+        byte[] xmpOutput = Save(profile, Xmp("DCP profile"));
+        Assert.Equal(new byte[] { 0x49, 0x49, 0x2A, 0x00 }, xmpOutput[..4]);
+        using TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(new MemoryStream(xmpOutput));
+        Assert.Equal("DCP profile", document.ReadXmp()!.Properties[Tool].Text);
     }
 
     [Theory]

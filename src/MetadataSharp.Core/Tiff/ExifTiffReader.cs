@@ -18,6 +18,7 @@ internal ref struct ExifTiffReader
     private const ushort BigTiffMagic = 43;
     private const ushort OrfMagic = 0x4F52; // "RO" after "II", "OR" after "MM"
     private const ushort Rw2Magic = 0x0055;
+    private const ushort DcpMagic = 0x4352;
 
     private readonly ReadOnlySpan<byte> data;
     private readonly MetadataLimits limits;
@@ -201,7 +202,7 @@ internal ref struct ExifTiffReader
         ushort magic = file[0] == 0x49
             ? BinaryPrimitives.ReadUInt16LittleEndian(file.Slice(2, 2))
             : BinaryPrimitives.ReadUInt16BigEndian(file.Slice(2, 2));
-        return magic is ClassicMagic or BigTiffMagic or OrfMagic or Rw2Magic;
+        return magic is ClassicMagic or BigTiffMagic or OrfMagic or Rw2Magic or DcpMagic;
     }
 
     private static bool HasByteOrderMark(ReadOnlySpan<byte> tiff) =>
@@ -213,7 +214,7 @@ internal ref struct ExifTiffReader
         ushort magic = U16(2);
         if (magic == BigTiffMagic)
             throw Error(MetadataErrorCode.UnsupportedFeature, "BigTIFF is not supported.", 2);
-        bool vendorMagic = wholeFile && magic is OrfMagic or Rw2Magic;
+        bool vendorMagic = wholeFile && magic is OrfMagic or Rw2Magic or DcpMagic;
         if (magic != ClassicMagic && !vendorMagic)
             throw Error(MetadataErrorCode.InvalidExif, "The TIFF identifier is invalid.", 2);
         uint first = U32(4);

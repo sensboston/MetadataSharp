@@ -216,6 +216,8 @@ public sealed class ImageMetadataTests
     [InlineData("FFD8FF", MetadataFormat.Jpeg)]
     [InlineData("89504E470D0A1A0A", MetadataFormat.Png)]
     [InlineData("524946462400000057454250", MetadataFormat.WebP)]
+    [InlineData("4949524308000000", MetadataFormat.Dcp)]
+    [InlineData("4D4D435200000008", MetadataFormat.Dcp)]
     [InlineData("49492A0008000000", MetadataFormat.Tiff)]
     [InlineData("4D4D002A00000008", MetadataFormat.Tiff)]
     [InlineData("4949524F08000000", MetadataFormat.Tiff)]
@@ -337,6 +339,23 @@ public sealed class ImageMetadataTests
         if (hasIptc) Assert.NotEmpty(metadata.Iptc!.Datasets);
         Assert.NotNull(metadata.Xmp);
         Assert.NotEmpty(metadata.Xmp.Entries);
+    }
+
+    [Fact]
+    public void DcpProfileUsesTheClassicTiffMetadataReader()
+    {
+        byte[] profile = Tiff((0x010F, 2, "Adobe\0"u8.ToArray()), (0x02BC, 1, GoodPacket), (0x83BB, 7, IptcStream));
+        profile[2] = 0x52;
+        profile[3] = 0x43;
+
+        ImageMetadata metadata = ImageMetadata.Read(profile);
+
+        Assert.Equal(MetadataFormat.Dcp, metadata.Format);
+        Assert.Equal(new[] { 0x010F, 0x02BC, 0x83BB }, metadata.Exif!.Entries.Select(entry => (int)entry.Key.Tag));
+        Assert.NotNull(metadata.Iptc);
+        Assert.Equal(IptcStream.Length, metadata.Iptc.ByteLength);
+        Assert.Equal(GoodPacket.Length, metadata.Xmp!.ByteLength);
+        Assert.Empty(metadata.Errors);
     }
 
     [Fact]

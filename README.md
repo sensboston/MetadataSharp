@@ -31,6 +31,13 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
   DNG layout accepts insertion: an un-reduced, uncompressed RGB primary with an accounted strip and a separate
   CFA SubIFD; other DNG/camera-RAW layouts still require an existing valid primary tag 0x8773 for
   replacement/removal. Tests pin the image and MakerNote bytes; this is not general DNG write support.
+- DCP profiles use their `0x4352` TIFF identifier for bounded EXIF reading and restricted,
+  offset-preserving EXIF edits; DCP-specific color-profile semantics remain outside the API
+  ([reader and writer tests](https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Tests/Tiff/TiffBasedWriteTests.cs)).
+- IPTC IIM stored in TIFF EXIF carriers is read from JXL, CR3 and HEIF-family BMFF files; these
+  formats remain read-only for IPTC ([JXL](https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Tests/Jxl/JxlMetadataTests.cs),
+  [CR3](https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Tests/Cr3/Cr3ExifTests.cs),
+  [BMFF](https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Tests/Bmff/BmffMetadataTests.cs)).
 - `PSD/JP2/EXV` common-metadata writer parity is gated both ways against pinned Exiv2 0.28.9:
   EXIF/IPTC/XMP for all three, exact ICC bytes both ways for JP2, and Exiv2 ICC insertion/read-back
   for EXV. Exiv2 0.28.9 documents no PSD ICC support and its ICC print path does not expose the

@@ -31,6 +31,18 @@ public static class TiffIptc
     {
         IptcLimits iptcLimits = IptcPacket.Settings(options);
         ExifMetadata metadata = TiffExif.Read(data, limits);
+        return Read(metadata, options, iptcLimits);
+    }
+
+    /// <summary>Reads IPTC from an already bounded, parsed TIFF metadata snapshot.</summary>
+    internal static IptcPacket? Read(ExifMetadata metadata, IptcReadOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(metadata);
+        return Read(metadata, options, IptcPacket.Settings(options));
+    }
+
+    private static IptcPacket? Read(ExifMetadata metadata, IptcReadOptions? options, IptcLimits iptcLimits)
+    {
         if (metadata.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, IptcNaaTag), out ExifEntry? naa) && naa.Value.ByteLength != 0)
         {
             ReadOnlySpan<byte> stream = naa.Value.RawBytes;

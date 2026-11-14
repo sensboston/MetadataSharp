@@ -145,6 +145,7 @@ public sealed class ImageMetadata
         if (At(header, 0, "RIFF"u8) && At(header, 8, "WEBP"u8)) return MetadataFormat.WebP;
         if (VideoMetadata.TryDetect(header, out MetadataFormat videoFormat)) return videoFormat;
         if (At(header, 0, "II*\0"u8) || At(header, 0, "MM\0*"u8)) return MetadataFormat.Tiff;
+        if (At(header, 0, "IIRC"u8) || At(header, 0, "MMCR"u8)) return MetadataFormat.Dcp;
         // ORF ("IIRO", "MMOR") and RW2 ("IIU\0") are TIFF structures under their own identifier.
         if (At(header, 0, "IIRO"u8) || At(header, 0, "MMOR"u8) || At(header, 0, "IIU\0"u8)) return MetadataFormat.Tiff;
         if (At(header, 0, "8BPS"u8)) return MetadataFormat.Psd;
@@ -433,6 +434,7 @@ public sealed class ImageMetadata
             case MetadataFormat.Png: ReadPng(owned ?? data.ToArray(), limits, parts); break;
             case MetadataFormat.WebP: ReadWebP(owned ?? data.ToArray(), limits, parts); break;
             case MetadataFormat.Tiff: ReadTiff(data, limits, parts); break;
+            case MetadataFormat.Dcp: ReadTiff(data, limits, parts); break;
             case MetadataFormat.Psd: ReadPsd(data, limits, parts); break;
             case MetadataFormat.Exv: ReadExv(data, limits, parts); break;
             case MetadataFormat.Jp2: ReadJp2(data, parts); break;
@@ -603,8 +605,9 @@ public sealed class ImageMetadata
         var refusals = new KindRefusals();
         Cr3Metadata metadata;
         try { metadata = Cr3Reader.Read(data, limits, null, refusals); }
-        catch (MetadataException refusal) { parts.Refuse(refusal, ExifXmp); return; }
+        catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); return; }
         parts.Exif = metadata.Exif;
+        parts.Iptc = metadata.Iptc;
         parts.Xmp = metadata.Xmp;
         parts.Refuse(refusals);
     }
@@ -615,8 +618,9 @@ public sealed class ImageMetadata
         var refusals = new KindRefusals();
         BmffMetadata metadata;
         try { metadata = BmffReader.Read(data, limits, null, refusals); }
-        catch (MetadataException refusal) { parts.Refuse(refusal, ExifXmp); return; }
+        catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); return; }
         parts.Exif = metadata.Exif;
+        parts.Iptc = metadata.Iptc;
         parts.Xmp = metadata.Xmp;
         parts.Refuse(refusals);
     }
@@ -670,8 +674,9 @@ public sealed class ImageMetadata
         var refusals = new KindRefusals();
         JxlMetadata metadata;
         try { metadata = JxlReader.Read(data, limits, null, refusals); }
-        catch (MetadataException refusal) { parts.Refuse(refusal, ExifXmp); return; }
+        catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); return; }
         parts.Exif = metadata.Exif;
+        parts.Iptc = metadata.Iptc;
         parts.Xmp = metadata.Xmp;
         parts.Refuse(refusals);
     }
