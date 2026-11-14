@@ -2,9 +2,9 @@
 
 `Previews.List` reports bounded preview candidates in ascending pixel area, with each `PreviewImage`
 carrying the MIME type, dimensions when known, file-relative byte offset, byte length, and source
-pointer. It does not decode pixels. `Previews.Extract` returns JPEG bytes, raw RGB samples, direct
-native preview bytes (including TIFF, WMF, PNM, HEVC and AV1 payloads), or generated PNM/JPEG bytes
-for the EPS AI7 and XMP thumbnail forms described below. BMFF HEVC/AV1 bytes remain encoded and are
+pointer. It does not decode pixels. `Previews.Extract` returns JPEG bytes, native preview bytes
+(including TIFF, WMF, PNM, HEVC and AV1 payloads), re-encoded TIFF bytes for reduced uncompressed
+images, or generated PNM/JPEG bytes for the EPS AI7 and XMP thumbnail forms described below. BMFF HEVC/AV1 bytes remain encoded and are
 not decoded or transcoded.
 
 ```csharp
@@ -27,14 +27,15 @@ if (previews.Count != 0)
   they can prove are bounded. JPEG APP1, TIFF IFD and MakerNote ranges report absolute offsets in the
   complete input. BMFF item extents include the container's item-location calculations.
 - CRW uses CIFF preview and thumbnail records; MRW scans its bounded TTW TIFF block; RAF scans the
-  embedded JPEG and its separate TIFF block; JP2 scans the Exif UUID box; XMP sidecars can expose
-  `xmpGImg`/`xapGImg` JPEG thumbnails. EPS exposes DOS EPS WMF/TIFF previews and decodes AI7 hex
-  thumbnails to binary P6 PNM. EPS PostScript is never interpreted or executed.
-- JPEG extraction checks SOI/EOI markers. Raw RGB extraction requires exactly width × height × 3
-  bytes. TIFF, WMF, PNM, HEVC and AV1 extraction is byte-preserving and does not validate or decode
-  the media. EPS AI7 and XMP thumbnails are transformed, so their `Offset` identifies the source
-  payload while `Length` is the generated output length; use `Extract` rather than slicing the file
-  at that range for those two `Source` values.
+  embedded JPEG and its separate TIFF block; JP2 scans the Exif UUID box; PGF scans its bounded
+  embedded image; XMP sidecars and PNG iTXt packets can expose `xmpGImg`/`xapGImg` JPEG thumbnails and compressed ImageMagick Raw EXIF profiles.
+  EPS exposes DOS EPS WMF/TIFF previews and decodes AI7 hex thumbnails to binary P6 PNM. EPS
+  PostScript is never interpreted or executed.
+- JPEG extraction checks SOI/EOI markers. TIFF, WMF, PNM, HEVC and AV1 extraction is byte-preserving
+  and does not decode the media; reduced uncompressed TIFF images are re-encoded as standalone TIFF
+  thumbnails. EPS AI7, XMP thumbnails and generated TIFF previews are transformed, so their `Offset`
+  identifies the source payload (or first strip) while `Length` is the generated output length; use
+  `Extract` rather than slicing the file at that range for those generated previews.
 - Malformed, unsupported, overlapping or out-of-file pointer layouts are omitted; configured
   `MetadataLimits` bound the input, directory/segment walks, and the maximum preview count. A listed
   media type that has no extractor throws `UnsupportedFeature`; invalid selected byte ranges fail
@@ -58,7 +59,7 @@ JPEG/TIFF/PSD coverage. The pinned Exiv2 0.28.9 comparison is
 [`run_previews.py`](../../tools/parity/run_previews.py), with offline parser/gate tests in
 [`test_preview_parity.py`](../../tests/parity/test_preview_parity.py). `MetadataSharp.Dump --previews`
 emits each preview's dimensions, MIME type, byte length, absolute offset and source. Since `exiv2 -pp`
-does not print offsets, the dynamic parity pass runs pinned `exiv2 -ep`, reverses direct, EPS-hex and
-XMP-base64 output bytes to their source position, and requires our reported offset to be one of the
-oracle positions. The gate fails on an unprovable offset, any type/dimension/length/offset mismatch,
+does not print offsets, the dynamic parity pass runs pinned `exiv2 -ep`, reverses direct, EPS-hex,
+XMP-base64, compressed PNG Raw EXIF and generated-TIFF strip output bytes to their source positions,
+and requires our reported offset to be one of those oracle positions. The gate fails on an unprovable offset, any type/dimension/length/offset mismatch,
 or reader refusal; fixture tests independently pin range offsets.

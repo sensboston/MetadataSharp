@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.IO.Compression;
 using System.Text;
 using MetadataSharp.Core;
 using MetadataSharp.Formats;
@@ -204,14 +205,16 @@ public sealed class PreviewTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void AnUncompressedThumbnailIsListedAsItsSamples(bool little)
+    public void AnUncompressedThumbnailIsRepackagedAsATiff(bool little)
     {
         byte[] file = Wrap("jpeg", StripTiff(little, 168), out int origin);
 
         PreviewImage preview = Assert.Single(Previews.List(file));
 
-        Assert.Equal(new PreviewImage("image/x-raw-rgb", 2, 2, origin + 162, 12, "Exif.Thumbnail.StripOffsets"), preview);
-        Assert.Equal(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, Previews.Extract(file, preview));
+        Assert.Equal(new PreviewImage("image/tiff", 2, 2, origin + 162, 156, "Exif.Thumbnail.StripOffsets"), preview);
+        byte[] extracted = Previews.Extract(file, preview);
+        Assert.Equal(new byte[] { 0x49, 0x49, 42, 0 }, extracted[..4]);
+        Assert.Equal(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, extracted[144..]);
     }
 
     [Theory]
@@ -535,6 +538,36 @@ public sealed class PreviewTests
         Assert.Equal((long)Encoding.UTF8.GetByteCount(xml[..encodedAt]), preview.Offset);
         Assert.Equal(jpeg.Length, preview.Length);
         Assert.Equal(jpeg, Previews.Extract(file, preview));
+    }
+
+    [Fact]
+    public void PngCompressedExifRawProfileThumbnailIsDecodedAndExtracted()
+    {
+        byte[] picture = Picture(13, 9);
+        byte[] exif = Join("Exif\0\0"u8.ToArray(), ThumbnailTiff(true, picture));
+        byte[] profile = Encoding.ASCII.GetBytes($"\nexif\n{exif.Length}\n{Convert.ToHexString(exif)}");
+        using var compressed = new MemoryStream();
+        using (var zlib = new ZLibStream(compressed, CompressionLevel.Optimal, leaveOpen: true)) zlib.Write(profile);
+        byte[] compressedBytes = compressed.ToArray();
+        byte[] keyword = "Raw profile type exif\0"u8.ToArray();
+        byte[] payload = Join(keyword, new byte[] { 0 }, compressedBytes);
+        byte[] chunk = Join(Be32(payload.Length), "zTXt"u8.ToArray(), payload, new byte[4]);
+        byte[] file = Join(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A },
+            chunk, Be32(0), "IEND"u8.ToArray(), new byte[4]);
+
+        PreviewImage preview = Assert.Single(Previews.List(file));
+        Assert.Equal("image/jpeg", preview.MimeType);
+        Assert.Equal((long)file.AsSpan().IndexOf(compressedBytes), preview.Offset);
+        Assert.Equal(picture.Length, preview.Length);
+        Assert.Equal(picture, Previews.Extract(file, preview));
+
+        byte[] pgf = new byte[24 + file.Length];
+        "PGF6"u8.CopyTo(pgf);
+        BinaryPrimitives.WriteUInt32LittleEndian(pgf.AsSpan(4), (uint)(file.Length + 16));
+        file.CopyTo(pgf, 24);
+        PreviewImage nested = Assert.Single(Previews.List(pgf));
+        Assert.Equal(preview.Offset + 24, nested.Offset);
+        Assert.Equal(picture, Previews.Extract(pgf, nested));
     }
 
     [Fact]

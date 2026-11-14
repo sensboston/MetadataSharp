@@ -36,7 +36,7 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   a digest without a stream. PNG: EXIF in a "Raw profile type" text chunk, eXIf after IDAT
   (IPTC in its raw profile chunk is editable, see below).
 - Previews: `Previews.List` / `Previews.Extract` in `MetadataSharp.Formats` report bounded file offsets
-  and support JPEG/EXV/TIFF/PNG/WebP/PSD/BMFF plus CRW, MRW, RAF, JP2, EPS and XMP thumbnail loaders.
+  and support JPEG/EXV/TIFF/PNG/WebP/PSD/BMFF plus CRW, MRW, RAF, JP2, PGF, EPS and XMP thumbnail loaders, including PNG iTXt and compressed Raw EXIF profiles.
   Encoded BMFF HEVC/AV1 bytes can be copied without decoding; EPS/XMP thumbnail filters return the
   generated image bytes. Existing EXIF thumbnails and PSD's JPEG resource are writable only through
   their format-specific writers; there is no general preview replacement API. See

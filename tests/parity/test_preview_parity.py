@@ -3,9 +3,11 @@ file's previews are judged. No external tool runs here."""
 import base64
 import contextlib
 import io
+import struct
 import sys
 import tempfile
 import unittest
+import zlib
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "parity"))
@@ -188,6 +190,23 @@ class ComparisonTests(unittest.TestCase):
         eps = b"%%BeginData: 6 Hex Bytes\n 010203\n%%EndData"
         self.assertEqual([len(b"%%BeginData: 6 Hex Bytes\n")],
                          run_previews._source_offsets(eps, pnm, "image/x-portable-anymap", 1, 1))
+        profile = b"Exif\0\0" + jpeg
+        text = b"\nexif\n" + str(len(profile)).encode() + b"\n" + profile.hex().encode()
+        keyword = b"Raw profile type exif"
+        payload = keyword + b"\0\0" + zlib.compress(text)
+        chunk = struct.pack(">I", len(payload)) + b"zTXt" + payload + bytes(4)
+        png = b"\x89PNG\r\n\x1a\n" + chunk + struct.pack(">I", 0) + b"IEND" + bytes(4)
+        expected_offset = 8 + 8 + len(keyword) + 2
+        self.assertEqual([expected_offset], run_previews._source_offsets(png, jpeg, "image/jpeg", 1, 1))
+
+    def test_generated_tiff_offset_is_recovered_from_its_source_strip(self):
+        pixels = b"RGB!"
+        # Two TIFF fields: StripOffsets at 38 and StripByteCounts at four bytes.
+        tiff = (b"II" + struct.pack("<HI", 42, 8) + struct.pack("<H", 2) +
+                struct.pack("<HHII", 273, 4, 1, 38) + struct.pack("<HHII", 279, 4, 1, len(pixels)) +
+                struct.pack("<I", 0) + pixels)
+        source = b"prefix" + pixels + b"suffix"
+        self.assertEqual([6], run_previews._source_offsets(source, tiff, "image/tiff", 1, 1))
 
     def test_a_reported_offset_outside_its_source_file_is_a_structural_failure(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.IO.Compression;
 using System.Text;
 using MetadataSharp.Core;
 
@@ -8,8 +9,8 @@ namespace MetadataSharp.Formats;
 /// One preview image embedded in a file: where its bytes are and what they are.
 /// </summary>
 /// <param name="MimeType">
-/// <c>image/jpeg</c> for a JPEG stream; <c>image/x-raw-rgb</c> for uncompressed strips of interleaved
-/// 8-bit RGB samples, rows top to bottom; <c>video/H265</c> or <c>video/AV1</c> for a coded BMFF
+/// <c>image/jpeg</c> for a JPEG stream; <c>image/tiff</c> for an embedded TIFF or a reduced uncompressed
+/// image re-encoded as a standalone TIFF; <c>video/H265</c> or <c>video/AV1</c> for a coded BMFF
 /// thumbnail item, whose encoded item bytes can be extracted without decoding.
 /// </param>
 /// <param name="Width">Width in pixels, when the preview or its container states it.</param>
@@ -67,7 +68,10 @@ public static class Previews
     {
         ArgumentNullException.ThrowIfNull(preview);
         limits = Checked(file, limits);
-        if ((preview.Source is "EPS.AI7.Hex" or "EPS.Photoshop.Hex") || preview.Source.StartsWith("Xmp.Thumbnail", StringComparison.Ordinal))
+        if ((preview.Source is "EPS.AI7.Hex" or "EPS.Photoshop.Hex") ||
+            preview.Source.StartsWith("Xmp.Thumbnail", StringComparison.Ordinal) ||
+            preview.Source.StartsWith("PNG.RawExif.", StringComparison.Ordinal) ||
+            (preview.MimeType == "image/tiff" && preview.Source.EndsWith(".StripOffsets", StringComparison.Ordinal)))
         {
             var scanner = new PreviewScanner(file, limits);
             _ = scanner.Run();
@@ -135,16 +139,18 @@ internal ref struct PreviewScanner
 
     private readonly ReadOnlySpan<byte> data;
     private readonly MetadataLimits limits;
+    private readonly int nesting;
     private readonly List<PreviewImage> found;
     private int directories;
     private int subImages;
     private readonly Dictionary<(string Source, long Offset, int Length), byte[]> generated = new();
 
     // Retain the file span and limits while scanning preview pointers.
-    internal PreviewScanner(ReadOnlySpan<byte> data, MetadataLimits limits)
+    internal PreviewScanner(ReadOnlySpan<byte> data, MetadataLimits limits, int nesting = 0)
     {
         this.data = data;
         this.limits = limits;
+        this.nesting = nesting;
         found = new List<PreviewImage>();
         directories = 0;
         subImages = 0;
@@ -168,6 +174,7 @@ internal ref struct PreviewScanner
         else if (data.Length >= 4 && data[..4].SequenceEqual("\0MRM"u8)) Mrw();
         else if (data.Length >= 8 && data[..8].SequenceEqual("FUJIFILM"u8)) Raf();
         else if (IsJp2Header()) Jp2();
+        else if (MetadataSharp.Formats.Pgf.PgfMetadata.HasSignature(data)) Pgf();
         else if (IsTiffHeader()) Tiff(0, data.Length, data.Length >= 4 && data[2] == 0x55);
         else if (data.Length >= 4 && data[..4].SequenceEqual("8BPS"u8)) Psd();
         else if (data.Length >= 8 && data[0] == 0x89 && data.Slice(1, 3).SequenceEqual("PNG"u8)) Png();
@@ -230,6 +237,28 @@ internal ref struct PreviewScanner
         {
             int start = checked((int)tiff);
             Tiff(start, checked(start + (int)metadata.TiffLength), false);
+        }
+    }
+
+    private void Pgf()
+    {
+        if (data.Length < 24 || nesting >= limits.MaxDirectoryDepth) return;
+        int regionStart = data[20] == 2 ? 24 + 256 * 3 : 24;
+        long headerEnd = (long)BinaryPrimitives.ReadUInt32LittleEndian(data[4..]) + 8;
+        if (headerEnd < regionStart || headerEnd > data.Length) return;
+        Nested(data.Slice(regionStart, (int)headerEnd - regionStart), regionStart);
+    }
+
+    // Scan a bounded embedded image while keeping every returned range in the outer file's coordinates.
+    private void Nested(ReadOnlySpan<byte> bytes, int origin)
+    {
+        var embedded = new PreviewScanner(bytes, limits, nesting + 1);
+        foreach (PreviewImage item in embedded.Run())
+        {
+            var preview = item with { Offset = item.Offset + origin };
+            Add(preview);
+            if (embedded.generated.TryGetValue((item.Source, item.Offset, item.Length), out byte[]? generatedBytes))
+                generated[(preview.Source, preview.Offset, preview.Length)] = generatedBytes;
         }
     }
 
@@ -492,13 +521,113 @@ internal ref struct PreviewScanner
         {
             uint length = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(at, 4));
             if (length > (uint)(data.Length - at - 12)) return;
+            int payload = at + 8, end = payload + (int)length;
             if (data.Slice(at + 4, 4).SequenceEqual("eXIf"u8))
             {
-                Tiff(at + 8, at + 8 + (int)length, false);
+                Tiff(payload, end, false);
                 return;
             }
-            at += 12 + (int)length;
+            if (data.Slice(at + 4, 4).SequenceEqual("iTXt"u8)) PngXmp(payload, end);
+            else if (data.Slice(at + 4, 4).SequenceEqual("zTXt"u8)) PngRawExif(payload, end);
+            at = end + 4;
         }
+    }
+
+    // ImageMagick's compressed Raw profile type exif chunk is hex text around a TIFF block.
+    private void PngRawExif(int start, int end)
+    {
+        int keywordLength = data.Slice(start, end - start).IndexOf((byte)0);
+        if (keywordLength < 0 || !data.Slice(start, keywordLength).SequenceEqual("Raw profile type exif"u8)) return;
+        int method = start + keywordLength + 1;
+        if (method >= end || data[method] != 0) return;
+        byte[]? text = Inflate(data.Slice(method + 1, end - method - 1));
+        if (text is null) return;
+        ReadOnlySpan<byte> profile = text;
+        while (!profile.IsEmpty && (profile[0] == (byte)'\r' || profile[0] == (byte)'\n')) profile = profile[1..];
+        int firstEnd = profile.IndexOf((byte)'\n');
+        if (firstEnd < 0 || !Encoding.ASCII.GetString(profile[..firstEnd]).Trim().Equals("exif", StringComparison.OrdinalIgnoreCase)) return;
+        profile = profile[(firstEnd + 1)..];
+        int secondEnd = profile.IndexOf((byte)'\n');
+        if (secondEnd < 0 || !int.TryParse(Encoding.ASCII.GetString(profile[..secondEnd]).Trim(), out int expectedBytes) ||
+            expectedBytes <= 0 || expectedBytes > limits.MaxValueBytes) return;
+        profile = profile[(secondEnd + 1)..];
+        byte[] hex = new byte[expectedBytes];
+        int high = -1, decoded = 0;
+        foreach (byte value in profile)
+        {
+            if (value is (byte)' ' or (byte)'\t' or (byte)'\r' or (byte)'\n') continue;
+            int digit = value switch
+            {
+                >= (byte)'0' and <= (byte)'9' => value - '0',
+                >= (byte)'A' and <= (byte)'F' => value - 'A' + 10,
+                >= (byte)'a' and <= (byte)'f' => value - 'a' + 10,
+                _ => -1
+            };
+            if (digit < 0) return;
+            if (high < 0) high = digit;
+            else
+            {
+                if (decoded >= hex.Length) return;
+                hex[decoded++] = (byte)((high << 4) | digit);
+                high = -1;
+            }
+        }
+        if (decoded != expectedBytes || high >= 0) return;
+        int tiffAt = hex.AsSpan().IndexOf("Exif\0\0"u8);
+        if (tiffAt >= 0) tiffAt += 6;
+        else if (hex.Length >= 4 && (hex.AsSpan(0, 4).SequenceEqual(new byte[] { 0x49, 0x49, 42, 0 }) ||
+                 hex.AsSpan(0, 4).SequenceEqual(new byte[] { 0x4D, 0x4D, 0, 42 }))) tiffAt = 0;
+        if (tiffAt < 0 || hex.Length - tiffAt < 8) return;
+        var embedded = new PreviewScanner(hex.AsSpan(tiffAt), limits, nesting + 1);
+        foreach (PreviewImage item in embedded.Run())
+        {
+            byte[]? previewBytes = null;
+            if (embedded.generated.TryGetValue((item.Source, item.Offset, item.Length), out byte[]? transformed))
+                previewBytes = transformed;
+            else if (item.Offset >= 0 && item.Offset <= hex.Length - tiffAt - item.Length)
+                previewBytes = hex.AsSpan(tiffAt + (int)item.Offset, item.Length).ToArray();
+            if (previewBytes is null) continue;
+            string source = "PNG.RawExif." + item.Source;
+            var preview = new PreviewImage(item.MimeType, item.Width, item.Height, method + 1L, previewBytes.Length, source);
+            generated[(preview.Source, preview.Offset, preview.Length)] = previewBytes;
+            Add(preview);
+        }
+    }
+
+    private byte[]? Inflate(ReadOnlySpan<byte> compressed)
+    {
+        try
+        {
+            using var input = new MemoryStream(compressed.ToArray(), writable: false);
+            using var zlib = new ZLibStream(input, CompressionMode.Decompress);
+            using var output = new MemoryStream();
+            byte[] buffer = new byte[Math.Min(8192, limits.CopyBufferBytes)];
+            while (true)
+            {
+                int read = zlib.Read(buffer, 0, buffer.Length);
+                if (read == 0) break;
+                if (read > limits.MaxValueBytes - output.Length) return null;
+                output.Write(buffer, 0, read);
+            }
+            return output.ToArray();
+        }
+        catch (InvalidDataException) { return null; }
+    }
+
+    // PNG's standard XMP iTXt chunk can carry the same base64 preview as an XMP sidecar.
+    private void PngXmp(int start, int end)
+    {
+        int keywordEnd = data.Slice(start, end - start).IndexOf((byte)0);
+        if (keywordEnd < 0 || !data.Slice(start, keywordEnd).SequenceEqual("XML:com.adobe.xmp"u8)) return;
+        int at = start + keywordEnd + 1;
+        if (end - at < 2 || data[at++] != 0 || data[at++] != 0) return; // uncompressed iTXt only
+        int languageEnd = data.Slice(at, end - at).IndexOf((byte)0);
+        if (languageEnd < 0) return;
+        at += languageEnd + 1;
+        int translatedEnd = data.Slice(at, end - at).IndexOf((byte)0);
+        if (translatedEnd < 0) return;
+        at += translatedEnd + 1;
+        if (at < end) Nested(data.Slice(at, end - at), at);
     }
 
     private void WebP()
@@ -624,7 +753,167 @@ internal ref struct PreviewScanner
         if (at - start != total || total > int.MaxValue) return;
         long position = frame.Origin + start;
         if (!Free(position, total, tableStart, tableEnd)) return;
-        Add(new PreviewImage(Previews.RawRgbType, (int)width, (int)height, position, (int)total, source));
+        byte[]? tiff = TiffSamples(frame, entries, strips, counts, (int)total);
+        if (tiff is null) return;
+        var preview = new PreviewImage("image/tiff", (int)width, (int)height, position, tiff.Length, source);
+        generated[(preview.Source, preview.Offset, preview.Length)] = tiff;
+        Add(preview);
+    }
+
+    // Exiv2's TIFF-thumbnail loader re-encodes an uncompressed reduced image as a standalone TIFF.
+    // Keep its image tags, relocate the strip data into a bounded, little-endian TIFF, and report the
+    // original first-strip position as the source offset.
+    private byte[]? TiffSamples(Frame frame, List<Entry> entries, Entry strips, Entry counts, int total)
+    {
+        ushort[] supported = [0x0100, 0x0101, 0x0102, 0x0103, 0x0106, 0x0111, 0x0115, 0x0116, 0x0117, 0x011A, 0x011B, 0x0128];
+        var values = new List<(ushort Tag, ushort Type, uint Count, byte[] Bytes)>();
+        foreach (Entry entry in entries)
+        {
+            if (!supported.Contains(entry.Tag)) continue;
+            int unit = TiffTypeWidth(entry.Type);
+            long length = (long)unit * entry.Count;
+            if (unit == 0 || entry.Count == 0 || length > limits.MaxValueBytes || length > int.MaxValue) return null;
+            byte[] bytes = new byte[(int)length];
+            if (entry.Tag == 0x0111)
+            {
+                if (entry.Count != strips.Count) return null;
+            }
+            else if (entry.Tag == 0x0117)
+            {
+                if (entry.Count != counts.Count) return null;
+                for (int i = 0; i < entry.Count; i++)
+                {
+                    long stripLength = Element(frame, counts, i);
+                    if (stripLength <= 0 || !WriteTiffScalar(bytes, i * unit, entry.Type, stripLength)) return null;
+                }
+            }
+            else
+            {
+                ReadOnlySpan<byte> raw = data.Slice(entry.At, (int)length);
+                raw.CopyTo(bytes);
+                if (!frame.Little && unit > 1)
+                {
+                    int word = entry.Type is 5 or 10 ? 4 : unit;
+                    for (int at = 0; at < bytes.Length; at += word)
+                        for (int left = 0, right = word - 1; left < right; left++, right--)
+                            (bytes[at + left], bytes[at + right]) = (bytes[at + right], bytes[at + left]);
+                }
+            }
+            values.Add((entry.Tag, entry.Type, entry.Count, bytes));
+        }
+        if (values.Count == 0 || !values.Exists(value => value.Tag == 0x0100) ||
+            !values.Exists(value => value.Tag == 0x0101) || !values.Exists(value => value.Tag == 0x0111) ||
+            !values.Exists(value => value.Tag == 0x0117) || values.Count > ushort.MaxValue) return null;
+
+        values.Sort((left, right) => left.Tag.CompareTo(right.Tag));
+        int directoryEnd = 8 + 2 + values.Count * 12 + 4;
+        int auxiliaryEnd = directoryEnd;
+        int[] auxiliaryOffsets = new int[values.Count];
+        for (int i = 0; i < values.Count; i++)
+        {
+            if (values[i].Bytes.Length <= 4) continue;
+            if ((auxiliaryEnd & 1) != 0) auxiliaryEnd++;
+            if (values[i].Bytes.Length > limits.MaxValueBytes - auxiliaryEnd) return null;
+            auxiliaryOffsets[i] = auxiliaryEnd;
+            auxiliaryEnd += values[i].Bytes.Length;
+        }
+        if ((auxiliaryEnd & 1) != 0) auxiliaryEnd++;
+        int pixelsAt = auxiliaryEnd;
+        if (pixelsAt > limits.MaxValueBytes || total > limits.MaxValueBytes - pixelsAt) return null;
+        using var output = new MemoryStream(pixelsAt + total);
+        output.Write([0x49, 0x49, 42, 0, 8, 0, 0, 0]);
+        WriteLe16(output, (ushort)values.Count);
+        for (int i = 0; i < values.Count; i++)
+        {
+            var value = values[i];
+            WriteLe16(output, value.Tag);
+            WriteLe16(output, value.Type);
+            WriteLe32(output, value.Count);
+            if (value.Bytes.Length <= 4)
+            {
+                output.Write(value.Bytes);
+                for (int padding = value.Bytes.Length; padding < 4; padding++) output.WriteByte(0);
+            }
+            else WriteLe32(output, (uint)auxiliaryOffsets[i]);
+        }
+        WriteLe32(output, 0);
+        for (int i = 0; i < values.Count; i++)
+        {
+            if (values[i].Bytes.Length <= 4) continue;
+            while (output.Length < auxiliaryOffsets[i]) output.WriteByte(0);
+            output.Write(values[i].Bytes);
+        }
+        while (output.Length < pixelsAt) output.WriteByte(0);
+        foreach (var value in values)
+        {
+            if (value.Tag != 0x0111) continue;
+            long cursor = pixelsAt;
+            int unit = TiffTypeWidth(value.Type);
+            for (int i = 0; i < value.Count; i++)
+            {
+                if (!WriteTiffScalar(value.Bytes, i * unit, value.Type, cursor)) return null;
+                cursor += Element(frame, counts, i);
+            }
+        }
+        // StripOffsets is inline for the ordinary one-strip thumbnail. Write its final value before
+        // serializing the IFD, which means the offsets are computed before the table is emitted.
+        byte[] result = output.ToArray();
+        for (int i = 0; i < values.Count; i++)
+        {
+            var value = values[i];
+            if (value.Tag != 0x0111) continue;
+            int table = 10;
+            for (int j = 0; j < i; j++) table += 12;
+            if (value.Bytes.Length <= 4) value.Bytes.CopyTo(result, table + 8);
+            else value.Bytes.CopyTo(result, auxiliaryOffsets[i]);
+        }
+        int dataAt = checked((int)Element(frame, strips, 0));
+        output.SetLength(0);
+        output.Write(result);
+        output.Write(data.Slice(frame.Origin + dataAt, total));
+        return output.ToArray();
+    }
+
+    private static int TiffTypeWidth(ushort type) => type switch
+    {
+        1 or 2 or 6 or 7 => 1,
+        3 or 8 => 2,
+        4 or 9 or 11 or 13 => 4,
+        5 or 10 or 12 => 8,
+        _ => 0
+    };
+
+    // Write one unsigned component in the TIFF field's original type, with overflow refused.
+    private static bool WriteTiffScalar(Span<byte> bytes, int at, ushort type, long value)
+    {
+        if (value < 0) return false;
+        switch (type)
+        {
+            case 1: case 2: case 6: case 7:
+                if (value > byte.MaxValue) return false;
+                bytes[at] = (byte)value; return true;
+            case 3:
+                if (value > ushort.MaxValue) return false;
+                BinaryPrimitives.WriteUInt16LittleEndian(bytes[at..], (ushort)value); return true;
+            case 4: case 13:
+                if (value > uint.MaxValue) return false;
+                BinaryPrimitives.WriteUInt32LittleEndian(bytes[at..], (uint)value); return true;
+            default: return false;
+        }
+    }
+
+    private static void WriteLe16(Stream output, ushort value)
+    {
+        Span<byte> bytes = stackalloc byte[2];
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes, value);
+        output.Write(bytes);
+    }
+
+    private static void WriteLe32(Stream output, uint value)
+    {
+        Span<byte> bytes = stackalloc byte[4];
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes, value);
+        output.Write(bytes);
     }
 
     // ---- MakerNotes ----

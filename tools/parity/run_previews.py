@@ -33,9 +33,11 @@ import base64
 import json
 import re
 import shlex
+import struct
 import subprocess
 import sys
 import tempfile
+import zlib
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -150,10 +152,97 @@ def _compact_base64_offsets(source: bytes, encoded: bytes) -> list[int]:
     return found
 
 
+def _tiff_first_strip(data: bytes) -> bytes | None:
+    """The first image strip of a standalone TIFF generated for Exiv2's reduced-image preview."""
+    if len(data) < 8 or data[:2] not in (b"II", b"MM"):
+        return None
+    little = data[:2] == b"II"
+    order = "<" if little else ">"
+    if struct.unpack_from(order + "H", data, 2)[0] != 42:
+        return None
+    ifd = struct.unpack_from(order + "I", data, 4)[0]
+    if ifd > len(data) - 2:
+        return None
+    count = struct.unpack_from(order + "H", data, ifd)[0]
+    if count > 4096 or ifd + 2 + count * 12 > len(data):
+        return None
+    fields: dict[int, tuple[int, int, int]] = {}
+    widths = {1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 6: 1, 7: 1, 8: 2, 9: 4, 10: 8, 11: 4, 12: 8, 13: 4}
+    for index in range(count):
+        at = ifd + 2 + index * 12
+        tag, kind, number, value = struct.unpack_from(order + "HHII", data, at)
+        if kind not in widths:
+            continue
+        length = widths[kind] * number
+        fields[tag] = (kind, number, value if length <= 4 else value)
+    offsets, counts = fields.get(273), fields.get(279)
+    if offsets is None or counts is None or offsets[1] == 0 or offsets[1] != counts[1]:
+        return None
+
+    # Locate each field's inline value independently; external arrays use their TIFF offsets.
+    def field_values(tag: int, field: tuple[int, int, int]) -> list[int]:
+        for index in range(count):
+            entry = ifd + 2 + index * 12
+            if struct.unpack_from(order + "H", data, entry)[0] != tag:
+                continue
+            kind, number, pointer = field
+            length = widths[kind] * number
+            start = entry + 8 if length <= 4 else pointer
+            fmt = {1: "B", 3: "H", 4: "I", 13: "I", 6: "B", 7: "B", 8: "h", 9: "i"}.get(kind)
+            if fmt is None or start < 0 or start > len(data) - length:
+                return []
+            return list(struct.unpack_from(order + fmt * number, data, start))
+        return []
+
+    strip_offsets = field_values(273, offsets)
+    strip_counts = field_values(279, counts)
+    if not strip_offsets or not strip_counts or strip_offsets[0] > len(data) - strip_counts[0]:
+        return None
+    return data[strip_offsets[0]:strip_offsets[0] + strip_counts[0]]
+
+
+def _png_raw_exif_profile_offsets(source: bytes, extracted: bytes) -> list[int]:
+    """Map a PNG Raw profile thumbnail back to its compressed zTXt profile payload."""
+    signature = b"\x89PNG\r\n\x1a\n"
+    candidates: list[int] = []
+    search = 0
+    while (png := source.find(signature, search)) >= 0:
+        search = png + len(signature)
+        at = search
+        while at + 12 <= len(source):
+            length = struct.unpack_from(">I", source, at)[0]
+            if length > len(source) - at - 12:
+                break
+            kind = source[at + 4:at + 8]
+            payload = source[at + 8:at + 8 + length]
+            if kind == b"zTXt":
+                keyword, separator, rest = payload.partition(b"\0")
+                if keyword == b"Raw profile type exif" and separator and rest[:1] == b"\0":
+                    try:
+                        text = zlib.decompress(rest[1:])
+                        lines = text.lstrip(b"\r\n").split(b"\n", 2)
+                        if len(lines) == 3 and lines[0].strip().lower() == b"exif":
+                            expected = int(lines[1].strip())
+                            digits = bytes(value for value in lines[2] if value not in b" \t\r\n")
+                            decoded = bytes.fromhex(digits.decode("ascii"))
+                            if len(decoded) == expected and extracted in decoded:
+                                candidates.append(at + 8 + len(keyword) + 2)
+                    except (ValueError, UnicodeDecodeError, zlib.error):
+                        pass
+            at += 12 + length
+            if kind == b"IEND":
+                break
+    return candidates
+
+
 def _source_offsets(source: bytes, extracted: bytes, mime: str, width: int, height: int) -> list[int]:
     exact = _find_all(source, extracted)
     if exact:
         return exact
+    if mime == "image/tiff":
+        first_strip = _tiff_first_strip(extracted)
+        if first_strip:
+            return _find_all(source, first_strip)
     if mime == "image/jpeg":
         # Photoshop EPS stores JPEG data as hexadecimal IRB data; XMP thumbnails use base64.
         start, end = 0, len(source)
@@ -166,6 +255,9 @@ def _source_offsets(source: bytes, extracted: bytes, mime: str, width: int, heig
                 if found:
                     return [line + 1]
         found = _compact_base64_offsets(source, extracted)
+        if found:
+            return found
+        found = _png_raw_exif_profile_offsets(source, extracted)
         if found:
             return found
     elif mime == "image/x-portable-anymap" and extracted.startswith(b"P6\n"):
