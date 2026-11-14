@@ -2208,7 +2208,7 @@ else if (args.Length == 2 && args[0] == "tiff-thumbnails")
     {
         string name = Path.GetFileNameWithoutExtension(path);
         byte[] source = File.ReadAllBytes(path);
-        foreach (string operation in new[] { "set", "remove" })
+        foreach (string operation in new[] { "thumbnail", "delete-t" })
         {
             string status, text = "";
             try
@@ -2217,7 +2217,7 @@ else if (args.Length == 2 && args[0] == "tiff-thumbnails")
                 using (TiffBasedMetadataDocument document = TiffBasedMetadataDocument.Open(new MemoryStream(source)))
                 {
                     var edit = new ExifEdit();
-                    if (operation == "set") edit.SetThumbnail(thumb);
+                    if (operation == "thumbnail") edit.SetThumbnail(thumb);
                     else edit.RemoveThumbnail();
                     var written = new MemoryStream();
                     document.SaveExif(written, edit);

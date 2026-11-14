@@ -36,8 +36,9 @@ printed, compare, documented = ops.printed, ops.compare, ops.documented
 # The signatures the library reads as TIFF-based: TIFF itself, DNG, the raw formats built as one.
 EXTENSIONS = (".tif", ".tiff", ".dng", ".nef", ".nrw", ".cr2", ".arw", ".sr2", ".pef", ".orf", ".rw2")
 
-# operation -> the tool's arguments before the file
-OPERATIONS = OrderedDict([("set", ["-i", "t", "in"]), ("remove", ["-d", "t", "rm"])])
+# The operations, named as tools/reference/operations_parity.py names them, so that the differences it
+# documents for them are the differences this gate accepts: the tool's arguments before the file.
+OPERATIONS = OrderedDict([("thumbnail", ["-i", "t", "in"]), ("delete-t", ["-d", "t", "rm"])])
 
 # The codes this library refuses a thumbnail change with, each for a reason of its own: a directory
 # that is a picture of the file (UnsupportedFeature), one nothing may be appended to
@@ -74,7 +75,9 @@ def tool_side(work, names, exiv2, runner=run):
         for operation, arguments in OPERATIONS.items():
             copy = work / f"{name}.{operation}.tool"
             shutil.copyfile(work / (name + ".src"), copy)
-            shutil.copyfile(work / "thumb.jpg", work / f"{name}.{operation}.tool-thumb.jpg")
+            # The tool reads the stream to insert from its own path with the last extension taken
+            # off and "-thumb.jpg" added (app/actions.cpp, newFilePath).
+            shutil.copyfile(work / "thumb.jpg", work / (copy.name.rsplit(".", 1)[0] + "-thumb.jpg"))
             code, _, errors = runner([exiv2] + arguments + [str(copy)])
             if code != 0:
                 failed[(name, operation)] = (errors.strip().splitlines() or [f"exit {code}"])[-1]
