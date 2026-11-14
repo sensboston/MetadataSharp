@@ -520,6 +520,9 @@ def main(argv: list[str] | None = None) -> int:
         extraction_command = [part for part in shlex.split(args.exiv2_command) if part != "-pp"]
         if not extraction_command:
             raise PreviewParityError("--exiv2-command must name the pinned exiv2 executable")
+        executable = Path(extraction_command[0])
+        if not executable.is_absolute() and executable.exists():
+            extraction_command[0] = str(executable.resolve())
         for name, path in paths.items():
             if path is not None:
                 expected_offsets[name] = oracle_offsets(extraction_command, path, expected[name])

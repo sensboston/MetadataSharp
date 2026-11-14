@@ -53,11 +53,11 @@ unless their format-specific writer contract says so.
 ## Tests and differential checks
 
 The synthetic range/offset tests are in
-[`PreviewTests.cs`](../../tests/MetadataSharp.Tests/Containers/PreviewTests.cs); they pin CRW/CIFF,
+[`PreviewTests.cs`](https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Tests/Containers/PreviewTests.cs); they pin CRW/CIFF,
 MRW/TTW, RAF embedded-JPEG and TIFF, JP2 UUID, EPS, XMP and BMFF handling alongside existing
 JPEG/TIFF/PSD coverage. The pinned Exiv2 0.28.9 comparison is
-[`run_previews.py`](../../tools/parity/run_previews.py), with offline parser/gate tests in
-[`test_preview_parity.py`](../../tests/parity/test_preview_parity.py). `MetadataSharp.Dump --previews`
+[`run_previews.py`](https://github.com/sensboston/MetadataSharp/blob/HEAD/tools/parity/run_previews.py), with offline parser/gate tests in
+[`test_preview_parity.py`](https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/parity/test_preview_parity.py). `MetadataSharp.Dump --previews`
 emits each preview's dimensions, MIME type, byte length, absolute offset and source. Since `exiv2 -pp`
 does not print offsets, the dynamic parity pass runs pinned `exiv2 -ep`, reverses direct, EPS-hex,
 XMP-base64, compressed PNG Raw EXIF and generated-TIFF strip output bytes to their source positions,
