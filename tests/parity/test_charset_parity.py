@@ -59,7 +59,8 @@ class CharsetParityTest(unittest.TestCase):
         # -n belongs to the fc action: the tool converts a copy and says what it read in its verbose
         # line, which is what has to equal this library's text. The title is read translated.
         self.assertIn(["exiv2", "-v", "-n", "windows-1252", "fc", str(self.work / "charset-00.jpg.fc.jpg")], commands)
-        self.assertIn(["exiv2", "-PEkt", str(self.work / "charset-00.jpg")], commands)
+        # Only the title is printed translated: the comment's bytes are a code page in these files.
+        self.assertIn(["exiv2", "-PEkt", "-K", "Exif.Image.XPTitle", str(self.work / "charset-00.jpg")], commands)
         self.assertFalse((self.work / "charset-00.jpg.fc.jpg").exists())
 
     def test_a_comment_the_tool_reads_differently_fails(self):

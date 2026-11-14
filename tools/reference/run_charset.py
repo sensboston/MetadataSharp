@@ -45,9 +45,9 @@ TITLE = "Exif.Image.XPTitle"
 NO_ICONV = "Cannot convert text encoding"
 
 
-def printed(exiv2, path, flags="-PEkv", runner=run):
-    """(key -> the value the tool prints, exit code, stderr) for one file."""
-    command = [exiv2, flags]
+def printed(exiv2, path, flags="-PEkv", runner=run, key=None):
+    """(key -> the value the tool prints, exit code, stderr) for one file, or for one tag of it."""
+    command = [exiv2, flags] + (["-K", key] if key else [])
     code, output, errors = runner(command + [str(path)])
     values = {}
     for line in output.splitlines():
@@ -135,12 +135,15 @@ def compare(argv=None, runner=run) -> int:
                             f"(exit {convert_code}): {((convert_errors or '') + ('' if convert_errors else '')).strip()[:300]}")
             continue
         if tool_text != values.get(COMMENT, ""):
-            failures.append(f"{name} ({charset}): the tool reads {tool_text!r}, "
-                            f"this library {values.get(COMMENT)!r}")
+            failures.append(f"{name} ({charset}): the tool reads {tool_text!r} "
+                            f"({len(tool_text)} characters), this library {values.get(COMMENT)!r} "
+                            f"({len(values.get(COMMENT, ''))})")
             counts["comment differs"] += 1
         else:
             counts["comment matched"] += 1
-        title, title_code, title_errors = printed(args.exiv2, path, "-PEkt", runner)
+        # Only the title: the translated print of the file would also render the comment, whose
+        # bytes are deliberately a code page rather than the UCS-2 its marker promises.
+        title, title_code, title_errors = printed(args.exiv2, path, "-PEkt", runner, key=TITLE)
         if title_code != 0:
             failures.append(f"{name}: the tool failed (exit {title_code}): "
                             f"{(title_errors or '').strip()[:300]}")
