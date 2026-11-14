@@ -92,6 +92,16 @@ public static class Previews
         ReadOnlySpan<byte> bytes = file.Slice((int)preview.Offset, preview.Length);
         if (jpeg)
         {
+            if (bytes.Length >= 4 && (bytes[0] != 0xFF || bytes[1] != 0xD8) && IsMinoltaSource(preview) &&
+                bytes[1] == 0xD8 && bytes[2] == 0xFF)
+            {
+                // A Minolta note names a thumbnail whose start-of-image marker has a damaged first byte.
+                // The reference repairs that byte before it writes the picture out, and the picture it
+                // returns is the one named here, so the same byte is repaired.
+                byte[] repaired = bytes.ToArray();
+                repaired[0] = 0xFF;
+                bytes = repaired;
+            }
             if (bytes.Length < 4 || bytes[0] != 0xFF || bytes[1] != 0xD8)
                 throw new MetadataException(MetadataErrorCode.InvalidJpeg, "The preview does not begin with a JPEG start-of-image marker.", preview.Offset);
             int last = bytes.Length;
@@ -114,6 +124,12 @@ public static class Previews
         }
         return bytes.ToArray();
     }
+
+    // The reference repairs the first byte of a Minolta thumbnail's start-of-image marker, and only of that.
+    private static bool IsMinoltaSource(PreviewImage preview) => IsMinoltaSource(preview.Source);
+
+    private static bool IsMinoltaSource(string source) =>
+        source.StartsWith("Exif.Minolta.", StringComparison.Ordinal);
 
     // Validate preview input limits before traversing any container-specific pointers.
     private static MetadataLimits Checked(ReadOnlySpan<byte> file, MetadataLimits? limits)
@@ -1557,10 +1573,17 @@ internal ref struct PreviewScanner
     {
         if (length < 4 || !Free(offset, length, tableStart, tableEnd)) return false;
         int at = (int)offset, end = at + (int)length;
-        if (data[at] != 0xFF || data[at + 1] != 0xD8 || data[at + 2] != 0xFF) return false;
+        int start = at;
+        if (data[at] != 0xFF || data[at + 1] != 0xD8 || data[at + 2] != 0xFF)
+        {
+            // A Minolta note names a thumbnail whose start-of-image marker has a damaged first byte; the
+            // reference repairs that byte before it writes the picture out, so the stream is one.
+            if (!IsMinoltaSource(source) || data[at + 1] != 0xD8 || data[at + 2] != 0xFF) return false;
+            start = at + 1;
+        }
         int? width = null, height = null;
         // The frame header states the dimensions. A lossless frame is raw sensor data, not a preview.
-        int position = at + 2;
+        int position = start + 2;
         for (int count = 0; count < limits.MaxSegments && end - position >= 4 && data[position] == 0xFF; count++)
         {
             byte marker = data[position + 1];
