@@ -106,8 +106,8 @@ compatibility work, with the full option inventory and the data-target DSL, is
 
 The corpus described in [build and test](BUILD_AND_TEST.md) added 23 camera raw files from raw.pixls.us
 (CC0 1.0), two cameras per raw format. Reading them against the pinned 0.28.9 binary changed the picture
-this document had: 352 files and 34 764 matched rows, with 13 raw files still failing, and the failures
-group into six reader gaps that the one-to-three-file-per-format corpus could not show.
+this document had: 352 files and 36 461 matched rows, and the failures of its first runs group into six
+reader gaps that the one-to-three-file-per-format corpus could not show. All six are closed.
 
 1. ~~**RW2 is not read as a Panasonic raw.**~~ **Closed.** In a `.RW2` the first directory is the
    `PanasonicRaw` directory, the file names no directory after it, and its `ExifTag` leads to the EXIF
@@ -116,25 +116,25 @@ group into six reader gaps that the one-to-three-file-per-format corpus could no
    `PanasonicRaw`, and the embedded picture's metadata is available as
    [`EmbeddedImageMetadata`](usage/CRW_MRW_RAF_USAGE_AND_LIMITS.md#the-pictures-a-raw-container-embeds)
    and merged by the print the way the reference merges it.
-2. **A raw file with more than one top-level image directory loses the later ones.** Canon CR2 keeps the
-   raw image in the second directory and a second reduced image in the third, Pentax PEF keeps its
-   preview in the second; those entries (`Exif.Image2.*`, `Exif.Image3.*`) are missing while the first
-   directory matches row for row.
-3. **Samsung SRW preview directories are not synthesized.** Exiv2 publishes `Exif.SamsungPreview.*` and
-   `Exif.SubThumb1.*` for the pointers inside a Samsung note; nothing is reported for the NX10 and NX100
-   files here.
-4. **Two Sony raws are refused outright.** The A100 `.ARW` stops at `LimitExceeded`, the A700 `.ARW` and
-   the R1 `.SR2` at `InvalidExif`, where the reference prints their tables. All three are TIFF-based and
-   should read with the same code as the other raws.
-5. **One MRW preview cannot be placed.** `exiv2 -pp` lists previews for the DiMAGE A1 that the extraction
-   oracle cannot locate in the file, so the offset comparison of the preview gate has nothing to compare
-   against.
-6. **A Fujifilm note copy loses its thumbnail pointers.** Copying the note out of the S2Pro and S3Pro
-   files drops `Exif.Image2.JPEGInterchangeFormat` and its length, which the reference keeps.
+2. ~~**A raw file with more than one top-level image directory loses the later ones.**~~ **Closed.** The
+   chain is read whole: the `Exif.Image2.*` and `Exif.Image3.*` rows of the CR2, PEF and DNG files match
+   the reference row for row.
+3. ~~**Samsung SRW preview directories are not synthesized.**~~ **Closed.** The pointers of a Samsung note
+   are followed and published as `Exif.SamsungPreview.*` and `Exif.SubThumb1.*`.
+4. ~~**Two Sony raws are refused outright.**~~ **Closed.** The order a directory states its tags in is no
+   longer a refusal — a directory is read in the order it gives — and the A100, A700 and R1 files read and
+   match the reference.
+5. ~~**One MRW preview cannot be placed.**~~ **Closed.** The note of the DiMAGE A1 counts its thumbnail
+   from the start of the block the note lives in, and the first byte of that picture's start-of-image
+   marker is damaged in the file: the reference repairs that byte before it writes the picture out, and
+   so does this reader.
+6. ~~**A Fujifilm note copy loses its thumbnail pointers.**~~ **Closed.** The copy keeps
+   `Exif.Image2.JPEGInterchangeFormat` and its length.
 
 These are the work items the corpus was added to expose, and they are listed here rather than in an
-exception table: `raw-corpus-parity` fails on all six, and it has to pass on its whole corpus before
-this document claims the raw read paths are established.
+exception table: `raw-corpus-parity` passes on its whole corpus. The one difference it records is a
+preview this reader lists and the reference does not — the 640x480 picture of
+`minolta-a2-pict0881.mrw`, which the gate names with the reason the reference misses it.
 
 ## Open library gaps
 
