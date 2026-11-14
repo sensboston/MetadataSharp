@@ -20,7 +20,35 @@ sample, not a drop-in `exiv2` executable.
 | `in -i t` | `ExifEdit.SetThumbnail(jpeg)`; `ExifEdit.RemoveThumbnail()` |
 | `fi` | `MetadataOperations.FixIso(exif)` → `ExifEdit?` |
 | `fc -n charset` | `MetadataOperations.FixUserComment(exif, encoding)` → `ExifEdit?` |
-| EXV files | `ExvFile.Create(exif, iptc, xmp, comment, thumbnail)`; read by `ImageMetadata.Read` |
+| EXV files | `ExvFile.Create(exif, iptc, xmp, comment, thumbnail, iccProfile)`; read by `ImageMetadata.Read` |
+
+`ExvFile.Create(..., iccProfile: profile)` accepts an exact ICC profile (128-byte minimum,
+header length equal to the supplied bytes, `acsp` signature) and emits numbered APP2
+`ICC_PROFILE` segments, at most 255. `null` omits ICC. `MetadataOperations.ExtractExv` carries
+ICC when `MetadataFamilies.IccProfile` is selected. The test
+`ExvMetadataTests.ExvCreationWritesValidatedIccProfilesInNumberedApp2Segments` verifies
+round-trip extraction, malformed-profile refusal, and the segment ceiling.
+
+`PsdMetadata.Write(file, exif, iptc, xmp, iccProfile, jpegThumbnail)` treats its arguments as the
+complete target set: null metadata removes the corresponding resource; an empty thumbnail removes
+both known Photoshop thumbnail resources. Only editable EXIF tags are re-encoded within the
+65,527-byte EXIF-block ceiling (MakerNote, image-address tags and the EXIF thumbnail directory
+are omitted). IPTC digest resource 0x0425 is removed when rewriting IPTC. ICC requires an exact header. The JPEG thumbnail is validated by the
+bounded JPEG scanner and framed as resource 0x040C. Resource records outside these families,
+Photoshop color/layer sections, merged pixels and the bytes after the resource section are retained;
+the output is parsed again before return. PSD input and output are limited to 64 MiB; the complete
+resource section and each resource payload are limited to 4 MiB. `PsdMetadataTests.ResourceWriterRoundTripsIccAndPreservesExistingMetadataAndImageBytes`
+covers metadata round-trip, resource and image-byte preservation, ICC and thumbnail removal, and
+malformed input.
+
+`Jp2Metadata.Write(file, exif, iptc, xmp, iccProfile)` likewise writes a complete metadata set.
+It uses Exif, IPTC and XMP UUID boxes; an XMP packet in an existing XML box that parses as XMP is
+replaced or removed too, while opaque XML is copied. An ICC profile is written as a method-2
+`colr` child of `jp2h`; removal fails if no other color specification would remain. EXIF is
+re-encoded from editable tags without MakerNote, image-address or thumbnail-directory tags. Every
+unknown box and the codestream are preserved; the result is parsed before return. The complete JP2
+file and box count have the reader's 64 MiB / 1024-box limits. `Jp2MetadataTests.CompleteSetWriterAddsMetadataAndIccBoxesAndKeepsCodestream`
+covers all four metadata boxes, ICC removal, codestream preservation and malformed input.
 
 `MetadataKeys` formats and parses keys as the tool prints them. Core
 (`MetadataSharp.Core.Operations`) computes edits and writes nothing; `MetadataSharp.Formats.Operations`
@@ -100,10 +128,12 @@ byte[] filled = MetadataOperations.InsertExv(other, exv, MetadataFamilies.All, o
   directory that is replaced keeps its other tags. The block has to fit one APP1 segment
   (`ExifTooLarge` otherwise). JPEG, PNG and WebP; TIFF-based and BMFF documents refuse the edit.
 - **Extract**: a JPEG or EXV source is copied segment by segment, so the block is byte for byte the
-  source's. Any other source is built anew by `ExvFile.Create` (see the MakerNote above), and its
-  ICC profile is not carried.
+  source's. Any other source is built anew by `ExvFile.Create` (see the MakerNote above); when ICC
+  is selected, its validated profile is carried in numbered APP2 segments.
 - **Delete** removes a family whose reader failed (the bytes go, unread), skips a family the
-  container cannot hold, and refuses containers no document writes (EXV, PSD, sidecars).
+  container cannot hold, and refuses formats for which no corresponding writer operation exists.
+  PSD resources can be removed by `PsdMetadata.Write` with null family values; the general file
+  operation does not dispatch to that complete-set writer.
 - A file whose structure cannot be established is refused where the tool writes it anyway:
   duplicate tags, several XMP packets, IPTC resources that differ, malformed directories.
 

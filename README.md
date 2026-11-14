@@ -21,6 +21,21 @@ see [docs/CURRENT_STATE.md][state] for what works today and what is next.
 - Bounded parsing of hostile input: every length, offset and count is checked and budgeted.
 - Continuously measured against the exiv2 0.28.9 test corpus.
 
+## Beyond exiv2
+
+- The PSD resource writer can add a checked ICC profile and a JPEG thumbnail, preserving unrelated
+  resource and image bytes ([preservation and round-trip test](https://github.com/sensboston/MetadataSharp/blob/HEAD/tests/MetadataSharp.Tests/Psd/PsdMetadataTests.cs)).
+- The JP2 complete-set writer updates EXIF, IPTC, XMP and ICC boxes while preserving unknown boxes
+  and codestream bytes. The EXV creator can carry ICC profiles in numbered APP2 segments.
+- TIFF-based RAW ICC editing fails closed unless the primary image target is proven. One bounded
+  DNG layout accepts insertion: an un-reduced, uncompressed RGB primary with an accounted strip and a separate
+  CFA SubIFD; other DNG/camera-RAW layouts still require an existing valid primary tag 0x8773 for
+  replacement/removal. Tests pin the image and MakerNote bytes; this is not general DNG write support.
+- `PSD/JP2/EXV` common-metadata writer parity is gated both ways against pinned Exiv2 0.28.9:
+  EXIF/IPTC/XMP for all three, exact ICC bytes both ways for JP2, and Exiv2 ICC insertion/read-back
+  for EXV. Exiv2 0.28.9 documents no PSD ICC support and its ICC print path does not expose the
+  authored EXV ICC representation; PSD ICC remains on MetadataSharp's format-specific tests.
+
 ## Quick start
 
 Reference `MetadataSharp.Formats`; it brings `MetadataSharp.Core` with it. No package is published

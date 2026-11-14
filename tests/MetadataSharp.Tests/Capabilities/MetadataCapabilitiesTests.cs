@@ -92,6 +92,10 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Dng, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; any property by path, in any namespace."),
         (MetadataContainer.Dng, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; any property by path; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.Dng, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: insert tag 0x8773 only when an un-reduced, uncompressed RGB primary has one accounted strip and a separate CFA SubIFD; other DNG/raw layouts fail closed."),
+        (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace a valid existing primary tag 0x8773, or a proven full-colour DNG primary; other DNG/raw targets fail closed."),
+        (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove a valid existing primary tag 0x8773; a missing target is refused except for a proven full-colour DNG primary."),
+        (MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
         (MetadataContainer.Arw, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Arw, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); new data is appended, image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Arw, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); in place when it fits, appended otherwise; image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -104,6 +108,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Arw, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; any property by path, in any namespace."),
         (MetadataContainer.Arw, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; any property by path; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.Arw, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Arw, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace only a valid existing primary tag 0x8773 in a TIFF-based RAW; insertion without one is refused."),
+        (MetadataContainer.Arw, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove only a valid existing primary tag 0x8773 in a TIFF-based RAW; a missing target is refused."),
+        (MetadataContainer.Arw, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
         (MetadataContainer.Avif, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; a block longer than a JPEG segment holds is read within the budgets. An item built from other items or stored in another file is refused."),
         (MetadataContainer.Avif, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); a file without an Exif item gains one for the primary item. New data goes into a media data box of its own; no item data moves."),
         (MetadataContainer.Avif, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); in place when the item keeps its length, in a new media data box otherwise. No other item moves."),
@@ -128,6 +135,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; any property by path, in any namespace."),
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; any property by path; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.Cr2, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Cr2, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace only a valid existing primary tag 0x8773 in a TIFF-based RAW; insertion without one is refused."),
+        (MetadataContainer.Cr2, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove only a valid existing primary tag 0x8773 in a TIFF-based RAW; a missing target is refused."),
+        (MetadataContainer.Cr2, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
         (MetadataContainer.Cr3, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "Cr3Metadata.Read: the CMT1, CMT2 and CMT4 boxes of the Canon box as the IFD0, EXIF and GPS directories of one block, CMT3 as the Canon MakerNote, as raw values; boxes that differ in byte order are refused. Nothing is written."),
         (MetadataContainer.Cr3, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "Cr3Metadata.Read: the packet of the XMP box at the top level of the file; every XMP form within finite packet limits; raw bytes retained for a packet that cannot be rewritten without loss. Nothing is written."),
         (MetadataContainer.Crw, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "CrwMetadata.Read: the records of the CIFF heap that Exiv2 0.28.9 maps to EXIF tags, as those tags, the Canon ones as a Canon MakerNote; the preview and the thumbnail are reported by where they lie."),
@@ -142,6 +152,7 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: inserts an announced packet in plain or DOS EPS; the rewritten packet is parsed before output."),
         (MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: replaces the packet range; DOS section lengths and offsets are updated and previews verified byte-identical."),
         (MetadataContainer.Eps, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "EpsMetadata.WriteXmp: removes the packet and marks NoMain; malformed framing and unsafe DOS layouts are refused."),
+        (MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Supported, "ExvFile.Create with iccProfile: a validated ICC profile in numbered APP2 ICC_PROFILE segments; at most 255 segments, with every other requested EXV part written as before."),
         (MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the APP2 ICC_PROFILE chunks, joined by their numbers as in a JPEG; the bytes the profile declares, not interpreted."),
         (MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Read, CapabilityStatus.Supported, "Comments.Read: every COM segment, in file order, as in a JPEG. Nothing is written."),
         (MetadataContainer.Heic, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "The Exif item of the top-level meta box, with a recognised MakerNote, as raw values; a block longer than a JPEG segment holds is read within the budgets. An item built from other items or stored in another file is refused."),
@@ -168,6 +179,21 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile: the colr property of kind prof or rICC of the primary item, replaced for every item that shares it; inside the iprp box when it fits, else the meta box changes its length; the same profile is copied."),
         (MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "BmffMetadataDocument.SaveIccProfile with null: the property becomes a free box of eight bytes that no item is given; the item properties box is rewritten in the bytes it has; nclx colour information stays."),
         (MetadataContainer.Heif, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the colr property of kind prof or rICC that ipma gives the primary item, not interpreted; nclx colour information is not a profile; two profiles are refused."),
+        (MetadataContainer.Jp2, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "Jp2Metadata.Read: the Exif UUID box, with a TIFF header or Exif\\0\\0 prefix; a single recognized EXIF block is parsed under the TIFF limits; duplicates are refused."),
+        (MetadataContainer.Jp2, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Jp2Metadata.Write: editable EXIF tags are encoded in the Exif UUID box; MakerNote, image-address tags and the EXIF thumbnail directory are not carried."),
+        (MetadataContainer.Jp2, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Jp2Metadata.Write: the Exif UUID box is replaced from the supplied editable EXIF snapshot, or removed when null."),
+        (MetadataContainer.Jp2, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Jp2Metadata.Write with null EXIF: recognized Exif UUID boxes are removed."),
+        (MetadataContainer.Jp2, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "Jp2Metadata.Read: IIM bytes of the recognized IPTC UUID box."),
+        (MetadataContainer.Jp2, MetadataFamily.IptcIim, MetadataOperation.Insert, CapabilityStatus.Partial, "Jp2Metadata.Write: the supplied IIM stream is written in the IPTC UUID box."),
+        (MetadataContainer.Jp2, MetadataFamily.IptcIim, MetadataOperation.Replace, CapabilityStatus.Partial, "Jp2Metadata.Write: the IPTC UUID box is replaced from the supplied packet, or removed when null."),
+        (MetadataContainer.Jp2, MetadataFamily.IptcIim, MetadataOperation.Remove, CapabilityStatus.Partial, "Jp2Metadata.Write with null IPTC: recognized IPTC UUID boxes are removed."),
+        (MetadataContainer.Jp2, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "Jp2Metadata.Read: the recognized XMP UUID box; XML boxes remain separately available as opaque payloads."),
+        (MetadataContainer.Jp2, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Jp2Metadata.Write: the supplied packet is written in an XMP UUID box; ICC stays in jp2h."),
+        (MetadataContainer.Jp2, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Jp2Metadata.Write: recognized XMP UUID boxes and parseable XML XMP boxes are replaced by one XMP UUID box."),
+        (MetadataContainer.Jp2, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Jp2Metadata.Write with null XMP: recognized XMP UUID boxes and parseable XML XMP boxes are removed."),
+        (MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "Jp2Metadata.Write: an exact ICC profile is written as a method-2 colr child of jp2h, and read back before output is returned."),
+        (MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "Jp2Metadata.Write: method-2 or method-3 ICC colr children are replaced by one method-2 child; other boxes and color specifications are retained."),
+        (MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "Jp2Metadata.Write with null ICC: profile colr children are removed; removal is refused if no non-profile color specification remains."),
         (MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: the first colr box of the jp2h header whose method is 2 or 3, not interpreted; a colour space named by number is not a profile."),
         (MetadataContainer.Jxl, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "JxlMetadata.Read: the block of the Exif box, plain or Brotli-compressed in a brob box, with a recognised MakerNote, as raw values; read within the budgets, counted after decompression. Nothing is written."),
         (MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "JxlMetadata.Read: the packet of the xml box, plain or Brotli-compressed in a brob box; every XMP form within finite packet limits; raw bytes retained for a packet that cannot be rewritten without loss. Nothing is written."),
@@ -186,6 +212,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Nef, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; any property by path, in any namespace."),
         (MetadataContainer.Nef, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; any property by path; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.Nef, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Nef, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace only a valid existing primary tag 0x8773 in a TIFF-based RAW; insertion without one is refused."),
+        (MetadataContainer.Nef, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove only a valid existing primary tag 0x8773 in a TIFF-based RAW; a missing target is refused."),
+        (MetadataContainer.Nef, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
         (MetadataContainer.Orf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Orf, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); new data is appended, image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Orf, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); in place when it fits, appended otherwise; image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -198,6 +227,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Orf, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; any property by path, in any namespace."),
         (MetadataContainer.Orf, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; any property by path; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.Orf, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Orf, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace only a valid existing primary tag 0x8773 in a TIFF-based RAW; insertion without one is refused."),
+        (MetadataContainer.Orf, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove only a valid existing primary tag 0x8773 in a TIFF-based RAW; a missing target is refused."),
+        (MetadataContainer.Orf, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
         (MetadataContainer.Pef, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Pef, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); new data is appended, image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Pef, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "Any tag in any field type except pointers, image-data addresses and the MakerNote (TagNotEditable); in place when it fits, appended otherwise; image data and the MakerNote keep their offsets. Tested on authored layouts, not on camera files."),
@@ -210,6 +242,9 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Tag 700 of the primary directory, appended; any property by path, in any namespace."),
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Tag 700 of the primary directory; any property by path; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.Pef, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "Removal of any property, item, field or qualifier by path; whole-XMP removal removes tag 700."),
+        (MetadataContainer.Pef, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace only a valid existing primary tag 0x8773 in a TIFF-based RAW; insertion without one is refused."),
+        (MetadataContainer.Pef, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove only a valid existing primary tag 0x8773 in a TIFF-based RAW; a missing target is refused."),
+        (MetadataContainer.Pef, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
         (MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "PgfMetadata.Read: the EXIF of the image file held in the header region; width and height from the PGF header."),
         (MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer for a PNG carrier; EXIF tags retain the PNG writer's edit restrictions."),
         (MetadataContainer.Pgf, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer for a PNG carrier; EXIF tags retain the PNG writer's edit restrictions."),
@@ -226,13 +261,37 @@ public sealed class MetadataCapabilitiesTests
         (MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Insert, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer with the reference Description keyword; pinned Exiv2 does not surface PGF comments; the region length is updated and its image suffix retained."),
         (MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Replace, CapabilityStatus.Partial, "PgfMetadata.Write: uses the PNG writer with the reference Description keyword; pinned Exiv2 does not surface PGF comments; the region length is updated and its image suffix retained."),
         (MetadataContainer.Pgf, MetadataFamily.Comment, MetadataOperation.Remove, CapabilityStatus.Partial, "PgfMetadata.Write with comment null: removes Comment and Description text chunks through the PNG writer; pinned Exiv2 does not surface PGF comments; the PGF region length is updated."),
+        (MetadataContainer.Psd, MetadataFamily.Exif, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: editable EXIF tags use resource 0x0422, capped at 65,527 bytes; MakerNote, image-address and thumbnail-directory tags are omitted; unrelated resources and image data are preserved."),
+        (MetadataContainer.Psd, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: resource 0x0422 is replaced from the supplied editable EXIF snapshot, or removed when null; a rewritten PSD is parsed before return."),
+        (MetadataContainer.Psd, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with null EXIF: resource 0x0422 is removed; unrelated resources and image bytes are preserved."),
+        (MetadataContainer.Psd, MetadataFamily.IptcIim, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: IPTC packet bytes are written to resource 0x0404; stale IPTC digest resource 0x0425 is removed."),
+        (MetadataContainer.Psd, MetadataFamily.IptcIim, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: resource 0x0404 is replaced from the supplied IPTC packet; stale IPTC digest resource 0x0425 is removed."),
+        (MetadataContainer.Psd, MetadataFamily.IptcIim, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with null IPTC: resources 0x0404 and 0x0425 are removed."),
+        (MetadataContainer.Psd, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: the supplied XMP packet bytes are written to image resource 0x0424."),
+        (MetadataContainer.Psd, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: resource 0x0424 is replaced from the supplied XMP packet."),
+        (MetadataContainer.Psd, MetadataFamily.Xmp, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with null XMP: resource 0x0424 is removed."),
+        (MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: an exact ICC profile is written to image resource 0x040F and read back before output is returned."),
+        (MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: resource 0x040F is replaced from the exact supplied ICC profile."),
+        (MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with null ICC profile: image resource 0x040F is removed."),
         (MetadataContainer.Psd, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Supported, "IccProfiles.Read: image resource 0x040F, not interpreted; a second one is refused."),
+        (MetadataContainer.Psd, MetadataFamily.Thumbnail, MetadataOperation.Insert, CapabilityStatus.Partial, "PsdMetadata.Write: a validated JPEG thumbnail is framed in image resource 0x040C with its Photoshop thumbnail header."),
+        (MetadataContainer.Psd, MetadataFamily.Thumbnail, MetadataOperation.Replace, CapabilityStatus.Partial, "PsdMetadata.Write: existing thumbnail resources 0x0409 and 0x040C are replaced by the JPEG resource 0x040C."),
+        (MetadataContainer.Psd, MetadataFamily.Thumbnail, MetadataOperation.Remove, CapabilityStatus.Partial, "PsdMetadata.Write with an empty thumbnail: image resources 0x0409 and 0x040C are removed."),
         (MetadataContainer.Raf, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the EXIF block of the embedded JPEG file, and the tags only the primary directory of the TIFF structure has; its Fujifilm directory (tag 0xF000) is not read; tested on authored files. Nothing is written."),
         (MetadataContainer.Raf, MetadataFamily.IptcIim, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the IPTC datasets of the embedded JPEG file; tested on authored files, not on camera files. Nothing is written."),
         (MetadataContainer.Raf, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Partial, "RafMetadata.Read: the packet of the embedded JPEG file; tested on authored files, not on camera files. Nothing is written."),
         (MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Read, CapabilityStatus.Partial, "IFD0, EXIF, GPS, Interop and thumbnail directories and a recognised MakerNote of a classic (non-BigTIFF) TIFF structure, as raw values; sub-image directories are not read."),
         (MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Replace, CapabilityStatus.Partial, "In place only: a value of any editable tag that fits where the old one is. The raw data runs to the end of the file, so nothing is appended and no tag can be added. Tested on authored layouts, not on camera files."),
         (MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Remove, CapabilityStatus.Partial, "Per-tag removal of any editable tag, the directory rewritten in place; whole-EXIF removal is refused."),
+        (MetadataContainer.Rw2, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace only a valid existing primary tag 0x8773 in a TIFF-based RAW; insertion without one is refused."),
+        (MetadataContainer.Rw2, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove only a valid existing primary tag 0x8773 in a TIFF-based RAW; a missing target is refused."),
+        (MetadataContainer.Rw2, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
+        (MetadataContainer.Sr2, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace only a valid existing primary tag 0x8773 in a TIFF-based RAW; insertion without one is refused."),
+        (MetadataContainer.Sr2, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove only a valid existing primary tag 0x8773 in a TIFF-based RAW; a missing target is refused."),
+        (MetadataContainer.Sr2, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
+        (MetadataContainer.Srw, MetadataFamily.Icc, MetadataOperation.Replace, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile: replace only a valid existing primary tag 0x8773 in a TIFF-based RAW; insertion without one is refused."),
+        (MetadataContainer.Srw, MetadataFamily.Icc, MetadataOperation.Remove, CapabilityStatus.Partial, "TiffBasedMetadataDocument.SaveIccProfile with null: remove only a valid existing primary tag 0x8773 in a TIFF-based RAW; a missing target is refused."),
+        (MetadataContainer.Srw, MetadataFamily.Icc, MetadataOperation.Extract, CapabilityStatus.Partial, "IccProfiles.Read: tag 0x8773 of the first TIFF directory, within ICC header and byte limits; not interpreted."),
         (MetadataContainer.XmpSidecar, MetadataFamily.Xmp, MetadataOperation.Read, CapabilityStatus.Supported, "Load/save of XMP packets and .xmp sidecars; every XMP form within finite packet limits."),
         (MetadataContainer.XmpSidecar, MetadataFamily.Xmp, MetadataOperation.Insert, CapabilityStatus.Partial, "Any property by path: simple values, arrays, language alternatives, structures and qualifiers in any namespace; a packet that cannot be rewritten without loss is refused."),
         (MetadataContainer.XmpSidecar, MetadataFamily.Xmp, MetadataOperation.Replace, CapabilityStatus.Partial, "Any property by path: simple values, arrays, language alternatives, structures and qualifiers in any namespace; a packet that cannot be rewritten without loss is refused."),
@@ -317,10 +376,8 @@ public sealed class MetadataCapabilitiesTests
     [InlineData(MetadataContainer.Jxl, MetadataFamily.Xmp, MetadataOperation.Replace)]
     [InlineData(MetadataContainer.Jxl, MetadataFamily.IptcIim, MetadataOperation.Read)]
     [InlineData(MetadataContainer.Jxl, MetadataFamily.Icc, MetadataOperation.Extract)]
-    [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Extract)]
     [InlineData(MetadataContainer.Gif, MetadataFamily.Icc, MetadataOperation.Extract)]
-    [InlineData(MetadataContainer.Dng, MetadataFamily.Icc, MetadataOperation.Insert)]
-    [InlineData(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Replace)]
+    [InlineData(MetadataContainer.Jp2, MetadataFamily.Icc, MetadataOperation.Read)]
     [InlineData(MetadataContainer.WebP, MetadataFamily.Comment, MetadataOperation.Insert)]
     [InlineData(MetadataContainer.Exv, MetadataFamily.Comment, MetadataOperation.Remove)]
     [InlineData(MetadataContainer.WebP, MetadataFamily.Comment, MetadataOperation.Read)]
@@ -348,6 +405,7 @@ public sealed class MetadataCapabilitiesTests
     public void TheTiffBasedWriterHasTheSameRowsForEveryFormatItsLayoutTestsCover()
     {
         // TiffBasedWriteTests runs on a layout of each of these kinds; RW2 is edited in place only.
+        // The separate ICC writer contract adds three rows (read, replace, remove) to each TIFF-based RAW.
         MetadataContainer[] appendable = [MetadataContainer.Tiff, MetadataContainer.Dng, MetadataContainer.Arw, MetadataContainer.Cr2,
             MetadataContainer.Nef, MetadataContainer.Orf, MetadataContainer.Pef];
         foreach (MetadataContainer container in appendable)
@@ -358,7 +416,7 @@ public sealed class MetadataCapabilitiesTests
                 foreach (MetadataOperation write in new[] { MetadataOperation.Insert, MetadataOperation.Replace, MetadataOperation.Remove })
                     Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(container, family, write));
             }
-        Assert.Equal(3, MetadataCapabilities.All.Count(row => row.Container == MetadataContainer.Rw2));
+        Assert.Equal(6, MetadataCapabilities.All.Count(row => row.Container == MetadataContainer.Rw2));
         Assert.Equal(CapabilityStatus.Partial, MetadataCapabilities.GetStatus(MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Replace));
         Assert.Equal(CapabilityStatus.NotSupported, MetadataCapabilities.GetStatus(MetadataContainer.Rw2, MetadataFamily.Exif, MetadataOperation.Insert));
     }
@@ -423,9 +481,11 @@ public sealed class MetadataCapabilitiesTests
     public void TheIccAndCommentReadersHaveARowForEveryKindTheirTestsCover()
     {
         // IccProfileTests and CommentTests author a file of each of these kinds. The profile is
-        // returned as bytes, which is Extract; of a TIFF only the first directory is looked at.
+        // returned as bytes, which is Extract; of TIFF-based files only the primary directory is looked at.
         MetadataContainer[] profiles = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.WebP, MetadataContainer.Tiff,
-            MetadataContainer.Avif, MetadataContainer.Exv, MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Psd];
+            MetadataContainer.Dng, MetadataContainer.Arw, MetadataContainer.Avif, MetadataContainer.Cr2, MetadataContainer.Exv,
+            MetadataContainer.Heic, MetadataContainer.Heif, MetadataContainer.Jp2, MetadataContainer.Nef, MetadataContainer.Orf,
+            MetadataContainer.Pef, MetadataContainer.Psd, MetadataContainer.Rw2, MetadataContainer.Sr2, MetadataContainer.Srw];
         // The comment of a CRW file is a record of its heap: CrwMetadata reads it, and RawContainerTests authors one.
         MetadataContainer[] comments = [MetadataContainer.Jpeg, MetadataContainer.Png, MetadataContainer.Crw, MetadataContainer.Exv, MetadataContainer.Pgf];
         CapabilityDescriptor[] extracted = MetadataCapabilities.All.Where(row => row.Operation == MetadataOperation.Extract).ToArray();
@@ -438,7 +498,10 @@ public sealed class MetadataCapabilitiesTests
         {
             // Nothing but the profile is extracted through this table.
             Assert.Equal(MetadataFamily.Icc, row.Family);
-            Assert.Equal(row.Container == MetadataContainer.Tiff ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
+            Assert.Equal(row.Container is MetadataContainer.Tiff or MetadataContainer.Dng or MetadataContainer.Arw or
+                MetadataContainer.Cr2 or MetadataContainer.Nef or MetadataContainer.Orf or MetadataContainer.Pef or
+                MetadataContainer.Rw2 or MetadataContainer.Sr2 or MetadataContainer.Srw
+                    ? CapabilityStatus.Partial : CapabilityStatus.Supported, row.Status);
             Assert.StartsWith("IccProfiles.Read: ", row.Note);
             Assert.Contains("not interpreted", row.Note);
         }
@@ -453,10 +516,10 @@ public sealed class MetadataCapabilitiesTests
     [Fact]
     public void TheProfileAndTheCommentAreWrittenOnlyWhereAWriterAndItsTestsExist()
     {
-        // The tests named <Format>IccProfileTests and <Format>CommentTests insert, replace and remove; no other container has a writer.
+        // The format-specific profile tests and PSD/JP2 complete-set writer tests provide evidence for every listed writer.
         // A TIFF and the BMFF brands are written by the documents that edit their EXIF, which refuse the layouts they cannot
-        // account for: their rows are partial, as the other rows of those documents are. DNG and the raw formats have no row:
-        // the primary directory of such a file is commonly that of a reduced image.
+        // account for: their rows are partial, as the other rows of those documents are. TIFF-based RAW rows are
+        // checked separately because they permit only replace/remove of an already valid primary ICC field.
         MetadataOperation[] writes = [MetadataOperation.Insert, MetadataOperation.Replace, MetadataOperation.Remove];
         (MetadataContainer Container, string Document, CapabilityStatus Status)[] profiles =
         [
@@ -467,6 +530,8 @@ public sealed class MetadataCapabilitiesTests
             (MetadataContainer.Avif, "BmffMetadataDocument", CapabilityStatus.Partial),
             (MetadataContainer.Heic, "BmffMetadataDocument", CapabilityStatus.Partial),
             (MetadataContainer.Heif, "BmffMetadataDocument", CapabilityStatus.Partial),
+            (MetadataContainer.Jp2, "Jp2Metadata", CapabilityStatus.Partial),
+            (MetadataContainer.Psd, "PsdMetadata", CapabilityStatus.Partial),
         ];
         (MetadataContainer Container, string Document, CapabilityStatus Status)[] comments =
         [
@@ -483,13 +548,22 @@ public sealed class MetadataCapabilitiesTests
         ];
         foreach ((MetadataFamily family, string save, (MetadataContainer Container, string Document, CapabilityStatus Status)[] writers) in families)
         {
-            CapabilityDescriptor[] rows = MetadataCapabilities.All.Where(row => row.Family == family && writes.Contains(row.Operation)).ToArray();
+            CapabilityDescriptor[] rows = MetadataCapabilities.All.Where(row => row.Family == family && writes.Contains(row.Operation) &&
+                !(family == MetadataFamily.Icc && row.Container == MetadataContainer.Exv) &&
+                !(family == MetadataFamily.Icc && row.Container is MetadataContainer.Dng or MetadataContainer.Arw or
+                    MetadataContainer.Cr2 or MetadataContainer.Nef or MetadataContainer.Orf or MetadataContainer.Pef or
+                    MetadataContainer.Rw2 or MetadataContainer.Sr2 or MetadataContainer.Srw)).ToArray();
 
             Assert.Equal(writers.Select(writer => writer.Container), rows.Select(row => row.Container).Distinct());
             foreach ((MetadataContainer container, string document, CapabilityStatus status) in writers)
             {
                 CapabilityDescriptor[] own = rows.Where(row => row.Container == container).ToArray();
-                string api = container == MetadataContainer.Pgf ? "PgfMetadata.Write" : document + "." + save;
+                string api = container switch
+                {
+                    MetadataContainer.Pgf => "PgfMetadata.Write",
+                    MetadataContainer.Jp2 or MetadataContainer.Psd => document + ".Write",
+                    _ => document + "." + save,
+                };
 
                 Assert.Equal(writes, own.Select(row => row.Operation));
                 Assert.All(own, row =>
@@ -498,9 +572,57 @@ public sealed class MetadataCapabilitiesTests
                     Assert.StartsWith(api, row.Note);
                 });
                 if (container == MetadataContainer.Pgf) Assert.StartsWith(api + " with comment null: ", own[2].Note);
+                else if (container is MetadataContainer.Jp2 or MetadataContainer.Psd)
+                    Assert.StartsWith(api + " with null ICC", own[2].Note);
                 else Assert.StartsWith(api + " with null: ", own[2].Note);
             }
         }
+
+        Assert.True(MetadataCapabilities.TryGet(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Insert,
+            out CapabilityDescriptor exvIcc));
+        Assert.Equal(CapabilityStatus.Supported, exvIcc.Status);
+        Assert.StartsWith("ExvFile.Create", exvIcc.Note);
+        Assert.False(MetadataCapabilities.TryGet(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Replace, out _));
+        Assert.False(MetadataCapabilities.TryGet(MetadataContainer.Exv, MetadataFamily.Icc, MetadataOperation.Remove, out _));
+    }
+
+    [Fact]
+    public void DngIccInsertionIsPartialForTheProvenColourPrimaryLayout()
+    {
+        Assert.True(MetadataCapabilities.TryGet(MetadataContainer.Dng, MetadataFamily.Icc,
+            MetadataOperation.Insert, out CapabilityDescriptor insert));
+        Assert.Equal(CapabilityStatus.Partial, insert.Status);
+        Assert.Contains("un-reduced, uncompressed RGB primary", insert.Note!);
+        Assert.True(MetadataCapabilities.TryGet(MetadataContainer.Dng, MetadataFamily.Icc,
+            MetadataOperation.Replace, out CapabilityDescriptor replace));
+        Assert.Equal(CapabilityStatus.Partial, replace.Status);
+        Assert.True(MetadataCapabilities.TryGet(MetadataContainer.Dng, MetadataFamily.Icc,
+            MetadataOperation.Remove, out CapabilityDescriptor remove));
+        Assert.Equal(CapabilityStatus.Partial, remove.Status);
+    }
+
+    [Theory]
+    [InlineData(MetadataContainer.Arw)]
+    [InlineData(MetadataContainer.Cr2)]
+    [InlineData(MetadataContainer.Nef)]
+    [InlineData(MetadataContainer.Orf)]
+    [InlineData(MetadataContainer.Pef)]
+    [InlineData(MetadataContainer.Rw2)]
+    [InlineData(MetadataContainer.Sr2)]
+    [InlineData(MetadataContainer.Srw)]
+    public void TiffBasedRawIccWriteRequiresAnExistingPrimaryTarget(MetadataContainer container)
+    {
+        Assert.True(MetadataCapabilities.TryGet(container, MetadataFamily.Icc, MetadataOperation.Extract,
+            out CapabilityDescriptor extract));
+        Assert.Equal(CapabilityStatus.Partial, extract.Status);
+        foreach (MetadataOperation operation in new[] { MetadataOperation.Replace, MetadataOperation.Remove })
+        {
+            Assert.True(MetadataCapabilities.TryGet(container, MetadataFamily.Icc, operation,
+                out CapabilityDescriptor descriptor));
+            Assert.Equal(CapabilityStatus.Partial, descriptor.Status);
+            Assert.Contains("valid existing primary tag 0x8773", descriptor.Note!);
+        }
+        Assert.False(MetadataCapabilities.TryGet(container, MetadataFamily.Icc, MetadataOperation.Insert, out _));
     }
 
     [Fact]

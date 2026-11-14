@@ -8,8 +8,8 @@ namespace MetadataSharp.Formats;
 /// <summary>
 /// Read-only access to the ICC colour profile a file embeds. The profile is returned as the bytes
 /// its header declares and nothing in it is interpreted: the reader checks the size field and the
-/// <c>acsp</c> signature of the header, and no more. Nothing is written here: the documents of
-/// the formats write a profile (<c>SaveIccProfile</c>).
+/// <c>acsp</c> signature of the header, and no more. Profiles are written by the format documents
+/// with <c>SaveIccProfile</c> and, for a newly created EXV file, by <c>ExvFile.Create</c>.
 /// </summary>
 public static class IccProfiles
 {

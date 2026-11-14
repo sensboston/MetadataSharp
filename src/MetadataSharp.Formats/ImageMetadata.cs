@@ -574,16 +574,21 @@ public sealed class ImageMetadata
         try
         {
             Jp2Metadata boxes = Jp2Metadata.Read(data);
-            // An XML box holds any XML: the first that starts as a packet or an XML declaration is taken for the packet.
-            for (int i = 0; i < boxes.XmlBoxCount; i++)
-            {
-                byte[] box = boxes.GetXmlBox(i);
-                if (!At(box, 0, "<?xpacket"u8) && !At(box, 0, "<?xml"u8)) continue;
-                parts.Xmp = XmpPacket.Parse(box);
-                break;
-            }
+            parts.Exif = boxes.Exif;
+            parts.Iptc = boxes.Iptc;
+            parts.Xmp = boxes.Xmp;
+            // An XML box holds any XML: the first packet or XML declaration is a fallback when no XMP UUID exists.
+            if (parts.Xmp is null)
+                for (int i = 0; i < boxes.XmlBoxCount; i++)
+                {
+                    byte[] box = boxes.GetXmlBox(i);
+                    if (!At(box, 0, "<?xpacket"u8) && !At(box, 0, "<?xml"u8)) continue;
+                    try { parts.Xmp = XmpPacket.Parse(box); }
+                    catch (MetadataException refusal) { parts.Refuse(refusal, MetadataFamily.Xmp); }
+                    break;
+                }
         }
-        catch (MetadataException refusal) { parts.Refuse(refusal, XmpOnly); }
+        catch (MetadataException refusal) { parts.Refuse(refusal, ExifIptcXmp); }
     }
 
     private static void ReadSidecar(ReadOnlySpan<byte> data, Parts parts)

@@ -1,23 +1,26 @@
 using System.Buffers.Binary;
 using MetadataSharp.Core;
+using MetadataSharp.Core.Iptc;
+using MetadataSharp.Core.Tiff;
+using MetadataSharp.Core.Xmp;
 
 namespace MetadataSharp.Formats.Jp2;
 
 /// <summary>
-/// Narrow read-only boxed JP2 header inspection. Dimensions are declarations,
-/// not decoded or validated image pixels. XML box payloads are opaque, not
-/// necessarily XMP. This does not validate the JPEG 2000 codestream.
+/// Bounded boxed JP2 metadata inspection and complete-set metadata writing. Dimensions are declarations,
+/// not decoded or validated image pixels. XML box payloads are exposed as opaque copies unless parsed
+/// as XMP by the higher-level reader. The JPEG 2000 codestream is not decoded or validated.
 /// </summary>
-public sealed class Jp2Metadata
+public sealed partial class Jp2Metadata
 {
     private const int MaxFileBytes = 64 * 1024 * 1024;
     private const int MaxXmlBytes = 4 * 1024 * 1024;
     private const int MaxBoxes = 1024;
     private readonly byte[][] xmlBoxes;
 
-    private Jp2Metadata(uint width, uint height, List<byte[]> xml)
+    private Jp2Metadata(uint width, uint height, List<byte[]> xml, ExifMetadata? exif, IptcPacket? iptc, XmpPacket? xmp)
     {
-        Width = width; Height = height; xmlBoxes = xml.ToArray();
+        Width = width; Height = height; xmlBoxes = xml.ToArray(); Exif = exif; Iptc = iptc; Xmp = xmp;
     }
     /// <summary>Declared image width.</summary>
     public uint Width { get; }
@@ -25,6 +28,12 @@ public sealed class Jp2Metadata
     public uint Height { get; }
     /// <summary>Number of top-level XML boxes, irrespective of their content.</summary>
     public int XmlBoxCount => xmlBoxes.Length;
+    /// <summary>EXIF metadata from the recognized Exif UUID box, or null when absent.</summary>
+    public ExifMetadata? Exif { get; }
+    /// <summary>IPTC metadata from the recognized IPTC UUID box, or null when absent.</summary>
+    public IptcPacket? Iptc { get; }
+    /// <summary>XMP metadata from the recognized XMP UUID box, or null when absent.</summary>
+    public XmpPacket? Xmp { get; }
     /// <summary>Return an independent copy of an opaque XML box payload.</summary>
     /// <param name="index">Zero-based index of the XML box in the order returned by the reader.</param>
     /// <returns>An independent copy of the indexed XML box payload.</returns>
@@ -54,6 +63,7 @@ public sealed class Jp2Metadata
         bool seenHeader = false, seenCodestream = false;
         uint width = 0, height = 0;
         var xml = new List<byte[]>();
+        byte[]? exifBytes = null, iptcBytes = null, xmpBytes = null;
         while (at < data.Length)
         {
             Box box = Next(data, ref at, ref boxes);
@@ -70,6 +80,26 @@ public sealed class Jp2Metadata
                     if (!seenHeader || seenCodestream || box.Length == 8) throw Bad("Duplicate, empty or misplaced codestream.");
                     seenCodestream = true;
                     break;
+                case 0x75756964: // uuid metadata
+                    if (box.End - box.Payload < 16) throw Bad("Truncated JP2 UUID box.");
+                    ReadOnlySpan<byte> uuid = data.Slice(box.Payload, 16);
+                    ReadOnlySpan<byte> payload = data.Slice(box.Payload + 16, box.End - box.Payload - 16);
+                    if (uuid.SequenceEqual(ExifUuid))
+                    {
+                        if (exifBytes is not null) throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "More than one JP2 EXIF UUID box.");
+                        exifBytes = payload.ToArray();
+                    }
+                    else if (uuid.SequenceEqual(IptcUuid))
+                    {
+                        if (iptcBytes is not null) throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "More than one JP2 IPTC UUID box.");
+                        iptcBytes = payload.ToArray();
+                    }
+                    else if (uuid.SequenceEqual(XmpUuid))
+                    {
+                        if (xmpBytes is not null) throw new MetadataException(MetadataErrorCode.AmbiguousMetadata, "More than one JP2 XMP UUID box.");
+                        xmpBytes = payload.ToArray();
+                    }
+                    break;
                 case 0x786d6c20: // xml (not necessarily XMP)
                     int size = box.Length - 8;
                     if (size > MaxXmlBytes - xmlBytes) throw Limit();
@@ -79,7 +109,10 @@ public sealed class Jp2Metadata
             }
         }
         if (!seenHeader || !seenCodestream) throw Bad("Missing JP2 header or codestream.");
-        return new Jp2Metadata(width, height, xml);
+        ExifMetadata? exif = exifBytes is null ? null : ExifTiffReader.Inspect(ExifTiff(exifBytes), ceiling: ExifTiffReader.NoCeiling);
+        IptcPacket? iptc = iptcBytes is null ? null : IptcPacket.Inspect(iptcBytes);
+        XmpPacket? xmp = xmpBytes is null ? null : XmpPacket.Parse(xmpBytes);
+        return new Jp2Metadata(width, height, xml, exif, iptc, xmp);
     }
 
     // Read header from bounded metadata data, validating its declared extent before consuming fields.
@@ -119,5 +152,5 @@ public sealed class Jp2Metadata
     private static MetadataException Bad(string message) => new(MetadataErrorCode.InvalidJp2, message);
     private static MetadataException Unsupported(string message) => new(MetadataErrorCode.UnsupportedFeature, message);
     // Report a JP2 box or file-size budget violation.
-    private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "JP2 exceeds a fixed read budget.");
+    private static MetadataException Limit() => new(MetadataErrorCode.LimitExceeded, "JP2 exceeds a fixed read or write budget.");
 }

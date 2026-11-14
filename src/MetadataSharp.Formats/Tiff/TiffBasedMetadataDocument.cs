@@ -386,15 +386,14 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// The tag describes the image of its directory. In a DNG and in a raw file the primary
-    /// directory is commonly that of a reduced image, and a profile there would say how to show
-    /// that one. Such a file is refused, for a profile and for null alike, and nothing is written:
-    /// a file with DNGVersion (0xC612) in the primary directory; a file with the header of an ORF
-    /// or an RW2 or the signature of a CR2; a file whose primary directory is that of a reduced
-    /// image (bit 0 of NewSubfileType, as in a NEF or an ARW); and a file with raw sensor data in
-    /// any image directory (a colour filter array, linear raw data or the compression of a raw
-    /// format, as in a PEF). The file is judged by what it holds, not by its name, and the name
-    /// of the maker alone decides nothing. <see cref="IccProfiles.Read"/> still returns what the
-    /// primary directory of such a file holds.
+    /// directory is commonly that of a reduced image, and a new profile there might instead describe
+    /// that one. Such a file cannot be given a profile when tag 0x8773 is absent. A valid profile
+    /// already in the accounted primary directory is an explicit target: it may be replaced or
+    /// removed there, with all image and MakerNote bytes held to the same preservation checks. This
+    /// rule applies to DNGVersion (0xC612), ORF/RW2 and CR2 headers, reduced primary images
+    /// (NewSubfileType bit 0), and raw sensor data in any image directory. The file is judged by
+    /// what it holds, not by its name, and the maker alone decides nothing. <see cref="IccProfiles.Read"/>
+    /// still returns the valid profile that the primary directory holds.
     /// </remarks>
     /// <param name="destination">A writable, seekable, empty stream.</param>
     /// <param name="profile">The whole profile, or null for none.</param>
@@ -404,8 +403,9 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
     /// signature is absent; <see cref="MetadataErrorCode.LimitExceeded"/> when it is longer than
     /// <see cref="MetadataLimits.MaxValueBytes"/> or
     /// <see cref="MetadataLimits.MaxRetainedMetadataBytes"/> of the limits;
-    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when the file is a DNG or a raw file, or
-    /// its primary directory is that of a reduced image; otherwise as <see cref="SaveExif"/> fails.
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> when a DNG or raw layout has no valid
+    /// existing ICC field to replace or remove, or its primary directory is not a safe new-profile
+    /// target; otherwise as <see cref="SaveExif"/> fails.
     /// </exception>
     public void SaveIccProfile(Stream destination, byte[]? profile) => SaveCore(destination, Icc(profile), false, default).GetAwaiter().GetResult();
 
@@ -530,7 +530,8 @@ public sealed class TiffBasedMetadataDocument : IDisposable, IAsyncDisposable
         }
 
         // Before the refusal of the map: a raw file is refused for what it is, damaged or not.
-        if (icc is not null && TiffBasedIccTarget.Refusal(source, map) is string unsuitable)
+        if (icc is not null && TiffBasedIccTarget.Refusal(source, map) is string unsuitable &&
+            !TiffBasedIccTarget.HasExistingPrimaryProfile(source, map))
             throw new MetadataException(MetadataErrorCode.UnsupportedFeature, unsuitable);
         if (refusal is not null) throw new MetadataException(refusal.Code, refusal.Message, refusal.SourceOffset);
         TiffBasedFileMap layout = map!;

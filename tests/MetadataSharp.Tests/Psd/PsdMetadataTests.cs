@@ -1,7 +1,9 @@
 using System.Buffers.Binary;
 using System.Text;
 using MetadataSharp.Core;
+using MetadataSharp.Formats;
 using MetadataSharp.Formats.Psd;
+using MetadataSharp.Formats.Operations;
 using Xunit;
 
 namespace MetadataSharp.Tests.Psd;
@@ -17,6 +19,24 @@ public sealed class PsdMetadataTests
     }
 
     private static MetadataErrorCode Error(byte[] bytes) => Assert.Throws<MetadataException>(() => PsdMetadata.Read(bytes)).Code;
+
+    private static byte[] ResourceRecord(byte[] file, ushort id)
+    {
+        int at = 30 + checked((int)BinaryPrimitives.ReadUInt32BigEndian(file.AsSpan(26, 4)));
+        int end = at + 4 + checked((int)BinaryPrimitives.ReadUInt32BigEndian(file.AsSpan(at, 4)));
+        at += 4;
+        while (at < end)
+        {
+            int start = at;
+            ushort current = BinaryPrimitives.ReadUInt16BigEndian(file.AsSpan(at + 4, 2));
+            at += 6;
+            int name = file[at]; at += (1 + name + 1) & ~1;
+            int length = checked((int)BinaryPrimitives.ReadUInt32BigEndian(file.AsSpan(at, 4)));
+            at += 4 + length + (length & 1);
+            if (current == id) return file[start..at];
+        }
+        throw new InvalidOperationException("PSD resource not found.");
+    }
 
     [Fact]
     public void FlatAndMetadataPresentOwnedFixturesAreRead()
@@ -38,6 +58,53 @@ public sealed class PsdMetadataTests
         byte[] copy = metadata.GetResource(1058)!;
         copy[0] ^= 0xff; rich[0] ^= 0xff;
         Assert.Equal((byte)'I', metadata.GetResource(1058)![0]);
+    }
+
+    [Fact]
+    public void ResourceWriterRoundTripsIccAndPreservesExistingMetadataAndImageBytes()
+    {
+        byte[] source = Fixture("owned-metadata-rgb.psd");
+        PsdMetadata before = PsdMetadata.Read(source);
+        byte[] profile = MetadataSharp.Tests.Containers.IccProfileTests.Profile(560, 31);
+        byte[] output = PsdMetadata.Write(source, before.ReadExif(), before.ReadIptc(), before.ReadXmp(), profile);
+        PsdMetadata after = PsdMetadata.Read(output);
+        Assert.Equal(profile, IccProfiles.Read(output));
+        byte[] extracted = MetadataSharp.Formats.Operations.MetadataOperations.ExtractExv(output, MetadataFamilies.IccProfile);
+        Assert.Equal(profile, IccProfiles.Read(extracted));
+        Assert.Equal(before.Width, after.Width);
+        Assert.Equal(before.Height, after.Height);
+        Assert.Equal(before.ReadExif()!.Entries.Select(entry => entry.Key), after.ReadExif()!.Entries.Select(entry => entry.Key));
+        Assert.Equal(before.ReadIptc()!.Datasets.Select(dataset => dataset.Key), after.ReadIptc()!.Datasets.Select(dataset => dataset.Key));
+        Assert.Equal(before.ReadXmp()!.Entries.Select(entry => entry.Key), after.ReadXmp()!.Entries.Select(entry => entry.Key));
+        Assert.Equal(before.GetResource(1058), after.GetResource(1058));
+        Assert.Equal(before.GetResource(1060), after.GetResource(1060));
+        Assert.Equal(before.GetResource(1028), after.GetResource(1028));
+        Assert.Equal(ResourceRecord(source, 1058), ResourceRecord(output, 1058));
+        Assert.Equal(ResourceRecord(source, 1060), ResourceRecord(output, 1060));
+        Assert.Equal(ResourceRecord(source, 1028), ResourceRecord(output, 1028));
+
+        int resourceLengthAt = 30 + (int)BinaryPrimitives.ReadUInt32BigEndian(source.AsSpan(26, 4));
+        int sourceEnd = resourceLengthAt + 4 + (int)BinaryPrimitives.ReadUInt32BigEndian(source.AsSpan(resourceLengthAt, 4));
+        int outputEnd = resourceLengthAt + 4 + (int)BinaryPrimitives.ReadUInt32BigEndian(output.AsSpan(resourceLengthAt, 4));
+        Assert.Equal(source[..resourceLengthAt], output[..resourceLengthAt]);
+        Assert.Equal(source[sourceEnd..], output[outputEnd..]);
+
+        byte[] withoutIcc = PsdMetadata.Write(output, after.ReadExif(), after.ReadIptc(), after.ReadXmp());
+        Assert.Null(IccProfiles.Read(withoutIcc));
+        byte[] malformed = (byte[])profile.Clone(); malformed[36] = (byte)'x';
+        Assert.Equal(MetadataErrorCode.InvalidIccProfile,
+            Assert.Throws<MetadataException>(() => PsdMetadata.Write(source, iccProfile: malformed)).Code);
+
+        byte[] jpeg = MetadataSharp.Tests.Jpeg.JpegFixture.Build();
+        byte[] withThumbnail = PsdMetadata.Write(source, before.ReadExif(), before.ReadIptc(), before.ReadXmp(), profile, jpeg);
+        byte[] resource = PsdMetadata.Read(withThumbnail).GetResource(0x040C)!;
+        Assert.Equal(1u, BinaryPrimitives.ReadUInt32BigEndian(resource));
+        Assert.Equal(8u, BinaryPrimitives.ReadUInt32BigEndian(resource.AsSpan(4)));
+        Assert.Equal(8u, BinaryPrimitives.ReadUInt32BigEndian(resource.AsSpan(8)));
+        Assert.Equal(jpeg, resource[28..]);
+        byte[] withoutThumbnail = PsdMetadata.Write(withThumbnail, after.ReadExif(), after.ReadIptc(), after.ReadXmp(), profile);
+        Assert.Null(PsdMetadata.Read(withoutThumbnail).GetResource(0x040C));
+        Assert.Throws<MetadataException>(() => PsdMetadata.Write(source, jpegThumbnail: [1, 2]));
     }
 
     [Fact]

@@ -12,9 +12,10 @@ namespace MetadataSharp.Tests.Tiff;
 /// <summary>
 /// Writing the ICC profile of a plain TIFF: tag 0x8773 of the primary directory, through the
 /// writer that moves no byte of the source. Every case runs on a baseline TIFF, a TIFF of several
-/// pages with a reduced image and a TIFF as a camera writes it, in both byte orders. A DNG, a raw
-/// file and a file whose primary directory is that of a reduced image are refused: the profile
-/// there would describe the thumbnail.
+/// pages with a reduced image and a TIFF as a camera writes it, in both byte orders. RAW layouts
+/// without a proven colour primary are refused; the one bounded DNG preview-root layout has an RGB
+/// primary strip and a separate CFA SubIFD. A valid existing primary field is also an explicit
+/// target for replacement or removal.
 /// </summary>
 public sealed class TiffBasedIccProfileTests
 {
@@ -355,11 +356,53 @@ public sealed class TiffBasedIccProfileTests
         byte[] dng = TiffBasedFixture.Flat(big, (0x010F, 2, make), (0xC612, 1, new byte[] { 1, 4, 0, 0 }));
         Assert.Contains("DNG", Unsuitable(dng));
 
-        // A profile the primary directory of a DNG has is still read, and is neither replaced,
-        // nor removed, nor a reason to copy the file.
+        // A profile already stored in the primary DNG directory is an explicit target; the
+        // full-directory fixture below pins replacement and removal with image bytes held.
         byte[] held = TiffBasedFixture.Flat(big, (0x010F, 2, make), (IccTag, 7, Profile(560)), (0xC612, 1, new byte[] { 1, 4, 0, 0 }));
         Assert.Equal(Profile(560), IccProfiles.Read(held));
-        Assert.Contains("DNG", Unsuitable(held));
+        byte[] replacement = Profile(560, 9);
+        Assert.Equal(replacement, IccProfiles.Read(Save(held, replacement)));
+        Assert.Null(IccProfiles.Read(Save(held, null)));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnExistingDngPrimaryIccFieldIsAProvenReplaceOrRemoveTarget(bool big)
+    {
+        TiffBasedFixture fixture = TiffBasedFixture.Dng(big, iccProfile: Profile(560));
+        byte[] source = fixture.Bytes;
+        Assert.Equal(Profile(560), IccProfiles.Read(source));
+
+        byte[] replacement = Save(source, Profile(560, 9));
+        Assert.Equal(Profile(560, 9), IccProfiles.Read(replacement));
+        TiffBasedWriteTests.AssertImageAndMakerNoteUntouched(fixture, replacement);
+
+        byte[] removed = Save(source, null);
+        Assert.Null(IccProfiles.Read(removed));
+        TiffBasedWriteTests.AssertImageAndMakerNoteUntouched(fixture, removed);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AFullColourDngPrimaryWithASeparateRawSubIfdAcceptsIccInsertion(bool big)
+    {
+        TiffBasedFixture fixture = TiffBasedFixture.DngColourPreview(big);
+        byte[] source = fixture.Bytes, profile = Profile(560);
+
+        byte[] output = Save(source, profile);
+
+        Assert.Equal(profile, IccProfiles.Read(output));
+        Assert.True(HasTag(output, big));
+        TiffBasedWriteTests.AssertSourceKeptExcept(source, output, (4, 4));
+        TiffBasedWriteTests.AssertImageAndMakerNoteUntouched(fixture, output);
+
+        // A compressed or raw-sensor primary is not covered by this narrow proof.
+        byte[] compressed = WithEntry(source, big, 8, 0x0103, 0x0103, 3, 8);
+        Assert.Contains("not a proven full-colour", Unsuitable(compressed));
+        byte[] cfaPrimary = WithEntry(source, big, 8, 0x0106, 0x0106, 3, 32803);
+        Assert.Contains("not a proven full-colour", Unsuitable(cfaPrimary));
     }
 
     [Theory]

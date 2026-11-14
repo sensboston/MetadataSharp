@@ -77,11 +77,12 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   value of 16 MiB and 64 MiB retained. The `MetadataLimits` defaults (65,527 bytes, 1 MiB) are the
   sizes of an EXIF block in a JPEG segment and refused `ReaganLargeTiff.tiff` (ICC profile, tag
   0x8773, 1,613,600 bytes); with the new defaults no corpus TIFF is refused for a budget.
-- ICC profiles, read-only: `IccProfiles.Read` returns the profile bytes of JPEG and EXV (APP2 chunks),
-  PNG (iCCP), TIFF (tag 0x8773, first directory), WebP (ICCP), HEIC/HEIF/AVIF (`colr` of the primary
+- ICC profiles: `IccProfiles.Read` returns the profile bytes of JPEG and EXV (APP2 chunks), PNG
+  (iCCP), TIFF (tag 0x8773, first directory), WebP (ICCP), HEIC/HEIF/AVIF (`colr` of the primary
   item), JPEG 2000 (`colr` of `jp2h`) and PSD (resource 0x040F); header checked (size, `acsp`), nothing
-  interpreted; new code `InvalidIccProfile`. `MetadataSharp.Dump --icc`; the parity job requires the
-  17 profiles the pinned tests give for `exiv2 -pC` (`tools/parity/run_icc.py`).
+  interpreted; new code `InvalidIccProfile`. ICC is written by the JPEG, PNG, WebP, safe TIFF/BMFF
+  writers, `ExvFile.Create`, `PsdMetadata.Write` and `Jp2Metadata.Write`; `MetadataSharp.Dump --icc`.
+  The parity job requires the 17 profiles the pinned tests give for `exiv2 -pC` (`tools/parity/run_icc.py`).
 - Comments, read-only: `Comments.Read` lists the COM segments of a JPEG or EXV and the PNG text
   chunks with the keyword `Comment` (`exiv2 -pc` prints `Description` instead, so no parity for PNG).
   `MetadataSharp.Dump --comments`. Capability rows: ICC under Extract for ten kinds, comments under Read.
@@ -138,8 +139,16 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   (tag 0x8773 of the first directory: over the stored value, else appended; removal leaves the bytes
   unaddressed) and `BmffMetadataDocument` (`colr` `prof` of the primary item: replaced in place,
   added last, removed as `free`; `iprp` in place, else `meta` grows or is appended; no item moves).
-  Same profile: copy. Verified before written. A DNG, a raw file (ORF / RW2 header, CR2 signature,
-  raw sensor data) and a first directory that is a reduced image are refused (`UnsupportedFeature`).
+  Same profile: copy. Verified before written. A DNG or raw layout with no valid existing primary
+  tag 0x8773, and a first directory that is a reduced image without such a target, are refused
+  (`UnsupportedFeature`). A readable existing primary profile permits only replace/remove, preserving
+  image and MakerNote bytes; insertion remains refused.
+- Write, complete-set PSD and JP2 metadata: `PsdMetadata.Write` replaces EXIF/IPTC/XMP/ICC resources,
+  and adds or removes a JPEG thumbnail resource; unrelated resources and image bytes are preserved.
+  `Jp2Metadata.Write` replaces EXIF/IPTC/XMP UUID boxes and ICC `colr`; unknown boxes and the
+  codestream are preserved. These complete-set byte-buffer APIs are tested in `PsdMetadataTests` and
+  `Jp2MetadataTests`; they are not in-place/stream document APIs. `ExvFile.Create` and selected
+  `MetadataOperations.ExtractExv` output ICC as numbered APP2 segments.
   Run 43146310534: 2,408 tests; `exiv2 -pC`, `-pc`, `-pa` agree on 56 + 117 edited fixtures and on
   10 + 15 files written from the corpus (15 of 22 TIFF-based, 2 of 15 BMFF refused). Twelve partial rows.
 - One entry point for reading: `ImageMetadata.Read` (span, stream, async, path) tells the format by
@@ -246,16 +255,11 @@ Updated 2026-11-12. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
 ## Known limits
 
 - Writes refuse when safety is not established; MakerNotes are never moved; their tags are edited in place, and a grown value is appended for four layouts only. EXIF takes any
-  tag; the thumbnail (IFD1) is edited in JPEG, PNG and WebP only. IPTC is not written to PSD or sidecars. XMP and
+  tag; the thumbnail (IFD1) is edited in JPEG, PNG and WebP only. The PSD complete-set writer omits EXIF MakerNote/image-address/thumbnail-directory tags and drops IPTC digest resource 0x0425; sidecars have no IPTC write. XMP and
   IPTC agree only when asked (`MetadataSync`); an independent `SaveIptc` leaves the digest stale.
 - Sync: `SaveAll` has no async twin; PSD and sidecars have no `SaveAll`. Not in the mapping table:
   CFAPattern, OECF, SpatialFrequencyResponse, DeviceSettingDescription. A value of a type or count
   the tag is not defined with is not converted and is listed in `SyncEdits.Notes`.
 - Interpreted values cover standard EXIF, IPTC and part of Canon/Nikon/Sony MakerNotes; not XMP.
-- No ICC write for PSD, JPEG 2000 and EXV; comments are written in JPEG, PNG and CRW only; a PNG profile
-  over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to
-  agree with a written profile. A BMFF item is edited or added, never
-  removed. Previews are not decoded and not written. CR3, JPEG XL, MRW and RAF are read, never
-  written. CRW: no async members; a record outside the directory the reference writes it to is not
-  changed; the Fujifilm directory (0xF000) of a RAF TIFF structure is not read.
+- PSD and JP2 writes are complete-set byte-buffer APIs, not the general per-family stream/path document APIs; JP2 XML boxes not parsed as XMP remain opaque. EXIF blocks written for PSD keep the 65,527-byte ceiling. ICC insertion for TIFF-based RAW remains refused unless a layout proves that tag 0x8773 targets the image rather than a thumbnail or raw-sensor IFD. The bounded DNG case is an un-reduced, uncompressed RGB primary with one accounted strip and a separate CFA SubIFD; other DNG and camera-RAW layouts without a validated existing primary ICC target remain refused (valid existing targets permit replacement/removal). Comments are written in JPEG, PNG and CRW only; a PNG profile over the retained budget (1 MiB by default) is refused; `gAMA` / `cHRM` / `cICP` are not made to agree with a written profile. A BMFF item is edited or added, never removed. Previews are not decoded and not written. CR3, JPEG XL, MRW and RAF are read, never written. CRW: no async members; a record outside the directory the reference writes it to is not changed; the Fujifilm directory (0xF000) of a RAF TIFF structure is not read.
 - EXIF blocks of PNG, WebP and PSD are still held to 65,527 bytes (`ExifTooLarge`), a JPEG rule.

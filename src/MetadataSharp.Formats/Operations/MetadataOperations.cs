@@ -378,7 +378,7 @@ public static class MetadataOperations
     /// From a JPEG file the segments are copied as they are, so the EXIF block arrives byte for byte,
     /// with its MakerNote and its thumbnail, and so do the image resources that hold the IPTC stream
     /// and an ICC profile. From any other file the EXV file is built by <see cref="ExvFile.Create"/>,
-    /// with the limits it states; an ICC profile is then not carried.
+    /// with the selected ICC profile carried as numbered APP2 segments.
     /// </remarks>
     /// <exception cref="MetadataException">What the readers refuse the file with, and what <see cref="ExvFile.Create"/> refuses.</exception>
     /// <param name="file">Complete image bytes from which the selected metadata families are extracted into EXV.</param>
@@ -397,7 +397,8 @@ public static class MetadataOperations
             families.HasFlag(MetadataFamilies.Iptc) ? metadata.Iptc : null,
             families.HasFlag(MetadataFamilies.Xmp) ? metadata.Xmp : null,
             families.HasFlag(MetadataFamilies.Comment) && metadata.Comments.Count != 0 ? metadata.Comments[0] : null,
-            exif || families.HasFlag(MetadataFamilies.Thumbnail) ? Thumbnail(file, metadata) : default);
+            exif || families.HasFlag(MetadataFamilies.Thumbnail) ? Thumbnail(file, metadata) : default,
+            families.HasFlag(MetadataFamilies.IccProfile) && !metadata.IccProfile.IsEmpty ? metadata.IccProfile.ToArray() : null);
     }
 
     /// <summary>

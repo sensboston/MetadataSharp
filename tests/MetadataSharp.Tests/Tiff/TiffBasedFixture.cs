@@ -29,8 +29,10 @@ internal sealed class TiffBasedFixture
     internal int Gps { get; private init; }
     /// <summary>Strips and JPEG streams: the image data no edit may touch.</summary>
     internal (int Start, int Length)[] Image { get; private init; } = [];
-    /// <summary>The MakerNote or DNGPrivateData value.</summary>
+    /// <summary>The MakerNote value whose original byte range an edit must preserve.</summary>
     internal (int Start, int Length) Note { get; private init; }
+    /// <summary>DNGPrivateData, separate from the MakerNote when a DNG fixture holds both.</summary>
+    internal (int Start, int Length) PrivateData { get; private init; }
     /// <summary>The twenty bytes of DateTimeOriginal (Exif 0x9003).</summary>
     internal int Date { get; private init; }
     /// <summary>A text tag of the primary directory that every edit of a text uses, and its value.</summary>
@@ -115,23 +117,32 @@ internal sealed class TiffBasedFixture
     /// <summary>
     /// A DNG. IFD0 at 8 is the thumbnail (strip at 400 of 16 bytes) with Make at 160, SubIFDs,
     /// ExifIFD, DNGVersion and DNGPrivateData at 320 (24 bytes); the Exif IFD at 190 has
-    /// DateTimeOriginal at 210; the SubIFD at 240 is the raw image (strip at 420 of 80 bytes).
+    /// DateTimeOriginal at 220 and a 56-byte MakerNote at 344; the SubIFD at 240 is the raw image
+    /// (strip at 420 of 80 bytes).
     /// With <paramref name="sharedExif"/> the SubIFD points at the Exif IFD as well.
     /// </summary>
-    internal static TiffBasedFixture Dng(bool big, bool sharedExif = false)
+    internal static TiffBasedFixture Dng(bool big, bool sharedExif = false, byte[]? iccProfile = null)
     {
-        var layout = new Layout(500, big).Header()
-            .Directory(8, 0,
-                (0x00FE, 4, 1, 1), (0x0100, 3, 1, 4), (0x0101, 3, 1, 4), (0x010F, 2, 12, 160),
-                (0x0111, 4, 1, 400), (0x0117, 4, 1, 16), (0x014A, 4, 1, 240), (0x8769, 4, 1, 190),
-                (0xC612, 1, 4, 0), (0xC634, 1, 24, 320))
-            .Raw(8 + 2 + 8 * 12 + 8, 1, 4, 0, 0)
+        int profileLength = iccProfile?.Length ?? 0;
+        int length = 500 + profileLength + (profileLength & 1);
+        byte[] makerNote = Nef(big).Bytes.AsSpan(380, 56).ToArray();
+        var entries = new List<(int Tag, int Type, long Count, long Value)>
+        {
+            (0x00FE, 4, 1, 1), (0x0100, 3, 1, 4), (0x0101, 3, 1, 4), (0x010F, 2, 12, 160),
+            (0x0111, 4, 1, 400), (0x0117, 4, 1, 16), (0x014A, 4, 1, 240), (0x8769, 4, 1, 190)
+        };
+        if (iccProfile is not null) entries.Add((0x8773, 7, iccProfile.Length, 500));
+        entries.Add((0xC612, 1, 4, 0)); entries.Add((0xC634, 1, 24, 320));
+        var layout = new Layout(length, big).Header().Directory(8, 0, entries.ToArray())
+            .Raw(8 + 2 + entries.FindIndex(entry => entry.Tag == 0xC612) * 12 + 8, 1, 4, 0, 0)
             .Ascii(160, "TestCompany\0")
-            .Directory(190, 0, (0x9003, 2, 20, 210))
-            .Ascii(210, "2020:01:02 03:04:05\0")
+            .Directory(190, 0, (0x9003, 2, 20, 220), (0x927C, 7, 56, 344))
+            .Ascii(220, "2020:01:02 03:04:05\0")
             .Pattern(320, 24, 3)
+            .Raw(344, makerNote)
             .Pattern(400, 16, 5)
             .Pattern(420, 80, 11);
+        if (iccProfile is not null) layout.Raw(500, iccProfile);
         if (sharedExif)
             layout.Directory(240, 0, (0x00FE, 4, 1, 0), (0x0100, 3, 1, 8), (0x0101, 3, 1, 8), (0x0111, 4, 1, 420),
                 (0x0117, 4, 1, 80), (0x8769, 4, 1, 190));
@@ -140,8 +151,34 @@ internal sealed class TiffBasedFixture
                 (0x0117, 4, 1, 80));
         return new("dng", big, layout.Bytes)
         {
-            Exif = 190, Image = [(400, 16), (420, 80)], Note = (320, 24), Date = 210, TextTag = 0x010F, Text = (160, 12)
+            Exif = 190, Image = [(400, 16), (420, 80)], Note = (344, 56), PrivateData = (320, 24), Date = 220,
+            TextTag = 0x010F, Text = (160, 12)
         };
+    }
+
+    /// <summary>
+    /// A bounded DNG layout with a full-colour RGB IFD0 and a separate CFA SubIFD. The primary
+    /// strip is the only ICC target; the CFA strip is retained as raw sensor data.
+    /// </summary>
+    internal static TiffBasedFixture DngColourPreview(bool big)
+    {
+        long version = big ? 0x01040000 : 0x00000401;
+        var layout = new Layout(676, big).Header()
+            .Directory(8, 0,
+                (0x00FE, 4, 1, 0), (0x0100, 4, 1, 4), (0x0101, 4, 1, 4), (0x0102, 3, 3, 400),
+                (0x0103, 3, 1, 1), (0x0106, 3, 1, 2), (0x0111, 4, 1, 500), (0x0115, 3, 1, 3),
+                (0x0116, 4, 1, 4), (0x0117, 4, 1, 48), (0x014A, 4, 1, 240), (0x8769, 4, 1, 180),
+                (0xC612, 1, 4, version))
+            .U16(400, 8).U16(402, 8).U16(404, 8)
+            .Directory(180, 0, (0x9003, 2, 20, 210))
+            .Ascii(210, "2020:01:02 03:04:05\0")
+            .Directory(240, 0,
+                (0x0100, 4, 1, 8), (0x0101, 4, 1, 8), (0x0103, 3, 1, 1), (0x0106, 3, 1, 32803),
+                (0x0111, 4, 1, 548), (0x0115, 3, 1, 1), (0x0116, 4, 1, 8), (0x0117, 4, 1, 128),
+                (0xC612, 1, 4, version))
+            .Pattern(500, 48, 17)
+            .Pattern(548, 128, 19);
+        return new("dng-colour-preview", big, layout.Bytes) { Image = [(500, 48), (548, 128)] };
     }
 
     /// <summary>
