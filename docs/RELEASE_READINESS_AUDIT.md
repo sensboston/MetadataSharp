@@ -109,11 +109,13 @@ The corpus described in [build and test](BUILD_AND_TEST.md) added 23 camera raw 
 this document had: 352 files and 34 764 matched rows, with 13 raw files still failing, and the failures
 group into six reader gaps that the one-to-three-file-per-format corpus could not show.
 
-1. **RW2 is not read as a Panasonic raw.** In a `.RW2` the first directory is the `PanasonicRaw`
-   directory: its tags name the sensor geometry, white-balance levels and strip layout, and its `ExifTag`
-   points at the EXIF directory. Both corpus files (DMC-G1, DMC-LX3) are read as if that directory were
-   `Exif.Image`, so about a hundred keys per file are reported under the wrong group and the EXIF,
-   Makernote, Interoperability and thumbnail directories behind it are not reached at all.
+1. ~~**RW2 is not read as a Panasonic raw.**~~ **Closed.** In a `.RW2` the first directory is the
+   `PanasonicRaw` directory, the file names no directory after it, and its `ExifTag` leads to the EXIF
+   directory; the `Exif.Image.*` and `Exif.Thumbnail.*` rows the reference prints come from the JPEG the
+   file embeds. The read now stops at the container's own directories, the print names them
+   `PanasonicRaw`, and the embedded picture's metadata is available as
+   [`EmbeddedImageMetadata`](usage/CRW_MRW_RAF_USAGE_AND_LIMITS.md#the-pictures-a-raw-container-embeds)
+   and merged by the print the way the reference merges it.
 2. **A raw file with more than one top-level image directory loses the later ones.** Canon CR2 keeps the
    raw image in the second directory and a second reduced image in the third, Pentax PEF keeps its
    preview in the second; those entries (`Exif.Image2.*`, `Exif.Image3.*`) are missing while the first

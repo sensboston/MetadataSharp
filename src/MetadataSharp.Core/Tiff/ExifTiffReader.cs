@@ -32,6 +32,7 @@ internal ref struct ExifTiffReader
     // Image directories named by tag 0x014A are listed for reading only, never merged into the entries.
     private readonly List<ExifSubImage> subImages;
     private int subIfdImages;
+    private bool panasonicRaw;
     private int chainImages;
     private readonly Queue<(uint Offset, int Index, bool Chain)> pendingImages;
     private readonly List<(int Start, int Length)> ranges;
@@ -222,6 +223,7 @@ internal ref struct ExifTiffReader
         if (magic == BigTiffMagic)
             throw Error(MetadataErrorCode.UnsupportedFeature, "BigTIFF is not supported.", 2);
         bool vendorMagic = wholeFile && magic is OrfMagic or Rw2Magic or DcpMagic;
+        panasonicRaw = vendorMagic && magic == Rw2Magic;
         if (magic != ClassicMagic && !vendorMagic)
             throw Error(MetadataErrorCode.InvalidExif, "The TIFF identifier is invalid.", 2);
         uint first = U32(4);
@@ -487,6 +489,11 @@ internal ref struct ExifTiffReader
         uint next = U32(start + 2 + count * 12);
         if (next != 0)
         {
+            // A Panasonic RW2 names no directory after its primary one: that directory is the
+            // PanasonicRaw one, and the reference ignores the link rather than following it. The
+            // Image and thumbnail rows an RW2 prints come from the image it embeds, not from here.
+            if (panasonicRaw && kind == ExifDirectoryKind.Ifd0)
+                return;
             // A whole file may chain further image directories after the second one (CR2 puts its raw
             // picture in the second directory and a further reduced one in the third, PEF its preview).
             // They hold pictures, not EXIF: like SubIFDs they are listed and nothing in them is followed.

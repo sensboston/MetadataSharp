@@ -197,6 +197,46 @@ internal static class Program
         Record(stdout, "STATUS", "not-attempted", "magic");
     }
 
+    private const string PanasonicRawGroup = "PanasonicRaw";
+
+    /// <summary>
+    /// Whether the file is a Panasonic RW2, which is a TIFF whose identifier is 0x0055 rather than 42.
+    /// </summary>
+    private static bool IsRw2(string path)
+    {
+        Span<byte> head = stackalloc byte[4];
+        using var probe = File.OpenRead(path);
+        if (probe.Read(head) != head.Length)
+            return false;
+        return (head[0] == 0x49 && head[1] == 0x49 && head[2] == 0x55 && head[3] == 0x00) ||
+               (head[0] == 0x4D && head[1] == 0x4D && head[2] == 0x00 && head[3] == 0x55);
+    }
+
+    /// <summary>
+    /// Print the metadata of the image an RW2 embeds, the way the reference merges it into the file's
+    /// own: rows of the embedded image are kept unless the container already holds that key, and the
+    /// container's PanasonicRaw directory never counts as holding one, because it names the raw data
+    /// rather than the embedded picture's tags. This is a rendering rule of the print, not a second
+    /// metadata view of the container: the library keeps the two apart in
+    /// <see cref="EmbeddedImageMetadata"/>.
+    /// </summary>
+    private static void MergeEmbedded(StreamWriter stdout, string path, long length, ExifMetadata? container)
+    {
+        if (!WithinBudget(length, stdout)) return;
+        EmbeddedImageMetadata? embedded = EmbeddedImageMetadata.Read(File.ReadAllBytes(path));
+        if (embedded?.Exif is not ExifMetadata exif) return;
+        var taken = new HashSet<ExifTagKey>();
+        if (container is not null)
+            foreach (ExifEntry entry in container.Entries)
+                if (entry.Key.Directory != ExifDirectoryKind.Ifd0)
+                    taken.Add(entry.Key);
+        foreach (ExifEntry entry in exif.Entries)
+            if (!taken.Contains(entry.Key))
+                Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
+                    TypeName(entry.Value), entry.Value.Count, Value(entry),
+                    ExifTags.Interpret(entry.Key, entry.Value));
+    }
+
     /// <summary>
     /// A JPEG, PNG, WebP, TIFF, PSD, BMFF, CR3 or JPEG XL file, read once through the entry point of
     /// the library and reported under the rules of this tool, which are older and differ by format.
@@ -229,7 +269,10 @@ internal static class Program
         }
         // In a CR3 the note is a box of its own, not the value of a tag: the reference prints no
         // rows for where it starts and how it is ordered.
-        Exif(file.Exif, stdout, noteRows: file.Format != MetadataFormat.Cr3);
+        bool panasonicRaw = file.Format == MetadataFormat.Tiff && IsRw2(path);
+        Exif(file.Exif, stdout, noteRows: file.Format != MetadataFormat.Cr3, panasonicRaw: panasonicRaw);
+        if (panasonicRaw)
+            MergeEmbedded(stdout, path, length, file.Exif);
         if (iptc is not null)
         {
             if (!othersInDetail) throw iptc;
@@ -408,13 +451,28 @@ internal static class Program
         Done(stdout);
     }
 
-    private static void Exif(ExifMetadata? metadata, StreamWriter stdout, bool noteRows = true)
+    private static void Exif(ExifMetadata? metadata, StreamWriter stdout, bool noteRows = true,
+        bool panasonicRaw = false)
     {
         if (metadata is null) return;
         foreach (ExifEntry entry in metadata.Entries)
+        {
+            // A Panasonic RW2's primary directory is the PanasonicRaw one: the reference prints its
+            // tags under that group, and only the ones its own PanasonicRaw table names. The Image
+            // group of an RW2 describes the image it embeds, which is merged in below.
+            if (panasonicRaw && entry.Key.Directory == ExifDirectoryKind.Ifd0)
+            {
+                if (!MetadataTagCatalog.TryGet(PanasonicRawGroup, entry.Key.TagId, out NumberedTagDefinition? raw) ||
+                    raw is null)
+                    continue;
+                Tag(stdout, "Exif.PanasonicRaw." + raw.Name, TypeName(entry.Value), entry.Value.Count,
+                    Value(entry), ExifTags.Interpret(entry.Key, entry.Value));
+                continue;
+            }
             Tag(stdout, "Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
                 TypeName(entry.Value), entry.Value.Count, Value(entry),
                 ExifTags.Interpret(entry.Key, entry.Value));
+        }
         // Image directories name their tags with the same vocabulary as the primary one, and only the
         // group says which directory the row was read from: the reference numbers a SubIFD list from
         // one and a directory chain from the second one, after the thumbnail directory.
