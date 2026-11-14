@@ -297,6 +297,8 @@ internal ref struct ExifTiffReader
     /// <summary>
     /// Queues the image directories a whole file names with tag 0x014A. The tag holds file offsets, one
     /// per picture, in the type its entry declares; an entry of another shape is left as an entry only.
+    /// A picture directory the payload does not hold, or one that was already read, is not followed: the
+    /// pictures are incidental to the metadata, exactly as the thumbnail is, and the entry stays.
     /// </summary>
     private void ScheduleSubImages(ExifValue value, int depth)
     {
@@ -316,8 +318,10 @@ internal ref struct ExifTiffReader
                     : BinaryPrimitives.ReadUInt16BigEndian(bytes.AsSpan(i * 2, 2)));
             if (at == 0)
                 continue; // A slot the file leaves empty is not a directory.
+            if (!CheckedRange.TryGetSpanRange(at, 2, data.Length, out _, out _))
+                continue; // The picture directory is not in the payload: there is nothing to list.
             if (!offsets.Add(at))
-                throw Error(MetadataErrorCode.InvalidExif, "An IFD offset is cyclic or shared.", at);
+                continue; // The offset names a directory this read already visited.
             if (offsets.Count > limits.MaxDirectories || depth > limits.MaxDirectoryDepth)
                 throw Error(MetadataErrorCode.LimitExceeded, "The directory traversal budget was exceeded.", at);
             pendingImages.Enqueue((at, subImages.Count + pendingImages.Count + 1));
