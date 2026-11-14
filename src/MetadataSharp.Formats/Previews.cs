@@ -175,12 +175,12 @@ internal ref struct PreviewScanner
         else if (data.Length >= 8 && data[..8].SequenceEqual("FUJIFILM"u8)) Raf();
         else if (IsJp2Header()) Jp2();
         else if (MetadataSharp.Formats.Pgf.PgfMetadata.HasSignature(data)) Pgf();
-        else if (IsTiffHeader()) Tiff(0, data.Length, data.Length >= 4 && data[2] == 0x55);
+        else if (IsTiffHeader()) Tiff(0, data.Length);
         else if (data.Length >= 4 && data[..4].SequenceEqual("8BPS"u8)) Psd();
         else if (data.Length >= 8 && data[0] == 0x89 && data.Slice(1, 3).SequenceEqual("PNG"u8)) Png();
         else if (data.Length >= 12 && data[..4].SequenceEqual("RIFF"u8) && data.Slice(8, 4).SequenceEqual("WEBP"u8)) WebP();
         else if (data.Length >= 12 && data.Slice(4, 4).SequenceEqual("ftyp"u8)) Bmff();
-        else if (data.Length >= 4 && (data[..4].SequenceEqual("IIRC"u8) || data[..4].SequenceEqual("MMCR"u8))) Tiff(0, data.Length, false);
+        else if (data.Length >= 4 && (data[..4].SequenceEqual("IIRC"u8) || data[..4].SequenceEqual("MMCR"u8))) Tiff(0, data.Length);
         else if (data.Length >= 11 && data[..11].SequenceEqual("%!PS-Adobe-"u8)) Eps();
         else if (data.Length >= 4 && data[..4].SequenceEqual(new byte[] { 0xC5, 0xD0, 0xD3, 0xC6 })) Eps();
         else if (LooksLikeXmp()) XmpThumbnail();
@@ -220,7 +220,7 @@ internal ref struct PreviewScanner
     private void Mrw()
     {
         (int start, int length) = MetadataSharp.Formats.Mrw.MrwMetadata.Locate(data);
-        Tiff(start, start + length, false);
+        Tiff(start, start + length);
     }
 
     private void Raf()
@@ -236,7 +236,7 @@ internal ref struct PreviewScanner
         if (metadata.TiffOffset is long tiff && metadata.TiffLength >= 8)
         {
             int start = checked((int)tiff);
-            Tiff(start, checked(start + (int)metadata.TiffLength), false);
+            Tiff(start, checked(start + (int)metadata.TiffLength));
         }
     }
 
@@ -299,7 +299,7 @@ internal ref struct PreviewScanner
                     int prefix = data.Slice(payload, end - payload).IndexOf("Exif\0\0"u8);
                     if (prefix >= 0) tiff = payload + prefix + 6;
                 }
-                if (HasTiffAt(tiff, end)) Tiff(tiff, end, false);
+                if (HasTiffAt(tiff, end)) Tiff(tiff, end);
             }
             at = end;
         }
@@ -506,7 +506,7 @@ internal ref struct PreviewScanner
             int payload = at + 4, end = at + 2 + length;
             if (marker == 0xE1 && end - payload >= 14 && data.Slice(payload, 6).SequenceEqual("Exif\0\0"u8))
             {
-                Tiff(payload + 6, end, false);
+                Tiff(payload + 6, end);
                 return;
             }
             at = end;
@@ -524,7 +524,7 @@ internal ref struct PreviewScanner
             int payload = at + 8, end = payload + (int)length;
             if (data.Slice(at + 4, 4).SequenceEqual("eXIf"u8))
             {
-                Tiff(payload, end, false);
+                Tiff(payload, end);
                 return;
             }
             if (data.Slice(at + 4, 4).SequenceEqual("iTXt"u8)) PngXmp(payload, end);
@@ -642,7 +642,7 @@ internal ref struct PreviewScanner
             {
                 // Some writers keep the JPEG identifier in front of the TIFF header.
                 if (end - payload >= 6 && data.Slice(payload, 6).SequenceEqual("Exif\0\0"u8)) payload += 6;
-                Tiff(payload, end, false);
+                Tiff(payload, end);
                 return;
             }
             long next = (long)end + (length & 1);
@@ -654,7 +654,7 @@ internal ref struct PreviewScanner
     // ---- TIFF ----
 
     // Keep Tiff focused on metadata and its format-specific validation contract.
-    private void Tiff(int origin, int end, bool panasonicRaw)
+    private void Tiff(int origin, int end)
     {
         if (origin < 0 || end > data.Length || end - origin < 8) return;
         bool little;
@@ -666,12 +666,12 @@ internal ref struct PreviewScanner
         for (int index = 0; index < 4 && next != 0; index++)
         {
             string group = index == 0 ? "Image" : index == 1 ? "Thumbnail" : "Image" + (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
-            next = ImageDirectory(frame, origin + next, group, index == 1, index == 0, panasonicRaw, 0);
+            next = ImageDirectory(frame, origin + next, group, index == 1, index == 0, 0);
         }
     }
 
     /// <summary>Read one image directory, list what it holds, and return the offset of the next one in its chain.</summary>
-    private long ImageDirectory(Frame frame, long position, string group, bool thumbnail, bool first, bool panasonicRaw, int depth)
+    private long ImageDirectory(Frame frame, long position, string group, bool thumbnail, bool first, int depth)
     {
         var entries = new List<Entry>();
         if (!Directory(frame, position, entries, out int tableEnd, out long next)) return 0;
@@ -696,9 +696,6 @@ internal ref struct PreviewScanner
 
         if (first)
         {
-            // RW2 keeps a complete JPEG in a field of its first directory.
-            if (panasonicRaw && Find(entries, 0x002E) is Entry embedded && (embedded.Type == 1 || embedded.Type == 7))
-                Jpeg(embedded.At, embedded.Count, "Exif.PanasonicRaw.PreviewImage", tableStart, tableEnd);
             string make = Text(Find(entries, 0x010F));
             long exif = Number(frame, entries, 0x8769);
             if (exif > 0) ExifDirectory(frame, frame.Origin + exif, make);
@@ -715,7 +712,7 @@ internal ref struct PreviewScanner
                 if (child <= 0) continue;
                 subImages++;
                 string name = "SubImage" + subImages.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                ImageDirectory(frame, frame.Origin + child, name, false, false, false, depth + 1);
+                ImageDirectory(frame, frame.Origin + child, name, false, false, depth + 1);
             }
         }
         return next;

@@ -571,6 +571,14 @@ public sealed class PreviewTests
     }
 
     [Fact]
+    public void UnrecognizedRw2RootBytesAreNotTreatedAsAPreview()
+    {
+        byte[] file = Fixture("b10", "owned-rw2-root24.rw2");
+
+        Assert.Empty(Previews.List(file));
+    }
+
+    [Fact]
     public void CrwPreviewAndThumbnailUseTheCiffRanges()
     {
         byte[] file = Fixture("b11", "owned-crw-preview-thumb.crw");
