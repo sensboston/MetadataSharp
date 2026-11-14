@@ -283,7 +283,8 @@ def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 60,
         def value(rows, key):
             for row in rows:
                 if row["key"] == key:
-                    return row["raw"]
+                    # The dump records the bytes and the reference the text it prints for them.
+                    return row.get("raw") or row.get("value", "")
             return ""
 
         lines.append(f"camera local={value(local_rows, 'Exif.Image.Make')!r}/{value(local_rows, 'Exif.Image.Model')!r} "

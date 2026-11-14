@@ -263,6 +263,12 @@ def _source_offsets(source: bytes, extracted: bytes, mime: str, width: int, heig
         if first_strip:
             return _find_all(source, first_strip)
     if mime == "image/jpeg":
+        # The reference repairs a thumbnail whose JPEG header is damaged by forcing its first byte to
+        # 0xFF before writing it out, so the bytes after that one, and only those, are the file's own.
+        if len(extracted) > 16 and extracted[0] == 0xFF:
+            repaired = [begin - 1 for begin in _find_all(source, extracted[1:]) if begin > 0]
+            if repaired:
+                return repaired
         # Photoshop EPS stores JPEG data as hexadecimal IRB data; XMP thumbnails use base64.
         start, end = 0, len(source)
         begin = source.find(b"%BeginPhotoshop:")

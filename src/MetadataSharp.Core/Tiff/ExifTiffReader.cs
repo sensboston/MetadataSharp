@@ -503,7 +503,9 @@ internal ref struct ExifTiffReader
             // They hold pictures, not EXIF: like SubIFDs they are listed and nothing in them is followed.
             if (wholeFile && kind == ExifDirectoryKind.Thumbnail)
             {
-                if (offsets.Add(next))
+                // A link the payload does not hold names no picture: it is neither read nor refused,
+                // exactly as an offset of a SubIFD list that lies outside it is not.
+                if (CheckedRange.TryGetSpanRange(next, 2, data.Length, out _, out _) && offsets.Add(next))
                     pendingImages.Enqueue((next, ++chainImages + 1, ExifSubImageKind.ImageDirectory));
                 return;
             }

@@ -116,12 +116,14 @@ public sealed class TiffSubImageTests
     [Fact]
     public void ASubIfdListAndAChainAreNumberedApart()
     {
+        // One picture named by a one-element SubIFD list, held inline, and two chained after the
+        // thumbnail directory: the list is numbered from one and the chain from the second picture.
         var file = new Sample(1024).Header();
-        file.Directory(8, 500, (ImageWidth, 4, 1, 32), (SubIfds, 4, 1, 64));
-        file.U32(64, 200);
+        file.Directory(8, 500, (ImageWidth, 4, 1, 32), (SubIfds, 4, 1, 200));
         file.Directory(200, 0, (ImageWidth, 4, 1, 8));
         file.Directory(500, 600, (ImageWidth, 4, 1, 16));
-        file.Directory(600, 0, (ImageWidth, 4, 1, 24));
+        file.Directory(600, 700, (ImageWidth, 4, 1, 24));
+        file.Directory(700, 0, (ImageWidth, 4, 1, 40));
 
         ExifMetadata metadata = TiffExif.Read(file.Bytes);
 
@@ -129,6 +131,8 @@ public sealed class TiffSubImageTests
         Assert.Equal(ExifSubImageKind.SubIfd, metadata.SubImages[0].Kind);
         Assert.Equal(ExifSubImageKind.ImageDirectory, metadata.SubImages[1].Kind);
         Assert.Equal(ExifSubImageKind.ImageDirectory, metadata.SubImages[2].Kind);
+        Assert.Equal(new uint[] { 8, 24, 40 },
+            metadata.SubImages.Select(image => image.Entries[0].Value.TryGetUInt32(out uint value) ? value : 0));
     }
 
     [Fact]
