@@ -105,7 +105,7 @@ class TagPrintProtocolTests(unittest.TestCase):
                           "detail": "a" * 160} for i in range(34)],
             "value_diff_by_key": [{"key": f"Exif.Photo.Tag{i}", "exiv2": "x", "metadatasharp": "y",
                                    "occurrences": i} for i in range(30)],
-            "description_alias_hits": [],
+            "display_rule_hits": [],
         }
         output = io.StringIO()
         with redirect_stdout(output):
@@ -113,7 +113,7 @@ class TagPrintProtocolTests(unittest.TestCase):
         lines = output.getvalue().splitlines()
         self.assertGreater(len(lines), 1)
         self.assertTrue(all(len(line) < 4000 for line in lines))
-        self.assertEqual(6, sum("refusals " in line for line in lines))
+        self.assertEqual(2, sum("refusals " in line for line in lines))
 
     def test_report_groups_text_only_differences_by_key_and_category(self) -> None:
         candidate = gate.corpus.Candidate("metering.jpg", Path("/tmp/metering.jpg"), "test")
@@ -123,8 +123,8 @@ class TagPrintProtocolTests(unittest.TestCase):
         with patch.object(gate, "_run_reference", return_value=(0, "Exif.Photo.MeteringMode Short 1 Multi-segment\n", "")):
             report = gate.build_report([candidate], [], dump)
         self.assertEqual([{"key": "Exif.Photo.MeteringMode", "exiv2": "Multi-segment", "metadatasharp": "Pattern",
-                           "occurrences": 1, "rule": gate._TAG_PRINT_DESCRIPTION_REASONS["Exif.Photo.MeteringMode"]}],
-                         report["description_alias_hits"])
+                           "occurrences": 1, "rule": gate._TAG_PRINT_DISPLAY_REASONS["Exif.Photo.MeteringMode"]}],
+                         report["display_rule_hits"])
         self.assertEqual([], report["mismatch_groups"])
 
 

@@ -62,10 +62,11 @@ IPTC or XMP, and it does not change the encoding used by metadata writers.
 Exiv2 0.28.9 `-pt` output for each available upstream corpus file. Synthetic upstream reference names
 without source media are individually listed with reasons. The exact `Exif.GPSInfo.GPSAltitudeRef`
 translation is also listed as a tag-level exception because the local table follows the expanded Exif
-3.0 wording while the pinned Exiv2 release predates that wording. Exact display-alias rules for
-`Exif.Photo.MeteringMode`, `Exif.Photo.ExposureProgram`, and `Exif.Photo.SensitivityType` are
-tracked once per key and applied only to enumerated text pairs; any other value for those keys still
-fails. These rules preserve the local vocabulary rather than copying Exiv2 descriptions. A vendor tag rendered only as an
+3.0 wording while the pinned Exiv2 release predates that wording. Exact display rules for
+`Exif.Photo.MeteringMode`, `Exif.Photo.ExposureProgram`, `Exif.Photo.SensitivityType`,
+`Exif.Image.CalibrationIlluminant1`, and `Exif.Image.CalibrationIlluminant2` are tracked once per key
+and applied only to the listed display pairs; any other value for those keys still fails. These rules
+preserve the local vocabulary and raw-code policy rather than copying Exiv2 descriptions. A vendor tag rendered only as an
 unknown numeric key (for example, `Exif.Canon.0x0019`) is not a named catalog entry; if the pinned
 reference does not print that key, the report lists it under `raw_only_tag_exceptions` instead of
 counting its fallback raw value as a named-table mismatch. This does not suppress unknown named keys,

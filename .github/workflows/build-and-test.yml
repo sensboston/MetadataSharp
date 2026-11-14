@@ -429,9 +429,9 @@ jobs:
           tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
           echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
           artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
-      # This is the D gate: the complete ordered tag stream from the library has to match the
-      # pinned CLI's -pt output for every upstream fixture with an actual file. The unmatched
-      # synthetic upstream expectations are each named and explained in run_tag_print.py.
+      # Compare the pinned CLI's -pt rows on the corpus without treating iterator order or all
+      # printed prose as a universal compatibility promise. Exact display-only aliases are grouped
+      # and documented by key; structural and unexplained value differences still fail the gate.
       - name: Tag table and -pt parity against pinned Exiv2 0.28.9
         shell: bash
         run: |

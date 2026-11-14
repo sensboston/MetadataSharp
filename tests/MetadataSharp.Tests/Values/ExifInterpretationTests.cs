@@ -198,14 +198,6 @@ public sealed class ExifInterpretationTests
         Assert.Equal(expected, ExifTags.Interpret(Interop(0x0002), value));
     }
 
-    [Theory]
-    [InlineData(0xC65A, 17, "Standard light A")]
-    [InlineData(0xC65B, 21, "D65")]
-    public void DngCalibrationIlluminantsUseTheExifLightSourceMeaningTable(ushort tag, ushort code, string expected)
-    {
-        Assert.Equal(expected, ExifTags.Interpret(Image(tag), Short(code)));
-    }
-
     [Fact]
     public void InvalidInteroperabilityVersionRemainsUninterpreted()
     {

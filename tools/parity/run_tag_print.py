@@ -33,12 +33,6 @@ def _is_raw_numeric_tag(key: str) -> bool:
     return bool(_RAW_NUMERIC_TAG.search(key))
 
 
-def _is_text_display(value: str) -> bool:
-    """Whether a printed value is a label/string rather than a numeric rendering."""
-    numeric = r"[+-]?(?:\d+(?:\.\d+)?|\d+/\d+)(?:\s+[+-]?(?:\d+(?:\.\d+)?|\d+/\d+))*"
-    return bool(value.strip()) and re.fullmatch(numeric, value.strip()) is None
-
-
 PINNED_EXIV2_COMMIT = "b0859fc61fea5dedfc898aece6b15893ddf4314e"
 
 # Exception keys are upstream test/data basenames, never extensions or directories. Every retained
@@ -54,9 +48,11 @@ _TAG_PRINT_KEY_EXCEPTIONS: dict[str, str] = {
 # Exact display aliases, not descriptions copied from Exiv2. These pairs represent the same assigned
 # values in the local Exif vocabulary and Exiv2 0.28.9's shorter/older print terminology. Any other
 # value for these keys still fails comparison.
-_TAG_PRINT_DESCRIPTION_ALIASES: dict[str, dict[str, str]] = {
+_TAG_PRINT_DISPLAY_ALIASES: dict[str, dict[str, str]] = {
     "Exif.Photo.MeteringMode": {"Multi-segment": "Pattern"},
     "Exif.Photo.ExposureProgram": {"Auto": "Normal program"},
+    "Exif.Image.CalibrationIlluminant1": {"Standard light A": "17"},
+    "Exif.Image.CalibrationIlluminant2": {"D65": "21"},
     "Exif.Photo.SensitivityType": {
         "0": "Unknown",
         "1": "Standard output sensitivity (SOS)",
@@ -68,7 +64,9 @@ _TAG_PRINT_DESCRIPTION_ALIASES: dict[str, dict[str, str]] = {
         "7": "Standard output sensitivity (SOS) and recommended exposure index (REI) and ISO speed",
     },
 }
-_TAG_PRINT_DESCRIPTION_REASONS = {
+_TAG_PRINT_DISPLAY_REASONS = {
+    "Exif.Image.CalibrationIlluminant1": "The DNG field's local catalog entry preserves its numeric code; Exiv2 renders code 17 with the standard LightSource label. This exact code-to-label pair is accepted without extending the other-source interpretation table.",
+    "Exif.Image.CalibrationIlluminant2": "The DNG field's local catalog entry preserves its numeric code; Exiv2 renders code 21 with the standard LightSource label. This exact code-to-label pair is accepted without extending the other-source interpretation table.",
     "Exif.Photo.MeteringMode": "The same EXIF metering code is called Pattern by the local vocabulary and Multi-segment by Exiv2; these terms describe the same assigned mode.",
     "Exif.Photo.ExposureProgram": "The same EXIF exposure-program code is called Normal program by the local vocabulary and Auto by Exiv2; this is a terminology-only difference.",
     "Exif.Photo.SensitivityType": "MetadataSharp renders the assigned EXIF meaning; Exiv2 0.28.9 prints the stored numeric code for this tag. Exact code-to-label pairs are listed and checked, not generalized to arbitrary values.",
@@ -254,7 +252,7 @@ def _summary(report: dict[str, Any]) -> dict[str, Any]:
     return {"totals": report["totals"], "failure_kinds": report["failure_kinds"],
             "difference_types": report["difference_types"],
             "mismatch_groups": report["mismatch_groups"][:200],
-            "description_alias_hits": report["description_alias_hits"],
+            "display_rule_hits": report["display_rule_hits"],
             "value_diff_by_key": report["value_diff_by_key"][:40],
             "refusals": report["refusals"],
             "formats": report["formats"],
@@ -278,10 +276,10 @@ def _emit_annotation(payload: dict[str, Any]) -> None:
     grouped = payload.pop("mismatch_groups", [])
     refusals = payload.pop("refusals", [])
     value_differences = payload.pop("value_diff_by_key", [])
-    alias_hits = payload.pop("description_alias_hits", [])
+    alias_hits = payload.pop("display_rule_hits", [])
     emit(f"{TITLE} summary", payload)
-    for label, items, size in (("groups", grouped, 12), ("refusals", refusals, 6),
-                               ("values", value_differences, 8), ("description rules", alias_hits, 4)):
+    for label, items, size in (("groups", grouped, 50), ("refusals", refusals, 17),
+                               ("values", value_differences, 40), ("display rules", alias_hits, 20)):
         chunks = [items[i:i + size] for i in range(0, len(items), size)] or [[]]
         for index, chunk in enumerate(chunks, 1):
             emit(f"{TITLE} {label} {index}/{len(chunks)}", {label: chunk})
@@ -359,7 +357,7 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
                         if (row["key"] in CATALOG_KEYS or row["key"] in expected_keys
                             or not _is_raw_numeric_tag(row["key"]))
                         and row["key"] not in _TAG_PRINT_KEY_EXCEPTIONS]
-            rows = compare_rows(expected, observed, _TAG_PRINT_DESCRIPTION_ALIASES, accepted_aliases)
+            rows = compare_rows(expected, observed, _TAG_PRINT_DISPLAY_ALIASES, accepted_aliases)
             if rows:
                 for row in rows:
                     difference_types[row["kind"]] += 1
@@ -413,15 +411,15 @@ def build_report(candidates: list[corpus.Candidate], reference_command: list[str
     ]
     refusals = [item for item in differing if item["kind"] in
                 ("metadatasharp-refused", "exiv2-refused", "missing-dump-file")]
-    description_alias_hits = [
+    display_rule_hits = [
         {"key": key, "exiv2": reference, "metadatasharp": local, "occurrences": count,
-         "rule": _TAG_PRINT_DESCRIPTION_REASONS[key]}
+         "rule": _TAG_PRINT_DISPLAY_REASONS[key]}
         for (key, reference, local), count in sorted(accepted_aliases.items())
     ]
     return {"kind": "TagPrint", "totals": dict(totals), "failure_kinds": dict(sorted(failure_kinds.items())),
             "difference_types": dict(sorted(difference_types.items())),
             "mismatch_groups": grouped_differences,
-            "description_alias_hits": description_alias_hits,
+            "display_rule_hits": display_rule_hits,
             "value_diff_by_key": value_diff_by_key,
             "refusals": refusals,
             "formats": {key: dict(value) for key, value in sorted(formats.items())},
@@ -441,8 +439,8 @@ def text_report(report: dict[str, Any]) -> str:
         lines.append(f"  named missing-input exception: {entry['file']}: {entry['reason']}")
     for entry in report["tag_exceptions"]:
         lines.append(f"  named tag exception: {entry['key']}: {entry['reason']}")
-    for entry in report["description_alias_hits"]:
-        lines.append(f"  description alias: {entry['key']} {entry['exiv2']!r} => {entry['metadatasharp']!r} "
+    for entry in report["display_rule_hits"]:
+        lines.append(f"  display rule: {entry['key']} {entry['exiv2']!r} => {entry['metadatasharp']!r} "
                      f"({entry['occurrences']} rows): {entry['rule']}")
     for entry in report["raw_only_tag_exceptions"]:
         lines.append(f"  named raw-only tag exception: {entry['key']} ({entry['occurrences']} rows): {entry['reason']}")

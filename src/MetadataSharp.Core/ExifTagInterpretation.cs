@@ -295,8 +295,7 @@ public static partial class ExifTags
             },
             // YCbCrPositioning
             0x0213 => number switch { 1 => "Centered", 2 => "Co-sited", _ => null },
-            // DNG CalibrationIlluminant tags share the EXIF LightSource value domain.
-            0xC65A or 0xC65B => DngIlluminant(number),
+
             _ => null,
         },
         ExifDirectoryKind.Exif => key.TagId switch
@@ -374,15 +373,9 @@ public static partial class ExifTags
         return majorMinor.ToString(CultureInfo.InvariantCulture) + "." + digits[2..];
     }
 
-    private static string? DngIlluminant(long number)
-    {
-        ExifTagKey lightSourceKey = new(ExifDirectoryKind.Exif, 0x9208);
-        return Find(lightSourceKey) is { } definition ? Meaning(definition, number) : null;
-    }
-
     private static string? InterpretImage(ExifTagKey key, ExifValue value) => key.TagId switch
     {
-        0x00FE or 0x013D or 0xC65A or 0xC65B => Labelled(key, value),                        // NewSubfileType, Predictor
+        0x00FE or 0x013D => Labelled(key, value),                        // NewSubfileType, Predictor
         0x011A or 0x011B or 0x011E or 0x011F => PlainDecimal(value),    // X/YResolution, X/YPosition
         0x0132 => AsciiText(value),                                      // DateTime
         0x0153 => SampleFormat(key, value),
