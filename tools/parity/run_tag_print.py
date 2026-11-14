@@ -519,9 +519,17 @@ def _emit_annotation(payload: dict[str, Any]) -> None:
     def emit(title: str, part: dict[str, Any]) -> None:
         raw = json.dumps(part, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
         encoded = base64.b64encode(zlib.compress(raw)).decode("ascii")
-        if len(encoded) > 3500:
+        if len(encoded) <= 3500:
+            print(f"::notice title={title}::{encoded}")
+            return
+        # A failing run is exactly when the report is large, so an oversized payload is halved
+        # rather than dropped: losing it leaves the failure unexplained.
+        keys = list(part)
+        if len(keys) < 2:
             raise TagPrintError(f"annotation payload too large for {title}: {len(encoded)} characters")
-        print(f"::notice title={title}::{encoded}")
+        half = len(keys) // 2
+        emit(f"{title} 1/2", {key: part[key] for key in keys[:half]})
+        emit(f"{title} 2/2", {key: part[key] for key in keys[half:]})
 
     grouped = payload.pop("mismatch_groups", [])
     refusals = payload.pop("refusals", [])

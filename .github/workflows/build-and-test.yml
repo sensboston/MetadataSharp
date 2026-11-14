@@ -918,6 +918,7 @@ jobs:
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP" \
             --fixtures artifacts/parity/raw-corpus --out artifacts/parity/raw-tag-print --annotate
       - name: Preview parity on the RAW corpus
+        if: always()
         shell: bash
         run: |
           python tools/parity/run_previews.py \
@@ -925,6 +926,7 @@ jobs:
             --dump-command "$DUMP" --fixtures artifacts/parity/raw-corpus \
             --out artifacts/parity/raw-preview --annotate --title 'PARITY RAW preview'
       - name: MakerNote edit and copy parity on the RAW corpus
+        if: always()
         shell: bash
         run: |
           python tools/reference/makernote_parity.py artifacts/parity/raw-corpus artifacts/parity/raw-makernote \

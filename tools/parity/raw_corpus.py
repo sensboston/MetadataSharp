@@ -216,13 +216,20 @@ def pin(destination: Path, write: bool = False, document: dict | None = None,
 
 
 def annotate(outcomes: dict) -> None:
-    """Print what a workflow run needs: the pin of each file, and every failure as an error."""
-    for item in outcomes["files"]:
-        if item.get("sha256"):
-            print(f"::notice title=raw corpus {item['status']}::{item['name']} bytes={item['bytes']} "
-                  f"sha256={item['sha256']} camera={item['camera']}")
-        if item["status"] in ("failed", "mismatch"):
-            print(f"::error title=raw corpus {item['status']}::{item['name']} {item.get('detail', '')}")
+    """Print what a workflow run needs: the pin of every file in one notice, failures as errors.
+
+    The pins share one annotation because a step is allowed only about ten of them, and a run that
+    cannot report all 23 pins at once cannot be pinned from its own output.
+    """
+    lines = [f"{item['name']} {item['bytes']} {item['sha256']} ({item['status']})"
+             for item in outcomes["files"] if item.get("sha256")]
+    if lines:
+        print("::notice title=raw corpus pins::" + "\n".join(lines))
+    failures = [item for item in outcomes["files"] if item["status"] in ("failed", "mismatch")]
+    for item in failures[:10]:
+        print(f"::error title=raw corpus {item['status']}::{item['name']} {item.get('detail', '')}")
+    if len(failures) > 10:
+        print(f"::error title=raw corpus::{len(failures) - 10} further files failed; see download.json")
 
 
 def describe(outcomes: dict) -> str:
