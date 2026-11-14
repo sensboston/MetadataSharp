@@ -384,11 +384,19 @@ internal static class Program
     {
         if (!WithinBudget(length, stdout)) return;
         Jp2Metadata metadata = Jp2Metadata.Read(File.ReadAllBytes(path));
-        for (int i = 0; i < metadata.XmlBoxCount; i++)
-        {
-            byte[] box = metadata.GetXmlBox(i);
-            if (box.AsSpan().StartsWith("<?xpacket"u8) || box.AsSpan().StartsWith("<?xml"u8)) Xmp(XmpPacket.Parse(box), stdout);
-        }
+        Exif(metadata.Exif, stdout);
+        if (metadata.Iptc is IptcPacket iptc) Iptc(iptc, stdout);
+        if (metadata.Xmp is XmpPacket packet) Xmp(packet, stdout);
+        else
+            for (int i = 0; i < metadata.XmlBoxCount; i++)
+            {
+                byte[] box = metadata.GetXmlBox(i);
+                if (box.AsSpan().StartsWith("<?xpacket"u8) || box.AsSpan().StartsWith("<?xml"u8))
+                {
+                    Xmp(XmpPacket.Parse(box), stdout);
+                    break;
+                }
+            }
         Done(stdout);
     }
 
