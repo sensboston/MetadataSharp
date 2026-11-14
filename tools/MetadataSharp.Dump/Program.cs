@@ -323,16 +323,16 @@ internal static class Program
             // address the file holds a stream at: the number a scan that lists nothing was given.
             if (exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0201), out ExifEntry? at) &&
                 exif.TryGetEntry(new ExifTagKey(ExifDirectoryKind.Thumbnail, 0x0202), out ExifEntry? size) &&
-                long.TryParse(Value(at), NumberStyles.Integer, CultureInfo.InvariantCulture, out long offset) &&
-                long.TryParse(Value(size), NumberStyles.Integer, CultureInfo.InvariantCulture, out long length))
+                long.TryParse(Value(at), NumberStyles.Integer, CultureInfo.InvariantCulture, out long thumbAt) &&
+                long.TryParse(Value(size), NumberStyles.Integer, CultureInfo.InvariantCulture, out long thumbLength))
             {
                 PreviewImage? picture = Previews.List(file)
                     .FirstOrDefault(found => found.Source == "Exif.PanasonicRaw.PreviewImage");
-                bool inFile = offset >= 0 && offset + 2 <= file.Length && file[offset] == 0xFF && file[offset + 1] == 0xD8;
-                bool inPicture = picture is not null && offset >= 0 && picture.Offset + offset + 2 <= file.Length &&
-                    file[picture.Offset + offset] == 0xFF && file[picture.Offset + offset + 1] == 0xD8;
-                token += " thumb=" + offset.ToString(CultureInfo.InvariantCulture) + "/" +
-                    length.ToString(CultureInfo.InvariantCulture) + " file=" + (inFile ? "yes" : "no") +
+                bool inFile = thumbAt >= 0 && thumbAt + 2 <= file.Length && file[thumbAt] == 0xFF && file[thumbAt + 1] == 0xD8;
+                bool inPicture = picture is not null && thumbAt >= 0 && picture.Offset + thumbAt + 2 <= file.Length &&
+                    file[picture.Offset + thumbAt] == 0xFF && file[picture.Offset + thumbAt + 1] == 0xD8;
+                token += " thumb=" + thumbAt.ToString(CultureInfo.InvariantCulture) + "/" +
+                    thumbLength.ToString(CultureInfo.InvariantCulture) + " file=" + (inFile ? "yes" : "no") +
                     " picture=" + (inPicture ? "yes" : "no");
             }
             return token;
