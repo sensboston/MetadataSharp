@@ -13,9 +13,12 @@ text that was written.
 only (``app/actions.cpp``, ``FixCom::run``): the comment is read in that set, converted to UCS-2 and
 written back. Printing does not consult it - ``CommentValue::write`` sniffs a byte-order mark and
 otherwise assumes the file's own byte order (``src/value.cpp``, ``detectCharset``). So the gate
-asks the pinned tool to do what ``-n`` does: ``exiv2 -n <name> fc`` on a copy of the file, then
-``-PEkv`` of the copy, whose comment must be the text this library reads. The title is compared
-through the tool's translated print, ``-PEkt``, which is where its ``printUcs2`` runs.
+asks the pinned tool to do what ``-n`` does - ``exiv2 -v -n <name> fc`` on a copy of the file - and
+reads the text it converted out of the action's own verbose line, ``Setting Exif UNICODE user comment
+to "..."``. That text has to be the text this library reads. (The copy is written back by the tool,
+and 0.28.9 writes the converted value as UCS-2 in big-endian order whatever the file is, so the copy
+is only read for that line and thrown away.) The title is compared through the tool's translated
+print, ``-PEkt``, which is where its ``printUcs2`` runs.
 
 A round-trip row (``written``) must read back as it was written. ``-n`` is behind Exiv2's optional
 iconv support: when the pinned build cannot convert, the run says so in a notice, compares no text
@@ -54,9 +57,16 @@ def printed(exiv2, path, flags="-PEkv", runner=run):
     return values, code, errors
 
 
-def comment_text(printed_value: str) -> str:
-    """The text of a comment line: the tool puts the character set it read in front of it."""
-    return printed_value.split(" ", 1)[1] if printed_value.startswith("charset=") else printed_value
+SETTING = "Setting Exif UNICODE user comment to"
+
+
+def converted(exiv2, path, charset, runner=run):
+    """The text the tool reads out of the comment in the named character set, and its exit and errors."""
+    code, output, errors = runner([exiv2, "-v", "-n", charset, "fc", str(path)])
+    for line in output.splitlines():
+        if SETTING in line:
+            return line.split(SETTING, 1)[1].strip().strip('"'), code, errors
+    return None, code, errors
 
 
 def compare(argv=None, runner=run) -> int:
@@ -113,27 +123,19 @@ def compare(argv=None, runner=run) -> int:
         path = work / name
         # What -n does in the reference: the comment is read in that character set and written back
         # as UCS-2, so the tool's own print of the result is the statement being compared.
-        converted = work / (name + ".fc.jpg")
-        shutil.copyfile(path, converted)
-        convert_code, _, convert_errors = runner([args.exiv2, "-n", charset, "fc", str(converted)])
-        if convert_code != 0 and NO_ICONV in (convert_errors or ""):
-            iconv_missing = True
-            converted.unlink(missing_ok=True)
-            break
-        if convert_code != 0:
-            failures.append(f"{name} ({charset}): the tool's -n {charset} fc failed (exit {convert_code}): "
-                            f"{(convert_errors or '').strip()[:300]}")
-            converted.unlink(missing_ok=True)
+        copy = work / (name + ".fc.jpg")
+        shutil.copyfile(path, copy)
+        tool_text, convert_code, convert_errors = converted(args.exiv2, copy, charset, runner)
+        copy.unlink(missing_ok=True)
+        if tool_text is None:
+            if NO_ICONV in (convert_errors or ""):
+                iconv_missing = True
+                break
+            failures.append(f"{name} ({charset}): the tool converted no comment in that character set "
+                            f"(exit {convert_code}): {((convert_errors or '') + ('' if convert_errors else '')).strip()[:300]}")
             continue
-        tool, tool_code, tool_errors = printed(args.exiv2, converted, "-PEkv", runner)
-        converted.unlink(missing_ok=True)
-        if tool_code != 0:
-            failures.append(f"{name}: the tool failed (exit {tool_code}): {(tool_errors or '').strip()[:300]}")
-            continue
-        if COMMENT not in tool:
-            failures.append(f"{name}: the tool does not print {COMMENT}")
-        elif comment_text(tool[COMMENT]) != values.get(COMMENT, ""):
-            failures.append(f"{name} ({charset}): the tool prints {comment_text(tool[COMMENT])!r}, "
+        if tool_text != values.get(COMMENT, ""):
+            failures.append(f"{name} ({charset}): the tool reads {tool_text!r}, "
                             f"this library {values.get(COMMENT)!r}")
             counts["comment differs"] += 1
         else:

@@ -144,9 +144,11 @@ is in.)
 
 `tools/reference/run_charset.py` writes one JPEG for every entry of the matrix - a `UNICODE`
 `UserComment` whose body is the text in that code page, and an `XPTitle` in text that stresses it -
-and asks the pinned Exiv2 to make the same statement the name makes: `exiv2 -n <name> fc` on a copy
-converts the comment from that code page to UCS-2, and the tool's print of the copy has to be the
-text this library reads. The title is compared through the tool's translated print (`-PEkt`), where
+and asks the pinned Exiv2 to make the same statement the name makes: `exiv2 -v -n <name> fc` on a
+copy converts the comment from that code page, and the text the tool says it converted
+(`Setting Exif UNICODE user comment to "..."`) has to be the text this library reads. The copy is
+thrown away: 0.28.9 writes the converted value in big-endian UCS-2 whatever the file's order is
+(`CommentValue::read`, `src/value.cpp`), so its own print of the result is not what is compared. The title is compared through the tool's translated print (`-PEkt`), where
 its `printUcs2` runs. A comment or title the tool reads differently fails the job, and so does a text
 this library cannot read back with the character set it was written in. The conversion is iconv, an
 optional dependency of the reference: a build without it says so in the gate's notice instead of

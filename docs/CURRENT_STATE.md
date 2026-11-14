@@ -41,7 +41,8 @@ Updated 2026-11-14. Rules: `METADATASHARP_PROMPT.md`. History: `docs/archive/` (
   print sniffs a byte-order mark and otherwise assumes the file's byte order - which is what a null
   name does here. `MetadataTextTests` (30 tests) covers the matrix, its refusals and both writers;
   `tools/reference/run_charset.py` writes one fixture per charset, has the pinned binary convert it
-  with `-n <name> fc`, and compares the tool's print of the result with what this library reads.
+  with `-v -n <name> fc`, and compares the text the tool reports converting with what this library
+  reads.
 - Tag keys (PR "keys"): `tools/parity/run_key_catalog.py` reads every tag table of the pinned
   checkout (6 537 keys in 124 groups) and finds none missing from `tag-catalog-data.json`, one
   local-only key (`Exif.Fujifilm.Sharpness`) and no differing numbers; `tests/parity/test_key_catalog.py`
