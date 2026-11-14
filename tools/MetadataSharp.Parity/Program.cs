@@ -124,8 +124,10 @@ internal static class Program
                         .Replace("\r", "%0D", StringComparison.Ordinal)
                         .Replace("\n", "%0A", StringComparison.Ordinal);
                     Console.Error.WriteLine($"::error title=MakerNote parity gate::{detail}");
+                    if (options.Gaps) EmitGapNotices(report, GateGroups(report, options));
                     return 1;
                 }
+                if (options.Gaps) EmitGapNotices(report, GateGroups(report, options));
             }
             return 0;
         }
@@ -632,6 +634,65 @@ internal static class Program
         }
     }
 
+    // The groups a gate run covers: those asked for, and with --require-all-maker-notes every group a
+    // note or a field of one is reported under.
+    private static List<string> GateGroups(Report report, Options options)
+    {
+        List<string> groups = options.RequiredGroups.Distinct(StringComparer.Ordinal).ToList();
+        if (options.RequireAllMakerNotes)
+            groups.AddRange(report.ByFamily.Keys.Union(report.Interpreted.ByFamily.Keys, StringComparer.Ordinal)
+                .Where(g => g.StartsWith("Exif.", StringComparison.Ordinal) && !StandardExif.Contains(g) && !SubImage.IsMatch(g))
+                .Except(groups, StringComparer.Ordinal).Order(StringComparer.Ordinal));
+        return groups;
+    }
+
+    // One notice per group with every row that is no parity, compressed: the log of a job is not always
+    // at hand, and a list of what remains is what the work on it is done from.
+    private static void EmitGapNotices(Report report, List<string> groups)
+    {
+        foreach (string group in groups)
+        {
+            var gaps = new SortedDictionary<string, (string Kind, string Ours, string Theirs, int Files)>(StringComparer.Ordinal);
+            foreach (FileReport file in report.PerFile)
+            {
+                if (file.RowsDropped > 0) continue;
+                foreach (ParityRow row in file.Rows)
+                {
+                    if (!row.Key.StartsWith(group + ".", StringComparison.Ordinal)) continue;
+                    string? kind = row.Outcome switch
+                    {
+                        ExtraKey => OpaqueTag.IsMatch(row.Key) || RawExtras.ContainsKey(row.Key) ? null : "raw-extra",
+                        NotRead => "not-read",
+                        MissingKey or ValueDiff or MatchKey => "raw-" + row.Outcome,
+                        _ => null
+                    };
+                    if (row.Translated && row.Interpreted != MatchInterpreted)
+                        kind = row.Interpreted is null or NotInterpreted ? "not-interpreted" : InterpretedDiff;
+                    if (kind is null) continue;
+                    if (InterpretationAllowances.ContainsKey(row.Key)) kind = "allowed: " + kind;
+                    string signature = kind + "\t" + (row.OurInterpreted ?? "") + "\t" + (row.TheirInterpreted ?? "");
+                    (string Kind, string Ours, string Theirs, int Files) held =
+                        gaps.TryGetValue(row.Key + "|" + signature, out var existing) ? existing : (kind, row.OurInterpreted ?? "", row.TheirInterpreted ?? "", 0);
+                    gaps[row.Key + "|" + signature] = (held.Kind, held.Ours, held.Theirs, held.Files + 1);
+                }
+            }
+            if (gaps.Count == 0) continue;
+            var payload = gaps.Select(pair => new
+            {
+                key = pair.Key[..pair.Key.IndexOf('|')],
+                kind = pair.Value.Kind,
+                ours = pair.Value.Ours,
+                exiv2 = pair.Value.Theirs,
+                files = pair.Value.Files
+            }).ToList();
+            string json = JsonSerializer.Serialize(payload, JsonOptions);
+            using var buffer = new MemoryStream();
+            using (var zlib = new ZLibStream(buffer, CompressionLevel.SmallestSize, leaveOpen: true))
+                zlib.Write(Encoding.UTF8.GetBytes(json));
+            Console.WriteLine($"::notice title=MakerNote gaps {group}::{Convert.ToBase64String(buffer.ToArray())}");
+        }
+    }
+
     // Enforce the MakerNote coverage threshold and report the attribution for unread entries.
     private static (bool Pass, string Text) MakerNoteGate(Report report, List<string> required, bool all, bool inventory)
     {
@@ -828,6 +889,7 @@ internal static class Program
         public bool RequireReferenceTags { get; private set; }
         public bool Inventory { get; private set; }
         public bool RequireAllMakerNotes { get; private set; }
+        public bool Gaps { get; private set; }
         public List<string> RequiredGroups { get; } = [];
         public string? CompareReport { get; private set; }
         // Parse command-line switches once and reject incompatible or incomplete option combinations.
@@ -849,6 +911,7 @@ internal static class Program
                     case "--require-reference-tags": result.RequireReferenceTags = true; break;
                     case "--inventory": result.Inventory = true; break;
                     case "--require-all-maker-notes": result.RequireAllMakerNotes = true; break;
+                    case "--gaps": result.Gaps = true; break;
                     case "--require": result.RequiredGroups.Add(Value()); break;
                     case "--compare-report": result.CompareReport = Value(); break;
                     case "--annotate": break;

@@ -21,9 +21,11 @@ using MetadataSharp.Formats.Tiff;
 //   STATUS  ok | refused | not-attempted | error  <detail>
 // The sixth TAG field is optional. It is what the library makes of the value - ExifTags.Interpret for
 // the standard EXIF directories, MakerNote.Interpret for MakerNote tags and their fields, and
-// IptcDatasetNames.Interpret for IPTC datasets - and it is empty where that is null. A record without
-// the field says no interpretation is offered for the tag at all, which is the case for XMP records
-// and for the elements of an array nested in a MakerNote sub-directory.
+// IptcDatasetNames.Interpret for IPTC datasets - and it is empty where that is null: an EXIF or
+// MakerNote row always states the field, since the comparison of interpreted values has to see that
+// nothing was made of a value the reference renders as text. A record without the field says no
+// interpretation is offered for the tag at all, which is the case for XMP records and for the
+// elements of an array nested in a MakerNote sub-directory.
 // A file whose reader refused or was not attempted simply carries no TAG records. A JPEG, PNG, TIFF or PSD
 // that was read, with one kind of its metadata refused, is ok with the detail exif-refused:<code>,
 // iptc-refused:<code> or xmp-refused:<code>, several of them separated by commas.
@@ -564,12 +566,12 @@ internal static class Program
                     raw is null)
                     continue;
                 Row("Exif.PanasonicRaw." + raw.Name, TypeName(entry.Value), entry.Value.Count,
-                    Value(entry), ExifTags.Interpret(entry.Key, entry.Value));
+                    Value(entry), ExifTags.Interpret(entry.Key, entry.Value) ?? string.Empty);
                 continue;
             }
             Row("Exif." + Group(entry.Key.Directory) + "." + Name(entry.Key),
                 TypeName(entry.Value), entry.Value.Count, Value(entry),
-                ExifTags.Interpret(entry.Key, entry.Value));
+                ExifTags.Interpret(entry.Key, entry.Value) ?? string.Empty);
         }
         // Image directories name their tags with the same vocabulary as the primary one, and only the
         // group says which directory the row was read from: the reference numbers a SubIFD list from
@@ -585,7 +587,7 @@ internal static class Program
             foreach (ExifEntry entry in image.Entries)
                 Row("Exif." + imageGroup + "." + Name(entry.Key, imageGroup),
                     TypeName(entry.Value), entry.Value.Count, Value(entry),
-                    ExifTags.Interpret(entry.Key, entry.Value));
+                    ExifTags.Interpret(entry.Key, entry.Value) ?? string.Empty);
         }
         if (metadata.MakerNote is MakerNote makerNote && ReferenceAttributesNote(metadata))
         {
@@ -622,7 +624,7 @@ internal static class Program
                         makerNote.Format == MakerNoteFormat.Canon && entry.TagId == 0x0026;
                     if (keepParent)
                         Row("Exif." + group + "." + entry.Name, TypeName(entry.Value), entry.Value.Count, MakerNoteValue(makerNote, entry),
-                            makerNote.InterpretForModel(entry, cameraModel));
+                            makerNote.InterpretForModel(entry, cameraModel) ?? string.Empty);
                     string fieldGroup = olympusIfd ? OlympusGroup(entry.TagId)
                         : nikonPreview ? "NikonPreview"
                         : sonyMinolta ? "SonyMinolta"
@@ -644,7 +646,7 @@ internal static class Program
                             entry.Value.CopyRawTo(array);
                             Row("Exif.NikonVr." + field.Name, "Byte", 3,
                                 string.Join(' ', array[4..7].Select(b => b.ToString(CultureInfo.InvariantCulture))),
-                                makerNote.InterpretFieldForModel(entry, field, cameraModel));
+                                makerNote.InterpretFieldForModel(entry, field, cameraModel) ?? string.Empty);
                             continue;
                         }
                         // An entry of a sub-directory that is itself a split array: its elements only,
@@ -659,12 +661,12 @@ internal static class Program
                         }
                         Row("Exif." + fieldGroup + "." + field.Name,
                             TypeName(field.Value.FieldType), field.Value.Count, Render(field.Value),
-                            makerNote.InterpretFieldForModel(entry, field, cameraModel));
+                            makerNote.InterpretFieldForModel(entry, field, cameraModel) ?? string.Empty);
                     }
                     continue;
                 }
                 Row("Exif." + group + "." + (entry.Name ?? "0x" + entry.TagId.ToString("x4", CultureInfo.InvariantCulture)),
-                    TypeName(entry.Value), entry.Value.Count, MakerNoteValue(makerNote, entry), makerNote.InterpretForModel(entry, cameraModel));
+                    TypeName(entry.Value), entry.Value.Count, MakerNoteValue(makerNote, entry), makerNote.InterpretForModel(entry, cameraModel) ?? string.Empty);
             }
         }
     }
