@@ -10,8 +10,8 @@ namespace MetadataSharp.Core.Xmp;
 /// The reference tool prints a property it knows an EXIF counterpart for with that tag's own reading,
 /// after converting the text: <c>Xmp.exif.FNumber</c> holding <c>5/1</c> reads <c>F5</c>, and
 /// <c>Xmp.tiff.Orientation</c> holding <c>1</c> reads <c>top, left</c>. The conversion is the one
-/// <see cref="MetadataSync.XmpToExif"/> makes, and the reading is what
-/// <see cref="ExifTags.Interpret"/> makes of the tag the value lands in.
+/// <see cref="MetadataSync.XmpToExif"/> makes, and the reading is what <c>ExifTags.Interpret</c>
+/// makes of the tag the value lands in.
 /// </para>
 /// <para>
 /// A property with no counterpart in EXIF, a structure, an array of structures, and a value the
@@ -25,6 +25,7 @@ public static class XmpTags
     // name one property, the table's last row is the one the conversion reads and writes.
     private static readonly Dictionary<string, ExifXmpMapping> ByPath = Build();
 
+    // The table by the path an entry is printed under, so one lookup serves every row of a packet.
     private static Dictionary<string, ExifXmpMapping> Build()
     {
         Dictionary<string, ExifXmpMapping> table = new(StringComparer.Ordinal);
@@ -42,7 +43,7 @@ public static class XmpTags
         // A structure and an array whose items are not plain text hold no value of their own.
         if (entry.HasChildEntries) return null;
         // A field of a structure, an item of one and a qualifier are not properties of their own.
-        if (entry.Path.Contains('/', StringComparison.Ordinal) || entry.Path.Contains('[', StringComparison.Ordinal))
+        if (entry.Path.Contains("/", StringComparison.Ordinal) || entry.Path.Contains("[", StringComparison.Ordinal))
             return null;
         if (!ByPath.TryGetValue("Xmp." + entry.Prefix + "." + entry.Path, out ExifXmpMapping? mapping)) return null;
         string[] items = Items(entry);
@@ -52,13 +53,11 @@ public static class XmpTags
         {
             SyncExif.Write(edit, mapping, items, existing: null);
         }
-        catch (ArgumentException)
+        catch (Exception error) when (error is ArgumentException or FormatException or OverflowException or MetadataException)
         {
-            return null; // The text is not a value the EXIF tag can hold; the packet's text is all there is.
-        }
-        catch (MetadataException)
-        {
-            return null; // The tag is not one an edit may place.
+            // The text is not a value the tag can hold, or the tag is not one an edit may place:
+            // the packet's text is all there is, and no reading is made of it.
+            return null;
         }
         if (!edit.Snapshot().Changes.TryGetValue(mapping.Tag, out ExifValue? value) || value is null) return null;
         return ExifTags.Interpret(mapping.Tag, value);
