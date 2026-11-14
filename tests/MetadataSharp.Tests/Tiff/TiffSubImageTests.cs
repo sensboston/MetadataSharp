@@ -85,6 +85,52 @@ public sealed class TiffSubImageTests
         Assert.True(metadata.IsEditable);
     }
 
+    // A chain of picture directories: the primary directory's next link is the thumbnail one, and the
+    // directories after it are pictures, as Canon CR2 and Pentax PEF keep them.
+    private static Sample ChainedImages()
+    {
+        var file = new Sample(1024).Header();
+        file.Directory(8, 200, (ImageWidth, 4, 1, 32));
+        file.Directory(200, 300, (Compression, 3, 1, 1));
+        file.Directory(300, 400, (ImageWidth, 4, 1, 64));
+        file.Directory(400, 0, (ImageWidth, 4, 1, 16));
+        return file;
+    }
+
+    [Fact]
+    public void PictureDirectoriesChainedAfterTheThumbnailAreListedAsImageDirectories()
+    {
+        ExifMetadata metadata = TiffExif.Read(ChainedImages().Bytes);
+
+        // The reference numbers a chain from the second directory, after the thumbnail one.
+        Assert.Equal(new[] { 2, 3 }, metadata.SubImages.Select(image => image.Index));
+        Assert.All(metadata.SubImages, image => Assert.Equal(ExifSubImageKind.ImageDirectory, image.Kind));
+        Assert.Equal(64u, metadata.SubImages[0].Entries[0].Value.TryGetUInt32(out uint raw) ? raw : 0);
+        Assert.Equal(16u, metadata.SubImages[1].Entries[0].Value.TryGetUInt32(out uint reduced) ? reduced : 0);
+        // The chain is not metadata: the primary directory and the thumbnail one are.
+        Assert.Equal(2, metadata.Entries.Count);
+        Assert.Contains(metadata.Entries,
+            entry => entry.Key == new ExifTagKey(ExifDirectoryKind.Thumbnail, Compression));
+    }
+
+    [Fact]
+    public void ASubIfdListAndAChainAreNumberedApart()
+    {
+        var file = new Sample(1024).Header();
+        file.Directory(8, 500, (ImageWidth, 4, 1, 32), (SubIfds, 4, 1, 64));
+        file.U32(64, 200);
+        file.Directory(200, 0, (ImageWidth, 4, 1, 8));
+        file.Directory(500, 600, (ImageWidth, 4, 1, 16));
+        file.Directory(600, 0, (ImageWidth, 4, 1, 24));
+
+        ExifMetadata metadata = TiffExif.Read(file.Bytes);
+
+        Assert.Equal(new[] { 1, 2, 3 }, metadata.SubImages.Select(image => image.Index));
+        Assert.Equal(ExifSubImageKind.SubIfd, metadata.SubImages[0].Kind);
+        Assert.Equal(ExifSubImageKind.ImageDirectory, metadata.SubImages[1].Kind);
+        Assert.Equal(ExifSubImageKind.ImageDirectory, metadata.SubImages[2].Kind);
+    }
+
     [Fact]
     public void AnEmptySubIfdSlotIsNotADirectory()
     {

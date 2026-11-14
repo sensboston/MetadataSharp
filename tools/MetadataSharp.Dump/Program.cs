@@ -416,10 +416,12 @@ internal static class Program
                 TypeName(entry.Value), entry.Value.Count, Value(entry),
                 ExifTags.Interpret(entry.Key, entry.Value));
         // Image directories name their tags with the same vocabulary as the primary one, and only the
-        // group says which directory the row was read from.
+        // group says which directory the row was read from: the reference numbers a SubIFD list from
+        // one and a directory chain from the second one, after the thumbnail directory.
         foreach (ExifSubImage image in metadata.SubImages)
         {
-            string imageGroup = "SubImage" + image.Index.ToString(CultureInfo.InvariantCulture);
+            string imageGroup = (image.Kind == ExifSubImageKind.ImageDirectory ? "Image" : "SubImage") +
+                image.Index.ToString(CultureInfo.InvariantCulture);
             foreach (ExifEntry entry in image.Entries)
                 Tag(stdout, "Exif." + imageGroup + "." + Name(entry.Key, imageGroup),
                     TypeName(entry.Value), entry.Value.Count, Value(entry),

@@ -31,7 +31,9 @@ internal ref struct ExifTiffReader
     private readonly List<ExifDirectoryKind> directories;
     // Image directories named by tag 0x014A are listed for reading only, never merged into the entries.
     private readonly List<ExifSubImage> subImages;
-    private readonly Queue<(uint Offset, int Index)> pendingImages;
+    private int subIfdImages;
+    private int chainImages;
+    private readonly Queue<(uint Offset, int Index, bool Chain)> pendingImages;
     private readonly List<(int Start, int Length)> ranges;
     // Breadth-first worklist avoids recursion and carries each directory role and depth into validation.
     private readonly Queue<(uint Offset, ExifDirectoryKind Kind, int Depth)> pending;
@@ -234,7 +236,7 @@ internal ref struct ExifTiffReader
         while (pendingImages.Count != 0)
         {
             var item = pendingImages.Dequeue();
-            ReadSubImage(item.Offset, item.Index);
+            ReadSubImage(item.Offset, item.Index, item.Chain);
         }
         // A read-only result is never planned for writing, so its picture is not taken out either.
         byte[]? thumbnail = readOnly ? null : ReadThumbnail();
@@ -324,7 +326,7 @@ internal ref struct ExifTiffReader
                 continue; // The offset names a directory this read already visited.
             if (offsets.Count > limits.MaxDirectories || depth > limits.MaxDirectoryDepth)
                 throw Error(MetadataErrorCode.LimitExceeded, "The directory traversal budget was exceeded.", at);
-            pendingImages.Enqueue((at, subImages.Count + pendingImages.Count + 1));
+            pendingImages.Enqueue((at, ++subIfdImages, false));
         }
     }
 
@@ -334,7 +336,7 @@ internal ref struct ExifTiffReader
     /// field type this reader does not know is left out rather than refused: the rest of the file's
     /// metadata does not depend on it.
     /// </summary>
-    private void ReadSubImage(uint offset, int index)
+    private void ReadSubImage(uint offset, int index, bool chain)
     {
         int start = RequireRange(offset, 2);
         int count = U16(start);
@@ -378,7 +380,12 @@ internal ref struct ExifTiffReader
             imageEntries.Add(new ExifEntry(new ExifTagKey(ExifDirectoryKind.Ifd0, tag),
                 ExifValue.FromRaw(type, valueCount, order, data.Slice(valueStart, byteLength))));
         }
-        subImages.Add(new ExifSubImage(index, imageEntries));
+        subImages.Add(new ExifSubImage(index, imageEntries,
+            chain ? ExifSubImageKind.ImageDirectory : ExifSubImageKind.SubIfd));
+        // A chain continues: the directory after this one is the file's next picture, not metadata.
+        uint following = U32(start + 2 + count * 12);
+        if (chain && following != 0 && offsets.Add(following))
+            pendingImages.Enqueue((following, ++chainImages + 1, true));
     }
 
     private void ReadDirectory(uint offset, ExifDirectoryKind kind, int depth)
@@ -480,10 +487,15 @@ internal ref struct ExifTiffReader
         uint next = U32(start + 2 + count * 12);
         if (next != 0)
         {
-            // A whole file may chain further image directories after the second one (CR2 and PEF do).
-            // Like SubIFDs they hold images, not EXIF: the link is neither followed nor refused.
+            // A whole file may chain further image directories after the second one (CR2 puts its raw
+            // picture in the second directory and a further reduced one in the third, PEF its preview).
+            // They hold pictures, not EXIF: like SubIFDs they are listed and nothing in them is followed.
             if (wholeFile && kind == ExifDirectoryKind.Thumbnail)
+            {
+                if (offsets.Add(next))
+                    pendingImages.Enqueue((next, ++chainImages + 1, true));
                 return;
+            }
             if (kind != ExifDirectoryKind.Ifd0)
                 throw Error(MetadataErrorCode.UnsupportedFeature, "Only the primary IFD may link to a thumbnail IFD.", start + length - 4);
             Schedule(next, ExifDirectoryKind.Thumbnail, depth + 1);
