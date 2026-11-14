@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace MetadataSharp.Core;
@@ -55,7 +56,7 @@ public sealed record XmpTagSchema(string NamespaceUri, IReadOnlyList<string> Pre
 /// <see cref="ExifTags.Interpret(ExifTagKey, ExifValue)" />, <see cref="Iptc.IptcDatasetNames"/>,
 /// and the MakerNote interpreter, not by copying text descriptions into the registry.
 /// </remarks>
-public static class MetadataTagCatalog
+public static partial class MetadataTagCatalog
 {
     private static readonly CatalogData Data = Load();
     private static readonly IReadOnlyList<string> GroupsValue = Array.AsReadOnly(Data.ExifGroups.Select(group => group.Name).ToArray());
@@ -119,7 +120,7 @@ public static class MetadataTagCatalog
     {
         using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("MetadataSharp.Core.tag-catalog-data.json")
             ?? throw new InvalidOperationException("The embedded metadata tag catalog is missing.");
-        CatalogData data = JsonSerializer.Deserialize<CatalogData>(stream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+        CatalogData data = JsonSerializer.Deserialize(stream, CatalogJsonContext.Default.CatalogData)
             ?? throw new InvalidOperationException("The embedded metadata tag catalog is empty.");
         foreach (CatalogGroup group in data.ExifGroups) group.Initialize();
         return data;
@@ -193,6 +194,12 @@ public static class MetadataTagCatalog
     {
         public string Name { get; set; } = "";
         public string? Type { get; set; }
+    }
+
+    [JsonSourceGenerationOptions(PropertyNameCaseInsensitive = true)]
+    [JsonSerializable(typeof(CatalogData))]
+    private partial class CatalogJsonContext : JsonSerializerContext
+    {
     }
 
     // Brief local summaries: these are authored here and intentionally not copied from upstream prose.

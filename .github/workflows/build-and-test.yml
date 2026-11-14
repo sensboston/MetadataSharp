@@ -678,7 +678,7 @@ jobs:
             artifacts/parity/preview/preview-report.json
             artifacts/parity/icc/icc-report.txt
             artifacts/parity/icc/icc-report.json
-              artifacts/parity/sweep/sweep-report.txt
+            artifacts/parity/sweep/sweep-report.txt
             artifacts/parity/sweep/sweep-report.json
             artifacts/parity/tag-print/tag-print-report.txt
             artifacts/parity/tag-print/tag-print-report.json

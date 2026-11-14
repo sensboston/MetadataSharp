@@ -694,8 +694,8 @@ public static partial class ExifTags
             Encoding strict = Encoding.GetEncoding(encoding.CodePage, EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
             return strict.GetString(bytes).TrimEnd(' ', '\0');
         }
-        catch (ArgumentException) { return null; }
         catch (DecoderFallbackException) { return null; }
+        catch (ArgumentException) { return null; }
     }
 
     // Honor an embedded byte-order mark, drop an incomplete trailing code unit, and reject invalid UTF-16.
