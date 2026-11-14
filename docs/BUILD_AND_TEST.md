@@ -45,7 +45,8 @@ python tools/parity/raw_corpus.py verify artifacts/parity/raw-corpus        # re
 python tools/parity/raw_corpus.py pin artifacts/parity/raw-corpus --write   # record a measured size and hash
 ```
 
-`verify` refuses a file whose size or hash is not the pinned one, and refuses an entry that has no pin
+`explain` prints where the first corpus file disagrees with the reference, row by row, and is what the
+job emits when one of its comparisons fails. `verify` refuses a file whose size or hash is not the pinned one, and refuses an entry that has no pin
 at all, so a green run never rests on bytes nobody measured. A downloaded file that does not match its
 pin is deleted instead of passed on to a comparison.
 

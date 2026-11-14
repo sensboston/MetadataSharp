@@ -27,6 +27,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import shlex
 import shutil
 import subprocess
 import sys
@@ -248,12 +249,74 @@ def describe(outcomes: dict) -> str:
             f"formats: {layout}")
 
 
+def explain(destination: Path, exiv2: str, dump_command: str, limit: int = 140) -> int:
+    """Print where the first corpus file disagrees with the pinned reference, row by row.
+
+    The differential gate reports an aggregate of a whole corpus, which says what differs but not why:
+    one file's rows beside the reference's are what a reader defect is diagnosed from. Only the first
+    file that differs is explained, because a run reports one annotation and a defect is fixed one
+    file at a time.
+    """
+    import run_tag_print as harness  # imported here: the two modules share the row vocabulary
+
+    command = shlex.split(dump_command)
+    for entry in entries():
+        path = destination / entry.name
+        if not path.is_file():
+            continue
+        code, text, error = harness._run_reference([exiv2], path)
+        if code != 0:
+            print(f"::notice title=RAW corpus explain::{entry.name} reference exited {code}: "
+                  f"{(error or text).strip().splitlines()[:1]}")
+            return 0
+        reference = harness.parse_exiv2(text)
+        dumped = harness.run_dump(command, [path])[str(path)]
+        if dumped["status"] not in (None, "ok"):
+            print(f"::notice title=RAW corpus explain::{entry.name} status {dumped['status']} "
+                  f"{dumped['detail']}")
+            return 0
+        actual = harness.project_dump(dumped["rows"])
+        lines = _row_differences(reference, actual)
+        if not lines:
+            continue
+        print(f"::notice title=RAW corpus explain::{entry.name}::" +
+              "%0A".join([f"{len(lines)} differing row(s); {len(reference)} reference, "
+                          f"{len(actual)} local"] + lines[:limit]))
+        return 0
+    print("::notice title=RAW corpus explain::no corpus file differs from the reference")
+    return 0
+
+
+def _row_differences(reference: list[dict], actual: list[dict]) -> list[str]:
+    """Rows the reference prints and this library does not, rows it does not and this one does, and
+    the same row with a different value, in that order."""
+    def index(rows: list[dict]) -> dict[tuple, list[dict]]:
+        table: dict[tuple, list[dict]] = {}
+        for row in rows:
+            table.setdefault((row["key"], row["type"], row["count"]), []).append(row)
+        return table
+
+    theirs, ours = index(reference), index(actual)
+    missing = [f"- {key[0]} {key[1]} {key[2]} = {row['value']}"
+               for key, rows in theirs.items() for row in rows[len(ours.get(key, [])):]]
+    extra = [f"+ {key[0]} {key[1]} {key[2]} = {row['value']}"
+             for key, rows in ours.items() for row in rows[len(theirs.get(key, [])):]]
+    changed = []
+    for key in theirs.keys() & ours.keys():
+        for left, right in zip(theirs[key], ours[key]):
+            if left["value"] != right["value"]:
+                changed.append(f"~ {key[0]} {key[1]} {key[2]}: reference={left['value']!r} local={right['value']!r}")
+    return missing + changed + extra
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Download and verify the pinned RAW corpus.")
-    parser.add_argument("command", choices=("download", "verify", "pin", "list"))
+    parser.add_argument("command", choices=("download", "verify", "pin", "list", "explain"))
     parser.add_argument("destination", nargs="?", type=Path, help="where the corpus is kept")
     parser.add_argument("--report", type=Path, help="write the run report here")
     parser.add_argument("--write", action="store_true", help="pin: record the measured values in the manifest")
+    parser.add_argument("--exiv2", help="explain: the pinned reference executable")
+    parser.add_argument("--dump-command", help="explain: how to run MetadataSharp.Dump")
     args = parser.parse_args(argv)
     document = load()
     if args.command == "list":
@@ -276,6 +339,10 @@ def main(argv: list[str] | None = None) -> int:
             print("::error title=raw corpus::could not fetch " + ", ".join(failed))
             return 1
         return 0
+    if args.command == "explain":
+        if not args.exiv2 or not args.dump_command:
+            parser.error("explain needs --exiv2 and --dump-command")
+        return explain(args.destination, args.exiv2, args.dump_command)
     if args.command == "verify":
         problems = verify(args.destination, document)
         for problem in problems:

@@ -917,6 +917,14 @@ jobs:
           python tools/parity/run_tag_print.py --tree artifacts/parity/exiv2 \
             --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP" \
             --fixtures artifacts/parity/raw-corpus --out artifacts/parity/raw-tag-print --annotate
+      # An aggregate of 350 files says what differs, not why. When anything above fails, one file's rows
+      # beside the reference's are what a reader defect is diagnosed from.
+      - name: Explain the first RAW file that differs
+        if: failure()
+        shell: bash
+        run: |
+          python tools/parity/raw_corpus.py explain artifacts/parity/raw-corpus \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP"
       - name: Preview parity on the RAW corpus
         if: always()
         shell: bash
