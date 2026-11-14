@@ -1574,17 +1574,13 @@ internal ref struct PreviewScanner
     {
         if (length < 4 || !Free(offset, length, tableStart, tableEnd)) return false;
         int at = (int)offset, end = at + (int)length;
-        int start = at;
-        if (data[at] != 0xFF || data[at + 1] != 0xD8 || data[at + 2] != 0xFF)
-        {
-            // A Minolta note names a thumbnail whose start-of-image marker has a damaged first byte; the
-            // reference repairs that byte before it writes the picture out, so the stream is one.
-            if (!IsMinoltaSource(source) || data[at + 1] != 0xD8 || data[at + 2] != 0xFF) return false;
-            start = at + 1;
-        }
+        // A Minolta note names a thumbnail whose start-of-image marker has a damaged first byte; the
+        // reference repairs that byte before it writes the picture out, so the stream is one.
+        bool damaged = data[at] != 0xFF || data[at + 1] != 0xD8 || data[at + 2] != 0xFF;
+        if (damaged && (!IsMinoltaSource(source) || data[at + 1] != 0xD8 || data[at + 2] != 0xFF)) return false;
         int? width = null, height = null;
         // The frame header states the dimensions. A lossless frame is raw sensor data, not a preview.
-        int position = start + 2;
+        int position = at + 2;
         for (int count = 0; count < limits.MaxSegments && end - position >= 4 && data[position] == 0xFF; count++)
         {
             byte marker = data[position + 1];
@@ -1604,6 +1600,8 @@ internal ref struct PreviewScanner
             }
             position += 2 + size;
         }
+        // A repaired marker is accepted only when what follows it is a picture: the dimensions are stated.
+        if (damaged && width is null) return false;
         Add(new PreviewImage(Previews.JpegType, width, height, offset, (int)length, source));
         return true;
     }
