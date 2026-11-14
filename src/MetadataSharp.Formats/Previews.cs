@@ -126,10 +126,7 @@ public static class Previews
     }
 
     // The reference repairs the first byte of a Minolta thumbnail's start-of-image marker, and only of that.
-    private static bool IsMinoltaSource(PreviewImage preview) => IsMinoltaSource(preview.Source);
-
-    private static bool IsMinoltaSource(string source) =>
-        source.StartsWith("Exif.Minolta.", StringComparison.Ordinal);
+    private static bool IsMinoltaSource(PreviewImage preview) => PreviewScanner.IsMinoltaSource(preview.Source);
 
     // Validate preview input limits before traversing any container-specific pointers.
     private static MetadataLimits Checked(ReadOnlySpan<byte> file, MetadataLimits? limits)
@@ -184,6 +181,10 @@ internal ref struct PreviewScanner
     private int pointerBase = -1;
     // The vendor a container names in its own header when it carries no Make tag.
     private string containerMake = string.Empty;
+
+    /// <summary>The source of a preview the reference repairs a byte of: the note of a Minolta file.</summary>
+    internal static bool IsMinoltaSource(string source) =>
+        source.StartsWith("Exif.Minolta.", StringComparison.Ordinal);
 
     // Retain the file span and limits while scanning preview pointers.
     internal PreviewScanner(ReadOnlySpan<byte> data, MetadataLimits limits, int nesting = 0)
