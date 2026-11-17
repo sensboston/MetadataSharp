@@ -1,0 +1,58 @@
+[
+  {
+    "file": "dng-raw-ii.dng",
+    "sha256": "474952a49242556b9bec981483df2afc9c06546a0c7705a529f789c9ad52d2a0",
+    "length": 598,
+    "byteOrder": "II",
+    "shape": "raw",
+    "ifd0": 8,
+    "raw_ifd": 8,
+    "raw_strip": 582,
+    "raw_strip_length": 16,
+    "thumb_ifd": null,
+    "thumb_strip": null,
+    "rawStripSha256": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9"
+  },
+  {
+    "file": "dng-thumb-ii.dng",
+    "sha256": "3208c70940419fbd5655d9ed7643702626f4ada7c22d2dcb8346b738c0f11b96",
+    "length": 1034,
+    "byteOrder": "II",
+    "shape": "thumb",
+    "ifd0": 8,
+    "raw_ifd": 444,
+    "raw_strip": 1018,
+    "raw_strip_length": 16,
+    "thumb_ifd": 8,
+    "thumb_strip": 420,
+    "rawStripSha256": "067436bafb67573443706a095729cfe4b4d0427dd1c25d165777df8ff41780b9"
+  },
+  {
+    "file": "dng-raw-mm.dng",
+    "sha256": "64dee07029c8ed6fb9fcddac5a578ec79141789e6834fdf22809f8bca08685f8",
+    "length": 598,
+    "byteOrder": "MM",
+    "shape": "raw",
+    "ifd0": 8,
+    "raw_ifd": 8,
+    "raw_strip": 582,
+    "raw_strip_length": 16,
+    "thumb_ifd": null,
+    "thumb_strip": null,
+    "rawStripSha256": "6472f018a621000b17e1b6c90e5555b2f11ed33f71d113a55af0c1c85e74716c"
+  },
+  {
+    "file": "dng-thumb-mm.dng",
+    "sha256": "5d32ea1c44c204fcd3040c1a12204d64dfe84fcb83412a0bd4dcfa9f577be5e9",
+    "length": 1034,
+    "byteOrder": "MM",
+    "shape": "thumb",
+    "ifd0": 8,
+    "raw_ifd": 444,
+    "raw_strip": 1018,
+    "raw_strip_length": 16,
+    "thumb_ifd": 8,
+    "thumb_strip": 420,
+    "rawStripSha256": "6472f018a621000b17e1b6c90e5555b2f11ed33f71d113a55af0c1c85e74716c"
+  }
+]

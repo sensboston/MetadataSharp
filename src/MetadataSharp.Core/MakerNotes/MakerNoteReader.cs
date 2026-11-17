@@ -1,0 +1,505 @@
+using System.Buffers.Binary;
+using MetadataSharp.Core.Internal;
+using MetadataSharp.Core.Binary;
+
+namespace MetadataSharp.Core.MakerNotes;
+
+/// <summary>
+/// Recognises a MakerNote by camera make and signature and decodes it with the vendor's layout.
+/// Best effort: any structural problem returns null and the raw MakerNote value stays authoritative.
+/// </summary>
+internal static class MakerNoteReader
+{
+    private static ReadOnlySpan<byte> NikonSignature => "Nikon\0"u8;
+
+    /// <summary>Decodes the MakerNote of a file the caller already holds in memory.</summary>
+    /// <param name="tiff">The whole file.</param>
+    /// <param name="start">Where the note begins.</param>
+    /// <param name="length">How long the note is.</param>
+    /// <param name="order">The byte order of the enclosing TIFF.</param>
+    /// <param name="make">The Make tag, which names the layout.</param>
+    /// <param name="model">The Model tag, where the layout needs it.</param>
+    /// <param name="limits">The budgets.</param>
+    /// <param name="retainedBudget">What the read may still keep.</param>
+    /// <returns>The decoded note, or null when the layout is not one this release reads.</returns>
+    internal static MakerNote? TryRead(ReadOnlySpan<byte> tiff, int start, int length, Endianness order,
+        ReadOnlySpan<byte> make, ReadOnlySpan<byte> model, MetadataLimits limits, long retainedBudget) =>
+        TryRead(ByteView.Over(tiff), start, length, order, make, model, limits, retainedBudget);
+
+    /// <summary>Decodes the MakerNote of a file held as a view: only the note and the head it names are read.</summary>
+    /// <param name="tiff">The whole file.</param>
+    /// <param name="start">Where the note begins.</param>
+    /// <param name="length">How long the note is.</param>
+    /// <param name="order">The byte order of the enclosing TIFF.</param>
+    /// <param name="make">The Make tag, which names the layout.</param>
+    /// <param name="model">The Model tag, where the layout needs it.</param>
+    /// <param name="limits">The budgets.</param>
+    /// <param name="retainedBudget">What the read may still keep.</param>
+    /// <returns>The decoded note, or null when the layout is not one this release reads.</returns>
+    internal static MakerNote? TryRead(ByteView tiff, int start, int length, Endianness order,
+        ReadOnlySpan<byte> make, ReadOnlySpan<byte> model, MetadataLimits limits, long retainedBudget)
+    {
+        if (start < 0 || length < 2 || start > tiff.Length - length)
+            return null;
+        ReadOnlySpan<byte> note = tiff.Slice(start, length);
+        if (make.StartsWith("Canon"u8))
+            return CanonMakerNoteReader.TryRead(tiff, start, length, order, limits, retainedBudget);
+        int end = start + length;
+        if (make.StartsWith("FUJIFILM"u8) || make.StartsWith("FUJI PHOTO FILM"u8))
+        {
+            // "FUJIFILM", then a little-endian offset of the IFD; all offsets count from the MakerNote.
+            if (!note.StartsWith("FUJIFILM"u8) || length < 12)
+                return null;
+            uint ifd = BinaryPrimitives.ReadUInt32LittleEndian(note[8..]);
+            if (ifd < 12 || ifd >= (uint)length)
+                return null;
+            return Directory(MakerNoteFormat.Fujifilm, tiff, start + (int)ifd, end, start, Endianness.LittleEndian, 0,
+                limits, retainedBudget, VendorMakerNoteNames.Fujifilm, null);
+        }
+        if (make.StartsWith("PENTAX"u8) || make.StartsWith("RICOH"u8))
+        {
+            // "PENTAX \0" + two bytes: the IFD at 10 in the TIFF's byte order (as with "AOC", the two
+            // bytes are not a reliable byte-order mark), offsets from the MakerNote.
+            if (note.StartsWith("PENTAX \0"u8) && length >= 10 + 18)
+                return Directory(MakerNoteFormat.PentaxDng, tiff, start + 10, end, start, order, 0,
+                    limits, retainedBudget, VendorMakerNoteNames.Pentax, null);
+            // "AOC\0" + two bytes, then the IFD at 6 in the TIFF's byte order (the two bytes are not a
+            // reliable byte-order mark); offsets from the TIFF header.
+            if (note.StartsWith("AOC\0"u8) && length >= 6 + 18)
+                return Directory(MakerNoteFormat.Pentax, tiff, start + 6, end, 0, order, 0,
+                    limits, retainedBudget, VendorMakerNoteNames.Pentax, null);
+            return null;
+        }
+        if (make.StartsWith("SONY"u8))
+        {
+            // "SONY DSC \0\0\0" then an IFD, or a bare IFD; offsets from the TIFF header either way.
+            MakerNote? sony = note.StartsWith("SONY DSC \0\0\0"u8)
+                ? Directory(MakerNoteFormat.Sony1, tiff, start + 12, end, 0, order, 0, limits, retainedBudget, VendorMakerNoteNames.Sony, null)
+                : Directory(MakerNoteFormat.Sony2, tiff, start, end, 0, order, 0, limits, retainedBudget, VendorMakerNoteNames.Sony, null);
+            return sony is null ? null : SonyMinoltaDirectory(SplitSony(sony, model), tiff, model, limits, retainedBudget);
+        }
+        if (make.StartsWith("Panasonic"u8))
+        {
+            // "Panasonic\0\0\0" then an IFD without a next-IFD pointer; offsets from the TIFF header.
+            if (!note.StartsWith("Panasonic\0\0\0"u8))
+                return null;
+            return Directory(MakerNoteFormat.Panasonic, tiff, start + 12, end, 0, order, 0,
+                limits, retainedBudget, VendorMakerNoteNames.Panasonic, null);
+        }
+        if (make.StartsWith("OLYMPUS"u8) || make.StartsWith("OM Digital"u8))
+            return Olympus(tiff, start, length, order, note, limits, retainedBudget);
+        if (make.StartsWith("NIKON"u8) || make.StartsWith("Nikon"u8))
+        {
+            if (note.StartsWith(NikonSignature) && note.Length >= 18 && note[6] == 0x02)
+                return Nikon3(tiff, start, length, model, limits, retainedBudget);
+            if (note.StartsWith(NikonSignature) && note.Length >= 10 && note[6] == 0x01 && note[7] == 0x00)
+                return Directory(MakerNoteFormat.Nikon2, tiff, start + 8, start + length, 0, order, 0, limits,
+                    retainedBudget, NikonMakerNoteNames.Nikon2, null);
+            if (!note.StartsWith(NikonSignature))
+                return Directory(MakerNoteFormat.Nikon1, tiff, start, start + length, 0, order, 0, limits,
+                    retainedBudget, NikonMakerNoteNames.Nikon1, null);
+            return null;
+        }
+        if (StartsWithIgnoringCase(make, "MINOLTA"u8) || StartsWithIgnoringCase(make, "KONICA MINOLTA"u8))
+        {
+            // A bare IFD in the TIFF's byte order, offsets from the TIFF header. The compact cameras that
+            // carry another maker's layout behind a "MINOL" or "CAMER" signature are not this format.
+            if (note.StartsWith("MINOL"u8) || note.StartsWith("CAMER"u8))
+                return null;
+            return Directory(MakerNoteFormat.Minolta, tiff, start, end, 0, order, 0, limits, retainedBudget,
+                VendorMakerNoteNames.Minolta, MinoltaMakerNoteArrays.Decompose);
+        }
+        if (make.StartsWith("CASIO"u8))
+        {
+            // "QVC\0\0\0" then an IFD that is big-endian whatever the TIFF is; without the signature, a
+            // bare IFD in the TIFF's byte order. Offsets from the TIFF header either way.
+            return note.StartsWith("QVC\0\0\0"u8)
+                ? Directory(MakerNoteFormat.Casio2, tiff, start + 6, end, 0, Endianness.BigEndian, 0, limits, retainedBudget,
+                    VendorMakerNoteNames.Casio2, null)
+                : Directory(MakerNoteFormat.Casio, tiff, start, end, 0, order, 0, limits, retainedBudget,
+                    VendorMakerNoteNames.Casio, null);
+        }
+        if (make.StartsWith("SAMSUNG"u8))
+        {
+            // The cameras Samsung built with Pentax carry Pentax's "AOC" MakerNote. Otherwise a bare IFD in
+            // the TIFF's byte order whose offsets count from the MakerNote.
+            if (note.StartsWith("AOC\0"u8))
+                return length >= 6 + 18
+                    ? Directory(MakerNoteFormat.Pentax, tiff, start + 6, end, 0, order, 0, limits, retainedBudget,
+                        VendorMakerNoteNames.Pentax, null)
+                    : null;
+            MakerNote? samsung = Directory(MakerNoteFormat.Samsung2, tiff, start, end, start, order, 0, limits,
+                retainedBudget, VendorMakerNoteNames.Samsung2, SamsungPictureWizard);
+            return samsung is null ? null : SamsungPreview(samsung, tiff, start, end, limits, retainedBudget);
+        }
+        if (make.StartsWith("SIGMA"u8) || make.StartsWith("FOVEON"u8))
+        {
+            // "SIGMA\0\0\0" or "FOVEON\0\0", two version bytes, then an IFD in the TIFF's byte order;
+            // offsets from the TIFF header.
+            if (!note.StartsWith("SIGMA\0\0\0"u8) && !note.StartsWith("FOVEON\0\0"u8))
+                return null;
+            return Directory(MakerNoteFormat.Sigma, tiff, start + 10, end, 0, order, 0, limits, retainedBudget,
+                VendorMakerNoteNames.Sigma, null);
+        }
+        return null;
+    }
+
+    /// <summary>ASCII comparison of a Make with an upper-case prefix; makers spell themselves in either case.</summary>
+    private static bool StartsWithIgnoringCase(ReadOnlySpan<byte> text, ReadOnlySpan<byte> upperCasePrefix)
+    {
+        if (text.Length < upperCasePrefix.Length)
+            return false;
+        for (int i = 0; i < upperCasePrefix.Length; i++)
+        {
+            byte c = text[i];
+            if (c is >= (byte)'a' and <= (byte)'z')
+                c -= 0x20;
+            if (c != upperCasePrefix[i])
+                return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Reads the directory that Samsung2 tag 0x0035 points to, as the fields of that tag. It describes
+    /// the picture the note embeds with ordinary TIFF fields, so they carry the TIFF names; its offsets
+    /// count from the start of the note, like the rest of the note. An offset that does not lead to a
+    /// directory inside the note leaves the tag as the number it is.
+    /// </summary>
+    private static MakerNote SamsungPreview(MakerNote note, ByteView tiff, int start, int end,
+        MetadataLimits limits, long retainedBudget)
+    {
+        if (!note.TryGetEntry(0x0035, out MakerNoteEntry? pointer) || pointer.Fields.Count != 0 ||
+            pointer.Value.FieldType != TiffFieldType.Long || pointer.Value.Count != 1)
+            return note;
+        ReadOnlySpan<byte> raw = pointer.Value.RawBytes;
+        uint offset = note.ByteOrder == Endianness.LittleEndian
+            ? BinaryPrimitives.ReadUInt32LittleEndian(raw) : BinaryPrimitives.ReadUInt32BigEndian(raw);
+        if (offset < 8 || offset >= (uint)(end - start))
+            return note;
+        MakerNote? preview = Directory(MakerNoteFormat.Samsung2, tiff, start + (int)offset, end, start,
+            note.ByteOrder, 0, limits, retainedBudget,
+            static tag => ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Ifd0, tag))?.Name, null);
+        return preview is null ? note : WithDirectoryFields(note, pointer, preview);
+    }
+
+    /// <summary>Samsung's PictureWizard, five SHORTs in the MakerNote's byte order.</summary>
+    private static IReadOnlyList<MakerNoteField> SamsungPictureWizard(ushort tag, ExifValue value)
+    {
+        if (tag != 0x0021 || value.FieldType is not (TiffFieldType.Short or TiffFieldType.Undefined))
+            return [];
+        ReadOnlySpan<byte> raw = value.RawBytes;
+        var fields = new List<MakerNoteField>(PictureWizardNames.Length);
+        for (int i = 0; i < PictureWizardNames.Length && (i * 2) + 2 <= raw.Length; i++)
+            fields.Add(new MakerNoteField((ushort)i, PictureWizardNames[i],
+                ExifValue.FromRaw(TiffFieldType.Short, 1, value.ByteOrder, raw.Slice(i * 2, 2)), null, i * 2));
+        return fields;
+    }
+
+    private static readonly string[] PictureWizardNames = ["Mode", "Color", "Saturation", "Sharpness", "Contrast"];
+
+    /// <summary>"Nikon\0", a two-byte version, two bytes, then a TIFF header that the IFD and its
+    /// value offsets are relative to; that header carries its own byte order.</summary>
+    private static MakerNote? Nikon3(ByteView tiff, int start, int length, ReadOnlySpan<byte> model,
+        MetadataLimits limits, long retainedBudget)
+    {
+        int header = start + 10;
+        ReadOnlySpan<byte> h = tiff.Slice(header, 8);
+        Endianness order;
+        if (h[0] == 0x49 && h[1] == 0x49 && h[2] == 42 && h[3] == 0) order = Endianness.LittleEndian;
+        else if (h[0] == 0x4D && h[1] == 0x4D && h[2] == 0 && h[3] == 42) order = Endianness.BigEndian;
+        else return null;
+        uint ifd = order == Endianness.LittleEndian
+            ? BinaryPrimitives.ReadUInt32LittleEndian(h[4..])
+            : BinaryPrimitives.ReadUInt32BigEndian(h[4..]);
+        if (ifd < 8 || ifd >= (uint)(length - 10))
+            return null;
+        MakerNote? note = Directory(MakerNoteFormat.Nikon3, tiff, header + (int)ifd, start + length, header, order, 0,
+            limits, retainedBudget, NikonMakerNoteNames.Nikon3, NikonMakerNoteArrays.Decompose);
+        return note is null ? null : DecryptNikon3(NikonPreview(note, tiff, header, start + length, limits, retainedBudget), model);
+    }
+
+    /// <summary>
+    /// Reads the directory that Nikon3 tag 0x0011 points to, as the fields of that tag. It describes the
+    /// preview picture with ordinary TIFF fields, so they carry the TIFF names; its offsets count from the
+    /// note's own TIFF header, like the rest of the note. A pointer that does not lead to a directory
+    /// inside the note leaves the tag as the plain number it is.
+    /// </summary>
+    private static MakerNote NikonPreview(MakerNote note, ByteView tiff, int header, int end,
+        MetadataLimits limits, long retainedBudget)
+    {
+        if (!note.TryGetEntry(0x0011, out MakerNoteEntry? pointer) || pointer.Fields.Count != 0 ||
+            pointer.Value.FieldType != TiffFieldType.Long || pointer.Value.Count != 1)
+            return note;
+        ReadOnlySpan<byte> raw = pointer.Value.RawBytes;
+        uint offset = note.ByteOrder == Endianness.LittleEndian
+            ? BinaryPrimitives.ReadUInt32LittleEndian(raw) : BinaryPrimitives.ReadUInt32BigEndian(raw);
+        if (offset < 8 || offset >= (uint)(end - header))
+            return note;
+        MakerNote? preview = Directory(MakerNoteFormat.Nikon3, tiff, header + (int)offset, end, header, note.ByteOrder, 0,
+            limits, retainedBudget, static tag => ExifTags.Find(new ExifTagKey(ExifDirectoryKind.Ifd0, tag))?.Name, null);
+        if (preview is null)
+            return note;
+        return WithDirectoryFields(note, pointer, preview);
+    }
+
+    /// <summary>
+    /// Replaces a pointer tag with the directory it leads to, as that tag's fields. The directory's own
+    /// entries keep their names, and the note keeps every other entry as it was.
+    /// </summary>
+    private static MakerNote WithDirectoryFields(MakerNote note, MakerNoteEntry pointer, MakerNote directory)
+    {
+        var fields = new List<MakerNoteField>(directory.Entries.Count);
+        foreach (MakerNoteEntry field in directory.Entries)
+            fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value) { Slot = field.Slot });
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        foreach (MakerNoteEntry entry in note.Entries)
+            entries.Add(ReferenceEquals(entry, pointer) ? entry.With(fields) : entry);
+        return new MakerNote(note.Format, note.ByteOrder, entries);
+    }
+
+    /// <summary>
+    /// Olympus: "OLYMP" + 3 bytes, then an IFD with offsets from the TIFF header; or "OLYMPUS" + 0 +
+    /// byte order + 2 bytes (or "OM SYSTEM" + 3 zeros + byte order + 2 bytes), then an IFD whose
+    /// offsets, including those of its sub-directories, count from the MakerNote.
+    /// </summary>
+    private static MakerNote? Olympus(ByteView tiff, int start, int length, Endianness order,
+        ReadOnlySpan<byte> note, MetadataLimits limits, long retainedBudget)
+    {
+        int end = start + length;
+        if (note.StartsWith("OLYMPUS\0"u8) && length >= 12 + 18 && OrderMark(note.Slice(8, 2)) is Endianness o2)
+            return OlympusSubDirectories(Directory(MakerNoteFormat.Olympus2, tiff, start + 12, end, start, o2, 0,
+                limits, retainedBudget, OlympusMakerNoteNames.Main, null), tiff, start, end, limits, retainedBudget);
+        if (note.StartsWith("OM SYSTEM\0\0\0"u8) && length >= 16 + 18 && OrderMark(note.Slice(12, 2)) is Endianness om)
+            return OlympusSubDirectories(Directory(MakerNoteFormat.OMSystem, tiff, start + 16, end, start, om, 0,
+                limits, retainedBudget, OlympusMakerNoteNames.Main, null), tiff, start, end, limits, retainedBudget);
+        if (note.StartsWith("OLYMP\0"u8) && length >= 8 + 18)
+            return Directory(MakerNoteFormat.Olympus, tiff, start + 8, end, 0, order, 0,
+                limits, retainedBudget, OlympusMakerNoteNames.Main, null);
+        return null;
+    }
+
+    /// <summary>Reads the sub-directories that the Olympus2 tags 0x2010-0x3000 point to, as their fields.</summary>
+    private static MakerNote? OlympusSubDirectories(MakerNote? note, ByteView tiff, int start, int end,
+        MetadataLimits limits, long retainedBudget)
+    {
+        if (note is null)
+            return null;
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        bool changed = false;
+        foreach (MakerNoteEntry entry in note.Entries)
+        {
+            Func<ushort, string?>? names = entry.TagId switch
+            {
+                0x2010 => OlympusMakerNoteNames.Eq,
+                0x2020 => OlympusMakerNoteNames.Cs,
+                0x2030 => OlympusMakerNoteNames.Rd,
+                0x2031 => OlympusMakerNoteNames.Rd2,
+                0x2040 => OlympusMakerNoteNames.Ip,
+                0x2050 => OlympusMakerNoteNames.Fi,
+                0x3000 => OlympusMakerNoteNames.Ri,
+                _ => null
+            };
+            MakerNote? sub = null;
+            if (names is not null && entry.Value.FieldType == TiffFieldType.Long && entry.Value.Count == 1)
+            {
+                ReadOnlySpan<byte> raw = entry.Value.RawBytes;
+                uint offset = note.ByteOrder == Endianness.LittleEndian
+                    ? BinaryPrimitives.ReadUInt32LittleEndian(raw) : BinaryPrimitives.ReadUInt32BigEndian(raw);
+                if (offset < (uint)(end - start))
+                    sub = Directory(note.Format, tiff, start + (int)offset, end, start, note.ByteOrder, 0, limits,
+                        retainedBudget, names, null);
+            }
+            if (sub is null)
+            {
+                entries.Add(entry);
+                continue;
+            }
+            var fields = new List<MakerNoteField>(sub.Entries.Count);
+            foreach (MakerNoteEntry field in sub.Entries)
+                fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value) { Slot = field.Slot });
+            entries.Add(entry.With(fields));
+            changed = true;
+        }
+        return changed ? new MakerNote(note.Format, note.ByteOrder, entries) : note;
+    }
+
+    private static Endianness? OrderMark(ReadOnlySpan<byte> mark) =>
+        mark[0] == 0x49 && mark[1] == 0x49 ? Endianness.LittleEndian :
+        mark[0] == 0x4D && mark[1] == 0x4D ? Endianness.BigEndian : null;
+
+    /// <summary>Splits the Sony array tags, whose layouts may depend on the camera model.</summary>
+    private static MakerNote SplitSony(MakerNote note, ReadOnlySpan<byte> model)
+    {
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        bool changed = false;
+        foreach (MakerNoteEntry entry in note.Entries)
+        {
+            IReadOnlyList<MakerNoteField> fields = SonyMakerNoteArrays.Decompose(entry.TagId, entry.Value, model);
+            bool enciphered = fields.Count != 0 && SonyMakerNoteArrays.IsEnciphered(entry.TagId, entry.Value, model);
+            entries.Add(fields.Count == 0 ? entry
+                : enciphered ? entry.With(fields, static stored => SonyMakerNoteArrays.Plain(stored), static plain => SonyMakerNoteArrays.Stored(plain))
+                : entry.With(fields));
+            changed |= fields.Count != 0;
+        }
+        return changed ? new MakerNote(note.Format, note.ByteOrder, entries) : note;
+    }
+
+    /// <summary>
+    /// Reads the directory that Sony tag 0xB028 points to, as the fields of that tag. The DSLR-A100 keeps
+    /// the MakerNote of the Minolta cameras it descends from there: a directory of Minolta tags in the
+    /// note's byte order, with offsets from the TIFF header. Its camera-settings array is split for the
+    /// DSLR-A100, the one model whose layout is known. A pointer that does not lead to a directory stays
+    /// a plain number.
+    /// </summary>
+    private static MakerNote SonyMinoltaDirectory(MakerNote note, ByteView tiff, ReadOnlySpan<byte> model,
+        MetadataLimits limits, long retainedBudget)
+    {
+        if (!note.TryGetEntry(0xB028, out MakerNoteEntry? pointer) || pointer.Fields.Count != 0 ||
+            pointer.Value.FieldType != TiffFieldType.Long || pointer.Value.Count != 1)
+            return note;
+        ReadOnlySpan<byte> raw = pointer.Value.RawBytes;
+        uint offset = note.ByteOrder == Endianness.LittleEndian
+            ? BinaryPrimitives.ReadUInt32LittleEndian(raw) : BinaryPrimitives.ReadUInt32BigEndian(raw);
+        if (offset < 8 || offset >= (uint)tiff.Length)
+            return note;
+        bool a100 = model.StartsWith("DSLR-A100"u8);
+        Func<ushort, string?> names = VendorMakerNoteNames.Minolta;
+        Func<ushort, ExifValue, IReadOnlyList<MakerNoteField>>? split = null;
+        if (a100)
+        {
+            names = static tag => tag == 0x0114 ? "CameraSettingsA100" : VendorMakerNoteNames.Minolta(tag);
+            split = MinoltaMakerNoteArrays.DecomposeSonyA100;
+        }
+        MakerNote? minolta = Directory(note.Format, tiff, (int)offset, tiff.Length, 0, note.ByteOrder, 0, limits,
+            retainedBudget, names, split);
+        if (minolta is null)
+            return note;
+        var fields = new List<MakerNoteField>(minolta.Entries.Count);
+        foreach (MakerNoteEntry field in minolta.Entries)
+            fields.Add(new MakerNoteField(field.TagId, field.Name ?? "0x" + field.TagId.ToString("x4"), field.Value, field.Fields) { Slot = field.Slot });
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        foreach (MakerNoteEntry entry in note.Entries)
+            entries.Add(ReferenceEquals(entry, pointer) ? entry.With(fields) : entry);
+        return new MakerNote(note.Format, note.ByteOrder, entries);
+    }
+
+    /// <summary>
+    /// Splits the encrypted Nikon3 arrays when the shutter count is present. The serial number is half
+    /// of the key, and a camera always writes it; a note without one was rewritten by software, and the
+    /// files seen in that state hold the arrays in the clear, so they are split as stored.
+    /// </summary>
+    private static MakerNote DecryptNikon3(MakerNote note, ReadOnlySpan<byte> model)
+    {
+        if (!note.TryGetEntry(0x00A7, out MakerNoteEntry? count) || count.Value.FieldType != TiffFieldType.Long ||
+            count.Value.Count == 0)
+            return note;
+        uint? key = null;
+        if (note.TryGetEntry(0x001D, out MakerNoteEntry? serial))
+        {
+            if (serial.Value.FieldType != TiffFieldType.Ascii ||
+                NikonMakerNoteCipher.SerialKey(serial.Value.RawBytes, model) is not uint serialKey)
+                return note;
+            key = serialKey;
+        }
+        ReadOnlySpan<byte> c = count.Value.RawBytes;
+        uint shutterCount = note.ByteOrder == Endianness.LittleEndian
+            ? BinaryPrimitives.ReadUInt32LittleEndian(c) : BinaryPrimitives.ReadUInt32BigEndian(c);
+        var entries = new List<MakerNoteEntry>(note.Entries.Count);
+        bool changed = false;
+        foreach (MakerNoteEntry entry in note.Entries)
+        {
+            if (entry.Fields.Count == 0 && entry.TagId is 0x0091 or 0x0097 or 0x0098 &&
+                NikonMakerNoteArrays.DecomposeEncrypted(entry.TagId, entry.Value, shutterCount, key) is { Count: > 0 } fields)
+            {
+                if (key is uint serialKeyOfCipher)
+                {
+                    // The cipher is its own inverse: the same key stream is XORed either way.
+                    int clear = NikonMakerNoteArrays.EncryptedStart(entry.TagId, entry.Value);
+                    Func<byte[], byte[]> cipher = bytes => NikonMakerNoteCipher.Decrypt(bytes, clear, shutterCount, serialKeyOfCipher);
+                    entries.Add(entry.With(fields, cipher, cipher));
+                }
+                else
+                    entries.Add(entry.With(fields));
+                changed = true;
+            }
+            else
+                entries.Add(entry);
+        }
+        return changed ? new MakerNote(note.Format, note.ByteOrder, entries) : note;
+    }
+
+    /// <summary>
+    /// Reads one IFD at <paramref name="ifd"/>. External value offsets are relative to
+    /// <paramref name="offsetBase"/>, corrected by <paramref name="delta"/>, and must lie in
+    /// [<paramref name="offsetBase"/>, <paramref name="regionEnd"/>) when the base is inside the
+    /// MakerNote, or anywhere in the TIFF payload when the base is the TIFF header (0).
+    /// </summary>
+    internal static MakerNote? Directory(MakerNoteFormat format, ByteView tiff, int ifd, int regionEnd,
+        int offsetBase, Endianness order, long delta, MetadataLimits limits, long retainedBudget,
+        Func<ushort, string?> name, Func<ushort, ExifValue, IReadOnlyList<MakerNoteField>>? split)
+    {
+        bool little = order == Endianness.LittleEndian;
+        int lowest = offsetBase == 0 ? 0 : offsetBase;
+        int highest = offsetBase == 0 ? tiff.Length : regionEnd;
+        if (ifd < lowest || ifd > highest - 2)
+            return null;
+        int count = U16(tiff, ifd, little);
+        if (count == 0 || count > limits.MaxEntriesPerDirectory || 2L + count * 12L > highest - ifd)
+            return null;
+        var entries = new List<MakerNoteEntry>(count);
+        long decoded = 0;
+        for (int i = 0; i < count; i++)
+        {
+            int p = ifd + 2 + i * 12;
+            ushort tag = U16(tiff, p, little);
+            ushort typeCode = U16(tiff, p + 2, little);
+            uint valueCount = U32(tiff, p + 4, little);
+            if (typeCode is < 1 or > 13)
+                continue; // Not a TIFF field type; vendor-private.
+            // Type 13 (IFD) is a LONG offset of a sub-directory.
+            var type = typeCode == 13 ? TiffFieldType.Long : (TiffFieldType)typeCode;
+            if (!CheckedRange.TryMultiply(valueCount, ExifValue.GetWidth(type), out int byteLength) ||
+                byteLength > limits.MaxValueBytes)
+                return null;
+            long valueStart = p + 8;
+            if (byteLength > 4)
+            {
+                valueStart = offsetBase + (long)U32(tiff, p + 8, little) + delta;
+                if (valueStart < lowest || valueStart > highest - byteLength)
+                    return null;
+            }
+            decoded += 2L * byteLength; // The value and, at most, its split fields.
+            if (decoded > retainedBudget)
+                return null;
+            ExifValue value = ExifValue.FromRaw(type, valueCount, order, tiff.Slice((int)valueStart, byteLength));
+            entries.Add(new MakerNoteEntry(tag, name(tag), value, split?.Invoke(tag, value) ?? [])
+            {
+                Slot = new MakerNoteSlot(ifd, p, (int)valueStart, byteLength, little, regionEnd, offsetBase, delta),
+            });
+        }
+        return new MakerNote(format, order, entries);
+    }
+
+    private static ushort U16(ByteView s, int p, bool little) => little
+        ? BinaryPrimitives.ReadUInt16LittleEndian(s.Slice(p, 2))
+        : BinaryPrimitives.ReadUInt16BigEndian(s.Slice(p, 2));
+
+    private static uint U32(ByteView s, int p, bool little) => little
+        ? BinaryPrimitives.ReadUInt32LittleEndian(s.Slice(p, 4))
+        : BinaryPrimitives.ReadUInt32BigEndian(s.Slice(p, 4));
+
+    /// <summary>Binary search in an ascending (Id, Name) table.</summary>
+    internal static string? Lookup((ushort Id, string Name)[] table, ushort tag)
+    {
+        int lo = 0, hi = table.Length - 1;
+        while (lo <= hi)
+        {
+            int mid = (lo + hi) >>> 1;
+            ushort id = table[mid].Id;
+            if (id == tag) return table[mid].Name;
+            if (id < tag) lo = mid + 1; else hi = mid - 1;
+        }
+        return null;
+    }
+}

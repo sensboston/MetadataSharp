@@ -1,0 +1,83 @@
+using MetadataSharp.Core;
+
+namespace MetadataSharp.Formats.Tiff;
+
+/// <summary>Finite read-only TIFF framing and accounting budgets, captured before I/O.</summary>
+public sealed record TiffReadOptions
+{
+    /// <summary>
+    /// The budgets of a whole TIFF-based file when the caller names none. Two of the defaults of
+    /// <see cref="MetadataLimits"/> are sized for an EXIF block inside another container (65,527
+    /// bytes is the most a JPEG APP1 segment holds), and a valid TIFF-based file exceeds them with
+    /// one ICC profile, Photoshop block or DNG profile table: a value may be 16 MiB here, and
+    /// 64 MiB may be retained in all.
+    /// </summary>
+    internal static MetadataLimits FileLimits { get; } = new() { MaxValueBytes = 16_777_216, MaxRetainedMetadataBytes = 67_108_864 };
+
+    /// <summary>
+    /// The budgets. Unless set, those of <see cref="MetadataLimits"/> with
+    /// <see cref="MetadataLimits.MaxValueBytes"/> 16,777,216 and
+    /// <see cref="MetadataLimits.MaxRetainedMetadataBytes"/> 67,108,864.
+    /// </summary>
+    public MetadataLimits Limits { get; init; } = FileLimits;
+    /// <summary>The most pointers between directories followed in one file. Default 4,096.</summary>
+    public int MaxDirectoryLinks { get; init; } = 4096;
+    /// <summary>The most byte ranges accounted for in one file. Default 16,384.</summary>
+    public int MaxAccountedRanges { get; init; } = 16384;
+    // Take a stable copy without exposing mutable TIFF/DNG state.
+    internal TiffReadOptions Snapshot()
+    {
+        ArgumentNullException.ThrowIfNull(Limits); Limits.Validate();
+        if (MaxDirectoryLinks <= 0 || MaxAccountedRanges <= 0) throw new ArgumentOutOfRangeException(nameof(TiffReadOptions));
+        return this with { Limits = Limits with { } };
+    }
+}
+
+/// <summary>An owned immutable accounting snapshot, not a pixel decoder or relocation certificate.</summary>
+public sealed class TiffLayout
+{
+    // Expose the validated primary IFD and image directories without re-reading the file.
+    internal TiffLayout(Endianness order, long length, uint first, TiffDirectoryInfo[] directories,
+        TiffAccountedRange[] ranges, TiffLayoutIssue[] issues)
+    { ByteOrder = order; SourceLength = length; FirstIfdOffset = first; Directories = Array.AsReadOnly(directories); Ranges = Array.AsReadOnly(ranges); Issues = Array.AsReadOnly(issues); }
+    /// <summary>The byte order of the file.</summary>
+    public Endianness ByteOrder { get; }
+    /// <summary>The length of the source in bytes.</summary>
+    public long SourceLength { get; }
+    /// <summary>The offset of the first directory, from the header.</summary>
+    public uint FirstIfdOffset { get; }
+    /// <summary>Every directory reached from the header.</summary>
+    public IReadOnlyList<TiffDirectoryInfo> Directories { get; }
+    /// <summary>Every range of the file the directories account for, in file order.</summary>
+    public IReadOnlyList<TiffAccountedRange> Ranges { get; }
+    /// <summary>The reasons, if any, the layout is outside the accounting profile.</summary>
+    public IReadOnlyList<TiffLayoutIssue> Issues { get; }
+    /// <summary>True when there are no issues, the file has an image, and every image is within the accounting profile.</summary>
+    public bool IsSupported => Issues.Count == 0 && Directories.Any(d => d.Image is not null) && Directories.All(d => d.Image?.IsSupported != false);
+    /// <summary>Reads the layout of a classic TIFF from a readable, seekable stream at position zero, and leaves the stream open.</summary>
+    /// <exception cref="MetadataException">
+    /// <see cref="MetadataErrorCode.InvalidTiff"/> for a malformed file;
+    /// <see cref="MetadataErrorCode.UnsupportedFeature"/> for BigTIFF, a DNG, or a field type of
+    /// unknown width; <see cref="MetadataErrorCode.LimitExceeded"/> when a budget is exceeded.
+    /// </exception>
+    /// <param name="source">Readable, seekable TIFF/DNG input stream positioned at the start; it remains open after the read.</param>
+    /// <param name="options">Settings for TIFF/DNG parsing; null selects the defaults.</param>
+    /// <returns>The parsed TiffLayout for the complete input file.</returns>
+    public static TiffLayout Read(Stream source, TiffReadOptions? options = null) => TiffLayoutReader.Read(source, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
+    /// <summary>Reads the layout of a file. Fails as <see cref="Read(Stream, TiffReadOptions?)"/> does.</summary>
+    /// <param name="path">Path of the TIFF/DNG file to identify or open.</param>
+    /// <param name="options">Settings for TIFF/DNG parsing; null selects the defaults.</param>
+    /// <returns>The parsed TiffLayout for the complete input file.</returns>
+    public static TiffLayout Read(string path, TiffReadOptions? options = null) => PathRead(path, (options ?? new()).Snapshot(), false, default).GetAwaiter().GetResult();
+    /// <inheritdoc cref="Read(Stream, TiffReadOptions?)"/>
+    public static Task<TiffLayout> ReadAsync(Stream source, TiffReadOptions? options = null, CancellationToken cancellationToken = default) => TiffLayoutReader.Read(source, (options ?? new()).Snapshot(), true, cancellationToken);
+    /// <inheritdoc cref="Read(string, TiffReadOptions?)"/>
+    public static Task<TiffLayout> ReadAsync(string path, TiffReadOptions? options = null, CancellationToken cancellationToken = default) => PathRead(path, (options ?? new()).Snapshot(), true, cancellationToken);
+    // Keep PathRead focused on TIFF/DNG and its format-specific validation contract.
+    private static async Task<TiffLayout> PathRead(string path, TiffReadOptions options, bool asynchronous, CancellationToken token)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path); token.ThrowIfCancellationRequested();
+        await using var file = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, options.Limits.CopyBufferBytes, asynchronous ? FileOptions.Asynchronous : FileOptions.None);
+        return await TiffLayoutReader.Read(file, options, asynchronous, token).ConfigureAwait(false);
+    }
+}

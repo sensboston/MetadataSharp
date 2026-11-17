@@ -1,0 +1,35 @@
+# Byte-authored fixtures and manifests are hashed as committed bytes; a CRLF checkout must not touch them.
+tests/fixtures/b8/owned-vector.eps text eol=lf
+tests/fixtures/b8/census-manifest.json text eol=lf
+tests/fixtures/b10/census-manifest.json text eol=lf
+tests/fixtures/b10/owned-marker-sr2.sr2 -text
+tests/fixtures/b10/owned-mrw-ttw.mrw -text
+tests/fixtures/b10/owned-raf-fujifilm.raf -text
+tests/fixtures/b10/owned-rw2-root24.rw2 -text
+tests/fixtures/b9/census-manifest.json text eol=lf
+tests/fixtures/b9/owned-marker-arw.arw -text
+tests/fixtures/b9/owned-marker-cr2.cr2 -text
+tests/fixtures/b9/owned-marker-nef.nef -text
+tests/fixtures/b9/owned-marker-orf.orf -text
+tests/fixtures/b9/owned-marker-pef.pef -text
+tests/fixtures/b9/owned-marker-srw.srw -text
+tests/fixtures/b11/census-manifest.json text eol=lf
+tests/fixtures/b11/owned-asf-header.asf -text
+tests/fixtures/b11/owned-avi-avih.avi -text
+tests/fixtures/b11/owned-bmp-dib.bmp -text
+tests/fixtures/b11/owned-bmp-os2.bmp -text
+tests/fixtures/b11/owned-crw-mapped.crw -text
+tests/fixtures/b11/owned-crw-preview-thumb.crw -text
+tests/fixtures/b11/owned-crw-thumb.crw -text
+tests/fixtures/b11/owned-crw-unmapped.crw -text
+tests/fixtures/b11/owned-gif-lsd.gif -text
+tests/fixtures/b11/owned-gif-no-lsd.gif -text
+tests/fixtures/b11/owned-mkv-header.mkv -text
+tests/fixtures/b11/owned-mov-brand.mov -text
+tests/fixtures/b11/owned-mov-unknownbrand.mov -text
+tests/fixtures/b11/owned-tga-full.tga -text
+tests/fixtures/b11/owned-tga-name-only.tga -text
+tests/fixtures/b11/owned-tga-signature-only.targa -text
+tests/fixtures/b11/owned-wav-fmt.wav -text
+tests/fixtures/b11eps/* -text
+tests/fixtures/fuzz/*/* -text

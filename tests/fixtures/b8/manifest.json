@@ -1,0 +1,26 @@
+[
+  {
+    "file": "owned-flat-rgb.psd",
+    "format": "PSD",
+    "layout": "flat-rgb-v1-no-resources",
+    "length": 52,
+    "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+    "rights": "owned-synthetic",
+    "width": 2,
+    "height": 2,
+    "metadata": "none",
+    "risk": "ordinary"
+  },
+  {
+    "file": "owned-metadata-rgb.psd",
+    "format": "PSD",
+    "layout": "flat-rgb-v1-metadata",
+    "length": 358,
+    "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+    "rights": "owned-synthetic",
+    "width": 2,
+    "height": 2,
+    "metadata": "authored-exif-xmp-iptc",
+    "risk": "ordinary"
+  }
+]

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The tests of the CI gates in tools/MetadataSharp.Harness: their verdicts, named exceptions and
+       thresholds, on small reports and fake tools. Nothing here reads the library or a downloaded corpus,
+       and nothing here belongs to tests/MetadataSharp.Tests, which tests the library only. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Program.cs is the assembly's entry point: the fuzz runner's tests start it as a stand-in harness. -->
+    <GenerateProgramFile>false</GenerateProgramFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MetadataSharp.Harness/MetadataSharp.Harness.csproj" />
+  </ItemGroup>
+</Project>

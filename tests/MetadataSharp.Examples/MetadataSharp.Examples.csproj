@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The README's "Quick start" as code: QuickStart.cs holds the snippets, QuickStartTests.cs runs them.
+       Only the public API is visible from here; the fixtures are the authored files of the main suite. -->
+  <PropertyGroup>
+    <TargetFramework />
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/MetadataSharp.Core/MetadataSharp.Core.csproj" />
+    <ProjectReference Include="../../src/MetadataSharp.Formats/MetadataSharp.Formats.csproj" />
+    <Compile Include="../MetadataSharp.Tests/Jpeg/JpegFixture.cs" Link="Fixtures/JpegFixture.cs" />
+    <Compile Include="../MetadataSharp.Tests/Png/PngFixture.cs" Link="Fixtures/PngFixture.cs" />
+    <Compile Include="../MetadataSharp.Tests/Tiff/TiffBasedFixture.cs" Link="Fixtures/TiffBasedFixture.cs" />
+  </ItemGroup>
+</Project>

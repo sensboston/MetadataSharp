@@ -1,0 +1,155 @@
+[
+  {
+    "file": "png-base.png",
+    "sha256": "5f8564422b1aa2e65999237b5fe9eca4ed4296f22eb28c05246bc21a4a598e13",
+    "length": 72,
+    "layout": "container",
+    "duplicates": "none",
+    "recipe": "png-base-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-exif-thumb-jpeg.png",
+    "sha256": "9eddf77cdc43f3f365f33a01dfab7edfe06add35ea4dadd7f2c872b0119ba5c4",
+    "length": 301,
+    "layout": "exif-ifd1-jpeg",
+    "duplicates": "none",
+    "recipe": "png-exif-ifd1-jpeg-thumbnail-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-exif-thumb-raw.png",
+    "sha256": "eccf357a3219a50e92a47d74fd322c89eea5d93f460040cf3e37640fa6a55c7c",
+    "length": 404,
+    "layout": "exif-ifd1-uncompressed",
+    "duplicates": "none",
+    "recipe": "png-exif-ifd1-uncompressed-thumbnail-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-exif.png",
+    "sha256": "e6ef7b3ae56af891411dbf492d46c48155a5e8a71a2c26980d32bb38c3551a18",
+    "length": 128,
+    "layout": "png-exif",
+    "duplicates": "none",
+    "recipe": "png-exif-orientation-artist-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-iccp-dup.png",
+    "sha256": "b8f83f067964967ad9384f86fe52a262e522d0d5cf20daa67c0a54292fcefd59",
+    "length": 376,
+    "layout": "iccp",
+    "duplicates": "first-wins",
+    "recipe": "png-iccp-two-byte-identical-chunks-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-iccp.png",
+    "sha256": "2c4c50cc347f753ea8b56cef85c56bb3496a3f28a3174d574a55bd6e63b984ca",
+    "length": 224,
+    "layout": "iccp",
+    "duplicates": "none",
+    "recipe": "png-iccp-named-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-iptc-dup.png",
+    "sha256": "42453bc395c5a49076329263abb00e5e98c8ddd7f920a7d8cbfc0f268090aea9",
+    "length": 300,
+    "layout": "ztxt-raw-profile-iptc",
+    "duplicates": "first-wins",
+    "recipe": "png-iptc-two-byte-identical-ztxt-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-iptc-itxt-dup.png",
+    "sha256": "22944ce944f7863b6eed1fca198bff2592782f5e64c983bce6b1390d42c96b5e",
+    "length": 410,
+    "layout": "itxt-raw-profile-iptc",
+    "duplicates": "first-wins",
+    "recipe": "png-iptc-two-byte-identical-itxt-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-iptc-itxt.png",
+    "sha256": "c4239b076d15499cb824afbdc6b6a186b78a1d1bdf6b63b54ef342fef8470189",
+    "length": 241,
+    "layout": "itxt-raw-profile-iptc",
+    "duplicates": "none",
+    "recipe": "png-iptc-itxt-raw-profile-alpha-beta-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-iptc.png",
+    "sha256": "3af2d45b1607bc9cf1b58e807a9568e5c72ec32881e88a4cf1c0caeb93eed742",
+    "length": 186,
+    "layout": "ztxt-raw-profile-iptc",
+    "duplicates": "none",
+    "recipe": "png-iptc-ztxt-raw-profile-alpha-beta-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-text.png",
+    "sha256": "e790b7c04f74cc531bc89ff577acb1253a80481aff37516fbe862bfe86503d94",
+    "length": 218,
+    "layout": "png-text",
+    "duplicates": "none",
+    "recipe": "png-text-ztxt-itxt-trio-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-xmp-dup.png",
+    "sha256": "6f7a73112f89c5de4c472bd209d88624d690174f23a022655a5a7c2deb0a7834",
+    "length": 854,
+    "layout": "itxt-xmp",
+    "duplicates": "first-wins",
+    "recipe": "png-xmp-two-itxt-different-creators-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-xmp-nonutf8.png",
+    "sha256": "5f67b9ededdf8ec9f90011b24c9a6cab2a8bcc5c13ef0465390b92e75e6d913b",
+    "length": 120,
+    "layout": "itxt-xmp",
+    "duplicates": "none",
+    "recipe": "png-xmp-itxt-non-utf8-payload-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-xmp-ztxt-dup.png",
+    "sha256": "37a3e4937358b40175fb773e58c9af80213a72c31c5e831f4608729815b78f4f",
+    "length": 626,
+    "layout": "ztxt-xmp",
+    "duplicates": "first-wins",
+    "recipe": "png-xmp-two-ztxt-different-creators-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-xmp-ztxt-nonutf8.png",
+    "sha256": "859c2c57bcd2acf80d778c4c59f63db602207a3015071af137ce97438598ae84",
+    "length": 125,
+    "layout": "ztxt-xmp",
+    "duplicates": "none",
+    "recipe": "png-xmp-ztxt-non-utf8-payload-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-xmp-ztxt.png",
+    "sha256": "4014cedf913e2cbc9ac103ad7a27d9a65af1a96c2707d825ca236ab34b2cc740",
+    "length": 348,
+    "layout": "ztxt-xmp",
+    "duplicates": "none",
+    "recipe": "png-xmp-ztxt-standard-v1",
+    "rights": "owned-synthetic"
+  },
+  {
+    "file": "png-xmp.png",
+    "sha256": "a7acb76c9059435a4c3d293068fe89215509066a8befd23b0dd856e87e4eae9e",
+    "length": 462,
+    "layout": "itxt-xmp",
+    "duplicates": "none",
+    "recipe": "png-xmp-itxt-standard-v1",
+    "rights": "owned-synthetic"
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "rights": "owned-synthetic",
+  "fixture": "owned-vector.eps",
+  "generator": "tools/reference/b8_eps_fixture.py",
+  "authorship": "A small ASCII DSC header and original rectangle drawing commands were independently constructed from scratch; no vendor samples, test data, fonts, images, metadata, code or PostScript examples were copied.",
+  "reference": "https://printtechnologies.org/standards/files/epsf_spec_v3_0.pdf",
+  "review": "docs/research/E01_B8_RIGHTS_AND_ORACLE_REVIEW.md",
+  "limitations": "No PostScript execution, rendered-output oracle, preview, embedded XMP, full DSC/EPS conformance or safe-execution claim; this fixture tests a narrow header only."
+}

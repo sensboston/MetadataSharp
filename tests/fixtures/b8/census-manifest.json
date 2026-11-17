@@ -1,0 +1,42 @@
+[
+  {
+    "file": "owned-vector.eps",
+    "format": "EPS",
+    "layout": "eps-dsc-bounding-box",
+    "length": 168,
+    "sha256": "17a5075bac1eaa58e7d37225db451e23e8ef5c13672eb8f24e7fef3d66a270ba",
+    "rights": "owned-synthetic",
+    "recipe": "tools/reference/b8_eps_fixture.py; authored ASCII EPSF 3.0 single page",
+    "metadata": "none"
+  },
+  {
+    "file": "owned-metadata-rgb.psd",
+    "format": "PSD",
+    "layout": "flat-rgb-v1-metadata",
+    "length": 358,
+    "sha256": "fee30fbbe825123fe4fdbe5278c99329cabfa4dfc949a68768e5777526acb493",
+    "rights": "owned-synthetic",
+    "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1",
+    "metadata": "authored-exif-xmp-iptc"
+  },
+  {
+    "file": "owned-flat-rgb.psd",
+    "format": "PSD",
+    "layout": "flat-rgb-v1-no-resources",
+    "length": 52,
+    "sha256": "8903393ec12d1236063cc994add7a87514ddbad49689db5b5501a249933c4c10",
+    "rights": "owned-synthetic",
+    "recipe": "tools/reference/b8_psd_fixture.py; authored 2x2 RGB, 8-bit planar, v1",
+    "metadata": "none"
+  },
+  {
+    "file": "owned-rgb.jp2",
+    "format": "JP2",
+    "layout": "jp2-boxed-rgb",
+    "length": 428,
+    "sha256": "5590ea8a66fe8729c6cf986f61a8cb52ee537d5dadc63b96ba8aa2ce0099ee6f",
+    "rights": "owned-synthetic",
+    "recipe": "tools/reference/b8_jp2_fixture.py; Pillow 11.3.0 / OpenJPEG 2.5.3, 8x8 RGB",
+    "metadata": "none"
+  }
+]

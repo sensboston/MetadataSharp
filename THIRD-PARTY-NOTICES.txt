@@ -1,0 +1,34 @@
+THIRD-PARTY NOTICES
+===================
+
+MetadataSharp is licensed under the MIT License (see LICENSE). Its assemblies carry the
+following controlled vocabularies, used to print the values of the XMP properties that
+name them (MetadataSharp.Core.Xmp.XmpVocabularies).
+
+-------------------------------------------------------------------------------
+1. IPTC NewsCodes: Scene, Subject Codes, Digital Source Type
+-------------------------------------------------------------------------------
+
+Copyright IPTC - International Press Telecommunications Council.
+https://cv.iptc.org/newscodes/scene/
+https://cv.iptc.org/newscodes/subjectcode/
+https://cv.iptc.org/newscodes/digitalsourcetype/
+
+Licensed under the Creative Commons Attribution 4.0 International License
+(CC BY 4.0), https://creativecommons.org/licenses/by/4.0/. The term codes and
+labels are carried as published; no other change was made.
+
+-------------------------------------------------------------------------------
+2. PLUS License Data Format controlled vocabularies (PLUS Version 2.0.1)
+-------------------------------------------------------------------------------
+
+Published by the PLUS Coalition for use with the PLUS License Data Format.
+https://ns.useplus.org/LDF/ldf-XMPSpecification
+
+-------------------------------------------------------------------------------
+Lens identification data
+-------------------------------------------------------------------------------
+
+The tables that map the lens codes of camera MakerNotes to lens names are facts
+collected and published by the Exiv2 project (https://exiv2.org) and by ExifTool
+(https://exiftool.org, Phil Harvey). They are stated here as a credit to both.

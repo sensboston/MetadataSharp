@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework />
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/MetadataSharp.Core/MetadataSharp.Core.csproj" />
+    <ProjectReference Include="../../src/MetadataSharp.Formats/MetadataSharp.Formats.csproj" />
+  </ItemGroup>
+  <!-- The command line of samples/MetaTool is linked rather than referenced: its grammar is part of
+       what this project pins, and a test project cannot reference an executable sample. -->
+  <ItemGroup>
+    <Compile Include="../../samples/MetaTool/Cli/**/*.cs" Link="MetaTool/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../../samples/Shared/SampleSupport.cs" Link="MetaTool/SampleSupport.cs" />
+  </ItemGroup>
+  <!-- The fuzz targets are linked for the same reason: the tool that fuzzes them depends on SharpFuzz,
+       this project does not, and every minimized failure under tests/fixtures/fuzz is replayed here. -->
+  <ItemGroup>
+    <Compile Include="../../tools/MetadataSharp.Fuzz/FuzzTargets.cs" Link="Fuzz/FuzzTargets.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,1138 @@
+name: Build and test
+
+on:
+  push:
+    branches: ['**']
+    # A tag v<version> runs everything and then publishes the packages (job "publish").
+    tags: ['v*']
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-and-test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    # Two tiers. A push to a work branch builds and tests two legs in parallel (ubuntu, net8.0 and
+    # net10.0) for a fast answer; a pull request and master get the full matrix before anything is
+    # merged. Both target frameworks are in the fast tier because a failure can belong to one runtime:
+    # ExifEdit.Set of a long text once failed on net8.0 only. A release tag gets the full matrix too.
+    name: ${{ matrix.tfm }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 6
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(github.event_name == 'push' && github.ref != 'refs/heads/master' && !startsWith(github.ref, 'refs/tags/') && '["ubuntu-latest"]' || '["ubuntu-latest","windows-latest","macos-latest"]') }}
+        tfm: ['net8.0', 'net10.0']
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      # SDK 10 builds every target; the .NET 8 SDK (and its runtime) is installed only where net8.0
+      # code runs. Downloading SDKs was the slowest step of the Windows legs.
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Install .NET 8 SDK
+        if: matrix.tfm == 'net8.0'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Record SDK and runtime environment
+        run: dotnet --info
+      - name: Restore
+        run: dotnet restore MetadataSharp.sln
+      # The CI gates (tools/MetadataSharp.Harness), run through the HARNESS command.
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Inventory Core documentation (baseline)
+        run: dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- --root src/MetadataSharp.Core --check-public --report artifacts/doc-inventory/baseline-core.json
+      - name: Report Core documentation inventory
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f artifacts/doc-inventory/baseline-core.json ]]; then
+            $HARNESS doc-inventory-report core artifacts/doc-inventory/baseline-core.json
+          else
+            echo '::warning::Core documentation inventory report was not produced.'
+          fi
+      - name: Inventory Formats documentation (baseline)
+        run: dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- --root src/MetadataSharp.Formats --check-public --report artifacts/doc-inventory/baseline-formats.json
+      - name: Report Formats documentation inventory
+        shell: bash
+        run: |
+          $HARNESS doc-inventory-report formats artifacts/doc-inventory/baseline-formats.json
+      - name: Inventory tools documentation (baseline)
+        run: dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- --root tools --report artifacts/doc-inventory/baseline-tools.json
+      - name: Report tools documentation inventory
+        shell: bash
+        run: |
+          $HARNESS doc-inventory-report tools artifacts/doc-inventory/baseline-tools.json
+      - name: Inventory samples documentation (baseline)
+        run: dotnet run --project tools/MetadataSharp.DocInventory --configuration Release -- --root samples --report artifacts/doc-inventory/baseline-samples.json
+      - name: Report samples documentation inventory
+        shell: bash
+        run: |
+          $HARNESS doc-inventory-report samples artifacts/doc-inventory/baseline-samples.json
+      - name: Build fuzz target
+        run: dotnet build tools/MetadataSharp.Fuzz/MetadataSharp.Fuzz.csproj --configuration Release
+      - name: Build Release
+        run: dotnet build MetadataSharp.sln --configuration Release --no-restore
+      - name: Verify authored video fixtures
+        shell: bash
+        run: |
+          $HARNESS video-fixtures verify tests/fixtures/video
+      - name: Test Release
+        run: dotnet test tests/MetadataSharp.Tests/MetadataSharp.Tests.csproj --framework ${{ matrix.tfm }} --configuration Release --no-build --no-restore --logger "trx;LogFileName=tests.trx" --results-directory TestResults/${{ matrix.tfm }}
+      # The README's "Quick start" as code: every snippet is run, and the README has to show them as compiled.
+      - name: Test README examples
+        run: dotnet test tests/MetadataSharp.Examples/MetadataSharp.Examples.csproj --framework ${{ matrix.tfm }} --configuration Release --no-build --no-restore --logger "trx;LogFileName=examples.trx" --results-directory TestResults/${{ matrix.tfm }}
+      # The tests of the C# gates (formerly tests/parity and tools/ci unittest suites), on every operating
+      # system; they target net10.0 only.
+      - name: Test the CI gates (tools/MetadataSharp.Harness.Tests)
+        if: matrix.tfm == 'net10.0'
+        run: dotnet test tools/MetadataSharp.Harness.Tests/MetadataSharp.Harness.Tests.csproj --configuration Release --logger "trx;LogFileName=harness.trx" --results-directory TestResults/${{ matrix.tfm }}
+      - name: Report failed test details
+        if: failure()
+        shell: bash
+        run: $HARNESS trx-failures
+      # Result files with counters, every test passed, and at least 450 of them (trx-count).
+      - name: Verify tests actually ran
+        shell: bash
+        run: $HARNESS trx-count
+      - name: Upload documentation inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-inventory-${{ matrix.os }}-${{ matrix.tfm }}
+          path: artifacts/doc-inventory/baseline-*.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.tfm }}
+          path: TestResults/**/*.trx
+          if-no-files-found: warn
+          retention-days: 7
+
+  samples:
+    name: Samples / net10.0 / ubuntu-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Build every sample (the desktop viewer is build-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          for project in MetaTool GeoTag BatchRename StripMetadata CopyMetadata Thumbnails MetadataViewer; do
+            log="$(mktemp)"
+            if ! dotnet build "samples/$project/$project.csproj" --configuration Release >"$log" 2>&1; then
+              cat "$log"
+              $HARNESS annotate-tail "$project build failed" "$log"
+              exit 1
+            fi
+            cat "$log"
+            rm "$log"
+          done
+      - name: Generate small authored image fixtures
+        shell: bash
+        run: |
+          mkdir -p artifacts/samples
+          dotnet run --project tools/MetadataSharp.ReferenceFixture --configuration Release --framework net10.0 -- generate artifacts/samples
+          cp artifacts/samples/ours.jpg artifacts/samples/camera.jpg
+          cp artifacts/samples/base.jpg artifacts/samples/target.jpg
+          cat > artifacts/samples/track.gpx <<'GPX'
+          <?xml version="1.0"?>
+          <gpx version="1.1" creator="MetadataSharp sample"><trk><trkseg>
+            <trkpt lat="51.5007" lon="-0.1246"><time>2024-01-01T10:00:00Z</time></trkpt>
+          </trkseg></trk></gpx>
+          GPX
+      - name: Smoke-test the command-line samples on public API fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Every action, print mode, target and documented exit code of samples/MetaTool.
+          bash tools/ci/metatool_smoke.sh artifacts/samples
+          cp artifacts/samples/target.jpg artifacts/samples/copy.jpg
+          dotnet run --project samples/GeoTag -c Release --no-build -- --gpx artifacts/samples/track.gpx --max-gap 2m artifacts/samples/camera.jpg
+          dotnet run --project samples/BatchRename -c Release --no-build -- --dry-run artifacts/samples/camera.jpg
+          dotnet run --project samples/StripMetadata -c Release --no-build -- --keep icc,orientation,copyright --dry-run artifacts/samples/camera.jpg
+          dotnet run --project samples/CopyMetadata -c Release --no-build -- --dry-run artifacts/samples/camera.jpg artifacts/samples/target.jpg
+          dotnet run --project samples/Thumbnails -c Release --no-build -- list artifacts/samples/copy.jpg
+          dotnet run --project samples/Thumbnails -c Release --no-build -- extract artifacts/samples/copy.jpg artifacts/samples/previews
+
+  external-reference:
+    # Depends on Ubuntu's package mirror (exiv2 0.27.6, exiftool, webp from apt), which has failed for
+    # hours at a time on the runners. Runs nightly and on demand; parity against the pinned 0.28.9
+    # binary is the per-commit gate.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    continue-on-error: true
+    name: References / ${{ matrix.tfm }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        tfm: [net8.0, net10.0]
+    timeout-minutes: 15
+    env:
+      LC_ALL: C
+      METADATASHARP_REFERENCE_TFM: ${{ matrix.tfm }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      # SDK 10 builds every target; the .NET 8 SDK (and its runtime) is installed only where net8.0
+      # code runs. Downloading SDKs was the slowest step of the Windows legs.
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Install .NET 8 SDK
+        if: matrix.tfm == 'net8.0'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install external CLI tools
+        timeout-minutes: 5
+        run: |
+          # Runner mirrors occasionally fail DNS; fail fast and retry instead of hanging for minutes.
+          APT_OPTS='-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20'
+          for attempt in 1 2 3; do
+            sudo apt-get $APT_OPTS update &&
+              sudo apt-get $APT_OPTS install -y exiv2 libimage-exiftool-perl webp && break
+            [ "$attempt" = 3 ] && exit 1
+            # The runner's Azure mirror has failed DNS for hours at a time; fall back to the main archive.
+            echo 'http://archive.ubuntu.com/ubuntu/' | sudo tee /etc/apt/apt-mirrors.txt >/dev/null
+            sudo sed -i 's|mirror+file:/etc/apt/apt-mirrors.txt|http://archive.ubuntu.com/ubuntu/|' /etc/apt/sources.list.d/ubuntu.sources || true
+            sleep 10
+          done
+          mkdir -p artifacts/reference
+          dpkg-query -W exiv2 libimage-exiftool-perl webp > artifacts/reference/packages.txt
+          cp /usr/share/doc/exiv2/copyright artifacts/reference/exiv2-copyright.txt
+          cp /usr/share/doc/libimage-exiftool-perl/copyright artifacts/reference/exiftool-copyright.txt
+          cp /usr/share/doc/webp/copyright artifacts/reference/webp-copyright.txt
+          dotnet --info > artifacts/reference/dotnet-info.txt
+      - name: Build fixture generator and public API consumer
+        run: dotnet build MetadataSharp.sln --configuration Release
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Required differential and validation checks
+        shell: bash
+        run: |
+          $HARNESS external-reference --required
+      - name: Upload reproducibility evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-reference-evidence-${{ matrix.tfm }}
+          path: artifacts/reference/
+          if-no-files-found: warn
+          retention-days: 7
+
+  performance-package-audit:
+    # Package audit: on pull requests, master and release tags.
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    name: Audit / ${{ matrix.os }} / ${{ matrix.tfm }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 6
+    strategy:
+      fail-fast: false
+      matrix:
+        # Package contents and the dependency audit do not depend on the OS; one runner is enough.
+        os: [ubuntu-latest]
+        tfm: [net8.0, net10.0]
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      AUDIT_TFM: ${{ matrix.tfm }}
+      AUDIT_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+      # Not through dotnet run, which adds DOTNET_ROOT_X64 to the environment of the program it starts: the
+      # audit records dotnet --info, and that prints every DOTNET_ variable.
+      HARNESS: dotnet tools/MetadataSharp.Harness/bin/Release/net10.0/MetadataSharp.Harness.dll
+    steps:
+      - uses: actions/checkout@v4
+      # SDK 10 builds every target; the .NET 8 SDK (and its runtime) is installed only where net8.0
+      # code runs. Downloading SDKs was the slowest step of the Windows legs.
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Install .NET 8 SDK
+        if: matrix.tfm == 'net8.0'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Record SDK and environment
+        run: dotnet --info
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Measure and audit local candidates
+        shell: bash
+        run: |
+          $HARNESS package-audit
+      - name: Upload audit evidence (never publish packages)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-${{ matrix.os }}-${{ matrix.tfm }}
+          path: |
+            artifacts/audit/**/baseline.json
+            artifacts/audit/**/packages.json
+          if-no-files-found: error
+          retention-days: 30
+
+  differential-parity:
+    # Branches of this repository are built by their push run, which GitHub also shows on the PR;
+    # pull_request runs only for forks, so each commit is built once.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    name: Exiv2 0.28.9 / differential parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      LC_ALL: C
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      DUMP: dotnet run --project tools/MetadataSharp.Dump -c Release -f net10.0 --no-build --
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the dump tool (restricted to the public API by construction)
+        run: dotnet build tools/MetadataSharp.Dump/MetadataSharp.Dump.csproj --configuration Release -f net10.0
+      # The gates of the parity reports (tools/MetadataSharp.Harness), run through the HARNESS command.
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Checkout pinned upstream corpus (CI-time fetch; never vendored, never executed)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/parity/exiv2
+          persist-credentials: false
+      - name: Range equivalence and byte budgets on pinned exiv2 corpus
+        shell: bash
+        run: |
+          $HARNESS range-corpus-gate --kind exiv2 --corpus artifacts/parity/exiv2/test/data --dump-command "$DUMP" --out artifacts/parity/ranges/exiv2.md
+      - name: C# parity against upstream expectations and dynamic MakerNote gate
+        shell: bash
+        run: |
+          dotnet build tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj --configuration Release
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj --configuration Release --no-build -- \
+            --tree artifacts/parity/exiv2 --dump-command "$DUMP" --out artifacts/parity/upstream \
+            --title 'PARITY upstream' --rows-per-file 20000 --annotate --inventory --gaps --require-all-maker-notes \
+            --require Exif.PentaxDng --require Exif.Pentax --require Exif.Canon --require Exif.CanonSi \
+            --require Exif.CanonCs --require Exif.CanonFi --require Exif.CanonAfC --require Exif.CanonPi \
+            --require Exif.CanonPa --require Exif.CanonAfMiAdj --require Exif.CanonAm --require Exif.CanonHdr \
+            --require Exif.CanonLe --require Exif.CanonLiOp --require Exif.CanonMe --require Exif.CanonPr \
+            --require Exif.CanonTi --require Exif.CanonVigCor2 --require Exif.Sony1 --require Exif.Sony2 \
+            --require Exif.Sony2Fp --require Exif.SonyMisc1 --require Exif.Sony1Cs --require Exif.SonyMisc3c \
+            --require Exif.SonyMisc2b --require Exif.SonyMinolta --require Exif.NikonLd3 --require Exif.NikonLd4 \
+            --require Exif.NikonFl7 --require Exif.NikonFl6 --require Exif.NikonIi --require Exif.Nikon3 \
+            --require Exif.NikonSi02xx --require Exif.Nikon1 --require Exif.Nikon2 --require Exif.NikonLd2 \
+            --require Exif.NikonAf --require Exif.NikonFl1 --require Exif.NikonFl3 --require Exif.NikonAFT \
+            --require Exif.NikonAf2 --require Exif.NikonAf22 --require Exif.NikonCb2b --require Exif.NikonCb3 \
+            --require Xmp.exif --require Xmp.tiff --require Xmp.iptc --require Xmp.iptcExt \
+            --require Xmp.plus \
+            --require Exif.NikonCb4 --require Exif.NikonFi --require Exif.NikonMe --require Exif.NikonPc \
+            --require Exif.NikonPreview --require Exif.NikonSi01xx --require Exif.NikonVr --require Exif.NikonWt \
+            --require Exif.Fujifilm --require Exif.Panasonic --require Exif.Olympus --require Exif.Olympus2 \
+            --require Exif.OlympusCs --require Exif.OlympusEq --require Exif.OlympusFi --require Exif.OlympusIp \
+            --require Exif.OlympusRd --require Exif.Sigma --require Exif.Minolta --require Exif.MinoltaCs5D \
+            --require Exif.MinoltaCs7D
+      # A gate over the vocabulary rather than over files: every key of every tag table of the pinned
+      # reference has to exist in the catalog, so a tag no corpus file exercises cannot stay unnamed.
+      - name: Tag key completeness against the pinned reference's own tables (a missing key fails)
+        shell: bash
+        run: |
+          $HARNESS key-catalog artifacts/parity/exiv2 --catalog src/MetadataSharp.Core/tag-catalog-data.json
+      - name: Preview parity against upstream expectations (kind "Preview"; exiv2 -pp output read as text)
+        shell: bash
+        run: |
+          $HARNESS previews --tree artifacts/parity/exiv2 --dump-command "$DUMP" --out artifacts/parity/preview --annotate
+      # A gate, unlike the two measurements above: the profile is a run of bytes the file holds, so
+      # every file the pinned tests give an "exiv2 -pC" output for has to give the same bytes here.
+      - name: ICC parity against upstream expectations (kind "Icc"; the pinned tests of exiv2 -pC read as text)
+        shell: bash
+        run: |
+          $HARNESS icc --tree artifacts/parity/exiv2 --dump-command "$DUMP" --out artifacts/parity/icc --annotate
+      # No comparison: the ICC and comment readers take any bytes, and the corpus has files damaged
+      # on purpose. Each file has to end with a result or a refusal that carries a code.
+      - name: ICC and comment readers over every corpus file (a reader failure fails the job)
+        shell: bash
+        run: |
+          $HARNESS sweep --tree artifacts/parity/exiv2 --dump-command "$DUMP" --out artifacts/parity/sweep --annotate
+      # The oracle is the official 0.28.9 release binary from github.com: no apt, no compiler, no
+      # 1-minute build. The Ubuntu package mirrors have failed DNS for hours at a time on the runners.
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/parity/exiv2.tar.gz             https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          test "$(wc -c < artifacts/parity/exiv2.tar.gz)" -eq 10041994 || { echo "unexpected size: $(wc -c < artifacts/parity/exiv2.tar.gz) bytes" >&2; exit 1; }
+          tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
+          artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      # Compare the pinned CLI's -pt rows on the corpus without treating iterator order or all
+      # printed prose as a universal compatibility promise. Exact display-only aliases are grouped
+      # and documented by key; structural and unexplained value differences still fail the gate.
+      - name: Tag table and -pt parity against pinned Exiv2 0.28.9
+        shell: bash
+        run: |
+          $HARNESS tag-print --tree artifacts/parity/exiv2 --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --dump-command "$DUMP" --out artifacts/parity/tag-print --annotate
+      - name: Preview source-offset parity by reversing pinned exiv2 -ep outputs
+        shell: bash
+        run: |
+          $HARNESS previews --tree artifacts/parity/exiv2 --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pp" \
+            --dump-command "$DUMP" --out artifacts/parity/preview-offsets --annotate --title 'PARITY preview offsets'
+      - name: Preview parity for raw, JP2, EPS, XMP and BMFF fixtures (pinned exiv2 -pp/-ep)
+        shell: bash
+        run: |
+          fixtures="--fixtures tests/fixtures/b10 --fixtures tests/fixtures/b11 --fixtures tests/fixtures/b11eps --fixtures tests/fixtures/b7 --fixtures tests/fixtures/b8"
+          $HARNESS previews $fixtures --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pp" \
+            --dump-command "$DUMP" --out artifacts/parity/group-c-preview --annotate --title 'PARITY group C preview'
+      - name: Bidirectional PSD, JP2 and EXV write parity
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/psd-jp2-exv
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 -- \
+            psd-jp2-exv-write-parity artifacts/parity/psd-jp2-exv
+          $HARNESS psd-jp2-exv-write-parity artifacts/parity/psd-jp2-exv \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP"
+      # The packaged release binary omits the optional video readers. Build only the pinned 0.28.9
+      # CLI from the checkout above with video enabled, and keep the release binary for other jobs.
+      - name: Build pinned Exiv2 video-enabled oracle
+        timeout-minutes: 10
+        shell: bash
+        run: |
+          cmake -S artifacts/parity/exiv2 -B artifacts/parity/exiv2-video-build \
+            -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
+            -DEXIV2_ENABLE_VIDEO=ON -DEXIV2_ENABLE_XMP=ON -DEXIV2_ENABLE_EXTERNAL_XMP=OFF \
+            -DEXIV2_ENABLE_PNG=OFF -DEXIV2_ENABLE_BMFF=OFF -DEXIV2_ENABLE_BROTLI=OFF \
+            -DEXIV2_ENABLE_INIH=OFF -DEXIV2_ENABLE_LENSDATA=OFF -DEXIV2_ENABLE_NLS=OFF \
+            -DEXIV2_BUILD_SAMPLES=OFF -DEXIV2_BUILD_UNIT_TESTS=OFF -DEXIV2_BUILD_DOC=OFF
+          cmake --build artifacts/parity/exiv2-video-build --parallel 2 --target exiv2
+          artifacts/parity/exiv2-video-build/bin/exiv2 -V
+          echo "VIDEO_EXIV2=$PWD/artifacts/parity/exiv2-video-build/bin/exiv2" >> "$GITHUB_ENV"
+      # Exiv2 0.28.9's video-enabled build still rejects RIFF/WAVE as unknown image type. Assert
+      # that exact known limitation; WAV remains covered by MetadataSharp reader tests. If the oracle
+      # starts supporting it, fail here so it can be added to parity rather than silently skipped.
+      # Every other authored video fixture is read by the pinned tool; the gate enforces exact
+      # key-set parity plus the two explicitly documented AVI value exceptions.
+      - name: Video-container key and value parity (required gate)
+        shell: bash
+        run: |
+          $HARNESS video-fixtures verify tests/fixtures/video
+          if "$VIDEO_EXIV2" -Pkycvt tests/fixtures/video/valid/authored-wave.wav > artifacts/parity/wave-oracle.txt 2>&1; then
+            echo "Pinned Exiv2 now reads the authored WAV; add it to the required video key/value parity set."
+            cat artifacts/parity/wave-oracle.txt
+            exit 1
+          fi
+          grep -F "unknown image type" artifacts/parity/wave-oracle.txt
+          mkdir -p artifacts/parity/video-corpus artifacts/parity/video-generated
+          ln -s "$PWD/artifacts/parity/exiv2/test/data/sample_960x540.asf" artifacts/parity/video-corpus/sample_960x540.asf
+          for fixture in authored-asf.asf authored-avi.avi authored-matroska.mkv authored-quicktime.mp4 authored-webm.webm; do
+            ln -s "$PWD/tests/fixtures/video/valid/$fixture" "artifacts/parity/video-generated/$fixture"
+          done
+          VIDEO_REPORT_DIR="$PWD/artifacts/parity/video"
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj -c Release --no-build -- --tree artifacts/parity/exiv2 \
+            --fixtures artifacts/parity/video-corpus --fixtures artifacts/parity/video-generated \
+            --exiv2-command "$VIDEO_EXIV2 -Pkycvt" --require-reference-tags --rows-per-file 1000 \
+            --dump-command "$DUMP" --out "$VIDEO_REPORT_DIR" --title 'PARITY video containers' --annotate
+          test -s "$VIDEO_REPORT_DIR/parity-report.json"
+          $HARNESS video-gate "$VIDEO_REPORT_DIR/parity-report.json"
+      # The pinned tree holds one CR3 file and no expectation for it, so the pinned tool reads it here.
+      # Two measurements, no gate: key parity of the CMT boxes and the XMP box, and the preview list.
+      - name: The CR3 file of the pinned corpus against the pinned tool (exiv2 -Pkycvt, exiv2 -pp)
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/cr3-input
+          cp artifacts/parity/exiv2/test/data/Canon-R6-pruned.CR3 artifacts/parity/cr3-input/
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj -c Release --no-build -- --fixtures artifacts/parity/cr3-input \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
+            --dump-command "$DUMP" --out artifacts/parity/cr3 --title 'PARITY cr3' --annotate
+          $HARNESS previews --fixtures artifacts/parity/cr3-input --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pp" \
+            --dump-command "$DUMP" --out artifacts/parity/cr3-preview --title 'PARITY cr3 preview' --annotate
+      # The pinned tree has no MRW file and two RAF files of 120 bytes. Files are authored here from
+      # files of the tree (raw-container-fixtures of the harness): a TIFF file as the TTW block of
+      # an MRW file, a JPEG file and a TIFF structure in a RAF file; the CRW files are copied. The
+      # pinned tool reads them in this job. A measurement, no gate.
+      - name: MRW, RAF and CRW files against the pinned tool (exiv2 -Pkycvt)
+        shell: bash
+        run: |
+          $HARNESS raw-container-fixtures artifacts/parity/exiv2/test/data artifacts/parity/raw-input
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj -c Release --no-build -- --fixtures artifacts/parity/raw-input \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
+            --dump-command "$DUMP" --out artifacts/parity/raw --title 'PARITY raw containers' --annotate
+      - name: Generate this repository's own fixtures
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/generated
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 -- generate artifacts/parity/generated
+          for name in jpeg png tiff webp xmp; do
+            $HARNESS $name-owned-fixtures generate artifacts/parity/generated
+          done
+          $HARNESS dng-fixtures generate artifacts/parity/generated
+          $HARNESS eps-pgf-fixtures generate artifacts/parity/generated
+      - name: Parity against owned fixtures (oracle is the pinned tool, run in this same job)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.Parity/MetadataSharp.Parity.csproj -c Release --no-build -- \
+            --fixtures artifacts/parity/generated --fixtures tests/fixtures/b7 --fixtures tests/fixtures/b8 \
+            --fixtures tests/fixtures/b9 --fixtures tests/fixtures/b10 --fixtures tests/fixtures/b11 \
+            --fixtures tests/fixtures/b11l --fixtures tests/fixtures/b11eps \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -Pkycvt" \
+            --summary-command "artifacts/parity/exiv2-bin/bin/exiv2 -ps" \
+            --dump-command "$DUMP" --out artifacts/parity/owned --title 'PARITY owned' --annotate
+      # Not key parity: nothing here is compared with what this library reads. The pinned tool has
+      # to read every file the TIFF-based writer edited, print what the edit wrote, and print
+      # unchanged every line of the source file that the edit did not name.
+      - name: Files edited by the TIFF-based writer still read in the pinned tool (exiv2 -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-edits artifacts/parity/edited
+          $HARNESS tiff-based-edits artifacts/parity/edited \
+            --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+      # The same rule on the TIFF-based files of the pinned corpus: real camera files, and files
+      # damaged on purpose. A refusal of the writer is counted by its code; a file it did write has
+      # to read in the pinned tool as its source did, wherever the tool could read the source.
+      - name: Corpus files edited by the TIFF-based writer still read in the pinned tool (exiv2 -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-corpus
+          $HARNESS tiff-based-edits artifacts/parity/edited-corpus --skip-unreadable-sources \
+            --title "TIFF-based corpus edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+      # The same rule for the BMFF writer: authored HEIC and AVIF files in the layouts whose item
+      # location box the pinned tool reads, after each kind of edit; then the HEIC, HEIF and AVIF
+      # files of the pinned corpus, where a refusal of the writer is counted by its code.
+      - name: Files edited by the BMFF writer still read in the pinned tool (exiv2 -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- bmff-edits artifacts/parity/edited-bmff
+          $HARNESS tiff-based-edits artifacts/parity/edited-bmff \
+            --title "BMFF edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+      - name: Corpus files edited by the BMFF writer still read in the pinned tool (exiv2 -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- bmff-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-bmff-corpus
+          $HARNESS tiff-based-edits artifacts/parity/edited-bmff-corpus --skip-unreadable-sources \
+            --title "BMFF corpus edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pa"
+      # The same rule for an edit of any tag. Authored blocks with all five directories, a MakerNote,
+      # a tag no vocabulary lists and a thumbnail, in a JPEG, a PNG, a WebP, a TIFF and a HEIC file,
+      # after tags of every directory and field type were set, written in place, taken out again,
+      # after directories were added and dropped, and after a file without a block was given one.
+      # The tool prints a tag it has no name for only with -u, and such tags are among those set.
+      - name: Files after an edit of any EXIF tag still read in the pinned tool (exiv2 -u -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- exif-tag-edits artifacts/parity/edited-tags
+          $HARNESS tiff-based-edits artifacts/parity/edited-tags \
+            --title "Any-tag EXIF edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -u -pa"
+      # Then the JPEG, PNG and WebP files of the pinned corpus, whose EXIF block is edited where it
+      # lies: what the tool prints of a MakerNote after the edit has to be what it printed before.
+      - name: Corpus JPEG, PNG and WebP files after an edit of any EXIF tag still read in the pinned tool (exiv2 -u -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- exif-tag-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-tags-corpus
+          $HARNESS tiff-based-edits artifacts/parity/edited-tags-corpus --skip-unreadable-sources \
+            --title "Any-tag EXIF corpus edits" --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -u -pa"
+      # The rule for an XMP edit by path is stricter, since the files are authored and everything in
+      # their packets was written here: the tool has to print every property as it was written and
+      # no other (-pa), and take the packet out as one well-formed document (-pX). Every node kind
+      # and a namespace of the edit's own, a second edit of the result, in JPEG, PNG, WebP, TIFF,
+      # HEIC and a sidecar; and a JPEG file whose packet is Extended XMP, before and after.
+      - name: Every XMP property an edit wrote is printed by the pinned tool (exiv2 -pa, -pX)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- xmp-edits artifacts/parity/edited-xmp
+          $HARNESS xmp-edits artifacts/parity/edited-xmp --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      # Not key parity either: the pinned tool has to print, with -pi and -pa, every IPTC dataset an
+      # edit wrote into a JPEG, a TIFF (tag 0x83BB, and the resources of tag 0x8649) and a PNG file
+      # (the raw profile text chunk), as often as it was written, and no other.
+      - name: Every IPTC dataset an edit wrote is printed by the pinned tool (exiv2 -u -pi, -pa)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- iptc-edits artifacts/parity/edited-iptc
+          $HARNESS iptc-edits artifacts/parity/edited-iptc --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      # Not key parity either: the pinned tool has to print, with -pC and -pc, the ICC profile and
+      # the comment the JPEG writer gave a file, replaced or took out, and with -pa what it printed
+      # for the file the edit started from. Authored files first, then the JPEG files of the pinned
+      # corpus, where a refusal of the writer is counted by its code.
+      - name: Profiles and comments written into JPEG files are printed by the pinned tool (exiv2 -pC, -pc)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- jpeg-embedded-edits artifacts/parity/edited-embedded
+          $HARNESS embedded-edits artifacts/parity/edited-embedded --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      - name: Profiles and comments written into corpus JPEG files are printed by the pinned tool (exiv2 -pC, -pc)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- jpeg-embedded-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-embedded-corpus
+          $HARNESS embedded-edits artifacts/parity/edited-embedded-corpus --skip-unreadable-sources \
+            --title "JPEG corpus profile and comment edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      - name: Profiles and comments written into PNG and WebP files are read by the pinned tool (exiv2 -pC, -pS)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- png-webp-embedded-edits artifacts/parity/edited-embedded-png-webp
+          $HARNESS embedded-edits artifacts/parity/edited-embedded-png-webp \
+            --title "PNG and WebP profile and comment edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+          $HARNESS png-chunk-edits artifacts/parity/edited-embedded-png-webp --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      - name: Profiles and comments written into corpus PNG and WebP files are read by the pinned tool (exiv2 -pC, -pS)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- png-webp-embedded-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-embedded-png-webp-corpus
+          $HARNESS embedded-edits artifacts/parity/edited-embedded-png-webp-corpus --skip-unreadable-sources \
+            --title "PNG and WebP corpus profile and comment edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+          $HARNESS png-chunk-edits artifacts/parity/edited-embedded-png-webp-corpus --skip-unreadable-sources \
+            --title "PNG corpus profile and comment chunks" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      # The same rule for the profile of a TIFF-based file (tag 0x8773 of the first directory) and of
+      # a HEIC, HEIF or AVIF file (a colr property of the primary item). The tool prints the field of
+      # a TIFF-based file with -pa as well: that key is named, left out of the comparison of the
+      # other keys, and has to be printed exactly where the file is to have a profile.
+      - name: Profiles written into TIFF-based and BMFF files are printed by the pinned tool (exiv2 -pC)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-icc-edits artifacts/parity/edited-icc-tiff
+          $HARNESS embedded-edits artifacts/parity/edited-icc-tiff --profile-key Exif.Image.InterColorProfile \
+            --title "TIFF-based profile edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- bmff-icc-edits artifacts/parity/edited-icc-bmff
+          $HARNESS embedded-edits artifacts/parity/edited-icc-bmff \
+            --title "BMFF profile edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      - name: Profiles written into corpus TIFF-based and BMFF files are printed by the pinned tool (exiv2 -pC)
+        shell: bash
+        run: |
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- tiff-based-icc-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-icc-tiff-corpus
+          $HARNESS embedded-edits artifacts/parity/edited-icc-tiff-corpus --skip-unreadable-sources --profile-key Exif.Image.InterColorProfile \
+            --title "TIFF-based corpus profile edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build -- bmff-icc-corpus artifacts/parity/exiv2/test/data artifacts/parity/edited-icc-bmff-corpus
+          $HARNESS embedded-edits artifacts/parity/edited-icc-bmff-corpus --skip-unreadable-sources \
+            --title "BMFF corpus profile edits" --exiv2 artifacts/parity/exiv2-bin/bin/exiv2
+      - name: Upload parity reports (measurements only - no corpus bytes, no external source)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: differential-parity
+          path: |
+            artifacts/parity/upstream/parity-report.txt
+            artifacts/parity/upstream/parity-report.json
+            artifacts/parity/video/parity-report.txt
+            artifacts/parity/video/parity-report.json
+            artifacts/parity/preview/preview-report.txt
+            artifacts/parity/preview/preview-report.json
+            artifacts/parity/icc/icc-report.txt
+            artifacts/parity/icc/icc-report.json
+            artifacts/parity/ranges/exiv2.md
+            artifacts/parity/sweep/sweep-report.txt
+            artifacts/parity/sweep/sweep-report.json
+            artifacts/parity/tag-print/tag-print-report.txt
+            artifacts/parity/tag-print/tag-print-report.json
+            artifacts/parity/owned/parity-report.txt
+            artifacts/parity/owned/parity-report.json
+            artifacts/parity/cr3/parity-report.txt
+            artifacts/parity/cr3/parity-report.json
+            artifacts/parity/cr3-preview/preview-report.txt
+            artifacts/parity/cr3-preview/preview-report.json
+          retention-days: 30
+      # Not key parity either: what ExifToXmp and XmpToExif produce is held against the conversion
+      # the pinned tool does itself when it writes an XMP sidecar from a file (exiv2 -eX) and when
+      # it reads one. The JPEG files of the pinned corpus, with EXIF as their only metadata. Every
+      # difference has to be one tools/MetadataSharp.Harness/Reference/SyncParity.cs documents with its reason.
+      - name: ExifToXmp and XmpToExif against the conversion of the pinned tool (exiv2 -eX, -PXkv, -PEkv)
+        shell: bash
+        env:
+          TZ: UTC
+        run: |
+          $HARNESS sync-parity artifacts/parity/exiv2/test/data artifacts/parity/sync \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+
+  # A separate check from key parity, in a job of its own so that its report is not cut by the
+  # annotation budget of the parity job: the operations of the tool's command line (adjust, modify,
+  # delete, extract, insert, thumbnail, fixiso, fixcom, rename) against the operations this library
+  # offers for the same purpose, on copies of the JPEG files of the pinned corpus; both results are
+  # printed with exiv2 -pa. Every difference has to be one tools/MetadataSharp.Harness/Reference/OperationsParity.cs
+  # documents with its reason.
+  operations-parity:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    name: Exiv2 0.28.9 / operations parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      LC_ALL: C
+      TZ: UTC
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the fixture generator
+        run: dotnet build tools/MetadataSharp.ReferenceFixture/MetadataSharp.ReferenceFixture.csproj --configuration Release -f net10.0
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Checkout pinned upstream corpus (CI-time fetch; never vendored, never executed)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/parity/exiv2
+          persist-credentials: false
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/parity/exiv2.tar.gz https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          test "$(wc -c < artifacts/parity/exiv2.tar.gz)" -eq 10041994 || { echo "unexpected size: $(wc -c < artifacts/parity/exiv2.tar.gz) bytes" >&2; exit 1; }
+          tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
+          artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      - name: The operations of the command line against the pinned tool (exiv2 ad, mo, rm, ex, in, fi, fc, mv; -pa)
+        shell: bash
+        run: |
+          $HARNESS operations-parity artifacts/parity/exiv2/test/data artifacts/parity/operations \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+
+      # The thumbnail directory of a TIFF-based file is the only one this library writes outside a JPEG,
+      # PNG or WebP container: the tool sets it with -it and removes it with -dt, and both results are
+      # printed with -pa and extracted with -et beside each other.
+      - name: The thumbnail of a TIFF-based file against the pinned tool (exiv2 -it, -dt; -pa, -et)
+        shell: bash
+        run: |
+          $HARNESS tiff-thumbnail-parity artifacts/parity/exiv2/test/data artifacts/parity/tiff-thumbnails \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+
+  # EPS and PGF writers are checked in both directions: Exiv2 reads our output, then our entry
+  # point reads output written by the pinned binary. The authored EPS/PGF fixtures are the only inputs.
+  eps-pgf-write-parity:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    name: Exiv2 0.28.9 / EPS and PGF write parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      LC_ALL: C
+      TZ: UTC
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the fixture generator
+        run: dotnet build tools/MetadataSharp.ReferenceFixture/MetadataSharp.ReferenceFixture.csproj --configuration Release -f net10.0
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/parity/exiv2.tar.gz https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          test "$(wc -c < artifacts/parity/exiv2.tar.gz)" -eq 10041994 || { echo "unexpected size: $(wc -c < artifacts/parity/exiv2.tar.gz) bytes" >&2; exit 1; }
+          tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
+      - name: Write and read EPS and PGF in both directions
+        shell: bash
+        run: |
+          $HARNESS eps-pgf-write-parity tests/fixtures/b11eps artifacts/parity/eps-pgf-writes \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      - name: Keep the measured writer parity report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eps-pgf-writer-parity
+          path: artifacts/parity/eps-pgf-writes/write-parity.json
+          retention-days: 30
+
+  # MakerNote tags that this library sets (in place, and appended where a value grows), in copies of
+  # the JPEG and raw files of the pinned corpus; the pinned tool has to print the key with the value
+  # that was set and every other key as before (tools/MetadataSharp.Harness/Reference/MakerNoteParity.cs).
+  makernote-parity:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    name: Exiv2 0.28.9 / MakerNote edit parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      LC_ALL: C
+      TZ: UTC
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the fixture generator
+        run: dotnet build tools/MetadataSharp.ReferenceFixture/MetadataSharp.ReferenceFixture.csproj --configuration Release -f net10.0
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Checkout pinned upstream corpus (CI-time fetch; never vendored, never executed)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/parity/exiv2
+          persist-credentials: false
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/parity/exiv2.tar.gz https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          test "$(wc -c < artifacts/parity/exiv2.tar.gz)" -eq 10041994 || { echo "unexpected size: $(wc -c < artifacts/parity/exiv2.tar.gz) bytes" >&2; exit 1; }
+          tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
+          artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      - name: MakerNote edit and copy relocation parity against pinned Exiv2 (exiv2 -u -PEkv)
+        shell: bash
+        run: |
+          $HARNESS makernote-parity artifacts/parity/exiv2/test/data artifacts/parity/makernote \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      - name: Character-set matrix read back by the pinned tool (exiv2 -n NAME -PEkv, exiv2 -PEkv)
+        shell: bash
+        run: |
+          $HARNESS charset-parity artifacts/parity/charset \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      - name: Upload corpus MakerNote copy disposition report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: makernote-copy-parity
+          path: artifacts/parity/makernote/copy-report.json
+          if-no-files-found: ignore
+          retention-days: 30
+      # Tags and the comment that this library writes into the records of the CRW files of the pinned
+      # corpus; the pinned tool has to print what was set and every other key as before
+      # (tools/MetadataSharp.Harness/Reference/CrwParity.cs).
+      - name: CRW tags and comment set by this library, read back by the pinned tool (exiv2 -u -PEkv, exiv2 -pc)
+        shell: bash
+        run: |
+          $HARNESS crw-parity artifacts/parity/exiv2/test/data artifacts/parity/crw \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+
+  # The pinned upstream checkout holds one to three raw files for most raw formats, which is too few
+  # to say anything about a camera family. This job reads a wider corpus downloaded from
+  # raw.pixls.us (CC0 1.0, pinned by URL, size and SHA-256 in tools/parity/raw-corpus.json, never
+  # committed) with the same comparisons as the other jobs: -pt rows, previews and MakerNote edits
+  # against the pinned 0.28.9 binary.
+  raw-corpus-parity:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    name: Exiv2 0.28.9 / RAW corpus parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      LC_ALL: C
+      TZ: UTC
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      DUMP: dotnet run --project tools/MetadataSharp.Dump -c Release -f net10.0 --no-build --
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the dump and the fixture generator
+        run: |
+          dotnet build tools/MetadataSharp.Dump/MetadataSharp.Dump.csproj --configuration Release -f net10.0
+          dotnet build tools/MetadataSharp.ReferenceFixture/MetadataSharp.ReferenceFixture.csproj --configuration Release -f net10.0
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Checkout pinned upstream corpus (CI-time fetch; never vendored, never executed)
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/parity/exiv2
+          persist-credentials: false
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          mkdir -p artifacts/parity/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/parity/exiv2.tar.gz https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          test "$(wc -c < artifacts/parity/exiv2.tar.gz)" -eq 10041994 || { echo "unexpected size: $(wc -c < artifacts/parity/exiv2.tar.gz) bytes" >&2; exit 1; }
+          tar -xzf artifacts/parity/exiv2.tar.gz -C artifacts/parity/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/parity/exiv2-bin/lib" >> "$GITHUB_ENV"
+          artifacts/parity/exiv2-bin/bin/exiv2 --version | head -1
+      # The corpus is 290 MB from a public mirror: a run re-verifies it against the same pins whether it
+      # came from the cache or from the network.
+      - name: Restore the RAW corpus
+        id: raw-corpus-cache
+        uses: actions/cache@v4
+        with:
+          path: artifacts/parity/raw-corpus
+          key: raw-corpus-${{ hashFiles('tools/parity/raw-corpus.json') }}
+          # A manifest edit that leaves every pin as it was starts from the previous corpus; the download
+          # step checks every file against the pins either way.
+          restore-keys: raw-corpus-
+      # Every sample is fetched from the URL the manifest pins and checked against the pinned size
+      # and SHA-256 before any comparison reads it.
+      - name: Download the pinned RAW corpus (CC0 1.0, pinned URL and SHA-256)
+        shell: bash
+        run: |
+          $HARNESS raw-corpus download artifacts/parity/raw-corpus --report artifacts/parity/raw-corpus/download.json
+      - name: Range equivalence and byte budgets on the pinned RAW corpus
+        shell: bash
+        run: |
+          $HARNESS range-corpus-gate --kind raw --corpus artifacts/parity/raw-corpus --dump-command "$DUMP" --out artifacts/parity/ranges/raw.md
+      - name: Tag table and -pt parity on the RAW corpus
+        shell: bash
+        run: |
+          $HARNESS tag-print --tree artifacts/parity/exiv2 --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP" \
+            --fixtures artifacts/parity/raw-corpus --out artifacts/parity/raw-tag-print --annotate
+      # Every RAW file here is TIFF-based: this is where the thumbnail directory is most often an image
+      # of the file, and where this library refuses the change rather than writing one.
+      - name: The thumbnail of a RAW file against the pinned tool (exiv2 -it, -dt; -pa, -et)
+        shell: bash
+        run: |
+          $HARNESS tiff-thumbnail-parity artifacts/parity/raw-corpus artifacts/parity/raw-thumbnails \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      # An aggregate of 350 files says what differs, not why. When anything above fails, one file's rows
+      # beside the reference's are what a reader defect is diagnosed from.
+      - name: Explain the first RAW file that differs
+        if: failure()
+        shell: bash
+        run: |
+          $HARNESS raw-corpus explain artifacts/parity/raw-corpus --files 8 --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 --dump-command "$DUMP"
+      - name: Preview parity on the RAW corpus
+        if: always()
+        shell: bash
+        run: |
+          $HARNESS previews --exiv2-command "artifacts/parity/exiv2-bin/bin/exiv2 -pp" --dump-command "$DUMP" \
+            --fixtures artifacts/parity/raw-corpus --out artifacts/parity/raw-preview --annotate --title 'PARITY RAW preview'
+      - name: MakerNote edit and copy parity on the RAW corpus
+        if: always()
+        shell: bash
+        run: |
+          $HARNESS makernote-parity artifacts/parity/raw-corpus artifacts/parity/raw-makernote \
+            --exiv2 artifacts/parity/exiv2-bin/bin/exiv2 \
+            --fixture "dotnet run --project tools/MetadataSharp.ReferenceFixture -c Release -f net10.0 --no-build --"
+      # The pins are checked last so that a comparison is never reported green for bytes nobody
+      # pinned: `verify` refuses a missing file, a wrong size, a wrong hash and an unpinned entry.
+      - name: Verify the RAW corpus against its pins
+        if: always()
+        shell: bash
+        run: |
+          $HARNESS raw-corpus verify artifacts/parity/raw-corpus
+      - name: Keep the RAW corpus reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: raw-corpus-parity
+          path: |
+            artifacts/parity/ranges/raw.md
+            artifacts/parity/raw-corpus/download.json
+            artifacts/parity/raw-tag-print/tag-print-report.json
+            artifacts/parity/raw-preview/preview-report.json
+            artifacts/parity/raw-makernote/
+          if-no-files-found: warn
+          retention-days: 30
+
+  # The reading change is measured, never gated: this job reports what a file costs to read whole
+  # and what it costs to read the ranges a parser asks for, beside the same file read by the pinned
+  # exiv2 binary. The numbers belong to the runner; the ratio is the result.
+  streaming-bench:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    name: Reading cost (report)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      LC_ALL: C
+      TZ: UTC
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      METADATASHARP_BENCH_QUICK: '1'
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the measurement tool
+        run: dotnet build tools/MetadataSharp.Bench/MetadataSharp.Bench.csproj --configuration Release
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness/MetadataSharp.Harness.csproj --configuration Release
+      - name: Download the pinned exiv2 release binary
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          mkdir -p artifacts/bench/exiv2-bin
+          curl -fsSL --retry 5 --retry-delay 5 -o artifacts/bench/exiv2.tar.gz https://github.com/Exiv2/exiv2/releases/download/v0.28.9/exiv2-0.28.9-Linux-x86_64.tar.gz
+          test "$(wc -c < artifacts/bench/exiv2.tar.gz)" -eq 10041994 || { echo "unexpected size: $(wc -c < artifacts/bench/exiv2.tar.gz) bytes" >&2; exit 1; }
+          tar -xzf artifacts/bench/exiv2.tar.gz -C artifacts/bench/exiv2-bin --strip-components=1
+          echo "LD_LIBRARY_PATH=$PWD/artifacts/bench/exiv2-bin/lib" >> "$GITHUB_ENV"
+      - name: Restore the RAW corpus
+        uses: actions/cache@v4
+        with:
+          path: artifacts/bench/raw-corpus
+          key: raw-corpus-${{ hashFiles('tools/parity/raw-corpus.json') }}
+          # A manifest edit that leaves every pin as it was starts from the previous corpus; the download
+          # step checks every file against the pins either way.
+          restore-keys: raw-corpus-
+      - name: Download the pinned RAW corpus (CC0 1.0, pinned URL and SHA-256)
+        shell: bash
+        run: |
+          $HARNESS raw-corpus download artifacts/bench/raw-corpus --report artifacts/bench/raw-corpus/download.json
+      # The corpus is 290 MB of raw files from the same cameras this library reads: the files where a
+      # whole-file read costs most, and where a range read shows. Six of them, one per extension.
+      - name: Measure the same files four ways, then with the pinned exiv2
+        shell: bash
+        run: |
+          mkdir -p artifacts/bench/table
+          METADATASHARP_BENCH_DIR=artifacts/bench/raw-corpus \
+            dotnet run --project tools/MetadataSharp.Bench --configuration Release --no-build -- \
+              --filter '*' --artifacts artifacts/bench/BenchmarkDotNet.Artifacts
+          $HARNESS read-cost-table --results artifacts/bench/BenchmarkDotNet.Artifacts/results --corpus artifacts/bench/raw-corpus \
+            --exiv2 artifacts/bench/exiv2-bin/bin/exiv2 --out artifacts/bench/table/reading-cost.md
+          cat artifacts/bench/table/reading-cost.md >> "$GITHUB_STEP_SUMMARY"
+      # The table is small and a reader of the run should not have to download it: it goes into the
+      # step summary above and into the annotations of this job, where a log-less reader can see it.
+      - name: Report the table in the annotations of this run
+        if: always()
+        shell: bash
+        run: |
+          file=artifacts/bench/table/reading-cost.md
+          [ -f "$file" ] || exit 0
+          $HARNESS annotate-chunks "Reading cost" "$file"
+      - name: Keep the reading cost table
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: streaming-bench
+          path: artifacts/bench/table/reading-cost.md
+          if-no-files-found: warn
+          retention-days: 30
+
+  # The NuGet packages, built from the checkout (Source Link, deterministic CI build). A tag v<version>
+  # gives the version; any other run packs <prefix>-ci.<run number>, kept as an artifact only.
+  pack:
+    needs: [build-and-test, samples]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "PACK_VERSION=-p:Version=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+          else
+            echo "PACK_VERSION=-p:VersionSuffix=ci.$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          fi
+      - name: Pack
+        run: |
+          dotnet pack src/MetadataSharp.Core -c Release -o artifacts/package $PACK_VERSION
+          dotnet pack src/MetadataSharp.Formats -c Release -o artifacts/package $PACK_VERSION
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: artifacts/package/*
+          retention-days: 30
+
+  # Publishing, only for a tag v<version>: both packages of this run go to nuget.org (trusted
+  # publishing: a short-lived key from GitHub OIDC, no stored secret) and to a GitHub release
+  # with the notes of that version from CHANGELOG.md.
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [pack, performance-package-audit]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Download the packages
+        uses: actions/download-artifact@v4
+        with:
+          name: package
+          path: package
+      - name: Check the version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          for id in MetadataSharp.Core MetadataSharp; do
+            test -f "package/$id.$version.nupkg" || { echo "no package $id for version $version:"; ls package; exit 1; }
+          done
+          grep -qx "## $version" CHANGELOG.md || { echo "CHANGELOG.md has no section ## $version"; exit 1; }
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+      - name: NuGet login
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: sensboston
+      # Core first: MetadataSharp depends on it.
+      - name: Push to nuget.org
+        run: |
+          for id in MetadataSharp.Core MetadataSharp; do
+            dotnet nuget push "package/$id.$VERSION.nupkg" --api-key ${{ steps.login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+          done
+      - name: GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          awk -v v="## $VERSION" '$0 == v {on = 1; next} /^## / {on = 0} on' CHANGELOG.md > notes.md
+          {
+            echo
+            echo '```'
+            echo "dotnet add package MetadataSharp --version $VERSION"
+            echo '```'
+          } >> notes.md
+          gh release create "$GITHUB_REF_NAME" package/* --title "MetadataSharp $VERSION" --notes-file notes.md

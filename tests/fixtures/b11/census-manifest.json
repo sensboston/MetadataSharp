@@ -1,0 +1,374 @@
+[
+  {
+    "file": "owned-asf-header.asf",
+    "format": "ASF",
+    "layout": "asf-header-guid-v1",
+    "length": 100,
+    "sha256": "6ccb0660294271acc79d983d06adb5d2e0158ed3d442895dbd64b727bc73f1c6",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "asf",
+    "carriers": "xmp-only",
+    "vendorIdentity": "the 16-byte ASF Header Object GUID; AsfVideo::mimeType is video/asf, and nothing about this container is RIFF",
+    "decodable": false,
+    "metadata": "none",
+    "asf": {
+      "headerGuid": "3026b2758e66cf11a6d900aa0062ce6c",
+      "objectSize": 100,
+      "subobjects": 0
+    }
+  },
+  {
+    "file": "owned-bmp-dib.bmp",
+    "format": "BMP",
+    "layout": "bmp-dib-v3",
+    "length": 55,
+    "sha256": "f5f2c1a64be58b46f125e57b76693aa3f1a28c18196cdd7a101ca1bbb22e77d9",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "bmp",
+    "carriers": "none",
+    "vendorIdentity": "BM plus a DIB header; BmpImage::mimeType is image/x-ms-bmp and the reader has no Exif, IPTC, XMP, comment, ICC or thumbnail path",
+    "decodable": false,
+    "metadata": "none",
+    "bmp": {
+      "headerSize": 40,
+      "width": 64,
+      "height": 48,
+      "bitsPerPixel": 24,
+      "dataOffset": 54
+    }
+  },
+  {
+    "file": "owned-bmp-os2.bmp",
+    "format": "BMP",
+    "layout": "bmp-os2-coreheader-v1",
+    "length": 27,
+    "sha256": "085fa701ef1ed380d4f2ebbd4402d23baccb443eeaa8a478014a8da5e8945eaf",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "bmp",
+    "carriers": "none",
+    "vendorIdentity": "BM plus a DIB header; BmpImage::mimeType is image/x-ms-bmp and the reader has no Exif, IPTC, XMP, comment, ICC or thumbnail path",
+    "decodable": false,
+    "metadata": "none",
+    "bmp": {
+      "headerSize": 12,
+      "width": 48,
+      "height": 32,
+      "bitsPerPixel": 24,
+      "dataOffset": 26
+    }
+  },
+  {
+    "file": "owned-crw-mapped.crw",
+    "format": "CRW",
+    "layout": "ciff-mapped-v1",
+    "length": 334,
+    "sha256": "10c684999485edd34409bc284979c1d4648be456f392939c7ce4bf15750eefaf",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "crw",
+    "carriers": "ciff-components",
+    "vendorIdentity": "II/MM byte-order mark, HEAPCCDR at 6, root directory at the u32 in bytes 2-5; CrwImage::mimeType is image/x-canon-crw and dimensions come from Exif.Photo.PixelXDimension, not from pixels",
+    "decodable": false,
+    "metadata": "ciff-components",
+    "mappedKeys": [
+      "colorspace",
+      "comment",
+      "datetime",
+      "dimensions",
+      "distance",
+      "file-number",
+      "firmware",
+      "make-model",
+      "owner-name"
+    ],
+    "byteOrder": "littleEndian",
+    "ciff": {
+      "rootOffset": 26,
+      "padding": 12,
+      "regionLength": 308
+    }
+  },
+  {
+    "file": "owned-crw-preview-thumb.crw",
+    "format": "CRW",
+    "layout": "ciff-preview-plus-thumb-v1",
+    "length": 326,
+    "sha256": "9fc6b927e5b35d6cdcacd85ae3bdd7184f8369782f7943bb0692a64cc2b9626c",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "crw",
+    "carriers": "ciff-components",
+    "vendorIdentity": "II/MM byte-order mark, HEAPCCDR at 6, root directory at the u32 in bytes 2-5; CrwImage::mimeType is image/x-canon-crw and dimensions come from Exif.Photo.PixelXDimension, not from pixels",
+    "decodable": false,
+    "metadata": "ciff-components",
+    "mappedKeys": [
+      "preview-offset",
+      "thumbnail"
+    ],
+    "thumbnailLength": 137,
+    "thumbnailSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+    "previewLength": 137,
+    "byteOrder": "littleEndian",
+    "ciff": {
+      "rootOffset": 26,
+      "padding": 12,
+      "regionLength": 300
+    }
+  },
+  {
+    "file": "owned-crw-thumb.crw",
+    "format": "CRW",
+    "layout": "ciff-thumb-only-v1",
+    "length": 179,
+    "sha256": "97985131ae099e0809fa28e8a664e844a2e461ed7abae6d3eca5fd976fa83587",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "crw",
+    "carriers": "ciff-components",
+    "vendorIdentity": "II/MM byte-order mark, HEAPCCDR at 6, root directory at the u32 in bytes 2-5; CrwImage::mimeType is image/x-canon-crw and dimensions come from Exif.Photo.PixelXDimension, not from pixels",
+    "decodable": false,
+    "metadata": "ciff-components",
+    "mappedKeys": [
+      "thumbnail"
+    ],
+    "thumbnailLength": 137,
+    "thumbnailSha256": "8292726994d10ced48123f0ff06d852f70cf199f656f962a8690dfe36eb03260",
+    "byteOrder": "littleEndian",
+    "ciff": {
+      "rootOffset": 26,
+      "padding": 12,
+      "regionLength": 153
+    }
+  },
+  {
+    "file": "owned-crw-unmapped.crw",
+    "format": "CRW",
+    "layout": "ciff-unmapped-only-v1",
+    "length": 191,
+    "sha256": "5f063e55c8073518a0b03e4db36619d21c08a623e7a0bab3b20701db832fa5c7",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "crw",
+    "carriers": "ciff-components",
+    "vendorIdentity": "II/MM byte-order mark, HEAPCCDR at 6, root directory at the u32 in bytes 2-5; CrwImage::mimeType is image/x-canon-crw and dimensions come from Exif.Photo.PixelXDimension, not from pixels",
+    "decodable": false,
+    "metadata": "ciff-components",
+    "mappedKeys": [],
+    "byteOrder": "littleEndian",
+    "ciff": {
+      "rootOffset": 26,
+      "padding": 12,
+      "regionLength": 165
+    }
+  },
+  {
+    "file": "owned-gif-lsd.gif",
+    "format": "GIF",
+    "layout": "gif-lsd-v1",
+    "length": 13,
+    "sha256": "9752816844757d9b250b5d23530db1794af188914aadc06a93a50f3789bda9eb",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "gif",
+    "carriers": "none",
+    "vendorIdentity": "GIF87a/GIF89a plus the logical screen descriptor; GifImage::mimeType is image/gif",
+    "decodable": false,
+    "metadata": "none",
+    "gif": {
+      "signature": "GIF89a",
+      "lsdBytes": 4,
+      "width": 64,
+      "height": 48
+    }
+  },
+  {
+    "file": "owned-gif-no-lsd.gif",
+    "format": "GIF",
+    "layout": "gif-truncated-v1",
+    "length": 6,
+    "sha256": "9faccac8ea389a38814e46d03b2d4704bc2caf3bed368f3d6a694cfebcbf1d29",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "gif",
+    "carriers": "none",
+    "vendorIdentity": "GIF87a/GIF89a plus the logical screen descriptor; GifImage::mimeType is image/gif",
+    "decodable": false,
+    "metadata": "none",
+    "gif": {
+      "signature": "GIF87a",
+      "lsdBytes": 0,
+      "width": null,
+      "height": null
+    }
+  },
+  {
+    "file": "owned-mkv-header.mkv",
+    "format": "MKV",
+    "layout": "mkv-ebml-header-v1",
+    "length": 24,
+    "sha256": "a258433af38d153bfafd2a621912e74a347ed2b20d113e36ede67e5b343a8134",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "mkv",
+    "carriers": "xmp-only",
+    "vendorIdentity": "EBML magic 1A 45 DF A3; MatroskaVideo::mimeType is video/matroska",
+    "decodable": false,
+    "metadata": "none",
+    "matroska": {
+      "magic": "1a45dfa3",
+      "headerId": "1f4d9b74"
+    }
+  },
+  {
+    "file": "owned-mov-brand.mov",
+    "format": "MOV",
+    "layout": "qtime-known-brand-v1",
+    "length": 36,
+    "sha256": "f91fca8a132217d37bc5716cda3b1356f3d407e4a9521ee2c50ef3699ecb07e3",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "qtime",
+    "carriers": "xmp-only",
+    "vendorIdentity": "8-byte atom header plus a brand; isQTimeType needs a known atom tag *and* a brand in qTimeFileType, and isBmffType is the fall-through, so the brand decides the reader",
+    "decodable": false,
+    "metadata": "none",
+    "mov": {
+      "atom": "ftyp",
+      "brand": "qt  ",
+      "brandKnownToQuickTime": true,
+      "bmffAlsoAccepts": true
+    }
+  },
+  {
+    "file": "owned-mov-unknownbrand.mov",
+    "format": "MOV",
+    "layout": "qtime-unknown-brand-v1",
+    "length": 36,
+    "sha256": "e64fe03dc7a779b3c48f8aff9878cc09244abf17b27922cc8532b3c613943e23",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "bmff",
+    "carriers": "xmp-only",
+    "vendorIdentity": "8-byte atom header plus a brand; isQTimeType needs a known atom tag *and* a brand in qTimeFileType, and isBmffType is the fall-through, so the brand decides the reader",
+    "decodable": false,
+    "metadata": "none",
+    "mov": {
+      "atom": "ftyp",
+      "brand": "b10u",
+      "brandKnownToQuickTime": false,
+      "bmffAlsoAccepts": true
+    }
+  },
+  {
+    "file": "owned-avi-avih.avi",
+    "format": "AVI",
+    "layout": "riff-avi-avih-v1",
+    "length": 88,
+    "sha256": "caa2bac8914c255c27b0a54f265820ebbe1b38a07dd1557224139b1f353f0e56",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "riff",
+    "carriers": "xmp-only",
+    "vendorIdentity": "the RIFF fourcc only -- isRiffType checks nothing else -- with an AVI LIST/hdrl/avih body; RiffVideo::mimeType is video/riff",
+    "decodable": false,
+    "metadata": "none",
+    "riff": {
+      "fourcc": "AVI "
+    }
+  },
+  {
+    "file": "owned-wav-fmt.wav",
+    "format": "WAV",
+    "layout": "riff-wav-fmt-v1",
+    "length": 36,
+    "sha256": "781c2cfa6db08d8c9e8eb824541248222ca1509f59aadac3c06373c4dceb2f6d",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "riff",
+    "carriers": "xmp-only",
+    "vendorIdentity": "RIFF fourcc with a WAVE/fmt body: the same video/riff reader handles it, which is what the pinned bullet means by \"riff based\"",
+    "decodable": false,
+    "metadata": "none",
+    "riff": {
+      "fourcc": "WAVE"
+    }
+  },
+  {
+    "file": "owned-tga-full.tga",
+    "format": "TGA",
+    "layout": "tga-full-v1",
+    "length": 44,
+    "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "tga",
+    "carriers": "none",
+    "vendorIdentity": "18-byte header with width/height at +12/+14 and an optional 26-byte TRUEVISION-XFILE footer; TgaImage::mimeType is image/targa and isTgaType consults the file name before any byte",
+    "decodable": false,
+    "metadata": "none",
+    "tga": {
+      "footerSigned": true,
+      "width": 80,
+      "height": 60,
+      "recognisedByName": true,
+      "footerRouteReachableByFactory": false
+    }
+  },
+  {
+    "file": "owned-tga-name-only.tga",
+    "format": "TGA",
+    "layout": "tga-name-only-v1",
+    "length": 23,
+    "sha256": "5d0afb0c587c1d9e10ccd01fb805ccb57b388943f0c147fa71db030d2d0f19a0",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "tga",
+    "carriers": "none",
+    "vendorIdentity": "18-byte header with width/height at +12/+14 and an optional 26-byte TRUEVISION-XFILE footer; TgaImage::mimeType is image/targa and isTgaType consults the file name before any byte",
+    "decodable": false,
+    "metadata": "none",
+    "tga": {
+      "footerSigned": false,
+      "width": 8313,
+      "height": 18260,
+      "recognisedByName": true,
+      "footerRouteReachableByFactory": false
+    }
+  },
+  {
+    "file": "owned-tga-signature-only.targa",
+    "format": "TGA",
+    "layout": "tga-signature-wrong-name-v1",
+    "length": 44,
+    "sha256": "090d75135d9adb932534a66a4958eae4634adeb21b219f1fde232091724b9d47",
+    "rights": "owned-synthetic",
+    "recipe": "authored byte-level small-format and container writer (CIFF directory tree with payload-before-count regions, BMP BITMAPINFOHEADER/BITMAPCOREHEADER, GIF logical screen descriptor, TGA header plus optional footer, and per-reader container stubs); tools/reference/b11_container_fixtures.py",
+    "dispatch": "none",
+    "carriers": "none",
+    "vendorIdentity": "18-byte header with width/height at +12/+14 and an optional 26-byte TRUEVISION-XFILE footer; TgaImage::mimeType is image/targa and isTgaType consults the file name before any byte",
+    "decodable": false,
+    "metadata": "none",
+    "tga": {
+      "footerSigned": true,
+      "width": 80,
+      "height": 60,
+      "recognisedByName": false,
+      "footerRouteReachableByFactory": false
+    }
+  },
+  {
+    "file": null,
+    "format": "CRW",
+    "layout": "ciff-vendor-private-unobserved",
+    "rights": "not-admitted",
+    "recipe": "Canon CIFF content beyond the 17 canonId rows of crwMapping_ is not authored: the private tag semantics are vendor-defined, no independent normative specification was reviewed here and no rights-cleared sample is admitted, so the cell is blocked rather than refused -- a plausible-looking private component would invent evidence instead of observing it. See docs/research/E01_B11_RIGHTS_AND_ORACLE_REVIEW.md.",
+    "dispatch": "crw",
+    "carriers": "none",
+    "decodable": false,
+    "metadata": "none",
+    "blocked": true
+  }
+]

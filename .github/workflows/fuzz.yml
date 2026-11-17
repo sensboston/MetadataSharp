@@ -1,0 +1,122 @@
+name: Fuzz
+# Coverage-guided fuzzing of every parser and writer with SharpFuzz and AFL++ (tools/MetadataSharp.Fuzz).
+# Each target first replays the whole corpus - the repository's own fixtures, the files the reference
+# tool generates, the pinned exiv2 test data and the CC0 raw files - and then fuzzes two seeds per
+# source and format for a bounded time: five minutes on a push or a pull request, thirty at night.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      seconds:
+        description: Seconds of afl-fuzz per target
+        default: '300'
+  schedule:
+    - cron: '31 3 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: fuzz-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [span, stream, previews, embedded, icc, comments, iptc, xmp, maker, write]
+    env:
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Install AFL++ and the SharpFuzz instrumentation tool
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq afl++
+          afl-fuzz -h | head -n 1 || true
+          dotnet tool install --tool-path artifacts/fuzz-tools SharpFuzz.CommandLine --version 2.2.0
+      - name: Build the fuzz harness, the gate harness and the owned seeds
+        run: |
+          dotnet build tools/MetadataSharp.Fuzz -c Release -o artifacts/fuzz-bin
+          dotnet build tools/MetadataSharp.Harness -c Release
+          dotnet run --project tools/MetadataSharp.ReferenceFixture -f net10.0 -c Release -- generate artifacts/owned
+      - name: Check out the pinned exiv2 test data
+        uses: actions/checkout@v4
+        with:
+          repository: Exiv2/exiv2
+          ref: b0859fc61fea5dedfc898aece6b15893ddf4314e
+          path: artifacts/exiv2
+          sparse-checkout: test/data
+      - uses: actions/cache@v4
+        with:
+          path: artifacts/raw
+          key: raw-corpus-v1-${{ hashFiles('tools/parity/raw-corpus.json') }}
+          restore-keys: raw-corpus-v1-
+      - name: Download and verify the CC0 raw files
+        run: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build -- raw-corpus download artifacts/raw
+      - name: Extract IPTC, XMP and MakerNote seeds
+        run: >-
+          $HARNESS fuzz-run extract
+          --dll artifacts/fuzz-bin/MetadataSharp.Fuzz.dll
+          --source owned=artifacts/owned --source fixtures=tests/fixtures
+          --source exiv2=artifacts/exiv2/test/data --source raw=artifacts/raw
+          --output artifacts/extracted
+      - name: Instrument the parsers
+        run: |
+          artifacts/fuzz-tools/sharpfuzz artifacts/fuzz-bin/MetadataSharp.Core.dll
+          artifacts/fuzz-tools/sharpfuzz artifacts/fuzz-bin/MetadataSharp.Formats.dll
+      - name: Replay the corpus, then fuzz
+        env:
+          SECONDS_PER_TARGET: ${{ github.event_name == 'schedule' && '1800' || github.event.inputs.seconds || '300' }}
+        run: |
+          case "${{ matrix.target }}" in
+            iptc|xmp|maker) dictionary=${{ matrix.target }} ;;
+            *) dictionary=files ;;
+          esac
+          $HARNESS fuzz-run ${{ matrix.target }} \
+            --dll artifacts/fuzz-bin/MetadataSharp.Fuzz.dll \
+            --source owned=artifacts/owned --source fixtures=tests/fixtures \
+            --source exiv2=artifacts/exiv2/test/data --source raw=artifacts/raw \
+            --extracted artifacts/extracted \
+            --dictionary tools/MetadataSharp.Fuzz/dictionaries/$dictionary.dict \
+            --output artifacts/fuzz-${{ matrix.target }} \
+            --seconds "$SECONDS_PER_TARGET"
+      - name: Keep the report, the reproductions and the minimized failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fuzz-${{ matrix.target }}
+          if-no-files-found: warn
+          path: |
+            artifacts/fuzz-${{ matrix.target }}/report.json
+            artifacts/fuzz-${{ matrix.target }}/*.log
+            artifacts/fuzz-${{ matrix.target }}/minimized-*
+            artifacts/fuzz-${{ matrix.target }}/unminimized-*
+            artifacts/fuzz-${{ matrix.target }}/findings/**/fuzzer_stats
+            artifacts/fuzz-${{ matrix.target }}/reproductions/*
+
+  summary:
+    needs: fuzz
+    if: always()
+    runs-on: ubuntu-latest
+    env:
+      HARNESS: dotnet run --project tools/MetadataSharp.Harness -c Release --no-build --
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the gate harness (C#)
+        run: dotnet build tools/MetadataSharp.Harness -c Release
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fuzz-*
+          path: reports
+      - name: One table for all targets
+        run: $HARNESS fuzz-summary reports | tee -a "$GITHUB_STEP_SUMMARY"

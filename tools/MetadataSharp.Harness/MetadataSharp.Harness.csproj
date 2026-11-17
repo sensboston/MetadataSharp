@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The CI gates that were Python scripts: the parity reports against the pinned exiv2 (tag-print,
+       previews, icc, key-catalog, sweep, video-gate, makernote-render-gate), the pinned RAW corpus, the
+       range and reading-cost gates, the reference checks and fixture writers (formerly tools/reference),
+       the package audit, the documentation inventory report, the fuzz campaign runner and the inline
+       steps of the workflows. It runs the library only through MetadataSharp.Dump,
+       MetadataSharp.ReferenceFixture and the fuzz harness, as separate processes, so it references
+       neither library. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="MetadataSharp.Harness.Tests" />
+  </ItemGroup>
+</Project>

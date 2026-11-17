@@ -1,0 +1,67 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Deterministic>true</Deterministic>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- The two libraries, in every build and not only when a package is made. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'MetadataSharp.Core' or '$(MSBuildProjectName)' == 'MetadataSharp.Formats'">
+    <!-- The XML documentation file is always written, so a public member without a comment (CS1591)
+         or a comment that names something that does not exist fails the build. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Marks the assemblies trimmable and runs the trim, native AOT and single-file analyzers on both
+         targets: code that reflection-free publishing cannot keep fails the build (IL2xxx, IL3xxx). -->
+    <IsAotCompatible>true</IsAotCompatible>
+
+    <!-- The repository the packages and their symbols point at. One property, so that a move of the
+         repository is one change: -p:MetadataSharpRepositoryUrl=... or an edit of this line. The
+         packed README links into the repository too: the link block at its end starts with this
+         value, and QuickStartTests fails until the two agree. -->
+    <MetadataSharpRepositoryUrl Condition="'$(MetadataSharpRepositoryUrl)' == ''">https://github.com/sensboston/MetadataSharp</MetadataSharpRepositoryUrl>
+
+    <Authors>SeNS</Authors>
+    <Copyright>Copyright (c) 2026 SeNS</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>$(MetadataSharpRepositoryUrl)</PackageProjectUrl>
+    <PackageTags>exif;iptc;xmp;makernote;icc;metadata;image;jpeg;png;webp;tiff;dng;raw;heic;avif</PackageTags>
+    <RepositoryUrl>$(MetadataSharpRepositoryUrl)</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+
+    <!-- Source Link (part of the SDK): the PDB maps every source file to its commit in the repository,
+         files outside the repository are embedded, and the package records the commit it was built
+         from. The symbols travel beside the package as a .snupkg. -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <!-- On CI the build machine's paths are taken out of the binaries, which makes them reproducible. -->
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'MetadataSharp.Core'">
+    <Description>The metadata model of MetadataSharp: EXIF with camera MakerNotes, IPTC, XMP and ICC, a typed tag vocabulary with print conversion, bounded parsing of hostile input and edits that are refused when their safety cannot be established. Fully managed, no dependencies. Most applications reference the MetadataSharp package, which brings this one with it.</Description>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'MetadataSharp.Formats'">
+    <PackageId>MetadataSharp</PackageId>
+    <Description>Reads image metadata (EXIF with MakerNotes, IPTC, XMP, ICC profiles, comments, previews) from JPEG, PNG, WebP, TIFF, DNG, TIFF-based raw files, HEIC/HEIF/AVIF, PSD, JPEG 2000, EXV, CR3, JPEG XL and XMP sidecars, and edits it without decoding or recompressing image data. An independent implementation measured against exiv2. Fully managed; depends only on MetadataSharp.Core.</Description>
+  </PropertyGroup>
+
+  <!-- The two libraries are the packages. The version of a release is the tag that publishes it
+       (v1.2.3 gives -p:Version=1.2.3 in CI); a local pack gets the prefix and a -local suffix.
+       The package audit (package-audit of tools/MetadataSharp.Harness) packs a candidate under a
+       version that cannot be mistaken for a release. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'MetadataSharp.Core' or '$(MSBuildProjectName)' == 'MetadataSharp.Formats'">
+    <IsPackable>true</IsPackable>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix Condition="'$(Version)' == '' and '$(VersionSuffix)' == ''">local</VersionSuffix>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(MetadataSharpAuditPackage)' == 'true' and ('$(MSBuildProjectName)' == 'MetadataSharp.Core' or '$(MSBuildProjectName)' == 'MetadataSharp.Formats')">
+    <Version>0.0.0-audit</Version>
+  </PropertyGroup>
+</Project>

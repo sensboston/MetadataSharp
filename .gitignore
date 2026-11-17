@@ -1,0 +1,18 @@
+# .NET build, test and package output
+**/bin/
+**/obj/
+**/TestResults/
+artifacts/
+*.nupkg
+*.snupkg
+*.trx
+*.coverage
+*.coveragexml
+
+# Local IDE and operating system state
+.vs/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db

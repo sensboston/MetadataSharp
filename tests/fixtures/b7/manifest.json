@@ -1,0 +1,47 @@
+[
+  {
+    "file": "owned.avif",
+    "format": "AVIF",
+    "layout": "heif-av1",
+    "length": 765,
+    "sha256": "6c05def4e0378a98fe16ae4d59a359d0fd4247aff6e95a2b326fce3013852774",
+    "rights": "owned-synthetic",
+    "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 23"
+  },
+  {
+    "file": "owned.heif",
+    "format": "HEIF",
+    "layout": "heif-hevc",
+    "length": 1003,
+    "sha256": "66d3eaf5e9b6d040a213c76415159573911606f010f1e0f9dbb10eb15b55277e",
+    "rights": "owned-synthetic",
+    "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 29"
+  },
+  {
+    "file": "owned.heic",
+    "format": "HEIC",
+    "layout": "heif-hevc",
+    "length": 1029,
+    "sha256": "0b38be512b902a8e4589a0d7c7fc35462e35b22c6d68696922a675aed9e70548",
+    "rights": "owned-synthetic",
+    "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 31"
+  },
+  {
+    "file": "owned-codestream.jxl",
+    "format": "JXL",
+    "layout": "codestream",
+    "length": 187,
+    "sha256": "62b9d1f37508b16c21d2f85a4fec589050746c4f7ab682fb35f12788256307cf",
+    "rights": "owned-synthetic",
+    "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
+  },
+  {
+    "file": "owned-container.jxl",
+    "format": "JXL",
+    "layout": "container",
+    "length": 503,
+    "sha256": "86bd77046b2525a4d5d202881c46a3950879d857a41b6b39e441d901966b49f9",
+    "rights": "owned-synthetic",
+    "recipe": "tools/reference/b7_owned_fixtures.py; 8x8 RGB seed 37"
+  }
+]

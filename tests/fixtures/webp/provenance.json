@@ -1,0 +1,52 @@
+{
+  "encoder": "Pillow 12.0.0 manylinux cp311 x86_64 wheel, bundled libwebp 1.6.0",
+  "recipe": "Image.frombytes(mode, (1,1), raw).save(result, format=\"WEBP\", lossless=lossless, quality=75, method=6, exact=True)",
+  "inputRights": "MetadataSharp authored single-pixel values, MIT; no imported images or codec code/tests",
+  "fixtures": [
+    {
+      "kind": 0,
+      "mode": "RGB",
+      "rawInputHex": "0a141e",
+      "inputSha256": "6951bbd9c2178b2a9d01714687307afda1eb6161ff8c398486a76683e7b42925",
+      "lossless": false,
+      "outputSha256": "eadbd992c7bed764fbceb6eb182ece269bdb6e53f76c1ddf272a16bc26f504e8",
+      "outputHex": "524946462c0000005745425056503820200000007001009d012a010001000200342594027401400000fefa79509bb0edc9f85400"
+    },
+    {
+      "kind": 1,
+      "mode": "RGB",
+      "rawInputHex": "0a141e",
+      "inputSha256": "6951bbd9c2178b2a9d01714687307afda1eb6161ff8c398486a76683e7b42925",
+      "lossless": true,
+      "outputSha256": "37f962cdffb3683961b9b0010f6285fea26d3f2a0b8fa47c4af6c0404d6ddc0d",
+      "outputHex": "524946461e000000574542505650384c110000002f0000000007508a2ad4a3ff8188e87f0000"
+    },
+    {
+      "kind": 2,
+      "mode": "RGBA",
+      "rawInputHex": "0a141e80",
+      "inputSha256": "2fbd78fcbfd282d617256568e8c64ac0e5dbdc1d4866e882816a3a218fd097fc",
+      "lossless": false,
+      "outputSha256": "0f5a7ff3ee3c23093b2f3832668bd232c13bdab5ca13fff7e468c47935cdac5e",
+      "outputHex": "524946464800000057454250565038580a00000010000000000000000000414c504802000000008056503820200000007001009d012a010001000200342594027401400000fefa79509bb0edc9f85400"
+    },
+    {
+      "kind": 3,
+      "mode": "RGBA",
+      "rawInputHex": "0a141e80",
+      "inputSha256": "2fbd78fcbfd282d617256568e8c64ac0e5dbdc1d4866e882816a3a218fd097fc",
+      "lossless": true,
+      "outputSha256": "54691ac34e7ac6de4991e5df5618da4a8a1d4ad8e2d3ba8da24a231a77cc784e",
+      "outputHex": "524946461e000000574542505650384c110000002f0000001007508a2ad4a3808188e87f0000"
+    }
+  ],
+  "encoderDistribution": {
+    "filename": "pillow-12.0.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "url": "https://files.pythonhosted.org/packages/41/1e/db9470f2d030b4995083044cd8738cdd1bf773106819f6d8ba12597d5352/pillow-12.0.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl",
+    "digests": {
+      "blake2b_256": "411edb9470f2d030b4995083044cd8738cdd1bf773106819f6d8ba12597d5352",
+      "md5": "1900fa940a75e89cca203e0acce0018e",
+      "sha256": "bee2a6db3a7242ea309aa7ee8e2780726fed67ff4e5b40169f2c940e7eb09227"
+    }
+  }
+}

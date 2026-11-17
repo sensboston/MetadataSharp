@@ -1,0 +1,1596 @@
+[
+  {
+    "layout": "bmp-len008-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len008.bmp",
+    "kind": "bmp",
+    "size": 8,
+    "sha256": "cafe26b5a15bf32e06428195bc76117977ec293a0f62a167df039c90d7587773",
+    "structure": {
+      "length": 8,
+      "sha256": "cafe26b5a15bf32e06428195bc76117977ec293a0f62a167df039c90d7587773",
+      "signature": "424d4e000000",
+      "signatureText": "BM"
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 8-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len012-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len012.bmp",
+    "kind": "bmp",
+    "size": 12,
+    "sha256": "c0b19f77639c5d85dc38e8c72d999931b68d32f385adb9bd7546d0158d305219",
+    "structure": {
+      "length": 12,
+      "sha256": "c0b19f77639c5d85dc38e8c72d999931b68d32f385adb9bd7546d0158d305219",
+      "signature": "424d4e000000",
+      "signatureText": "BM"
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 12-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len016-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len016.bmp",
+    "kind": "bmp",
+    "size": 16,
+    "sha256": "f4176580a63d4ef750b4d1558d747d36a056fa86f5480cc3edbb50827c8e9794",
+    "structure": {
+      "length": 16,
+      "sha256": "f4176580a63d4ef750b4d1558d747d36a056fa86f5480cc3edbb50827c8e9794",
+      "signature": "424d4e000000",
+      "signatureText": "BM"
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 16-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len020-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len020.bmp",
+    "kind": "bmp",
+    "size": 20,
+    "sha256": "5d8d38534179bb66e007963cbc833bdff3bba2848bbad98d169ca1cec0990aab",
+    "structure": {
+      "length": 20,
+      "sha256": "5d8d38534179bb66e007963cbc833bdff3bba2848bbad98d169ca1cec0990aab",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 20-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len024-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len024.bmp",
+    "kind": "bmp",
+    "size": 24,
+    "sha256": "78399bc39f09316538d22c68bbde580f6e2e2b63f95f4a7ceddc56b71fbab49a",
+    "structure": {
+      "length": 24,
+      "sha256": "78399bc39f09316538d22c68bbde580f6e2e2b63f95f4a7ceddc56b71fbab49a",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 24-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len040-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len040.bmp",
+    "kind": "bmp",
+    "size": 40,
+    "sha256": "9567c886b432d67f4cbc88b1d8bb86ae3cfd7f62495fc91bc2253d4183c0430b",
+    "structure": {
+      "length": 40,
+      "sha256": "9567c886b432d67f4cbc88b1d8bb86ae3cfd7f62495fc91bc2253d4183c0430b",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before bmp at 23",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len054-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len054.bmp",
+    "kind": "bmp",
+    "size": 54,
+    "sha256": "d73b54a4dd41ac0504f2a98d9e210eb6d37910771fa170fa61a79c3a34801617",
+    "structure": {
+      "length": 54,
+      "sha256": "d73b54a4dd41ac0504f2a98d9e210eb6d37910771fa170fa61a79c3a34801617",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before bmp at 23",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len055-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len055.bmp",
+    "kind": "bmp",
+    "size": 55,
+    "sha256": "05a208255cbcd891451c346bc0c21de8e56a19d908c3df64560ffeda204989c7",
+    "structure": {
+      "length": 55,
+      "sha256": "05a208255cbcd891451c346bc0c21de8e56a19d908c3df64560ffeda204989c7",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before bmp at 23",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len056-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len056.bmp",
+    "kind": "bmp",
+    "size": 56,
+    "sha256": "cbf585b344ba9acf916a45c6a22b1c01fe6c17deab4966d268079b773586bedb",
+    "structure": {
+      "length": 56,
+      "sha256": "cbf585b344ba9acf916a45c6a22b1c01fe6c17deab4966d268079b773586bedb",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before bmp at 23",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len064-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len064.bmp",
+    "kind": "bmp",
+    "size": 64,
+    "sha256": "c77996c2e8476c0c5386a417af38dc29e3065f254c86d9d3109e631389dde0cd",
+    "structure": {
+      "length": 64,
+      "sha256": "c77996c2e8476c0c5386a417af38dc29e3065f254c86d9d3109e631389dde0cd",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before bmp at 23",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len079-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len079.bmp",
+    "kind": "bmp",
+    "size": 79,
+    "sha256": "3c3e671aa02ab0bafbaa72359589c4a18dca5f7eb6bc393652b0e67855859c26",
+    "structure": {
+      "length": 79,
+      "sha256": "3c3e671aa02ab0bafbaa72359589c4a18dca5f7eb6bc393652b0e67855859c26",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before bmp at 23",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len080-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len080.bmp",
+    "kind": "bmp",
+    "size": 80,
+    "sha256": "acdcfc9ecdea0cd72875fd56c9114ad3afd7202694227452392d3cd866bfdf92",
+    "structure": {
+      "length": 80,
+      "sha256": "acdcfc9ecdea0cd72875fd56c9114ad3afd7202694227452392d3cd866bfdf92",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": true,
+      "cause": "no-strand",
+      "attributable": true,
+      "predictedFamily": "reader-reached",
+      "predictedEntry": "bmp",
+      "predictedNote": "nothing before it strands, so its own magic test runs at position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len081-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len081.bmp",
+    "kind": "bmp",
+    "size": 81,
+    "sha256": "a1036edec9bbbf13f8b3ba6fff2c303d2a636e2953b27aab20d26482a7456f62",
+    "structure": {
+      "length": 81,
+      "sha256": "a1036edec9bbbf13f8b3ba6fff2c303d2a636e2953b27aab20d26482a7456f62",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": true,
+      "cause": "no-strand",
+      "attributable": true,
+      "predictedFamily": "reader-reached",
+      "predictedEntry": "bmp",
+      "predictedNote": "nothing before it strands, so its own magic test runs at position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len096-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len096.bmp",
+    "kind": "bmp",
+    "size": 96,
+    "sha256": "c2957cced15f573dc7d9bf26de0124390f4fc3b7bf5274f469027b1a82bfccc8",
+    "structure": {
+      "length": 96,
+      "sha256": "c2957cced15f573dc7d9bf26de0124390f4fc3b7bf5274f469027b1a82bfccc8",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": true,
+      "cause": "no-strand",
+      "attributable": true,
+      "predictedFamily": "reader-reached",
+      "predictedEntry": "bmp",
+      "predictedNote": "nothing before it strands, so its own magic test runs at position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-len128-v1",
+    "format": "BMP",
+    "file": "owned-bmp-len128.bmp",
+    "kind": "bmp",
+    "size": 128,
+    "sha256": "3e911daf27cc7dfd1d051f68929deca111dd73b7fa2f7ebf74005276d54bdef7",
+    "structure": {
+      "length": 128,
+      "sha256": "3e911daf27cc7dfd1d051f68929deca111dd73b7fa2f7ebf74005276d54bdef7",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": true,
+      "cause": "no-strand",
+      "attributable": true,
+      "predictedFamily": "reader-reached",
+      "predictedEntry": "bmp",
+      "predictedNote": "nothing before it strands, so its own magic test runs at position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-xmltail-len040-v1",
+    "format": "BMP",
+    "file": "owned-bmp-xmltail-len040.bmp",
+    "kind": "bmp-xmltail",
+    "size": 40,
+    "sha256": "fe699f3995053718a5f08f22a22b2c4e0584147e728d0fbc6ad7e3a55735e0b8",
+    "structure": {
+      "length": 40,
+      "sha256": "fe699f3995053718a5f08f22a22b2c4e0584147e728d0fbc6ad7e3a55735e0b8",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before bmp at 23",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "bmp-xmltail-len096-v1",
+    "format": "BMP",
+    "file": "owned-bmp-xmltail-len096.bmp",
+    "kind": "bmp-xmltail",
+    "size": 96,
+    "sha256": "115e271a40248fbb3600a92e0270fb14016e85a3e9e15b45cfd4a3d6af973f3d",
+    "structure": {
+      "length": 96,
+      "sha256": "115e271a40248fbb3600a92e0270fb14016e85a3e9e15b45cfd4a3d6af973f3d",
+      "signature": "424d4e000000",
+      "signatureText": "BM",
+      "headerSize": 40,
+      "bitmapOffset": 54,
+      "declaredFileSize": 78,
+      "consistentLength": false,
+      "pixelWidth": 4,
+      "pixelHeight": 2,
+      "planes": 1,
+      "depth": 24
+    },
+    "prediction": {
+      "recognised": true,
+      "cause": "no-strand",
+      "attributable": true,
+      "predictedFamily": "reader-reached",
+      "predictedEntry": "bmp",
+      "predictedNote": "nothing before it strands, so its own magic test runs at position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "bmp"
+      ],
+      "registryIndex": 23,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len008-v1",
+    "format": "GIF",
+    "file": "owned-gif-len008.gif",
+    "kind": "gif",
+    "size": 8,
+    "sha256": "a045114501473f18b8f1354d2c0ba00b8fcb4c02ef14e5e8a4c147ccae39e6b4",
+    "structure": {
+      "length": 8,
+      "sha256": "a045114501473f18b8f1354d2c0ba00b8fcb4c02ef14e5e8a4c147ccae39e6b4",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 8-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len012-v1",
+    "format": "GIF",
+    "file": "owned-gif-len012.gif",
+    "kind": "gif",
+    "size": 12,
+    "sha256": "54fc3980f8ec1b577307537fef98fc645adce8b56466394c47169aff503d5f84",
+    "structure": {
+      "length": 12,
+      "sha256": "54fc3980f8ec1b577307537fef98fc645adce8b56466394c47169aff503d5f84",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 12-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len016-v1",
+    "format": "GIF",
+    "file": "owned-gif-len016.gif",
+    "kind": "gif",
+    "size": 16,
+    "sha256": "d0b0b5a6b7c93d0438e4b1ff1379cabfa113452b92857753e0d56ec8042d88a8",
+    "structure": {
+      "length": 16,
+      "sha256": "d0b0b5a6b7c93d0438e4b1ff1379cabfa113452b92857753e0d56ec8042d88a8",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 16-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len020-v1",
+    "format": "GIF",
+    "file": "owned-gif-len020.gif",
+    "kind": "gif",
+    "size": 20,
+    "sha256": "edfa91868f6582543d82a773a834859083a67a0ae8def9df5775631464fbfbc4",
+    "structure": {
+      "length": 20,
+      "sha256": "edfa91868f6582543d82a773a834859083a67a0ae8def9df5775631464fbfbc4",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 20-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len024-v1",
+    "format": "GIF",
+    "file": "owned-gif-len024.gif",
+    "kind": "gif",
+    "size": 24,
+    "sha256": "6e735cb514dc2f8223c008e7d573a0e3ed23cf9ac514cf6c87e91df666d9bbf4",
+    "structure": {
+      "length": 24,
+      "sha256": "6e735cb514dc2f8223c008e7d573a0e3ed23cf9ac514cf6c87e91df666d9bbf4",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 24-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len040-v1",
+    "format": "GIF",
+    "file": "owned-gif-len040.gif",
+    "kind": "gif",
+    "size": 40,
+    "sha256": "d7d6a0018172d389500eb592bce8e2ce4b94e53c913736b3a2e1f1984323afee",
+    "structure": {
+      "length": 40,
+      "sha256": "d7d6a0018172d389500eb592bce8e2ce4b94e53c913736b3a2e1f1984323afee",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before gif at 20",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len054-v1",
+    "format": "GIF",
+    "file": "owned-gif-len054.gif",
+    "kind": "gif",
+    "size": 54,
+    "sha256": "da01d1e765261cefc46f33a13861089b63d9827d3bc625516ce88ad2d4cfdac7",
+    "structure": {
+      "length": 54,
+      "sha256": "da01d1e765261cefc46f33a13861089b63d9827d3bc625516ce88ad2d4cfdac7",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before gif at 20",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len055-v1",
+    "format": "GIF",
+    "file": "owned-gif-len055.gif",
+    "kind": "gif",
+    "size": 55,
+    "sha256": "5d28288738b6768c090b11af452011fd065ddfc652a94ba1a34bfa11ea22f0d0",
+    "structure": {
+      "length": 55,
+      "sha256": "5d28288738b6768c090b11af452011fd065ddfc652a94ba1a34bfa11ea22f0d0",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before gif at 20",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len056-v1",
+    "format": "GIF",
+    "file": "owned-gif-len056.gif",
+    "kind": "gif",
+    "size": 56,
+    "sha256": "ef4929a42a2b2910967be5d799ba54338ecd20e7d163e1d9aecb4cd66369e614",
+    "structure": {
+      "length": 56,
+      "sha256": "ef4929a42a2b2910967be5d799ba54338ecd20e7d163e1d9aecb4cd66369e614",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before gif at 20",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len064-v1",
+    "format": "GIF",
+    "file": "owned-gif-len064.gif",
+    "kind": "gif",
+    "size": 64,
+    "sha256": "8de8af86e503b06ddf59a27bef4d6f2f00cd8b1b3e7973bf726d99186b0ee12e",
+    "structure": {
+      "length": 64,
+      "sha256": "8de8af86e503b06ddf59a27bef4d6f2f00cd8b1b3e7973bf726d99186b0ee12e",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before gif at 20",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len079-v1",
+    "format": "GIF",
+    "file": "owned-gif-len079.gif",
+    "kind": "gif",
+    "size": 79,
+    "sha256": "4c105936f864710c021d5cbd00f4d9646974393749252db88bb8af95ac21dfc7",
+    "structure": {
+      "length": 79,
+      "sha256": "4c105936f864710c021d5cbd00f4d9646974393749252db88bb8af95ac21dfc7",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before gif at 20",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len080-v1",
+    "format": "GIF",
+    "file": "owned-gif-len080.gif",
+    "kind": "gif",
+    "size": 80,
+    "sha256": "cab3e85b24a6fc1fe9168114a92e2c8a52452ed54fb69d9b083b1628d799b31b",
+    "structure": {
+      "length": 80,
+      "sha256": "cab3e85b24a6fc1fe9168114a92e2c8a52452ed54fb69d9b083b1628d799b31b",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": true,
+      "cause": "no-strand",
+      "attributable": true,
+      "predictedFamily": "reader-reached",
+      "predictedEntry": "gif",
+      "predictedNote": "nothing before it strands, so its own magic test runs at position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len081-v1",
+    "format": "GIF",
+    "file": "owned-gif-len081.gif",
+    "kind": "gif",
+    "size": 81,
+    "sha256": "c76626c8986c070c0f10a4eded117566b2370a5918f05d97f2c4e71ea447a4cd",
+    "structure": {
+      "length": 81,
+      "sha256": "c76626c8986c070c0f10a4eded117566b2370a5918f05d97f2c4e71ea447a4cd",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": true,
+      "cause": "no-strand",
+      "attributable": true,
+      "predictedFamily": "reader-reached",
+      "predictedEntry": "gif",
+      "predictedNote": "nothing before it strands, so its own magic test runs at position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len096-v1",
+    "format": "GIF",
+    "file": "owned-gif-len096.gif",
+    "kind": "gif",
+    "size": 96,
+    "sha256": "7df04f09ec0cbe24a77fc2cabc89e2ca8fded7d5eb8fcd1c0880857a3bfa264b",
+    "structure": {
+      "length": 96,
+      "sha256": "7df04f09ec0cbe24a77fc2cabc89e2ca8fded7d5eb8fcd1c0880857a3bfa264b",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": true,
+      "cause": "no-strand",
+      "attributable": true,
+      "predictedFamily": "reader-reached",
+      "predictedEntry": "gif",
+      "predictedNote": "nothing before it strands, so its own magic test runs at position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "gif-len128-v1",
+    "format": "GIF",
+    "file": "owned-gif-len128.gif",
+    "kind": "gif",
+    "size": 128,
+    "sha256": "77b70c1843645ab9bccd0ca9b33c78cf859d357ace9427ecfe11fbb9e117682c",
+    "structure": {
+      "length": 128,
+      "sha256": "77b70c1843645ab9bccd0ca9b33c78cf859d357ace9427ecfe11fbb9e117682c",
+      "signature": "474946383761",
+      "signatureText": "GIF87a",
+      "hasLogicalScreenDescriptor": true
+    },
+    "prediction": {
+      "recognised": true,
+      "cause": "no-strand",
+      "attributable": true,
+      "predictedFamily": "reader-reached",
+      "predictedEntry": "gif",
+      "predictedNote": "nothing before it strands, so its own magic test runs at position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "gif"
+      ],
+      "registryIndex": 20,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len008-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len008.targa",
+    "kind": "targa",
+    "size": 8,
+    "sha256": "fb2fec8f6cf186024bdb5fffba1623ae1336d860c506367156f8ab28826687da",
+    "structure": {
+      "length": 8,
+      "sha256": "fb2fec8f6cf186024bdb5fffba1623ae1336d860c506367156f8ab28826687da",
+      "signature": "2d5846494c45",
+      "footerSignature": null,
+      "footerAtEof": false,
+      "headAtOffset0": false,
+      "bothRegionsCanonical": false,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": false,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 8-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len012-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len012.targa",
+    "kind": "targa",
+    "size": 12,
+    "sha256": "eba5cc0dd52d7aef277412e94cadb65c13313d2697e8bbffe3e9d02bb1bca479",
+    "structure": {
+      "length": 12,
+      "sha256": "eba5cc0dd52d7aef277412e94cadb65c13313d2697e8bbffe3e9d02bb1bca479",
+      "signature": "53494f4e2d58",
+      "footerSignature": null,
+      "footerAtEof": false,
+      "headAtOffset0": false,
+      "bothRegionsCanonical": false,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": false,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 12-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len016-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len016.targa",
+    "kind": "targa",
+    "size": 16,
+    "sha256": "0bbe9fa485f6937de6fe89c0fdc01e46eeedcb445ea28cdda9e47810d2d5eef4",
+    "structure": {
+      "length": 16,
+      "sha256": "0bbe9fa485f6937de6fe89c0fdc01e46eeedcb445ea28cdda9e47810d2d5eef4",
+      "signature": "554556495349",
+      "footerSignature": null,
+      "footerAtEof": false,
+      "headAtOffset0": false,
+      "bothRegionsCanonical": false,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": false,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 16-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len020-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len020.targa",
+    "kind": "targa",
+    "size": 20,
+    "sha256": "a303f304c76b08dcffd0f6992d7d0c75110ba789a37f94a41e044cc959b71d91",
+    "structure": {
+      "length": 20,
+      "sha256": "a303f304c76b08dcffd0f6992d7d0c75110ba789a37f94a41e044cc959b71d91",
+      "signature": "000054525545",
+      "footerSignature": null,
+      "footerAtEof": false,
+      "headAtOffset0": false,
+      "bothRegionsCanonical": false,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": false,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 20-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len024-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len024.targa",
+    "kind": "targa",
+    "size": 24,
+    "sha256": "8438030b7b09769564cce064bad2132d193f3610eb8607245d9c68c99a73c504",
+    "structure": {
+      "length": 24,
+      "sha256": "8438030b7b09769564cce064bad2132d193f3610eb8607245d9c68c99a73c504",
+      "signature": "000000000000",
+      "footerSignature": null,
+      "footerAtEof": false,
+      "headAtOffset0": false,
+      "bothRegionsCanonical": false,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": false,
+      "predictedFamily": "throws-during-scan",
+      "predictedEntry": "eps",
+      "predictedNote": "read(26) on a 24-byte file throws, so no later entry runs",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len040-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len040.targa",
+    "kind": "targa",
+    "size": 40,
+    "sha256": "2bf30589251be81166c6466a893c5d394a2b89b559347705bcabaa08363ae609",
+    "structure": {
+      "length": 40,
+      "sha256": "2bf30589251be81166c6466a893c5d394a2b89b559347705bcabaa08363ae609",
+      "signature": "000000000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": false,
+      "bothRegionsCanonical": false,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": false,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before tga at 22",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len054-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len054.targa",
+    "kind": "targa",
+    "size": 54,
+    "sha256": "dc0c8651c747288e63c2b977680a935554eaf63ef064010654397a0ea2aaae05",
+    "structure": {
+      "length": 54,
+      "sha256": "dc0c8651c747288e63c2b977680a935554eaf63ef064010654397a0ea2aaae05",
+      "signature": "000002000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": true,
+      "bothRegionsCanonical": true,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before tga at 22",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len055-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len055.targa",
+    "kind": "targa",
+    "size": 55,
+    "sha256": "377a1ae7223887a5683f421a688b63760f841e4bd198acd86ec0378a86342ff3",
+    "structure": {
+      "length": 55,
+      "sha256": "377a1ae7223887a5683f421a688b63760f841e4bd198acd86ec0378a86342ff3",
+      "signature": "000002000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": true,
+      "bothRegionsCanonical": true,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before tga at 22",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len056-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len056.targa",
+    "kind": "targa",
+    "size": 56,
+    "sha256": "7701d65d4060cba35d55c0c7bf340fe78ae5a7252691acc8d9ad688394d567a3",
+    "structure": {
+      "length": 56,
+      "sha256": "7701d65d4060cba35d55c0c7bf340fe78ae5a7252691acc8d9ad688394d567a3",
+      "signature": "000002000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": true,
+      "bothRegionsCanonical": true,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before tga at 22",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len064-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len064.targa",
+    "kind": "targa",
+    "size": 64,
+    "sha256": "7ea700474e5e2ccbaf38184a574b16b16b80ecf8b22d06947d0d6e92277c1c5f",
+    "structure": {
+      "length": 64,
+      "sha256": "7ea700474e5e2ccbaf38184a574b16b16b80ecf8b22d06947d0d6e92277c1c5f",
+      "signature": "000002000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": true,
+      "bothRegionsCanonical": true,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before tga at 22",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len079-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len079.targa",
+    "kind": "targa",
+    "size": 79,
+    "sha256": "0bc3461417356ed0ab7753b6b318c19ddde17b25a5831e9fd66326a89ceb4ea2",
+    "structure": {
+      "length": 79,
+      "sha256": "0bc3461417356ed0ab7753b6b318c19ddde17b25a5831e9fd66326a89ceb4ea2",
+      "signature": "000002000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": true,
+      "bothRegionsCanonical": true,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": "xmp",
+      "predictedNote": "cursor stranded by index 19 (window 80) before tga at 22",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len080-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len080.targa",
+    "kind": "targa",
+    "size": 80,
+    "sha256": "7ff694a9b00541c43bbcddd366805ffdfe53dbf9ab3bca206467ec94cdf2fe71",
+    "structure": {
+      "length": 80,
+      "sha256": "7ff694a9b00541c43bbcddd366805ffdfe53dbf9ab3bca206467ec94cdf2fe71",
+      "signature": "000002000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": true,
+      "bothRegionsCanonical": true,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": null,
+      "predictedNote": "name test cannot fire, tell() < 26 at scan position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len081-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len081.targa",
+    "kind": "targa",
+    "size": 81,
+    "sha256": "ae64273c7c4dd5b1e52e21146beffea3947bfc5d2b93175a07cd8e4fb3078da9",
+    "structure": {
+      "length": 81,
+      "sha256": "ae64273c7c4dd5b1e52e21146beffea3947bfc5d2b93175a07cd8e4fb3078da9",
+      "signature": "000002000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": true,
+      "bothRegionsCanonical": true,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": null,
+      "predictedNote": "name test cannot fire, tell() < 26 at scan position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len096-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len096.targa",
+    "kind": "targa",
+    "size": 96,
+    "sha256": "4170e3257b6ecc741db0db80c9d6721bdcbf661abe4014a3e32a5fd57a7055c1",
+    "structure": {
+      "length": 96,
+      "sha256": "4170e3257b6ecc741db0db80c9d6721bdcbf661abe4014a3e32a5fd57a7055c1",
+      "signature": "000002000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": true,
+      "bothRegionsCanonical": true,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": null,
+      "predictedNote": "name test cannot fire, tell() < 26 at scan position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  },
+  {
+    "layout": "targa-len128-v1",
+    "format": "TARGA",
+    "file": "owned-targa-len128.targa",
+    "kind": "targa",
+    "size": 128,
+    "sha256": "de8b41a03feeae272384491edf6bc5c32c4b15a12bafbf363de85f260abbdceb",
+    "structure": {
+      "length": 128,
+      "sha256": "de8b41a03feeae272384491edf6bc5c32c4b15a12bafbf363de85f260abbdceb",
+      "signature": "000002000000",
+      "footerSignature": "TRUEVISION-XFILE",
+      "footerAtEof": true,
+      "headAtOffset0": true,
+      "bothRegionsCanonical": true,
+      "nameMatchesRecognizer": false,
+      "positionTestPassesDuringScan": false
+    },
+    "prediction": {
+      "recognised": false,
+      "cause": "registry-strand",
+      "attributable": true,
+      "predictedFamily": "unknown-image-type",
+      "predictedEntry": null,
+      "predictedNote": "name test cannot fire, tell() < 26 at scan position 0",
+      "basis": "static reading of the pinned 0.28.9 source; no offline rehearsal"
+    },
+    "recognizers": {
+      "model": [
+        "tga-footer"
+      ],
+      "registryIndex": null,
+      "xmpWindow": 80
+    }
+  }
+]
