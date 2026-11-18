@@ -8,8 +8,6 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
-  schedule:
-    - cron: '17 6 * * *'
 
 permissions:
   contents: read
@@ -187,8 +185,8 @@ jobs:
 
   external-reference:
     # Depends on Ubuntu's package mirror (exiv2 0.27.6, exiftool, webp from apt), which has failed for
-    # hours at a time on the runners. Runs nightly and on demand; parity against the pinned 0.28.9
-    # binary is the per-commit gate.
+    # hours at a time on the runners. Runs on demand (Run workflow, before a release); parity against
+    # the pinned 0.28.9 binary is the per-commit gate.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     continue-on-error: true
     name: References / ${{ matrix.tfm }}

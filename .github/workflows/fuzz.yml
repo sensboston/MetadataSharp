@@ -14,7 +14,7 @@ on:
         description: Seconds of afl-fuzz per target
         default: '300'
   schedule:
-    - cron: '31 3 * * *'
+    - cron: '31 3 * * 0'  # weekly, Sunday 03:31 UTC
 permissions:
   contents: read
 concurrency:
