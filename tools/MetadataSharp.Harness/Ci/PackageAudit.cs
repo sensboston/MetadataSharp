@@ -157,7 +157,7 @@ internal static class PackageAudit
             using (var archive = ZipFile.OpenRead(package))
             {
                 names = Py.Sorted(archive.Entries.Select(entry => entry.FullName));
-                var required = new List<string> { "LICENSE", "README.md" };
+                var required = new List<string> { "LICENSE", "README.md", "icon.png" };
                 foreach (string tfm in Targets) required.AddRange(new[] { "dll", "xml" }.Select(extension => $"lib/{tfm}/{name}.{extension}"));
                 Assert(required.All(names.Contains), names);
                 Assert(Read(archive, "LICENSE").AsSpan().SequenceEqual(PyFile.ReadBytes(Repo.Path("LICENSE"))));
@@ -174,7 +174,9 @@ internal static class PackageAudit
                 }
                 Assert(markers.Values.All(found => ((List<object?>)found!).Contains("IsTrimmable")), markers);
                 string[] refused = [".exe", ".cs", ".pdb", ".pdf", ".tif", ".jpg", ".png", ".webp"];
-                Assert(!names.Any(entry => refused.Any(suffix => entry.EndsWith(suffix, StringComparison.Ordinal))), names);
+                // The package icon is the only image allowed in a package.
+                Assert(!names.Any(entry => entry != "icon.png" && refused.Any(suffix => entry.EndsWith(suffix, StringComparison.Ordinal))), names);
+                Assert(Read(archive, "icon.png").AsSpan().SequenceEqual(PyFile.ReadBytes(Repo.Path("assets/icon.png"))));
                 var nuspec = Parse(Read(archive, $"{id}.nuspec"));
                 var license = Local(nuspec, "license")[0];
                 Assert(Text(license) == "MIT" && Get(license, "type") == "expression");
@@ -186,7 +188,8 @@ internal static class PackageAudit
                     repository[attribute.NamespaceURI.Length > 0 ? $"{{{attribute.NamespaceURI}}}{attribute.LocalName}" : attribute.LocalName] = attribute.Value;
                 }
                 Assert(Py.Eq(new PyTuple(repository.Get("type"), repository.Get("url"), repository.Get("commit")), new PyTuple("git", Repository, head)), repository);
-                Assert(Local(nuspec, "projectUrl").Select(Text).SequenceEqual([Repository]) && Local(nuspec, "readme").Select(Text).SequenceEqual(["README.md"]));
+                Assert(Local(nuspec, "projectUrl").Select(Text).SequenceEqual([Repository]) && Local(nuspec, "readme").Select(Text).SequenceEqual(["README.md"])
+                    && Local(nuspec, "icon").Select(Text).SequenceEqual(["icon.png"]));
                 groups = new PyDict();
                 foreach (var group in Local(nuspec, "group"))
                 {
