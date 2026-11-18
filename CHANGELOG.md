@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Package icon.
+
 ## 1.0.0
 
 First release.

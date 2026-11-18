@@ -29,6 +29,7 @@
     <Copyright>Copyright (c) 2026 SeNS</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageProjectUrl>$(MetadataSharpRepositoryUrl)</PackageProjectUrl>
     <PackageTags>exif;iptc;xmp;makernote;icc;metadata;image;jpeg;png;webp;tiff;dng;raw;heic;avif</PackageTags>
     <RepositoryUrl>$(MetadataSharpRepositoryUrl)</RepositoryUrl>
@@ -58,7 +59,7 @@
        version that cannot be mistaken for a release. -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'MetadataSharp.Core' or '$(MSBuildProjectName)' == 'MetadataSharp.Formats'">
     <IsPackable>true</IsPackable>
-    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionPrefix>1.0.1</VersionPrefix>
     <VersionSuffix Condition="'$(Version)' == '' and '$(VersionSuffix)' == ''">local</VersionSuffix>
   </PropertyGroup>
   <PropertyGroup Condition="'$(MetadataSharpAuditPackage)' == 'true' and ('$(MSBuildProjectName)' == 'MetadataSharp.Core' or '$(MSBuildProjectName)' == 'MetadataSharp.Formats')">
